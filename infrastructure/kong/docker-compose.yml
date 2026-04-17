@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  kong:
+    image: kong:3.6
+    container_name: nrg-kong-gateway
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: "0.0.0.0:8002"
+      KONG_PROXY_LISTEN: "0.0.0.0:8000"
+      KONG_PLUGINS: "bundled,dlp"
+      KONG_LUA_PACKAGE_PATH: "/usr/local/share/lua/5.1/kong/plugins/?.lua;;"
+    ports:
+      - "8000:8000"
+      - "8002:8002"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./kong.yml:/usr/local/kong/declarative/kong.yml
+      - ./plugins/dlp:/usr/local/share/lua/5.1/kong/plugins/dlp
+      - kong_data:/usr/local/kong
+    networks:
+      - nrg-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: nrg-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nrg-network
+
+volumes:
+  kong_data:
+  redis_data:
+
+networks:
+  nrg-network:
+    driver: bridge

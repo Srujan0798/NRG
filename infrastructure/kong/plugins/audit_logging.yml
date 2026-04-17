@@ -1,0 +1,56 @@
+_format_version: "1.1"
+
+plugins:
+  - name: file-log
+    config:
+      path: /var/log/kong/audit.log
+      reopen: true
+    
+  - name: pre-function
+    config:
+      functions:
+        - |
+          local cjson = require "cjson"
+          local digest = require "resty.sha256"
+          
+          return function()
+            local timestamp = os.date("%Y-%m-%dT%H:%M:%S.%LZ")
+            local request_id = kong.request.get_header("X-Request-ID")
+            local user_tier = kong.request.get_header("X-User-Tier") or "unknown"
+            local client_ip = kong.request.get_header("X-Forwarded-For") or kong.request.get_ip()
+            
+            local body = kong.request.get_raw_body()
+            local query_hash = ""
+            if body then
+              local sha256 = digest:new()
+              sha256:update(body)
+              query_hash = sha256:final()
+            end
+            
+            kong.ctx.plugin.audit_data = {
+              timestamp = timestamp,
+              request_id = request_id,
+              user_tier = user_tier,
+              client_ip = client_ip,
+              query_hash = query_hash,
+              method = kong.request.get_method(),
+              path = kong.request.get_path(),
+              user_agent = kong.request.get_header("User-Agent")
+            }
+          end
+    
+  - name: post-function
+    config:
+      functions:
+        - |
+          return function()
+            local audit_data = kong.ctx.plugin.audit_data
+            if audit_data then
+              audit_data.latency = kong.ctx.shared.KONG_LATENCY
+              audit_data.upstream_status = kong.ctx.shared.KONG_UPSTREAM_STATUS
+              audit_data.response_size = kong.response.get_header("Content-Length")
+              
+              local log_entry = cjson.encode(audit_data)
+              kong.log(log_entry)
+            end
+          end

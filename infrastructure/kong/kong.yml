@@ -1,0 +1,146 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: nrg-api
+    url: http://host.docker.internal:8001
+    routes:
+      - name: public-auth-route
+        paths:
+          - /login
+          - /refresh
+          - /health
+        strip_path: false
+        preserve_host: true
+      - name: protected-query-route
+        paths:
+          - /query
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+              key_claim_name: iss
+              header_names:
+                - authorization
+          - name: acl
+            config:
+              allow:
+                - researcher
+                - government
+                - industry
+                - guest
+              hide_groups_header: false
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: local
+      - name: protected-data-route
+        paths:
+          - /researchers
+          - /logout
+          - /
+        strip_path: false
+        preserve_host: true
+        plugins:
+          - name: jwt
+            config:
+              claims_to_verify:
+                - exp
+              key_claim_name: iss
+              header_names:
+                - authorization
+          - name: acl
+            config:
+              allow:
+                - researcher
+                - government
+                - industry
+              hide_groups_header: false
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: local
+
+consumers:
+  - username: researcher
+    custom_id: tier1
+    jwt_secrets:
+      - key: researcher
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuziTGZaxyCrUZ9p9uEPx
+          BYHj4wcPVb08DhWIAvyT3Vg0+oDdHfwNivXagh63j5Zmm5L+r1kSO/BbHC6yMx5W
+          lKFh8bD94Gkl66b3mwrIOslxCEFe5D2LSUtvOBMOx03obBGx3O2xYDTTDqJ/c9wU
+          SvxS1ZEbncK1qfXwtB3ieMIT5YGryjmEm+qQtKR6bQU5r9jXaN7BiLJ3MdlSC7aM
+          bfpavbjVXN7fVTVWLgBfFwkJD+UTbnr1e5TRCG9GOMqc41Mz/CYl2Zb0YTEJEfuM
+          5/bQpY7yOHJhsY9tYP1yPHGDW4xCpK1Hjd4oxqLx/6BZEBO+e1R2nKflOwervevE
+          hqE1f28/LaKkYoOezIdPBEgC2Wt+RjGg2g8XSNefsCTZhBN8v7esAt84UrxgKOOf
+          cr3P6rltE8+BCqpXK+pvWHtJK3BVVfQUW2vvaCyq3IDu5mmTACvBSdaCFs8xLeRB
+          cOVZ7XphW8PzXmmNLEz9zLfNsGzWHBcncS7xA/fKwYXuW0LhC+YnI/QWcjsUoHkn
+          idie6Zu0tuJuNgqr6siAaJ/JFuzUziMg/vjOMkFeyPd6Idju1EUQZmjQmwEcZIUJ
+          T8oD90nRbFXFiI1trs2GWeEEh3iIU0mNmH2fslaMw+MeQ+dSHT+DX7WRayZxXbaX
+          YdjimQU9Jb0t5VqfUYg5xD8CAwEAAQ==
+          -----END PUBLIC KEY-----
+        algorithm: RS256
+    acls:
+      - group: researcher
+
+  - username: government
+    custom_id: tier2
+    jwt_secrets:
+      - key: government
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuziTGZaxyCrUZ9p9uEPx
+          BYHj4wcPVb08DhWIAvyT3Vg0+oDdHfwNivXagh63j5Zmm5L+r1kSO/BbHC6yMx5W
+          lKFh8bD94Gkl66b3mwrIOslxCEFe5D2LSUtvOBMOx03obBGx3O2xYDTTDqJ/c9wU
+          SvxS1ZEbncK1qfXwtB3ieMIT5YGryjmEm+qQtKR6bQU5r9jXaN7BiLJ3MdlSC7aM
+          bfpavbjVXN7fVTVWLgBfFwkJD+UTbnr1e5TRCG9GOMqc41Mz/CYl2Zb0YTEJEfuM
+          5/bQpY7yOHJhsY9tYP1yPHGDW4xCpK1Hjd4oxqLx/6BZEBO+e1R2nKflOwervevE
+          hqE1f28/LaKkYoOezIdPBEgC2Wt+RjGg2g8XSNefsCTZhBN8v7esAt84UrxgKOOf
+          cr3P6rltE8+BCqpXK+pvWHtJK3BVVfQUW2vvaCyq3IDu5mmTACvBSdaCFs8xLeRB
+          cOVZ7XphW8PzXmmNLEz9zLfNsGzWHBcncS7xA/fKwYXuW0LhC+YnI/QWcjsUoHkn
+          idie6Zu0tuJuNgqr6siAaJ/JFuzUziMg/vjOMkFeyPd6Idju1EUQZmjQmwEcZIUJ
+          T8oD90nRbFXFiI1trs2GWeEEh3iIU0mNmH2fslaMw+MeQ+dSHT+DX7WRayZxXbaX
+          YdjimQU9Jb0t5VqfUYg5xD8CAwEAAQ==
+          -----END PUBLIC KEY-----
+        algorithm: RS256
+    acls:
+      - group: government
+
+  - username: industry
+    custom_id: tier3
+    jwt_secrets:
+      - key: industry
+        rsa_public_key: |
+          -----BEGIN PUBLIC KEY-----
+          MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAuziTGZaxyCrUZ9p9uEPx
+          BYHj4wcPVb08DhWIAvyT3Vg0+oDdHfwNivXagh63j5Zmm5L+r1kSO/BbHC6yMx5W
+          lKFh8bD94Gkl66b3mwrIOslxCEFe5D2LSUtvOBMOx03obBGx3O2xYDTTDqJ/c9wU
+          SvxS1ZEbncK1qfXwtB3ieMIT5YGryjmEm+qQtKR6bQU5r9jXaN7BiLJ3MdlSC7aM
+          bfpavbjVXN7fVTVWLgBfFwkJD+UTbnr1e5TRCG9GOMqc41Mz/CYl2Zb0YTEJEfuM
+          5/bQpY7yOHJhsY9tYP1yPHGDW4xCpK1Hjd4oxqLx/6BZEBO+e1R2nKflOwervevE
+          hqE1f28/LaKkYoOezIdPBEgC2Wt+RjGg2g8XSNefsCTZhBN8v7esAt84UrxgKOOf
+          cr3P6rltE8+BCqpXK+pvWHtJK3BVVfQUW2vvaCyq3IDu5mmTACvBSdaCFs8xLeRB
+          cOVZ7XphW8PzXmmNLEz9zLfNsGzWHBcncS7xA/fKwYXuW0LhC+YnI/QWcjsUoHkn
+          idie6Zu0tuJuNgqr6siAaJ/JFuzUziMg/vjOMkFeyPd6Idju1EUQZmjQmwEcZIUJ
+          T8oD90nRbFXFiI1trs2GWeEEh3iIU0mNmH2fslaMw+MeQ+dSHT+DX7WRayZxXbaX
+          YdjimQU9Jb0t5VqfUYg5xD8CAwEAAQ==
+          -----END PUBLIC KEY-----
+        algorithm: RS256
+    acls:
+      - group: industry
+
+plugins:
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+      headers:
+        - "*"

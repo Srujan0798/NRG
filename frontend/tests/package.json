@@ -1,0 +1,13 @@
+{
+  "name": "nrg-frontend-tests",
+  "version": "1.0.0",
+  "description": "Playwright tests for National Research Graph frontend",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:trace": "playwright test --trace on"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.40.0"
+  }
+}

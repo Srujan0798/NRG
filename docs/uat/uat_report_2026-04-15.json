@@ -1,0 +1,341 @@
+{
+  "timestamp": "2026-04-15T07:45:37.248023+00:00",
+  "evaluate_with_llm": false,
+  "success_threshold": 0.9,
+  "personas": {
+    "researcher": {
+      "persona": "researcher",
+      "total_scenarios": 20,
+      "successful": 20,
+      "success_rate": 1.0,
+      "avg_response_time": 0.0216808557510376,
+      "results": [
+        {
+          "query": "Find researchers in machine learning at IIT Delhi",
+          "category": "researcher_discovery",
+          "success": true,
+          "response_time": 0.07805991172790527
+        },
+        {
+          "query": "List publications by Dr. Amit Sharma in quantum computing",
+          "category": "publication_discovery",
+          "success": true,
+          "response_time": 0.02205204963684082
+        },
+        {
+          "query": "Find collaborators for natural language processing research",
+          "category": "collaboration",
+          "success": true,
+          "response_time": 0.02447676658630371
+        },
+        {
+          "query": "What research labs work on computer vision in India?",
+          "category": "lab_discovery",
+          "success": true,
+          "response_time": 0.01934814453125
+        },
+        {
+          "query": "Find funding opportunities for AI research in 2025",
+          "category": "funding_analysis",
+          "success": true,
+          "response_time": 0.017177104949951172
+        },
+        {
+          "query": "Who are the top researchers in deep learning?",
+          "category": "expertise_discovery",
+          "success": true,
+          "response_time": 0.017008066177368164
+        },
+        {
+          "query": "Find research papers on blockchain technology from IITs",
+          "category": "publication_discovery",
+          "success": true,
+          "response_time": 0.017086029052734375
+        },
+        {
+          "query": "What is the collaboration network between IIT Bombay and IIT Madras?",
+          "category": "network_analysis",
+          "success": true,
+          "response_time": 0.017999887466430664
+        },
+        {
+          "query": "Find researchers working on quantum computing at Indian institutions",
+          "category": "researcher_discovery",
+          "success": true,
+          "response_time": 0.020142793655395508
+        },
+        {
+          "query": "What are the recent publications in cybersecurity from Indian labs?",
+          "category": "publication_discovery",
+          "success": true,
+          "response_time": 0.01826000213623047
+        },
+        {
+          "query": "Find cross-institution research projects in data science",
+          "category": "project_discovery",
+          "success": true,
+          "response_time": 0.017267942428588867
+        },
+        {
+          "query": "Who are the leading researchers in neural networks?",
+          "category": "expertise_discovery",
+          "success": true,
+          "response_time": 0.017331838607788086
+        },
+        {
+          "query": "Find research groups working on robotics at IISc",
+          "category": "lab_discovery",
+          "success": true,
+          "response_time": 0.028844118118286133
+        },
+        {
+          "query": "What is the research output of NIT Trichy in the last 5 years?",
+          "category": "metrics_analysis",
+          "success": true,
+          "response_time": 0.016230344772338867
+        },
+        {
+          "query": "Find collaborations between industry and academia in AI",
+          "category": "partnership_discovery",
+          "success": true,
+          "response_time": 0.017208099365234375
+        },
+        {
+          "query": "Who published papers on reinforcement learning in 2024?",
+          "category": "publication_discovery",
+          "success": true,
+          "response_time": 0.01618194580078125
+        },
+        {
+          "query": "Find researcher profiles with expertise in computer graphics",
+          "category": "expertise_discovery",
+          "success": true,
+          "response_time": 0.019706010818481445
+        },
+        {
+          "query": "What research areas are growing at IIT Kharagpur?",
+          "category": "trends_analysis",
+          "success": true,
+          "response_time": 0.017596960067749023
+        },
+        {
+          "query": "Find international collaborations in biotechnology research",
+          "category": "network_analysis",
+          "success": true,
+          "response_time": 0.016051054000854492
+        },
+        {
+          "query": "What patents have been filed by IIT researchers in AI?",
+          "category": "ip_discovery",
+          "success": true,
+          "response_time": 0.015588045120239258
+        }
+      ]
+    },
+    "government": {
+      "persona": "government",
+      "total_scenarios": 15,
+      "successful": 15,
+      "success_rate": 1.0,
+      "avg_response_time": 1.5254837036132813,
+      "results": [
+        {
+          "query": "What is the total research funding allocated to all IITs in 2024?",
+          "category": "funding_analysis",
+          "success": true,
+          "response_time": 0.01699376106262207
+        },
+        {
+          "query": "Compare research output between Gujarat and Maharashtra institutions",
+          "category": "state_comparison",
+          "success": true,
+          "response_time": 0.016117095947265625
+        },
+        {
+          "query": "What are the trending research areas across Indian institutions?",
+          "category": "trends_report",
+          "success": true,
+          "response_time": 7.76721715927124
+        },
+        {
+          "query": "Show funding distribution by state for the last fiscal year",
+          "category": "funding_analysis",
+          "success": true,
+          "response_time": 0.05069589614868164
+        },
+        {
+          "query": "What is the research productivity index of all NITs?",
+          "category": "metrics_report",
+          "success": true,
+          "response_time": 0.024490833282470703
+        },
+        {
+          "query": "Compare patent filings between IITs over the last 5 years",
+          "category": "ip_analysis",
+          "success": true,
+          "response_time": 7.393036842346191
+        },
+        {
+          "query": "What is the funding utilization rate by institution type?",
+          "category": "funding_analysis",
+          "success": true,
+          "response_time": 0.07836389541625977
+        },
+        {
+          "query": "Show regional distribution of research funding across India",
+          "category": "geographic_analysis",
+          "success": true,
+          "response_time": 0.03027200698852539
+        },
+        {
+          "query": "What is the return on research investment by state?",
+          "category": "roi_analysis",
+          "success": true,
+          "response_time": 0.030097007751464844
+        },
+        {
+          "query": "Compare research impact of centrally funded vs state institutions",
+          "category": "comparison",
+          "success": true,
+          "response_time": 7.364504098892212
+        },
+        {
+          "query": "What is the growth rate of research publications in India?",
+          "category": "trends_report",
+          "success": true,
+          "response_time": 0.04257798194885254
+        },
+        {
+          "query": "Show industry-academia collaboration statistics",
+          "category": "partnership_analysis",
+          "success": true,
+          "response_time": 0.01705193519592285
+        },
+        {
+          "query": "What is the research output by domain across all institutions?",
+          "category": "metrics_report",
+          "success": true,
+          "response_time": 0.016354084014892578
+        },
+        {
+          "query": "Compare funding allocation between public and private institutions",
+          "category": "comparison",
+          "success": true,
+          "response_time": 0.017862796783447266
+        },
+        {
+          "query": "Show research impact scores by institution",
+          "category": "metrics_report",
+          "success": true,
+          "response_time": 0.016620159149169922
+        }
+      ]
+    },
+    "industry": {
+      "persona": "industry",
+      "total_scenarios": 15,
+      "successful": 15,
+      "success_rate": 1.0,
+      "avg_response_time": 0.019383319218953452,
+      "results": [
+        {
+          "query": "What AI capabilities do Indian research institutions offer?",
+          "category": "capability_mapping",
+          "success": true,
+          "response_time": 0.018049955368041992
+        },
+        {
+          "query": "Find potential partnership opportunities in semiconductor research",
+          "category": "partnership_discovery",
+          "success": true,
+          "response_time": 0.01628589630126953
+        },
+        {
+          "query": "What is the Technology Readiness Level (TRL) of Indian quantum research?",
+          "category": "trl_assessment",
+          "success": true,
+          "response_time": 0.021187782287597656
+        },
+        {
+          "query": "Find researchers working on electric vehicle technology",
+          "category": "talent_discovery",
+          "success": true,
+          "response_time": 0.017714738845825195
+        },
+        {
+          "query": "What are the emerging technologies from Indian labs?",
+          "category": "technology_scouting",
+          "success": true,
+          "response_time": 0.014816045761108398
+        },
+        {
+          "query": "Find industry-academia collaboration opportunities in biotech",
+          "category": "partnership_discovery",
+          "success": true,
+          "response_time": 0.02756500244140625
+        },
+        {
+          "query": "What IP is available for licensing from IITs?",
+          "category": "ip_discovery",
+          "success": true,
+          "response_time": 0.018095731735229492
+        },
+        {
+          "query": "Find technical expertise in machine learning and AI",
+          "category": "capability_mapping",
+          "success": true,
+          "response_time": 0.01603102684020996
+        },
+        {
+          "query": "What are the research capabilities at IIT for EV technology?",
+          "category": "capability_mapping",
+          "success": true,
+          "response_time": 0.016894102096557617
+        },
+        {
+          "query": "Find potential R&D partners for semiconductor manufacturing",
+          "category": "partnership_discovery",
+          "success": true,
+          "response_time": 0.019582271575927734
+        },
+        {
+          "query": "What technologies are ready for commercial transfer?",
+          "category": "tech_transfer",
+          "success": true,
+          "response_time": 0.015602350234985352
+        },
+        {
+          "query": "Find research groups working on renewable energy",
+          "category": "partner_discovery",
+          "success": true,
+          "response_time": 0.0207979679107666
+        },
+        {
+          "query": "What is the innovation index of Indian engineering institutions?",
+          "category": "metrics",
+          "success": true,
+          "response_time": 0.02316594123840332
+        },
+        {
+          "query": "Find expertise in advanced materials science",
+          "category": "capability_mapping",
+          "success": true,
+          "response_time": 0.021811962127685547
+        },
+        {
+          "query": "What are the technology gaps in Indian research?",
+          "category": "gap_analysis",
+          "success": true,
+          "response_time": 0.02314901351928711
+        }
+      ]
+    }
+  },
+  "overall": {
+    "total_scenarios": 50,
+    "total_successful": 50,
+    "success_rate": 1.0,
+    "avg_response_time": 0.5221826261944241,
+    "passed": true
+  }
+}

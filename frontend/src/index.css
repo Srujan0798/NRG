@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* IITGN Sovereign Design Tokens */
+@layer base {
+  :root {
+    --iitgn-glass-bg: rgba(255, 255, 255, 0.7);
+    --iitgn-glass-border: rgba(255, 255, 255, 0.3);
+    --iitgn-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    --iitgn-glass-blur: 12px;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  body {
+    @apply antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  .font-devanagari {
+    font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Glass-morphism Card (IITGN Standard) */
+  .iitgn-glass-card {
+    @apply rounded-2xl border p-6 transition-all duration-300;
+    background: var(--iitgn-glass-bg);
+    backdrop-filter: blur(var(--iitgn-glass-blur));
+    -webkit-backdrop-filter: blur(var(--iitgn-glass-blur));
+    border-color: var(--iitgn-glass-border);
+    box-shadow: var(--iitgn-glass-shadow);
+  }
+
+  .iitgn-glass-card:hover {
+    @apply shadow-lg;
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  /* Tier Badge Standard */
+  .iitgn-tier-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border;
+    animation: tier-pulse 2s ease-in-out infinite;
+  }
+
+  /* DPDP Consent Gate */
+  .iitgn-dpdp-gate {
+    @apply relative overflow-hidden;
+  }
+
+  .iitgn-dpdp-gate::before {
+    content: '';
+    @apply absolute inset-0 border-2 border-sovereign-300 rounded-xl;
+    animation: dpdp-glow 1.5s ease-in-out infinite;
+  }
+
+  /* Skeleton Loader Standard */
+  .iitgn-skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  /* Persona Accent Border */
+  .iitgn-accent-researcher {
+    @apply border-l-4 border-researcher-500;
+  }
+
+  .iitgn-accent-government {
+    @apply border-l-4 border-government-500;
+  }
+
+  .iitgn-accent-industry {
+    @apply border-l-4 border-industry-500;
+  }
+
+  /* Graph Container */
+  .iitgn-graph-container {
+    @apply w-full h-96 rounded-xl border border-gray-200 bg-white overflow-hidden;
+  }
+}
+
+@layer utilities {
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+}

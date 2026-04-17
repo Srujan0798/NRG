@@ -1,0 +1,294 @@
+import { useState, useEffect, useCallback } from 'react';
+import { PermissionBoundary } from '../components/PermissionBoundary';
+import { TierBadge } from '../components/TierBadge';
+import { SkeletonLoader } from '../components/SkeletonLoader';
+import { DPDPConsentDialog } from '../components/DPDPConsentDialog';
+import { DPDPAuditLog } from '../components/DPDPAuditLog';
+import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel';
+import { SecurityMonitor } from '../components/SecurityMonitor';
+import { ForceGraph } from '../components/ForceGraph';
+import { GlassCard } from '../components/GlassCard';
+import { useAuth } from '../hooks/useAuth';
+import { useQueryStore } from '../stores/queryStore';
+import { useDPDPStore } from '../stores/dpdpStore';
+import { queryService, GraphNode } from '../services/queryService';
+import { useQuery } from '@tanstack/react-query';
+// import { FixedSizeList } from 'react-window';
+
+export function ResearcherDashboard() {
+  const { user } = useAuth();
+  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching } = useQueryStore();
+  const { grantConsent, addAuditEntry } = useDPDPStore();
+  
+  const [showDPDPConsent, setShowDPDPConsent] = useState(false);
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'graph' | 'dpdp' | 'audit'>('dashboard');
+  const [graphData, setGraphData] = useState(queryService.mockGraphData());
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+
+  // React Query for publications
+  const { data: publications, isLoading: pubsLoading } = useQuery({
+    queryKey: ['publications', user?.id],
+    queryFn: () => Promise.resolve([
+      { id: '1', title: 'Attention Mechanisms in Indian Language NLP', year: 2024, citations: 23 },
+      { id: '2', title: 'Sovereign AI: Infrastructure for Bharat', year: 2023, citations: 45 },
+      { id: '3', title: 'Knowledge Graph Embeddings for Research Discovery', year: 2024, citations: 12 },
+    ]),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const handleSearch = useCallback(async () => {
+    if (!currentQuery.trim()) return;
+    
+    setIsSearching(true);
+    try {
+      const result = await queryService.query({ query: currentQuery });
+      addToHistory({ 
+        query: currentQuery, 
+        persona: 'researcher', 
+        resultsCount: result.verification_status ? 10 : 0 
+      });
+      addAuditEntry({ 
+        action: 'data_accessed', 
+        persona: user?.role || 'researcher', 
+        details: `Query: ${currentQuery}` 
+      });
+    } catch (error: any) {
+      console.error('Search error:', error);
+      const message = error.response?.data?.message || error.message || 'Search failed';
+      // Surface DLP/Security messages safely
+      addToHistory({ 
+        query: currentQuery, 
+        persona: 'researcher', 
+        resultsCount: 0,
+        error: message
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, user]);
+
+  const handleNodeClick = useCallback((node: GraphNode) => {
+    setSelectedNode(node);
+    setCurrentQuery(node.label);
+  }, [setCurrentQuery]);
+
+  // Row renderer for virtualized publication list
+  const RowRenderer = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
+    if (!publications) return null;
+    const pub = publications[index];
+    return (
+      <div style={style} className="px-1 py-1">
+        <div className="bg-white rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition">
+          <div className="text-sm font-medium text-gray-800 truncate">{pub.title}</div>
+          <div className="flex gap-3 mt-1 text-xs text-gray-500">
+            <span>📅 {pub.year}</span>
+            <span>📊 {pub.citations} citations</span>
+          </div>
+        </div>
+      </div>
+    );
+  }, [publications]);
+
+  return (
+    <div className="iitgn-researcher-dashboard min-h-screen bg-gradient-to-br from-slate-50 via-researcher-50 to-gray-100">
+      {/* Devanagari Header with Glass Effect */}
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900 font-devanagari">
+              राष्ट्रीय गवेषण मंच
+            </h1>
+            <p className="text-xs text-gray-500 tracking-wide">
+              National Research Intelligence Platform · Researcher Workspace
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {user && <TierBadge tier={user.tier} role={user.role} />}
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <nav className="max-w-7xl mx-auto px-4 flex gap-1 -mb-px">
+          {(['dashboard', 'graph', 'dpdp', 'audit'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
+                activeTab === tab
+                  ? 'border-researcher-500 text-researcher-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {tab === 'dashboard' && '📊 '}
+              {tab === 'graph' && '🕸️ '}
+              {tab === 'dpdp' && '🔒 '}
+              {tab === 'audit' && '📋 '}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+        </nav>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 py-6">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Search Card */}
+            <GlassCard accent="researcher" title="Knowledge Graph Query" description="Search across national research publications">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={currentQuery}
+                  onChange={(e) => setCurrentQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  placeholder="Enter research topic, author, or DOI..."
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-researcher-500 focus:border-researcher-500 transition text-sm"
+                />
+                <button
+                  onClick={handleSearch}
+                  disabled={isSearching || !currentQuery}
+                  className="px-6 py-2.5 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSearching ? 'Searching...' : 'Search'}
+                </button>
+              </div>
+            </GlassCard>
+
+            {/* Quick Stats + Publications */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Stats */}
+              <div className="space-y-4">
+                <GlassCard accent="researcher" title="Quick Stats">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-researcher-50 p-3 rounded-lg text-center border border-researcher-100">
+                      <div className="text-xl font-bold text-researcher-700">3</div>
+                      <div className="text-xs text-researcher-500">Publications</div>
+                    </div>
+                    <div className="bg-green-50 p-3 rounded-lg text-center border border-green-100">
+                      <div className="text-xl font-bold text-green-700">80</div>
+                      <div className="text-xs text-green-500">Total Citations</div>
+                    </div>
+                    <div className="bg-amber-50 p-3 rounded-lg text-center border border-amber-100">
+                      <div className="text-xl font-bold text-amber-700">12</div>
+                      <div className="text-xs text-amber-500">Queries Today</div>
+                    </div>
+                    <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
+                      <div className="text-xl font-bold text-purple-700">5</div>
+                      <div className="text-xs text-purple-500">Collaborators</div>
+                    </div>
+                  </div>
+                </GlassCard>
+
+                <SecurityMonitor />
+              </div>
+
+{/* Publications (Virtualized) */}
+              <GlassCard accent="researcher" title="My Publications" className="lg:col-span-2">
+                {pubsLoading ? (
+                  <SkeletonLoader type="list" count={3} />
+                ) : publications && publications.length > 0 ? (
+                  <div className="h-40 overflow-y-auto scrollbar-thin">
+                    {publications.map((pub: any, index: number) => (
+                      <div key={index} className="px-1 py-1">
+                        <div className="bg-white rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition">
+                          <div className="text-sm font-medium text-gray-800 truncate">{pub.title}</div>
+                          <div className="flex gap-3 mt-1 text-xs text-gray-500">
+                            <span>📅 {pub.year}</span>
+                            <span>📊 {pub.citations} citations</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-400 text-center py-8">No publications yet.</p>
+                )}
+              </GlassCard>
+            </div>
+
+            {/* Query History */}
+            {history.length > 0 && (
+              <GlassCard accent="sovereign" title="Recent Queries">
+                <div className="space-y-2">
+                  {history.slice(0, 5).map((entry) => (
+                    <div key={entry.id} className="text-sm py-2 border-b border-gray-100 last:border-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-700 truncate font-medium">{entry.query}</span>
+                        <span className="text-gray-400 text-xs ml-4">{new Date(entry.timestamp).toLocaleTimeString()}</span>
+                      </div>
+                      {entry.error ? (
+                        <div className="mt-1 text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">
+                          🛡️ Security Message: {entry.error}
+                        </div>
+                      ) : (
+                        <div className="text-gray-400 text-xs mt-0.5">{entry.resultsCount} results found</div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </GlassCard>
+            )}
+          </div>
+        )}
+
+        {/* Graph Tab */}
+        {activeTab === 'graph' && (
+          <div className="space-y-6">
+            <GlassCard accent="researcher" title="Research Knowledge Graph" description="Drag nodes to explore · Click to query">
+              <ForceGraph data={graphData} width={1100} height={500} onNodeClick={handleNodeClick} />
+              {selectedNode && (
+                <div className="mt-4 bg-gray-50 rounded-lg p-3 text-sm border border-gray-200">
+                  <span className="font-medium text-gray-800 truncate">{selectedNode.label}</span>
+                  <span className="ml-2 text-gray-500 capitalize">({selectedNode.type})</span>
+                  {selectedNode.year && <span className="ml-2 text-gray-500">· {selectedNode.year}</span>}
+                  {selectedNode.citations !== undefined && <span className="ml-2 text-gray-500">· {selectedNode.citations} citations</span>}
+                </div>
+              )}
+            </GlassCard>
+          </div>
+        )}
+
+        {/* DPDP Tab */}
+        {activeTab === 'dpdp' && (
+          <div className="space-y-6">
+            <DPDPWithdrawalPanel />
+            <GlassCard accent="sovereign" title="Data Protection Overview">
+              <div className="space-y-3 text-sm text-gray-700">
+                <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                  <div className="font-medium text-green-800">✅ Consent Status</div>
+                  <div className="text-green-700 mt-1">
+                    Your data access is managed per India's DPDP Act 2023. All queries are logged with purpose limitation.
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowDPDPConsent(true)}
+                  className="w-full px-4 py-2 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition text-sm font-medium"
+                >
+                  Grant New Consent for Data Access
+                </button>
+              </div>
+            </GlassCard>
+          </div>
+        )}
+
+        {/* Audit Tab */}
+        {activeTab === 'audit' && (
+          <div className="space-y-6">
+            <DPDPAuditLog />
+          </div>
+        )}
+      </main>
+
+      {/* DPDP Consent Dialog */}
+      <DPDPConsentDialog
+        isOpen={showDPDPConsent}
+        onApprove={() => {
+          grantConsent('Research data analysis', 365);
+          setShowDPDPConsent(false);
+        }}
+        onDeny={() => setShowDPDPConsent(false)}
+      />
+    </div>
+  );
+}
