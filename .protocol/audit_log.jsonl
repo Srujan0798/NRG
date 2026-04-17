@@ -1,0 +1,136 @@
+{"query_id": "2073c2e2-a64c-44f6-850f-6f41918ed7ae", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-14T01:50:39.164856", "status": "executing"}
+{"query_id": "2073c2e2-a64c-44f6-850f-6f41918ed7ae", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  role \"nrg_readonly\" does not exist\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-14T01:50:39.169425", "status": "error"}
+{"query_id": "cb967256-9b3f-4de4-bc61-a6fa527494ea", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-14T12:01:52.078153", "status": "executing"}
+{"query_id": "cb967256-9b3f-4de4-bc61-a6fa527494ea", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  role \"nrg_readonly\" does not exist\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-14T12:01:52.083404", "status": "error"}
+{"query_id": "8ff17af6-8a3c-4374-8550-ebdc5d0fab6d", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-14T12:08:25.191681", "status": "executing"}
+{"query_id": "8ff17af6-8a3c-4374-8550-ebdc5d0fab6d", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  role \"nrg_readonly\" does not exist\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-14T12:08:27.851702", "status": "error"}
+{"query_id": "d1734e9e-4cb4-40c0-a730-01454018f950", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-14T12:38:11.298892", "status": "executing"}
+{"query_id": "d1734e9e-4cb4-40c0-a730-01454018f950", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (::1), port 5432 failed: FATAL:  role \"nrg_readonly\" does not exist\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-14T12:38:11.307066", "status": "error"}
+{"query_id": "e917a926-d5d2-4033-863a-9572ebc33c6e", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.525689", "status": "executing"}
+{"query_id": "e917a926-d5d2-4033-863a-9572ebc33c6e", "row_count": 51, "timestamp": "2026-04-15T08:16:15.527304", "status": "success"}
+{"query_id": "47df308c-5871-4482-b9e3-5b0e4cfcd61b", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.540223", "status": "executing"}
+{"query_id": "47df308c-5871-4482-b9e3-5b0e4cfcd61b", "row_count": 51, "timestamp": "2026-04-15T08:16:15.541057", "status": "success"}
+{"query_id": "96ec71f7-284c-4f28-ae73-b90c26084c0f", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.547294", "status": "executing"}
+{"query_id": "96ec71f7-284c-4f28-ae73-b90c26084c0f", "row_count": 51, "timestamp": "2026-04-15T08:16:15.549357", "status": "success"}
+{"query_id": "d7e9d5cf-4348-415c-9a97-c2f176cc0be8", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.551728", "status": "executing"}
+{"query_id": "d7e9d5cf-4348-415c-9a97-c2f176cc0be8", "row_count": 51, "timestamp": "2026-04-15T08:16:15.552833", "status": "success"}
+{"query_id": "902b57af-51ad-436c-9686-dd2d6a1ae616", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.553725", "status": "executing"}
+{"query_id": "902b57af-51ad-436c-9686-dd2d6a1ae616", "row_count": 51, "timestamp": "2026-04-15T08:16:15.554223", "status": "success"}
+{"query_id": "5cca5d34-d987-40cd-824a-b9ed9c119133", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.554824", "status": "executing"}
+{"query_id": "5cca5d34-d987-40cd-824a-b9ed9c119133", "row_count": 51, "timestamp": "2026-04-15T08:16:15.555416", "status": "success"}
+{"query_id": "39436662-319d-44b0-97c0-14dabb590a86", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T08:16:15.558815", "status": "executing"}
+{"query_id": "39436662-319d-44b0-97c0-14dabb590a86", "row_count": 51, "timestamp": "2026-04-15T08:16:15.559355", "status": "success"}
+{"query_id": "74f7c5ad-4751-4dc0-a2d1-b98802be82c0", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T15:33:33.838121", "status": "executing"}
+{"query_id": "74f7c5ad-4751-4dc0-a2d1-b98802be82c0", "row_count": 100, "timestamp": "2026-04-15T15:33:33.840655", "status": "success"}
+{"query_id": "567abb1d-a625-4ee2-a6ab-8ca390a6758e", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T16:00:59.235430", "status": "executing"}
+{"query_id": "567abb1d-a625-4ee2-a6ab-8ca390a6758e", "row_count": 100, "timestamp": "2026-04-15T16:00:59.253488", "status": "success"}
+{"query_id": "428f553c-de12-43f1-9841-a6896fe8b189", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T17:37:47.073345", "status": "executing"}
+{"query_id": "428f553c-de12-43f1-9841-a6896fe8b189", "row_count": 100, "timestamp": "2026-04-15T17:37:47.090724", "status": "success"}
+{"query_id": "e0d0a40d-a6e9-4448-af76-3fe51ad17b65", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T17:38:24.660784", "status": "executing"}
+{"query_id": "e0d0a40d-a6e9-4448-af76-3fe51ad17b65", "row_count": 100, "timestamp": "2026-04-15T17:38:24.664359", "status": "success"}
+{"query_id": "e1a0baf3-aba2-404f-84ad-8d90ff11856d", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T19:08:09.757054", "status": "executing"}
+{"query_id": "e1a0baf3-aba2-404f-84ad-8d90ff11856d", "row_count": 100, "timestamp": "2026-04-15T19:08:09.760103", "status": "success"}
+{"query_id": "ba0cd6e4-a26f-476a-b676-ef4e78e2b2d6", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 1, "timestamp": "2026-04-15T19:26:10.191014", "status": "executing"}
+{"query_id": "ba0cd6e4-a26f-476a-b676-ef4e78e2b2d6", "row_count": 6, "timestamp": "2026-04-15T19:26:10.203949", "status": "success"}
+{"query_id": "93a9ec80-8d36-486a-8ef0-d75387a8f988", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T04:07:38.144470", "status": "executing"}
+{"query_id": "93a9ec80-8d36-486a-8ef0-d75387a8f988", "row_count": 100, "timestamp": "2026-04-16T04:07:38.260422", "status": "success"}
+{"query_id": "66e39e39-3f58-4c54-8676-001542fa1a9e", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T04:20:36.978015", "status": "executing"}
+{"query_id": "66e39e39-3f58-4c54-8676-001542fa1a9e", "row_count": 6, "timestamp": "2026-04-16T04:20:36.994727", "status": "success"}
+{"query_id": "1842e80a-69af-4a54-a349-972e2eeac2de", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:20:19.302723", "status": "executing"}
+{"query_id": "1842e80a-69af-4a54-a349-972e2eeac2de", "row_count": 5, "timestamp": "2026-04-16T05:20:19.347349", "status": "success"}
+{"query_id": "c1ae166e-54f2-45ef-bdc3-354b391664bb", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:22:58.660461", "status": "executing"}
+{"query_id": "c1ae166e-54f2-45ef-bdc3-354b391664bb", "row_count": 100, "timestamp": "2026-04-16T05:22:58.672750", "status": "success"}
+{"query_id": "897f4092-2dfd-4f8b-81d0-5d54ebafda97", "sql": "SELECT * FROM publications LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:00.541985", "status": "executing"}
+{"query_id": "897f4092-2dfd-4f8b-81d0-5d54ebafda97", "row_count": 0, "timestamp": "2026-04-16T05:23:00.542928", "status": "success"}
+{"query_id": "d9addf06-dbe0-48b1-94e2-e1425ff01e8f", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:01.318196", "status": "executing"}
+{"query_id": "d9addf06-dbe0-48b1-94e2-e1425ff01e8f", "row_count": 0, "timestamp": "2026-04-16T05:23:01.318971", "status": "success"}
+{"query_id": "f93bfffe-f4da-4438-a306-f8256250a376", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:02.212701", "status": "executing"}
+{"query_id": "f93bfffe-f4da-4438-a306-f8256250a376", "row_count": 0, "timestamp": "2026-04-16T05:23:02.213769", "status": "success"}
+{"query_id": "5d0c8bc2-cfa9-4db4-90cd-8a2798c2129e", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:02.976041", "status": "executing"}
+{"query_id": "5d0c8bc2-cfa9-4db4-90cd-8a2798c2129e", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:23:02.983234", "status": "error"}
+{"query_id": "5504a69f-ca4d-4940-9013-477f7cd6b62f", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:03.941309", "status": "executing"}
+{"query_id": "5504a69f-ca4d-4940-9013-477f7cd6b62f", "row_count": 100, "timestamp": "2026-04-16T05:23:03.942698", "status": "success"}
+{"query_id": "16472403-1041-4357-9f67-5e3d85c8fdbc", "sql": "SELECT * FROM publications LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:04.874633", "status": "executing"}
+{"query_id": "16472403-1041-4357-9f67-5e3d85c8fdbc", "row_count": 0, "timestamp": "2026-04-16T05:23:04.875596", "status": "success"}
+{"query_id": "d399144f-5f05-4aca-9ec7-89ac00f93593", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:05.699623", "status": "executing"}
+{"query_id": "d399144f-5f05-4aca-9ec7-89ac00f93593", "row_count": 0, "timestamp": "2026-04-16T05:23:05.700225", "status": "success"}
+{"query_id": "87237a41-a561-48ac-ac3a-ba7bab4b5d3e", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:06.694701", "status": "executing"}
+{"query_id": "87237a41-a561-48ac-ac3a-ba7bab4b5d3e", "row_count": 100, "timestamp": "2026-04-16T05:23:06.696091", "status": "success"}
+{"query_id": "a621e455-3e49-4dc3-a09a-7e48265801fc", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:07.585600", "status": "executing"}
+{"query_id": "a621e455-3e49-4dc3-a09a-7e48265801fc", "row_count": 0, "timestamp": "2026-04-16T05:23:07.586474", "status": "success"}
+{"query_id": "f9806322-dae9-4879-b4b6-aeaab70b7628", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:08.535851", "status": "executing"}
+{"query_id": "f9806322-dae9-4879-b4b6-aeaab70b7628", "row_count": 100, "timestamp": "2026-04-16T05:23:08.544173", "status": "success"}
+{"query_id": "036d9545-3ed5-473e-b749-c557154e4376", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:09.447522", "status": "executing"}
+{"query_id": "036d9545-3ed5-473e-b749-c557154e4376", "row_count": 100, "timestamp": "2026-04-16T05:23:09.449033", "status": "success"}
+{"query_id": "262799a3-17a6-42a7-8488-0a0b25160393", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:10.459013", "status": "executing"}
+{"query_id": "262799a3-17a6-42a7-8488-0a0b25160393", "row_count": 100, "timestamp": "2026-04-16T05:23:10.460023", "status": "success"}
+{"query_id": "f2e4fd3a-dad0-4d58-98b2-d80348c8001b", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:11.369940", "status": "executing"}
+{"query_id": "f2e4fd3a-dad0-4d58-98b2-d80348c8001b", "row_count": 100, "timestamp": "2026-04-16T05:23:11.370821", "status": "success"}
+{"query_id": "e3904bcf-0ecf-4801-a5dd-65bafc5abf93", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:12.298451", "status": "executing"}
+{"query_id": "e3904bcf-0ecf-4801-a5dd-65bafc5abf93", "row_count": 0, "timestamp": "2026-04-16T05:23:12.298899", "status": "success"}
+{"query_id": "38643ad3-1cce-4d80-9049-c92d9bdeb1c2", "sql": "SELECT * FROM publications LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:16.098058", "status": "executing"}
+{"query_id": "38643ad3-1cce-4d80-9049-c92d9bdeb1c2", "row_count": 0, "timestamp": "2026-04-16T05:23:16.099546", "status": "success"}
+{"query_id": "a33a6a7d-5c21-4aa2-b4e9-cf2ac266f65a", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:16.949625", "status": "executing"}
+{"query_id": "a33a6a7d-5c21-4aa2-b4e9-cf2ac266f65a", "row_count": 100, "timestamp": "2026-04-16T05:23:16.950986", "status": "success"}
+{"query_id": "a572c029-b4bd-410c-aa5f-64c759500e7b", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:18.464760", "status": "executing"}
+{"query_id": "a572c029-b4bd-410c-aa5f-64c759500e7b", "row_count": 100, "timestamp": "2026-04-16T05:23:18.466086", "status": "success"}
+{"query_id": "6e450c19-d863-42ae-a29d-1f69dd89a15c", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:19.365395", "status": "executing"}
+{"query_id": "6e450c19-d863-42ae-a29d-1f69dd89a15c", "row_count": 0, "timestamp": "2026-04-16T05:23:19.365950", "status": "success"}
+{"query_id": "230d4acb-fbe1-4701-ae69-b459f100fa2c", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:23:20.113820", "status": "executing"}
+{"query_id": "230d4acb-fbe1-4701-ae69-b459f100fa2c", "row_count": 100, "timestamp": "2026-04-16T05:23:20.114695", "status": "success"}
+{"query_id": "bb2d0cd9-ba40-4604-8fc8-5bee0a3ce2df", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:21.129143", "status": "executing"}
+{"query_id": "bb2d0cd9-ba40-4604-8fc8-5bee0a3ce2df", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:23:21.131204", "status": "error"}
+{"query_id": "4f4bdb39-3e54-4601-97b3-15d09d6ecd4e", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:21.874878", "status": "executing"}
+{"query_id": "4f4bdb39-3e54-4601-97b3-15d09d6ecd4e", "row_count": 100, "timestamp": "2026-04-16T05:23:21.876187", "status": "success"}
+{"query_id": "a26a2f1f-d8ce-465c-8f14-abd7d2d1356f", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:37.564824", "status": "executing"}
+{"query_id": "a26a2f1f-d8ce-465c-8f14-abd7d2d1356f", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:23:37.565472", "status": "error"}
+{"query_id": "f3f391bc-5691-4d6e-b062-10b60597612b", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:38.354445", "status": "executing"}
+{"query_id": "f3f391bc-5691-4d6e-b062-10b60597612b", "row_count": 100, "timestamp": "2026-04-16T05:23:38.355618", "status": "success"}
+{"query_id": "4b221340-b49f-42bf-9419-27f5f2aea345", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:49.079154", "status": "executing"}
+{"query_id": "4b221340-b49f-42bf-9419-27f5f2aea345", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:23:49.080294", "status": "error"}
+{"query_id": "d8543c27-ffe9-451f-abbb-a444f32faf32", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:49.833363", "status": "executing"}
+{"query_id": "d8543c27-ffe9-451f-abbb-a444f32faf32", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:23:49.833840", "status": "error"}
+{"query_id": "39e44322-729f-47e5-a8a7-4492da299aa6", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:23:50.674953", "status": "executing"}
+{"query_id": "39e44322-729f-47e5-a8a7-4492da299aa6", "row_count": 100, "timestamp": "2026-04-16T05:23:50.676349", "status": "success"}
+{"query_id": "c1f98206-3776-48ce-a168-8c169a1eedd2", "sql": "SELECT * FROM publications LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:24:00.750214", "status": "executing"}
+{"query_id": "c1f98206-3776-48ce-a168-8c169a1eedd2", "row_count": 0, "timestamp": "2026-04-16T05:24:00.751263", "status": "success"}
+{"query_id": "234e991a-1146-447b-a217-5a7db9c913a8", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:24:01.613702", "status": "executing"}
+{"query_id": "234e991a-1146-447b-a217-5a7db9c913a8", "row_count": 0, "timestamp": "2026-04-16T05:24:01.614438", "status": "success"}
+{"query_id": "5bb9cdd2-1077-4d2f-b7e0-e8ee649f17f7", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:24:02.356758", "status": "executing"}
+{"query_id": "5bb9cdd2-1077-4d2f-b7e0-e8ee649f17f7", "row_count": 100, "timestamp": "2026-04-16T05:24:02.358939", "status": "success"}
+{"query_id": "40306479-eb71-435c-b1f0-8df831f94373", "sql": "SELECT * FROM funding LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:24:03.293070", "status": "executing"}
+{"query_id": "40306479-eb71-435c-b1f0-8df831f94373", "error": "(sqlite3.OperationalError) no such table: funding\n[SQL: SELECT * FROM funding LIMIT 100]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:03.293556", "status": "error"}
+{"query_id": "282826da-0bb2-40b8-a8ae-fb34c2411d80", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 2, "timestamp": "2026-04-16T05:24:04.032716", "status": "executing"}
+{"query_id": "282826da-0bb2-40b8-a8ae-fb34c2411d80", "row_count": 100, "timestamp": "2026-04-16T05:24:04.033469", "status": "success"}
+{"query_id": "c0900a1f-7e21-4b02-907b-bdbb4139e61e", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:04.910556", "status": "executing"}
+{"query_id": "c0900a1f-7e21-4b02-907b-bdbb4139e61e", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:04.911018", "status": "error"}
+{"query_id": "7a3ea356-6d0d-49fd-8e18-95da1829f9a7", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:05.700214", "status": "executing"}
+{"query_id": "7a3ea356-6d0d-49fd-8e18-95da1829f9a7", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:05.700618", "status": "error"}
+{"query_id": "75756768-3d00-42aa-a471-66730f0a606f", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:06.520741", "status": "executing"}
+{"query_id": "75756768-3d00-42aa-a471-66730f0a606f", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:06.521442", "status": "error"}
+{"query_id": "fa9ceaf8-56f5-4e97-809e-26181e87206a", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:07.265628", "status": "executing"}
+{"query_id": "fa9ceaf8-56f5-4e97-809e-26181e87206a", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:07.266108", "status": "error"}
+{"query_id": "2dd2d092-535d-4fca-93ad-1be954ce9180", "sql": "SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:08.107438", "status": "executing"}
+{"query_id": "2dd2d092-535d-4fca-93ad-1be954ce9180", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:08.108002", "status": "error"}
+{"query_id": "3e837789-3d31-4091-b752-13f5e29f81b0", "sql": "SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:08.877629", "status": "executing"}
+{"query_id": "3e837789-3d31-4091-b752-13f5e29f81b0", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:08.881286", "status": "error"}
+{"query_id": "c5eaed5c-35ba-4c62-a001-d461fec57ae0", "sql": "SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:09.642802", "status": "executing"}
+{"query_id": "c5eaed5c-35ba-4c62-a001-d461fec57ae0", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM labs LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:09.648111", "status": "error"}
+{"query_id": "d8f48af6-a0ff-4bd1-a70a-9e34ae067a38", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:10.428453", "status": "executing"}
+{"query_id": "d8f48af6-a0ff-4bd1-a70a-9e34ae067a38", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:10.428975", "status": "error"}
+{"query_id": "b2c97543-fa63-47d7-a289-ece967d7787f", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:11.170681", "status": "executing"}
+{"query_id": "b2c97543-fa63-47d7-a289-ece967d7787f", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:11.171137", "status": "error"}
+{"query_id": "bd056f53-2384-4bec-8640-8f4cb5a0aae4", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:11.965457", "status": "executing"}
+{"query_id": "bd056f53-2384-4bec-8640-8f4cb5a0aae4", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:11.967135", "status": "error"}
+{"query_id": "100de2c0-2c65-4d32-9069-19602f141a81", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:12.708468", "status": "executing"}
+{"query_id": "100de2c0-2c65-4d32-9069-19602f141a81", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:12.709074", "status": "error"}
+{"query_id": "582c6234-08ba-48af-b4e5-90a55ca390a3", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:13.449852", "status": "executing"}
+{"query_id": "582c6234-08ba-48af-b4e5-90a55ca390a3", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:13.450283", "status": "error"}
+{"query_id": "b151ccd4-a32c-404a-9197-183b69324cf4", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:14.253972", "status": "executing"}
+{"query_id": "b151ccd4-a32c-404a-9197-183b69324cf4", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:14.254687", "status": "error"}
+{"query_id": "e67ff048-52b9-4087-bdee-8561827dd7b1", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:14.993700", "status": "executing"}
+{"query_id": "e67ff048-52b9-4087-bdee-8561827dd7b1", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:14.994131", "status": "error"}
+{"query_id": "3030a6c6-d7a6-401a-b65f-478f1b69c904", "sql": "SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3'", "user_tier": 3, "timestamp": "2026-04-16T05:24:15.738320", "status": "executing"}
+{"query_id": "3030a6c6-d7a6-401a-b65f-478f1b69c904", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:15.738772", "status": "error"}
+{"query_id": "ac8d8e75-7e14-47e2-a7cd-b9ede880d357", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:53:45.363154", "status": "executing"}
+{"query_id": "ac8d8e75-7e14-47e2-a7cd-b9ede880d357", "row_count": 100, "timestamp": "2026-04-16T05:53:45.370357", "status": "success"}

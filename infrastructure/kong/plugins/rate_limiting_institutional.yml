@@ -1,0 +1,63 @@
+# Institutional-Scale Rate Limiting Configuration
+# Target: IITGN Production Environment (10K users/hour)
+
+_format_version: "1.1"
+
+plugins:
+  - name: rate-limiting
+    config:
+      second: 10
+      minute: 1000
+      hour: 10000
+      day: 100000
+      policy: redis
+      redis:
+        host: redis
+        port: 6379
+        timeout: 2000
+        database: 0
+      limit_by: consumer
+      error_code: 429
+      error_message: "IITGN Rate Limit Exceeded: Maximum 10K requests/hour. Please try again later or contact support."
+      synchronous: false
+      header_name: X-RateLimit-Remaining
+
+  # Tier-based rate limiting override
+  - name: pre-function
+    config:
+      access:
+        - |
+          return function()
+            local consumer = kong.client.get_consumer()
+            if consumer then
+              local tier = consumer.custom_id
+              
+              -- Tier-specific institutional limits
+              local limits = {
+                ["tier1"] = { minute = 1000, hour = 10000 },  -- Researchers
+                ["tier2"] = { minute = 2000, hour = 20000 },  -- Government
+                ["tier3"] = { minute = 500, hour = 5000 }     -- Industry
+              }
+              
+              local tier_limit = limits[tier]
+              if tier_limit then
+                kong.ctx.plugin.rate_limiting_minute = tier_limit.minute
+                kong.ctx.plugin.rate_limiting_hour = tier_limit.hour
+                kong.service.request.set_header("X-User-Tier", tier)
+              end
+            end
+          end
+
+  # Bot detection and filtering
+  - name: request-transformer
+    config:
+      add:
+        headers:
+          - X-Request-Source:external
+
+  - name: response-transformer
+    config:
+      add:
+        headers:
+          - X-IITGN-Security:active
+          - X-RateLimit-Policy:institutional

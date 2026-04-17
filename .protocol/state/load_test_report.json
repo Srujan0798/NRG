@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-04-14T09:46:34.203771",
+  "results": {
+    "PII Detection": {
+      "total_queries": 700,
+      "elapsed_seconds": 0.002,
+      "queries_per_second": 299409.83,
+      "avg_latency_ms": 0.003
+    },
+    "RBAC Middleware": {
+      "total_checks": 300,
+      "elapsed_seconds": 0.0,
+      "checks_per_second": 5447148.05,
+      "avg_latency_ms": 0.0
+    },
+    "Query Validation": {
+      "total_validations": 500,
+      "elapsed_seconds": 0.001,
+      "validations_per_second": 539946.45,
+      "avg_latency_ms": 0.002
+    },
+    "Concurrent Load": {
+      "workers": 10,
+      "total_queries": 300,
+      "elapsed_seconds": 0.001,
+      "queries_per_second": 475544.67
+    }
+  },
+  "summary": {
+    "total_queries": 1800
+  }
+}

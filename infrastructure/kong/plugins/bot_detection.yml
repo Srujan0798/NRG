@@ -1,0 +1,54 @@
+# Bot Detection & Filtering Configuration
+# Target: IITGN Security Perimeter
+
+_format_version: "1.1"
+
+plugins:
+  # IP-based bot detection
+  - name: ip-restriction
+    config:
+      whitelist:
+        - 10.0.0.0/8        # Internal network
+        - 172.16.0.0/12     # Private range
+        - 192.168.0.0/16    # Private range
+        - 117.239.192.0/19  # IITGN network
+        - 103.0.0.0/8       # Indian academic networks
+      
+      blacklist:
+        - 0.0.0.0/0         # Block all by default (whitelist takes precedence)
+
+  # User-Agent based bot filtering
+  - name: request-transformer
+    config:
+      add:
+        headers:
+          - X-Bot-Score:0
+      
+      append:
+        headers:
+          - X-Bot-Detection:active
+
+  # Academy domain whitelist (for institutional access)
+  - name: cors
+    config:
+      origins:
+        - "*.iitgn.ac.in"
+        - "*.iitb.ac.in"
+        - "*.iitm.ac.in"
+        - "*.iitd.ac.in"
+        - "*.iitk.ac.in"
+        - "*.iitr.ac.in"
+        - "*.iitkgp.ac.in"
+        - "localhost:3000"
+        - "localhost:5173"
+      methods:
+        - GET
+        - POST
+        - OPTIONS
+      headers:
+        - Authorization
+        - Content-Type
+        - X-Request-ID
+        - X-User-Tier
+      credentials: true
+      max_age: 3600

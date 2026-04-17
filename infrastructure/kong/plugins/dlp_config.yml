@@ -1,0 +1,8 @@
+_format_version: "1.1"
+
+plugins:
+- name: dlp
+  config:
+    block_pii: true
+    block_injection: true
+    audit_log_blocks: true

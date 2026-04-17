@@ -1,0 +1,56 @@
+_format_version: "1.1"
+
+plugins:
+  - name: rate-limiting
+    config:
+      second: 5
+      minute: 100
+      hour: 1000
+      policy: redis
+      redis:
+        host: redis
+        port: 6379
+        timeout: 2000
+        database: 0
+    
+  - name: key-auth
+    config:
+      key_names:
+        - apikey
+      key_in_body: false
+      hide_credentials: true
+    
+  - name: acl
+    config:
+      allow:
+        - tier1
+        - tier2
+        - tier3
+        - admin
+    
+  - name: pre-function
+    config:
+      functions:
+        - |
+          return function()
+            local consumer = kong.client.get_consumer()
+            if consumer then
+              local tier = consumer.custom_id:match("tier(%d+)")
+              if tier then
+                kong.service.request.set_header("X-User-Tier", tier)
+                
+                -- Tier-specific rate limiting
+                local limits = {
+                  ["1"] = { minute = 100, hour = 1000 },
+                  ["2"] = { minute = 50, hour = 500 },
+                  ["3"] = { minute = 20, hour = 200 }
+                }
+                
+                local tier_limit = limits[tier]
+                if tier_limit then
+                  kong.ctx.plugin.rate_limiting_minute = tier_limit.minute
+                  kong.ctx.plugin.rate_limiting_hour = tier_limit.hour
+                end
+              end
+            end
+          end

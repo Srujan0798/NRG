@@ -1,0 +1,49 @@
+{
+  "timestamp": "2026-04-14T09:38:32.583254",
+  "overall_status": "PASS",
+  "checks": {
+    "Python Version": {
+      "status": "PASS",
+      "version": "3.13.5"
+    },
+    "Dependencies": {
+      "status": "PASS",
+      "packages": {
+        "pytest": "INSTALLED",
+        "requests": "INSTALLED"
+      }
+    },
+    "Project Structure": {
+      "status": "PASS",
+      "directories": {
+        "src": "EXISTS",
+        "tests": "EXISTS",
+        "scripts": "EXISTS",
+        "docs": "EXISTS",
+        "frontend": "EXISTS"
+      }
+    },
+    "Security Module": {
+      "status": "PASS",
+      "tests": {
+        "aadhaar_detection": true,
+        "pan_detection": true,
+        "phone_detection": true
+      }
+    },
+    "RBAC Module": {
+      "status": "PASS",
+      "tests": {
+        "tier1_access": true,
+        "tier2_access": true,
+        "tier3_access": true
+      }
+    },
+    "Python Modules": {
+      "status": "PASS",
+      "modules": [
+        "NRGWorkflow"
+      ]
+    }
+  }
+}
