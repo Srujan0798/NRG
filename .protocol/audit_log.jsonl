@@ -134,3 +134,13 @@
 {"query_id": "3030a6c6-d7a6-401a-b65f-478f1b69c904", "error": "(sqlite3.OperationalError) near \"WHERE\": syntax error\n[SQL: SELECT * FROM researchers LIMIT 100 WHERE access_tier >= '3']\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-16T05:24:15.738772", "status": "error"}
 {"query_id": "ac8d8e75-7e14-47e2-a7cd-b9ede880d357", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-16T05:53:45.363154", "status": "executing"}
 {"query_id": "ac8d8e75-7e14-47e2-a7cd-b9ede880d357", "row_count": 100, "timestamp": "2026-04-16T05:53:45.370357", "status": "success"}
+{"query_id": "8e041db7-fe82-465c-b2ca-a8e5a7e7c3ef", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-18T13:16:43.702826", "status": "executing"}
+{"query_id": "8e041db7-fe82-465c-b2ca-a8e5a7e7c3ef", "row_count": 100, "timestamp": "2026-04-18T13:16:43.711357", "status": "success"}
+{"query_id": "f147bf6f-60a0-45dd-b3fa-c3a150289003", "sql": "SELECT COUNT(*) as count FROM researchers", "user_tier": 1, "timestamp": "2026-04-18T15:11:29.624144", "status": "executing"}
+{"query_id": "f147bf6f-60a0-45dd-b3fa-c3a150289003", "row_count": 1, "timestamp": "2026-04-18T15:11:29.627740", "status": "success"}
+{"query_id": "a7c8988f-347f-4f51-bfee-be38f6f68d91", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-18T15:15:13.806149", "status": "executing"}
+{"query_id": "a7c8988f-347f-4f51-bfee-be38f6f68d91", "row_count": 100, "timestamp": "2026-04-18T15:15:13.812070", "status": "success"}
+{"query_id": "f14716ab-5c6a-4fc0-af43-b6448bcd52c0", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-18T15:21:53.107965", "status": "executing"}
+{"query_id": "f14716ab-5c6a-4fc0-af43-b6448bcd52c0", "row_count": 100, "timestamp": "2026-04-18T15:21:53.110929", "status": "success"}
+{"query_id": "597fb281-e8db-4f78-bc0d-6bc3317bfd39", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-18T15:23:24.471103", "status": "executing"}
+{"query_id": "597fb281-e8db-4f78-bc0d-6bc3317bfd39", "row_count": 100, "timestamp": "2026-04-18T15:23:24.474716", "status": "success"}

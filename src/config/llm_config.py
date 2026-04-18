@@ -83,7 +83,7 @@ def load_llm_settings(provider_name: str | None = None) -> LLMSettings:
         return LLMSettings(
             provider=provider,
             api_key=api_key,
-            model=_env("OPENAI_MODEL", "gpt-4-turbo") or "gpt-4-turbo",
+            model=_env("OPENAI_MODEL", "gpt-4o") or "gpt-4o",
             base_url=_env("OPENAI_BASE_URL", "https://api.openai.com/v1/responses"),
             request_timeout_seconds=timeout,
         )

@@ -1,10 +1,17 @@
-# National Research Graph - Phase 3 Complete
+# National Research Graph
 
-## Overview
+## Quick Start (5 min)
 
-This repository contains the **complete Phase 3 implementation** of the National Research Intelligence Platform for India - a sovereign AI system for querying 600GB of confidential research data with zero data leakage.
+```bash
+git clone <this-repo-url>
+# Or: git clone ~/Desktop/NRG (local development)
+cd National-Research-Graph
+make bootstrap   # Install deps
+make up         # Start services
+make seed       # Seed database
+```
 
-**Status**: ✅ Phase 3 Complete - Production Ready
+Now visit http://localhost:8000 for the API, http://localhost:3000 for UI.
 
 ## Architecture
 
@@ -42,8 +49,6 @@ National-Research-Graph/
     └── kong/                 # Kong Gateway configs
 ```
 
-## Quick Start
-
 ### Prerequisites
 - Python 3.11+
 - Docker & Docker Compose (for full deployment)
@@ -53,7 +58,7 @@ National-Research-Graph/
 
 ```bash
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .
 
 # Start API server
 python3 -m src.api.main
@@ -69,7 +74,7 @@ bash scripts/health_check.sh
 
 ```bash
 # Deploy all services
-docker-compose -f docker-compose-production.yml up -d
+docker-compose up -d
 
 # Or use Kong Gateway
 docker-compose -f infrastructure/kong/docker-compose.yml up -d
@@ -103,11 +108,11 @@ docker-compose -f infrastructure/kong/docker-compose.yml up -d
 ## Database
 
 Current data:
-- **51** Researchers
-- **10** Institutions (IIT Bombay, Delhi, Madras, etc.)
-- **80** Publications
-- **20** Research Labs
-- **40** Funding Records
+- **200** Researchers
+- **24** Institutions
+- **500** Publications
+- **50** Labs
+- **100** Funding Records
 
 ## Testing
 
@@ -134,18 +139,45 @@ cp .env.example .env
 # Edit .env with your settings
 ```
 
-## Phase 3 Deliverables
+## Project Status
+
+### Phase 1 — PoC (Complete)
 
 | Component | Status |
 |-----------|--------|
-| Kong AI Gateway (DLP, Rate Limiting, Audit) | ✅ Complete |
-| React Frontend (3 Persona Views) | ✅ Complete |
-| DPDP 2023 Compliance (12 clauses) | ✅ Complete |
-| Red-team Security Testing | ✅ Complete |
-| UAT (50 scenarios, 3 personas) | ✅ Complete |
-| National Pitch Deck | ✅ Complete |
-| Export Blueprint | ✅ Complete |
+| LangGraph Orchestration Pipeline | ✅ Complete |
+| Text-to-SQL Sandbox (read-only) | ✅ Complete |
+| Schema Extractor (metadata-only to LLM) | ✅ Complete |
+| PII Tokenizer (Aadhaar, PAN, phone) | ✅ Complete |
+| Prompt Injection Detection | ✅ Complete |
+| HMAC-SHA256 Immutable Audit Log | ✅ Complete |
+| RBAC Middleware (3-tier) | ✅ Complete |
+| JWT Authentication | ✅ Complete |
+| React Frontend (3 persona views) | ✅ Complete |
+| FastAPI Backend | ✅ Complete |
+| Security Test Suite + Red-team | ✅ Complete |
+| DPDP 2023 Compliance Mapping | ✅ Complete |
 | Architecture Report | ✅ Complete |
+
+### Phase 2 — Scaling (Planned)
+
+| Component | Status |
+|-----------|--------|
+| PostgreSQL migration (from SQLite) | ⬜ Pending |
+| Qdrant vector DB with real embeddings | ⬜ Pending |
+| Local SLM (Llama 3 8B) synthesis | ⬜ Pending |
+| Kong Gateway production deployment | ⬜ Pending |
+| 600GB data ingestion pipeline | ⬜ Pending |
+
+### Phase 3 — Production (Planned)
+
+| Component | Status |
+|-----------|--------|
+| Bare-metal sovereign deployment | ⬜ Pending |
+| UAT with real stakeholders | ⬜ Pending |
+| Performance benchmarking under load | ⬜ Pending |
+
+See [docs/reports/FINAL_STATUS_REPORT.md](docs/reports/FINAL_STATUS_REPORT.md) for full details.
 
 ## Test Results
 

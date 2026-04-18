@@ -24,41 +24,54 @@ export function ResearcherDashboard() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'graph' | 'dpdp' | 'audit'>('dashboard');
   const [graphData, setGraphData] = useState(queryService.mockGraphData());
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
+  const [queryResult, setQueryResult] = useState<string | null>(null);
+  const [queryError, setQueryError] = useState<string | null>(null);
 
-  // React Query for publications
-  const { data: publications, isLoading: pubsLoading } = useQuery({
+  // React Query for publications - now from real API
+  const { data: publicationsData, isLoading: pubsLoading } = useQuery({
     queryKey: ['publications', user?.id],
-    queryFn: () => Promise.resolve([
-      { id: '1', title: 'Attention Mechanisms in Indian Language NLP', year: 2024, citations: 23 },
-      { id: '2', title: 'Sovereign AI: Infrastructure for Bharat', year: 2023, citations: 45 },
-      { id: '3', title: 'Knowledge Graph Embeddings for Research Discovery', year: 2024, citations: 12 },
-    ]),
+    queryFn: () => queryService.fetchPublications(10),
     staleTime: 5 * 60 * 1000,
+    enabled: !!user,
+  });
+
+  const publications = publicationsData?.publications || [];
+
+  // React Query for stats
+  const { data: statsData, isLoading: statsLoading } = useQuery({
+    queryKey: ['stats', user?.id],
+    queryFn: () => queryService.fetchStats(),
+    staleTime: 30 * 1000, // 30 seconds
+    enabled: !!user,
   });
 
   const handleSearch = useCallback(async () => {
     if (!currentQuery.trim()) return;
-    
+
     setIsSearching(true);
+    setQueryResult(null);
+    setQueryError(null);
     try {
       const result = await queryService.query({ query: currentQuery });
-      addToHistory({ 
-        query: currentQuery, 
-        persona: 'researcher', 
-        resultsCount: result.verification_status ? 10 : 0 
+      setQueryResult(result.response);
+      addToHistory({
+        query: currentQuery,
+        persona: 'researcher',
+        resultsCount: result.verification_status ? 10 : 0
       });
-      addAuditEntry({ 
-        action: 'data_accessed', 
-        persona: user?.role || 'researcher', 
-        details: `Query: ${currentQuery}` 
+      addAuditEntry({
+        action: 'data_accessed',
+        persona: user?.role || 'researcher',
+        details: `Query: ${currentQuery}`
       });
     } catch (error: any) {
       console.error('Search error:', error);
-      const message = error.response?.data?.message || error.message || 'Search failed';
+      const message = error.response?.data?.detail || error.response?.data?.message || error.message || 'Search failed';
+      setQueryError(message);
       // Surface DLP/Security messages safely
-      addToHistory({ 
-        query: currentQuery, 
-        persona: 'researcher', 
+      addToHistory({
+        query: currentQuery,
+        persona: 'researcher',
         resultsCount: 0,
         error: message
       });
@@ -145,38 +158,81 @@ export function ResearcherDashboard() {
                   placeholder="Enter research topic, author, or DOI..."
                   className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-researcher-500 focus:border-researcher-500 transition text-sm"
                 />
-                <button
-                  onClick={handleSearch}
-                  disabled={isSearching || !currentQuery}
-                  className="px-6 py-2.5 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSearching ? 'Searching...' : 'Search'}
-                </button>
-              </div>
-            </GlassCard>
+          <button
+            onClick={handleSearch}
+            disabled={isSearching || !currentQuery}
+            className="px-6 py-2.5 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSearching ? 'Searching...' : 'Search'}
+          </button>
+        </div>
 
-            {/* Quick Stats + Publications */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Stats */}
-              <div className="space-y-4">
-                <GlassCard accent="researcher" title="Quick Stats">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-researcher-50 p-3 rounded-lg text-center border border-researcher-100">
-                      <div className="text-xl font-bold text-researcher-700">3</div>
-                      <div className="text-xs text-researcher-500">Publications</div>
-                    </div>
-                    <div className="bg-green-50 p-3 rounded-lg text-center border border-green-100">
-                      <div className="text-xl font-bold text-green-700">80</div>
-                      <div className="text-xs text-green-500">Total Citations</div>
-                    </div>
-                    <div className="bg-amber-50 p-3 rounded-lg text-center border border-amber-100">
-                      <div className="text-xl font-bold text-amber-700">12</div>
-                      <div className="text-xs text-amber-500">Queries Today</div>
-                    </div>
-                    <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                      <div className="text-xl font-bold text-purple-700">5</div>
-                      <div className="text-xs text-purple-500">Collaborators</div>
-                    </div>
+        {/* Query Results Display */}
+        {isSearching && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="animate-spin h-4 w-4 border-2 border-researcher-500 border-t-transparent rounded-full"></div>
+              Processing query through NRG LangGraph...
+            </div>
+          </div>
+        )}
+
+        {queryError && (
+          <div className="mt-4 p-4 bg-rose-50 rounded-lg border border-rose-200">
+            <div className="flex items-start gap-2">
+              <span className="text-rose-500">⚠️</span>
+              <div className="text-sm text-rose-700">
+                <span className="font-semibold">Error:</span> {queryError}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {queryResult && (
+          <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                Research Intelligence Response
+              </h3>
+            </div>
+            <div className="p-4">
+              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{queryResult}</pre>
+            </div>
+          </div>
+        )}
+      </GlassCard>
+
+      {/* Quick Stats + Publications */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Stats */}
+        <div className="space-y-4">
+          <GlassCard accent="researcher" title="Quick Stats">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-researcher-50 p-3 rounded-lg text-center border border-researcher-100">
+                <div className="text-xl font-bold text-researcher-700">
+                  {statsLoading ? '...' : statsData?.total_researchers || 0}
+                </div>
+                <div className="text-xs text-researcher-500">Researchers</div>
+              </div>
+              <div className="bg-green-50 p-3 rounded-lg text-center border border-green-100">
+                <div className="text-xl font-bold text-green-700">
+                  {statsLoading ? '...' : statsData?.total_publications || 0}
+                </div>
+                <div className="text-xs text-green-500">Publications</div>
+              </div>
+              <div className="bg-amber-50 p-3 rounded-lg text-center border border-amber-100">
+                <div className="text-xl font-bold text-amber-700">
+                  {statsLoading ? '...' : statsData?.total_institutions || 0}
+                </div>
+                <div className="text-xs text-amber-500">Institutions</div>
+              </div>
+              <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
+                <div className="text-xl font-bold text-purple-700">
+                  {history.length}
+                </div>
+                <div className="text-xs text-purple-500">Your Queries</div>
+              </div>
                   </div>
                 </GlassCard>
 

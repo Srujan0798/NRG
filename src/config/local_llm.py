@@ -1,0 +1,237 @@
+"""Local SLM (Small Language Model) integration for sovereign synthesis.
+
+Uses HuggingFace transformers with a small model (Phi-2 or similar) for
+local text generation when cloud LLMs are unavailable.
+"""
+
+import os
+import logging
+from typing import Optional, List
+
+logger = logging.getLogger(__name__)
+
+# Global model cache
+_model = None
+_tokenizer = None
+
+
+def get_local_llm():
+    """Get or initialize local LLM."""
+    global _model, _tokenizer
+
+    if _model is not None:
+        return _model, _tokenizer
+
+    try:
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+        import torch
+
+        # Use Phi-2 (2.7B parameters) - small but capable
+        model_name = os.getenv("LOCAL_LLM_MODEL", "microsoft/phi-2")
+
+        logger.info(f"Loading local LLM: {model_name}")
+
+        # Load tokenizer
+        _tokenizer = AutoTokenizer.from_pretrained(
+            model_name,
+            trust_remote_code=True
+        )
+
+        # Load model with optimizations
+        _model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=torch.float32,  # Use float32 for CPU compatibility
+            device_map="auto",  # Auto-detect CPU/GPU
+            trust_remote_code=True,
+        )
+
+        logger.info("Local LLM loaded successfully")
+        return _model, _tokenizer
+
+    except ImportError as e:
+        logger.warning(f"transformers/torch not installed: {e}")
+        return None, None
+    except Exception as e:
+        logger.error(f"Failed to load local LLM: {e}")
+        return None, None
+
+
+class LocalLLMClient:
+    """Local LLM client that mimics cloud LLM interface."""
+
+    def __init__(self):
+        self.model, self.tokenizer = get_local_llm()
+        self.max_length = int(os.getenv("LOCAL_LLM_MAX_LENGTH", "512"))
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: List[dict] = None,
+    ) -> str:
+        """Generate response using local model."""
+        if self.model is None or self.tokenizer is None:
+            raise RuntimeError("Local LLM not available")
+
+        try:
+            import torch
+
+            # Build prompt
+            prompt = self._build_prompt(system_prompt, user_prompt, conversation_history)
+
+            # Tokenize
+            inputs = self.tokenizer(prompt, return_tensors="pt")
+
+            # Move to same device as model
+            if hasattr(self.model, 'device'):
+                inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
+
+            # Generate
+            with torch.no_grad():
+                outputs = self.model.generate(
+                    **inputs,
+                    max_new_tokens=256,
+                    temperature=0.7,
+                    top_p=0.9,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                )
+
+            # Decode
+            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+            # Extract only the generated part (after the prompt)
+            if prompt in response:
+                response = response[len(prompt):].strip()
+
+            return response
+
+        except Exception as e:
+            logger.error(f"Local LLM generation failed: {e}")
+            raise
+
+    def _build_prompt(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: List[dict] = None,
+    ) -> str:
+        """Build prompt for local LLM."""
+        parts = []
+
+        # Add system prompt
+        if system_prompt:
+            parts.append(f"System: {system_prompt}")
+            parts.append("")
+
+        # Add conversation history
+        if conversation_history:
+            for turn in conversation_history[-3:]:  # Last 3 turns
+                if turn.get("query"):
+                    parts.append(f"User: {turn['query']}")
+                if turn.get("response"):
+                    parts.append(f"Assistant: {turn['response']}")
+
+        # Add current user prompt
+        parts.append(f"User: {user_prompt}")
+        parts.append("Assistant:")
+
+        return "\n".join(parts)
+
+
+def get_local_llm_client() -> Optional[LocalLLMClient]:
+    """Get local LLM client if available."""
+    client = LocalLLMClient()
+    if client.model is not None:
+        return client
+    return None
+
+
+# Simple rule-based synthesis as ultimate fallback
+def rule_based_synthesis(
+    query: str,
+    sql_results: list,
+    chunks: list,
+    user_tier: int,
+) -> str:
+    """Generate synthesis using rule-based templates.
+
+    This is used when both cloud LLM and local SLM are unavailable.
+    """
+    lines = []
+
+    # Header
+    lines.append("# Research Intelligence Report")
+    lines.append("")
+    lines.append(f"**Query:** {query}")
+    lines.append("")
+
+    # Executive summary based on data
+    if sql_results:
+        lines.append(f"## Summary")
+        lines.append(f"Found **{len(sql_results)}** research records matching your query.")
+        lines.append("")
+
+        # Group by research area
+        areas = {}
+        states = {}
+        institutions = {}
+
+        for row in sql_results:
+            if isinstance(row, dict):
+                area = row.get('research_area')
+                if area:
+                    areas[area] = areas.get(area, 0) + 1
+
+                state = row.get('state')
+                if state:
+                    states[state] = states.get(state, 0) + 1
+
+                inst = row.get('institution_id')
+                if inst:
+                    institutions[inst] = institutions.get(inst, 0) + 1
+
+        if areas:
+            lines.append("### Research Areas")
+            for area, count in sorted(areas.items(), key=lambda x: -x[1])[:5]:
+                lines.append(f"- {area}: {count} researchers")
+            lines.append("")
+
+        if states:
+            lines.append("### Geographic Distribution")
+            for state, count in sorted(states.items(), key=lambda x: -x[1])[:5]:
+                lines.append(f"- {state}: {count} researchers")
+            lines.append("")
+
+        # List top researchers
+        lines.append("## Top Researchers")
+        for i, row in enumerate(sql_results[:10], 1):
+            if isinstance(row, dict):
+                name = row.get('name', 'Unknown')
+                area = row.get('research_area', 'N/A')
+                state = row.get('state', 'N/A')
+                lines.append(f"{i}. **{name}** - {area} ({state})")
+        lines.append("")
+
+    elif chunks:
+        lines.append(f"## Document Analysis")
+        lines.append(f"Found **{len(chunks)}** relevant document excerpts.")
+        lines.append("")
+        for i, chunk in enumerate(chunks[:5], 1):
+            lines.append(f"{i}. {chunk[:150]}...")
+            lines.append("")
+
+    else:
+        lines.append("No data found for this query.")
+
+    # Tier-specific footer
+    lines.append("")
+    lines.append("---")
+    if user_tier == 1:
+        lines.append("*Researcher Tier Access: Full details shown with contact information.*")
+    elif user_tier == 2:
+        lines.append("*Government Tier Access: Aggregated and anonymized data shown.*")
+    elif user_tier == 3:
+        lines.append("*Industry Tier Access: Limited licensed data shown.*")
+
+    return "\n".join(lines)

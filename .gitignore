@@ -51,3 +51,4 @@ frontend/build/
 .idea/
 .vscode/
 *.sublime-*
+.venv311/

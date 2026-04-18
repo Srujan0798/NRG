@@ -155,7 +155,7 @@ Example Plan:
 | **Secure API Gateway** | Kong AI Gateway | Content-aware LLM prompt inspection, DLP, audit trails |
 | **Embedding Model** | HuggingFace TEI | Efficient local vectorization, privacy-critical |
 | **Local SLM** | Llama 3 (8B quantized) | On-premise synthesis, no external compute |
-| **Cloud Reasoning** | Gemini 1.5 Pro / Claude 3.5 | Complex JSON tool calling, instruction following |
+| **Cloud Reasoning** | Gemini 2.5 Pro / Claude Sonnet 4 | Complex JSON tool calling, instruction following |
 
 ### Why LangGraph for Orchestration?
 

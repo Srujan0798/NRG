@@ -22,7 +22,7 @@ class Sandbox:
     def __init__(self, connection_string: Optional[str] = None):
         self.connection_string = connection_string or os.getenv(
             "DATABASE_URL",
-            "sqlite:///nrg_research.db",
+            "postgresql://nrg:nrg_secret@localhost:5432/nrg",
         )
         self.engine = create_engine(
             self.connection_string, echo=False, pool_pre_ping=True

@@ -21,7 +21,7 @@ function TestApp() {
   const fetchResearchers = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/researchers', {
+      const response = await fetch('/researchers', {
         headers: {
           'Authorization': 'Bearer dev-key-insecure-change-in-production'
         }

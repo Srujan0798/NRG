@@ -10,11 +10,23 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/refresh': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/logout': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
       '/query': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
       '/researchers': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/health': {
         target: 'http://localhost:8000',
         changeOrigin: true
       }

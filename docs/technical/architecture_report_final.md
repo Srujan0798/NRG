@@ -1,5 +1,9 @@
 # Technical Architecture Report - National Research Intelligence Platform
 
+> ⚠️ **DEPRECATED**: See `docs/architecture/ARCHITECTURE.md` v1.0
+> 
+> This document is superseded. All architecture decisions are now in `docs/architecture/ARCHITECTURE.md`.
+
 ## Final Technical Architecture for Government Submission
 
 ---
@@ -62,7 +66,7 @@ The National Research Intelligence Platform (NRIP) is a sovereign, enterprise-gr
                               ↓
 ┌──────────────────────────────────────────────────────────────────────┐
 │                 REASONING LAYER (External)                       │
-│  Gemini 1.5 Pro / Claude 3.5                                     │
+│  Gemini 2.5 Pro / Claude Sonnet 4                                    │
 │  • Receives ONLY retrieved facts                               │
 │  • Returns execution plans only                                │
 │  • NO raw data storage                                         │
