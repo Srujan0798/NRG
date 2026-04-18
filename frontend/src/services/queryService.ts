@@ -54,6 +54,16 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+export interface StatsResponse {
+  total_researchers: number;
+  total_publications: number;
+  total_institutions?: number;
+  total_labs?: number;
+  research_area_distribution?: Array<{ area: string; count: number }>;
+  state_distribution?: Array<{ state: string; count: number }>;
+  research_areas?: string[];
+}
+
 export const queryService = {
   async query(request: QueryRequest): Promise<QueryResponse> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
@@ -70,6 +80,25 @@ export const queryService = {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<GraphData>('/query/graph', {
         params: { topic },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return response.data;
+    });
+  },
+
+  async fetchStats(): Promise<StatsResponse> {
+    return authService.withAuthenticatedRequest(async (accessToken) => {
+      const response = await api.get<StatsResponse>('/stats', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return response.data;
+    });
+  },
+
+  async fetchPublications(limit: number = 10): Promise<{ publications: Array<{ publication_id: string; title: string; year: number; venue?: string }> }> {
+    return authService.withAuthenticatedRequest(async (accessToken) => {
+      const response = await api.get('/publications', {
+        params: { limit },
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       return response.data;

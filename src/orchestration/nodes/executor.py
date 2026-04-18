@@ -6,6 +6,7 @@ from typing_extensions import NotRequired
 
 from src.skills.rag.skill import RAGSkill
 from src.skills.text_to_sql.skill import TextToSQLSkill
+from src.audit import log_sql
 
 
 logger = logging.getLogger(__name__)
@@ -59,6 +60,8 @@ def executor_node(state):
             sql_result = sql_skill.execute(user_query, user_tier=user_tier)
             results["sql_query"] = sql_result.get("query")
             results["sql_results"] = sql_result.get("results", [])
+            # Log successful SQL execution
+            log_sql("executor", sql_result.get("query", ""), {"row_count": sql_result.get("row_count", 0)})
         except Exception as exc:
             logger.warning("Text-to-SQL execution failed: %s", exc)
             results["errors"].append({"node": "executor", "error": str(exc)})

@@ -17,6 +17,7 @@ from src.orchestration.nodes.router import router_node
 from src.orchestration.nodes.executor import executor_node
 from src.orchestration.nodes.synthesizer import synthesizer_node
 from src.caching.redis_layer import cache_query
+from src.audit import log_query
 
 
 load_dotenv()
@@ -72,9 +73,14 @@ class NRGWorkflow:
         query: str,
         user_tier: int = 1,
         session_id: str | None = None,
+        user_id: str | None = None,
     ) -> dict:
         """Execute a query through the workflow."""
         active_session_id = session_id or str(uuid.uuid4())
+
+        # Log query start
+        log_query(user_id or "anonymous", query)
+
         conversation_history = self._get_session_history(active_session_id)
         initial_state = create_initial_state(
             query,

@@ -1,3 +1,4 @@
+import os
 import re
 import hashlib
 import base64
@@ -15,9 +16,8 @@ class PIITokenizer:
     def __init__(self, encryption_key: Optional[bytes] = None):
         """Initialize PII tokenizer with optional encryption key."""
         if encryption_key is None:
-            # Generate a key from a password (in production, use a secure key management system)
-            password = b"nrg_platform_secret_key_2026"
-            salt = b"nrg_salt_2026"
+            password = os.getenv("PII_ENCRYPTION_KEY", "").encode() or b"dev-only-key"
+            salt = os.getenv("PII_ENCRYPTION_SALT", "").encode() or b"dev-only-salt"
             kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=32,

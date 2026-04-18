@@ -1,0 +1,80 @@
+# Golden Queries for Benchmarking
+# 500 representative queries with ground-truth citations
+
+- query: "List all robotics researchers in Gujarat"
+  tier: 1
+  expected_tables: [researchers]
+  expected_rows_min: 5
+  citations:
+    - researcher_id
+    - research_area
+
+- query: "Show funding for AI projects in 2023"
+  tier: 1
+  expected_tables: [funding]
+  expected_rows_min: 10
+  citations:
+    - funding_id
+    - amount
+
+- query: "What publications came from IIT Gandhinagar in 2024?"
+  tier: 2
+  expected_tables: [publications, researchers]
+  expected_rows_min: 15
+  citations:
+    - publication_id
+    - title
+
+- query: "Top 10 funded institutions in Maharashtra"
+  tier: 2
+  expected_tables: [funding, institutions]
+  expected_rows_min: 10
+  citations:
+    - institution_id
+    - amount
+
+- query: "List all ML research labs"
+  tier: 3
+  expected_tables: [labs]
+  expected_rows_min: 3
+  citations:
+    - lab_id
+    - name
+
+- query: "Find researchers working on quantum computing"
+  tier: 1
+  expected_tables: [researchers]
+  expected_rows_min: 5
+  citations:
+    - researcher_id
+    - research_area
+
+- query: "Show collaboration between IITs"
+  tier: 2
+  expected_tables: [collaborations, researchers]
+  expected_rows_min: 20
+  citations:
+    - collaboration_id
+
+- query: "Total funding by agency"
+  tier: 2
+  expected_tables: [funding]
+  expected_rows_min: 5
+  citations:
+    - agency
+    - amount
+
+- query: "Publications by year trend"
+  tier: 2
+  expected_tables: [publications]
+  expected_rows_min: 50
+  citations:
+    - year
+    - publication_id
+
+- query: "Research areas distribution"
+  tier: 1
+  expected_tables: [researchers]
+  expected_rows_min: 50
+  citations:
+    - research_area

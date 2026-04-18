@@ -4,6 +4,7 @@ import logging
 from typing import TypedDict
 
 from src.config.llm_config import get_llm_client
+from src.config.local_llm import get_local_llm_client, rule_based_synthesis
 
 logger = logging.getLogger(__name__)
 
@@ -108,28 +109,52 @@ def _synthesize(
     user_tier: int,
     context_summary: str,
 ) -> str:
-    """Synthesize data into response using the configured cloud LLM."""
+    """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback."""
+    # Try 1: Cloud LLM
     client = get_llm_client()
-    if client is None:
-        return _fallback_synthesis(query, sql_results, chunks, context_summary)
-
-    system_prompt = _build_system_prompt(
-        user_tier=user_tier,
-        sources=sources,
-        sql_results=sql_results,
-        chunks=chunks,
-        context_summary=context_summary,
-    )
-    user_prompt = f"User Query: {query}"
-
-    try:
-        return client.generate(
-            system_prompt,
-            user_prompt,
-            conversation_history=_coerce_history(context_summary),
+    if client:
+        system_prompt = _build_system_prompt(
+            user_tier=user_tier,
+            sources=sources,
+            sql_results=sql_results,
+            chunks=chunks,
+            context_summary=context_summary,
         )
-    except Exception:
-        return _fallback_synthesis(query, sql_results, chunks, context_summary)
+        user_prompt = f"User Query: {query}"
+        try:
+            logger.info("Using cloud LLM for synthesis")
+            return client.generate(
+                system_prompt,
+                user_prompt,
+                conversation_history=_coerce_history(context_summary),
+            )
+        except Exception as e:
+            logger.warning(f"Cloud LLM failed: {e}, trying local LLM")
+
+    # Try 2: Local SLM
+    local_client = get_local_llm_client()
+    if local_client:
+        system_prompt = _build_system_prompt(
+            user_tier=user_tier,
+            sources=sources,
+            sql_results=sql_results,
+            chunks=chunks,
+            context_summary=context_summary,
+        )
+        user_prompt = f"User Query: {query}"
+        try:
+            logger.info("Using local LLM for synthesis")
+            return local_client.generate(
+                system_prompt,
+                user_prompt,
+                conversation_history=_coerce_history(context_summary),
+            )
+        except Exception as e:
+            logger.warning(f"Local LLM failed: {e}, using rule-based synthesis")
+
+    # Try 3: Rule-based synthesis (always works)
+    logger.info("Using rule-based synthesis")
+    return rule_based_synthesis(query, sql_results, chunks, user_tier)
 
 
 def _build_context_summary(conversation_history: list) -> str:
@@ -174,22 +199,66 @@ def _coerce_history(context_summary: str) -> list[dict]:
     return [{"query": "Prior Session Context", "response": context_summary}]
 
 
+def _format_sql_results(sql_results: list) -> str:
+    """Format SQL results for display in fallback mode."""
+    if not sql_results:
+        return "No structured data found."
+
+    lines = []
+    lines.append(f"Found {len(sql_results)} research records:\n")
+
+    for i, row in enumerate(sql_results[:10], 1):  # Show first 10
+        if isinstance(row, dict):
+            # Format based on table type
+            if 'name' in row:
+                lines.append(f"{i}. {row.get('name', 'Unknown')}")
+                if 'research_area' in row:
+                    lines.append(f"   Research Area: {row.get('research_area')}")
+                if 'state' in row:
+                    lines.append(f"   State: {row.get('state')}")
+                if 'institution_id' in row:
+                    lines.append(f"   Institution: {row.get('institution_id')}")
+                lines.append("")
+            elif 'title' in row:
+                lines.append(f"{i}. {row.get('title', 'Unknown')}")
+                if 'year' in row:
+                    lines.append(f"   Year: {row.get('year')}")
+                lines.append("")
+            else:
+                # Generic formatting
+                for key, value in row.items():
+                    if value and key not in ['created_at', 'updated_at', 'researcher_id', 'institution_id']:
+                        lines.append(f"   {key}: {value}")
+                lines.append("")
+
+    if len(sql_results) > 10:
+        lines.append(f"... and {len(sql_results) - 10} more records")
+
+    return "\n".join(lines)
+
+
 def _fallback_synthesis(
     query: str,
     sql_results: list,
     chunks: list,
     context_summary: str,
 ) -> str:
-    """Truthful fallback when LLM is unavailable."""
-    msg = f"National Research Graph (Service Mode: Fallback)\n\n"
-    msg += f"The synthesis engine is currently unavailable. "
-    msg += f"However, the following data was retrieved for your query '{query}':\n"
+    """Enhanced fallback that shows actual data when LLM is unavailable."""
+    msg = f"**Research Intelligence Result**\n\n"
+    msg += f"**Query:** {query}\n\n"
+
     if sql_results:
-        msg += f"- {len(sql_results)} structured research records found.\n"
-    if chunks:
-        msg += f"- {len(chunks)} document excerpts identified.\n"
+        msg += _format_sql_results(sql_results)
+    elif chunks:
+        msg += f"Found {len(chunks)} document excerpts:\n"
+        for i, chunk in enumerate(chunks[:5], 1):
+            msg += f"{i}. {chunk[:100]}...\n\n"
+    else:
+        msg += "No data found for this query.\n\n"
+        msg += "Note: The AI synthesis engine is currently in fallback mode. "
+        msg += "You are seeing raw database results."
+
     if context_summary:
-        msg += f"\nPrior Session Context: {context_summary}"
-    
-    msg += "\n\nPlease try again later or contact support if the issue persists."
+        msg += f"\n**Session Context:** {context_summary}"
+
     return msg

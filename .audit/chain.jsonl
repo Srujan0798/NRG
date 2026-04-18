@@ -1,0 +1,2 @@
+{"event_id": "04da468b", "event_type": "sql", "timestamp": "2026-04-18T15:21:53.111604", "user_id": "executor", "sql": "SELECT * FROM researchers LIMIT 100", "result": {"row_count": 100}, "hash": "43e57e394004794e68c91b6bfa6978ecf8b1d97b7bef336204e0ea710c0c052c"}
+{"event_id": "68c2cec2", "event_type": "sql", "timestamp": "2026-04-18T15:23:24.475868", "user_id": "executor", "sql": "SELECT * FROM researchers LIMIT 100", "result": {"row_count": 100}, "hash": "1cbc4c0ff1a131a056e65be143396f3586f7a9e445c62f09f238dcdf68aabcdb"}

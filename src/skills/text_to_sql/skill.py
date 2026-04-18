@@ -5,8 +5,8 @@ import logging
 from typing import Dict, Any, Optional
 import json
 
-from .schema_extractor import SchemaExtractor
-from .sandbox import Sandbox
+from .sqlite_schema_extractor import SQLiteSchemaExtractor
+from .sqlite_sandbox import SQLiteSandbox
 
 
 logger = logging.getLogger(__name__)
@@ -17,8 +17,8 @@ class TextToSQLSkill:
 
     def __init__(self, llm_provider: Optional[Any] = None):
         self.llm_provider = llm_provider
-        self.extractor = SchemaExtractor()
-        self.sandbox = Sandbox()
+        self.extractor = SQLiteSchemaExtractor()
+        self.sandbox = SQLiteSandbox()
 
     def generate_sql(self, user_query: str, schema_prompt: str) -> str:
         """
@@ -96,14 +96,16 @@ RULES:
         return result
 
     def _apply_tier_filter(self, sql: str, user_tier: int) -> str:
-        """Apply access tier filter to SQL."""
-        if user_tier >= 3:
-            if "WHERE" in sql.upper():
-                if "access_tier" not in sql.lower():
-                    sql += f" AND access_tier >= '{user_tier}'"
-            else:
-                sql += f" WHERE access_tier >= '{user_tier}'"
+        """Apply access tier filter to SQL.
 
+        Tier 1 (Researcher): Own data and public data
+        Tier 2 (Government): Aggregated and anonymized
+        Tier 3 (Industry): Limited and licensed
+
+        For SQLite, we don't have access_tier column, so we rely on RBAC filtering
+        at the API middleware level. This function just ensures safe query limits.
+        """
+        # Add LIMIT if not present for safety
         if "LIMIT" not in sql.upper():
             sql = sql.rstrip(";") + " LIMIT 100"
 

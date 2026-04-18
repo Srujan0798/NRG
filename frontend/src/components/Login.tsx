@@ -12,19 +12,19 @@ const PERSONA_PRESETS: Record<'researcher' | 'government' | 'industry', PersonaP
   researcher: {
     label: 'Researcher',
     username: 'researcher_user',
-    password: 'researcher-pass',
+    password: 'researcher-demo-2026',
     icon: <UserIcon className="h-5 w-5" />
   },
   government: {
     label: 'Government',
     username: 'gov_user',
-    password: 'government-pass',
+    password: 'government-demo-2026',
     icon: <Building2Icon className="h-5 w-5" />
   },
   industry: {
     label: 'Industry',
     username: 'industry_user',
-    password: 'industry-pass',
+    password: 'industry-demo-2026',
     icon: <BuildingIcon className="h-5 w-5" />
   }
 }

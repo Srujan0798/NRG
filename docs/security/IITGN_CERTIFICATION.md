@@ -108,9 +108,9 @@ The National Research Graph (NRG) has successfully completed comprehensive secur
 
 | Component | Status | Details |
 |-----------|--------|---------|
-| Primary Provider | ✅ | OpenAI (GPT-4-turbo) |
-| Fallback 1 | ✅ | Anthropic (Claude-3.5-Sonnet) |
-| Fallback 2 | ✅ | Azure OpenAI (nrg-gpt-4-turbo) |
+| Primary Provider | ✅ | OpenAI (GPT-4o) |
+| Fallback 1 | ✅ | Anthropic (Claude Sonnet 4) |
+| Fallback 2 | ✅ | Azure OpenAI (nrg-gpt-4o) |
 | Automatic Failover | ✅ | 3 retries, 5s delay |
 | Health Checks | ✅ | Provider status monitoring |
 

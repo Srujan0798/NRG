@@ -1,0 +1,63 @@
+[project]
+name = "nrg"
+version = "1.0.0"
+description = "National Research Graph - Sovereign AI Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph==0.0.55",
+    "langchain==0.2.16",
+    "langchain-core==0.2.40",
+    "langsmith==0.1.17",
+    "qdrant-client==1.9.2",
+    "sqlalchemy==2.0.25",
+    "psycopg2-binary==2.9.9",
+    "python-dotenv==1.0.0",
+    "pydantic==2.6.0",
+    "numpy==1.26.3",
+    "sentence-transformers==2.3.1",
+    "pytest==8.0.0",
+    "faker==22.6.0",
+    "fastapi==0.115.0",
+    "uvicorn==0.34.0",
+    "httpx==0.28.1",
+    "requests==2.32.3",
+    "PyJWT==2.8.0",
+    "langchain-google-genai==1.0.1",
+    "sqlglot>=20.0.0",
+    "cryptography>=42.0.0",
+    "redis>=5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest-asyncio",
+    "black",
+    "ruff",
+    "mypy",
+    "pre-commit",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

@@ -36,16 +36,16 @@ ROLE_CONFIG = {
 
 DEFAULT_USERS = {
     "researcher_user": {
-        "password": "researcher-pass",
+        "password": os.getenv("RESEARCHER_PASSWORD", "change-me"),
         "role": "researcher",
         "researcher_id": "researcher-1",
     },
     "gov_user": {
-        "password": "government-pass",
+        "password": os.getenv("GOV_PASSWORD", "change-me"),
         "role": "government",
     },
     "industry_user": {
-        "password": "industry-pass",
+        "password": os.getenv("INDUSTRY_PASSWORD", "change-me"),
         "role": "industry",
     },
 }
@@ -87,13 +87,15 @@ class JWTHandler:
                 "JWT_PUBLIC_KEY_PATH",
                 "infrastructure/kong/ssl/jwt_rsa.pub"
             )
-            
+            self.secret_key = None
             self._load_rsa_keys(private_key_path, public_key_path)
+            if not self.private_key or not self.public_key:
+                raise AuthError("RSA key files could not be loaded")
         else:
             # Fallback to symmetric (HS256)
-            self.secret_key = secret_key or os.getenv(
-                "JWT_SECRET", "CHANGE_THIS_IN_PRODUCTION"
-            )
+            self.secret_key = secret_key or os.getenv("JWT_SECRET")
+            if not self.secret_key:
+                raise AuthError("JWT_SECRET environment variable must be set")
         
         self.access_token_ttl_seconds = access_token_ttl_seconds
         self.refresh_token_ttl_seconds = refresh_token_ttl_seconds

@@ -27,6 +27,7 @@ from src.auth.middleware import (
 )
 from src.data.database import NRGDatabase
 from src.orchestration.graph import NRGWorkflow
+from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
@@ -115,12 +116,23 @@ class QueryRequest(BaseModel):
 async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depends(get_current_user)):
     """Process query using LangGraph orchestration"""
     try:
+        # Security: Validate query for PII and prompt injection
+        validation = prompt_sanitiser.validate_query({"query": request.query})
+        if not validation["valid"]:
+            logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
+            raise HTTPException(
+                status_code=403,
+                detail=f"Security violation: {validation['reason']}"
+            )
+
         # Pass tier to workflow
         user_tier = token_payload.get("tier", 1)
+        user_id = token_payload.get("sub", "anonymous")
         result = workflow.run(
             request.query,
             user_tier=user_tier,
             session_id=request.session_id,
+            user_id=user_id,
         )
         
         return {
@@ -143,13 +155,110 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()}
 
 @app.get("/researchers")
-async def get_researchers(token_payload: dict = Depends(get_current_user)):
+async def get_researchers(
+    state: str = None,
+    research_area: str = None,
+    token_payload: dict = Depends(get_current_user)
+):
     """Protected endpoint with role-specific data shaping."""
     db = NRGDatabase("nrg_research.db")
-    researchers = db.query_researchers()
+    researchers = db.query_researchers(state=state, research_area=research_area)
     return filter_researcher_records(researchers, token_payload)
+
+
+@app.get("/stats")
+async def get_stats(token_payload: dict = Depends(get_current_user)):
+    """Get system statistics for dashboards."""
+    from src.data.database import sqlite3
+
+    db_path = "nrg_research.db"
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+
+    # Get counts
+    cursor = conn.execute("SELECT COUNT(*) FROM researchers")
+    researcher_count = cursor.fetchone()[0]
+
+    cursor = conn.execute("SELECT COUNT(*) FROM publications")
+    publication_count = cursor.fetchone()[0]
+
+    cursor = conn.execute("SELECT COUNT(*) FROM institutions")
+    institution_count = cursor.fetchone()[0]
+
+    cursor = conn.execute("SELECT COUNT(*) FROM labs")
+    lab_count = cursor.fetchone()[0]
+
+    # Get research area distribution
+    cursor = conn.execute(
+        "SELECT research_area, COUNT(*) as count FROM researchers WHERE research_area IS NOT NULL GROUP BY research_area ORDER BY count DESC LIMIT 10"
+    )
+    research_areas = [{"area": row[0], "count": row[1]} for row in cursor.fetchall()]
+
+    # Get state distribution
+    cursor = conn.execute(
+        "SELECT state, COUNT(*) as count FROM researchers GROUP BY state ORDER BY count DESC LIMIT 10"
+    )
+    states = [{"state": row[0], "count": row[1]} for row in cursor.fetchall()]
+
+    conn.close()
+
+    tier = token_payload.get("tier", 1)
+    role = token_payload.get("role", "researcher")
+
+    # Return tier-appropriate data
+    if role == "government":
+        return {
+            "total_researchers": researcher_count,
+            "total_publications": publication_count,
+            "total_institutions": institution_count,
+            "total_labs": lab_count,
+            "research_area_distribution": research_areas,
+            "state_distribution": states,
+        }
+    elif role == "industry":
+        return {
+            "total_researchers": researcher_count,
+            "total_publications": publication_count,
+            "research_areas": [ra["area"] for ra in research_areas[:5]],
+        }
+    else:  # researcher
+        return {
+            "total_researchers": researcher_count,
+            "total_publications": publication_count,
+            "total_institutions": institution_count,
+        }
+
+
+@app.get("/publications")
+async def get_publications(
+    year: int = None,
+    limit: int = 10,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get publications list."""
+    from src.data.database import sqlite3
+
+    db_path = "nrg_research.db"
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+
+    query = "SELECT * FROM publications WHERE 1=1"
+    params = []
+
+    if year:
+        query += " AND year = ?"
+        params.append(year)
+
+    query += " ORDER BY year DESC LIMIT ?"
+    params.append(limit)
+
+    cursor = conn.execute(query, params)
+    publications = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+
+    return {"publications": publications}
+
 
 if __name__ == "__main__":
     import uvicorn
-    # Change port to 8001 as Kong is on 8000
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

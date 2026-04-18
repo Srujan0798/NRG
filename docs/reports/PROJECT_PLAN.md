@@ -155,7 +155,7 @@
 - **API Gateway**: Kong AI Gateway
 - **Embedding**: HuggingFace TEI / local models
 - **Local SLM**: Llama 3 (8B quantized)
-- **Cloud LLM**: Gemini 1.5 Pro / Claude 3.5
+- **Cloud LLM**: Gemini 2.5 Pro / Claude Sonnet 4
 - **Audit**: Langfuse
 - **UI**: Streamlit → React.js
 - **Security**: Microsoft Presidio (PII detection)
