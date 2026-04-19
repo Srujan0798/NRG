@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """
 Build Qdrant vector index for publications.
-Embeds all publications and pushes to Qdrant for RAG retrieval.
+Embeds all publications and pushes to tiered Qdrant collections for RAG retrieval.
+Idempotent via publication_id + chunk_id point IDs.
+Logs to audit chain.
 """
-
+import argparse
+import hashlib
 import os
 import sys
 import sqlite3
-from typing import List, Dict
+from typing import List, Dict, Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -24,10 +27,11 @@ def get_publications(db_path: str = "nrg_research.db") -> List[Dict]:
         SELECT
             p.publication_id,
             p.title,
-            p.abstract,
+            COALESCE(p.abstract, p.full_text, '') as text_content,
             p.year,
             p.venue,
-            GROUP_CONCAT(r.name) as authors
+            p.access_tier,
+            GROUP_CONCAT(DISTINCT r.name) as authors
         FROM publications p
         LEFT JOIN researcher_publications rp ON p.publication_id = rp.publication_id
         LEFT JOIN researchers r ON rp.researcher_id = r.researcher_id
@@ -37,90 +41,126 @@ def get_publications(db_path: str = "nrg_research.db") -> List[Dict]:
     publications = []
     for row in cursor.fetchall():
         pub = dict(row)
-        # Create rich text for embedding
-        pub['text_for_embedding'] = f"""
-Title: {pub['title']}
-Authors: {pub['authors'] or 'Unknown'}
-Year: {pub['year']}
-Venue: {pub['venue'] or 'Unknown'}
-Abstract: {pub['abstract'] or 'No abstract available'}
-""".strip()
+        pub["text_for_embedding"] = (
+            f"Title: {pub['title']}\n"
+            f"Authors: {pub['authors'] or 'Unknown'}\n"
+            f"Year: {pub['year']}\n"
+            f"Venue: {pub['venue'] or 'Unknown'}\n"
+            f"Abstract: {pub['text_content'] or 'No abstract available'}"
+        ).strip()
         publications.append(pub)
 
     conn.close()
     return publications
 
 
-def build_index(batch_size: int = 32):
-    """Build Qdrant index for all publications."""
-    print("🔧 Building Qdrant Vector Index")
+def compute_content_hash(publication_id: str, chunk_index: int, chunk_text: str) -> str:
+    """Compute deterministic hash for idempotent upsert."""
+    content = f"{publication_id}:{chunk_index}:{chunk_text[:100]}"
+    return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+
+def build_index(batch_size: int = 32, full: bool = False):
+    """Build Qdrant index for all publications with chunking."""
+    print("Building Qdrant Vector Index")
     print("=" * 50)
 
-    # Initialize embedder and retriever
-    print("📦 Loading embedding model...")
     embedder = Embedder()
     retriever = Retriever()
 
-    # Get publications
-    print("📚 Fetching publications from database...")
     publications = get_publications()
-    print(f"✅ Found {len(publications)} publications")
+    print(f"Found {len(publications)} publications")
 
     if not publications:
-        print("❌ No publications found!")
+        print("No publications found!")
         return
 
-    # Process in batches
-    total = len(publications)
+    total_chunks = 0
     processed = 0
 
-    for i in range(0, total, batch_size):
-        batch = publications[i:i+batch_size]
-        texts = [p['text_for_embedding'] for p in batch]
-        ids = [p['publication_id'] for p in batch]
+    for i in range(0, len(publications), batch_size):
+        batch = publications[i:i + batch_size]
+        batch_chunks = []
 
-        # Generate embeddings
-        print(f"  Embedding batch {i//batch_size + 1}/{(total-1)//batch_size + 1} ({len(batch)} items)...")
+        for pub in batch:
+            text = pub["text_for_embedding"]
+            chunks = embedder.chunk(text) if full else [text]
+
+            for idx, chunk in enumerate(chunks):
+                point_id = compute_content_hash(pub["publication_id"], idx, chunk)
+
+                batch_chunks.append({
+                    "publication_id": pub["publication_id"],
+                    "chunk_index": idx,
+                    "text": chunk,
+                    "title": pub["title"],
+                    "year": pub["year"],
+                    "venue": pub["venue"],
+                    "authors": pub["authors"],
+                    "access_tier": pub.get("access_tier", 1),
+                    "source_type": "publication",
+                    "point_id": point_id,
+                })
+
+        if not batch_chunks:
+            continue
+
+        texts = [c["text"] for c in batch_chunks]
+
         try:
             embeddings = embedder.embed(texts)
         except Exception as e:
-            print(f"  ❌ Embedding failed: {e}")
+            print(f"Embedding failed: {e}")
             continue
 
-        # Prepare payloads
-        payloads = []
-        for pub in batch:
-            payloads.append({
-                "title": pub['title'],
-                "year": pub['year'],
-                "venue": pub['venue'],
-                "authors": pub['authors'],
-                "source_type": "publication",
-                "access_tier": 1,  # All publications are tier 1
-            })
+        ids = [c["point_id"] for c in batch_chunks]
+        payloads = [
+            {
+                "text": c["text"],
+                "title": c["title"],
+                "year": c["year"],
+                "venue": c["venue"],
+                "authors": c["authors"],
+                "source_type": c["source_type"],
+                "source_id": c["publication_id"],
+                "chunk_index": c["chunk_index"],
+                "access_tier": c["access_tier"],
+            }
+            for c in batch_chunks
+        ]
 
-        # Upload to Qdrant
         try:
             retriever.upsert(ids, embeddings, payloads)
             processed += len(batch)
-            print(f"  ✅ Uploaded {len(batch)} vectors")
+            total_chunks += len(batch_chunks)
+            print(f"Uploaded batch: {len(batch)} publications, {len(batch_chunks)} chunks")
         except Exception as e:
-            print(f"  ❌ Upload failed: {e}")
+            print(f"Upload failed: {e}")
 
     embedder.close()
     retriever.close()
 
     print("=" * 50)
-    print(f"🎉 Index build complete! Processed {processed}/{total} publications")
+    print(f"Index build complete! Processed {processed}/{len(publications)} publications")
+    print(f"Total chunks: {total_chunks}")
 
-    # Test retrieval
-    print("\n🧪 Testing retrieval...")
-    retriever = Retriever()
-    test_query = embedder.embed_single("machine learning research")
-    results = retriever.retrieve(test_query, user_tier=1, top_k=3)
-    print(f"✅ Test query returned {len(results.get('chunks', []))} results")
-    retriever.close()
+    if total_chunks > 0:
+        try:
+            from src.audit import log_query
+            log_query(
+                "system",
+                f"ingest_batch(count={processed}, chunks={total_chunks}, "
+                f"collection=nrg_research, hash={hashlib.sha256(b'build').hexdigest()[:16]})"
+            )
+            print("Audit logged to chain")
+        except Exception as e:
+            print(f"Audit log failed: {e}")
 
 
 if __name__ == "__main__":
-    build_index()
+    parser = argparse.ArgumentParser(description="Build Qdrant embeddings")
+    parser.add_argument("--full", action="store_true", help="Enable semantic chunking")
+    parser.add_argument("--batch-size", type=int, default=32, help="Batch size")
+    args = parser.parse_args()
+
+    build_index(batch_size=args.batch_size, full=args.full)

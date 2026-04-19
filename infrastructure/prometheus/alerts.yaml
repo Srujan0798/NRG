@@ -1,0 +1,97 @@
+groups:
+  - name: nrg_critical
+    rules:
+      - alert: AuditChainBroken
+        expr: nrg_audit_chain_integrity == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Audit chain integrity compromised"
+          description: "The HMAC audit chain has detected tampering. Immediate investigation required."
+          runbook_url: "https://wiki.internal/nrg/runbooks/audit-chain-broken"
+          
+      - alert: QdrantDown
+        expr: up{job="qdrant"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Qdrant vector database is down"
+          description: "Qdrant has been unreachable for 5 minutes. RAG functionality impacted."
+          runbook_url: "https://wiki.internal/nrg/runbooks/qdrant-down"
+          
+      - alert: PostgresReplicationLag
+        expr: pg_stat_replication_pg_wal_lsn_diff / 1024 / 1024 > 100
+        for: 30s
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Postgres replication lag > 100MB"
+          description: "Replication lag is {{ $value }} MB. Risk of data loss on failover."
+          runbook_url: "https://wiki.internal/nrg/runbooks/postgres-replication-lag"
+          
+      - alert: EgressViolation
+        expr: increase(nrg_egress_violations_total[5m]) > 0
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Data sovereignty violation detected"
+          description: "Raw research data attempted to leave VPC. Check egress logs."
+          runbook_url: "https://wiki.internal/nrg/runbooks/egress-violation"
+          
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[10m]))
+            /
+            sum(rate(http_requests_total[10m]))
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "5xx error rate > 1%"
+          description: "Error rate is {{ $value | humanizePercentage }}. Service degradation."
+          runbook_url: "https://wiki.internal/nrg/runbooks/high-error-rate"
+          
+      - alert: LlamaCppHealthFlapping
+        expr: |
+          changes(llama_cpp_health_status[10m]) > 3
+        labels:
+          severity: warning
+          team: ml-platform
+        annotations:
+          summary: "Llama.cpp health flapping"
+          description: "Local LLM health check is unstable. May impact synthesis quality."
+          runbook_url: "https://wiki.internal/nrg/runbooks/llama-health-flapping"
+          
+  - name: nrg_warning
+    rules:
+      - alert: LLMResponseLatencyHigh
+        expr: histogram_quantile(0.95, rate(nrg_llm_duration_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "LLM p95 latency > 10s"
+          description: "Synthesis is slow. Consider fallback to rule-based."
+          
+      - alert: CacheHitRateLow
+        expr: |
+          (
+            rate(nrg_cache_hits_total[5m])
+            /
+            rate(nrg_cache_requests_total[5m])
+          ) < 0.5
+        for: 10m
+        labels:
+          severity: info
+        annotations:
+          summary: "Cache hit rate < 50%"
+          description: "Consider increasing cache TTL or checking cache warming."

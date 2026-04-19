@@ -12,6 +12,10 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue, Range
 logger = logging.getLogger(__name__)
 
 
+class RetrieverUnavailable(RuntimeError):
+    """Raised when the vector store cannot serve retrieval requests."""
+
+
 class Retriever:
     """Local Qdrant retriever with access-tier filtering."""
 
@@ -88,8 +92,8 @@ class Retriever:
                 )
                 results = search_result.points
         except Exception as e:
-            logger.warning(f"Qdrant search failed: {e}")
-            return {"chunks": [], "metadata": [], "scores": []}
+            logger.error("Qdrant search failed: %s", e, exc_info=True)
+            raise RetrieverUnavailable(f"Qdrant search failed: {e}") from e
 
         chunks = []
         metadata = []

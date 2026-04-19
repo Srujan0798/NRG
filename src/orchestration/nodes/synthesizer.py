@@ -1,6 +1,7 @@
 """Synthesizer Node - LLM synthesis of retrieved data."""
 
 import logging
+import os
 from typing import TypedDict
 
 from src.config.llm_config import get_llm_client
@@ -83,6 +84,7 @@ def synthesizer_node(state):
     if not data_sources:
         synthesized = _fallback_response(user_query, context_summary)
         verification = False
+        provenance = {"synth": "rule_based", "cloud_synthesis_used": False}
     else:
         # IITGN Agentic Verification
         client = get_llm_client()
@@ -110,7 +112,7 @@ def synthesizer_node(state):
             except Exception as e:
                 logger.warning(f"Verification step failed: {e}")
 
-        synthesized = _synthesize(
+        synthesized, provenance = _synthesize(
             user_query,
             data_sources,
             sql_results,
@@ -126,6 +128,7 @@ def synthesizer_node(state):
         "synthesized_response": synthesized,
         "verification_status": verification,
         "context_summary": context_summary,
+        "provenance": provenance,
     }
 
 def _synthesize(
@@ -137,10 +140,12 @@ def _synthesize(
     context_summary: str,
     intent: str = "",
     routing_decision: str = "",
-) -> str:
+) -> tuple[str, dict]:
     """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback."""
-    # Try 1: Cloud LLM
-    client = get_llm_client()
+    cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
+
+    # Try 1: Cloud LLM, only when explicitly allowed.
+    client = get_llm_client() if cloud_allowed else None
     if client:
         system_prompt = _build_system_prompt(
             user_tier=user_tier,
@@ -167,7 +172,7 @@ def _synthesize(
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for cloud LLM", exc_info=True)
-            return response
+            return response, {"synth": "cloud_llm", "cloud_synthesis_used": True}
         except Exception as e:
             logger.warning(f"Cloud LLM failed: {e}, trying local LLM")
 
@@ -200,7 +205,7 @@ def _synthesize(
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for local LLM", exc_info=True)
-            return response
+            return response, {"synth": "local_llm", "cloud_synthesis_used": False}
         except Exception as e:
             logger.warning(f"Local LLM failed: {e}")
 
@@ -217,7 +222,7 @@ def _synthesize(
         )
     except Exception:
         logger.warning("Audit log_llm_call failed for rule-based synthesis", exc_info=True)
-    return response
+    return response, {"synth": "rule_based", "cloud_synthesis_used": False}
 
 
 def _build_context_summary(conversation_history: list) -> str:
@@ -246,14 +251,53 @@ def _build_system_prompt(
     chunks: list,
     context_summary: str,
 ) -> str:
+    safe_sql_results = _minimise_sql_results(sql_results)
+    safe_chunks = _minimise_chunks(chunks)
     return f"""You are the National Research Graph AI.
 Synthesize a response for a Tier {user_tier} user.
 Use only the provided data. If no data is provided, say so.
 Prior Session Context: {context_summary or "none"}
 Data Sources: {sources}
-SQL Results: {sql_results}
-Document Chunks: {chunks}
+SQL Evidence: {safe_sql_results}
+Document Evidence: {safe_chunks}
 """
+
+
+def _minimise_sql_results(sql_results: list) -> list:
+    """Reduce structured evidence before any LLM prompt is built."""
+    safe_rows = []
+    blocked_keys = {"email", "phone", "mobile", "address", "full_text", "full_text_uri"}
+    for row in sql_results[:10]:
+        if not isinstance(row, dict):
+            safe_rows.append(str(row)[:300])
+            continue
+        safe_rows.append(
+            {
+                key: str(value)[:300]
+                for key, value in row.items()
+                if key not in blocked_keys and value is not None
+            }
+        )
+    return safe_rows
+
+
+def _minimise_chunks(chunks: list) -> list:
+    """Send bounded excerpts, never full documents, to synthesis prompts."""
+    safe_chunks = []
+    for idx, chunk in enumerate(chunks[:5], 1):
+        if isinstance(chunk, dict):
+            content = chunk.get("chunk_text") or chunk.get("content") or chunk.get("text") or ""
+            safe_chunks.append(
+                {
+                    "chunk_id": chunk.get("chunk_id", f"chunk_{idx}"),
+                    "publication_id": chunk.get("publication_id") or chunk.get("source_id"),
+                    "title": chunk.get("title"),
+                    "excerpt": str(content)[:700],
+                }
+            )
+        else:
+            safe_chunks.append({"chunk_id": f"chunk_{idx}", "excerpt": str(chunk)[:700]})
+    return safe_chunks
 
 
 def _coerce_history(context_summary: str) -> list[dict]:
