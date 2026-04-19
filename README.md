@@ -179,6 +179,31 @@ cp .env.example .env
 
 See [docs/reports/FINAL_STATUS_REPORT.md](docs/reports/FINAL_STATUS_REPORT.md) for full details.
 
+## Honest Status (What Works / What Doesn't)
+
+### Working Today
+- JWT authentication with 3-tier RBAC (researcher, government, industry)
+- Text-to-SQL with schema-only prompts (no data values sent to LLM)
+- PII detection (Aadhaar, PAN, phone, email) with blocking
+- Prompt injection detection (5 patterns per AGENT-TASK-17)
+- Immutable HMAC-SHA256 audit log with chain verification
+- FastAPI backend with /login, /query, /researchers, /stats endpoints
+- React frontend with persona-specific views
+- SQLite database with 200 researchers, 500 publications, 24 institutions
+
+### NOT Working Today (Requires Setup)
+- **LLM Synthesis**: Requires real API key in `.env` (GEMINI_API_KEY, NVIDIA_API_KEY, etc.) — currently uses rule-based fallback
+- **Qdrant/RAG**: No vector DB running — embedding pipeline not executed
+- **Local SLM**: GPU required for Llama 3 8B local synthesis
+- **Kong Gateway**: Docker compose port collision in prod profile
+- **PostgreSQL**: Using SQLite for PoC — migration to PostgreSQL pending
+
+### Phase 2 (Planned)
+- PostgreSQL migration with real data
+- Qdrant vector DB with embeddings
+- Kong Gateway production deployment
+- 600GB data ingestion pipeline
+
 ## Test Results
 
 ```

@@ -16,14 +16,13 @@ class PromptSanitiser:
             "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
         }
 
-        # Prompt injection patterns
+        # Prompt injection patterns (per AGENT-TASK-17 spec)
         self.injection_patterns = [
             r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
             r"(?i)\byou\s+are\s+now\b",
-            r"(?i)\bdisregard\s+(all\s+)?previous\s+instructions\b",
+            r"(?i)\bdisregard\s+instructions\b",
             r"(?i)<\s*/\s*system\s*>",
-            r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)(?:\s+prompt)?\b",
-            r"(?i)<\s*!--.*ignore.*-->",
+            r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+prompt\b",
         ]
 
         self.injection_regex = [
