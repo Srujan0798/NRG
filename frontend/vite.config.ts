@@ -29,6 +29,14 @@ export default defineConfig({
       '/health': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/stats': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/publications': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   },

@@ -1,6 +1,6 @@
 .PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark
 
-PYTHON := python3
+PYTHON := .venv/bin/python
 UV := uv
 POSTGRES_CONTAINER := nrg-postgres
 
@@ -20,13 +20,12 @@ help:
 	@echo "make bench   - Run benchmark harness"
 
 bootstrap:
-	@echo "Installing dependencies..."
-	@if command -v uv >/dev/null 2>&1; then \
-		$(UV) pip sync pyproject.toml; \
-	else \
-		pip install -e .; \
-	fi
+	@echo "Bootstrapping NRG environment..."
+	@bash scripts/bootstrap.sh
 	@echo "Bootstrap complete."
+
+venv:
+	@bash scripts/bootstrap.sh
 
 up:
 	docker compose --profile dev up -d
