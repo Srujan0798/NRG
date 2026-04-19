@@ -10,14 +10,9 @@ from pydantic import BaseModel
 from typing import Optional
 import uuid
 import os
-import sys
 import logging
 from datetime import UTC, datetime
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from qdrant_client import QdrantClient
 
 from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
@@ -25,10 +20,14 @@ from src.auth.middleware import (
     filter_researcher_records,
     get_current_user,
 )
-from src.data.database import NRGDatabase
+from src.data.database import NRGDatabase, get_sqlite_connection, resolve_database_path
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.audit import log_query as audit_log_query
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
@@ -194,6 +193,59 @@ async def health_llm():
     except Exception as e:
         return {"ready": False, "provider": None, "error": str(e)}
 
+
+@app.get("/health/db")
+async def health_db():
+    """Check canonical SQLite database readiness."""
+    try:
+        db_path = resolve_database_path()
+        conn = get_sqlite_connection()
+        researcher_count = conn.execute("SELECT COUNT(*) FROM researchers").fetchone()[0]
+        publication_count = conn.execute("SELECT COUNT(*) FROM publications").fetchone()[0]
+        conn.close()
+        return {
+            "ready": True,
+            "dialect": "sqlite",
+            "path": str(db_path),
+            "researcher_count": researcher_count,
+            "publication_count": publication_count,
+        }
+    except Exception as e:
+        return {
+            "ready": False,
+            "dialect": "sqlite",
+            "error": str(e),
+        }
+
+
+@app.get("/health/qdrant")
+async def health_qdrant():
+    """Check Qdrant readiness without hiding connection failures."""
+    host = os.getenv("QDRANT_HOST", "localhost")
+    port = int(os.getenv("QDRANT_PORT", "6333"))
+    collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
+
+    try:
+        client = QdrantClient(host=host, port=port, timeout=2.0)
+        collections = client.get_collections()
+        names = [item.name for item in getattr(collections, "collections", [])]
+        return {
+            "ready": True,
+            "host": host,
+            "port": port,
+            "collection": collection,
+            "collection_exists": collection in names,
+            "collections": names,
+        }
+    except Exception as e:
+        return {
+            "ready": False,
+            "host": host,
+            "port": port,
+            "collection": collection,
+            "error": str(e),
+        }
+
 @app.get("/researchers")
 async def get_researchers(
     state: str = None,
@@ -201,7 +253,7 @@ async def get_researchers(
     token_payload: dict = Depends(get_current_user)
 ):
     """Protected endpoint with role-specific data shaping."""
-    db = NRGDatabase("nrg_research.db")
+    db = NRGDatabase()
     researchers = db.query_researchers(state=state, research_area=research_area)
     return filter_researcher_records(researchers, token_payload)
 
@@ -209,11 +261,7 @@ async def get_researchers(
 @app.get("/stats")
 async def get_stats(token_payload: dict = Depends(get_current_user)):
     """Get system statistics for dashboards."""
-    from src.data.database import sqlite3
-
-    db_path = "nrg_research.db"
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = get_sqlite_connection()
 
     # Get counts
     cursor = conn.execute("SELECT COUNT(*) FROM researchers")
@@ -242,7 +290,6 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
 
     conn.close()
 
-    tier = token_payload.get("tier", 1)
     role = token_payload.get("role", "researcher")
 
     # Return tier-appropriate data
@@ -276,11 +323,7 @@ async def get_publications(
     token_payload: dict = Depends(get_current_user)
 ):
     """Get publications list."""
-    from src.data.database import sqlite3
-
-    db_path = "nrg_research.db"
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = get_sqlite_connection()
 
     query = "SELECT * FROM publications WHERE 1=1"
     params = []
@@ -305,15 +348,10 @@ async def get_graph_data(
     token_payload: dict = Depends(get_current_user)
 ):
     """Get graph data for research network visualization."""
-    from src.data.database import sqlite3
-
-    db_path = "nrg_research.db"
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = get_sqlite_connection()
 
     nodes = []
     edges = []
-    node_id_map = {}
     node_counter = 0
 
     def add_node(label, type, **props):
@@ -328,18 +366,25 @@ async def get_graph_data(
         })
         return node_id
 
-    # Get researchers with their publications
-    cursor = conn.execute("""
+    # Get researchers with their publications, optionally scoped by topic.
+    graph_query = """
         SELECT DISTINCT r.researcher_id, r.name, r.research_area, r.state,
-                        p.publication_id, p.title, p.year
+                        r.institution_id, p.publication_id, p.title, p.year
         FROM researchers r
         LEFT JOIN researcher_publications rp ON r.researcher_id = rp.researcher_id
         LEFT JOIN publications p ON rp.publication_id = p.publication_id
         WHERE r.research_area IS NOT NULL
-        LIMIT 50
-    """)
+    """
+    params = []
+    if topic:
+        graph_query += " AND (LOWER(r.research_area) LIKE ? OR LOWER(p.title) LIKE ?)"
+        topic_pattern = f"%{topic.lower()}%"
+        params.extend([topic_pattern, topic_pattern])
+    graph_query += " LIMIT 50"
+    cursor = conn.execute(graph_query, params)
 
     researchers = {}
+    researcher_institution_ids = set()
     publications = {}
 
     for row in cursor.fetchall():
@@ -348,6 +393,8 @@ async def get_graph_data(
             rid = add_node(row['name'], 'author',
                           area=row['research_area'], state=row['state'])
             researchers[researcher_id] = rid
+            if row['institution_id']:
+                researcher_institution_ids.add(row['institution_id'])
 
         if row['publication_id']:
             pub_id = row['publication_id']
@@ -363,17 +410,43 @@ async def get_graph_data(
                 "weight": 1
             })
 
-    # Get institutions
-    cursor = conn.execute("""
-        SELECT institution_id, name, state FROM institutions LIMIT 20
-    """)
+    warnings = []
+    if topic and not researchers:
+        conn.close()
+        warnings.append({
+            "message": f"No graph data found for topic '{topic}'",
+            "topic": topic,
+        })
+        return {"nodes": [], "edges": [], "warnings": warnings}
+
+    # Get institutions for the matched researcher neighborhood. Generic graph
+    # requests keep a small sample for initial exploration.
     institutions = {}
+    if researcher_institution_ids:
+        placeholders = ",".join("?" for _ in researcher_institution_ids)
+        cursor = conn.execute(
+            f"SELECT institution_id, name, state FROM institutions WHERE institution_id IN ({placeholders})",
+            list(researcher_institution_ids),
+        )
+    else:
+        cursor = conn.execute("""
+            SELECT institution_id, name, state FROM institutions LIMIT 20
+        """)
+
     for row in cursor.fetchall():
         iid = add_node(row['name'], 'institution', state=row['state'])
         institutions[row['institution_id']] = iid
 
-    # Link researchers to institutions (random for demo)
-    cursor = conn.execute("SELECT researcher_id, institution_id FROM researchers LIMIT 50")
+    # Link researchers to their institutions.
+    if researchers:
+        placeholders = ",".join("?" for _ in researchers)
+        cursor = conn.execute(
+            f"SELECT researcher_id, institution_id FROM researchers WHERE researcher_id IN ({placeholders})",
+            list(researchers),
+        )
+    else:
+        cursor = conn.execute("SELECT researcher_id, institution_id FROM researchers LIMIT 50")
+
     for row in cursor.fetchall():
         if row['researcher_id'] in researchers and row['institution_id'] in institutions:
             edges.append({
@@ -385,7 +458,7 @@ async def get_graph_data(
 
     conn.close()
 
-    return {"nodes": nodes, "edges": edges}
+    return {"nodes": nodes, "edges": edges, "warnings": warnings}
 
 
 # DPDP Compliance Endpoints

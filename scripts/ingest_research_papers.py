@@ -6,15 +6,18 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from sentence_transformers import SentenceTransformer
 
-COLLECTION_NAME = "nrg_research"
-# Using 768 to match ai4bharat/IndicBERTv2-SS
+COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "nrg_research")
+# The final dimension is read from the active embedding model.
 VECTOR_SIZE = 768 
 MODEL_NAME = "ai4bharat/IndicBERTv2-SS"
 
 def ingest():
-    client = QdrantClient(host="localhost", port=6333)
+    client = QdrantClient(
+        host=os.getenv("QDRANT_HOST", "localhost"),
+        port=int(os.getenv("QDRANT_PORT", "6333")),
+    )
     
-    # Try to load model, fallback to 384 dim model if 768 fails
+    # Try to load model, fallback to a smaller model if needed.
     global VECTOR_SIZE, MODEL_NAME
     try:
         model = SentenceTransformer(MODEL_NAME)

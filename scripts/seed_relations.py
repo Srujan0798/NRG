@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Seed relationship tables for nrg_research.db (SQLite MVP)."""
 
-import sqlite3
 import random
 from datetime import datetime, timezone
+
+from src.data.database import get_sqlite_connection
 
 # Curated keywords from ML/Physics/Bio/Chem/CS/SS ontologies
 KEYWORDS = [
@@ -29,7 +30,7 @@ KEYWORDS = [
 
 def seed_relations(db_path: str = "nrg_research.db"):
     """Seed all relationship tables."""
-    conn = sqlite3.connect(db_path)
+    conn = get_sqlite_connection(db_path)
     cursor = conn.cursor()
     now = datetime.now(timezone.utc).isoformat()
 

@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from src.data.database import get_sqlite_connection, resolve_database_path
+
 Base = declarative_base()
 
 
@@ -108,12 +110,11 @@ class SqliteSaver:
     """SQLite-based checkpoint saver for development."""
     
     def __init__(self, db_path: str = "nrg_checkpoints.db"):
-        self.db_path = db_path
+        self.db_path = resolve_database_path(db_path)
         self._init_db()
     
     def _init_db(self):
-        import sqlite3
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         conn.execute("""
             CREATE TABLE IF NOT EXISTS checkpoints (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -129,10 +130,9 @@ class SqliteSaver:
         conn.close()
     
     def get(self, config: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        import sqlite3
         thread_id = config.get("configurable", {}).get("thread_id")
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             "SELECT checkpoint_json FROM checkpoints WHERE thread_id = ? ORDER BY updated_at DESC LIMIT 1",
             (thread_id,)
@@ -145,11 +145,10 @@ class SqliteSaver:
         return None
     
     def put(self, config: Dict[str, Any], checkpoint: Dict[str, Any]) -> None:
-        import sqlite3
         thread_id = config.get("configurable", {}).get("thread_id")
         session_id = checkpoint.get("session_id", thread_id)
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         # Delete old checkpoint for this thread
         conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
         # Insert new
@@ -161,10 +160,9 @@ class SqliteSaver:
         conn.close()
     
     def list(self, config: Dict[str, Any], limit: int = 10) -> List[Dict[str, Any]]:
-        import sqlite3
         thread_id = config.get("configurable", {}).get("thread_id")
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             "SELECT checkpoint_json FROM checkpoints WHERE thread_id = ? ORDER BY updated_at DESC LIMIT ?",
             (thread_id, limit)
@@ -175,10 +173,9 @@ class SqliteSaver:
         return [json.loads(r[0]) for r in rows]
     
     def delete(self, config: Dict[str, Any]) -> None:
-        import sqlite3
         thread_id = config.get("configurable", {}).get("thread_id")
         
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
         conn.commit()
         conn.close()

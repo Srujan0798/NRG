@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { XIcon } from './Icons';
-
-interface Citation {
-  pub_id: string;
-  chunk_id: string;
-  title?: string;
-  year?: number;
-  authors?: string[];
-  chunk_text?: string;
-}
+import { Citation } from '../services/queryService';
 
 interface CitationDrawerProps {
   citation: Citation | null;
@@ -33,12 +25,15 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
   const fetchCitationDetails = async (cite: Citation) => {
     setLoading(true);
     try {
+      const [pubId, chunkId] = cite.id?.split(':') || [];
       // Mock data for now - would fetch from /publications/{pub_id} and /rag/chunk/{chunk_id}
       setDetails({
-        title: cite.title || `Publication ${cite.pub_id}`,
+        title: cite.title || `Publication ${cite.pub_id || pubId || 'unknown'}`,
         year: cite.year || 2024,
         authors: cite.authors || ['Unknown Author'],
         chunk_text: cite.chunk_text || 'Chunk content would be loaded here...',
+        pub_id: cite.pub_id || pubId || 'unknown',
+        chunk_id: cite.chunk_id || chunkId || 'unknown',
       });
     } finally {
       setLoading(false);
@@ -94,8 +89,8 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                 Citation IDs
               </h4>
               <div className="mt-2 space-y-1 text-xs text-gray-500 font-mono">
-                <p>Publication: {citation.pub_id}</p>
-                <p>Chunk: {citation.chunk_id}</p>
+                <p>Publication: {details.pub_id}</p>
+                <p>Chunk: {details.chunk_id}</p>
               </div>
             </div>
           </div>

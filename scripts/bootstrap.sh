@@ -21,12 +21,6 @@ fi
 PYTHON_VERSION=$($PY --version 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
 echo "✓ Found Python $PYTHON_VERSION"
 
-# Remove old broken venvs
-if [ -d ".venv311" ]; then
-    echo "🗑️  Removing broken .venv311"
-    rm -rf .venv311
-fi
-
 if [ -d "venv" ]; then
     echo "🗑️  Removing old venv"
     rm -rf venv

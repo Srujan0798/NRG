@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 from typing import TypedDict
 
 from src.config.llm_config import get_llm_client
@@ -9,6 +10,31 @@ from src.config.local_llm import get_local_llm_client
 from src.audit import log_llm_call
 
 logger = logging.getLogger(__name__)
+
+SENSITIVE_KEY_TERMS = (
+    "email",
+    "phone",
+    "mobile",
+    "address",
+    "full_text",
+    "fulltext",
+    "full_abstract",
+    "abstract",
+    "raw_db_dump",
+    "secret",
+    "api_key",
+    "password",
+    "private_key",
+    "access_token",
+    "refresh_token",
+)
+
+REDACTION_PATTERNS = (
+    re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}"),
+    re.compile(r"\+?\d[\d\s().-]{8,}\d"),
+    re.compile(r"\b(?:sk|nvapi|AIza|xox[baprs])-?[A-Za-z0-9._-]{8,}\b", re.IGNORECASE),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL),
+)
 
 
 class SynthesizerState(TypedDict):
@@ -86,10 +112,14 @@ def synthesizer_node(state):
         verification = False
         provenance = {"synth": "rule_based", "cloud_synthesis_used": False}
     else:
-        # IITGN Agentic Verification
-        client = get_llm_client()
+        # Cloud verification is gated the same way as cloud synthesis.
+        cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
+        client = get_llm_client() if cloud_allowed else None
         if client:
-            verification_prompt = f"Verify this claim against data: {sql_results[:3]}"
+            verification_prompt = (
+                "Verify this claim against minimized evidence only: "
+                f"{_minimise_sql_results(sql_results[:3])}"
+            )
             try:
                 # Use query as user_prompt for context
                 verification_resp = client.generate(verification_prompt, user_query, _coerce_history(context_summary))
@@ -98,7 +128,16 @@ def synthesizer_node(state):
                     log_llm_call(
                         "synthesizer",
                         verification_prompt,
-                        {"response": verification_resp[:500] if verification_resp else ""},
+                        {
+                            "response": verification_resp[:500] if verification_resp else "",
+                            "cloud_synthesis_used": False,
+                            "mode": "cloud_verification",
+                            "evidence_counts": {
+                                "sql_rows": len(sql_results),
+                                "chunks": len(retrieved_chunks),
+                            },
+                            "redaction_counts": _redaction_counts(sql_results, retrieved_chunks),
+                        },
                         getattr(client, "model", "unknown"),
                     )
                 except Exception:
@@ -108,6 +147,10 @@ def synthesizer_node(state):
                         "synthesized_response": "IITGN AI requires more data to verify.",
                         "verification_status": False,
                         "context_summary": context_summary,
+                        "provenance": {
+                            "synth": "cloud_verification",
+                            "cloud_synthesis_used": False,
+                        },
                     }
             except Exception as e:
                 logger.warning(f"Verification step failed: {e}")
@@ -167,7 +210,16 @@ def _synthesize(
                 log_llm_call(
                     "synthesizer",
                     system_prompt[:1000],
-                    {"response": response[:500] if response else ""},
+                    {
+                        "response": response[:500] if response else "",
+                        "cloud_synthesis_used": True,
+                        "mode": "cloud_synthesis",
+                        "evidence_counts": {
+                            "sql_rows": len(sql_results),
+                            "chunks": len(chunks),
+                        },
+                        "redaction_counts": _redaction_counts(sql_results, chunks),
+                    },
                     getattr(client, "model", "cloud-llm"),
                 )
             except Exception:
@@ -178,7 +230,6 @@ def _synthesize(
 
 # Try 2: Local SLM
     local_client = get_local_llm_client()
-    local_available = False
     if local_client:
         system_prompt = _build_system_prompt(
             user_tier=user_tier,
@@ -266,16 +317,15 @@ Document Evidence: {safe_chunks}
 def _minimise_sql_results(sql_results: list) -> list:
     """Reduce structured evidence before any LLM prompt is built."""
     safe_rows = []
-    blocked_keys = {"email", "phone", "mobile", "address", "full_text", "full_text_uri"}
     for row in sql_results[:10]:
         if not isinstance(row, dict):
-            safe_rows.append(str(row)[:300])
+            safe_rows.append(_redact_text(str(row))[:300])
             continue
         safe_rows.append(
             {
-                key: str(value)[:300]
+                key: _redact_text(str(value))[:300]
                 for key, value in row.items()
-                if key not in blocked_keys and value is not None
+                if not _is_sensitive_key(str(key)) and value is not None
             }
         )
     return safe_rows
@@ -291,13 +341,54 @@ def _minimise_chunks(chunks: list) -> list:
                 {
                     "chunk_id": chunk.get("chunk_id", f"chunk_{idx}"),
                     "publication_id": chunk.get("publication_id") or chunk.get("source_id"),
-                    "title": chunk.get("title"),
-                    "excerpt": str(content)[:700],
+                    "title": _redact_text(str(chunk.get("title") or "")),
+                    "excerpt": _redact_text(str(content))[:700],
                 }
             )
         else:
-            safe_chunks.append({"chunk_id": f"chunk_{idx}", "excerpt": str(chunk)[:700]})
+            safe_chunks.append({"chunk_id": f"chunk_{idx}", "excerpt": _redact_text(str(chunk))[:700]})
     return safe_chunks
+
+
+def _is_sensitive_key(key: str) -> bool:
+    key_lower = key.lower()
+    return any(term in key_lower for term in SENSITIVE_KEY_TERMS)
+
+
+def _redact_text(value: str) -> str:
+    redacted = value
+    for pattern in REDACTION_PATTERNS:
+        redacted = pattern.sub("[REDACTED]", redacted)
+    return redacted
+
+
+def _redaction_counts(sql_results: list, chunks: list) -> dict:
+    sensitive_keys = 0
+    text_matches = 0
+
+    for row in sql_results[:10]:
+        if isinstance(row, dict):
+            for key, value in row.items():
+                if _is_sensitive_key(str(key)):
+                    sensitive_keys += 1
+                if value is not None:
+                    text_matches += _count_redactions(str(value))
+        else:
+            text_matches += _count_redactions(str(row))
+
+    for chunk in chunks[:5]:
+        if isinstance(chunk, dict):
+            for value in chunk.values():
+                if value is not None:
+                    text_matches += _count_redactions(str(value))
+        else:
+            text_matches += _count_redactions(str(chunk))
+
+    return {"sensitive_keys": sensitive_keys, "text_matches": text_matches}
+
+
+def _count_redactions(value: str) -> int:
+    return sum(len(pattern.findall(value)) for pattern in REDACTION_PATTERNS)
 
 
 def _coerce_history(context_summary: str) -> list[dict]:

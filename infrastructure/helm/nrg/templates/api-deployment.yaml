@@ -42,7 +42,9 @@ spec:
           env:
             - name: DATABASE_URL
               value: "postgresql://nrg:nrg_secret@nrg-postgres:5432/nrg"
-            - name: QDRANT_URL
-              value: "http://nrg-qdrant:6333"
+            - name: QDRANT_HOST
+              value: "nrg-qdrant"
+            - name: QDRANT_PORT
+              value: "6333"
             - name: REDIS_URL
               value: "redis://nrg-redis:6379/0"

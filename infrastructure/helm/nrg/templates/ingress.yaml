@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nrg-ingress
+  annotations:
+    konghq.com/strip-path: "false"
+spec:
+  ingressClassName: {{ .Values.ingress.className | default "kong" }}
+  rules:
+    - host: {{ .Values.ingress.host | default "nrg.india" }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nrg-api
+                port:
+                  number: {{ .Values.service.port }}

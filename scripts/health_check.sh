@@ -16,8 +16,9 @@ fi
 # Check Database
 echo ""
 echo "2. Database:"
-if [ -f "nrg_research.db" ]; then
-    COUNT=$(python3 -c "import sqlite3; c=sqlite3.connect('nrg_research.db').cursor(); c.execute('SELECT COUNT(*) FROM researchers'); print(c.fetchone()[0])" 2>/dev/null)
+DB_PATH=$(python3 -c "from src.data.database import resolve_database_path; print(resolve_database_path())" 2>/dev/null)
+if [ -n "$DB_PATH" ] && [ -f "$DB_PATH" ]; then
+    COUNT=$(python3 -c "from src.data.database import get_sqlite_connection; c=get_sqlite_connection().cursor(); c.execute('SELECT COUNT(*) FROM researchers'); print(c.fetchone()[0])" 2>/dev/null)
     echo "   ✅ Exists ($COUNT researchers)"
 else
     echo "   ❌ Not found"

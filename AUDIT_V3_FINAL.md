@@ -1,6 +1,8 @@
 # NRG — Audit v3 (Final, Cosmic-Level)
 ## National Research Graph — Sovereign AI Platform, End-to-End Delivery Blueprint
 
+> **Current alignment note — 2026-04-19.** `Core_Idea_Clean.md` is the product truth. Phase 1 allows cloud synthesis only when `CLOUD_SYNTHESIS_ALLOWED=true` and only through minimized, sanitized evidence packets. Raw DB dumps, full text, PII, secrets, and unrestricted schemas must not leave the controlled boundary. Local SLM/fine-tuned local intelligence remains the offline/sovereign endgame, not a Phase 1 blocker.
+>
 > **Purpose.** One file that takes NRG from its current state (auth + templated answers on a disconnected SQLite graph) to the full sovereign-AI platform described in `Sovereign_AI_Protocols_Clean.md`, `Sovereign_Infrastructure_Blueprint.md`, and `Core_Idea_Clean.md`. This is the terminal audit. After this, no more audits — only execution against the task protocols below.
 >
 > **How to use.** Each task block (AGENT-TASK-NN) is self-contained. Hand it to a coding agent. Acceptance criteria are executable. Roadmap in §15 sequences them into eight two-week sprints. Section 17 defines "done." Section 18 covers post-launch.
@@ -36,7 +38,7 @@
 
 ## 1. Executive Summary
 
-**What NRG is supposed to be.** A sovereign AI research-intelligence OS for India's 600 GB research corpus. Three user personas (researcher, government, industry) get tier-appropriate insights. All raw research data stays on Indian soil. Cloud LLMs are used only for planning against schema/metadata; synthesis of raw content runs on local quantized SLMs. DPDP-2023 compliant. HMAC-chained audit log. Kong AI Gateway in front.
+**What NRG is supposed to be.** A sovereign AI research-intelligence OS for India's 600 GB research corpus. Three user personas (researcher, government, industry) get tier-appropriate insights. All raw research data stays on Indian soil. Cloud LLMs may be used for planning and, when explicitly enabled, synthesis over minimized sanitized evidence packets; local quantized SLMs remain the offline/sovereign default path and endgame. DPDP-2023 compliant. HMAC-chained audit log. Kong AI Gateway in front.
 
 **What NRG is today.** A working JWT-RS256 auth backend, a LangGraph skeleton with four nodes, an SQLite database of 200 researchers / 500 publications with every join table empty, a Text-to-SQL path that generates PostgreSQL syntax against a SQLite sandbox, a RAG path with no running Qdrant and a silent dummy-embedding fallback that returns random vectors, no live LLM key (env value still `REPLACE_ME`), a frontend that 404s on three of its four data routes, and a docker-compose that port-collides in the prod profile. Rule-based markdown templates are doing all "synthesis."
 
@@ -108,13 +110,13 @@
 
 Resolve every ambiguity the two blueprints left open. Each decision is binding; implementation follows.
 
-### ADR-001 — Synthesis Location
+### ADR-001 — Synthesis Policy
 
 - **Status.** Accepted.
-- **Decision.** Synthesis runs on a **local quantized LLM** (Llama-3.1-8B-Instruct, GGUF Q4_K_M, via `llama.cpp` server) as the default path. Cloud LLMs (Gemini / Anthropic / Azure OpenAI) are used **only for planning and query decomposition**, where the input is schema metadata + user question — never raw research content.
-- **Rationale.** Sovereignty is the product's reason to exist. If raw content leaves India via a cloud LLM, the thesis collapses. Planning with schema/metadata is low-risk and earns the quality uplift of frontier models.
+- **Decision.** Phase 1 synthesis may use a cloud LLM only when `CLOUD_SYNTHESIS_ALLOWED=true` and only with minimized, sanitized evidence packets. The packet must exclude raw DB dumps, full documents, PII, secrets, private keys, access tokens, and unrestricted schemas. Local quantized LLM synthesis (Llama-3.1-8B-Instruct, GGUF Q4_K_M, via `llama.cpp`) remains the offline/sovereign path and the long-term endgame.
+- **Rationale.** `Core_Idea_Clean.md` makes fast PoC intelligence more important than blocking Phase 1 on a fully tuned local model. Sovereignty is preserved by evidence minimization, explicit opt-in, redaction, audit logging, and hard egress boundaries.
 - **Implementation.** AGENT-TASK-14, AGENT-TASK-15.
-- **Consequence.** Requires one Linux host with a GPU (24 GB VRAM minimum, 48 GB recommended). In absence of GPU, dev environment uses 4-bit quantized 8B on CPU via llama.cpp (≈20 tok/s acceptable for demo).
+- **Consequence.** Phase 1 can demo useful synthesis with cloud assistance under controls. Offline sovereign deployments require one Linux host with a GPU (24 GB VRAM minimum, 48 GB recommended), with CPU llama.cpp/rule-based fallback acceptable for development.
 
 ### ADR-002 — Primary Datastore
 

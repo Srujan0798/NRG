@@ -1,24 +1,27 @@
 #!/usr/bin/env python3
-"""
-doc_truth_check.py - AGENT-TASK-39 Acceptance Script
-Verifies docs have no unsupported claims: REPLACE_ME, sk-IITGN-prod, p95 claims.
-Only checks user-facing docs, not internal runbooks/agent reports.
-"""
-import os
+"""Check current source-of-truth docs for unsupported completion claims."""
+
 import re
 import sys
 from pathlib import Path
 
-DOCS_DIR = Path("docs")
-README = Path("README.md")
-
 PROBLEMS = []
 
-EXCLUDEDIRS = {
-    ".agents", "AGENT_AUDIT_PROMPT.md", "AUDIT_V3_FINAL.md", ".protocol",
-    "runbooks", "benchmarks", "strategy", "adr", "compliance", "engineering",
-    "migration", "research_papers"
-}
+CANONICAL_DOCS = [
+    Path("README.md"),
+    Path("Core_Idea_Clean.md"),
+    Path("docs/architecture/ARCHITECTURE.md"),
+    Path("docs/architecture/SYNTHESIS_DECISION.md"),
+]
+
+CHECKS = [
+    (r"REPLACE_ME", "placeholder secret"),
+    (r"sk-IITGN-prod", "fake production key"),
+    (r"\bProduction Ready\b", "unsupported production readiness claim"),
+    (r"\bCertified\b", "unsupported certification claim"),
+    (r"p95\s*[<>=]\s*\d+\s*ms", "unsupported p95 latency claim"),
+    (r"benchmark(?:ed|s)?\s+(?:passed|complete|verified|certified)", "unsupported benchmark completion claim"),
+]
 
 def check_file(filepath: Path, pattern: str, description: str):
     """Check a file for a pattern and report issues."""
@@ -31,16 +34,9 @@ def check_file(filepath: Path, pattern: str, description: str):
             PROBLEMS.append(f"{filepath}: {description} found: {match[:80]}")
 
 def main():
-    for md in DOCS_DIR.rglob("*.md"):
-        if any(excluded in str(md) for excluded in EXCLUDEDIRS):
-            continue
-        check_file(md, r"REPLACE_ME", "REPLACE_ME placeholder")
-        check_file(md, r"sk-IITGN-prod", "fake production key")
-        check_file(md, r"p95\s*[<>=]\s*\d+\s*ms", "unsupported p95 latency claim")
-
-    check_file(README, r"REPLACE_ME", "REPLACE_ME placeholder")
-    check_file(README, r"sk-IITGN-prod", "fake production key")
-    check_file(README, r"p95\s*[<>=]\s*\d+\s*ms", "unsupported p95 latency claim")
+    for doc in CANONICAL_DOCS:
+        for pattern, description in CHECKS:
+            check_file(doc, pattern, description)
 
     if PROBLEMS:
         print("ISSUES FOUND:")

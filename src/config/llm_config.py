@@ -197,26 +197,41 @@ class OpenAIResponsesClient:
         messages.append({"role": "user", "content": user_prompt})
 
         response = requests.post(
-            self.settings.base_url or "https://api.openai.com/v1/chat/completions",
+            self.settings.base_url or "https://api.openai.com/v1/responses",
             headers={
                 "Authorization": f"Bearer {self.settings.api_key}",
                 "Content-Type": "application/json",
             },
             json={
                 "model": self.settings.model,
-                "messages": [{"role": "system", "content": system_prompt}] + messages,
+                "instructions": system_prompt,
+                "input": messages,
                 "temperature": 0.2,
             },
             timeout=self.settings.request_timeout_seconds,
         )
         response.raise_for_status()
         payload = response.json()
-        choices = payload.get("choices", [])
-        if choices:
-            content = choices[0].get("message", {}).get("content")
-            if content:
-                return content
-        raise RuntimeError("OpenAI response did not include content")
+        
+        # Handle OpenAI Responses API format
+        # First try the convenience output_text property
+        if "output_text" in payload and payload["output_text"]:
+            return payload["output_text"]
+        
+        # Then try to extract from output array
+        if "output" in payload:
+            for item in payload["output"]:
+                if item.get("type") == "message":
+                    content = item.get("content", [])
+                    if isinstance(content, list):
+                        for content_item in content:
+                            if content_item.get("type") == "output_text" and content_item.get("text"):
+                                return content_item["text"]
+                    elif isinstance(content, str):
+                        return content
+        
+        # Fallback to empty string if no text found
+        return ""
 
 
 class AnthropicMessagesClient:

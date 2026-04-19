@@ -3,6 +3,7 @@
 Insert test data into PostgreSQL and Qdrant
 """
 
+import os
 import sys
 import uuid
 from datetime import date
@@ -10,6 +11,8 @@ import psycopg2
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct
 import numpy as np
+
+from src.skills.rag.embedder import Embedder
 
 
 def insert_postgres_test_data():
@@ -100,28 +103,15 @@ def insert_postgres_test_data():
 
 def insert_qdrant_test_data():
     """Insert test vectors into Qdrant."""
-    client = QdrantClient(host="localhost", port=6333, check_compatibility=False)
-
-    # Generate random test vectors
-    vectors = np.random.rand(10, 384).tolist()
-
-    points = [
-        PointStruct(
-            id=i,
-            vector=vectors[i],
-            payload={
-                "access_tier": 1 if i < 5 else 2,
-                "source_type": "researcher" if i < 3 else "publication",
-                "institution": "IIT Bombay" if i < 4 else "IIT Delhi",
-                "topic": "Machine Learning" if i % 2 == 0 else "Computer Vision",
-            },
-        )
-        for i in range(10)
-    ]
-
-    # client.upsert(collection_name="nrg_research", points=points)
-    # Since I already have high-end ingestion, I'll just skip this or use the right dimension
-    vectors = np.random.rand(10, 768).tolist()
+    client = QdrantClient(
+        host=os.getenv("QDRANT_HOST", "localhost"),
+        port=int(os.getenv("QDRANT_PORT", "6333")),
+        check_compatibility=False,
+    )
+    collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
+    embedder = Embedder()
+    dimension = embedder.get_dimension()
+    vectors = np.random.rand(10, dimension).tolist()
     points = [
         PointStruct(
             id=i + 100, # Avoid collision with synthetic papers
@@ -136,9 +126,9 @@ def insert_qdrant_test_data():
         )
         for i in range(10)
     ]
-    client.upsert(collection_name="nrg_research", points=points)
+    client.upsert(collection_name=collection_name, points=points)
     print("Inserted test vectors into Qdrant")
-    result = client.get_collection("nrg_research")
+    result = client.get_collection(collection_name)
     print(f"Collection has {result.points_count} points")
 
 

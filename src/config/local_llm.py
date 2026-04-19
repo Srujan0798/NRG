@@ -1,12 +1,14 @@
 """Local SLM (Small Language Model) integration for sovereign synthesis.
 
-Uses HuggingFace transformers with a small model (Phi-2 or similar) for
-local text generation when cloud LLMs are unavailable.
+Primary: Llama.cpp HTTP server (GGUF Q4_K_M quantization)
+Fallback: HuggingFace transformers with Phi-2 or rule-based templates
 """
 
 import os
 import logging
 from typing import Optional, List
+
+import httpx
 
 logger = logging.getLogger(__name__)
 
@@ -139,12 +141,112 @@ class LocalLLMClient:
         return "\n".join(parts)
 
 
-def get_local_llm_client() -> Optional[LocalLLMClient]:
-    """Get local LLM client if available."""
+def get_local_llm_client():
+    """Get the configured local synthesis client.
+
+    llama.cpp is the Phase 1 local path. HuggingFace Phi loading is retained
+    only as an explicit developer opt-in because it is slow and fragile on CPU.
+    """
+    llama_client = get_llama_cpp_client()
+    if llama_client is not None:
+        return llama_client
+
+    if os.getenv("LOCAL_LLM_ENABLE_HF", "false").lower() != "true":
+        logger.info("No healthy llama.cpp server; skipping HuggingFace local model")
+        return None
+
     client = LocalLLMClient()
     if client.model is not None:
         return client
     return None
+
+
+class LlamaCppClient:
+    """HTTP client for llama.cpp server (GGUF quantized models).
+
+    Preferred for synthesis: runs locally, raw content never leaves VPC.
+    """
+
+    def __init__(self, url: str | None = None, model: str = "local"):
+        self.url = url or os.getenv("LLAMA_CPP_URL", "http://localhost:8080")
+        self.model = model
+        self.timeout = float(os.getenv("LLAMA_CPP_TIMEOUT", "120"))
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: List[dict] | None = None,
+        temperature: float = 0.3,
+        max_tokens: int = 1024,
+    ) -> str:
+        """Generate response via llama.cpp HTTP API."""
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if conversation_history:
+            for turn in conversation_history[-5:]:
+                if turn.get("query"):
+                    messages.append({"role": "user", "content": turn["query"]})
+                if turn.get("response"):
+                    messages.append({"role": "assistant", "content": turn["response"]})
+
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": False,
+        }
+
+        try:
+            response = httpx.post(
+                f"{self.url}/v1/chat/completions",
+                json=payload,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            result = response.json()
+
+            choices = result.get("choices", [])
+            if choices:
+                content = choices[0].get("message", {}).get("content")
+                if content:
+                    return content
+
+            raise RuntimeError("llama.cpp response did not include content")
+
+        except httpx.ConnectError:
+            logger.warning("llama.cpp server not reachable at %s", self.url)
+            raise RuntimeError(f"llama.cpp server not available at {self.url}")
+        except httpx.TimeoutException:
+            logger.warning("llama.cpp request timed out after %s seconds", self.timeout)
+            raise RuntimeError(f"llama.cpp request timed out after {self.timeout}s")
+        except Exception as e:
+            logger.error("llama.cpp request failed: %s", e)
+            raise
+
+    def health_check(self) -> bool:
+        """Check if llama.cpp server is healthy."""
+        try:
+            response = httpx.get(f"{self.url}/health", timeout=5)
+            return response.status_code == 200
+        except Exception:
+            return False
+
+
+def get_llama_cpp_client() -> Optional[LlamaCppClient]:
+    """Get LlamaCppClient if server is available."""
+    try:
+        client = LlamaCppClient()
+        if client.health_check():
+            return client
+        logger.warning("llama.cpp server not healthy")
+        return None
+    except Exception as e:
+        logger.warning("Failed to create LlamaCppClient: %s", e)
+        return None
 
 
 # Simple rule-based synthesis as ultimate fallback
@@ -168,7 +270,7 @@ def rule_based_synthesis(
 
     # Executive summary based on data
     if sql_results:
-        lines.append(f"## Summary")
+        lines.append("## Summary")
         lines.append(f"Found **{len(sql_results)}** research records matching your query.")
         lines.append("")
 
@@ -214,7 +316,7 @@ def rule_based_synthesis(
         lines.append("")
 
     elif chunks:
-        lines.append(f"## Document Analysis")
+        lines.append("## Document Analysis")
         lines.append(f"Found **{len(chunks)}** relevant document excerpts.")
         lines.append("")
         for i, chunk in enumerate(chunks[:5], 1):

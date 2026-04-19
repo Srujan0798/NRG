@@ -9,19 +9,18 @@ import argparse
 import hashlib
 import os
 import sys
-import sqlite3
 from typing import List, Dict, Any
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.skills.rag.embedder import Embedder
 from src.skills.rag.retriever import Retriever
+from src.data.database import get_sqlite_connection
 
 
-def get_publications(db_path: str = "nrg_research.db") -> List[Dict]:
+def get_publications(db_path: str = None) -> List[Dict]:
     """Fetch all publications from database."""
-    conn = sqlite3.connect(db_path)
-    conn.row_factory = sqlite3.Row
+    conn = get_sqlite_connection(db_path)
 
     cursor = conn.execute("""
         SELECT
@@ -150,7 +149,7 @@ def build_index(batch_size: int = 32, full: bool = False):
             log_query(
                 "system",
                 f"ingest_batch(count={processed}, chunks={total_chunks}, "
-                f"collection=nrg_research, hash={hashlib.sha256(b'build').hexdigest()[:16]})"
+                f"collection={retriever.collection_name}, hash={hashlib.sha256(b'build').hexdigest()[:16]})"
             )
             print("Audit logged to chain")
         except Exception as e:

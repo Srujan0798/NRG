@@ -16,6 +16,12 @@ logger = logging.getLogger(__name__)
 
 TIER_AWARE_TABLES = {"researchers", "publications", "funding_records", "labs"}
 MAX_LIMIT = 200
+FORBIDDEN_SQL_PATTERN = re.compile(
+    r"(--|/\*|\*/|;|\b("
+    r"attach|detach|alter|create|delete|drop|insert|pragma|replace|truncate|union|update|vacuum"
+    r")\b)",
+    re.IGNORECASE,
+)
 
 
 class TierAwareSqlRewriter:
@@ -29,13 +35,18 @@ class TierAwareSqlRewriter:
 
     def rewrite(self, sql: str, user_tier: int) -> str:
         """Rewrite SQL with tier filtering."""
-        original_sql = sql
+        self._validate_sql_text(sql)
 
         try:
-            parsed = sqlglot.parse_one(sql, dialect=self._get_dialect())
+            statements = sqlglot.parse(sql, dialect=self._get_dialect())
         except sqlglot.errors.ParseError as e:
-            logger.warning(f"SQL parse error: {e}, falling back to safe query")
-            return self._safe_fallback(sql, user_tier)
+            logger.warning("SQL parse error: %s", e)
+            raise PermissionError("SQL could not be safely parsed") from e
+
+        if len(statements) != 1:
+            raise PermissionError("Only a single SELECT statement is allowed")
+
+        parsed = statements[0]
 
         if not isinstance(parsed, exp.Select):
             raise PermissionError("Only SELECT queries are allowed")
@@ -49,6 +60,13 @@ class TierAwareSqlRewriter:
         parsed = self._enforce_limit(parsed)
 
         return parsed.sql(dialect=self._get_dialect())
+
+    def _validate_sql_text(self, sql: str) -> None:
+        if not sql or not sql.strip():
+            raise PermissionError("Empty SQL is not allowed")
+
+        if FORBIDDEN_SQL_PATTERN.search(sql):
+            raise PermissionError("Potentially unsafe SQL is not allowed")
 
     def _get_dialect(self) -> str:
         db_url = os.getenv("DATABASE_URL", "")
@@ -66,39 +84,37 @@ class TierAwareSqlRewriter:
     def _inject_tier_filter(
         self, parsed: exp.Select, user_tier: int, tables: set
     ) -> exp.Select:
-        tier_condition = exp.LTE(
-            this=exp.Column(this=exp.Identifier(this="access_tier")),
-            expression=exp.Literal.number(user_tier),
-        )
+        if self._has_tier_filter(parsed):
+            return parsed
 
-        for table_name in tables:
-            for table in parsed.find_all(exp.Table):
-                if table.name.lower() == table_name:
-                    for join in list(parsed.find_all(exp.Join)):
-                        if join.side and join.side.name.lower() == table_name:
-                            if join.on:
-                                join.on = exp.and_(join.on, tier_condition.copy())
-                        elif join.kind == "LEFT" or join.kind == "RIGHT":
-                            pass
-                    if not self._has_tier_filter(parsed, table_name):
-                        where = parsed.args.get("where")
-                        if where:
-                            new_where = exp.and_(where.this, tier_condition.copy())
-                            parsed.set("where", exp.Where(this=new_where))
-                        else:
-                            parsed.set("where", exp.Where(this=tier_condition))
+        tier_condition = None
+        for table in parsed.find_all(exp.Table):
+            if table.name and table.name.lower() in tables:
+                table_ref = table.alias_or_name
+                condition = exp.LTE(
+                    this=exp.column("access_tier", table=table_ref),
+                    expression=exp.Literal.number(user_tier),
+                )
+                tier_condition = condition if tier_condition is None else exp.and_(
+                    tier_condition,
+                    condition,
+                )
+
+        if tier_condition is None:
+            tier_condition = exp.LTE(
+                this=exp.column("access_tier"),
+                expression=exp.Literal.number(user_tier),
+            )
 
         existing_where = parsed.args.get("where")
         if existing_where:
-            existing_condition = existing_where.this
-            new_condition = exp.and_(existing_condition, tier_condition.copy())
-            parsed.set("where", exp.Where(this=new_condition))
-        else:
-            parsed.set("where", exp.Where(this=tier_condition))
+            parsed.set("where", exp.Where(this=exp.and_(existing_where.this, tier_condition)))
+            return parsed
 
+        parsed.set("where", exp.Where(this=tier_condition))
         return parsed
 
-    def _has_tier_filter(self, parsed: exp.Select, table_name: str) -> bool:
+    def _has_tier_filter(self, parsed: exp.Select) -> bool:
         for column in parsed.find_all(exp.Column):
             if column.name == "access_tier":
                 return True
@@ -117,9 +133,7 @@ class TierAwareSqlRewriter:
         return parsed
 
     def _safe_fallback(self, sql: str, user_tier: int) -> str:
-        if "LIMIT" not in sql.upper():
-            sql = sql.rstrip(";").rstrip() + f" LIMIT {MAX_LIMIT}"
-        return sql
+        raise PermissionError("Unsafe SQL fallback refused")
 
 # Indian states for WHERE clause extraction
 _INDIAN_STATES = [

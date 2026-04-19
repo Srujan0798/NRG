@@ -1,8 +1,9 @@
 """Populate empty junction/relationship tables in nrg_research.db."""
 
-import sqlite3
 import random
 from datetime import date
+
+from src.data.database import get_sqlite_connection
 
 DB_PATH = "nrg_research.db"
 
@@ -40,7 +41,7 @@ AREA_KEYWORD_MAP = {
 
 def main():
     random.seed(42)
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_sqlite_connection(DB_PATH)
     cur = conn.cursor()
 
     # ---------------------------------------------------------------

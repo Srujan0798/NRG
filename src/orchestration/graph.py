@@ -1,31 +1,54 @@
-"""LangGraph Orchestration - Main agentic workflow for National Research Graph."""
+"""LangGraph orchestration for the Phase 1 NRG query workflow."""
 
+from __future__ import annotations
+
+import json
 import logging
-import sys
+import os
 import uuid
 from pathlib import Path
+from typing import Any
 
-from langgraph.graph import StateGraph, END
 from dotenv import load_dotenv
+from langgraph.graph import END, StateGraph
 
-# Add the project root to sys.path for relative imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-from src.orchestration.state import NRGState
-from src.orchestration.nodes.receiver import receiver_node, create_initial_state
-from src.orchestration.nodes.router import router_node
-from src.orchestration.nodes.executor import executor_node
-from src.orchestration.nodes.synthesizer import synthesizer_node
-from src.caching.redis_layer import cache_query
 from src.audit import log_query
+from src.caching.redis_layer import cache_query
+from src.orchestration.nodes.executor import executor_node
+from src.orchestration.nodes.receiver import create_initial_state, receiver_node
+from src.orchestration.nodes.router import router_node
+from src.orchestration.nodes.synthesizer import synthesizer_node
+from src.orchestration.state import NRGState
+
+try:
+    from src.orchestration.nodes.planner import planner_node
+except ModuleNotFoundError:
+
+    def planner_node(state: Any) -> dict:
+        """Phase 1 fallback planner.
+
+        The experimental cloud planner is quarantined until it is wired through
+        the evidence/egress policy. Router heuristics remain the active path.
+        """
+        return {"plan": None}
+
+
+try:
+    from src.orchestration.nodes.verifier import verifier_node
+except ModuleNotFoundError:
+
+    def verifier_node(state: Any) -> dict:
+        """Phase 1 fallback verifier."""
+        if isinstance(state, dict):
+            response = state.get("synthesized_response")
+        else:
+            response = getattr(state, "synthesized_response", None)
+        return {"verification_status": bool(response)}
 
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-
-from src.orchestration.checkpoint import get_checkpointer
 
 
 class NRGWorkflow:
@@ -34,29 +57,41 @@ class NRGWorkflow:
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
         self.session_history: dict[str, list[dict]] = {}
-        self.checkpointer = get_checkpointer()
+        self.checkpointer = None
+        if os.getenv("ENABLE_LANGGRAPH_CHECKPOINTS", "false").lower() == "true":
+            from src.orchestration.checkpoint import get_checkpointer
+
+            self.checkpointer = get_checkpointer()
         self.graph = self._build_graph()
 
-    def _build_graph(self) -> StateGraph:
-        """Build the LangGraph state machine."""
-
+    def _build_graph(self):
         workflow = StateGraph(NRGState)
 
         workflow.add_node("receiver", self._receiver_wrapper)
+        workflow.add_node("planner", planner_node)
         workflow.add_node("router", router_node)
         workflow.add_node("executor", executor_node)
         workflow.add_node("synthesizer", synthesizer_node)
+        workflow.add_node("verifier", verifier_node)
 
         workflow.set_entry_point("receiver")
-        workflow.add_edge("receiver", "router")
+        workflow.add_edge("receiver", "planner")
+        workflow.add_edge("planner", "router")
         workflow.add_edge("router", "executor")
         workflow.add_edge("executor", "synthesizer")
-        workflow.add_edge("synthesizer", END)
+        workflow.add_edge("synthesizer", "verifier")
+        workflow.add_edge("verifier", END)
 
-        return workflow.compile()
+        if self.checkpointer is None:
+            return workflow.compile()
+
+        try:
+            return workflow.compile(checkpointer=self.checkpointer, store=self.checkpointer)
+        except TypeError:
+            logger.warning("Checkpoint backend is not LangGraph-native; compiling without it")
+            return workflow.compile()
 
     def _receiver_wrapper(self, state: dict) -> dict:
-        """Wrapper for receiver node with state management."""
         return receiver_node(state)
 
     def _get_session_history(self, session_id: str) -> list[dict]:
@@ -83,7 +118,6 @@ class NRGWorkflow:
         """Execute a query through the workflow."""
         active_session_id = session_id or str(uuid.uuid4())
 
-        # Audit: log query at orchestration entry
         try:
             log_query(user_id or "anonymous", query)
         except Exception:
@@ -98,7 +132,6 @@ class NRGWorkflow:
         )
 
         config = {"configurable": {"thread_id": active_session_id}}
-
         result = self.graph.invoke(initial_state, config)
         result["session_id"] = active_session_id
         result["conversation_history"] = self._append_session_turn(
@@ -112,28 +145,20 @@ class NRGWorkflow:
 
         return result
 
-    def _save_state(self, state: dict):
-        """Save state to .protocol/ for validation."""
+    def _save_state(self, state: dict) -> None:
         protocol_dir = Path(".protocol")
         protocol_dir.mkdir(exist_ok=True)
-
         state_file = protocol_dir / f"state_{state.get('query_id', 'unknown')}.json"
-
-        import json
-
-        with open(state_file, "w") as f:
-            json.dump(state, f, indent=2, default=str)
+        state_file.write_text(json.dumps(state, indent=2, default=str))
 
 
 def main():
-    """Main entry point for LangGraph app."""
+    """CLI entry point for manual orchestration checks."""
     import argparse
 
     parser = argparse.ArgumentParser(description="NRG LangGraph Orchestration")
     parser.add_argument("--test-mode", action="store_true", help="Enable test mode")
-    parser.add_argument("--synthetic", action="store_true", help="Use synthetic data")
     parser.add_argument("--query", type=str, help="Query to execute")
-
     args = parser.parse_args()
 
     workflow = NRGWorkflow(test_mode=args.test_mode)
@@ -144,25 +169,21 @@ def main():
             "What are the latest advances in sustainable energy at IIT campuses",
             "Synthesize autonomous robotics research trends and funding data 2021-2024",
         ]
-
         for query in test_queries:
-            print(f"\n{'=' * 60}")
-            print(f"Executing: {query}")
-            print(f"{'=' * 60}")
-
+            print(f"\n{'=' * 60}\nExecuting: {query}\n{'=' * 60}")
             result = workflow.run(query)
-
             print(f"\nIntent: {result.get('intent')}")
             print(f"Routing: {result.get('routing_decision')}")
             print(f"Response: {result.get('synthesized_response', 'N/A')[:200]}...")
+        return
 
-    elif args.query:
+    if args.query:
         result = workflow.run(args.query)
         print(result.get("synthesized_response"))
+        return
 
-    else:
-        print("NRG LangGraph Orchestration Ready")
-        print("Use --test-mode or --query <query>")
+    print("NRG LangGraph Orchestration Ready")
+    print("Use --test-mode or --query <query>")
 
 
 if __name__ == "__main__":

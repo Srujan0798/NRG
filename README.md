@@ -15,11 +15,13 @@ Now visit http://localhost:8000 for the API, http://localhost:3000 for UI.
 
 ## Architecture
 
-The system implements a zero-data-leakage architecture with three primary layers:
+`Core_Idea_Clean.md` is the product source of truth. The current implementation is a Phase 1 sovereign research-intelligence PoC with controlled cloud synthesis disabled by default.
+
+The system has three primary layers:
 
 1. **Orchestration Layer** - LangGraph-based agentic workflow
-2. **Local Retrieval Layer** - PostgreSQL + Qdrant vector database  
-3. **Security Layer** - Kong Gateway + DLP protection + DPDP 2023 compliance
+2. **Local Retrieval Layer** - SQLite today, with Qdrant/RAG wiring available when configured
+3. **Security Layer** - API-side prompt/PII controls, JWT/RBAC, and audit chain
 
 ## Directory Structure
 
@@ -83,17 +85,16 @@ docker-compose -f infrastructure/kong/docker-compose.yml up -d
 ## Key Features
 
 ### Zero Data Leakage
-- All research data stays in local PostgreSQL/Qdrant
-- Only schema metadata sent to LLM (no data values)
-- Complete audit trail for all queries
+- Raw research data stays inside the local deployment boundary.
+- Cloud synthesis is disabled unless `CLOUD_SYNTHESIS_ALLOWED=true`.
+- When cloud synthesis is enabled, only minimized sanitized evidence packets may be sent.
+- Query responses expose warnings, retrieval sources, and synthesis provenance.
 
-### Security Controls (Phase 3)
-- ✅ Kong AI Gateway with DLP protection
-- ✅ PII detection (Aadhaar, PAN, phone, email)
-- ✅ Prompt injection prevention
-- ✅ Tier-based rate limiting (100/50/20 req/min)
-- ✅ Immutable audit logging
-- ✅ DPDP 2023 compliance (12/12 clauses)
+### Security Controls
+- API-side PII and prompt-injection checks are active.
+- JWT authentication and 3-persona tier behavior are wired.
+- HMAC audit logging exists for query and LLM-call events.
+- Kong gateway, formal compliance attestation, production rate limits, and full DPDP workflows are roadmap items unless verified by executable tests.
 
 ### Three User Personas
 1. **Researcher** - Granular data access
@@ -141,23 +142,20 @@ cp .env.example .env
 
 ## Project Status
 
-### Phase 1 — PoC (Complete)
+### Phase 1 — PoC (Current)
 
 | Component | Status |
 |-----------|--------|
-| LangGraph Orchestration Pipeline | ✅ Complete |
-| Text-to-SQL Sandbox (read-only) | ✅ Complete |
-| Schema Extractor (metadata-only to LLM) | ✅ Complete |
-| PII Tokenizer (Aadhaar, PAN, phone) | ✅ Complete |
-| Prompt Injection Detection | ✅ Complete |
-| HMAC-SHA256 Immutable Audit Log | ✅ Complete |
-| RBAC Middleware (3-tier) | ✅ Complete |
-| JWT Authentication | ✅ Complete |
-| React Frontend (3 persona views) | ✅ Complete |
-| FastAPI Backend | ✅ Complete |
-| Security Test Suite + Red-team | ✅ Complete |
-| DPDP 2023 Compliance Mapping | ✅ Complete |
-| Architecture Report | ✅ Complete |
+| FastAPI backend routes | Wired |
+| JWT authentication and persona shaping | Wired |
+| LangGraph orchestration pipeline | Wired |
+| Text-to-SQL sandbox | Wired, still being hardened |
+| Query warnings/provenance metadata | Wired |
+| Root database path determinism | Wired through `DATABASE_URL` |
+| `/query/graph` | DB-backed PoC endpoint |
+| Qdrant/RAG | Config-normalized; requires Qdrant and embeddings |
+| Local SLM | Optional setup |
+| Cloud synthesis | Explicit opt-in with minimized evidence |
 
 ### Phase 2 — Scaling (Planned)
 
@@ -177,43 +175,26 @@ cp .env.example .env
 | UAT with real stakeholders | ⬜ Pending |
 | Performance benchmarking under load | ⬜ Pending |
 
-See [docs/reports/FINAL_STATUS_REPORT.md](docs/reports/FINAL_STATUS_REPORT.md) for full details.
+See [Core_Idea_Clean.md](Core_Idea_Clean.md) and [docs/architecture/ARCHITECTURE.md](docs/architecture/ARCHITECTURE.md) for the current architecture. Older reports are historical unless backed by current tests.
 
 ## Honest Status (What Works / What Doesn't)
 
 ### Working Today
 - JWT authentication with 3-tier RBAC (researcher, government, industry)
-- Text-to-SQL with schema-only prompts (no data values sent to LLM)
+- Text-to-SQL path with read-only SQLite sandbox
 - PII detection (Aadhaar, PAN, phone, email) with blocking
-- Prompt injection detection (5 patterns per AGENT-TASK-17)
+- Prompt injection detection with narrowed high-confidence patterns
 - Immutable HMAC-SHA256 audit log with chain verification
-- FastAPI backend with /login, /query, /researchers, /stats endpoints
+- FastAPI backend with /login, /query, /researchers, /stats, /publications, and /query/graph endpoints
 - React frontend with persona-specific views
 - SQLite database with 200 researchers, 500 publications, 24 institutions
 
 ### NOT Working Today (Requires Setup)
-- **LLM Synthesis**: Requires real API key in `.env` (GEMINI_API_KEY, NVIDIA_API_KEY, etc.) — currently uses rule-based fallback
-- **Qdrant/RAG**: No vector DB running — embedding pipeline not executed
-- **Local SLM**: GPU required for Llama 3 8B local synthesis
-- **Kong Gateway**: Docker compose port collision in prod profile
+- **Cloud LLM Synthesis**: Requires provider key and `CLOUD_SYNTHESIS_ALLOWED=true`; otherwise local/rule-based fallback is used
+- **Qdrant/RAG**: Requires Qdrant service plus embedding build
+- **Local SLM**: Requires llama.cpp/local model setup
+- **Kong Gateway**: Not a Phase 1 runtime requirement
 - **PostgreSQL**: Using SQLite for PoC — migration to PostgreSQL pending
-
-### Phase 2 (Planned)
-- PostgreSQL migration with real data
-- Qdrant vector DB with embeddings
-- Kong Gateway production deployment
-- 600GB data ingestion pipeline
-
-## Test Results
-
-```
-✅ test_pii_detection_aadhaar - PASSED
-✅ test_pii_detection_pan - PASSED
-✅ test_pii_detection_phone - PASSED
-✅ test_prompt_injection_detection - PASSED
-✅ test_sanitisation - PASSED
-✅ test_query_validation - PASSED
-```
 
 ## License
 

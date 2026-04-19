@@ -9,7 +9,7 @@ You are auditing the **National Research Graph (NRG)** project — a sovereign A
 ## Project Context
 
 - **Repo**: `~/Desktop/NRG`
-- **Python**: 3.11 (venv at `.venv311/`)
+- **Python**: 3.11 (venv at `.venv/`)
 - **Backend**: FastAPI at `src/api/main.py`, runs on port 8000
 - **Frontend**: React + Vite + Tailwind at `frontend/`, runs on port 3000 with Vite proxy to backend
 - **Database**: Currently SQLite (`nrg_research.db`) — architecture docs say PostgreSQL
@@ -90,7 +90,7 @@ These are the known gaps. Verify each one, find any others, then produce protoco
 After login, each persona sees a dashboard (`ResearcherDashboard`, `GovernmentDashboard`, `IndustryDashboard`). Read the dashboard components. Do they have a search bar that calls `/query`? Do they render the response correctly? Or are they just static shells?
 
 ### 7. TEST SUITE — HOW MANY ACTUALLY PASS?
-Run: `.venv311/bin/python -m pytest tests/ -v --tb=short 2>&1 | tail -40`
+Run: `.venv/bin/python -m pytest tests/ -v --tb=short 2>&1 | tail -40`
 Report exactly how many pass, fail, and error. Fix the critical failures.
 
 ### 8. KNOWLEDGE GRAPH — DEAD CODE?

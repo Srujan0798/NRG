@@ -123,3 +123,10 @@ export const ExternalLinkIcon: React.FC<IconProps> = (props) => (
     <path d="M21 14v4a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V6a3 3 0 0 1 3-3h4" />
   </BaseIcon>
 )
+
+export const XIcon: React.FC<IconProps> = (props) => (
+  <BaseIcon {...props}>
+    <path d="M18 6 6 18" />
+    <path d="m6 6 12 12" />
+  </BaseIcon>
+)
