@@ -139,6 +139,46 @@ class Retriever:
         except Exception:
             return {"name": self.collection_name, "status": "not_found"}
 
+    def upsert(self, ids: List[str], embeddings: List[List[float]], payloads: List[Dict[str, Any]]):
+        """Upsert vectors into Qdrant collection."""
+        try:
+            # Check if collection exists, create if not
+            from qdrant_client.models import VectorParams, Distance
+
+            try:
+                self.client.get_collection(self.collection_name)
+            except Exception:
+                # Collection doesn't exist, create it
+                self.client.create_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=VectorParams(
+                        size=len(embeddings[0]),
+                        distance=Distance.COSINE
+                    )
+                )
+                logger.info(f"Created Qdrant collection: {self.collection_name}")
+
+            # Upsert points
+            from qdrant_client.models import PointStruct
+
+            points = [
+                PointStruct(
+                    id=ids[i],
+                    vector=embeddings[i],
+                    payload=payloads[i]
+                )
+                for i in range(len(ids))
+            ]
+
+            self.client.upsert(
+                collection_name=self.collection_name,
+                points=points
+            )
+
+        except Exception as e:
+            logger.error(f"Upsert failed: {e}")
+            raise
+
     def close(self):
         pass
 
