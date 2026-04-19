@@ -161,6 +161,36 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()}
 
+
+@app.get("/health/llm")
+async def health_llm():
+    """Check LLM provider health."""
+    from src.config.llm_config import get_llm_client, LLMConfigError
+    try:
+        client = get_llm_client()
+        if client is None:
+            return {
+                "ready": False,
+                "provider": None,
+                "error": "No LLM configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env"
+            }
+        # Try a test generation
+        test_response = client.generate(
+            "You are a health check system.",
+            "Respond with 'OK' only.",
+            []
+        )
+        return {
+            "ready": True,
+            "provider": getattr(client, 'settings', {}).get('provider', 'unknown'),
+            "model": getattr(client, 'settings', {}).get('model', 'unknown'),
+            "test_response": test_response[:10] if test_response else None
+        }
+    except LLMConfigError as e:
+        return {"ready": False, "provider": None, "error": str(e)}
+    except Exception as e:
+        return {"ready": False, "provider": None, "error": str(e)}
+
 @app.get("/researchers")
 async def get_researchers(
     state: str = None,
@@ -264,6 +294,95 @@ async def get_publications(
     conn.close()
 
     return {"publications": publications}
+
+
+@app.get("/query/graph")
+async def get_graph_data(
+    topic: str = None,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get graph data for research network visualization."""
+    from src.data.database import sqlite3
+
+    db_path = "nrg_research.db"
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+
+    nodes = []
+    edges = []
+    node_id_map = {}
+    node_counter = 0
+
+    def add_node(label, type, **props):
+        nonlocal node_counter
+        node_id = f"{type[0]}{node_counter}"
+        node_counter += 1
+        nodes.append({
+            "id": node_id,
+            "label": label,
+            "type": type,
+            **props
+        })
+        return node_id
+
+    # Get researchers with their publications
+    cursor = conn.execute("""
+        SELECT DISTINCT r.researcher_id, r.name, r.research_area, r.state,
+                        p.publication_id, p.title, p.year
+        FROM researchers r
+        LEFT JOIN researcher_publications rp ON r.researcher_id = rp.researcher_id
+        LEFT JOIN publications p ON rp.publication_id = p.publication_id
+        WHERE r.research_area IS NOT NULL
+        LIMIT 50
+    """)
+
+    researchers = {}
+    publications = {}
+
+    for row in cursor.fetchall():
+        researcher_id = row['researcher_id']
+        if researcher_id not in researchers:
+            rid = add_node(row['name'], 'author',
+                          area=row['research_area'], state=row['state'])
+            researchers[researcher_id] = rid
+
+        if row['publication_id']:
+            pub_id = row['publication_id']
+            if pub_id not in publications:
+                pid = add_node(row['title'][:50], 'paper', year=row['year'])
+                publications[pub_id] = pid
+
+            # Add edge: author -> paper
+            edges.append({
+                "source": researchers[researcher_id],
+                "target": publications[pub_id],
+                "type": "authored",
+                "weight": 1
+            })
+
+    # Get institutions
+    cursor = conn.execute("""
+        SELECT institution_id, name, state FROM institutions LIMIT 20
+    """)
+    institutions = {}
+    for row in cursor.fetchall():
+        iid = add_node(row['name'], 'institution', state=row['state'])
+        institutions[row['institution_id']] = iid
+
+    # Link researchers to institutions (random for demo)
+    cursor = conn.execute("SELECT researcher_id, institution_id FROM researchers LIMIT 50")
+    for row in cursor.fetchall():
+        if row['researcher_id'] in researchers and row['institution_id'] in institutions:
+            edges.append({
+                "source": researchers[row['researcher_id']],
+                "target": institutions[row['institution_id']],
+                "type": "affiliated",
+                "weight": 1
+            })
+
+    conn.close()
+
+    return {"nodes": nodes, "edges": edges}
 
 
 if __name__ == "__main__":
