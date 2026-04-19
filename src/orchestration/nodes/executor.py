@@ -60,8 +60,15 @@ def executor_node(state):
             sql_result = sql_skill.execute(user_query, user_tier=user_tier)
             results["sql_query"] = sql_result.get("query")
             results["sql_results"] = sql_result.get("results", [])
-            # Log successful SQL execution
-            log_sql("executor", sql_result.get("query", ""), {"row_count": sql_result.get("row_count", 0)})
+            # Audit: log SQL execution with HMAC chain
+            try:
+                log_sql(
+                    "executor",
+                    sql_result.get("query", ""),
+                    {"row_count": sql_result.get("row_count", 0)},
+                )
+            except Exception:
+                logger.warning("Audit log_sql failed", exc_info=True)
         except Exception as exc:
             logger.warning("Text-to-SQL execution failed: %s", exc)
             results["errors"].append({"node": "executor", "error": str(exc)})

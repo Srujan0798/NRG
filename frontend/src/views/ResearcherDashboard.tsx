@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 
 export function ResearcherDashboard() {
   const { user } = useAuth();
-  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching } = useQueryStore();
+  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching, setLastResult } = useQueryStore();
   const { grantConsent, addAuditEntry } = useDPDPStore();
   
   const [showDPDPConsent, setShowDPDPConsent] = useState(false);
@@ -54,6 +54,7 @@ export function ResearcherDashboard() {
     try {
       const result = await queryService.query({ query: currentQuery });
       setQueryResult(result.response);
+      setLastResult(result);
       addToHistory({
         query: currentQuery,
         persona: 'researcher',
@@ -78,7 +79,7 @@ export function ResearcherDashboard() {
     } finally {
       setIsSearching(false);
     }
-  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, user]);
+  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult, user]);
 
   const handleNodeClick = useCallback((node: GraphNode) => {
     setSelectedNode(node);

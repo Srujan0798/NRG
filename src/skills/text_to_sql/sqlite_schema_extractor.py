@@ -152,14 +152,15 @@ class SQLiteSchemaExtractor:
         """
         Prune schema to only relevant tables for query intent.
 
-        Simple keyword matching - can be enhanced with LLM.
+        Simple keyword matching - checks if query mentions entity keywords.
         """
         query_lower = query.lower()
         all_tables = self.get_table_names()
 
+        # Map table names to query keywords that indicate relevance
         keywords = {
-            "researchers": ["researcher", "faculty", "professor", "scientist"],
-            "labs": ["lab", "laboratory", "center", "institute"],
+            "researchers": ["researcher", "faculty", "professor", "scientist", "people", "person"],
+            "labs": ["lab", "laboratory", "center"],
             "publications": [
                 "publication",
                 "paper",
@@ -167,21 +168,30 @@ class SQLiteSchemaExtractor:
                 "journal",
                 "conference",
             ],
-            "funding": ["funding", "grant", "fund", "budget", "project"],
-            "collaborations": ["collaboration", "partner", "joint"],
-            "institutions": ["institution", "university", "iit", "nit"],
-            "topics": ["topic", "research_area", "specialization"],
+            "funding_records": ["funding", "grant", "fund", "budget"],
+            "institutions": ["institution", "university", "iit", "nit", "college"],
+            "keywords": ["topic", "keyword", "specialization"],
+            "researcher_publications": ["author", "wrote", "published"],
+            "researcher_labs": ["member", "works in", "affiliated"],
         }
 
-        relevant = []
+        relevant = set()
         for table in all_tables:
             table_lower = table.lower()
-            for entity, entity_keywords in keywords.items():
-                if entity in table_lower:
-                    relevant.append(table)
-                    break
+            # Check if query keywords match this table
+            if table_lower in keywords:
+                for kw in keywords[table_lower]:
+                    if kw in query_lower:
+                        relevant.add(table)
+                        break
 
-        return relevant if relevant else all_tables
+        # If no specific tables matched, try a broad match: return the
+        # most commonly useful tables rather than all of them
+        if not relevant:
+            default_tables = {"researchers", "institutions", "labs"}
+            relevant = {t for t in all_tables if t in default_tables}
+
+        return list(relevant) if relevant else all_tables
 
     def close(self):
         """Close database connection."""

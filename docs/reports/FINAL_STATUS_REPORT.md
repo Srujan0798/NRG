@@ -29,6 +29,7 @@
 - ⬜ Kong Gateway production deployment
 - ⬜ 600GB data ingestion pipeline
 - ⬜ Performance benchmarking under load
+- ⬜ Neo4j knowledge graph integration into query pipeline
 
 ## Pending for Phase 3
 

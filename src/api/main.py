@@ -28,6 +28,7 @@ from src.auth.middleware import (
 from src.data.database import NRGDatabase
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
+from src.audit import log_query as audit_log_query
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
@@ -125,9 +126,15 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
                 detail=f"Security violation: {validation['reason']}"
             )
 
-        # Pass tier to workflow
+        # Audit: log inbound query at API boundary
         user_tier = token_payload.get("tier", 1)
         user_id = token_payload.get("sub", "anonymous")
+        try:
+            audit_log_query(user_id, request.query)
+        except Exception:
+            logger.warning("Audit log_query failed at API layer", exc_info=True)
+
+        # Pass tier to workflow
         result = workflow.run(
             request.query,
             user_tier=user_tier,

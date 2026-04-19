@@ -1,5 +1,6 @@
 """LangGraph Orchestration - Main agentic workflow for National Research Graph."""
 
+import logging
 import sys
 import uuid
 from pathlib import Path
@@ -21,6 +22,8 @@ from src.audit import log_query
 
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class NRGWorkflow:
@@ -78,8 +81,11 @@ class NRGWorkflow:
         """Execute a query through the workflow."""
         active_session_id = session_id or str(uuid.uuid4())
 
-        # Log query start
-        log_query(user_id or "anonymous", query)
+        # Audit: log query at orchestration entry
+        try:
+            log_query(user_id or "anonymous", query)
+        except Exception:
+            logger.warning("Audit log_query failed in workflow", exc_info=True)
 
         conversation_history = self._get_session_history(active_session_id)
         initial_state = create_initial_state(

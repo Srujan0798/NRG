@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+# Phase 2: Neo4j integration — not yet connected to orchestration pipeline
 """
 Knowledge Graph Traversal Queries for National Researcher Graph
 Production-grade implementation of common traversal patterns
+
+NOTE: This module is standalone and not yet integrated into the query pipeline.
+Phase 2 will connect it to the LangGraph orchestration for graph-based queries.
 """
 
 import logging

@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
+# Phase 2: Neo4j integration — not yet connected to orchestration pipeline
 """
 Knowledge Graph Loader for National Researcher Graph
 Production-grade implementation for loading 600GB dataset into Neo4j
+
+NOTE: This module is standalone and not yet integrated into the query pipeline.
+Phase 2 will connect it to the LangGraph orchestration for graph-based queries.
 """
 
 import argparse
