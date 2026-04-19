@@ -10,9 +10,7 @@ from presidio_analyzer.predefined_recognizers import (
     IbanRecognizer,
     IpRecognizer,
     MedicalLicenseRecognizer,
-    PersonRecognizer,
     PhoneRecognizer,
-    SsnRecognizer,
     UrlRecognizer,
     InPanRecognizer,
     InAadhaarRecognizer,
@@ -52,9 +50,7 @@ class PresidioConfig:
             IbanRecognizer(),
             IpRecognizer(),
             MedicalLicenseRecognizer(),
-            PersonRecognizer(),
             PhoneRecognizer(),
-            SsnRecognizer(),
             UrlRecognizer(),
         ]
 
