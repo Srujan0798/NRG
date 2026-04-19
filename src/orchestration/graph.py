@@ -25,12 +25,16 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
+from src.orchestration.checkpoint import get_checkpointer
+
+
 class NRGWorkflow:
     """Main LangGraph workflow for NRG orchestration."""
 
     def __init__(self, test_mode: bool = False):
         self.test_mode = test_mode
         self.session_history: dict[str, list[dict]] = {}
+        self.checkpointer = get_checkpointer()
         self.graph = self._build_graph()
 
     def _build_graph(self) -> StateGraph:
