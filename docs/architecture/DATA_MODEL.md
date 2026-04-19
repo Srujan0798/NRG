@@ -208,4 +208,4 @@ CREATE POLICY institutions_tier_policy ON institutions
 
 ---
 
-*Aligned with: src/knowledge_graph/schema.cypher*
+*Historical KG alignment note. Current Phase 1 graph behavior is DB-backed through `/query/graph`; optional Neo4j work lives under `experiments/knowledge_graph/`.*

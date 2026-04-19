@@ -15,6 +15,8 @@ def test_synthesizer_uses_llm_client(monkeypatch):
         "src.orchestration.nodes.synthesizer.get_llm_client",
         lambda: FakeClient(),
     )
+    # Allow cloud synthesis for this test
+    monkeypatch.setenv("CLOUD_SYNTHESIS_ALLOWED", "true")
 
     result = synthesizer_node(
         {

@@ -1,5 +1,6 @@
 import pytest
 
+from src.auth import jwt_handler as jwt_handler_module
 from src.auth.jwt_handler import JWTHandler, AuthError
 
 
@@ -65,3 +66,18 @@ def test_revoked_access_token_is_rejected(jwt_handler):
 
     with pytest.raises(AuthError):
         jwt_handler.verify_access_token(tokens["access_token"])
+
+
+def test_demo_password_environment_names_are_supported(monkeypatch):
+    monkeypatch.delenv("RESEARCHER_PASSWORD", raising=False)
+    monkeypatch.setenv("DEMO_RESEARCHER_PASSWORD", "demo-researcher-pass")
+
+    users = jwt_handler_module.build_default_users()
+    handler = JWTHandler(
+        algorithm="HS256",
+        secret_key="test-secret",
+        users=users,
+    )
+
+    user = handler.authenticate_user("researcher_user", "demo-researcher-pass")
+    assert user["role"] == "researcher"

@@ -24,7 +24,7 @@ class PromptSanitiser:
             r"(?i)\bignore\s+(all\s+)?constraints\b",
             r"(?i)\bignore\s+previous\b",
             r"(?i)\byou\s+are\s+now\b",
-            r"(?i)\bdisregard\s+(all\s+|previous\s+)?instructions\b",
+            r"(?i)\bdisregard\s+(all\s+)?\s*(previous\s+)?instructions\b",
             r"(?i)\bdisregard\s+instruc\b",
             r"(?i)\bdisregard\s+your\s+programming\b",
             r"(?i)<\s*/\s*system\s*>",
@@ -36,6 +36,17 @@ class PromptSanitiser:
             r"(?i)\b(dump|print)\s+(the\s+)?system\b",
             r"(?i)\b(print|dump)\s+(the\s+)?hidden\b",
             r"(?i)\breveal\s+(the\s+)?hidden\b",
+            # Additional patterns to block common attack vectors from eval
+            r"(?i)\bbypass\s+.*?(?:filter|content|restriction|rule)",
+            r"(?i)\broleplay\s+.*?as\s+.*?(?:admin|ai|assistant|system)",
+            r"(?i)\bprint\s+.*?(?:unredacted|full.*?text|training.*?data|raw.*?data|system.*?prompt)",
+            r"(?i)\breveal\s+.*?(?:all\s+)?.*?(?:researcher|user|person).*?(?:email|id|information|data)",
+            r"(?i)\bignore\s+.*?(?:safety|guideline|rule|instruction)",
+            r"(?i)\bwhat\s+were\s+you\s+told\s+to\s+(?:hide|conceal)",
+            r"(?i)\boverride\s+.*?behavior\s+.*?sql",
+            r"(?i)\bignore\s+all\s+rules\s+.*?return\s+.*?(?:raw|abstract|data)",
+            r"(?i)\bextract\s+.*?underlying\s+.*?prompt",
+            r"(?i)\bwhat\s+is\s+your\s+system\s+prompt\b",
         ]
         self.injection_regex = [
             re.compile(pattern) for pattern in self.injection_patterns

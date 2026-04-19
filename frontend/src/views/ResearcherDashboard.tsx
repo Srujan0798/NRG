@@ -8,10 +8,11 @@ import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel';
 import { SecurityMonitor } from '../components/SecurityMonitor';
 import { ForceGraph } from '../components/ForceGraph';
 import { GlassCard } from '../components/GlassCard';
+import { AnswerPanel } from '../components/AnswerPanel';
 import { useAuth } from '../hooks/useAuth';
 import { useQueryStore } from '../stores/queryStore';
 import { useDPDPStore } from '../stores/dpdpStore';
-import { queryService, GraphNode } from '../services/queryService';
+import { queryService, GraphNode, QueryResponse } from '../services/queryService';
 import { useQuery } from '@tanstack/react-query';
 // import { FixedSizeList } from 'react-window';
 
@@ -22,9 +23,9 @@ export function ResearcherDashboard() {
   
   const [showDPDPConsent, setShowDPDPConsent] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'graph' | 'dpdp' | 'audit'>('dashboard');
-  const [graphData, setGraphData] = useState(queryService.mockGraphData());
+  const [graphData, setGraphData] = useState(queryService.emptyGraphData());
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [queryResult, setQueryResult] = useState<string | null>(null);
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
 
   // React Query for publications - now from real API
@@ -45,6 +46,20 @@ export function ResearcherDashboard() {
     enabled: !!user,
   });
 
+  const graphTopic = currentQuery.trim() || 'machine learning';
+  const { data: graphApiData, isLoading: graphLoading } = useQuery({
+    queryKey: ['graph', graphTopic, user?.id],
+    queryFn: () => queryService.fetchGraphData(graphTopic),
+    staleTime: 30 * 1000,
+    enabled: !!user && activeTab === 'graph',
+  });
+
+  useEffect(() => {
+    if (graphApiData) {
+      setGraphData(graphApiData);
+    }
+  }, [graphApiData]);
+
   const handleSearch = useCallback(async () => {
     if (!currentQuery.trim()) return;
 
@@ -53,7 +68,7 @@ export function ResearcherDashboard() {
     setQueryError(null);
     try {
       const result = await queryService.query({ query: currentQuery });
-      setQueryResult(result.response);
+      setQueryResult(result);
       setLastResult(result);
       addToHistory({
         query: currentQuery,
@@ -198,7 +213,12 @@ export function ResearcherDashboard() {
               </h3>
             </div>
             <div className="p-4">
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{queryResult}</pre>
+              <AnswerPanel
+                response={queryResult.response}
+                citations={queryResult.citations || []}
+                provenance={queryResult.provenance}
+                warnings={queryResult.warnings}
+              />
             </div>
           </div>
         )}
@@ -293,6 +313,16 @@ export function ResearcherDashboard() {
         {activeTab === 'graph' && (
           <div className="space-y-6">
             <GlassCard accent="researcher" title="Research Knowledge Graph" description="Drag nodes to explore · Click to query">
+              {graphLoading && (
+                <div className="mb-3 text-sm text-gray-500">Loading graph for "{graphTopic}"...</div>
+              )}
+              {graphData.warnings && graphData.warnings.length > 0 && (
+                <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                  {graphData.warnings.map((warning, index) => (
+                    <div key={index}>{warning.message}</div>
+                  ))}
+                </div>
+              )}
               <ForceGraph data={graphData} width={1100} height={500} onNodeClick={handleNodeClick} />
               {selectedNode && (
                 <div className="mt-4 bg-gray-50 rounded-lg p-3 text-sm border border-gray-200">

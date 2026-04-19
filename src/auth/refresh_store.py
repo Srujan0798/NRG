@@ -5,17 +5,19 @@ import sqlite3
 from datetime import datetime, timezone
 from typing import Optional
 
+from src.data.database import get_sqlite_connection, resolve_database_path
+
 
 class RefreshTokenStore:
     """SQLite-backed refresh token store with SHA256 hashing."""
 
-    def __init__(self, db_path: str = "nrg_research.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        self.db_path = resolve_database_path(db_path)
         self._init_table()
 
     def _init_table(self):
         """Create refresh_tokens table if not exists."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS refresh_tokens (
@@ -50,7 +52,7 @@ class RefreshTokenStore:
 
     def store(self, token: str, user_id: str, issued_at: datetime, expires_at: datetime) -> bool:
         """Store a new refresh token."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         try:
             conn.execute(
                 """
@@ -73,7 +75,7 @@ class RefreshTokenStore:
 
     def validate(self, token: str) -> Optional[dict]:
         """Validate a refresh token. Returns user_id if valid, None if not."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             """
             SELECT user_id, expires_at, revoked FROM refresh_tokens
@@ -100,7 +102,7 @@ class RefreshTokenStore:
 
     def revoke(self, token: str, replaced_by: Optional[str] = None) -> bool:
         """Revoke a refresh token."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             """
             UPDATE refresh_tokens
@@ -119,7 +121,7 @@ class RefreshTokenStore:
 
     def cleanup_expired(self, before: Optional[datetime] = None) -> int:
         """Delete expired tokens. Returns number deleted."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         before = before or datetime.now(timezone.utc)
         cursor = conn.execute(
             "DELETE FROM refresh_tokens WHERE expires_at < ?",
@@ -132,7 +134,7 @@ class RefreshTokenStore:
 
     def is_revoked(self, token: str) -> bool:
         """Check if a token is revoked."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             "SELECT revoked FROM refresh_tokens WHERE token_hash = ?",
             (self._hash_token(token),),

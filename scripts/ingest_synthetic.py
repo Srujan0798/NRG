@@ -151,7 +151,7 @@ def main():
     qdrant_port = int(os.getenv("QDRANT_PORT", "6333"))
     client = QdrantClient(host=qdrant_host, port=qdrant_port)
 
-    collection_name = "nrg_research"
+    collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     try:
         client.delete_collection(collection_name)

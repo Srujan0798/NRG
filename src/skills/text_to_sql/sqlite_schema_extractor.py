@@ -2,20 +2,21 @@
 
 import sqlite3
 from typing import List, Dict, Any, Optional
-from pathlib import Path
+
+from src.data.database import get_sqlite_connection, resolve_database_path
 
 
 class SQLiteSchemaExtractor:
     """Extract schema metadata from SQLite without exposing data."""
 
     def __init__(self, db_path: Optional[str] = None):
-        self.db_path = db_path or "nrg_research.db"
+        self.db_path = resolve_database_path(db_path)
         self.conn = None
 
     def _get_connection(self) -> sqlite3.Connection:
         """Get database connection."""
         if self.conn is None:
-            self.conn = sqlite3.connect(self.db_path)
+            self.conn = get_sqlite_connection(str(self.db_path))
         return self.conn
 
     def get_table_names(self) -> List[str]:

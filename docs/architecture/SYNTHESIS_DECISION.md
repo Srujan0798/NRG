@@ -1,48 +1,53 @@
-# SYNTHESIS_DECISION — Reconciling Two Blueprints
+# Synthesis Decision
 
-**Date**: 2026-04-18
-**Status**: Resolved by ADR-0001
-**Reconciles**: `Sovereign_AI_Protocols_Clean.md` vs `Sovereign_Infrastructure_Blueprint.md`
+**Status**: Accepted for Phase 1 PoC  
+**Canonical source**: `Core_Idea_Clean.md`  
+**Updated**: 2026-04-19
 
-## The Conflict
+## Decision
 
-Two architecture documents disagreed on where synthesis happens:
+NRG allows cloud LLM synthesis only through an explicit, minimized, sanitized evidence packet. Local SLM remains the offline/sovereign option, and rule-based synthesis remains the deterministic fallback.
 
-| Document | Claims Synthesis Location |
-|----------|--------------------------|
-| `Sovereign_AI_Protocols_Clean.md` | External LLM with data-only |
-| `Sovereign_Infrastructure_Blueprint.md` | Local SLM (Llama 3 8B) |
+Default behavior:
 
-A third document (`docs/technical/architecture_report_final.md`) referenced an "External Reasoning Layer" — further contradicting both.
+```text
+CLOUD_SYNTHESIS_ALLOWED=false
+```
 
-## Resolution
+When the flag is false, the synthesizer must not call a cloud LLM for either pre-verification or synthesis. When the flag is true, every cloud attempt must be auditable and must include only minimized evidence.
 
-ADR-0001 settled this: **Synthesis runs locally using `SYNTHESIS_MODE = local_slm`**
+## Allowed Evidence Packet
 
-| Mode | Implementation | Verdict |
-|------|---------------|---------|
-| `local_slm` | Llama 3 8B quantized | ✅ Adopted — data never leaves boundary |
-| `cloud_llm_facts_only` | Rejected | Raw facts egress to cloud |
+Cloud synthesis may receive:
 
-## Current Implementation State
+- User query.
+- Bounded excerpts from retrieved evidence.
+- Non-sensitive source identifiers.
+- Title/year/topic-style metadata.
+- Evidence counts and redaction counts.
 
-- `SYNTHESIS_MODE` feature flag exists but is **disabled by default**
-- The system currently uses **rule-based markdown templates** for synthesis
-- A real API key (GEMINI_API_KEY, OPENAI_API_KEY, NVIDIA_API_KEY, etc.) is needed for actual LLM synthesis
-- Local GPU with 8GB VRAM required for local Llama 3 8B synthesis
+Cloud synthesis must not receive:
 
-## Consequences
+- Raw DB dumps.
+- Full documents or unrestricted abstracts.
+- Emails, phone numbers, addresses, IDs, API keys, private keys, or secrets.
+- Full schemas unrelated to the current query.
+- Generated operational artifacts.
 
-- Local GPU required for true local synthesis (8GB VRAM minimum)
-- When disabled, no cloud LLM receives research data
-- Feature flag allows switching modes without code changes
+## Audit Requirements
 
-## References
+Every cloud synthesis attempt records:
 
-- ADR-0001: `docs/architecture/DECISIONS/ADR-0001-synthesis-location.md`
-- `src/config/llm_config.py` — LLM configuration
-- `src/orchestration/nodes/synthesizer.py` — synthesis node
+- Mode.
+- Model/provider.
+- Evidence counts.
+- Redaction/minimization metadata where available.
+- Whether `cloud_synthesis_used` was true.
 
----
+## Fallback Order
 
-*This document reconciles contradictory architecture claims per AGENT-TASK-39 truth-in-docs requirement.*
+1. Cloud LLM, only when `CLOUD_SYNTHESIS_ALLOWED=true`.
+2. Local SLM, when available.
+3. Rule-based synthesis.
+
+This decision supersedes older local-only or production-complete claims. Any future move to fine-tuned local-only synthesis should be written as a new ADR after it is implemented and tested.

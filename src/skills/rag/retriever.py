@@ -24,7 +24,7 @@ class Retriever:
         self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
 
         self.client = QdrantClient(host=self.host, port=self.port)
-        self.collection_name = "nrg_research"
+        self.collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     def _build_filter(
         self,

@@ -12,8 +12,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Set environment
 os.environ['DATABASE_URL'] = 'sqlite:///nrg_research.db'
-os.environ['LLM_PROVIDER'] = 'nvidia'
-os.environ['NVIDIA_API_KEY'] = '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'
+os.environ.setdefault('LLM_PROVIDER', 'none')
+os.environ.setdefault('CLOUD_SYNTHESIS_ALLOWED', 'false')
 
 print("=" * 70)
 print("🚀 NRG COMPLETE SYSTEM TEST")
@@ -22,8 +22,8 @@ print("=" * 70)
 # Test 1: Database
 print("\n📊 Test 1: Database Connectivity")
 try:
-    import sqlite3
-    conn = sqlite3.connect('nrg_research.db')
+    from src.data.database import get_sqlite_connection
+    conn = get_sqlite_connection()
     cursor = conn.execute("SELECT COUNT(*) FROM researchers")
     researcher_count = cursor.fetchone()[0]
     cursor = conn.execute("SELECT COUNT(*) FROM publications")
@@ -122,8 +122,8 @@ except Exception as e:
 # Test 7: Seed Relations
 print("\n🌱 Test 7: Relationship Tables")
 try:
-    import sqlite3
-    conn = sqlite3.connect('nrg_research.db')
+    from src.data.database import get_sqlite_connection
+    conn = get_sqlite_connection()
     cursor = conn.execute("SELECT COUNT(*) FROM researcher_publications")
     rp_count = cursor.fetchone()[0]
     cursor = conn.execute("SELECT COUNT(*) FROM publication_keywords")

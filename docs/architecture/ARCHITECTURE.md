@@ -1,153 +1,92 @@
-# NRG Architecture Specification v1.0
+# NRG Architecture
 
-**Mode Flag**: `SYNTHESIS_MODE = local_slm`  
-**Status**: Canonical - Supersedes all prior architecture docs  
-**Date**: 2026-04-18
+**Status**: Canonical architecture summary for the current PoC  
+**Source of truth**: `Core_Idea_Clean.md`  
+**Updated**: 2026-04-19
 
----
+## Executive Decision
 
-## 1. Executive Decision
+NRG is a sovereign research-intelligence PoC first, with a path toward a fine-tuned local model that lives inside the corpus. Phase 1 must be truthful, runnable, and deterministic before Phase 2/3 infrastructure claims are promoted.
 
-**Synthesis runs locally. This is the single source of truth.**
+Synthesis policy:
 
-| Mode | Implementation | Rationale |
-|------|---------------|-----------|
-| `local_slm` | Llama 3 8B (local execution) | ✅ Data never leaves boundary |
-| `cloud_llm_facts_only` | ❌ Rejected | Raw facts egresses to cloud |
+| Mode | Status | Boundary |
+| --- | --- | --- |
+| `cloud_synthesis` | Optional, explicit via `CLOUD_SYNTHESIS_ALLOWED=true` | Receives only minimized, sanitized evidence packets |
+| `local_slm` | Sovereign/offline path | Receives retrieved evidence inside the deployment boundary |
+| `rule_based` | Always-available fallback | Formats local SQL/RAG output without external calls |
 
----
+Cloud synthesis is not allowed to receive raw database dumps, full documents, secrets, unrestricted schemas, emails, phone numbers, or other PII. Local SLM and fine-tuned local models remain the long-term sovereign endgame, not a Phase 1 blocker.
 
-## 2. System Architecture
+## Current Runtime Shape
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                  PRESENTATION LAYER                   │
-│  React.js / Streamlit                              │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                   API GATEWAY                      │
-│  Kong Gateway - DLP, Rate Limit, Audit           │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                ORCHESTRATION LAYER                  │
-│  LangGraph - Query → Skill → Execute → Verify       │
-└─────────────────────────────────────────────────────────────────┘
-                            ↓
-┌──────────────────────┬────────────────────────────┐
-│    TOOL SKILLS       │      RETRIEVAL             │
-│  Text-to-SQL         │  RAG (Qdrant)             │
-│  Local Execution    │  Context Retrieval        │
-└──────────────────────┴────────────────────────────┘
-                            ↓
-┌──────────────────────┬────────────────────────────┐
-│   POSTGRESQL         │      QDRANT              │
-│  Researchers        │  Publications             │
-│  Projects, Labs    │  Abstracts, Embeddings   │
-└──────────────────────┴────────────────────────────┘
-                            ↓
-┌─────────────────────────────────────────────────────────────────┐
-│               REASONING LAYER (Local)               │
-│  Llama 3 8B (quantized) - Local Synthesis Only    │
-│  ⚠️ NO external LLM receives research data      │
-└─────────────────────────────────────────────────────────────────┘
+```text
+React dashboards
+  -> FastAPI routes (/login, /query, /stats, /publications, /query/graph)
+  -> LangGraph workflow
+  -> SQL skill + RAG skill
+  -> Synthesizer cascade: cloud-gated -> local -> rule-based
+  -> Response metadata: warnings, retrieval_sources, provenance
 ```
 
----
+## Data Boundary
 
-## 3. Execution Flow
+Allowed external LLM payloads, only when explicitly enabled:
 
-### Step-by-Step (local_slm mode)
+- User query.
+- Minimal retrieved evidence packet.
+- Bounded excerpts, not full documents.
+- Citation/source identifiers.
+- Redaction and evidence-count metadata.
 
-| Step | Actor | What Happens | Egress |
-|------|-------|-------------|--------|
-| 1 | User | Query submitted | → Gateway |
-| 2 | Gateway | PII detection, rate limiting | None |
-| 3 | LangGraph | Intent disambiguation, skill routing | None |
-| 4 | Cloud LLM | **Only**: semantic planning (metadata) | Metadata + query intent |
-| 5 | Local DBs | Execute retrieval (PostgreSQL + Qdrant) | None |
-| 6 | Local SLM | Synthesize facts → structured output | None |
-| 7 | Local Verification | Cross-reference claims with source | None |
-| 8 | User | Verified response | ← Gateway |
+Blocked external LLM payloads:
 
-### What NEVER leaves local boundary
+- Raw 600 GB corpus data.
+- Full abstracts or full-text documents.
+- Emails, phone numbers, addresses, IDs, and secrets.
+- Raw SQL dumps or unrestricted schema exports.
+- Generated audit/protocol artifacts.
 
-- Research data (600GB)
-- Retrieved facts/chunks
-- Synthesized content
-- Researcher PII
+## Retrieval And Storage
 
-### What CAN leave (sanitized)
+Phase 1 uses the root SQLite database by default via `DATABASE_URL=sqlite:///nrg_research.db`. Relative SQLite paths resolve from the repository root so API behavior is stable regardless of process working directory.
 
-- Query intent (embedded)
-- Execution plans (JSON)
-- Performance metrics
+Qdrant configuration is explicit:
 
----
+- `QDRANT_HOST`
+- `QDRANT_PORT`
+- `QDRANT_COLLECTION=nrg_research`
+- Vector dimension from the active embedder, not a hardcoded constant.
 
-## 4. Threat Model (STRIDE)
+If Qdrant or the embedder is unavailable, the API must return structured warnings. It must not pretend that a dependency failure is a valid "no data found" result.
 
-| Threat | Attack Vector | Mitigation |
-|--------|-------------|------------|
-| **Spoofing** | Fake user auth | MFA + RBAC |
-| **Tampering** | DB injection | Read-only sandbox, WAF |
-| **Repudiation** | Missing logs | Immutable audit (Langfuse) |
-| **Information Disclosure** | Data exfiltration | **Local SLM only** |
-| **Denial of Service** | Query flood | Rate limiting |
-| **Elevation of Privilege** | Role escalation | RBAC enforcement |
+## Knowledge Graph Scope
 
-### Data Flow Trust Boundaries
+Phase 1 graph views are DB-backed API responses from `/query/graph`. Neo4j is optional future work and lives under `experiments/knowledge_graph/` unless `FEATURE_KG=1` explicitly activates a future implementation.
 
-```
-[User] → [Gateway] → [Orchestrator] → [Local DBs] → [Local SLM] → [User]
-                ↓
-          [Cloud LLM] ← ONLY metadata/query intent
-```
+## Security And Audit
 
----
+The active PoC security baseline is:
 
-## 5. Configuration
+- JWT auth and persona/tier shaping.
+- Prompt sanitization and PII blocking at API boundary.
+- Cloud synthesis disabled by default.
+- Audit metadata for LLM calls, including cloud usage and evidence counts.
+- Generated `.audit`, `.protocol`, and Playwright reports are ignored source artifacts.
 
-```yaml
-# config.yaml
-synthesis:
-  mode: local_slm
-  model: llama3-8b-quantized
-  device: gpu  # or cpu
+## Honest Status
 
-security:
-  egress_blocked: true
-  cloud_llm_data: never
-  audit_immutable: true
+Working or actively wired:
 
-data_residency:
-  region: IN-GJ  # Gujarat, India
-  physically_isolated: true
-```
+- FastAPI routes for auth, query, stats, publications, and graph.
+- LangGraph query flow with visible warning/provenance metadata.
+- Controlled synthesis cascade with cloud gate.
+- Root database path resolver through `DATABASE_URL`.
 
----
+Not a current Phase 1 capability unless backed by executable tests:
 
-## 6. Superseded Documents
-
-| Document | Status | Replacement |
-|----------|--------|--------------|
-| `Sovereign_AI_Protocols_Clean.md` | ⚠️ Superseded | This doc |
-| `Sovereign_Infrastructure_Blueprint.md` | ⚠️ Superseded | This doc |
-| `docs/technical/architecture_report_final.md` | ⚠️ Superseded | This doc |
-
-**Note**: Prior docs contradicted on synthesis location (cloud vs. local). This doc resolves to `local_slm`.
-
----
-
-## 7. Success Criteria
-
-- [ ] One canonical architecture doc exists
-- [ ] Zero contradictions in architecture decisions
-- [ ] SYNTHESIS_MODE = local_slm enforced in config
-- [ ] STRIDE threat model documented
-- [ ] Data-flow diagram shows all boundaries
-
----
-
-*This document is the single source of truth for NRG architecture.*
+- Production Kong AI Gateway enforcement.
+- Neo4j traversal engine.
+- Verified Qdrant population for the full corpus.
+- Formal compliance attestation or benchmark claims.
+- Fine-tuned local model inside the full data corpus.

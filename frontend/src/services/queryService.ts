@@ -11,10 +11,28 @@ export interface QueryRequest {
 export interface Citation {
   id: string;
   source: string;
+  pub_id?: string;
+  chunk_id?: string;
   title: string;
   authors: string[];
   year: number;
   relevance_score: number;
+  chunk_text?: string;
+}
+
+export interface QueryWarning {
+  node?: string;
+  skill?: string;
+  error_type?: string;
+  message: string;
+  topic?: string;
+}
+
+export interface QueryProvenance {
+  planner?: string;
+  synth?: string;
+  verifier?: string;
+  cloud_synthesis_used?: boolean;
 }
 
 export interface QueryResponse {
@@ -26,6 +44,10 @@ export interface QueryResponse {
   intent?: string;
   routing_decision?: string;
   verification_status: boolean;
+  citations?: Citation[];
+  warnings?: QueryWarning[];
+  retrieval_sources?: string[];
+  provenance?: QueryProvenance;
   conversation_history: Array<{ query: string; response: string }>;
 }
 
@@ -47,6 +69,7 @@ export interface GraphEdge {
 export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
+  warnings?: QueryWarning[];
 }
 
 const api = axios.create({
@@ -95,7 +118,7 @@ export const queryService = {
     });
   },
 
-  async fetchPublications(limit: number = 10): Promise<{ publications: Array<{ publication_id: string; title: string; year: number; venue?: string }> }> {
+  async fetchPublications(limit: number = 10): Promise<{ publications: Array<{ publication_id: string; title: string; year: number; venue?: string; citations?: number }> }> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get('/publications', {
         params: { limit },
@@ -105,37 +128,7 @@ export const queryService = {
     });
   },
 
-  // Mock graph data for development
-  mockGraphData(): GraphData {
-    return {
-      nodes: [
-        { id: 'p1', label: 'Deep Learning in NLP', type: 'paper', year: 2023, citations: 142 },
-        { id: 'p2', label: 'Transformer Architectures', type: 'paper', year: 2022, citations: 89 },
-        { id: 'a1', label: 'Dr. A. Sharma', type: 'author' },
-        { id: 'a2', label: 'Prof. R. Patel', type: 'author' },
-        { id: 'i1', label: 'IIT Bombay', type: 'institution' },
-        { id: 'i2', label: 'IISc Bangalore', type: 'institution' },
-        { id: 't1', label: 'Machine Learning', type: 'topic' },
-        { id: 't2', label: 'Natural Language Processing', type: 'topic' },
-        { id: 'p3', label: 'Knowledge Graph Embeddings', type: 'paper', year: 2024, citations: 37 },
-        { id: 'p4', label: 'Graph Neural Networks', type: 'paper', year: 2023, citations: 65 },
-        { id: 'a3', label: 'Dr. K. Reddy', type: 'author' },
-        { id: 'i3', label: 'IIT Madras', type: 'institution' },
-      ],
-      edges: [
-        { source: 'a1', target: 'p1', type: 'authored', weight: 1 },
-        { source: 'a2', target: 'p2', type: 'authored', weight: 1 },
-        { source: 'p1', target: 'p2', type: 'cites', weight: 0.8 },
-        { source: 'a1', target: 'i1', type: 'affiliated', weight: 1 },
-        { source: 'a2', target: 'i2', type: 'affiliated', weight: 1 },
-        { source: 'p1', target: 't1', type: 'related', weight: 0.9 },
-        { source: 'p2', target: 't2', type: 'related', weight: 0.85 },
-        { source: 'p1', target: 't2', type: 'related', weight: 0.7 },
-        { source: 'a3', target: 'p3', type: 'authored', weight: 1 },
-        { source: 'a3', target: 'i3', type: 'affiliated', weight: 1 },
-        { source: 'p3', target: 'p4', type: 'cites', weight: 0.75 },
-        { source: 'p4', target: 't1', type: 'related', weight: 0.8 },
-      ],
-    };
+  emptyGraphData(): GraphData {
+    return { nodes: [], edges: [], warnings: [] };
   },
 };

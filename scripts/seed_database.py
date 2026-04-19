@@ -5,10 +5,11 @@ Seeds the database with sample research data for testing and demo.
 Matches the existing schema in nrg_research.db.
 """
 
-import sqlite3
 import random
 from datetime import datetime, timezone
 from faker import Faker
+
+from src.data.database import get_sqlite_connection
 
 fake = Faker("en_IN")
 
@@ -316,7 +317,7 @@ def main(db_path="nrg_research.db"):
     print(f"🌱 Starting database seeding: {db_path}")
     print("=" * 50)
 
-    conn = sqlite3.connect(db_path)
+    conn = get_sqlite_connection(db_path)
 
     try:
         seed_institutions(conn)

@@ -34,21 +34,42 @@ ROLE_CONFIG = {
 }
 
 
-DEFAULT_USERS = {
-    "researcher_user": {
-        "password": os.getenv("RESEARCHER_PASSWORD", "researcher-pass"),
-        "role": "researcher",
-        "researcher_id": "researcher-1",
-    },
-    "gov_user": {
-        "password": os.getenv("GOV_PASSWORD", "government-pass"),
-        "role": "government",
-    },
-    "industry_user": {
-        "password": os.getenv("INDUSTRY_PASSWORD", "industry-pass"),
-        "role": "industry",
-    },
-}
+def _first_env(names: tuple[str, ...], default: str) -> str:
+    for name in names:
+        value = os.getenv(name)
+        if value:
+            return value
+    return default
+
+
+def build_default_users() -> dict[str, dict[str, Any]]:
+    return {
+        "researcher_user": {
+            "password": _first_env(
+                ("RESEARCHER_PASSWORD", "DEMO_RESEARCHER_PASSWORD"),
+                "researcher-pass",
+            ),
+            "role": "researcher",
+            "researcher_id": "researcher-1",
+        },
+        "gov_user": {
+            "password": _first_env(
+                ("GOV_PASSWORD", "DEMO_GOVERNMENT_PASSWORD"),
+                "government-pass",
+            ),
+            "role": "government",
+        },
+        "industry_user": {
+            "password": _first_env(
+                ("INDUSTRY_PASSWORD", "DEMO_INDUSTRY_PASSWORD"),
+                "industry-pass",
+            ),
+            "role": "industry",
+        },
+    }
+
+
+DEFAULT_USERS = build_default_users()
 
 
 @dataclass
@@ -99,7 +120,7 @@ class JWTHandler:
         
         self.access_token_ttl_seconds = access_token_ttl_seconds
         self.refresh_token_ttl_seconds = refresh_token_ttl_seconds
-        self.users = users or DEFAULT_USERS
+        self.users = users or build_default_users()
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
     

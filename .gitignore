@@ -33,7 +33,10 @@ build/
 
 logs/
 *.log
+.audit/
+.protocol/
 .protocol/state_*.json
+frontend/playwright-report/
 
 .DS_Store
 *.swp

@@ -1,6 +1,5 @@
 """SQLite Sandbox for Text-to-SQL - Read-only execution."""
 
-import sqlite3
 import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
@@ -9,6 +8,7 @@ import json
 from datetime import datetime
 
 from src.audit import log_sql as audit_log_sql
+from src.data.database import get_sqlite_connection, resolve_database_path
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ class SQLiteSandbox:
     """Read-only sandbox for SQLite execution."""
 
     def __init__(self, db_path: Optional[str] = None):
-        self.db_path = db_path or "nrg_research.db"
+        self.db_path = resolve_database_path(db_path)
         self.audit_log_path = Path(".protocol/audit_log.jsonl")
         self._ensure_audit_log()
 
@@ -52,8 +52,7 @@ class SQLiteSandbox:
         )
 
         try:
-            conn = sqlite3.connect(self.db_path)
-            conn.row_factory = sqlite3.Row
+            conn = get_sqlite_connection(str(self.db_path))
             cursor = conn.execute(sql)
             rows = cursor.fetchall()
             columns = [desc[0] for desc in cursor.description] if cursor.description else []
@@ -100,7 +99,7 @@ class SQLiteSandbox:
     def test_connection(self) -> bool:
         """Test sandbox connectivity."""
         try:
-            conn = sqlite3.connect(self.db_path)
+            conn = get_sqlite_connection(str(self.db_path))
             conn.execute("SELECT 1")
             conn.close()
             return True
@@ -109,7 +108,7 @@ class SQLiteSandbox:
 
     def get_tables(self) -> list:
         """List available tables."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         )

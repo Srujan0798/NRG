@@ -1,9 +1,10 @@
 """DPDP 2023 Consent Management Service."""
 
-import sqlite3
 import uuid
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
+
+from src.data.database import get_sqlite_connection, resolve_database_path
 
 
 class ConsentService:
@@ -17,13 +18,13 @@ class ConsentService:
         "analytics": "Use for analytics",
     }
 
-    def __init__(self, db_path: str = "nrg_research.db"):
-        self.db_path = db_path
+    def __init__(self, db_path: str = None):
+        self.db_path = resolve_database_path(db_path)
         self._init_table()
 
     def _init_table(self):
         """Initialize consent_ledger table."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS consent_ledger (
@@ -51,7 +52,7 @@ class ConsentService:
         if scope not in self.SCOPES:
             return {"success": False, "error": f"Invalid scope: {scope}"}
 
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         now = datetime.now(timezone.utc).isoformat()
         consent_id = str(uuid.uuid4())
 
@@ -80,7 +81,7 @@ class ConsentService:
 
     def revoke_consent(self, user_id: str, scope: str) -> Dict[str, Any]:
         """Revoke consent for a scope."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         now = datetime.now(timezone.utc).isoformat()
 
         cursor = conn.execute(
@@ -101,7 +102,7 @@ class ConsentService:
 
     def get_consent(self, user_id: str, scope: str) -> Optional[Dict]:
         """Get consent status for a scope."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             """
             SELECT scope, version, granted_at, revoked_at
@@ -126,7 +127,7 @@ class ConsentService:
 
     def list_consents(self, user_id: str) -> List[Dict]:
         """List all consents for a user."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
             """
             SELECT scope, version, granted_at, revoked_at
@@ -158,8 +159,7 @@ class ConsentService:
 
     def export_user_data(self, user_id: str) -> Dict[str, Any]:
         """Export all data for a user (DPDP right to access)."""
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
+        conn = get_sqlite_connection(str(self.db_path))
 
         data = {
             "user_id": user_id,
@@ -187,7 +187,7 @@ class ConsentService:
 
     def erase_user_data(self, user_id: str) -> Dict[str, Any]:
         """Erase all PII for a user (DPDP right to erasure)."""
-        conn = sqlite3.connect(self.db_path)
+        conn = get_sqlite_connection(str(self.db_path))
 
         # Delete consents
         cursor = conn.execute(

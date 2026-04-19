@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Expand database to full 2,500 researcher dataset."""
 
-import sqlite3
 import random
 from datetime import datetime, timezone
 from faker import Faker
+
+from src.data.database import get_sqlite_connection
 
 fake = Faker("en_IN")
 
@@ -239,7 +240,7 @@ def main(db_path="nrg_research.db"):
     print(f"🌱 Expanding database: {db_path}")
     print("=" * 50)
     
-    conn = sqlite3.connect(db_path)
+    conn = get_sqlite_connection(db_path)
     
     try:
         expand_researchers(conn, target_count=2500)

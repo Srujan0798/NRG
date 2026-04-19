@@ -4,6 +4,7 @@ Qdrant Collection Manager for Production Deployment
 """
 
 import logging
+import os
 from typing import Dict, Any, Optional, List
 
 logging.basicConfig(level=logging.INFO)
@@ -68,7 +69,9 @@ if __name__ == "__main__":
 
     # Create collection config
     config = manager.create_collection_config(
-        collection_name="nrip_production", vector_size=768, shard_number=4
+        collection_name=os.getenv("QDRANT_COLLECTION", "nrg_research"),
+        vector_size=int(os.getenv("EMBEDDING_DIMENSION", "1024")),
+        shard_number=4,
     )
 
     logger.info("Collection configuration:")

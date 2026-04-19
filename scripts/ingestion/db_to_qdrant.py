@@ -3,22 +3,24 @@
 Generate embeddings from SQLite database and upload to Qdrant
 """
 
-import sqlite3
 import json
 import logging
+import os
 import sys
 from pathlib import Path
+
+from src.data.database import get_sqlite_connection
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-DB_PATH = "/Users/roshwinram/Desktop/National-Research-Graph/nrg_research.db"
+DB_PATH = "nrg_research.db"
 
 
 def get_db_connection():
-    return sqlite3.connect(DB_PATH)
+    return get_sqlite_connection(DB_PATH)
 
 
 def fetch_researchers(conn):
@@ -143,7 +145,11 @@ def upload_to_qdrant(entities, embeddings):
         from qdrant_client import QdrantClient
         from qdrant_client.http.models import PointStruct
 
-        client = QdrantClient(host="localhost", port=6333)
+        client = QdrantClient(
+            host=os.getenv("QDRANT_HOST", "localhost"),
+            port=int(os.getenv("QDRANT_PORT", "6333")),
+        )
+        collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
         points = []
         for i, entity in enumerate(entities):
@@ -154,7 +160,7 @@ def upload_to_qdrant(entities, embeddings):
             points.append(point)
 
         # Clear existing points and upload new ones
-        client.upsert(collection_name="nrg_research", points=points)
+        client.upsert(collection_name=collection_name, points=points)
 
         logger.info(f"Uploaded {len(points)} points to Qdrant")
         return True

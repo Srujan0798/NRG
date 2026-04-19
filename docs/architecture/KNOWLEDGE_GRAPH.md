@@ -1,8 +1,10 @@
 # NRG Knowledge Graph Specification v1.0
 
+**Status**: Historical/Phase 2 design note. Phase 1 uses the DB-backed `/query/graph` endpoint. Neo4j code is quarantined under `experiments/knowledge_graph/` and is not part of the current working platform unless explicitly promoted and tested.
+
 ## Neo4j Graph Model
 
-Aligned with: `src/knowledge_graph/schema.cypher`
+Aligned with future/experimental Neo4j work, not current `src` runtime code.
 
 ### Node Types
 
@@ -108,4 +110,4 @@ ORDER BY total_funding DESC;
 
 ---
 
-*Aligned with: src/knowledge_graph/schema.cypher*
+*Historical design note. Current canonical architecture: `docs/architecture/ARCHITECTURE.md`.*
