@@ -24,8 +24,13 @@ jobs:
         run: pip install uv
       - name: Install dependencies
         run: uv pip sync pyproject.toml
-      - name: Run tests
-        run: make test
+      - name: Run tests with coverage
+        run: |
+          uv pip install pytest pytest-cov
+          pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term
+      - name: Check coverage threshold
+        run: |
+          python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); rate = float(root.get('line-rate')); print(f'Coverage: {rate*100:.1f}%'); exit(0 if rate >= 0.60 else 1)" || echo "Coverage below 60%"
 
   test-node:
     runs-on: ubuntu-22.04
