@@ -1,0 +1,193 @@
+# Kong Declarative Configuration
+# National Research Graph Gateway
+
+_format_version: "3.0"
+
+services:
+  - name: nrg-api
+    url: http://nrg-api:8000
+    routes:
+      - name: health
+        paths:
+          - /health
+        strip_path: false
+        methods: [GET]
+      
+      - name: login
+        paths:
+          - /login
+        strip_path: false
+        methods: [POST]
+      
+      - name: refresh
+        paths:
+          - /refresh
+        strip_path: false
+        methods: [POST]
+      
+      - name: logout
+        paths:
+          - /logout
+        strip_path: false
+        methods: [POST]
+      
+      - name: query
+        paths:
+          - /query
+        strip_path: false
+        methods: [POST]
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: redis
+              redis_host: redis
+              fault_tolerant: true
+      
+      - name: query-graph
+        paths:
+          - /query/graph
+        strip_path: false
+        methods: [GET]
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 50
+              policy: redis
+      
+      - name: researchers
+        paths:
+          - /researchers
+        strip_path: false
+        methods: [GET]
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: redis
+      
+      - name: publications
+        paths:
+          - /publications
+        strip_path: false
+        methods: [GET]
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 100
+              policy: redis
+      
+      - name: stats
+        paths:
+          - /stats
+        strip_path: false
+        methods: [GET]
+      
+      - name: me
+        paths:
+          - /me
+        strip_path: false
+        methods: [GET, DELETE]
+      
+      - name: consent
+        paths:
+          - /consent
+        strip_path: false
+        methods: [POST, DELETE]
+      
+      - name: audit
+        paths:
+          - /audit
+        strip_path: false
+        methods: [GET]
+        plugins:
+          - name: rate-limiting
+            config:
+              minute: 20
+              policy: redis
+      
+      - name: health-llm
+        paths:
+          - /health/llm
+        strip_path: false
+        methods: [GET]
+      
+      - name: health-qdrant
+        paths:
+          - /health/qdrant
+        strip_path: false
+        methods: [GET]
+      
+      - name: jwks
+        paths:
+          - /.well-known/jwks.json
+        strip_path: false
+        methods: [GET]
+    
+    plugins:
+      - name: cors
+        config:
+          origins:
+            - http://localhost:3000
+          methods: [GET, POST, PUT, DELETE, OPTIONS]
+          headers:
+            - Authorization
+            - Content-Type
+            - X-Request-ID
+          credentials: true
+          max_age: 3600
+      
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-Proxy-By:Kong
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 200
+      policy: redis
+      redis_host: redis
+      redis_port: 6379
+      redis_timeout: 2000
+      redis_database: 0
+      fault_tolerant: true
+      hide_client_headers: false
+      redis_ssl: false
+      redis_ssl_verify: false
+
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 1
+      size_unit: megabytes
+      require_content_length: true
+
+consumers:
+  - username: tier1-researcher
+    custom_id: researcher_user
+    tags:
+      - tier:1
+      - role:researcher
+  
+  - username: tier2-government
+    custom_id: gov_user
+    tags:
+      - tier:2
+      - role:government
+  
+  - username: tier3-industry
+    custom_id: industry_user
+    tags:
+      - tier:3
+      - role:industry
+
+keyauth_credentials:
+  - consumer: tier1-researcher
+    key: researcher-api-key-001
+  
+  - consumer: tier2-government
+    key: government-api-key-001
+  
+  - consumer: tier3-industry
+    key: industry-api-key-001

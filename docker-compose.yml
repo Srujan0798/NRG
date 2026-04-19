@@ -84,14 +84,20 @@ services:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong/kong.yaml
       KONG_LOG_LEVEL: info
+      KONG_PLUGINS: bundled,rate-limiting-advanced
+      KONG_NGINX_WORKER_PROCESSES: "2"
     ports:
       - "8080:8000"
       - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
     volumes:
-      - ./infrastructure/kong:/kong
+      - ./infrastructure/kong:/kong:ro
     depends_on:
       - api
+      - redis
     profiles:
+      - dev
       - prod
 
 volumes:
