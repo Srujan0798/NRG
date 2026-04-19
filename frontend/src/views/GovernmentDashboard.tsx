@@ -12,14 +12,12 @@ import { useQuery } from '@tanstack/react-query';
 
 export function GovernmentDashboard() {
   const { user } = useAuth();
-  const { history, addToHistory } = useQueryStore();
+  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching, setLastResult } = useQueryStore();
   const { grantConsent, addAuditEntry } = useDPDPStore();
 
   const [isLoading, setIsLoading] = useState(true);
   const [showDPDPConsent, setShowDPDPConsent] = useState(false);
   const [dpdpApproved, setDpdpApproved] = useState(false);
-  const [currentQuery, setCurrentQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [queryResult, setQueryResult] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
 
@@ -45,6 +43,7 @@ export function GovernmentDashboard() {
     try {
       const result = await queryService.query({ query: currentQuery });
       setQueryResult(result.response);
+      setLastResult(result);
       addToHistory({
         query: currentQuery,
         persona: 'government',
@@ -68,7 +67,7 @@ export function GovernmentDashboard() {
     } finally {
       setIsSearching(false);
     }
-  }, [currentQuery, addToHistory, addAuditEntry, user]);
+  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult, user]);
 
   if (isLoading) {
     return (

@@ -8,6 +8,8 @@ import uuid
 import json
 from datetime import datetime
 
+from src.audit import log_sql as audit_log_sql
+
 logger = logging.getLogger(__name__)
 
 
@@ -66,6 +68,16 @@ class SQLiteSandbox:
                     "status": "success",
                 }
             )
+
+            # HMAC-chained audit log
+            try:
+                audit_log_sql(
+                    "sqlite-sandbox",
+                    sql,
+                    {"row_count": len(formatted_results), "query_id": query_id},
+                )
+            except Exception:
+                logger.warning("HMAC audit log_sql failed in sqlite sandbox", exc_info=True)
 
             return {
                 "query": sql,

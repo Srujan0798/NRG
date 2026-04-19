@@ -8,7 +8,6 @@ import uuid
 from datetime import datetime, date
 from pathlib import Path
 from typing import Optional, Any
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -26,10 +25,12 @@ class AuditEvent:
         llm_call: Optional[dict] = None,
         result: Optional[dict] = None,
         error: Optional[str] = None,
+        event_id: Optional[str] = None,
+        timestamp: Optional[str] = None,
     ):
-        self.event_id = str(uuid.uuid4())[:8]
+        self.event_id = event_id or str(uuid.uuid4())[:8]
         self.event_type = event_type
-        self.timestamp = datetime.utcnow().isoformat()
+        self.timestamp = timestamp or datetime.utcnow().isoformat()
         self.user_id = user_id
         self.query = query
         self.sql = sql
@@ -209,6 +210,10 @@ def log_plan(user_id: str, query: str, plan: dict) -> str:
 
 def log_sql(user_id: str, sql: str, result: dict = None) -> str:
     return get_audit_log().log_sql(user_id, sql, result)
+
+
+def log_llm_call(user_id: str, prompt: str, response: dict, model: str) -> str:
+    return get_audit_log().log_llm_call(user_id, prompt, response, model)
 
 
 def verify_chain() -> tuple[bool, list[str]]:

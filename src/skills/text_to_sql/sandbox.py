@@ -12,6 +12,8 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine, Result
 from sqlalchemy.exc import SQLAlchemyError
 
+from src.audit import log_sql as audit_log_sql
+
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +92,16 @@ class Sandbox:
                         "status": "success",
                     }
                 )
+
+                # HMAC-chained audit log
+                try:
+                    audit_log_sql(
+                        "sandbox",
+                        sql,
+                        {"row_count": len(formatted_results), "query_id": query_id},
+                    )
+                except Exception:
+                    logger.warning("HMAC audit log_sql failed in sandbox", exc_info=True)
 
                 return {
                     "query": sql,

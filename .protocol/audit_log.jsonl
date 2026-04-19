@@ -144,3 +144,69 @@
 {"query_id": "f14716ab-5c6a-4fc0-af43-b6448bcd52c0", "row_count": 100, "timestamp": "2026-04-18T15:21:53.110929", "status": "success"}
 {"query_id": "597fb281-e8db-4f78-bc0d-6bc3317bfd39", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-18T15:23:24.471103", "status": "executing"}
 {"query_id": "597fb281-e8db-4f78-bc0d-6bc3317bfd39", "row_count": 100, "timestamp": "2026-04-18T15:23:24.474716", "status": "success"}
+{"query_id": "a4e55aad-8b08-4483-8aae-7276d6af6eba", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:05:36.418684", "status": "executing"}
+{"query_id": "a4e55aad-8b08-4483-8aae-7276d6af6eba", "row_count": 100, "timestamp": "2026-04-19T05:05:36.422115", "status": "success"}
+{"query_id": "76d18f0f-811d-4999-b6b9-492fbeac4cbe", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:10.928644", "status": "executing"}
+{"query_id": "76d18f0f-811d-4999-b6b9-492fbeac4cbe", "row_count": 25, "timestamp": "2026-04-19T05:07:10.930723", "status": "success"}
+{"query_id": "db58d321-19bf-4415-92eb-d737d38f9b12", "sql": "SELECT COUNT(*) as count FROM researchers WHERE state = 'Maharashtra' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:21.821450", "status": "executing"}
+{"query_id": "db58d321-19bf-4415-92eb-d737d38f9b12", "row_count": 1, "timestamp": "2026-04-19T05:07:21.822927", "status": "success"}
+{"query_id": "3928811e-a052-4d3e-bd40-fb9d854619d6", "sql": "SELECT * FROM researchers WHERE state = 'Delhi' AND research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:24.498454", "status": "executing"}
+{"query_id": "3928811e-a052-4d3e-bd40-fb9d854619d6", "row_count": 0, "timestamp": "2026-04-19T05:07:24.500429", "status": "success"}
+{"query_id": "5ccf7b86-76fa-46de-b0d0-7121b0840e1e", "sql": "SELECT * FROM funding_records LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:24.636501", "status": "executing"}
+{"query_id": "5ccf7b86-76fa-46de-b0d0-7121b0840e1e", "row_count": 100, "timestamp": "2026-04-19T05:07:24.640280", "status": "success"}
+{"query_id": "3176f2cf-3a66-4e01-b763-36a6afd52e4c", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:29.055083", "status": "executing"}
+{"query_id": "3176f2cf-3a66-4e01-b763-36a6afd52e4c", "row_count": 50, "timestamp": "2026-04-19T05:07:29.057231", "status": "success"}
+{"query_id": "c4f32a44-18a7-48fd-8198-25a90f37e902", "sql": "SELECT * FROM publications WHERE year = 2020 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:07:30.213219", "status": "executing"}
+{"query_id": "c4f32a44-18a7-48fd-8198-25a90f37e902", "row_count": 68, "timestamp": "2026-04-19T05:07:30.219512", "status": "success"}
+{"query_id": "234ed7c5-c989-4fe2-b6df-6cd62c69c639", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T05:27:29.628047", "status": "executing"}
+{"query_id": "234ed7c5-c989-4fe2-b6df-6cd62c69c639", "row_count": 25, "timestamp": "2026-04-19T05:27:29.632678", "status": "success"}
+{"query_id": "1c92e143-77d9-4e9f-a892-c70c0c2ebb8c", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:26:04.362542", "status": "executing"}
+{"query_id": "1c92e143-77d9-4e9f-a892-c70c0c2ebb8c", "row_count": 25, "timestamp": "2026-04-19T07:26:04.363489", "status": "success"}
+{"query_id": "8f5d61c2-912f-4218-b120-617c6fa229f9", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:26:06.488500", "status": "executing"}
+{"query_id": "8f5d61c2-912f-4218-b120-617c6fa229f9", "row_count": 25, "timestamp": "2026-04-19T07:26:06.489067", "status": "success"}
+{"query_id": "f929c6d2-d822-42f1-bd66-6728e41040d6", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:30:28.019914", "status": "executing"}
+{"query_id": "f929c6d2-d822-42f1-bd66-6728e41040d6", "row_count": 25, "timestamp": "2026-04-19T07:30:28.021039", "status": "success"}
+{"query_id": "11a5289c-a22a-41e7-8142-b95da4f16069", "sql": "SELECT COUNT(*) as count FROM researchers WHERE state = 'Maharashtra' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:30:28.022892", "status": "executing"}
+{"query_id": "11a5289c-a22a-41e7-8142-b95da4f16069", "row_count": 1, "timestamp": "2026-04-19T07:30:28.023155", "status": "success"}
+{"query_id": "853904db-6829-4892-811d-328d2e508233", "sql": "SELECT * FROM labs WHERE research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:30:28.023665", "status": "executing"}
+{"query_id": "853904db-6829-4892-811d-328d2e508233", "row_count": 0, "timestamp": "2026-04-19T07:30:28.023936", "status": "success"}
+{"query_id": "5d8844e8-6897-453e-9469-0abb6256f7b0", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.551338", "status": "executing"}
+{"query_id": "5d8844e8-6897-453e-9469-0abb6256f7b0", "row_count": 25, "timestamp": "2026-04-19T07:31:18.552527", "status": "success"}
+{"query_id": "2c2c2a62-a6eb-4c19-923f-d8de5e7e7fba", "sql": "SELECT COUNT(*) as count FROM researchers WHERE state = 'Maharashtra' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.554603", "status": "executing"}
+{"query_id": "2c2c2a62-a6eb-4c19-923f-d8de5e7e7fba", "row_count": 1, "timestamp": "2026-04-19T07:31:18.555013", "status": "success"}
+{"query_id": "6c448b48-884a-4681-9a5b-68409d69db54", "sql": "SELECT * FROM researchers WHERE state = 'Karnataka' AND research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.555368", "status": "executing"}
+{"query_id": "6c448b48-884a-4681-9a5b-68409d69db54", "row_count": 0, "timestamp": "2026-04-19T07:31:18.555731", "status": "success"}
+{"query_id": "7d0cc01b-6e3a-4296-81df-00820a584e29", "sql": "SELECT * FROM labs LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.556067", "status": "executing"}
+{"query_id": "7d0cc01b-6e3a-4296-81df-00820a584e29", "row_count": 50, "timestamp": "2026-04-19T07:31:18.556522", "status": "success"}
+{"query_id": "d235fab3-88b5-44d6-97ca-4825a6dcae47", "sql": "SELECT * FROM institutions WHERE state = 'Delhi' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.556848", "status": "executing"}
+{"query_id": "d235fab3-88b5-44d6-97ca-4825a6dcae47", "row_count": 1, "timestamp": "2026-04-19T07:31:18.557141", "status": "success"}
+{"query_id": "19e1864f-1370-4011-a9bc-6e1526a44cae", "sql": "SELECT * FROM publications WHERE year = 2020 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.557431", "status": "executing"}
+{"query_id": "19e1864f-1370-4011-a9bc-6e1526a44cae", "row_count": 68, "timestamp": "2026-04-19T07:31:18.558222", "status": "success"}
+{"query_id": "749dc28b-6ace-469c-b549-b89bc632ad0a", "sql": "SELECT * FROM funding_records LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:31:18.558486", "status": "executing"}
+{"query_id": "749dc28b-6ace-469c-b549-b89bc632ad0a", "row_count": 100, "timestamp": "2026-04-19T07:31:18.559071", "status": "success"}
+{"query_id": "a5d4afd9-5bbb-4dc1-848f-0765b72bcdfe", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:32:11.840819", "status": "executing"}
+{"query_id": "a5d4afd9-5bbb-4dc1-848f-0765b72bcdfe", "row_count": 0, "timestamp": "2026-04-19T07:32:11.841717", "status": "success"}
+{"query_id": "f0f67449-23ff-4e02-ad31-a7df3dc806fb", "sql": "SELECT COUNT(*) as count FROM labs WHERE state = 'Maharashtra' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:32:11.845272", "status": "executing"}
+{"query_id": "f0f67449-23ff-4e02-ad31-a7df3dc806fb", "error": "no such column: state", "timestamp": "2026-04-19T07:32:11.845602", "status": "error"}
+{"query_id": "71fbcef1-0c29-4605-a4e8-a484e7389d9a", "sql": "SELECT * FROM publications WHERE year = 2023 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:32:11.847975", "status": "executing"}
+{"query_id": "71fbcef1-0c29-4605-a4e8-a484e7389d9a", "row_count": 75, "timestamp": "2026-04-19T07:32:11.850102", "status": "success"}
+{"query_id": "f5e9c259-8ed2-444b-b293-6d7ed474b11b", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:32:43.100644", "status": "executing"}
+{"query_id": "f5e9c259-8ed2-444b-b293-6d7ed474b11b", "row_count": 25, "timestamp": "2026-04-19T07:32:43.101656", "status": "success"}
+{"query_id": "0d37c924-e58b-48ff-aec6-1e0f6de57a07", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:02.868196", "status": "executing"}
+{"query_id": "0d37c924-e58b-48ff-aec6-1e0f6de57a07", "row_count": 25, "timestamp": "2026-04-19T07:33:02.869193", "status": "success"}
+{"query_id": "80ebb393-210b-4ecc-8cb8-80f70e1bf74f", "sql": "SELECT COUNT(*) as count FROM labs WHERE state = 'Maharashtra' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:05.113768", "status": "executing"}
+{"query_id": "80ebb393-210b-4ecc-8cb8-80f70e1bf74f", "error": "no such column: state", "timestamp": "2026-04-19T07:33:05.114215", "status": "error"}
+{"query_id": "03f1cc25-4878-455b-a39d-114c5d083957", "sql": "SELECT * FROM researchers WHERE state = 'Karnataka' AND research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:05.118227", "status": "executing"}
+{"query_id": "03f1cc25-4878-455b-a39d-114c5d083957", "row_count": 0, "timestamp": "2026-04-19T07:33:05.118774", "status": "success"}
+{"query_id": "05bfe7f3-0de2-437b-b15b-3884a9d26f4f", "sql": "SELECT COUNT(*) as count FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:05.121730", "status": "executing"}
+{"query_id": "05bfe7f3-0de2-437b-b15b-3884a9d26f4f", "row_count": 1, "timestamp": "2026-04-19T07:33:05.122178", "status": "success"}
+{"query_id": "0b06a352-7430-4eaa-872d-128a06de0cb5", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:51.927545", "status": "executing"}
+{"query_id": "0b06a352-7430-4eaa-872d-128a06de0cb5", "row_count": 25, "timestamp": "2026-04-19T07:33:51.928711", "status": "success"}
+{"query_id": "c797c239-8b8a-4f28-83f0-be9a9a940933", "sql": "SELECT * FROM publications WHERE year = 2023 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:54.189954", "status": "executing"}
+{"query_id": "c797c239-8b8a-4f28-83f0-be9a9a940933", "row_count": 75, "timestamp": "2026-04-19T07:33:54.193003", "status": "success"}
+{"query_id": "1757be65-ceb9-4e6a-8b3f-066e0c38404a", "sql": "SELECT COUNT(*) as count FROM researchers LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:56.234836", "status": "executing"}
+{"query_id": "1757be65-ceb9-4e6a-8b3f-066e0c38404a", "row_count": 1, "timestamp": "2026-04-19T07:33:56.235428", "status": "success"}
+{"query_id": "9be0adfa-5198-4b3d-8332-dd164b339eb0", "sql": "SELECT * FROM researchers WHERE research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:33:58.162510", "status": "executing"}
+{"query_id": "9be0adfa-5198-4b3d-8332-dd164b339eb0", "row_count": 25, "timestamp": "2026-04-19T07:33:58.163486", "status": "success"}
+{"query_id": "197e942c-e468-4f99-b3fb-3be762c2c37c", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T07:34:17.890222", "status": "executing"}
+{"query_id": "197e942c-e468-4f99-b3fb-3be762c2c37c", "row_count": 25, "timestamp": "2026-04-19T07:34:17.891692", "status": "success"}
