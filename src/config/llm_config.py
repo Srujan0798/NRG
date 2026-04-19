@@ -71,8 +71,8 @@ def load_llm_settings(provider_name: str | None = None) -> LLMSettings:
         return LLMSettings(
             provider=provider,
             api_key=api_key,
-            model=_env("NVIDIA_MODEL", "meta/llama3-70b-instruct") or "meta/llama3-70b-instruct",
-            base_url=_env("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+            model=_env("NVIDIA_MODEL", "meta/llama-3.1-70b-instruct") or "meta/llama-3.1-70b-instruct",
+            base_url="https://integrate.api.nvidia.com/v1",
             request_timeout_seconds=timeout,
         )
 
