@@ -37,6 +37,22 @@ export default defineConfig({
       '/publications': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/query/graph': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/me': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/health/llm': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/.well-known/jwks.json': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   },

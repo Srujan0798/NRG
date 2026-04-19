@@ -2,7 +2,6 @@ import re
 from typing import Dict, Any, Optional
 import hashlib
 
-
 class PromptSanitiser:
     """
     Security layer for detecting and blocking PII and prompt injection attempts.
@@ -17,14 +16,15 @@ class PromptSanitiser:
             "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
         }
 
-# Prompt injection patterns
-    self.injection_patterns = [
-        r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
-        r"(?i)\byou\s+are\s+now\b",
-        r"(?i)\bdisregard\s+instructions\b",
-        r"(?i)<\s*/\s*system\s*>",
-        r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+prompt\b",
-    ]
+        # Prompt injection patterns
+        self.injection_patterns = [
+            r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
+            r"(?i)\byou\s+are\s+now\b",
+            r"(?i)\bdisregard\s+(all\s+)?previous\s+instructions\b",
+            r"(?i)<\s*/\s*system\s*>",
+            r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)(?:\s+prompt)?\b",
+            r"(?i)<\s*!--.*ignore.*-->",
+        ]
 
         self.injection_regex = [
             re.compile(pattern) for pattern in self.injection_patterns
@@ -46,21 +46,21 @@ class PromptSanitiser:
                 return True
         return False
 
-def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
-  """
-  Sanitise prompt by replacing detected PII with placeholders.
-  Returns sanitised prompt and list of detected PII.
-  """
-  sanitised = prompt
-  detected_pii = []
+    def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
+        """
+        Sanitise prompt by replacing detected PII with placeholders.
+        Returns sanitised prompt and list of detected PII.
+        """
+        sanitised = prompt
+        detected_pii = []
 
-  for pii_type, pattern in self.pii_patterns.items():
-   if pattern.search(sanitised):
-    placeholder = f"[{pii_type.upper()}]"
-    sanitised = pattern.sub(placeholder, sanitised)
-    detected_pii.append(pii_type)
+        for pii_type, pattern in self.pii_patterns.items():
+            if pattern.search(sanitised):
+                placeholder = f"[{pii_type.upper()}]"
+                sanitised = pattern.sub(placeholder, sanitised)
+                detected_pii.append(pii_type)
 
-  return sanitised, detected_pii
+        return sanitised, detected_pii
 
     def validate_query(self, query_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -69,7 +69,15 @@ def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
         """
         query = query_data.get("query", "")
 
-        # Check for PII
+        # Check for prompt injection FIRST (security-critical)
+        if self.detect_injection(query):
+            return {
+                "valid": False,
+                "reason": "PROMPT_INJECTION",
+                "details": "Potential prompt injection detected",
+            }
+
+        # Check for PII (DLP compliance)
         pii_type = self.detect_pii(query)
         if pii_type:
             return {
@@ -77,14 +85,6 @@ def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
                 "reason": "DLP_VIOLATION",
                 "details": f"PII detected: {pii_type}",
                 "pii_type": pii_type,
-            }
-
-        # Check for prompt injection
-        if self.detect_injection(query):
-            return {
-                "valid": False,
-                "reason": "PROMPT_INJECTION",
-                "details": "Potential prompt injection detected",
             }
 
         # Generate query hash for audit logging

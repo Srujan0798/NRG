@@ -1,50 +1,27 @@
-"""Executor Node - Execute skills and retrieve data."""
+"""Executor node - executes skills based on routing decision."""
 
 import logging
-from typing import TypedDict
-from typing_extensions import NotRequired
+from typing import Dict, Any
 
-from src.skills.rag.skill import RAGSkill
 from src.skills.text_to_sql.skill import TextToSQLSkill
+from src.skills.rag.skill import RAGSkill
 from src.audit import log_sql
-
+from src.orchestration.state import NRGState
 
 logger = logging.getLogger(__name__)
 
 
-class ExecutorState(TypedDict):
-    """State passed from executor node."""
-
-    sql_query: NotRequired[str]
-    sql_results: list
-    retrieved_chunks: list
-    retrieval_metadata: list
-    errors: list
-
-
-def executor_node(state):
+def executor_node(state) -> dict:
     """Execute skills based on routing decision."""
-    # Extract routing decision from state object
-    if hasattr(state, "routing_decision"):
-        routing = state.routing_decision
-    elif isinstance(state, dict):
-        routing = state.get("routing_decision", "rag")
-    else:
-        routing = "rag"
-
-    if hasattr(state, "user_query"):
+    # Handle both NRGState dataclass and dict
+    if isinstance(state, NRGState):
         user_query = state.user_query
-    elif isinstance(state, dict):
-        user_query = state.get("user_query", "")
-    else:
-        user_query = ""
-
-    if hasattr(state, "user_tier"):
+        routing = state.routing_decision or "text_to_sql"
         user_tier = state.user_tier
-    elif isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
     else:
-        user_tier = 1
+        user_query = state.get("user_query", "")
+        routing = state.get("routing_decision", "text_to_sql")
+        user_tier = state.get("user_tier", 1)
 
     results = {
         "sql_results": [],
@@ -60,6 +37,7 @@ def executor_node(state):
             sql_result = sql_skill.execute(user_query, user_tier=user_tier)
             results["sql_query"] = sql_result.get("query")
             results["sql_results"] = sql_result.get("results", [])
+            
             # Audit: log SQL execution with HMAC chain
             try:
                 log_sql(
@@ -69,9 +47,15 @@ def executor_node(state):
                 )
             except Exception:
                 logger.warning("Audit log_sql failed", exc_info=True)
+                
         except Exception as exc:
-            logger.warning("Text-to-SQL execution failed: %s", exc)
-            results["errors"].append({"node": "executor", "error": str(exc)})
+            logger.error("Text-to-SQL execution failed: %s", exc, exc_info=True)
+            results["errors"].append({
+                "node": "executor",
+                "skill": "text_to_sql",
+                "error_type": type(exc).__name__,
+                "error": str(exc)
+            })
         finally:
             if sql_skill is not None:
                 sql_skill.close()
@@ -84,8 +68,13 @@ def executor_node(state):
             results["retrieved_chunks"] = rag_result.get("chunks", [])
             results["retrieval_metadata"] = rag_result.get("metadata", [])
         except Exception as exc:
-            logger.warning("RAG retrieval failed: %s", exc)
-            results["errors"].append({"node": "executor", "error": str(exc)})
+            logger.error("RAG retrieval failed: %s", exc, exc_info=True)
+            results["errors"].append({
+                "node": "executor",
+                "skill": "rag",
+                "error_type": type(exc).__name__,
+                "error": str(exc)
+            })
         finally:
             if rag_skill is not None:
                 rag_skill.close()
