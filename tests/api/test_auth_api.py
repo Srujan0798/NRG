@@ -98,7 +98,7 @@ def test_researchers_endpoint_applies_role_based_filtering(monkeypatch):
         def __init__(self, *_args, **_kwargs):
             pass
 
-        def query_researchers(self):
+        def query_researchers(self, state=None, research_area=None):
             return sample_records
 
     monkeypatch.setattr(api_main, "NRGDatabase", FakeDB)

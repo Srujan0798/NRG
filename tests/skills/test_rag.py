@@ -20,7 +20,8 @@ class TestEmbedder:
 
         result = embedder.embed_single("Robotics research")
         assert isinstance(result, list)
-        assert len(result) == 384
+        # IndicBERT produces 768-dim embeddings
+        assert len(result) == 768
 
         embedder.close()
 
@@ -32,7 +33,8 @@ class TestEmbedder:
         results = embedder.embed(texts)
 
         assert len(results) == 3
-        assert all(len(r) == 384 for r in results)
+        # IndicBERT produces 768-dim embeddings
+        assert all(len(r) == 768 for r in results)
 
         embedder.close()
 
@@ -41,7 +43,8 @@ class TestEmbedder:
         embedder = Embedder()
 
         dim = embedder.get_dimension()
-        assert dim == 384
+        # IndicBERT produces 768-dim embeddings
+        assert dim == 768
 
         embedder.close()
 
@@ -53,7 +56,8 @@ class TestRetriever:
         """Test retrieval includes metadata."""
         retriever = Retriever()
 
-        query_vector = [0.1] * 384
+        # IndicBERT uses 768-dim embeddings
+        query_vector = [0.1] * 768
         result = retriever.retrieve(query_vector, user_tier=1, top_k=5)
 
         assert "chunks" in result
@@ -66,7 +70,8 @@ class TestRetriever:
         """Test tier filtering in retrieval."""
         retriever = Retriever()
 
-        query_vector = [0.1] * 384
+        # IndicBERT uses 768-dim embeddings
+        query_vector = [0.1] * 768
 
         result_tier1 = retriever.retrieve(query_vector, user_tier=1, top_k=5)
         result_tier3 = retriever.retrieve(query_vector, user_tier=3, top_k=5)

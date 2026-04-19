@@ -36,16 +36,16 @@ ROLE_CONFIG = {
 
 DEFAULT_USERS = {
     "researcher_user": {
-        "password": os.getenv("RESEARCHER_PASSWORD", "change-me"),
+        "password": os.getenv("RESEARCHER_PASSWORD", "researcher-pass"),
         "role": "researcher",
         "researcher_id": "researcher-1",
     },
     "gov_user": {
-        "password": os.getenv("GOV_PASSWORD", "change-me"),
+        "password": os.getenv("GOV_PASSWORD", "government-pass"),
         "role": "government",
     },
     "industry_user": {
-        "password": os.getenv("INDUSTRY_PASSWORD", "change-me"),
+        "password": os.getenv("INDUSTRY_PASSWORD", "industry-pass"),
         "role": "industry",
     },
 }

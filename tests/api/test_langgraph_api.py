@@ -7,9 +7,9 @@ class StubWorkflow:
     def __init__(self):
         self.calls = []
 
-    def run(self, query: str, user_tier: int = 1, session_id: str | None = None):
+    def run(self, query: str, user_tier: int = 1, session_id: str | None = None, user_id: str | None = None):
         self.calls.append(
-            {"query": query, "user_tier": user_tier, "session_id": session_id}
+            {"query": query, "user_tier": user_tier, "session_id": session_id, "user_id": user_id}
         )
         return {
             "query_id": "query-123",
@@ -51,10 +51,9 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     assert payload["intent"] == "structured"
     assert payload["routing_decision"] == "text_to_sql"
     assert payload["response"] == "orchestrated answer"
-    assert stub_workflow.calls == [
-        {
-            "query": "Find robotics researchers",
-            "user_tier": 1,
-            "session_id": "session-123",
-        }
-    ]
+    assert len(stub_workflow.calls) == 1
+    call = stub_workflow.calls[0]
+    assert call["query"] == "Find robotics researchers"
+    assert call["user_tier"] == 1
+    assert call["session_id"] == "session-123"
+    assert "user_id" in call
