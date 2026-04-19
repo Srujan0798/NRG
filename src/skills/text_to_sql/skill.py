@@ -1,24 +1,78 @@
 """Text-to-SQL Skill - Natural language to SQL with zero data leakage."""
 
 import os
+import re
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List, Tuple
 import json
 
-from .sqlite_schema_extractor import SQLiteSchemaExtractor
-from .sqlite_sandbox import SQLiteSandbox
+from src.audit import log_llm_call as audit_log_llm_call
 
 
 logger = logging.getLogger(__name__)
 
+# Indian states for WHERE clause extraction
+_INDIAN_STATES = [
+    "andhra pradesh", "arunachal pradesh", "assam", "bihar", "chhattisgarh",
+    "delhi", "goa", "gujarat", "haryana", "himachal pradesh", "jharkhand",
+    "karnataka", "kerala", "madhya pradesh", "maharashtra", "manipur",
+    "meghalaya", "mizoram", "nagaland", "odisha", "punjab", "rajasthan",
+    "sikkim", "tamil nadu", "telangana", "tripura", "uttar pradesh",
+    "uttarakhand", "west bengal",
+]
+
+# Research areas for WHERE clause extraction
+_RESEARCH_AREAS = [
+    "ai", "machine learning", "deep learning", "nlp",
+    "natural language processing", "computer vision", "robotics",
+    "quantum computing", "cybersecurity", "data science",
+    "bioinformatics", "iot", "blockchain",
+]
+
 
 class TextToSQLSkill:
-    """Sovereign Text-to-SQL module."""
+    """Sovereign Text-to-SQL module.
+
+    Auto-detects database backend (SQLite vs PostgreSQL) from DATABASE_URL.
+    """
 
     def __init__(self, llm_provider: Optional[Any] = None):
         self.llm_provider = llm_provider
-        self.extractor = SQLiteSchemaExtractor()
-        self.sandbox = SQLiteSandbox()
+        self._db_type, self._db_url = self._detect_database()
+        self.extractor, self.sandbox = self._initialize_backend()
+
+    def _detect_database(self) -> tuple:
+        """Detect database type from DATABASE_URL environment variable."""
+        db_url = os.getenv("DATABASE_URL", "")
+
+        if db_url.startswith("sqlite"):
+            return "sqlite", db_url
+        elif db_url.startswith("postgresql") or db_url.startswith("postgres"):
+            return "postgresql", db_url
+        else:
+            # Default to SQLite for safety
+            logger.warning(f"Unknown DATABASE_URL format, defaulting to SQLite: {db_url[:50]}...")
+            return "sqlite", "sqlite:///nrg_research.db"
+
+    def _initialize_backend(self) -> tuple:
+        """Initialize the appropriate schema extractor and sandbox based on DB type."""
+        if self._db_type == "sqlite":
+            from .sqlite_schema_extractor import SQLiteSchemaExtractor
+            from .sqlite_sandbox import SQLiteSandbox
+
+            # Extract path from sqlite:/// URL
+            db_path = self._db_url.replace("sqlite:///", "")
+            extractor = SQLiteSchemaExtractor(db_path=db_path)
+            sandbox = SQLiteSandbox(db_path=db_path)
+        else:
+            from .schema_extractor import SchemaExtractor
+            from .sandbox import Sandbox
+
+            extractor = SchemaExtractor(connection_string=self._db_url)
+            sandbox = Sandbox(connection_string=self._db_url)
+
+        logger.info(f"Initialized TextToSQLSkill with {self._db_type} backend")
+        return extractor, sandbox
 
     def generate_sql(self, user_query: str, schema_prompt: str) -> str:
         """
@@ -32,15 +86,15 @@ class TextToSQLSkill:
         messages = [
             {
                 "role": "system",
-                "content": """You are a SQL expert. Generate accurate PostgreSQL queries.
-                
+                "content": """You are a SQL expert. Generate accurate SQLite queries.
+
 RULES:
 - Return ONLY the SQL query, no explanations
-- Use proper UUID handling (uuid_generate_v4())
-- Filter by access_tier based on user_tier parameter
 - Always include LIMIT for safety (default 100)
 - Use parameterized queries where possible
-- Return valid, executable PostgreSQL syntax""",
+- Return valid, executable SQLite syntax
+- Use single quotes for string literals
+- SQLite does not support UUID functions - use text IDs""",
             },
             {
                 "role": "user",
@@ -52,27 +106,112 @@ RULES:
             response = self.llm_provider.chat(messages)
             sql = response.content.strip()
             sql = sql.strip("`").strip("sql").strip()
+            # Audit: log LLM call for SQL generation
+            try:
+                audit_log_llm_call(
+                    "text-to-sql",
+                    messages[-1]["content"][:500],
+                    {"sql": sql[:500]},
+                    getattr(self.llm_provider, "model", "unknown"),
+                )
+            except Exception:
+                logger.warning("Audit log_llm_call failed for SQL generation", exc_info=True)
             return sql
         except Exception as e:
             logger.warning(f"LLM SQL generation failed: {e}")
             return self._fallback_sql(user_query)
 
-    def _fallback_sql(self, query: str) -> str:
-        """Simple keyword-based SQL generation fallback."""
+    def _extract_filters(self, query: str) -> Tuple[List[str], List[str]]:
+        """Extract state and research area filters from natural language query."""
         query_lower = query.lower()
+        matched_states = []
+        matched_areas = []
 
-        if "researcher" in query_lower or "faculty" in query_lower:
-            return "SELECT * FROM researchers LIMIT 100"
+        for state in _INDIAN_STATES:
+            if state in query_lower:
+                # Title-case the state for DB matching
+                matched_states.append(state.title())
+
+        for area in _RESEARCH_AREAS:
+            if area in query_lower:
+                # Use uppercase for short acronyms, title-case for others
+                if len(area) <= 3:
+                    matched_areas.append(area.upper())
+                else:
+                    matched_areas.append(area.title())
+
+        return matched_states, matched_areas
+
+    def _fallback_sql(self, query: str) -> str:
+        """Keyword-based SQL generation fallback with WHERE clause extraction."""
+        query_lower = query.lower()
+        states, areas = self._extract_filters(query)
+
+        # Determine the target table
+        if "researcher" in query_lower or "faculty" in query_lower or "scientist" in query_lower:
+            table = "researchers"
         elif "lab" in query_lower or "laboratory" in query_lower:
-            return "SELECT * FROM labs LIMIT 100"
+            table = "labs"
         elif "publication" in query_lower or "paper" in query_lower:
-            return "SELECT * FROM publications LIMIT 100"
+            table = "publications"
         elif "funding" in query_lower or "grant" in query_lower:
-            return "SELECT * FROM funding LIMIT 100"
-        elif "collaboration" in query_lower:
-            return "SELECT * FROM collaborations LIMIT 100"
+            table = "funding_records"
+        elif "institution" in query_lower or "university" in query_lower:
+            table = "institutions"
         else:
-            return "SELECT * FROM researchers LIMIT 100"
+            # Default to researchers for people-oriented queries
+            table = "researchers"
+
+        # Build WHERE clauses from extracted filters
+        conditions = []
+
+        if states:
+            if len(states) == 1:
+                conditions.append(f"state = '{states[0]}'")
+            else:
+                in_list = ", ".join(f"'{s}'" for s in states)
+                conditions.append(f"state IN ({in_list})")
+
+        if areas and table in ("researchers", "labs"):
+            if len(areas) == 1:
+                conditions.append(f"research_area = '{areas[0]}'")
+            else:
+                in_list = ", ".join(f"'{a}'" for a in areas)
+                conditions.append(f"research_area IN ({in_list})")
+
+        # Check for year filters
+        year_match = re.search(r'\b(19|20)\d{2}\b', query)
+        if year_match:
+            year = year_match.group()
+            if table == "researchers":
+                if "after" in query_lower or "since" in query_lower:
+                    conditions.append(f"year_joined >= {year}")
+                elif "before" in query_lower:
+                    conditions.append(f"year_joined <= {year}")
+                else:
+                    conditions.append(f"year_joined = {year}")
+            elif table == "publications":
+                if "after" in query_lower or "since" in query_lower:
+                    conditions.append(f"year >= {year}")
+                elif "before" in query_lower:
+                    conditions.append(f"year <= {year}")
+                else:
+                    conditions.append(f"year = {year}")
+
+        # Check for count queries
+        if "count" in query_lower or "how many" in query_lower:
+            select_clause = f"SELECT COUNT(*) as count FROM {table}"
+        else:
+            select_clause = f"SELECT * FROM {table}"
+
+        # Assemble
+        if conditions:
+            where_clause = " AND ".join(conditions)
+            sql = f"{select_clause} WHERE {where_clause} LIMIT 100"
+        else:
+            sql = f"{select_clause} LIMIT 100"
+
+        return sql
 
     def execute(self, user_query: str, user_tier: int = 1) -> Dict[str, Any]:
         """
