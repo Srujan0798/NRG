@@ -151,6 +151,9 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             "intent": result.get("intent"),
             "routing_decision": result.get("routing_decision"),
             "verification_status": result.get("verification_status", False),
+            "warnings": result.get("warnings", result.get("errors", [])),
+            "retrieval_sources": result.get("retrieval_sources", []),
+            "provenance": result.get("provenance", {}),
             "conversation_history": result.get("conversation_history", []),
         }
     except Exception as e:

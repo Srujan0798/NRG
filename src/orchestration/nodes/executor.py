@@ -28,6 +28,8 @@ def executor_node(state) -> dict:
         "retrieved_chunks": [],
         "retrieval_metadata": [],
         "errors": [],
+        "warnings": [],
+        "retrieval_sources": [],
     }
 
     if routing in ("text_to_sql", "text_to_sql+rag"):
@@ -37,6 +39,8 @@ def executor_node(state) -> dict:
             sql_result = sql_skill.execute(user_query, user_tier=user_tier)
             results["sql_query"] = sql_result.get("query")
             results["sql_results"] = sql_result.get("results", [])
+            if results["sql_results"]:
+                results["retrieval_sources"].append("structured")
             
             # Audit: log SQL execution with HMAC chain
             try:
@@ -50,12 +54,14 @@ def executor_node(state) -> dict:
                 
         except Exception as exc:
             logger.error("Text-to-SQL execution failed: %s", exc, exc_info=True)
-            results["errors"].append({
+            warning = {
                 "node": "executor",
                 "skill": "text_to_sql",
                 "error_type": type(exc).__name__,
-                "error": str(exc)
-            })
+                "message": str(exc),
+            }
+            results["errors"].append(warning)
+            results["warnings"].append(warning)
         finally:
             if sql_skill is not None:
                 sql_skill.close()
@@ -67,14 +73,18 @@ def executor_node(state) -> dict:
             rag_result = rag_skill.retrieve(user_query, user_tier=user_tier, top_k=5)
             results["retrieved_chunks"] = rag_result.get("chunks", [])
             results["retrieval_metadata"] = rag_result.get("metadata", [])
+            if results["retrieved_chunks"] or results["retrieval_metadata"]:
+                results["retrieval_sources"].append("rag")
         except Exception as exc:
             logger.error("RAG retrieval failed: %s", exc, exc_info=True)
-            results["errors"].append({
+            warning = {
                 "node": "executor",
                 "skill": "rag",
                 "error_type": type(exc).__name__,
-                "error": str(exc)
-            })
+                "message": str(exc),
+            }
+            results["errors"].append(warning)
+            results["warnings"].append(warning)
         finally:
             if rag_skill is not None:
                 rag_skill.close()

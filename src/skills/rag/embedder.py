@@ -18,6 +18,10 @@ INDIC_MODEL = "ai4bharat/IndicBERTv2-SS"
 INDIAN_LANG_CODES = {"hi", "bn", "gu", "kn", "ml", "mr", "ne", "pa", "ta", "te", "ur"}
 
 
+class EmbedderUnavailable(RuntimeError):
+    """Raised when embeddings cannot be generated reliably."""
+
+
 class SemanticChunker:
     """Sentence-aware semantic chunker with 512 token limit, 128 token stride."""
 
@@ -143,16 +147,18 @@ class Embedder:
     def embed(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for texts with language-gated model selection."""
         if not self._primary_model and not self._indic_model:
-            raise RuntimeError("No embedding models loaded")
+            raise EmbedderUnavailable("No embedding models loaded")
 
         embeddings = []
         for text in texts:
             model = self._get_model_for_text(text)
             if model is None:
-                embeddings.append([0.0] * 768)
-            else:
+                raise EmbedderUnavailable("No embedding model available for detected language")
+            try:
                 emb = model.encode(text, convert_to_numpy=True, show_progress_bar=False)
-                embeddings.append(emb.tolist())
+            except Exception as exc:
+                raise EmbedderUnavailable(f"Embedding generation failed: {exc}") from exc
+            embeddings.append(emb.tolist())
 
         return embeddings
 

@@ -1,4 +1,5 @@
 import re
+import unicodedata
 from typing import Dict, Any, Optional
 import hashlib
 
@@ -16,17 +17,26 @@ class PromptSanitiser:
             "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
         }
 
-    # Prompt injection patterns (per AGENT-TASK-17 spec)
-    self.injection_patterns = [
-        r"(?i)\bignore\s+(all\s+)?previous\s+instructions",
-        r"(?i)\byou\s+are\s+now\b",
-        r"(?i)\bdisregard\s+(all\s+|previous\s+)?instructions",
-        r"(?i)<\s*/\s*system\s*>",
-        r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+(prompt|instructions?|content)",
-        r"(?i)\b(dump|print)\s+(the\s+)?system\b",
-        r"(?i)\breveal\s+(the\s+)?hidden\b",
-    ]
-
+        # Prompt injection patterns (per AGENT-TASK-17 spec)
+        self.injection_patterns = [
+            r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
+            r"(?i)\bignore\s+instructions\b",
+            r"(?i)\bignore\s+(all\s+)?constraints\b",
+            r"(?i)\bignore\s+previous\b",
+            r"(?i)\byou\s+are\s+now\b",
+            r"(?i)\bdisregard\s+(all\s+|previous\s+)?instructions\b",
+            r"(?i)\bdisregard\s+instruc\b",
+            r"(?i)\bdisregard\s+your\s+programming\b",
+            r"(?i)<\s*/\s*system\s*>",
+            r"(?i)<\s*/?\s*system\s*>",
+            r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+(prompt|instructions?|content)\b",
+            r"(?i)\breveal\s+(the\s+)?system\b",
+            r"(?i)\breveal\s+all\s+system\s+instructions\b",
+            r"(?i)\b(reveal|print|dump)\s+(the\s+)?hidden\s+system\s+(prompt|instructions?|content)\b",
+            r"(?i)\b(dump|print)\s+(the\s+)?system\b",
+            r"(?i)\b(print|dump)\s+(the\s+)?hidden\b",
+            r"(?i)\breveal\s+(the\s+)?hidden\b",
+        ]
         self.injection_regex = [
             re.compile(pattern) for pattern in self.injection_patterns
         ]
@@ -40,12 +50,40 @@ class PromptSanitiser:
 
     def detect_injection(self, text: str) -> bool:
         """Detect potential prompt injection attempts."""
-        text_lower = text.lower()
+        if re.search(r"(?i)<\s*/?\s*system\s*>", text):
+            return True
+
+        text_lower = self._normalise_for_detection(text)
 
         for pattern in self.injection_regex:
             if pattern.search(text_lower):
                 return True
         return False
+
+    def _normalise_for_detection(self, text: str) -> str:
+        """Normalize common obfuscation before applying conservative regexes."""
+        normalized = unicodedata.normalize("NFKC", text).lower()
+        homoglyphs = str.maketrans(
+            {
+                "ɪ": "i",
+                "ɢ": "g",
+                "ɴ": "n",
+                "ᴏ": "o",
+                "ʀ": "r",
+                "ᴘ": "p",
+                "ᴇ": "e",
+                "ᴠ": "v",
+                "ᴜ": "u",
+                "s": "s",
+                "ᴛ": "t",
+                "ᴄ": "c",
+            }
+        )
+        normalized = normalized.translate(homoglyphs)
+        normalized = re.sub(r"[<>()!]+", " ", normalized)
+        normalized = re.sub(r"[-_*/>]+", " ", normalized)
+        normalized = re.sub(r"\s+", " ", normalized).strip()
+        return normalized
 
     def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
         """

@@ -6,7 +6,6 @@ import uuid
 from pathlib import Path
 
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
 from dotenv import load_dotenv
 
 # Add the project root to sys.path for relative imports
@@ -50,8 +49,7 @@ class NRGWorkflow:
         workflow.add_edge("executor", "synthesizer")
         workflow.add_edge("synthesizer", END)
 
-        checkpointer = MemorySaver()
-        return workflow.compile(checkpointer=checkpointer)
+        return workflow.compile()
 
     def _receiver_wrapper(self, state: dict) -> dict:
         """Wrapper for receiver node with state management."""

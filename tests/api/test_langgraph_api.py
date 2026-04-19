@@ -18,6 +18,18 @@ class StubWorkflow:
             "routing_decision": "text_to_sql",
             "synthesized_response": "orchestrated answer",
             "verification_status": True,
+            "warnings": [
+                {
+                    "skill": "rag",
+                    "error_type": "RetrieverUnavailable",
+                    "message": "Qdrant unavailable",
+                }
+            ],
+            "provenance": {
+                "synth": "rule_based",
+                "cloud_synthesis_used": False,
+            },
+            "retrieval_sources": ["structured"],
             "conversation_history": [
                 {"query": query, "response": "orchestrated answer"}
             ],
@@ -36,6 +48,7 @@ def _auth_headers(client: TestClient) -> dict[str, str]:
 def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     stub_workflow = StubWorkflow()
     monkeypatch.setattr(api_main, "workflow", stub_workflow)
+    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: None)
 
     client = TestClient(api_main.app)
     response = client.post(
@@ -51,6 +64,16 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     assert payload["intent"] == "structured"
     assert payload["routing_decision"] == "text_to_sql"
     assert payload["response"] == "orchestrated answer"
+    assert payload["warnings"] == [
+        {
+            "skill": "rag",
+            "error_type": "RetrieverUnavailable",
+            "message": "Qdrant unavailable",
+        }
+    ]
+    assert payload["provenance"]["synth"] == "rule_based"
+    assert payload["provenance"]["cloud_synthesis_used"] is False
+    assert payload["retrieval_sources"] == ["structured"]
     assert len(stub_workflow.calls) == 1
     call = stub_workflow.calls[0]
     assert call["query"] == "Find robotics researchers"
