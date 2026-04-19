@@ -18,13 +18,13 @@ class PromptSanitiser:
         }
 
 # Prompt injection patterns
- self.injection_patterns = [
- r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
- r"(?i)\byou\s+are\s+now\b",
- r"(?i)\bdisregard\s+instructions\b",
- r"(?i)<\s*/\s*system\s*>",
- r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+prompt\b",
- ]
+    self.injection_patterns = [
+        r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
+        r"(?i)\byou\s+are\s+now\b",
+        r"(?i)\bdisregard\s+instructions\b",
+        r"(?i)<\s*/\s*system\s*>",
+        r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+prompt\b",
+    ]
 
         self.injection_regex = [
             re.compile(pattern) for pattern in self.injection_patterns
