@@ -50,12 +50,11 @@ class Embedder:
         return self.embed([text])[0]
 
     def _dummy_embeddings(self, count: int) -> List[List[float]]:
-        """Fallback for offline testing."""
-        dim = 384
-        import numpy as np
-
-        np.random.seed(42)
-        return np.random.randn(count, dim).tolist()
+        """Fallback for offline testing - raises error instead of returning noise."""
+        raise RuntimeError(
+            f"Embedding model not loaded. Cannot generate embeddings for {count} texts. "
+            "Please check model availability or EMBEDDING_MODEL env var."
+        )
 
     def get_dimension(self) -> int:
         """Get embedding dimension."""
