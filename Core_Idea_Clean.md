@@ -1,7 +1,12 @@
 # Core Idea: National Research Intelligence Platform
 
-## Executive Summary
+# Main Challenge
+The speaker wants a chatbot where a user asks something ambiguous like "Tell me which professor is doing best research in terms of hydrogen catalysis" or "Who is working best in terms of hydrogen catalysis." It must automatically figure out the scope (e.g., all time vs. last 5 years) from a database and respond accurately.
 
+# Full Transcript
+Unknown Speaker A: What they are trying to say is we cant really expect know the user to know everything. Okay. You want to make a chatbot saying that user will ask something like this. Tell me which professor is doing best research in terms of hydrogen catalysis. All right. And the user wont tell anything. Using the database the chatbot has to figure out what to tell in what context it should be there. I say uh what who who is the who is working best in terms of hydrogen catalysis. It it could be whole time, it could be last five years. The AI has to figure that out. Can you build it? Dude,
+
+## Executive Summary
 A state-funded initiative (~₹40+ crore) to build a National Research Intelligence Platform for India, executed from IIT Gandhinagar with government backing.
 
 ## Current Situation
