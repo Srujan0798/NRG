@@ -17,19 +17,14 @@ class PromptSanitiser:
             "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
         }
 
-        # Prompt injection patterns
-        self.injection_patterns = [
-            r"(?i)ignore.*previous",
-            r"(?i)system.*prompt",
-            r"(?i)role.*play",
-            r"(?i)hypothetical",
-            r"(?i)as.*ai",
-            r"(?i)you.*are.*now",
-            r"(?i)disregard.*instructions",
-            r"(?i)from.*now.*on",
-            r"(?i)previous.*instructions",
-            r"(?i)following.*instructions",
-        ]
+# Prompt injection patterns
+ self.injection_patterns = [
+ r"(?i)\bignore\s+(all\s+)?previous\s+instructions\b",
+ r"(?i)\byou\s+are\s+now\b",
+ r"(?i)\bdisregard\s+instructions\b",
+ r"(?i)<\s*/\s*system\s*>",
+ r"(?i)\b(reveal|print|dump)\s+(the\s+)?(system|hidden)\s+prompt\b",
+ ]
 
         self.injection_regex = [
             re.compile(pattern) for pattern in self.injection_patterns
@@ -51,27 +46,21 @@ class PromptSanitiser:
                 return True
         return False
 
-    def sanitise_prompt(self, prompt: str) -> str:
-        """
-        Sanitise prompt by replacing detected PII with placeholders.
-        Returns sanitised prompt and list of detected PII.
-        """
-        sanitised = prompt
-        detected_pii = []
+def sanitise_prompt(self, prompt: str) -> tuple[str, list[str]]:
+  """
+  Sanitise prompt by replacing detected PII with placeholders.
+  Returns sanitised prompt and list of detected PII.
+  """
+  sanitised = prompt
+  detected_pii = []
 
-        # Replace Aadhaar numbers
-        sanitised = self.pii_patterns["aadhaar"].sub("[AADHAAR]", sanitised)
+  for pii_type, pattern in self.pii_patterns.items():
+   if pattern.search(sanitised):
+    placeholder = f"[{pii_type.upper()}]"
+    sanitised = pattern.sub(placeholder, sanitised)
+    detected_pii.append(pii_type)
 
-        # Replace PAN numbers
-        sanitised = self.pii_patterns["pan"].sub("[PAN]", sanitised)
-
-        # Replace phone numbers
-        sanitised = self.pii_patterns["phone"].sub("[PHONE]", sanitised)
-
-        # Replace emails
-        sanitised = self.pii_patterns["email"].sub("[EMAIL]", sanitised)
-
-        return sanitised, detected_pii
+  return sanitised, detected_pii
 
     def validate_query(self, query_data: Dict[str, Any]) -> Dict[str, Any]:
         """

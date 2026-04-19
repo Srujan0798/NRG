@@ -4,12 +4,17 @@ import hmac
 import hashlib
 import json
 import logging
+import os
 import uuid
 from datetime import datetime, date
 from pathlib import Path
 from typing import Optional, Any
 
 logger = logging.getLogger(__name__)
+
+CHAIN_KEY = os.environ.get("AUDIT_CHAIN_KEY")
+if not CHAIN_KEY and os.environ.get("NRG_ENV", "dev") != "dev":
+    raise RuntimeError("AUDIT_CHAIN_KEY must be set outside dev")
 
 
 class AuditEvent:
@@ -49,7 +54,7 @@ class AuditEvent:
 class ImmutableAuditLog:
     """Append-only audit log with HMAC chaining."""
 
-    CHAIN_KEY = "nrg-audit-chain-key"  # Override in production
+    CHAIN_KEY = CHAIN_KEY or "nrg-audit-chain-dev-key"
 
     def __init__(self, storage_path: str = ".audit"):
         self.storage_path = Path(storage_path)
