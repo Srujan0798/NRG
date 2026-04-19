@@ -4,7 +4,8 @@ import logging
 from typing import TypedDict
 
 from src.config.llm_config import get_llm_client
-from src.config.local_llm import get_local_llm_client, rule_based_synthesis
+from src.config.local_llm import get_local_llm_client
+from src.audit import log_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -55,6 +56,20 @@ def synthesizer_node(state):
     else:
         conversation_history = []
 
+    if hasattr(state, "intent"):
+        intent = state.intent
+    elif isinstance(state, dict):
+        intent = state.get("intent", "")
+    else:
+        intent = ""
+
+    if hasattr(state, "routing_decision"):
+        routing_decision = state.routing_decision
+    elif isinstance(state, dict):
+        routing_decision = state.get("routing_decision", "")
+    else:
+        routing_decision = ""
+
     data_sources = []
 
     if sql_results:
@@ -76,6 +91,16 @@ def synthesizer_node(state):
             try:
                 # Use query as user_prompt for context
                 verification_resp = client.generate(verification_prompt, user_query, _coerce_history(context_summary))
+                # Audit: log verification LLM call
+                try:
+                    log_llm_call(
+                        "synthesizer",
+                        verification_prompt,
+                        {"response": verification_resp[:500] if verification_resp else ""},
+                        getattr(client, "model", "unknown"),
+                    )
+                except Exception:
+                    logger.warning("Audit log_llm_call failed for verification", exc_info=True)
                 if "UNCERTAIN" in verification_resp.upper():
                     return {
                         "synthesized_response": "IITGN AI requires more data to verify.",
@@ -92,6 +117,8 @@ def synthesizer_node(state):
             retrieved_chunks,
             user_tier,
             context_summary,
+            intent,
+            routing_decision,
         )
         verification = True
 
@@ -108,6 +135,8 @@ def _synthesize(
     chunks: list,
     user_tier: int,
     context_summary: str,
+    intent: str = "",
+    routing_decision: str = "",
 ) -> str:
     """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback."""
     # Try 1: Cloud LLM
@@ -123,16 +152,28 @@ def _synthesize(
         user_prompt = f"User Query: {query}"
         try:
             logger.info("Using cloud LLM for synthesis")
-            return client.generate(
+            response = client.generate(
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
             )
+            # Audit: log cloud LLM synthesis call
+            try:
+                log_llm_call(
+                    "synthesizer",
+                    system_prompt[:1000],
+                    {"response": response[:500] if response else ""},
+                    getattr(client, "model", "cloud-llm"),
+                )
+            except Exception:
+                logger.warning("Audit log_llm_call failed for cloud LLM", exc_info=True)
+            return response
         except Exception as e:
             logger.warning(f"Cloud LLM failed: {e}, trying local LLM")
 
-    # Try 2: Local SLM
+# Try 2: Local SLM
     local_client = get_local_llm_client()
+    local_available = False
     if local_client:
         system_prompt = _build_system_prompt(
             user_tier=user_tier,
@@ -144,17 +185,39 @@ def _synthesize(
         user_prompt = f"User Query: {query}"
         try:
             logger.info("Using local LLM for synthesis")
-            return local_client.generate(
+            response = local_client.generate(
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
             )
+            # Audit: log local LLM synthesis call
+            try:
+                log_llm_call(
+                    "synthesizer",
+                    system_prompt[:1000],
+                    {"response": response[:500] if response else ""},
+                    getattr(local_client, "model", "local-slm"),
+                )
+            except Exception:
+                logger.warning("Audit log_llm_call failed for local LLM", exc_info=True)
+            return response
         except Exception as e:
-            logger.warning(f"Local LLM failed: {e}, using rule-based synthesis")
+            logger.warning(f"Local LLM failed: {e}")
 
     # Try 3: Rule-based synthesis (always works)
     logger.info("Using rule-based synthesis")
-    return rule_based_synthesis(query, sql_results, chunks, user_tier)
+    response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
+    # Audit: log rule-based fallback as an LLM call
+    try:
+        log_llm_call(
+            "synthesizer",
+            query,
+            {"response": response[:500] if response else ""},
+            "rule-based",
+        )
+    except Exception:
+        logger.warning("Audit log_llm_call failed for rule-based synthesis", exc_info=True)
+    return response
 
 
 def _build_context_summary(conversation_history: list) -> str:
@@ -242,23 +305,179 @@ def _fallback_synthesis(
     sql_results: list,
     chunks: list,
     context_summary: str,
+    intent: str = "",
+    routing_decision: str = "",
+    user_tier: int = 1,
 ) -> str:
-    """Enhanced fallback that shows actual data when LLM is unavailable."""
-    msg = f"**Research Intelligence Result**\n\n"
-    msg += f"**Query:** {query}\n\n"
+    """Intelligent fallback that formats data beautifully without LLM.
+
+    Produces structured, readable output that feels like a real research tool.
+    """
+    lines = []
+
+    lines.append("═" * 60)
+    lines.append("  NATIONAL RESEARCH GRAPH — Research Intelligence Report")
+    lines.append("═" * 60)
+    lines.append("")
+    lines.append(f"Query: {query}")
+    lines.append("")
+
+    if intent or routing_decision:
+        lines.append("┌─ Query Classification")
+        if intent:
+            lines.append(f"│  Intent: {intent}")
+        if routing_decision:
+            lines.append(f"│  Routed to: {routing_decision}")
+        lines.append("└" + "─" * 40)
+        lines.append("")
 
     if sql_results:
-        msg += _format_sql_results(sql_results)
-    elif chunks:
-        msg += f"Found {len(chunks)} document excerpts:\n"
-        for i, chunk in enumerate(chunks[:5], 1):
-            msg += f"{i}. {chunk[:100]}...\n\n"
-    else:
-        msg += "No data found for this query.\n\n"
-        msg += "Note: The AI synthesis engine is currently in fallback mode. "
-        msg += "You are seeing raw database results."
+        lines.append(f"┌─ Structured Data Results")
+        lines.append(f"│  Found {len(sql_results)} research record{'s' if len(sql_results) != 1 else ''}")
+        lines.append("└" + "─" * 40)
+        lines.append("")
+
+        if _is_researcher_results(sql_results):
+            lines = _format_researcher_table(lines, sql_results, user_tier)
+        elif _is_publication_results(sql_results):
+            lines = _format_publication_table(lines, sql_results)
+        else:
+            lines = _format_generic_table(lines, sql_results)
+
+    if chunks and not sql_results:
+        lines.append(f"┌─ Document Analysis")
+        lines.append(f"│  Found {len(chunks)} relevant excerpt{'s' if len(chunks) != 1 else ''}")
+        lines.append("└" + "─" * 40)
+        lines.append("")
+        lines = _format_chunks(lines, chunks)
 
     if context_summary:
-        msg += f"\n**Session Context:** {context_summary}"
+        lines.append("")
+        lines.append(f"┌─ Session Context")
+        lines.append(f"│  {context_summary}")
+        lines.append("└" + "─" * 40)
 
-    return msg
+    lines.append("")
+    lines.append("─" * 60)
+    if sql_results or chunks:
+        lines.append("  [Fallback Mode: Intelligent formatting without cloud LLM]")
+    else:
+        lines.append("  No data found for this query.")
+    lines.append("─" * 60)
+
+    return "\n".join(lines)
+
+
+def _is_researcher_results(sql_results: list) -> bool:
+    if not sql_results:
+        return False
+    sample = sql_results[0]
+    return isinstance(sample, dict) and (
+        "name" in sample or
+        ("researcher_id" in sample and "research_area" not in sample)
+    )
+
+
+def _is_publication_results(sql_results: list) -> bool:
+    if not sql_results:
+        return False
+    sample = sql_results[0]
+    return isinstance(sample, dict) and "title" in sample
+
+
+def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> list:
+    lines.append("  RESEARCHERS")
+    lines.append("  " + "-" * 56)
+
+    shown = 0
+    for i, row in enumerate(sql_results[:20], 1):
+        if not isinstance(row, dict):
+            continue
+
+        name = row.get("name", "Unknown Researcher")
+        area = row.get("research_area", "N/A")
+        state = row.get("state", "N/A")
+        institution = row.get("institution_id", row.get("institution", "N/A"))
+
+        if shown == 0:
+            lines.append(f"  #  {'Name':<30} {'Area':<15} {'Location'}")
+            lines.append("  " + "-" * 56)
+
+        lines.append(f"  {i:2}. {name:<30} {area:<15} {state}")
+
+        if user_tier == 1 and institution != "N/A":
+            lines.append(f"      Institution: {institution}")
+
+        if "email" in row and user_tier == 1 and row.get("email"):
+            lines.append(f"      Email: {row['email']}")
+
+        shown += 1
+
+    if len(sql_results) > 20:
+        lines.append(f"  ... and {len(sql_results) - 20} more researchers")
+
+    lines.append("")
+    lines.append(f"  Total: {len(sql_results)} researcher{'s' if len(sql_results) != 1 else ''}")
+    return lines
+
+
+def _format_publication_table(lines: list, sql_results: list) -> list:
+    lines.append("  PUBLICATIONS")
+    lines.append("  " + "-" * 56)
+
+    for i, row in enumerate(sql_results[:15], 1):
+        if not isinstance(row, dict):
+            continue
+
+        title = row.get("title", "Unknown Title")
+        year = row.get("year", "N/A")
+        authors = row.get("authors", row.get("author", "N/A"))
+
+        if len(title) > 50:
+            title = title[:47] + "..."
+
+        lines.append(f"  {i}. {title}")
+        lines.append(f"      Year: {year} | Authors: {authors}")
+
+    if len(sql_results) > 15:
+        lines.append(f"  ... and {len(sql_results) - 15} more publications")
+
+    lines.append("")
+    return lines
+
+
+def _format_generic_table(lines: list, sql_results: list) -> list:
+    for i, row in enumerate(sql_results[:15], 1):
+        if not isinstance(row, dict):
+            lines.append(f"  {i}. {row}")
+            continue
+
+        parts = []
+        for key, value in row.items():
+            if key in ("created_at", "updated_at", "id", "researcher_id", "institution_id"):
+                continue
+            if value:
+                parts.append(f"{key}: {value}")
+
+        if parts:
+            lines.append(f"  {i}. " + " | ".join(parts[:4]))
+        lines.append("")
+
+    if len(sql_results) > 15:
+        lines.append(f"  ... and {len(sql_results) - 15} more records")
+
+    return lines
+
+
+def _format_chunks(lines: list, chunks: list) -> list:
+    for i, chunk in enumerate(chunks[:3], 1):
+        content = chunk.get("content", chunk) if isinstance(chunk, dict) else chunk
+        if len(content) > 200:
+            content = content[:197] + "..."
+        lines.append(f"  Excerpt {i}:")
+        lines.append(f"    {content}")
+        lines.append("")
+
+    if len(chunks) > 3:
+        lines.append(f"  [+ {len(chunks) - 3} more excerpts available]")
+    return lines
