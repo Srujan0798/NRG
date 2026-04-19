@@ -578,3 +578,7 @@
 {"query_id": "1c54e3fc-5172-4920-b6ae-14a2f0a3e4bc", "row_count": 100, "timestamp": "2026-04-19T08:37:35.485688", "status": "success"}
 {"query_id": "cd602bfb-81ad-4e4b-a204-b43e0ad13372", "sql": "SELECT * FROM researchers LIMIT 100", "user_tier": 3, "timestamp": "2026-04-19T08:37:35.495610", "status": "executing"}
 {"query_id": "cd602bfb-81ad-4e4b-a204-b43e0ad13372", "row_count": 100, "timestamp": "2026-04-19T08:37:35.498386", "status": "success"}
+{"query_id": "4ffc5e2e-3bdc-4e7b-8110-4085163a9500", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T10:44:15.223536", "status": "executing"}
+{"query_id": "4ffc5e2e-3bdc-4e7b-8110-4085163a9500", "row_count": 0, "timestamp": "2026-04-19T10:44:15.224798", "status": "success"}
+{"query_id": "c8cef408-e986-495d-8c17-a5fcb09c93dc", "sql": "SELECT * FROM researchers WHERE state = 'Gujarat' AND research_area = 'Robotics' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T10:44:43.536956", "status": "executing"}
+{"query_id": "c8cef408-e986-495d-8c17-a5fcb09c93dc", "row_count": 25, "timestamp": "2026-04-19T10:44:43.537878", "status": "success"}
