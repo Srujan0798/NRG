@@ -594,3 +594,21 @@
 {"query_id": "4b8e10b9-0598-4587-b4ce-dde4633f69d2", "row_count": 25, "timestamp": "2026-04-19T12:57:26.652124", "status": "success"}
 {"query_id": "73b7df83-5bdf-4a73-b588-fdee87170dfb", "sql": "SELECT * FROM researchers WHERE research_area = 'AI' LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T13:22:07.150312", "status": "executing"}
 {"query_id": "73b7df83-5bdf-4a73-b588-fdee87170dfb", "row_count": 25, "timestamp": "2026-04-19T13:22:07.151059", "status": "success"}
+{"query_id": "10e1155a-2c38-47a6-8003-2fb4fe823a3e", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-19T14:02:04.039794", "status": "executing"}
+{"query_id": "10e1155a-2c38-47a6-8003-2fb4fe823a3e", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (127.0.0.1), port 5432 failed: FATAL:  password authentication failed for user \"nrg\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-19T14:02:04.052230", "status": "error"}
+{"query_id": "6c4d0d72-be89-408b-96f4-531b94438e0e", "sql": "SELECT * FROM researchers WHERE access_tier <= 1 AND access_tier <= 1 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T14:02:04.301522", "status": "executing"}
+{"query_id": "6c4d0d72-be89-408b-96f4-531b94438e0e", "error": "no such column: access_tier", "timestamp": "2026-04-19T14:02:04.301930", "status": "error"}
+{"query_id": "2adcb6c9-983b-4aa9-aa2f-5781282457fc", "sql": "SELECT * FROM researchers WHERE access_tier <= 3 AND access_tier <= 3 LIMIT 100", "user_tier": 3, "timestamp": "2026-04-19T14:02:04.311215", "status": "executing"}
+{"query_id": "2adcb6c9-983b-4aa9-aa2f-5781282457fc", "error": "no such column: access_tier", "timestamp": "2026-04-19T14:02:04.311551", "status": "error"}
+{"query_id": "507c58bb-bd13-4a91-9e16-2ba2a8d99415", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-19T14:03:44.018976", "status": "executing"}
+{"query_id": "507c58bb-bd13-4a91-9e16-2ba2a8d99415", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (127.0.0.1), port 5432 failed: FATAL:  password authentication failed for user \"nrg\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-19T14:03:44.033080", "status": "error"}
+{"query_id": "b8fb48c3-d670-482c-a55c-b29bd4fcb372", "sql": "SELECT * FROM researchers WHERE access_tier <= 1 AND access_tier <= 1 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T14:03:44.293535", "status": "executing"}
+{"query_id": "b8fb48c3-d670-482c-a55c-b29bd4fcb372", "row_count": 100, "timestamp": "2026-04-19T14:03:44.294453", "status": "success"}
+{"query_id": "f6e1e0e8-2fc1-4b6e-909f-4cf9f0cffcc9", "sql": "SELECT * FROM researchers WHERE access_tier <= 3 AND access_tier <= 3 LIMIT 100", "user_tier": 3, "timestamp": "2026-04-19T14:03:44.299339", "status": "executing"}
+{"query_id": "f6e1e0e8-2fc1-4b6e-909f-4cf9f0cffcc9", "row_count": 100, "timestamp": "2026-04-19T14:03:44.299975", "status": "success"}
+{"query_id": "b7f2ec18-aa39-40ad-8ba4-293cb41a58b6", "sql": "SELECT * FROM researchers LIMIT 10", "user_tier": 1, "timestamp": "2026-04-19T14:04:52.244506", "status": "executing"}
+{"query_id": "b7f2ec18-aa39-40ad-8ba4-293cb41a58b6", "error": "(psycopg2.OperationalError) connection to server at \"localhost\" (127.0.0.1), port 5432 failed: FATAL:  password authentication failed for user \"nrg\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)", "timestamp": "2026-04-19T14:04:52.260245", "status": "error"}
+{"query_id": "4c6f8f79-85b1-440b-b3c4-4e4afd9014d3", "sql": "SELECT * FROM researchers WHERE access_tier <= 1 AND access_tier <= 1 LIMIT 100", "user_tier": 1, "timestamp": "2026-04-19T14:04:52.479882", "status": "executing"}
+{"query_id": "4c6f8f79-85b1-440b-b3c4-4e4afd9014d3", "row_count": 100, "timestamp": "2026-04-19T14:04:52.480764", "status": "success"}
+{"query_id": "f2b40afd-3ff6-4ede-b1f3-09e428a78e7a", "sql": "SELECT * FROM researchers WHERE access_tier <= 3 AND access_tier <= 3 LIMIT 100", "user_tier": 3, "timestamp": "2026-04-19T14:04:52.483482", "status": "executing"}
+{"query_id": "f2b40afd-3ff6-4ede-b1f3-09e428a78e7a", "row_count": 100, "timestamp": "2026-04-19T14:04:52.484073", "status": "success"}

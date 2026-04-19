@@ -385,6 +385,117 @@ async def get_graph_data(
     return {"nodes": nodes, "edges": edges}
 
 
+# DPDP Compliance Endpoints
+@app.post("/consent")
+async def grant_consent(
+    scope: str,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Grant consent for data processing (DPDP 2023)."""
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    user_id = token_payload.get("sub", "anonymous")
+    result = service.grant_consent(user_id, scope)
+    if result["success"]:
+        return result
+    raise HTTPException(status_code=400, detail=result["error"])
+
+
+@app.delete("/consent/{scope}")
+async def revoke_consent(
+    scope: str,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Revoke consent for data processing (DPDP 2023)."""
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    user_id = token_payload.get("sub", "anonymous")
+    result = service.revoke_consent(user_id, scope)
+    if result["success"]:
+        return result
+    raise HTTPException(status_code=404, detail=result["error"])
+
+
+@app.get("/me/consents")
+async def list_consents(token_payload: dict = Depends(get_current_user)):
+    """List all consents for current user."""
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    user_id = token_payload.get("sub", "anonymous")
+    return {"consents": service.list_consents(user_id)}
+
+
+
+@app.get("/me/data")
+async def export_user_data(token_payload: dict = Depends(get_current_user)):
+    """Export all user data (DPDP right to access)."""
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    user_id = token_payload.get("sub", "anonymous")
+    return service.export_user_data(user_id)
+
+
+@app.delete("/me/data")
+async def erase_user_data(token_payload: dict = Depends(get_current_user)):
+    """Erase all user data (DPDP right to erasure)."""
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    user_id = token_payload.get("sub", "anonymous")
+    return service.erase_user_data(user_id)
+
+
+# Admin Audit Endpoints
+@app.get("/audit/verify")
+async def verify_audit_chain(token_payload: dict = Depends(get_current_user)):
+    """Verify audit chain integrity (admin only)."""
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    from src.audit import verify_chain
+    valid, errors = verify_chain()
+    
+    # Get last sealed event
+    from src.audit import get_audit_log
+    log = get_audit_log()
+    last_event = log.get_last_hash()
+    
+    return {
+        "ok": valid,
+        "broken_indices": errors,
+        "last_sealed_at": datetime.now(UTC).isoformat(),
+        "current_head_hash": last_event,
+    }
+
+
+@app.get("/audit/events")
+async def get_audit_events(
+    user_id: str = None,
+    action: str = None,
+    since: str = None,
+    limit: int = 100,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get audit events (admin only)."""
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    from src.audit import get_audit_log
+    log = get_audit_log()
+    events = log.get_recent_events(limit)
+    
+    # Filter by user_id if provided
+    if user_id:
+        events = [e for e in events if e.get("user_id") == user_id]
+    
+    # Filter by action if provided
+    if action:
+        events = [e for e in events if e.get("action") == action]
+    
+    return {"events": events[:limit]}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
