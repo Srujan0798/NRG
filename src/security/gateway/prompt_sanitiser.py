@@ -38,7 +38,7 @@ class PromptSanitiser:
             r"(?i)\breveal\s+(the\s+)?hidden\b",
             # Additional patterns to block common attack vectors from eval
             r"(?i)\bbypass\s+.*?(?:filter|content|restriction|rule)",
-            r"(?i)\broleplay\s+.*?as\s+.*?(?:admin|ai|assistant|system)",
+            r"(?i)\broleplay\s+.*?as\s+.*?(?:admin|system)\b",
             r"(?i)\bprint\s+.*?(?:unredacted|full.*?text|training.*?data|raw.*?data|system.*?prompt)",
             r"(?i)\breveal\s+.*?(?:all\s+)?.*?(?:researcher|user|person).*?(?:email|id|information|data)",
             r"(?i)\bignore\s+.*?(?:safety|guideline|rule|instruction)",

@@ -12,7 +12,7 @@ import re
 from typing import Any, Optional
 from functools import wraps
 import httpx
-from src.audit import audit_log
+from src.audit import AuditEvent, get_audit_log
 
 logger = logging.getLogger(__name__)
 
@@ -132,17 +132,27 @@ class SovereignHTTPXClient:
                 else:
                     check_value(f"[{i}]", item)
 
+    def inspect_payload(self, payload: dict | list | str) -> None:
+        """Public payload inspection entrypoint for non-httpx clients."""
+        try:
+            self._inspect_payload(payload)
+        except SovereigntyViolation as exc:
+            self._log_violation(exc, "payload_inspection")
+            raise
+
     def _log_violation(self, violation: SovereigntyViolation, url: str) -> None:
         """Log sovereignty violation to audit trail."""
         try:
-            audit_log(
-                user_id="system",
-                action="egress_block",
-                details={
-                    "reason": violation.reason,
-                    "blocked_field": violation.blocked_field,
-                    "url": url,
-                }
+            get_audit_log().append(
+                AuditEvent(
+                    event_type="egress_block",
+                    user_id="system",
+                    result={
+                        "reason": violation.reason,
+                        "blocked_field": violation.blocked_field,
+                        "url": url,
+                    },
+                )
             )
         except Exception:
             logger.warning("Failed to log sovereignty violation", exc_info=True)

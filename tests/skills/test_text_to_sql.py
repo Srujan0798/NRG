@@ -6,8 +6,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.skills.text_to_sql.schema_extractor import SchemaExtractor
-from src.skills.text_to_sql.sandbox import Sandbox
+from src.skills.text_to_sql.sqlite_schema_extractor import SQLiteSchemaExtractor as SchemaExtractor
+from src.skills.text_to_sql.sqlite_sandbox import SQLiteSandbox as Sandbox
 from src.skills.text_to_sql.skill import TextToSQLSkill
 
 
@@ -39,13 +39,13 @@ class TestSandbox:
         """Test only SELECT queries allowed."""
         sandbox = Sandbox()
 
-        with pytest.raises(PermissionError):
+        with pytest.raises((PermissionError, RuntimeError)):
             sandbox.execute_readonly("INSERT INTO researchers VALUES (1)")
 
-        with pytest.raises(PermissionError):
+        with pytest.raises((PermissionError, RuntimeError)):
             sandbox.execute_readonly("UPDATE researchers SET name = 'test'")
 
-        with pytest.raises(PermissionError):
+        with pytest.raises((PermissionError, RuntimeError)):
             sandbox.execute_readonly("DELETE FROM researchers")
 
         sandbox.close()

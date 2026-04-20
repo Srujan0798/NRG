@@ -18,7 +18,7 @@ const PERSONA_PRESETS: Record<'researcher' | 'government' | 'industry', PersonaP
   government: {
     label: 'Government',
     username: 'gov_user',
-    password: 'gov-pass',
+    password: 'government-pass',
     icon: <Building2Icon className="h-5 w-5" />
   },
   industry: {

@@ -10,6 +10,8 @@ from typing import Any
 
 import jwt
 
+from src.auth.refresh_store import RefreshStore
+
 
 class AuthError(Exception):
     """Raised when authentication or token validation fails."""
@@ -123,6 +125,7 @@ class JWTHandler:
         self.users = users or build_default_users()
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
+        self.refresh_store = RefreshStore()
     
     def _load_rsa_keys(self, private_key_path: str, public_key_path: str) -> None:
         """Load RSA keypair from PEM files."""
@@ -170,6 +173,12 @@ class JWTHandler:
         )
         refresh_claims = self._decode_token(refresh_token)
         self.active_refresh_tokens[refresh_claims["sub"]] = refresh_claims["jti"]
+        self.refresh_store.store(
+            refresh_token,
+            refresh_claims["sub"],
+            datetime.fromtimestamp(refresh_claims["iat"], UTC),
+            datetime.fromtimestamp(refresh_claims["exp"], UTC),
+        )
         return {
             "access_token": access_token,
             "refresh_token": refresh_token,
@@ -186,8 +195,10 @@ class JWTHandler:
     def verify_refresh_token(self, token: str) -> dict[str, Any]:
         claims = self._decode_token(token)
         self._validate_token_type(claims, "refresh")
+        if self.refresh_store.verify(token) is None:
+            raise AuthError("Refresh token has been rotated or revoked")
         active_jti = self.active_refresh_tokens.get(claims["sub"])
-        if active_jti != claims["jti"]:
+        if active_jti is not None and active_jti != claims["jti"]:
             raise AuthError("Refresh token has been rotated or revoked")
         return claims
 
@@ -209,6 +220,7 @@ class JWTHandler:
         claims = self._decode_token(token, verify_exp=False)
         self.revoked_jtis.add(claims["jti"])
         if claims.get("token_type") == "refresh":
+            self.refresh_store.revoke(token)
             self.active_refresh_tokens.pop(claims["sub"], None)
 
     def _create_token(

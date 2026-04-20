@@ -21,7 +21,13 @@ class FakeQdrantClient:
         return FakeCollections()
 
 
-def test_db_health_endpoint_uses_canonical_database():
+def test_db_health_endpoint_uses_canonical_database(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+    monkeypatch.setattr(api_main, "_get_db", FakeDB)
     client = TestClient(api_main.app)
 
     response = client.get("/health/db")

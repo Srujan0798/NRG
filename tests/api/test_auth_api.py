@@ -101,7 +101,7 @@ def test_researchers_endpoint_applies_role_based_filtering(monkeypatch):
         def query_researchers(self, state=None, research_area=None):
             return sample_records
 
-    monkeypatch.setattr(api_main, "NRGDatabase", FakeDB)
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     client = TestClient(api_main.app)
 
     researcher_tokens = _login(client, "researcher_user", "researcher-pass")

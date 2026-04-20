@@ -69,6 +69,16 @@ def _route_to_skill(intent: str) -> str:
 
 def router_node(state):
     """Route query to appropriate skill(s)."""
+    plan = state.get("plan") if isinstance(state, dict) else getattr(state, "plan", None)
+    if isinstance(plan, dict) and plan.get("desired_skills"):
+        desired = {str(skill).lower() for skill in plan["desired_skills"]}
+        if "sql+rag" in desired or {"sql", "rag"}.issubset(desired):
+            return {"intent": "hybrid", "routing_decision": "text_to_sql+rag"}
+        if "sql" in desired:
+            return {"intent": "structured", "routing_decision": "text_to_sql"}
+        if "rag" in desired:
+            return {"intent": "unstructured", "routing_decision": "rag"}
+
     # Extract user query from state object
     if hasattr(state, "user_query"):
         user_query = state.user_query

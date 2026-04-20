@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field, asdict
 from typing import Optional, Any
-from datetime import datetime
+from datetime import datetime, UTC
 import json
 from pathlib import Path
 
@@ -16,6 +16,8 @@ class NRGState:
     user_query: str = ""
     conversation_history: list = field(default_factory=list)
     intent: str = ""
+    plan: Optional[dict] = None
+    planner_metadata: dict = field(default_factory=dict)
     routing_decision: Optional[str] = None
     context_summary: Optional[str] = None
 
@@ -26,7 +28,10 @@ class NRGState:
     retrieval_metadata: list = field(default_factory=list)
 
     synthesized_response: Optional[str] = None
-    verification_status: bool = False
+    citations: list = field(default_factory=list)
+    verification_status: Any = False
+    verification_retries: int = 0
+    unsupported_claims: list = field(default_factory=list)
 
     trace: list = field(default_factory=list)
     errors: list = field(default_factory=list)
@@ -35,8 +40,8 @@ class NRGState:
     provenance: dict = field(default_factory=dict)
 
     user_tier: int = 1
-    created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
-    updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
+    updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def add_trace(self, node: str, event: str, data: Optional[dict] = None):
         self.trace.append(
@@ -44,14 +49,14 @@ class NRGState:
                 "node": node,
                 "event": event,
                 "data": data or {},
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         )
-        self.updated_at = datetime.utcnow().isoformat()
+        self.updated_at = datetime.now(UTC).isoformat()
 
     def add_error(self, node: str, error: str):
         self.errors.append(
-            {"node": node, "error": error, "timestamp": datetime.utcnow().isoformat()}
+            {"node": node, "error": error, "timestamp": datetime.now(UTC).isoformat()}
         )
 
     def to_dict(self) -> dict:
