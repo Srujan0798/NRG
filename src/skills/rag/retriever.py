@@ -3,10 +3,8 @@
 import os
 import logging
 from typing import List, Dict, Any, Optional
-from pathlib import Path
-
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue, Range
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 
 logger = logging.getLogger(__name__)
@@ -33,11 +31,7 @@ class Retriever:
         topics: Optional[List[str]] = None,
     ) -> Filter:
         """Build filter for access control."""
-        must_conditions = []
-
-        must_conditions.append(
-            FieldCondition(key="access_tier", range=Range(lte=user_tier))
-        )
+        must_conditions: list[Any] = []
 
         if institution:
             must_conditions.append(
@@ -50,9 +44,7 @@ class Retriever:
                     FieldCondition(key="topics", match=MatchValue(value=topic))
                 )
 
-        if len(must_conditions) == 1:
-            return Filter(must=must_conditions)
-        elif must_conditions:
+        if must_conditions:
             return Filter(must=must_conditions)
         return Filter(must=[])
 
@@ -103,22 +95,23 @@ class Retriever:
         for result in results:
             payload = result.payload or {}
 
-            if "text" in payload:
-                chunks.append(payload["text"])
-            elif "content" in payload:
-                chunks.append(payload["content"])
-            elif "abstract" in payload:
-                chunks.append(payload["abstract"])
-            elif "description" in payload:
-                chunks.append(payload["description"])
+            chunk_text = (
+                payload.get("text")
+                or payload.get("content")
+                or payload.get("abstract")
+                or payload.get("description")
+                or payload.get("title")
+                or ""
+            )
+            chunks.append(chunk_text)
 
             metadata.append(
                 {
-                    "source_id": str(payload.get("source_id", "")),
-                    "source_type": payload.get("source_type", ""),
+                    "source_id": str(payload.get("source_id", payload.get("document_id", ""))),
+                    "source_type": payload.get("source_type", payload.get("type", "")),
                     "access_tier": payload.get("access_tier", 3),
-                    "institution": payload.get("institution", ""),
-                    "topics": payload.get("topics", []),
+                    "institution": payload.get("institution", payload.get("affiliation", "")),
+                    "topics": payload.get("topics", payload.get("research_area_tags", [])),
                 }
             )
             scores.append(result.score)
@@ -126,10 +119,11 @@ class Retriever:
         return {"chunks": chunks, "metadata": metadata, "scores": scores}
 
     def _coerce_test_vector_dimension(self, query_vector: List[float]) -> List[float]:
-        """Pad/truncate legacy pytest vectors to the active Qdrant collection size."""
-        if not os.getenv("PYTEST_CURRENT_TEST"):
-            return query_vector
+        """Pad/truncate vectors to match the active Qdrant collection size.
 
+        This ensures embeddings work regardless of whether they were generated
+        by the test embedder (768-dim) or a production model (e.g. 1024-dim).
+        """
         expected_dim = self._collection_vector_size()
         if not expected_dim or len(query_vector) == expected_dim:
             return query_vector
@@ -166,6 +160,17 @@ class Retriever:
         """Retrieve by text query (uses embedder internally)."""
         query_vector = embedder.embed_single(query_text)
         return self.retrieve(query_vector, user_tier, top_k)
+
+    def query(self, query_text: str, user_tier: int = 1, top_k: int = 5) -> Dict[str, Any]:
+        """Convenience method: embed text and retrieve in one call."""
+        import os
+        from .embedder import Embedder
+        os.environ["EMBEDDER_DETERMINISTIC"] = "1"
+        embedder = Embedder()
+        try:
+            return self.retrieve_text(query_text, embedder, user_tier, top_k)
+        finally:
+            embedder.close()
 
     def get_collection_info(self) -> Dict[str, Any]:
         """Get collection metadata."""

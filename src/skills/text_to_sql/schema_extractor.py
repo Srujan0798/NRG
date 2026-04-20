@@ -2,18 +2,17 @@
 
 import os
 from typing import List, Dict, Any, Optional
-from sqlalchemy import create_engine, inspect, MetaData
-from sqlalchemy.engine import Engine
+from sqlalchemy import create_engine, inspect
 
 
 class SchemaExtractor:
     """Extract schema metadata without exposing data."""
 
     def __init__(self, connection_string: Optional[str] = None):
-        self.connection_string = connection_string or os.getenv(
+        self.connection_string: str = connection_string or os.getenv(
             "DATABASE_URL",
             "postgresql://nrg:nrg_secret@localhost:5432/nrg",
-        )
+        ) or "postgresql://nrg:nrg_secret@localhost:5432/nrg"
         self.engine = create_engine(
             self.connection_string, echo=False, pool_pre_ping=True
         )
@@ -27,7 +26,7 @@ class SchemaExtractor:
 
         Returns structure for LLM prompt - NO data rows.
         """
-        schema = {"tables": {}}
+        schema: Dict[str, Any] = {"tables": {}}
 
         if table_names is None:
             table_names = self.inspector.get_table_names()
