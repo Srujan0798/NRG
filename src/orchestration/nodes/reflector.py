@@ -7,7 +7,6 @@ Validates output completeness before delivery
 import logging
 import sys
 from typing import Dict, Any
-import time
 
 # Configure logging
 logging.basicConfig(

@@ -1,7 +1,8 @@
 """Executor node - executes skills based on routing decision."""
 
 import logging
-from typing import Dict, Any
+import threading
+from typing import Any
 
 from src.skills.text_to_sql.skill import TextToSQLSkill
 from src.skills.rag.skill import RAGSkill
@@ -10,10 +11,42 @@ from src.orchestration.state import NRGState
 
 logger = logging.getLogger(__name__)
 
+# Module-level skill caches with lazy initialization for efficiency.
+# Skills are expensive to instantiate (model loading, DB connection setup).
+# Cache invalidates automatically when the class is monkeypatched (tests).
+_sql_skill_instance: TextToSQLSkill | None = None
+_sql_skill_class_id: int | None = None
+_rag_skill_instance: RAGSkill | None = None
+_rag_skill_class_id: int | None = None
+_lock = threading.Lock()
+
+
+def _get_sql_skill() -> TextToSQLSkill:
+    """Get cached TextToSQLSkill instance (thread-safe, auto-invalidates on patch)."""
+    global _sql_skill_instance, _sql_skill_class_id
+    current_id = id(TextToSQLSkill)
+    if _sql_skill_instance is None or _sql_skill_class_id != current_id:
+        with _lock:
+            if _sql_skill_instance is None or _sql_skill_class_id != current_id:
+                _sql_skill_instance = TextToSQLSkill()
+                _sql_skill_class_id = current_id
+    return _sql_skill_instance
+
+
+def _get_rag_skill() -> RAGSkill:
+    """Get cached RAGSkill instance (thread-safe, auto-invalidates on patch)."""
+    global _rag_skill_instance, _rag_skill_class_id
+    current_id = id(RAGSkill)
+    if _rag_skill_instance is None or _rag_skill_class_id != current_id:
+        with _lock:
+            if _rag_skill_instance is None or _rag_skill_class_id != current_id:
+                _rag_skill_instance = RAGSkill()
+                _rag_skill_class_id = current_id
+    return _rag_skill_instance
+
 
 def executor_node(state) -> dict:
     """Execute skills based on routing decision."""
-    # Handle both NRGState dataclass and dict
     if isinstance(state, NRGState):
         user_query = state.user_query
         routing = state.routing_decision or "text_to_sql"
@@ -23,7 +56,7 @@ def executor_node(state) -> dict:
         routing = state.get("routing_decision", "text_to_sql")
         user_tier = state.get("user_tier", 1)
 
-    results = {
+    results: dict[str, Any] = {
         "sql_results": [],
         "retrieved_chunks": [],
         "retrieval_metadata": [],
@@ -35,14 +68,13 @@ def executor_node(state) -> dict:
     if routing in ("text_to_sql", "text_to_sql+rag"):
         sql_skill = None
         try:
-            sql_skill = TextToSQLSkill()
+            sql_skill = _get_sql_skill()
             sql_result = sql_skill.execute(user_query, user_tier=user_tier)
             results["sql_query"] = sql_result.get("query")
             results["sql_results"] = sql_result.get("results", [])
             if results["sql_results"]:
                 results["retrieval_sources"].append("structured")
-            
-            # Audit: log SQL execution with HMAC chain
+
             try:
                 log_sql(
                     "executor",
@@ -51,7 +83,7 @@ def executor_node(state) -> dict:
                 )
             except Exception:
                 logger.warning("Audit log_sql failed", exc_info=True)
-                
+
         except Exception as exc:
             logger.error("Text-to-SQL execution failed: %s", exc, exc_info=True)
             warning = {
@@ -69,7 +101,7 @@ def executor_node(state) -> dict:
     if routing in ("rag", "text_to_sql+rag"):
         rag_skill = None
         try:
-            rag_skill = RAGSkill()
+            rag_skill = _get_rag_skill()
             rag_result = rag_skill.retrieve(user_query, user_tier=user_tier, top_k=5)
             results["retrieved_chunks"] = rag_result.get("chunks", [])
             results["retrieval_metadata"] = rag_result.get("metadata", [])

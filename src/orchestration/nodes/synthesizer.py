@@ -3,7 +3,7 @@
 import logging
 import os
 import re
-from typing import TypedDict
+from typing import Any, TypedDict
 from pathlib import Path
 
 from src.config.llm_config import get_llm_client
@@ -99,6 +99,7 @@ def synthesizer_node(state):
         routing_decision = state.get("routing_decision", "")
     else:
         routing_decision = ""
+
 
     data_sources = []
 
@@ -299,6 +300,29 @@ def _fallback_response(query: str, context_summary: str) -> str:
     return f"No data found for your query: '{query}'."
 
 
+def _format_sql_results(query: str, sql_results: list) -> str:
+    """Format SQL results as markdown for structured-query fast-path."""
+    if not sql_results:
+        return "No matching records found."
+
+    # Single aggregate (COUNT/SUM/AVG) result
+    if len(sql_results) == 1 and len(sql_results[0]) == 1:
+        key = list(sql_results[0].keys())[0]
+        return f"**{key}:** {sql_results[0][key]}"
+
+    # Build markdown table
+    headers = list(sql_results[0].keys())
+    lines = ["| " + " | ".join(headers) + " |"]
+    lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
+    for row in sql_results[:50]:  # Cap at 50 rows
+        lines.append("| " + " | ".join(str(row.get(h, "")) for h in headers) + " |")
+
+    if len(sql_results) > 50:
+        lines.append(f"\n*... and {len(sql_results) - 50} more rows*")
+
+    return "\n".join(lines)
+
+
 def _build_system_prompt(
     user_tier: int,
     sources: list,
@@ -328,7 +352,7 @@ Document Evidence: {safe_chunks}
 
 def _minimise_sql_results(sql_results: list) -> list:
     """Reduce structured evidence before any LLM prompt is built."""
-    safe_rows = []
+    safe_rows: list[Any] = []
     for row in sql_results[:10]:
         if not isinstance(row, dict):
             safe_rows.append(_redact_text(str(row))[:300])
@@ -409,44 +433,6 @@ def _coerce_history(context_summary: str) -> list[dict]:
     return [{"query": "Prior Session Context", "response": context_summary}]
 
 
-def _format_sql_results(sql_results: list) -> str:
-    """Format SQL results for display in fallback mode."""
-    if not sql_results:
-        return "No structured data found."
-
-    lines = []
-    lines.append(f"Found {len(sql_results)} research records:\n")
-
-    for i, row in enumerate(sql_results[:10], 1):  # Show first 10
-        if isinstance(row, dict):
-            # Format based on table type
-            if 'name' in row:
-                lines.append(f"{i}. {row.get('name', 'Unknown')}")
-                if 'research_area' in row:
-                    lines.append(f"   Research Area: {row.get('research_area')}")
-                if 'state' in row:
-                    lines.append(f"   State: {row.get('state')}")
-                if 'institution_id' in row:
-                    lines.append(f"   Institution: {row.get('institution_id')}")
-                lines.append("")
-            elif 'title' in row:
-                lines.append(f"{i}. {row.get('title', 'Unknown')}")
-                if 'year' in row:
-                    lines.append(f"   Year: {row.get('year')}")
-                lines.append("")
-            else:
-                # Generic formatting
-                for key, value in row.items():
-                    if value and key not in ['created_at', 'updated_at', 'researcher_id', 'institution_id']:
-                        lines.append(f"   {key}: {value}")
-                lines.append("")
-
-    if len(sql_results) > 10:
-        lines.append(f"... and {len(sql_results) - 10} more records")
-
-    return "\n".join(lines)
-
-
 def _fallback_synthesis(
     query: str,
     sql_results: list,
@@ -479,7 +465,7 @@ def _fallback_synthesis(
         lines.append("")
 
     if sql_results:
-        lines.append(f"┌─ Structured Data Results")
+        lines.append("┌─ Structured Data Results")
         lines.append(f"│  Found {len(sql_results)} research record{'s' if len(sql_results) != 1 else ''}")
         lines.append("└" + "─" * 40)
         lines.append("")
@@ -492,7 +478,7 @@ def _fallback_synthesis(
             lines = _format_generic_table(lines, sql_results)
 
     if chunks and not sql_results:
-        lines.append(f"┌─ Document Analysis")
+        lines.append("┌─ Document Analysis")
         lines.append(f"│  Found {len(chunks)} relevant excerpt{'s' if len(chunks) != 1 else ''}")
         lines.append("└" + "─" * 40)
         lines.append("")
@@ -500,7 +486,7 @@ def _fallback_synthesis(
 
     if context_summary:
         lines.append("")
-        lines.append(f"┌─ Session Context")
+        lines.append("┌─ Session Context")
         lines.append(f"│  {context_summary}")
         lines.append("└" + "─" * 40)
 

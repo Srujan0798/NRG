@@ -137,12 +137,12 @@ def _match_evidence(state: Any, citations: list[dict]) -> dict[str, dict]:
 
 def _parse_verdict(raw: str) -> dict:
     try:
-        return json.loads(raw)
+        return dict(json.loads(raw))
     except json.JSONDecodeError:
         match = re.search(r"\{.*\}", raw, re.DOTALL)
         if not match:
             raise
-        return json.loads(match.group(0))
+        return dict(json.loads(match.group(0)))
 
 
 def _load_prompt() -> str:

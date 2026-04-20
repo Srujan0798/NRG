@@ -92,7 +92,7 @@ class NRGWorkflow:
             return workflow.compile()
 
     def _receiver_wrapper(self, state: dict) -> dict:
-        return receiver_node(state)
+        return dict(receiver_node(state))
 
     def _get_session_history(self, session_id: str) -> list[dict]:
         return list(self.session_history.get(session_id, []))
@@ -132,7 +132,7 @@ class NRGWorkflow:
         )
 
         config = {"configurable": {"thread_id": active_session_id}}
-        result = self.graph.invoke(initial_state, config)
+        result: dict = self.graph.invoke(initial_state, config)
         result["session_id"] = active_session_id
         result["conversation_history"] = self._append_session_turn(
             active_session_id,
@@ -143,7 +143,7 @@ class NRGWorkflow:
         if self.test_mode:
             self._save_state(result)
 
-        return result
+        return dict(result)
 
     def _save_state(self, state: dict) -> None:
         protocol_dir = Path(".protocol")

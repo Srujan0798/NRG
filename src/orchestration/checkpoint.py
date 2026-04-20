@@ -6,12 +6,11 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime, timezone
 
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, Text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker
 
 from src.data.database import get_sqlite_connection, resolve_database_path
 
-Base = declarative_base()
+Base: Any = declarative_base()
 
 
 class CheckpointRecord(Base):
@@ -29,11 +28,11 @@ class CheckpointRecord(Base):
 class PostgresSaver:
     """Postgres-based checkpoint saver for LangGraph."""
     
-    def __init__(self, database_url: str = None):
-        self.database_url = database_url or os.getenv(
+    def __init__(self, database_url: Optional[str] = None):
+        self.database_url: str = database_url or os.getenv(
             "DATABASE_URL", 
             "postgresql://nrg:nrg_secret@localhost:5432/nrg"
-        )
+        ) or "postgresql://nrg:nrg_secret@localhost:5432/nrg"
         self.engine = create_engine(self.database_url)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
@@ -48,7 +47,7 @@ class PostgresSaver:
             ).order_by(CheckpointRecord.updated_at.desc()).first()
             
             if record:
-                return json.loads(record.checkpoint_json)
+                return dict(json.loads(str(record.checkpoint_json)))  # type: ignore[arg-type]
             return None
         finally:
             session.close()
@@ -66,8 +65,8 @@ class PostgresSaver:
             ).first()
             
             if record:
-                record.checkpoint_json = json.dumps(checkpoint)
-                record.updated_at = datetime.now(timezone.utc)
+                record.checkpoint_json = json.dumps(checkpoint)  # type: ignore[assignment]
+                record.updated_at = datetime.now(timezone.utc)  # type: ignore[assignment]
             else:
                 record = CheckpointRecord(
                     session_id=session_id,
@@ -89,7 +88,7 @@ class PostgresSaver:
                 CheckpointRecord.thread_id == thread_id
             ).order_by(CheckpointRecord.updated_at.desc()).limit(limit).all()
             
-            return [json.loads(r.checkpoint_json) for r in records]
+            return [dict(json.loads(str(r.checkpoint_json))) for r in records]  # type: ignore[arg-type]
         finally:
             session.close()
     
@@ -141,7 +140,7 @@ class SqliteSaver:
         conn.close()
         
         if row:
-            return json.loads(row[0])
+            return dict(json.loads(row[0]))
         return None
     
     def put(self, config: Dict[str, Any], checkpoint: Dict[str, Any]) -> None:
@@ -170,7 +169,7 @@ class SqliteSaver:
         rows = cursor.fetchall()
         conn.close()
         
-        return [json.loads(r[0]) for r in rows]
+        return [dict(json.loads(r[0])) for r in rows]
     
     def delete(self, config: Dict[str, Any]) -> None:
         thread_id = config.get("configurable", {}).get("thread_id")
