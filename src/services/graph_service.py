@@ -3,7 +3,7 @@
 import logging
 import os
 import sqlite3
-from typing import Any
+
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def get_db_connection():
     return conn
 
 
-def _add_node(nodes: list, node_id_map: dict, label: str, ntype: str, counter: int, **props) -> str:
+def _add_node(nodes: list[dict], node_id_map: dict[str, str], label: str, ntype: str, counter: int, **props) -> str:
     """Add a node to the graph if not already present."""
     key = f"{ntype}:{label}"
     if key in node_id_map:
@@ -51,9 +51,9 @@ def build_topic_graph(
     Expands from keyword → papers → authors → institutions.
     Tier determines data visibility bounds.
     """
-    nodes = []
-    edges = []
-    node_id_map = {}
+    nodes: list[dict] = []
+    edges: list[dict] = []
+    node_id_map: dict[str, str] = {}
     node_counter = 0
 
     conn = get_db_connection()
@@ -163,7 +163,7 @@ def build_topic_graph(
                     """, (row["institution_id"],))
 
                     for rrow in cursor2.fetchall():
-                        rid_key = f"author:UNKNOWN"
+                        rid_key = "author:UNKNOWN"
                         for k, v in node_id_map.items():
                             if k.startswith("author:") and v not in [e["source"] for e in edges if "source" in e]:
                                 rid_key = k
@@ -201,9 +201,9 @@ def build_institution_graph(
     node_limit: int = DEFAULT_NODE_LIMIT,
 ) -> dict:
     """Build graph for an institution and its connections."""
-    nodes = []
+    nodes: list[dict] = []
     edges = []
-    node_id_map = {}
+    node_id_map: dict[str, str] = {}
     node_counter = 0
 
     conn = get_db_connection()
@@ -241,8 +241,8 @@ def build_institution_graph(
         """, (institution_id, user_tier))
 
         for row in cursor.fetchall():
-            pid = _add_node(nodes, node_id_map, row["title"][:50], "paper", node_counter,
-                          year=row["year"])
+            _add_node(nodes, node_id_map, row["title"][:50], "paper", node_counter,
+                      year=row["year"])
             node_counter += 1
 
     finally:

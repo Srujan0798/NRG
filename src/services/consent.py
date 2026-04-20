@@ -18,7 +18,7 @@ class ConsentService:
         "analytics": "Use for analytics",
     }
 
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: Optional[str] = None):
         self.db_path = resolve_database_path(db_path)
         self._init_table()
 
@@ -161,7 +161,7 @@ class ConsentService:
         """Export all data for a user (DPDP right to access)."""
         conn = get_sqlite_connection(str(self.db_path))
 
-        data = {
+        data: dict[str, Any] = {
             "user_id": user_id,
             "export_timestamp": datetime.now(timezone.utc).isoformat(),
             "consents": [],

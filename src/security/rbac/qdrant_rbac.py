@@ -6,8 +6,7 @@ Production-grade access control for Qdrant vector database
 
 import logging
 import sys
-from typing import List, Dict, Any, Optional, Union
-import json
+from typing import List, Dict, Any
 
 # Qdrant client
 try:
@@ -185,7 +184,7 @@ class QdrantRBAC:
 
         # Test Tier 1 access (should see all data)
         try:
-            tier1_filter = self.create_access_filter(1)
+            _ = self.create_access_filter(1)
             logger.info("Tier 1 access filter created successfully")
             results["tier_1_tests"] += 1
             results["passed"] += 1
@@ -196,7 +195,7 @@ class QdrantRBAC:
 
         # Test Tier 2 access (should see tiers 2 and 3)
         try:
-            tier2_filter = self.create_access_filter(2)
+            _ = self.create_access_filter(2)
             logger.info("Tier 2 access filter created successfully")
             results["tier_2_tests"] += 1
             results["passed"] += 1
@@ -207,7 +206,7 @@ class QdrantRBAC:
 
         # Test Tier 3 access (should see only tier 3)
         try:
-            tier3_filter = self.create_access_filter(3)
+            _ = self.create_access_filter(3)
             logger.info("Tier 3 access filter created successfully")
             results["tier_3_tests"] += 1
             results["passed"] += 1
