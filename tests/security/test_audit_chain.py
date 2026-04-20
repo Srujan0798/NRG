@@ -105,7 +105,6 @@ class TestAuditChain:
 def test_module_level_verify():
     """Test module-level verify_chain function."""
     # Just import - actual test runs with temp dir
-    from src.audit import verify_chain
     assert callable(verify_chain)
 
 

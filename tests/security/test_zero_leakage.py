@@ -28,7 +28,7 @@ class TestZeroLeakage:
             skill.llm_provider, "chat", return_value=MagicMock(content="SELECT 1")
         ) as mock_llm:
             try:
-                result = skill.execute("Find researchers", user_tier=1)
+                skill.execute("Find researchers", user_tier=1)
 
                 if mock_llm.called:
                     call_args = mock_llm.call_args[0][0]
@@ -36,7 +36,7 @@ class TestZeroLeakage:
 
                     assert "name" not in prompt.lower() or "test" not in prompt.lower()
                     assert "email" not in prompt.lower() or "test" not in prompt.lower()
-            except:
+            except Exception:
                 pass
 
         skill.close()
@@ -49,10 +49,10 @@ class TestZeroLeakage:
         os.environ["EMBEDDING_MODEL"] = "sentence-transformers/all-MiniLM-L6-v2"
 
         with patch("requests.post") as mock_post:
-            with patch("requests.get") as mock_get:
+            with patch("requests.get"):
                 try:
-                    result = skill.retrieve("robotics research", user_tier=1)
-                except:
+                    skill.retrieve("robotics research", user_tier=1)
+                except Exception:
                     pass
 
                 assert not mock_post.called or "qdrant" not in str(mock_post.call_args)
@@ -78,7 +78,7 @@ class TestZeroLeakage:
 
         status = skill.get_status()
 
-        assert status.get("offline_mode") == True
+        assert status.get("offline_mode") is True
 
         skill.close()
 

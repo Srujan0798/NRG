@@ -41,5 +41,5 @@ def kong_stack():
     try:
         wait_for_kong(timeout_seconds=5)
         yield
-    except:
+    except Exception:
         yield

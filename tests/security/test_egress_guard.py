@@ -1,12 +1,11 @@
 """Tests for sovereign egress guard."""
 
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from src.security.egress.guard import (
     SovereignHTTPXClient,
     SovereigntyViolation,
     create_sovereign_client,
-    SENSITIVE_FIELDS,
 )
 
 

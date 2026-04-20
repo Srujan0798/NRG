@@ -103,7 +103,7 @@ class TestRAGSkill:
         status = skill.get_status()
 
         assert "offline_mode" in status
-        assert status["offline_mode"] == True
+        assert status["offline_mode"] is True
 
         skill.close()
 
