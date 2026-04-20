@@ -9,7 +9,7 @@ import uuid
 import json
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine, Result
+
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.audit import log_sql as audit_log_sql
@@ -22,10 +22,10 @@ class Sandbox:
     """Read-only sandbox for SQL execution."""
 
     def __init__(self, connection_string: Optional[str] = None):
-        self.connection_string = connection_string or os.getenv(
+        self.connection_string: str = connection_string or os.getenv(
             "DATABASE_URL",
             "postgresql://nrg:nrg_secret@localhost:5432/nrg",
-        )
+        ) or "postgresql://nrg:nrg_secret@localhost:5432/nrg"
         self.engine = create_engine(
             self.connection_string, echo=False, pool_pre_ping=True
         )

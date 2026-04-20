@@ -11,12 +11,13 @@ class SQLiteSchemaExtractor:
 
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = resolve_database_path(db_path)
-        self.conn = None
+        self.conn: Optional[sqlite3.Connection] = None
 
     def _get_connection(self) -> sqlite3.Connection:
         """Get database connection."""
         if self.conn is None:
             self.conn = get_sqlite_connection(str(self.db_path))
+        assert self.conn is not None
         return self.conn
 
     def get_table_names(self) -> List[str]:
@@ -83,7 +84,7 @@ class SQLiteSchemaExtractor:
 
         Returns structure for LLM prompt - NO data rows.
         """
-        schema = {"tables": {}}
+        schema: Dict[str, Any] = {"tables": {}}
 
         if table_names is None:
             table_names = self.get_table_names()

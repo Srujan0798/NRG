@@ -2,8 +2,7 @@
 
 import sqlglot
 from sqlglot import exp
-from typing import List, Set, Optional
-import re
+from typing import Set, Optional
 
 
 class SQLValidationError(Exception):
@@ -42,8 +41,8 @@ class SQLValidator:
             # 2. No multi-statement
             self._validate_single_statement(sql)
             
-            # 3. No subqueries on disallowed tables
-            self._validate_subqueries(statement)
+            # 3. No queries on disallowed tables
+            self._validate_tables(statement)
             
             # 4. Enforce LIMIT
             self._validate_limit(statement)
@@ -68,27 +67,24 @@ class SQLValidator:
         if len(statements) > 1:
             raise SQLValidationError("Multiple statements not allowed")
     
-    def _validate_subqueries(self, statement) -> None:
-        """No subqueries against disallowed tables."""
-        for node in statement.walk():
-            if isinstance(node, exp.Subqueryable):
-                subquery = node
-                if hasattr(subquery, 'this') and hasattr(subquery.this, 'find'):
-                    for table in subquery.find(exp.Table):
-                        if table.name.lower() in self.DISALLOWED_TABLES:
-                            raise SQLValidationError(f"Subquery on disallowed table: {table.name}")
+    def _validate_tables(self, statement) -> None:
+        """No queries against disallowed tables."""
+        for table in statement.find_all(exp.Table):
+            if table.name.lower() in self.DISALLOWED_TABLES:
+                raise SQLValidationError(f"Query on disallowed table: {table.name}")
     
     def _validate_limit(self, statement) -> None:
         """Enforce LIMIT <= MAX_ROWS."""
-        if statement.find(exp.Limit):
-            limit_val = statement.find(exp.Limit).this
-            if hasattr(limit_val, 'this'):
+        limit_node = statement.find(exp.Limit)
+        if limit_node:
+            limit_val = limit_node.expression
+            if limit_val and hasattr(limit_val, 'this'):
                 limit_num = int(limit_val.this)
                 if limit_num > self.MAX_ROWS:
                     raise SQLValidationError(f"LIMIT {limit_num} exceeds max {self.MAX_ROWS}")
         else:
             # Add LIMIT if missing
-            statement.append("limit", exp.Limit(this=exp.Literal.number(100)))
+            statement.set("limit", exp.Limit(expression=exp.Literal.number(100)))
     
     def _validate_columns(self, statement, user_tier: int) -> None:
         """Enforce column allowlist."""

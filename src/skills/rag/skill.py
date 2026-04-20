@@ -1,10 +1,8 @@
 """RAG Skill - Offline RAG module with local Qdrant for Phase 1 PoC."""
 
-import os
-import logging
-from typing import Dict, Any, Optional
-from pathlib import Path
 import json
+import logging
+from typing import Dict, Any
 
 from .embedder import Embedder
 from .retriever import Retriever
@@ -31,7 +29,7 @@ class RAGSkill:
         """
         query_vector = self.embedder.embed_single(query)
 
-        results = self.retriever.retrieve(
+        results: Dict[str, Any] = self.retriever.retrieve(
             query_vector=query_vector, user_tier=user_tier, top_k=top_k
         )
 

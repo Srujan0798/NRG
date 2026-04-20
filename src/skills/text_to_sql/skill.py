@@ -87,7 +87,7 @@ class TierAwareSqlRewriter:
         if self._has_tier_filter(parsed):
             return parsed
 
-        tier_condition = None
+        tier_condition: Optional[exp.Condition] = None
         for table in parsed.find_all(exp.Table):
             if table.name and table.name.lower() in tables:
                 table_ref = table.alias_or_name
@@ -179,8 +179,10 @@ class TextToSQLSkill:
             logger.warning(f"Unknown DATABASE_URL format, defaulting to SQLite: {db_url[:50]}...")
             return "sqlite", "sqlite:///nrg_research.db"
 
-    def _initialize_backend(self) -> tuple:
+    def _initialize_backend(self) -> tuple[Any, Any]:
         """Initialize the appropriate schema extractor and sandbox based on DB type."""
+        extractor: Any
+        sandbox: Any
         if self._db_type == "sqlite":
             from .sqlite_schema_extractor import SQLiteSchemaExtractor
             from .sqlite_sandbox import SQLiteSandbox
@@ -245,7 +247,7 @@ RULES:
 
         try:
             response = self.llm_provider.chat(messages)
-            sql = response.content.strip()
+            sql: str = response.content.strip()
             sql = sql.strip("`").strip("sql").strip()
             # Audit: log LLM call for SQL generation
             try:
@@ -368,7 +370,7 @@ RULES:
 
         sql = self._apply_tier_filter(sql, user_tier)
 
-        result = self.sandbox.execute_readonly(sql, user_tier)
+        result: Dict[str, Any] = self.sandbox.execute_readonly(sql, user_tier)
 
         result["schema_used"] = list(schema["tables"].keys())
         result["audit_logged"] = True
