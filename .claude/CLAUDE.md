@@ -1,5 +1,9 @@
 # NRG — National Research Graph
 
+> **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
+> **Agent Warfare**: See @.claude/AGENT_WARFARE.md — Role hierarchy, evolution loop, full system.
+> **Every task must include skill assignments.** Agents must report which skills they used.
+
 ## What This Is
 Sovereign AI platform for India's 600GB research database. 3 personas (researcher/government/industry) get tier-filtered insights. All raw data stays on Indian soil. HMAC-chained audit. DPDP-2023 compliant.
 
