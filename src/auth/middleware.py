@@ -103,9 +103,13 @@ def _public_researcher_record(record: dict) -> dict:
         "researcher_id": record.get("researcher_id"),
         "name": record.get("name"),
         "institution_id": record.get("institution_id"),
+        "department": record.get("department"),
         "state": record.get("state"),
         "research_area": record.get("research_area"),
+        "secondary_research_areas": record.get("secondary_research_areas"),
+        "years_experience": record.get("years_experience"),
         "year_joined": record.get("year_joined"),
+        "h_index": record.get("h_index"),
         "email": None,
         "phone": None,
         "orcid": None,
@@ -117,7 +121,10 @@ def _government_record(record: dict) -> dict:
         "institution_id": record.get("institution_id"),
         "state": record.get("state"),
         "research_area": record.get("research_area"),
+        "department": record.get("department"),
+        "years_experience": record.get("years_experience"),
         "year_joined": record.get("year_joined"),
+        "h_index": record.get("h_index"),
     }
 
 
@@ -126,8 +133,11 @@ def _licensed_researcher_record(record: dict) -> dict:
         "researcher_id": record.get("researcher_id"),
         "name": record.get("name"),
         "institution_id": record.get("institution_id"),
+        "department": record.get("department"),
         "state": record.get("state"),
         "research_area": record.get("research_area"),
+        "years_experience": record.get("years_experience"),
         "year_joined": record.get("year_joined"),
+        "h_index": record.get("h_index"),
         "licensed": True,
     }

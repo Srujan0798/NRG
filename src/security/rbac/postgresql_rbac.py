@@ -6,13 +6,12 @@ Production-grade implementation of access control for NRG dataset
 
 import logging
 import sys
-from typing import List, Dict, Any, Optional
-import time
+from typing import Any
+
 
 # PostgreSQL driver
 try:
     import psycopg2
-    from psycopg2 import sql
 except ImportError:
     print("psycopg2 package not available. Install with: pip install psycopg2")
     sys.exit(1)
@@ -34,7 +33,7 @@ class PostgreSQLRBAC:
 
     def __init__(self, connection_string: str):
         self.connection_string = connection_string
-        self.connection = None
+        self.connection: Any = None
         self.connect()
 
     def connect(self) -> None:
