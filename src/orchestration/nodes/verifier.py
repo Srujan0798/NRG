@@ -132,6 +132,12 @@ def _match_evidence(state: Any, citations: list[dict]) -> dict[str, dict]:
                 if citation_id in wanted:
                     evidence[citation_id] = {"row": row}
 
+    if "structured:0" in wanted and "structured:0" not in evidence:
+        sql_results = _state_get(state, "sql_results", []) or []
+        if sql_results:
+            first_row = sql_results[0]
+            evidence["structured:0"] = {"row": first_row}
+
     return evidence
 
 

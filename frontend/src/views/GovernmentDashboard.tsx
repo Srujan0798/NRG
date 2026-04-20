@@ -7,8 +7,9 @@ import { GlassCard } from '../components/GlassCard';
 import { useAuth } from '../hooks/useAuth';
 import { useQueryStore } from '../stores/queryStore';
 import { useDPDPStore } from '../stores/dpdpStore';
-import { queryService } from '../services/queryService';
+import { queryService, QueryResponse } from '../services/queryService';
 import { useQuery } from '@tanstack/react-query';
+import { AnswerPanel } from '../components/AnswerPanel';
 
 export function GovernmentDashboard() {
   const { user } = useAuth();
@@ -18,7 +19,7 @@ export function GovernmentDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [showDPDPConsent, setShowDPDPConsent] = useState(false);
   const [dpdpApproved, setDpdpApproved] = useState(false);
-  const [queryResult, setQueryResult] = useState<string | null>(null);
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
 
   // React Query for stats
@@ -38,11 +39,11 @@ export function GovernmentDashboard() {
     if (!currentQuery.trim()) return;
 
     setIsSearching(true);
-    setQueryResult(null);
-    setQueryError(null);
-    try {
-      const result = await queryService.query({ query: currentQuery });
-      setQueryResult(result.response);
+      setQueryResult(null);
+      setQueryError(null);
+      try {
+        const result = await queryService.query({ query: currentQuery });
+      setQueryResult(result);
       setLastResult(result);
       addToHistory({
         query: currentQuery,
@@ -156,7 +157,12 @@ export function GovernmentDashboard() {
                   </h3>
                 </div>
                 <div className="p-4">
-                  <pre className="text-sm text-gray-700 whitespace-pre-wrap font-sans leading-relaxed">{queryResult}</pre>
+                  <AnswerPanel
+                    response={queryResult.response}
+                    citations={queryResult.citations || []}
+                    provenance={queryResult.provenance}
+                    warnings={queryResult.warnings}
+                  />
                 </div>
               </div>
             )}

@@ -62,6 +62,9 @@ National-Research-Graph/
 # Install dependencies
 pip install -e .
 
+# Install spaCy English model (PII scanner enrichment)
+python -m spacy download en_core_web_sm
+
 # Start API server
 python3 -m src.api.main
 
@@ -129,6 +132,10 @@ python tests/uat/run_all_personas.py
 
 # Run all tests
 pytest tests/ -v
+
+# Alembic migrations
+alembic upgrade head
+alembic revision --autogenerate -m "your message"
 ```
 
 ## Configuration

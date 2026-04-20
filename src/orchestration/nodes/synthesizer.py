@@ -477,8 +477,9 @@ def _fallback_synthesis(
         else:
             lines = _format_generic_table(lines, sql_results)
 
-    if chunks and not sql_results:
-        lines.append("┌─ Document Analysis")
+    if chunks:
+        section_title = "Supplementary Document Analysis" if sql_results else "Document Analysis"
+        lines.append(f"┌─ {section_title}")
         lines.append(f"│  Found {len(chunks)} relevant excerpt{'s' if len(chunks) != 1 else ''}")
         lines.append("└" + "─" * 40)
         lines.append("")

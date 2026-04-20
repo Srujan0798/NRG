@@ -14,7 +14,14 @@ from src.audit import log_llm_call as audit_log_llm_call
 
 logger = logging.getLogger(__name__)
 
-TIER_AWARE_TABLES = {"researchers", "publications", "funding_records", "labs"}
+TIER_AWARE_TABLES = {
+    "researchers",
+    "publications",
+    "funding_records",
+    "projects",
+    "patents",
+    "collaborations",
+}
 MAX_LIMIT = 200
 FORBIDDEN_SQL_PATTERN = re.compile(
     r"(--|/\*|\*/|;|\b("
@@ -145,12 +152,47 @@ _INDIAN_STATES = [
     "uttarakhand", "west bengal",
 ]
 
+_STATE_ABBREVIATIONS = {
+    "andhra pradesh": "AP",
+    "arunachal pradesh": "AR",
+    "assam": "AS",
+    "bihar": "BR",
+    "chhattisgarh": "CG",
+    "delhi": "DL",
+    "goa": "GA",
+    "gujarat": "GJ",
+    "haryana": "HR",
+    "himachal pradesh": "HP",
+    "jharkhand": "JH",
+    "karnataka": "KA",
+    "kerala": "KL",
+    "madhya pradesh": "MP",
+    "maharashtra": "MH",
+    "manipur": "MN",
+    "meghalaya": "ML",
+    "mizoram": "MZ",
+    "nagaland": "NL",
+    "odisha": "OR",
+    "punjab": "PB",
+    "rajasthan": "RJ",
+    "sikkim": "SK",
+    "tamil nadu": "TN",
+    "telangana": "TS",
+    "tripura": "TR",
+    "uttar pradesh": "UP",
+    "uttarakhand": "UK",
+    "west bengal": "WB",
+}
+
 # Research areas for WHERE clause extraction
 _RESEARCH_AREAS = [
     "ai", "machine learning", "deep learning", "nlp",
     "natural language processing", "computer vision", "robotics",
     "quantum computing", "cybersecurity", "data science",
-    "bioinformatics", "iot", "blockchain",
+    "bioinformatics", "biotechnology", "nanotechnology", "sustainable energy",
+    "climate", "climate science", "semiconductor", "vlsi", "drug discovery",
+    "healthcare ai", "smart manufacturing", "agriculture technology",
+    "catalysis", "iot", "blockchain",
 ]
 
 
@@ -168,7 +210,10 @@ class TextToSQLSkill:
 
     def _detect_database(self) -> tuple:
         """Detect database type from DATABASE_URL environment variable."""
-        db_url = os.getenv("DATABASE_URL", "")
+        db_url = os.getenv("DATABASE_URL", "").strip()
+
+        if not db_url:
+            return "sqlite", "sqlite:///nrg_research.db"
 
         if db_url.startswith("sqlite"):
             return "sqlite", db_url
@@ -187,7 +232,6 @@ class TextToSQLSkill:
             from .sqlite_schema_extractor import SQLiteSchemaExtractor
             from .sqlite_sandbox import SQLiteSandbox
 
-            # Extract path from sqlite:/// URL
             db_path = self._db_url.replace("sqlite:///", "")
             extractor = SQLiteSchemaExtractor(db_path=db_path)
             sandbox = SQLiteSandbox(db_path=db_path)
@@ -213,7 +257,7 @@ RULES:
 - Return valid, executable PostgreSQL syntax
 - Use single quotes for string literals
 - PostgreSQL supports UUID, NOW(), EXTRACT() functions
-- Table names: researchers, publications, institutions, labs, funding_records
+- Table names: researchers, publications, institutions, labs, funding_records, projects, patents, collaborations, research_documents
 - All tier-aware tables have access_tier column (1=researcher, 2=government, 3=industry)"""
         else:
             return """You are a SQL expert. Generate accurate SQLite queries.
@@ -225,7 +269,7 @@ RULES:
 - Return valid, executable SQLite syntax
 - Use single quotes for string literals
 - SQLite does not support UUID functions - use text IDs
-- Table names: researchers, publications, institutions, labs, funding_records
+- Table names: researchers, publications, institutions, labs, funding_records, projects, patents, collaborations, research_documents
 - All tier-aware tables have access_tier column (1=researcher, 2=government, 3=industry)"""
 
     def generate_sql(self, user_query: str, schema_prompt: str) -> str:
@@ -291,14 +335,22 @@ RULES:
         states, areas = self._extract_filters(query)
 
         # Determine the target table
-        if "researcher" in query_lower or "faculty" in query_lower or "scientist" in query_lower:
+        if any(term in query_lower for term in ["funding", "grant", "fund ", "budget", "fiscal year", "released"]):
+            table = "funding_records"
+        elif any(term in query_lower for term in ["project", "co-pi", "co pi", "principal investigator", "ongoing", "completed"]):
+            table = "projects"
+        elif any(term in query_lower for term in ["patent", "inventor", "filing", "technology transfer", "patentable"]):
+            table = "patents"
+        elif any(term in query_lower for term in ["collaboration", "collaborator", "partner", "network", "cross-institutional"]):
+            table = "collaborations"
+        elif "research document" in query_lower or "document" in query_lower:
+            table = "research_documents"
+        elif "researcher" in query_lower or "faculty" in query_lower or "scientist" in query_lower or "expert" in query_lower:
             table = "researchers"
         elif "lab" in query_lower or "laboratory" in query_lower:
             table = "labs"
-        elif "publication" in query_lower or "paper" in query_lower:
+        elif "publication" in query_lower or "paper" in query_lower or "article" in query_lower:
             table = "publications"
-        elif "funding" in query_lower or "grant" in query_lower:
-            table = "funding_records"
         elif "institution" in query_lower or "university" in query_lower:
             table = "institutions"
         else:
@@ -308,19 +360,55 @@ RULES:
         # Build WHERE clauses from extracted filters
         conditions = []
 
-        if states:
-            if len(states) == 1:
-                conditions.append(f"state = '{states[0]}'")
-            else:
-                in_list = ", ".join(f"'{s}'" for s in states)
-                conditions.append(f"state IN ({in_list})")
+        state_condition = ""
+        area_condition = ""
 
-        if areas and table in ("researchers", "labs"):
-            if len(areas) == 1:
-                conditions.append(f"research_area = '{areas[0]}'")
+        if states and table in ("researchers", "institutions", "labs"):
+            state_column = "location_state" if table == "labs" else "state"
+            state_conditions = []
+            for state in states:
+                lower_state = state.lower()
+                state_conditions.append(f"LOWER({state_column}) = '{lower_state}'")
+                state_code = _STATE_ABBREVIATIONS.get(lower_state)
+                if state_code:
+                    state_conditions.append(f"UPPER({state_column}) = '{state_code}'")
+            if state_conditions:
+                state_condition = "(" + " OR ".join(state_conditions) + ")"
+
+        if areas and table in ("researchers", "labs", "projects", "patents", "collaborations"):
+            search_terms = set()
+            for area in areas:
+                lowered = area.lower()
+                search_terms.add(lowered)
+                search_terms.update(term for term in lowered.split() if len(term) > 2)
+            area_column = "research_focus_areas" if table == "labs" else "research_area"
+            area_conditions = [f"LOWER({area_column}) LIKE '%{term}%'" for term in sorted(search_terms)]
+            if area_conditions:
+                area_condition = "(" + " OR ".join(area_conditions) + ")"
+
+        if areas and table in ("publications", "research_documents"):
+            search_terms = set()
+            for area in areas:
+                lowered = area.lower()
+                search_terms.add(lowered)
+                search_terms.update(term for term in lowered.split() if len(term) > 2)
+            if table == "research_documents":
+                area_conditions = [
+                    f"(LOWER(research_area_tags) LIKE '%{term}%' OR LOWER(keywords) LIKE '%{term}%')"
+                    for term in sorted(search_terms)
+                ]
             else:
-                in_list = ", ".join(f"'{a}'" for a in areas)
-                conditions.append(f"research_area IN ({in_list})")
+                area_conditions = [f"LOWER(research_area) LIKE '%{term}%'" for term in sorted(search_terms)]
+            if area_conditions:
+                area_condition = "(" + " OR ".join(area_conditions) + ")"
+
+        if state_condition and area_condition and table == "researchers":
+            conditions.append(f"({state_condition} OR {area_condition})")
+        else:
+            if state_condition:
+                conditions.append(state_condition)
+            if area_condition:
+                conditions.append(area_condition)
 
         # Check for year filters
         year_match = re.search(r'\b(19|20)\d{2}\b', query)
@@ -340,12 +428,33 @@ RULES:
                     conditions.append(f"year <= {year}")
                 else:
                     conditions.append(f"year = {year}")
+            elif table == "research_documents":
+                if "after" in query_lower or "since" in query_lower:
+                    conditions.append(f"publication_year >= {year}")
+                elif "before" in query_lower:
+                    conditions.append(f"publication_year <= {year}")
+                else:
+                    conditions.append(f"publication_year = {year}")
+
+        if "ongoing" in query_lower and table in ("projects", "collaborations"):
+            conditions.append("LOWER(status) = 'ongoing'")
+        elif "completed" in query_lower and table in ("projects", "collaborations"):
+            conditions.append("LOWER(status) = 'completed'")
 
         # Check for count queries
         if "count" in query_lower or "how many" in query_lower:
             select_clause = f"SELECT COUNT(*) as count FROM {table}"
         else:
-            select_clause = f"SELECT * FROM {table}"
+            if "top" in query_lower and table == "researchers":
+                select_clause = f"SELECT * FROM {table}"
+                conditions.append("h_index IS NOT NULL")
+            elif "h-index" in query_lower and table == "researchers":
+                select_clause = f"SELECT * FROM {table}"
+                conditions.append("h_index IS NOT NULL")
+            elif areas:
+                select_clause = f"SELECT *, '{areas[0].lower()}' AS query_topic FROM {table}"
+            else:
+                select_clause = f"SELECT * FROM {table}"
 
         # Assemble
         if conditions:
@@ -353,6 +462,9 @@ RULES:
             sql = f"{select_clause} WHERE {where_clause} LIMIT 100"
         else:
             sql = f"{select_clause} LIMIT 100"
+
+        if table == "researchers" and ("top" in query_lower or "h-index" in query_lower):
+            sql = sql.replace(" LIMIT 100", " ORDER BY h_index DESC LIMIT 100")
 
         return sql
 

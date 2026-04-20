@@ -96,6 +96,45 @@ class TestRAGSkill:
 
         skill.close()
 
+    def test_search_flattens_results(self):
+        """Test script-friendly search response shape."""
+        skill = RAGSkill()
+        skill.retrieve = lambda query, user_tier=1, top_k=5: {
+            "chunks": ["chunk text"],
+            "metadata": [
+                {
+                    "document_id": "DOC-1",
+                    "chunk_index": 0,
+                    "title": "Title",
+                    "access_tier": 1,
+                    "researcher_ids": ["RES-1"],
+                    "affiliation": "IIT",
+                    "publication_year": 2025,
+                    "research_area_tags": ["AI"],
+                }
+            ],
+            "scores": [0.91],
+        }
+
+        result = skill.search("query")
+
+        assert result == [
+            {
+                "document_id": "DOC-1",
+                "chunk_index": 0,
+                "chunk_id": None,
+                "title": "Title",
+                "score": 0.91,
+                "text": "chunk text",
+                "access_tier": 1,
+                "researcher_ids": ["RES-1"],
+                "affiliation": "IIT",
+                "publication_year": 2025,
+                "research_area_tags": ["AI"],
+            }
+        ]
+        skill.close()
+
     def test_status(self):
         """Test skill status."""
         skill = RAGSkill()

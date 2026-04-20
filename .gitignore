@@ -45,6 +45,8 @@ frontend/playwright-report/
 data/
 *.db
 *.sqlite3
+*.csv
+Research_Documents/
 
 node_modules/
 .npm

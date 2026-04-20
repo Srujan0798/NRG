@@ -2,6 +2,7 @@
 
 import sqlite3
 from typing import List, Dict, Any, Optional
+from pathlib import Path
 
 from src.data.database import get_sqlite_connection, resolve_database_path
 
@@ -148,6 +149,10 @@ class SQLiteSchemaExtractor:
 
             prompt_parts.append("")
 
+        hints = _load_schema_hints()
+        if hints:
+            prompt_parts.extend(["", "SCHEMA HINTS:", hints])
+
         return "\n".join(prompt_parts)
 
     def get_relevant_tables(self, query: str) -> List[str]:
@@ -170,6 +175,10 @@ class SQLiteSchemaExtractor:
                 "journal",
                 "conference",
             ],
+            "projects": ["project", "pi", "co-pi", "co pi", "principal investigator", "ongoing", "completed"],
+            "patents": ["patent", "inventor", "filing", "grant", "technology transfer", "ip"],
+            "collaborations": ["collaboration", "partner", "network", "cross-institutional"],
+            "research_documents": ["document", "research document", "full text", "category"],
             "funding_records": ["funding", "grant", "fund", "budget"],
             "institutions": ["institution", "university", "iit", "nit", "college"],
             "keywords": ["topic", "keyword", "specialization"],
@@ -190,7 +199,14 @@ class SQLiteSchemaExtractor:
         # If no specific tables matched, try a broad match: return the
         # most commonly useful tables rather than all of them
         if not relevant:
-            default_tables = {"researchers", "institutions", "labs"}
+            default_tables = {
+                "researchers",
+                "institutions",
+                "labs",
+                "projects",
+                "publications",
+                "funding_records",
+            }
             relevant = {t for t in all_tables if t in default_tables}
 
         return list(relevant) if relevant else all_tables
@@ -200,3 +216,20 @@ class SQLiteSchemaExtractor:
         if self.conn:
             self.conn.close()
             self.conn = None
+
+
+def _load_schema_hints() -> str:
+    hints_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_hints.md"
+    try:
+        return hints_path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
+
+
+def extract_schema(db_path: Optional[str] = None) -> Dict[str, Any]:
+    """Convenience function used by validation scripts and agents."""
+    extractor = SQLiteSchemaExtractor(db_path=db_path)
+    try:
+        return extractor.get_schema_metadata()
+    finally:
+        extractor.close()

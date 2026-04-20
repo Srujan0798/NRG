@@ -148,6 +148,7 @@ class TestRetriever:
         retriever = Retriever()
         f = retriever._build_filter(user_tier=2, institution="IIT")
         assert f is not None
+        assert f.must[0].match.any == [2, 3]
 
     @patch("src.skills.rag.retriever.QdrantClient")
     def test_retriever_custom_host_port(self, mock_qc):

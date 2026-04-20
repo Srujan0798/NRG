@@ -9,7 +9,6 @@ import uuid
 import json
 
 from sqlalchemy import create_engine, text
-
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.audit import log_sql as audit_log_sql
@@ -22,10 +21,7 @@ class Sandbox:
     """Read-only sandbox for SQL execution."""
 
     def __init__(self, connection_string: Optional[str] = None):
-        self.connection_string: str = connection_string or os.getenv(
-            "DATABASE_URL",
-            "postgresql://nrg:nrg_secret@localhost:5432/nrg",
-        ) or "postgresql://nrg:nrg_secret@localhost:5432/nrg"
+        self.connection_string: str = connection_string or _default_connection_string()
         self.engine = create_engine(
             self.connection_string, echo=False, pool_pre_ping=True
         )
@@ -131,14 +127,44 @@ class Sandbox:
 
     def get_tables(self) -> List[str]:
         """List available tables."""
+        dialect_name = getattr(getattr(self.engine, "dialect", None), "name", "sqlite")
         with self.engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    "SELECT table_name FROM information_schema.tables "
-                    "WHERE table_schema = 'public'"
+            if dialect_name == "sqlite":
+                result = conn.execute(
+                    text(
+                        "SELECT name AS table_name FROM sqlite_master "
+                        "WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                    )
                 )
-            )
+            else:
+                result = conn.execute(
+                    text(
+                        "SELECT table_name FROM information_schema.tables "
+                        "WHERE table_schema = 'public'"
+                    )
+                )
             return [row[0] for row in result.fetchall()]
 
     def close(self):
         self.engine.dispose()
+
+
+def _default_connection_string() -> str:
+    """Prefer DATABASE_URL; otherwise use the dev SQLite file."""
+    database_url = (os.getenv("DATABASE_URL") or "").strip()
+    if database_url:
+        return database_url
+    return "sqlite:///src/data/nrg_research.db"
+
+
+def execute_sql(
+    sql: str,
+    user_tier: int = 1,
+    connection_string: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Convenience helper used by scripts/tests for one-shot read-only SQL."""
+    sandbox = Sandbox(connection_string=connection_string)
+    try:
+        return sandbox.execute_readonly(sql, user_tier=user_tier)
+    finally:
+        sandbox.close()

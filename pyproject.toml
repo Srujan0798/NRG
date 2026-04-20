@@ -28,6 +28,8 @@ dependencies = [
     "sqlglot>=20.0.0",
     "cryptography>=42.0.0",
     "redis>=5.0.0",
+    "spacy>=3.8.0,<4.0.0",
+    "alembic>=1.14.0",
 ]
 
 [project.optional-dependencies]
@@ -37,6 +39,9 @@ dev = [
     "ruff",
     "mypy",
     "pre-commit",
+]
+nlp = [
+    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
 ]
 
 [build-system]

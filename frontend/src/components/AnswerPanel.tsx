@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { CitationDrawer } from './CitationDrawer';
 import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../services/queryService';
+import { parseCitations } from '../utils/parseCitations';
 
 interface AnswerPanelProps {
   response: string;
@@ -19,43 +20,6 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Parse citation tokens from response
-  const parseCitations = useCallback((text: string) => {
-    const parts: Array<{ type: 'text' | 'citation'; content: string; citation?: Citation }> = [];
-    const regex = /\[cite:([^:]+):([^\]]+)\]/g;
-    let lastIndex = 0;
-    let match;
-
-    while ((match = regex.exec(text)) !== null) {
-      // Add text before citation
-      if (match.index > lastIndex) {
-        parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
-      }
-
-      // Find matching citation
-      const pubId = match[1];
-      const chunkId = match[2];
-      const citation = citations.find(c => 
-        c.pub_id === pubId && c.chunk_id === chunkId
-      );
-
-      parts.push({
-        type: 'citation',
-        content: match[0],
-        citation,
-      });
-
-      lastIndex = match.index + match[0].length;
-    }
-
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push({ type: 'text', content: text.slice(lastIndex) });
-    }
-
-    return parts;
-  }, [citations]);
-
   const handleCitationClick = (citation: Citation) => {
     setSelectedCitation(citation);
     setDrawerOpen(true);
@@ -66,7 +30,10 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
     setSelectedCitation(null);
   };
 
-  const parsedParts = parseCitations(response);
+  const parsed = useCallback(() => parseCitations(response, citations), [response, citations]);
+  const parsedResult = parsed();
+  const parsedParts = parsedResult.segments;
+  const orderedCitations = parsedResult.orderedCitations;
 
   return (
     <div className="space-y-4">
@@ -109,18 +76,18 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
                 onClick={() => part.citation && handleCitationClick(part.citation)}
                 title={part.citation?.title || 'Citation'}
               >
-                [{index + 1}]
+                [{part.citationNumber || '?'}]
               </sup>
             );
           })}
         </div>
 
         {/* Citations List */}
-        {citations.length > 0 && (
+        {orderedCitations.length > 0 && (
           <div className="mt-6 pt-4 border-t border-gray-200">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">References</h4>
             <ol className="space-y-2 text-sm text-gray-600">
-              {citations.map((citation, index) => (
+              {orderedCitations.map((citation, index) => (
                 <li
                   key={citation.id}
                   className="cursor-pointer hover:text-blue-600"

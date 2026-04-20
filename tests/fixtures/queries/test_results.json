@@ -1,0 +1,461 @@
+{
+  "summary": {
+    "total": 50,
+    "passed": 44,
+    "partial": 6,
+    "failed": 0,
+    "errors": 0
+  },
+  "results": [
+    {
+      "query_id": "T1Q-00001",
+      "persona": "Tier1_Researcher",
+      "query": "I am Dr. Shivam Nair Sheikh from IIT Gandhinagar, working on Computer Vision. Find all researchers w...",
+      "status": "PASS",
+      "response_time_ms": 324.2,
+      "results_count": 13651,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00002",
+      "persona": "Tier1_Researcher",
+      "query": "List all AI/ML projects with sanctioned amount exceeding Rs. 20.0 crore. For each project, give me t...",
+      "status": "PASS",
+      "response_time_ms": 155.8,
+      "results_count": 8938,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00003",
+      "persona": "Tier1_Researcher",
+      "query": "Retrieve all published research documents authored by Shruti Desai (RES-00329) from IIT Gandhinagar....",
+      "status": "PASS",
+      "response_time_ms": 65.7,
+      "results_count": 3112,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00004",
+      "persona": "Tier1_Researcher",
+      "query": "I need to find all research laboratories in Gujarat that are working on Sustainable Energy. For each...",
+      "status": "PARTIAL",
+      "response_time_ms": 14.2,
+      "results_count": 889,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00005",
+      "persona": "Tier1_Researcher",
+      "query": "Show me the complete fund disbursement history for project PRJ-00125 (Sustainable Catalysis & Reacti...",
+      "status": "PASS",
+      "response_time_ms": 130.2,
+      "results_count": 7938,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00006",
+      "persona": "Tier1_Researcher",
+      "query": "Map the cross-institutional collaboration network in Quantum Computing research across India. List a...",
+      "status": "PASS",
+      "response_time_ms": 148.3,
+      "results_count": 8901,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00007",
+      "persona": "Tier1_Researcher",
+      "query": "I am setting up a new Robotics lab and need to identify all researchers at IIT Gandhinagar with expe...",
+      "status": "PASS",
+      "response_time_ms": 255.4,
+      "results_count": 14553,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00008",
+      "persona": "Tier1_Researcher",
+      "query": "Give me a comprehensive profile of Urmila Balasubramanian (RES-02322). I need: complete bio (affilia...",
+      "status": "PASS",
+      "response_time_ms": 248.7,
+      "results_count": 13664,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00009",
+      "persona": "Tier1_Researcher",
+      "query": "Compare the research funding landscape between Biotechnology and Nanotechnology across all of India....",
+      "status": "PASS",
+      "response_time_ms": 172.9,
+      "results_count": 8049,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00010",
+      "persona": "Tier1_Researcher",
+      "query": "Find all research documents in the 'Sustainable Energy & Climate Tech' category published between 20...",
+      "status": "NO_RESULTS",
+      "response_time_ms": 2.0,
+      "results_count": 0,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00011",
+      "persona": "Tier1_Researcher",
+      "query": "Who are the top 10 most-funded researchers in Gujarat across all institutions? For each, give their ...",
+      "status": "PASS",
+      "response_time_ms": 204.4,
+      "results_count": 14540,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00012",
+      "persona": "Tier1_Researcher",
+      "query": "List all ongoing research projects that are scheduled to end by 2026-06-30. For each, give the proje...",
+      "status": "PASS",
+      "response_time_ms": 164.9,
+      "results_count": 8049,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00013",
+      "persona": "Tier1_Researcher",
+      "query": "Find researchers who work at the intersection of AI/ML and Healthcare AI. Include those whose primar...",
+      "status": "PASS",
+      "response_time_ms": 108.0,
+      "results_count": 5615,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00014",
+      "persona": "Tier1_Researcher",
+      "query": "Compare all research labs in India that focus on VLSI & Semiconductor Design. For each lab, provide ...",
+      "status": "PARTIAL",
+      "response_time_ms": 16.4,
+      "results_count": 889,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00015",
+      "persona": "Tier1_Researcher",
+      "query": "Show a complete funding agency-wise breakdown for Asst. Prof. Rashi Farooqui (RES-00697). For each a...",
+      "status": "PASS",
+      "response_time_ms": 152.8,
+      "results_count": 8049,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00016",
+      "persona": "Tier1_Researcher",
+      "query": "Search for all research documents containing the keyword 'deep learning' in their keywords or title....",
+      "status": "PASS",
+      "response_time_ms": 98.7,
+      "results_count": 3636,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00017",
+      "persona": "Tier1_Researcher",
+      "query": "List all research laboratories at IIT Gandhinagar with their full details. For each lab, include the...",
+      "status": "PASS",
+      "response_time_ms": 303.5,
+      "results_count": 14545,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00018",
+      "persona": "Tier1_Researcher",
+      "query": "For Mr. Bina Bagul (RES-01006), analyze the frequency of co-PI appearances across all their projects...",
+      "status": "PASS",
+      "response_time_ms": 162.8,
+      "results_count": 8938,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00019",
+      "persona": "Tier1_Researcher",
+      "query": "As a Tier1 researcher, what is the total count of research documents I have access to? Break it down...",
+      "status": "PASS",
+      "response_time_ms": 126.5,
+      "results_count": 6504,
+      "errors": []
+    },
+    {
+      "query_id": "T1Q-00020",
+      "persona": "Tier1_Researcher",
+      "query": "Give me a department-wise research output analysis for IIT Gandhinagar. For each department, compute...",
+      "status": "PASS",
+      "response_time_ms": 235.4,
+      "results_count": 13657,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00001",
+      "persona": "Tier2_Policymaker",
+      "query": "What is the total research funding released by the Government of India across all agencies for each ...",
+      "status": "PARTIAL",
+      "response_time_ms": 3.4,
+      "results_count": 0,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00002",
+      "persona": "Tier2_Policymaker",
+      "query": "Provide a comprehensive breakdown of research funding by each government agency. For every agency (D...",
+      "status": "PASS",
+      "response_time_ms": 153.8,
+      "results_count": 8045,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00003",
+      "persona": "Tier2_Policymaker",
+      "query": "Map India's research ecosystem at the state level. For each state, provide: number of researchers, n...",
+      "status": "PASS",
+      "response_time_ms": 359.3,
+      "results_count": 14545,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00004",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze the year-over-year funding growth across the top 10 research areas. For each area, show fund...",
+      "status": "PASS",
+      "response_time_ms": 127.2,
+      "results_count": 7590,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00005",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze gender diversity in Indian research. Provide: overall male-to-female ratio, female researche...",
+      "status": "PASS",
+      "response_time_ms": 104.0,
+      "results_count": 4343,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00006",
+      "persona": "Tier2_Policymaker",
+      "query": "For each major funding agency, what is the ratio of ongoing to completed projects? Show the total pr...",
+      "status": "PASS",
+      "response_time_ms": 358.1,
+      "results_count": 8049,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00007",
+      "persona": "Tier2_Policymaker",
+      "query": "Generate a comprehensive research policy dashboard for Gujarat state. Include: total researchers, to...",
+      "status": "PASS",
+      "response_time_ms": 308.9,
+      "results_count": 14548,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00008",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze the industry-funded research landscape in India. How many projects are funded by Industry? W...",
+      "status": "PASS",
+      "response_time_ms": 405.0,
+      "results_count": 8936,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00009",
+      "persona": "Tier2_Policymaker",
+      "query": "Identify all researchers with an h-index of 40 or above. For this elite group, provide: total count,...",
+      "status": "PASS",
+      "response_time_ms": 94.3,
+      "results_count": 5433,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00010",
+      "persona": "Tier2_Policymaker",
+      "query": "What is the national research publication output trend from 2020 to 2026? For each year, show the to...",
+      "status": "NO_RESULTS",
+      "response_time_ms": 1.7,
+      "results_count": 0,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00011",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze the fund utilization efficiency of each major research funding agency. For each agency, calc...",
+      "status": "PARTIAL",
+      "response_time_ms": 1.3,
+      "results_count": 0,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00012",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze inter-state research collaboration patterns. Identify the top 10 state-pairs that collaborat...",
+      "status": "PASS",
+      "response_time_ms": 196.6,
+      "results_count": 8812,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00013",
+      "persona": "Tier2_Policymaker",
+      "query": "Create a research area density matrix across institution types (IITs, NITs, IISc, CSIR Labs, DRDO, I...",
+      "status": "PASS",
+      "response_time_ms": 109.2,
+      "results_count": 6500,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00014",
+      "persona": "Tier2_Policymaker",
+      "query": "Analyze the early career researcher segment (0-5 years experience). What percentage have received fu...",
+      "status": "PASS",
+      "response_time_ms": 245.9,
+      "results_count": 5805,
+      "errors": []
+    },
+    {
+      "query_id": "T2Q-00015",
+      "persona": "Tier2_Policymaker",
+      "query": "Assess the national research ecosystem's alignment with India's strategic priority areas: AI/ML, Qua...",
+      "status": "PASS",
+      "response_time_ms": 247.7,
+      "results_count": 11152,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00001",
+      "persona": "Tier3_Industry",
+      "query": "I represent a leading Indian IT company looking for AI/ML research partners at IIT Gandhinagar. Give...",
+      "status": "PASS",
+      "response_time_ms": 327.4,
+      "results_count": 14553,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00002",
+      "persona": "Tier3_Industry",
+      "query": "Our company is building a quantum computing division and needs to identify India's top quantum compu...",
+      "status": "PASS",
+      "response_time_ms": 114.4,
+      "results_count": 6493,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00003",
+      "persona": "Tier3_Industry",
+      "query": "Identify completed Sustainable Energy research projects that are ready for technology transfer. Focu...",
+      "status": "PASS",
+      "response_time_ms": 146.7,
+      "results_count": 8049,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00004",
+      "persona": "Tier3_Industry",
+      "query": "We are establishing a Robotics Center of Excellence in Gujarat. Map all robotics research capabiliti...",
+      "status": "PASS",
+      "response_time_ms": 263.2,
+      "results_count": 14544,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00005",
+      "persona": "Tier3_Industry",
+      "query": "Our semiconductor design company needs to build a talent pipeline from Indian academia. Identify top...",
+      "status": "PASS",
+      "response_time_ms": 276.3,
+      "results_count": 14534,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00006",
+      "persona": "Tier3_Industry",
+      "query": "Our pharmaceutical company is evaluating India's biotechnology research pipeline for potential licen...",
+      "status": "PASS",
+      "response_time_ms": 229.7,
+      "results_count": 12393,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00007",
+      "persona": "Tier3_Industry",
+      "query": "Compare IIT Gandhinagar and IIT Bombay as potential AI/ML research partners. In areas: AI/ML, Comput...",
+      "status": "PASS",
+      "response_time_ms": 318.6,
+      "results_count": 14550,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00008",
+      "persona": "Tier3_Industry",
+      "query": "Find all ongoing projects in applied research areas: Healthcare AI, Smart Manufacturing, Cybersecuri...",
+      "status": "PASS",
+      "response_time_ms": 171.5,
+      "results_count": 8838,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00009",
+      "persona": "Tier3_Industry",
+      "query": "Identify high-value completed research projects (budget >= Rs. 30 crore) that may have patentable ou...",
+      "status": "PASS",
+      "response_time_ms": 151.7,
+      "results_count": 7912,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00010",
+      "persona": "Tier3_Industry",
+      "query": "Our climate tech startup needs to connect with India's top climate science and sustainable energy re...",
+      "status": "PASS",
+      "response_time_ms": 257.2,
+      "results_count": 12007,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00011",
+      "persona": "Tier3_Industry",
+      "query": "Our materials science company needs access to Nanotechnology research facilities. List all labs in I...",
+      "status": "PASS",
+      "response_time_ms": 269.0,
+      "results_count": 12797,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00012",
+      "persona": "Tier3_Industry",
+      "query": "We are building a multi-institution research consortium for a national mission covering Sustainable ...",
+      "status": "PASS",
+      "response_time_ms": 276.6,
+      "results_count": 14545,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00013",
+      "persona": "Tier3_Industry",
+      "query": "Our bank is building an in-house cybersecurity R&D team and needs academic advisors. Find India's to...",
+      "status": "PASS",
+      "response_time_ms": 256.2,
+      "results_count": 13021,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00014",
+      "persona": "Tier3_Industry",
+      "query": "Our agri-business company wants to adopt precision agriculture technologies from Indian academia. Fi...",
+      "status": "PASS",
+      "response_time_ms": 323.1,
+      "results_count": 13754,
+      "errors": []
+    },
+    {
+      "query_id": "T3Q-00015",
+      "persona": "Tier3_Industry",
+      "query": "Generate a comprehensive capability matrix for all major research areas in India. For each area, sho...",
+      "status": "PASS",
+      "response_time_ms": 289.6,
+      "results_count": 14548,
+      "errors": []
+    }
+  ]
+}
