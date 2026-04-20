@@ -1,27 +1,34 @@
 import { useEffect, useState } from 'react';
-import { IITGN_LOGO } from '../assets';
 export default function DPDPAudit() {
-  const [logs, setLogs] = useState([]);
-  
+  const [events, setEvents] = useState<any[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    fetch('/api/audit/logs', {
+    fetch('/audit/events', {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('iitgn_token')}` }
-    }).then(r => r.json()).then(setLogs);
+    })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(data => setEvents(data.events || []))
+      .catch(e => setError(e.message));
   }, []);
-  
+
   return (
-    <div className="iitgn-dpdp-audit">
-      <h1>IITGN DPDP 2023 Compliance</h1>
-      <table>
-        <thead>
-          <tr><th>Timestamp</th><th>PII Type</th><th>Blocked</th></tr>
+    <div className="iitgn-dpdp-audit p-6">
+      <h1 className="text-2xl font-bold mb-4">DPDP 2023 Compliance Audit</h1>
+      {error && <div className="text-red-600 mb-4">Error: {error}</div>}
+      <table className="w-full text-sm border">
+        <thead className="bg-gray-100">
+          <tr><th className="p-2 border">Time</th><th className="p-2 border">User</th><th className="p-2 border">Action</th></tr>
         </thead>
         <tbody>
-          {logs.map(log => (
-            <tr key={log.id}>
-              <td>{log.timestamp}</td>
-              <td>{log.pii_type}</td>
-              <td>{log.blocked ? '✅' : '❌'}</td>
+          {events.map((ev, idx) => (
+            <tr key={idx} className="border-b">
+              <td className="p-2 border">{ev.timestamp}</td>
+              <td className="p-2 border">{ev.user_id}</td>
+              <td className="p-2 border">{ev.action}</td>
             </tr>
           ))}
         </tbody>

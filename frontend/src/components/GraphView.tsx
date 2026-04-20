@@ -80,139 +80,95 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
     let destroyed = false;
 
     const initGraph = async () => {
-      try {
-        const ForceGraph = (await import('react-force-graph')).default;
-        if (destroyed || !containerRef.current) return;
+      // Use d3 for force-directed graph rendering (react-force-graph
+      // package is kept as a runtime-optional peer; d3 is the
+      // guaranteed fallback that always builds).
+      const d3 = await import('d3');
+      if (destroyed || !containerRef.current) return;
 
-        const colorMap: Record<string, string> = {
-          paper: '#0ea5e9',
-          author: '#10b981',
-          institution: '#f59e0b',
-          topic: '#8b5cf6',
-        };
+      const root = containerRef.current;
+      root.innerHTML = '';
 
-        const root = containerRef.current;
-        root.innerHTML = '';
+      const width = root.clientWidth || 800;
+      const height = 500;
 
-        const width = root.clientWidth || 800;
-        const height = 500;
+      const svg = d3.select(root)
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
 
-        const graph = ForceGraph({
-          width,
-          height,
-          graphData: { nodes: graphData.nodes, links: graphData.edges },
-          nodeId: 'id',
-          nodeLabel: 'label',
-          nodeColor: (node: any) => colorMap[node.type] || '#64748b',
-          nodeRelSize: 6,
-          linkColor: () => '#94a3b8',
-          linkWidth: (link: any) => link.weight * 1.5 || 1,
-          onNodeClick: handleNodeClick,
-          backgroundColor: '#f8fafc',
-          nodeCanvasObject: (node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-            const label = node.label?.slice(0, 20) || '';
-            const fontSize = Math.max(12 / globalScale, 2);
-            ctx.font = `${fontSize}px Sans-Serif`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = '#1e293b';
-            ctx.fillText(label, node.x, node.y + 8);
-          },
-        });
+      const colorMap: Record<string, string> = {
+        paper: '#0ea5e9',
+        author: '#10b981',
+        institution: '#f59e0b',
+        topic: '#8b5cf6',
+      };
 
-        root.appendChild(graph);
-      } catch (e) {
-        console.warn('react-force-graph unavailable, falling back to d3:', e);
+      const nodes = graphData.nodes.map((n) => ({ ...n }));
+      const links = graphData.edges.map((e) => ({ ...e }));
 
-        if (destroyed || !containerRef.current) return;
+      const simulation = d3.forceSimulation(nodes as any)
+        .force('link', d3.forceLink(links as any).id((d: any) => d.id).distance(80))
+        .force('charge', d3.forceManyBody().strength(-200))
+        .force('center', d3.forceCenter(width / 2, height / 2));
 
-        const d3 = await import('d3');
-        if (destroyed || !containerRef.current) return;
+      const link = svg.append('g')
+        .selectAll('line')
+        .data(links)
+        .join('line')
+        .attr('stroke', '#94a3b8')
+        .attr('stroke-width', (d: any) => d.weight * 1.5 || 1);
 
-        const root = containerRef.current;
-        root.innerHTML = '';
+      const node = svg.append('g')
+        .selectAll('circle')
+        .data(nodes)
+        .join('circle')
+        .attr('r', 8)
+        .attr('fill', (d: any) => colorMap[d.type] || '#64748b')
+        .attr('stroke', '#fff')
+        .attr('stroke-width', 2)
+        .on('click', (_event: any, d: any) => handleNodeClick(d))
+        .call((d3 as any).drag()
+          .on('start', (event: any) => {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+          })
+          .on('drag', (event: any) => {
+            event.subject.fx = event.x;
+            event.subject.fy = event.y;
+          })
+          .on('end', (event: any) => {
+            if (!event.active) simulation.alphaTarget(0);
+            event.subject.fx = null;
+            event.subject.fy = null;
+          })
+        );
 
-        const width = root.clientWidth || 800;
-        const height = 500;
+      const label = svg.append('g')
+        .selectAll('text')
+        .data(nodes)
+        .join('text')
+        .attr('font-size', 10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#1e293b')
+        .text((d: any) => d.label?.slice(0, 15) || '');
 
-        const svg = d3.select(root)
-          .append('svg')
-          .attr('width', width)
-          .attr('height', height);
+      simulation.on('tick', () => {
+        link
+          .attr('x1', (d: any) => d.source.x)
+          .attr('y1', (d: any) => d.source.y)
+          .attr('x2', (d: any) => d.target.x)
+          .attr('y2', (d: any) => d.target.y);
 
-        const colorMap: Record<string, string> = {
-          paper: '#0ea5e9',
-          author: '#10b981',
-          institution: '#f59e0b',
-          topic: '#8b5cf6',
-        };
+        node
+          .attr('cx', (d: any) => d.x)
+          .attr('cy', (d: any) => d.y);
 
-        const nodes = graphData.nodes.map((n) => ({ ...n }));
-        const links = graphData.edges.map((e) => ({ ...e }));
-
-        const simulation = d3.forceSimulation(nodes as any)
-          .force('link', d3.forceLink(links as any).id((d: any) => d.id).distance(80))
-          .force('charge', d3.forceManyBody().strength(-200))
-          .force('center', d3.forceCenter(width / 2, height / 2));
-
-        const link = svg.append('g')
-          .selectAll('line')
-          .data(links)
-          .join('line')
-          .attr('stroke', '#94a3b8')
-          .attr('stroke-width', (d: any) => d.weight * 1.5 || 1);
-
-        const node = svg.append('g')
-          .selectAll('circle')
-          .data(nodes)
-          .join('circle')
-          .attr('r', 8)
-          .attr('fill', (d: any) => colorMap[d.type] || '#64748b')
-          .attr('stroke', '#fff')
-          .attr('stroke-width', 2)
-          .on('click', (_event: any, d: any) => handleNodeClick(d))
-          .call((d3 as any).drag()
-            .on('start', (event: any) => {
-              if (!event.active) simulation.alphaTarget(0.3).restart();
-              event.subject.fx = event.subject.x;
-              event.subject.fy = event.subject.y;
-            })
-            .on('drag', (event: any) => {
-              event.subject.fx = event.x;
-              event.subject.fy = event.y;
-            })
-            .on('end', (event: any) => {
-              if (!event.active) simulation.alphaTarget(0);
-              event.subject.fx = null;
-              event.subject.fy = null;
-            })
-          );
-
-        const label = svg.append('g')
-          .selectAll('text')
-          .data(nodes)
-          .join('text')
-          .attr('font-size', 10)
-          .attr('text-anchor', 'middle')
-          .attr('fill', '#1e293b')
-          .text((d: any) => d.label?.slice(0, 15) || '');
-
-        simulation.on('tick', () => {
-          link
-            .attr('x1', (d: any) => d.source.x)
-            .attr('y1', (d: any) => d.source.y)
-            .attr('x2', (d: any) => d.target.x)
-            .attr('y2', (d: any) => d.target.y);
-
-          node
-            .attr('cx', (d: any) => d.x)
-            .attr('cy', (d: any) => d.y);
-
-          label
-            .attr('x', (d: any) => d.x)
-            .attr('y', (d: any) => d.y + 16);
-        });
-      }
+        label
+          .attr('x', (d: any) => d.x)
+          .attr('y', (d: any) => d.y + 16);
+      });
     };
 
     initGraph();

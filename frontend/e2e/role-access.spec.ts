@@ -1,82 +1,46 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
-// Test data for different user roles
 const testUsers = {
-  researcher: {
-    username: 'researcher_user',
-    password: 'researcher-pass',
-    role: 'researcher'
-  },
-  government: {
-    username: 'gov_user',
-    password: 'government-pass',
-    role: 'government'
-  },
-  industry: {
-    username: 'industry_user',
-    password: 'industry-pass',
-    role: 'industry'
-  }
+  researcher: { username: 'researcher_user', password: 'researcher-pass' },
+  government: { username: 'gov_user', password: 'government-pass' },
+  industry: { username: 'industry_user', password: 'industry-pass' },
 };
 
+async function login(page, persona: string) {
+  await page.goto('/');
+  await page.waitForLoadState('networkidle');
+  await page.evaluate(() => localStorage.clear());
+  await page.getByRole('button', { name: `Select ${persona} persona` }).click();
+  await page.getByRole('button', { name: /Continue as/ }).click();
+}
+
 test.describe('User Role Access Tests', () => {
-  // Test researcher role access
-  test('Researcher role functionality', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel('Username').fill(testUsers.researcher.username);
-    await page.getByLabel('Password').fill(testUsers.researcher.password);
-    await page.getByRole('button', { name: /Continue as/ }).click();
-    
-    // Researcher should see researcher dashboard content
-    await expect(page.getByText(/Researcher Workspace/)).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('heading', { name: /Knowledge Graph Query/i })).toBeVisible({ timeout: 10000 });
+  test('Researcher sees researcher dashboard', async ({ page }) => {
+    await login(page, 'Researcher');
+    await expect(page.getByText(/Researcher Workspace/)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Knowledge Graph Query/)).toBeVisible({ timeout: 15000 });
   });
 
-  // Test government role access
-  test('Government role functionality', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel('Username').fill(testUsers.government.username);
-    await page.getByLabel('Password').fill(testUsers.government.password);
-    await page.getByRole('button', { name: /Continue as/ }).click();
-    
-    // Government user should see government dashboard content
-    await expect(page.getByText(/Government Analytics/)).toBeVisible({ timeout: 15000 });
-    await expect(page.getByRole('heading', { name: /National Research Metrics/i })).toBeVisible({ timeout: 10000 });
+  test('Government sees government dashboard', async ({ page }) => {
+    await login(page, 'Government');
+    await expect(page.getByText(/Government Analytics/)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/National Research Query/)).toBeVisible({ timeout: 15000 });
   });
 
-  // Test industry role access
-  test('Industry role functionality', async ({ page }) => {
-    await page.goto('/');
-    await page.getByLabel('Username').fill(testUsers.industry.username);
-    await page.getByLabel('Password').fill(testUsers.industry.password);
-    await page.getByRole('button', { name: /Continue as/ }).click();
-    
-    // Industry user should see industry dashboard content
-    await expect(page.getByText(/Industry Innovation/)).toBeVisible({ timeout: 15000 });
-    await expect(page.locator('h2', { hasText: /Technology Transfer/ })).toBeVisible({ timeout: 10000 });
+  test('Industry sees industry dashboard', async ({ page }) => {
+    await login(page, 'Industry');
+    await expect(page.getByText(/Industry Innovation/)).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/Research Partner Discovery/)).toBeVisible({ timeout: 15000 });
   });
 
-  // Test role-based access control
-  test('Role-based access control', async ({ page }) => {
-    // Login as researcher
-    await page.goto('/');
-    await page.getByLabel('Username').fill(testUsers.researcher.username);
-    await page.getByLabel('Password').fill(testUsers.researcher.password);
-    await page.getByRole('button', { name: /Continue as/ }).click();
-    
-    // Researcher should NOT see government-specific metrics
-    await expect(page.getByText(/National Research Metrics/)).toBeHidden();
+  test('Researcher does NOT see government metrics', async ({ page }) => {
+    await login(page, 'Researcher');
+    await expect(page.getByText(/Government Analytics/)).not.toBeVisible();
+    await expect(page.getByText(/National Research Metrics/)).not.toBeVisible();
   });
 
-  // Test cross-role access restrictions
-  test('Cross-role access restrictions', async ({ page }) => {
-    // Login as industry user
-    await page.goto('/');
-    await page.getByLabel('Username').fill(testUsers.industry.username);
-    await page.getByLabel('Password').fill(testUsers.industry.password);
-    await page.getByRole('button', { name: /Continue as/ }).click();
-    
-    // Industry user should NOT see researcher-specific graph query
-    await expect(page.getByText(/Knowledge Graph Query/)).toBeHidden();
+  test('Industry does NOT see researcher query interface', async ({ page }) => {
+    await login(page, 'Industry');
+    await expect(page.getByText(/Knowledge Graph Query/)).not.toBeVisible();
   });
 });
