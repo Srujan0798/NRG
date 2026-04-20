@@ -6,6 +6,7 @@ import Login from './components/Login'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { SkeletonLoader } from './components/SkeletonLoader'
 import { TierBadge } from './components/TierBadge'
+import { ErrorBoundary } from './components/ErrorBoundary'
 
 // Loading fallback for Suspense
 const DashboardLoading = () => (
@@ -41,9 +42,21 @@ const AppShell: React.FC = () => {
 
   return (
     <div>
-      {user.role === 'government' && <GovernmentDashboard />}
-      {user.role === 'industry' && <IndustryDashboard />}
-      {user.role === 'researcher' && <ResearcherDashboard />}
+      {user.role === 'government' && (
+        <ErrorBoundary title="Government Dashboard Error">
+          <GovernmentDashboard />
+        </ErrorBoundary>
+      )}
+      {user.role === 'industry' && (
+        <ErrorBoundary title="Industry Dashboard Error">
+          <IndustryDashboard />
+        </ErrorBoundary>
+      )}
+      {user.role === 'researcher' && (
+        <ErrorBoundary title="Researcher Dashboard Error">
+          <ResearcherDashboard />
+        </ErrorBoundary>
+      )}
     </div>
   )
 }

@@ -42,7 +42,15 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
-      '/me': {
+      '/me/': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/consent': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/audit/': {
         target: 'http://localhost:8000',
         changeOrigin: true
       },
@@ -50,7 +58,11 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
-      '/.well-known/jwks.json': {
+      '/health/db': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/health/qdrant': {
         target: 'http://localhost:8000',
         changeOrigin: true
       }
