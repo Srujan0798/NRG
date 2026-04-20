@@ -5,11 +5,11 @@ Logging configuration for production environment
 
 import logging
 import sys
+from typing import Optional
 from pathlib import Path
 from logging.handlers import RotatingFileHandler
 import json
 from datetime import datetime, UTC
-from datetime import datetime
 
 
 class JSONFormatter(logging.Formatter):
@@ -33,7 +33,7 @@ class JSONFormatter(logging.Formatter):
 
 
 def setup_logging(
-    log_level: str = "INFO", log_file: str = None, json_format: bool = False
+    log_level: str = "INFO", log_file: Optional[str] = None, json_format: bool = False
 ):
     """Setup logging configuration"""
 
