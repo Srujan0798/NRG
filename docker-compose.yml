@@ -68,12 +68,34 @@ services:
       - QDRANT_PORT=6333
       - REDIS_URL=redis://redis:6379/0
     volumes:
-      - ./nrg_research.db:/app/nrg_research.db:ro
+      - ./nrg_research.db:/app/nrg_research.db
       - ./infrastructure/kong/ssl:/app/infrastructure/kong/ssl:ro
     depends_on:
       qdrant:
         condition: service_healthy
       redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    profiles:
+      - dev
+      - prod
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../Dockerfile.frontend
+    container_name: nrg-frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      api:
         condition: service_healthy
     profiles:
       - dev
