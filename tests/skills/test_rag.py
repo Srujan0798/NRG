@@ -11,6 +11,88 @@ from src.skills.rag.retriever import Retriever
 from src.skills.rag.skill import RAGSkill
 
 
+class _FakeScoredPoint:
+    def __init__(self, payload, score=0.91):
+        self.payload = payload
+        self.score = score
+
+
+class _FakeQdrantClient:
+    def __init__(self):
+        self.search_calls = []
+
+    def search(self, **kwargs):
+        self.search_calls.append(kwargs)
+        return [
+            _FakeScoredPoint(
+                {
+                    "document_id": "DOC-1",
+                    "chunk_index": 0,
+                    "chunk_id": "DOC-1_0",
+                    "title": "Robotics Research in India",
+                    "text": "Robotics research evidence chunk.",
+                    "access_tier": 1,
+                    "researcher_ids": ["RES-1"],
+                    "affiliation": "IIT",
+                    "publication_year": 2025,
+                    "research_area_tags": ["Robotics"],
+                }
+            )
+        ]
+
+    def get_collection(self, collection_name):
+        class _Vectors:
+            size = 768
+
+        class _Params:
+            vectors = _Vectors()
+
+        class _Config:
+            params = _Params()
+
+        class _Info:
+            config = _Config()
+            vectors_count = 1
+            points_count = 1
+
+        return _Info()
+
+
+class _FakeRetriever:
+    def __init__(self):
+        self.client = _FakeQdrantClient()
+        self.collection_name = "nrg_research"
+
+    def _collection_vector_size(self):
+        return 768
+
+    def retrieve(self, query_vector, user_tier=1, top_k=5):
+        return {
+            "chunks": ["Robotics research evidence chunk."],
+            "metadata": [
+                {
+                    "document_id": "DOC-1",
+                    "source_id": "DOC-1",
+                    "chunk_index": 0,
+                    "chunk_id": "DOC-1_0",
+                    "title": "Robotics Research in India",
+                    "access_tier": user_tier,
+                    "researcher_ids": ["RES-1"],
+                    "affiliation": "IIT",
+                    "publication_year": 2025,
+                    "research_area_tags": ["Robotics"],
+                }
+            ],
+            "scores": [0.91],
+        }
+
+    def get_collection_info(self):
+        return {"name": self.collection_name, "vectors_count": 1, "points_count": 1}
+
+    def close(self):
+        pass
+
+
 class TestEmbedder:
     """Test embedding generation."""
 
@@ -55,6 +137,7 @@ class TestRetriever:
     def test_retrieve_returns_metadata(self):
         """Test retrieval includes metadata."""
         retriever = Retriever()
+        retriever.client = _FakeQdrantClient()
 
         # IndicBERT uses 768-dim embeddings
         query_vector = [0.1] * 768
@@ -63,12 +146,16 @@ class TestRetriever:
         assert "chunks" in result
         assert "metadata" in result
         assert "scores" in result
+        assert result["metadata"][0]["document_id"] == "DOC-1"
+        assert result["metadata"][0]["chunk_id"] == "DOC-1_0"
+        assert result["metadata"][0]["access_tier"] == 1
 
         retriever.close()
 
     def test_access_tier_filtering(self):
         """Test tier filtering in retrieval."""
         retriever = Retriever()
+        retriever.client = _FakeQdrantClient()
 
         # IndicBERT uses 768-dim embeddings
         query_vector = [0.1] * 768
@@ -78,6 +165,10 @@ class TestRetriever:
 
         assert "chunks" in result_tier1
         assert "chunks" in result_tier3
+        tier1_filter = retriever.client.search_calls[0]["query_filter"]
+        tier3_filter = retriever.client.search_calls[1]["query_filter"]
+        assert tier1_filter.must[0].match.any == [1, 2, 3]
+        assert tier3_filter.must[0].match.any == [3]
 
         retriever.close()
 
@@ -85,14 +176,16 @@ class TestRetriever:
 class TestRAGSkill:
     """Test RAG skill."""
 
-    def test_retrieve(self):
+    def test_retrieve(self, monkeypatch):
         """Test skill retrieval."""
+        monkeypatch.setattr("src.skills.rag.skill.Retriever", _FakeRetriever)
         skill = RAGSkill()
 
         result = skill.retrieve("robotics research", user_tier=1, top_k=5)
 
         assert "chunks" in result
         assert "metadata" in result
+        assert result["metadata"][0]["document_id"] == "DOC-1"
 
         skill.close()
 
