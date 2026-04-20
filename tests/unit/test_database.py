@@ -3,7 +3,6 @@
 import pytest
 import sqlite3
 import os
-from pathlib import Path
 
 from src.data.database import NRGDatabase
 

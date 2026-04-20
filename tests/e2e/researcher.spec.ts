@@ -7,7 +7,7 @@ test.describe('Researcher Persona E2E Flow', () => {
 
   test.beforeAll(async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'researcher', password: 'researcher-pass' },
+      data: { username: 'researcher_user', password: 'researcher-pass' },
     });
     if (response.ok()) {
       const data = await response.json();
@@ -17,7 +17,7 @@ test.describe('Researcher Persona E2E Flow', () => {
 
   test('login as researcher and receive tokens', async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'researcher', password: 'researcher-pass' },
+      data: { username: 'researcher_user', password: 'researcher-pass' },
     });
     expect(response.ok()).toBeTruthy();
     const data = await response.json();

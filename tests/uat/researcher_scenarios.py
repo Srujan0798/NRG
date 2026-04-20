@@ -3,7 +3,6 @@
 
 import json
 import time
-from datetime import UTC, datetime
 from typing import Dict, Tuple
 
 import requests
