@@ -59,6 +59,32 @@ Read `Core_Idea_Clean.md` for the full product vision including the fine-tuning 
 ## The Audit Blueprint
 Read `AUDIT_V3_FINAL.md` for all 40 agent tasks and the 8-sprint roadmap.
 
+## Agent Workflow — The Loop
+Every cycle follows: PLAN → EXECUTE → AUDIT → EVOLVE
+- `/sprint-plan` — Start here. Produces prioritized task list.
+- `/pre-commit` — Every agent runs this before committing. Blocks on failures.
+- `/code-review` — Mentor agent reviews all changes.
+- `/security-audit` — Guardian scans for vulnerabilities.
+- `/self-evolve` — After each sprint, updates rules/memory/skills.
+See `.claude/AGENT_WARFARE.md` for full system design.
+
+## All Skills (Slash Commands)
+| Command | Purpose |
+|---------|---------|
+| `/test-suite` | Run all tests + coverage |
+| `/audit-check` | Verify HMAC audit chain |
+| `/deploy-local` | Spin up full stack |
+| `/code-review` | Deep quality + security review |
+| `/security-audit` | Full OWASP + sovereignty scan |
+| `/pre-commit` | Quality gate before every commit |
+| `/post-deploy` | Smoke test after deployment |
+| `/self-evolve` | Analyze sprint + update system |
+| `/architect` | Architecture decisions + ADRs |
+| `/sprint-plan` | Plan next sprint tasks |
+| `/bug-hunt` | Systematic root cause analysis |
+| `/performance` | Benchmark + regression detection |
+| `/docs-sync` | Detect doc-code drift |
+
 ## DO NOT
 - Commit .env files or secrets
 - Use `allow_origins=["*"]` with credentials in CORS
