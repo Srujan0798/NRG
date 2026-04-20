@@ -6,7 +6,7 @@ import os
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Optional
 
 import jwt
 
@@ -98,8 +98,8 @@ class JWTHandler:
         self.algorithm = algorithm or os.getenv("JWT_ALGORITHM", "RS256")
         
         # Load RSA keys if using asymmetric algorithm
-        self.private_key = None
-        self.public_key = None
+        self.private_key: Optional[str] = None
+        self.public_key: Optional[str] = None
         
         if self.algorithm in ("RS256", "RS384", "RS512", "ES256", "ES384", "ES512"):
             private_key_path = private_key_path or os.getenv(
@@ -111,7 +111,8 @@ class JWTHandler:
                 "infrastructure/kong/ssl/jwt_rsa.pub"
             )
             self.secret_key = None
-            self._load_rsa_keys(private_key_path, public_key_path)
+            if private_key_path and public_key_path:
+                self._load_rsa_keys(private_key_path, public_key_path)
             if not self.private_key or not self.public_key:
                 raise AuthError("RSA key files could not be loaded")
         else:
@@ -190,7 +191,7 @@ class JWTHandler:
     def verify_access_token(self, token: str) -> dict[str, Any]:
         claims = self._decode_token(token)
         self._validate_token_type(claims, "access")
-        return claims
+        return dict(claims)  # type: ignore[no-any-return]
 
     def verify_refresh_token(self, token: str) -> dict[str, Any]:
         claims = self._decode_token(token)
@@ -251,6 +252,8 @@ class JWTHandler:
 
         # Use private key for asymmetric, secret key for symmetric
         signing_key = self.private_key if self.private_key else self.secret_key
+        if signing_key is None:
+            raise AuthError("No signing key available")
         return jwt.encode(payload, signing_key, algorithm=self.algorithm)
 
     def _decode_token(
@@ -262,11 +265,13 @@ class JWTHandler:
         try:
             # Use public key for asymmetric, secret key for symmetric
             verification_key = self.public_key if self.public_key else self.secret_key
+            if verification_key is None:
+                raise AuthError("No verification key available")
             
             claims = jwt.decode(
                 token,
                 verification_key,
-                algorithms=[self.algorithm],
+                algorithms=[str(self.algorithm)],
                 audience="nrg-api",
                 options={"verify_exp": verify_exp},
             )
@@ -276,7 +281,7 @@ class JWTHandler:
         if claims["jti"] in self.revoked_jtis:
             raise AuthError("Token has been revoked")
 
-        return claims
+        return claims  # type: ignore[no-any-return]
 
     def _validate_token_type(self, claims: dict[str, Any], expected: str) -> None:
         if claims.get("token_type") != expected:

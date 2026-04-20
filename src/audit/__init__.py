@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime, date, UTC
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class ImmutableAuditLog:
             )
         )
 
-    def log_sql(self, user_id: str, sql: str, result: dict = None) -> str:
+    def log_sql(self, user_id: str, sql: str, result: Optional[dict] = None) -> str:
         return self.append(
             AuditEvent(event_type="sql", user_id=user_id, sql=sql, result=result)
         )
@@ -170,6 +170,19 @@ class ImmutableAuditLog:
 
         return len(errors) == 0, errors
 
+    def get_last_hash(self) -> str:
+        """Return the hash of the most recent sealed event."""
+        return self._load_last_hash()
+
+    def get_recent_events(self, limit: int = 100) -> list[dict]:
+        """Return the most recent audit events from the chain."""
+        events = []
+        if self.chain_file.exists():
+            with open(self.chain_file) as f:
+                for line in f:
+                    events.append(json.loads(line))
+        return events[-limit:] if events else []
+
     def get_merkle_root(self) -> dict:
         """Publish daily Merkle root."""
         today = date.today().isoformat()
@@ -213,7 +226,7 @@ def log_plan(user_id: str, query: str, plan: dict) -> str:
     return get_audit_log().log_plan(user_id, query, plan)
 
 
-def log_sql(user_id: str, sql: str, result: dict = None) -> str:
+def log_sql(user_id: str, sql: str, result: Optional[dict] = None) -> str:
     return get_audit_log().log_sql(user_id, sql, result)
 
 

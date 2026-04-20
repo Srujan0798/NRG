@@ -11,7 +11,7 @@ from src.data.database import get_sqlite_connection, resolve_database_path
 class RefreshTokenStore:
     """SQLite-backed refresh token store with SHA256 hashing."""
 
-    def __init__(self, db_path: str = None):
+    def __init__(self, db_path: Optional[str] = None):
         self.db_path = resolve_database_path(db_path)
         self._init_table()
 

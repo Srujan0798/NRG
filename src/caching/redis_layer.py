@@ -75,9 +75,12 @@ def cache_query(ttl=300):
                 if client is None:
                     return func(*args, **kwargs)
 
+                import hashlib
                 query = args[1] if len(args) > 1 else kwargs.get("query", "")
                 user_tier = args[2] if len(args) > 2 else kwargs.get("user_tier", 1)
-                cache_key = f"query:{hash(query)}:{user_tier}"
+                # Deterministic, cross-run stable cache key
+                query_hash = hashlib.sha256(str(query).encode()).hexdigest()[:16]
+                cache_key = f"query:{query_hash}:{user_tier}"
 
                 try:
                     cached = client.get(cache_key)

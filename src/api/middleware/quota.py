@@ -2,8 +2,7 @@
 
 import time
 import redis
-from functools import wraps
-from typing import Optional
+
 from fastapi import HTTPException, Request
 
 
