@@ -125,12 +125,15 @@ BEFORE COMMIT:
   - Run /code-review-and-quality on your own changes
   - Report which skills you used and how
 
-SHISHYA PROTOCOL (mandatory):
-  - Read .claude/prompts/shishya_universal.md before starting
+AGENT INSTRUCTIONS (include this in every task you produce):
+  - First read: .agents/AGENTS.md (your operating manual)
+  - Then read: .agents/prompts/shishya_universal.md (your execution protocol)
+  - Read the SKILL.md for each skill listed in SKILLS TO USE above
   - Don't do the minimum — expand toward the best possible solution
   - Document what you upgraded beyond the original task
   - Extract any new reusable skill or pattern you discovered
-  - Report: completion status, skills used, issues found, what this unlocks next
+  - Run /pre-commit before committing (see .agents/skills/pre-commit/SKILL.md)
+  - Report back using the format in .agents/AGENTS.md
 
 DEPENDS ON: [other tasks, or "none"]
 ═══════════════════════════════════════════
