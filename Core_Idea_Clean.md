@@ -172,21 +172,20 @@ Think of it like a government building:
 
 ## The LangGraph Pipeline
 
-Every query flows through 4 nodes in sequence:
+Every query flows through 6 nodes in sequence:
 
 ```
 USER QUERY
     │
     ▼
-┌──────────┐     ┌──────────┐     ┌──────────┐     ┌─────────────┐
-│ RECEIVER │────▶│  ROUTER  │────▶│ EXECUTOR │────▶│ SYNTHESIZER │
-└──────────┘     └──────────┘     └──────────┘     └─────────────┘
-     │                │                │                   │
-  Assigns ID     Classifies:      Runs skills:       Writes answer:
-  Loads session  • structured     • Text-to-SQL      1st: Cloud LLM
-  history        • unstructured   • RAG              2nd: Local SLM
-                 • hybrid         • Both             3rd: Rule-based
-                                                     + Verification
+┌──────────┐   ┌─────────┐   ┌──────────┐   ┌──────────┐   ┌─────────────┐   ┌──────────┐
+│ RECEIVER │──▶│ PLANNER │──▶│  ROUTER  │──▶│ EXECUTOR │──▶│ SYNTHESIZER │──▶│ VERIFIER │
+└──────────┘   └─────────┘   └──────────┘   └──────────┘   └─────────────┘   └──────────┘
+     │              │              │              │                │                │
+  Assigns ID   Decomposes    Classifies:    Runs skills:     Writes answer:   Checks citations
+  Loads session query into   • structured   • Text-to-SQL    1st: Cloud LLM   against evidence
+  history      sub-queries   • unstructured • RAG            2nd: Local SLM   Retries if
+               + schema      • hybrid       • Both           3rd: Rule-based  unsupported
 ```
 
 ### Router Logic:
@@ -476,7 +475,9 @@ Audit:          src/audit/__init__.py (HMAC-SHA256 chain → .audit/)
 Cache:          src/caching/redis_layer.py (graceful degradation)
 Skills:         src/skills/text_to_sql/ and src/skills/rag/
 State:          src/orchestration/state.py (NRGState dataclass)
-Pipeline:       receiver → router → executor → synthesizer → END
+Pipeline:       receiver → planner → router → executor → synthesizer → verifier → END
+Skills:         .claude/skills/ (24 Claude skills) + .agents/skills/ (35 agent skills)
+Workflow:       GURU_PROTOCOL.md (strategy) + AGENT_WARFARE.md (execution system)
 ```
 
 ---
