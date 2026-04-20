@@ -29,6 +29,26 @@ INTENT_PATTERNS = {
     ],
 }
 
+# Ambiguous terms that require assumption-making or clarification
+AMBIGUITY_PATTERNS = [
+    r"\b(best|top|leading|most|strongest|greatest)\b",
+    r"\b(compare|versus|vs|against)\b",
+    r"\b(recent|lately|nowadays|currently)\b",
+    r"\b(all-time|ever|historically)\b",
+    r"\b(who is doing|who works on|who leads)\b",
+]
+
+
+def _detect_ambiguity(query: str) -> tuple[bool, list[str]]:
+    """Detect ambiguous terms and return (is_ambiguous, list_of_issues)."""
+    issues = []
+    query_lower = query.lower()
+    for pattern in AMBIGUITY_PATTERNS:
+        match = re.search(pattern, query_lower)
+        if match:
+            issues.append(match.group(0))
+    return len(issues) > 0, issues
+
 
 def _classify_intent(query: str) -> str:
     """Classify query intent based on patterns."""
@@ -90,7 +110,28 @@ def router_node(state):
     intent = _classify_intent(user_query)
     routing_decision = _route_to_skill(intent)
 
+    # Ambiguity detection (Core AI Challenge)
+    is_ambiguous, ambiguity_issues = _detect_ambiguity(user_query)
+    clarifications = []
+    if is_ambiguous:
+        # For PoC: auto-resolve with reasonable assumptions rather than asking user
+        if "best" in user_query.lower() or "top" in user_query.lower():
+            clarifications.append("Assumption: 'best' = most publications in last 5 years")
+        if "compare" in user_query.lower() or "versus" in user_query.lower():
+            clarifications.append("Assumption: compare = publication count and funding")
+        if "recent" in user_query.lower() or "currently" in user_query.lower():
+            clarifications.append("Assumption: 'recent' = last 3 years (2022-2025)")
+        if not clarifications:
+            clarifications.append("Assumption: query interpreted as general research overview")
+        # Ambiguous queries benefit from both structured data AND document context
+        if intent != "hybrid":
+            intent = "hybrid"
+            routing_decision = "text_to_sql+rag"
+
     return {
         "intent": intent,
         "routing_decision": routing_decision,
+        "is_ambiguous": is_ambiguous,
+        "ambiguity_issues": ambiguity_issues,
+        "clarifications": clarifications,
     }

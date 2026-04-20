@@ -6,7 +6,7 @@ Complex query processing with self-recovery capabilities
 
 import logging
 import sys
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import time
 
 # Configure logging
@@ -26,7 +26,7 @@ class MultiHopWorkflow:
         self.current_step = 0
 
     def execute_multi_hop_query(
-        self, sql_query: str, vector_query: str, graph_query: str = None
+        self, sql_query: str, vector_query: str, graph_query: Optional[str] = None
     ) -> Dict[str, Any]:
         """
         Execute multi-hop query workflow combining SQL, vector, and graph databases

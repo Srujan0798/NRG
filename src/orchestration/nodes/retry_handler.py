@@ -6,7 +6,7 @@ Handles failure recovery for complex queries
 
 import logging
 import sys
-from typing import Dict, Any, Callable
+from typing import Any, Callable, Optional
 import time
 import random
 
@@ -41,7 +41,7 @@ class RetryHandler:
         Returns:
             Result of operation or raises exception after max retries
         """
-        last_exception = None
+        last_exception: Optional[BaseException] = None
 
         for attempt in range(self.max_retries):
             try:
@@ -64,6 +64,7 @@ class RetryHandler:
                     raise last_exception
 
         # If we get here, all retries failed
+        assert last_exception is not None
         raise last_exception
 
 
