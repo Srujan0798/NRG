@@ -44,7 +44,7 @@ class TestDataBoundary:
 
         result = skill.execute("test", user_tier=1)
 
-        assert result.get("audit_logged") == True
+        assert result.get("audit_logged") is True
 
         skill.close()
 

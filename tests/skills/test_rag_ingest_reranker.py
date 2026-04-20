@@ -1,8 +1,7 @@
 """Tests for RAG ingest pipeline with mocked Qdrant and embeddings."""
 
 import pytest
-from unittest.mock import patch, MagicMock, PropertyMock
-import sqlite3
+from unittest.mock import patch, MagicMock
 
 
 class TestIngestPublications:

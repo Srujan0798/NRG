@@ -70,7 +70,7 @@ class TestTextToSQLSkill:
         result = skill.execute("Find all researchers", user_tier=1)
 
         assert "query" in result or "schema_used" in result
-        assert result.get("audit_logged") == True
+        assert result.get("audit_logged") is True
 
         skill.close()
 
@@ -95,6 +95,39 @@ class TestTextToSQLSkill:
         sql = skill._fallback_sql("List all labs")
         assert "lab" in sql.lower()
 
+        skill.close()
+
+    def test_fallback_sql_count_query(self):
+        skill = TextToSQLSkill()
+        sql = skill._fallback_sql("How many researchers are in Gujarat")
+        assert "COUNT" in sql.upper()
+        skill.close()
+
+    def test_fallback_sql_year_filter(self):
+        skill = TextToSQLSkill()
+        sql = skill._fallback_sql("Find researchers after 2020")
+        assert "2020" in sql
+        skill.close()
+
+    def test_fallback_sql_publications(self):
+        skill = TextToSQLSkill()
+        sql = skill._fallback_sql("List publications in 2023")
+        assert "publications" in sql.lower()
+        skill.close()
+
+    def test_detect_database_default(self):
+        skill = TextToSQLSkill()
+        assert skill._db_type == "sqlite"
+        skill.close()
+
+    def test_get_dialect_system_prompt_sqlite(self):
+        skill = TextToSQLSkill()
+        prompt = skill._get_dialect_system_prompt()
+        assert "SQLite" in prompt
+        skill.close()
+
+    def test_close(self):
+        skill = TextToSQLSkill()
         skill.close()
 
 

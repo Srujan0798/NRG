@@ -1,9 +1,7 @@
 """Tests for ConsentService (DPDP 2023)."""
 
 import pytest
-import os
-import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from src.services.consent import ConsentService
 

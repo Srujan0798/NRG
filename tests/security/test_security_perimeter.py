@@ -8,21 +8,18 @@ Usage:
     python tests/security/test_security_perimeter.py
 """
 
-import json
 import os
 import sys
-import time
 import uuid
 from pathlib import Path
 
-import jwt
 import requests
 
 # Add project root to path
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.auth.jwt_handler import JWTHandler, AuthError
+from src.auth.jwt_handler import JWTHandler, AuthError  # noqa: E402
 
 # Test configuration
 BASE_URL = os.getenv("NRG_API_URL", "http://localhost:8000")
@@ -456,8 +453,8 @@ def main():
         print(f"{TestColors.YELLOW}[INFO]{TestColors.RESET} Start Kong: docker-compose -f infrastructure/kong/docker-compose.yml up -d")
         print(f"\n{TestColors.BOLD}JWT Security (local):{TestColors.RESET} {'✅ PASSED' if jwt_passed else '❌ FAILED'}")
         print(f"\n{TestColors.YELLOW}[NOTE]{TestColors.RESET} To run full test suite:")
-        print(f"  1. Start Kong gateway")
-        print(f"  2. Run: python tests/security/test_security_perimeter.py")
+        print("  1. Start Kong gateway")
+        print("  2. Run: python tests/security/test_security_perimeter.py")
         print()
         return 0 if jwt_passed else 1
 
