@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Callable
+from typing import Any, Callable
 
 from fastapi import Depends, Header, HTTPException, Request, status
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -33,7 +33,7 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
 
 
 def get_current_user(request: Request, authorization: str = Header(default=None)) -> dict:
-    claims = getattr(request.state, "auth_claims", None)
+    claims: dict[str, Any] = getattr(request.state, "auth_claims", None) or {}
     if claims:
         return claims
 

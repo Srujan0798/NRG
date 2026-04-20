@@ -6,6 +6,7 @@ Fallback: HuggingFace transformers with Phi-2 or rule-based templates
 
 import os
 import logging
+import time
 from typing import Optional, List
 
 import httpx
@@ -69,7 +70,7 @@ class LocalLLMClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: List[dict] = None,
+        conversation_history: Optional[List[dict]] = None,
     ) -> str:
         """Generate response using local model."""
         if self.model is None or self.tokenizer is None:
@@ -100,7 +101,7 @@ class LocalLLMClient:
                 )
 
             # Decode
-            response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+            response: str = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
             # Extract only the generated part (after the prompt)
             if prompt in response:
@@ -116,7 +117,7 @@ class LocalLLMClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: List[dict] = None,
+        conversation_history: Optional[List[dict]] = None,
     ) -> str:
         """Build prompt for local LLM."""
         parts = []
@@ -213,7 +214,7 @@ class LlamaCppClient:
             if choices:
                 content = choices[0].get("message", {}).get("content")
                 if content:
-                    return content
+                    return str(content)
 
             raise RuntimeError("llama.cpp response did not include content")
 
@@ -236,16 +237,35 @@ class LlamaCppClient:
             return False
 
 
+# Cache health check results to avoid repeated HTTP calls.
+_llama_cpp_health_cache: tuple[float, bool] | None = None
+_LLAMA_CACHE_TTL_SECONDS = 30.0
+
+
 def get_llama_cpp_client() -> Optional[LlamaCppClient]:
-    """Get LlamaCppClient if server is available."""
+    """Get LlamaCppClient if server is available (health-check cached, TTL 30s)."""
+    global _llama_cpp_health_cache
+    now = time.time()
+
+    if _llama_cpp_health_cache is not None:
+        cached_at, was_healthy = _llama_cpp_health_cache
+        if now - cached_at < _LLAMA_CACHE_TTL_SECONDS:
+            if was_healthy:
+                return LlamaCppClient()
+            return None
+        # Cache expired; fall through to re-check
+
     try:
         client = LlamaCppClient()
         if client.health_check():
+            _llama_cpp_health_cache = (now, True)
             return client
         logger.warning("llama.cpp server not healthy")
+        _llama_cpp_health_cache = (now, False)
         return None
     except Exception as e:
         logger.warning("Failed to create LlamaCppClient: %s", e)
+        _llama_cpp_health_cache = (now, False)
         return None
 
 
@@ -275,9 +295,9 @@ def rule_based_synthesis(
         lines.append("")
 
         # Group by research area
-        areas = {}
-        states = {}
-        institutions = {}
+        areas: dict[str, int] = {}
+        states: dict[str, int] = {}
+        institutions: dict[str, int] = {}
 
         for row in sql_results:
             if isinstance(row, dict):

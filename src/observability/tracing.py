@@ -2,7 +2,7 @@
 
 import os
 from contextlib import contextmanager
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -13,7 +13,7 @@ from langfuse import Langfuse
 
 
 # Initialize Langfuse
-langfuse = Langfuse(
+langfuse: Any = Langfuse(
     public_key=os.getenv("LANGFUSE_PUBLIC_KEY", ""),
     secret_key=os.getenv("LANGFUSE_SECRET_KEY", ""),
     host=os.getenv("LANGFUSE_HOST", "http://localhost:3000"),
@@ -110,7 +110,7 @@ def trace_query(
             metadata={"tier": user_tier},
         )
         
-        return trace.id
+        return str(trace.id)
 
 
 def get_trace_context() -> Dict[str, Any]:

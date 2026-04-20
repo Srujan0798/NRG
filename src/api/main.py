@@ -7,12 +7,14 @@ from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Any
 import uuid
 import os
 import logging
+import time
 from datetime import UTC, datetime
 from qdrant_client import QdrantClient
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
@@ -21,7 +23,7 @@ from src.auth.middleware import (
     get_current_user,
 )
 from src.data.database import resolve_database_path
-from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
+from src.data.database_v2 import NRGDatabase as NRGDatabaseV2, Researcher
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.audit import log_query as audit_log_query
@@ -30,15 +32,69 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+class _APIMemoryCache:
+    """Simple in-memory TTL cache for GET endpoints."""
+    def __init__(self, default_ttl: int = 30):
+        self._store: dict[str, tuple[float, Any]] = {}
+        self._default_ttl = default_ttl
+
+    def get(self, key: str) -> Any:
+        now = time.time()
+        entry = self._store.get(key)
+        if entry is None:
+            return None
+        expires_at, value = entry
+        if now > expires_at:
+            self._store.pop(key, None)
+            return None
+        return value
+
+    def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        self._store[key] = (time.time() + (ttl or self._default_ttl), value)
+
+    def invalidate(self, prefix: str = "") -> None:
+        if prefix:
+            keys = [k for k in self._store if k.startswith(prefix)]
+            for k in keys:
+                self._store.pop(k, None)
+        else:
+            self._store.clear()
+
+
+_api_cache = _APIMemoryCache(default_ttl=30)
+
+
+_db_instance: NRGDatabaseV2 | None = None
+
+
 def _get_db() -> NRGDatabaseV2:
-    url = f"sqlite:///{resolve_database_path()}"
-    db = NRGDatabaseV2(url=url)
-    db.create_tables()
-    return db
+    global _db_instance
+    if _db_instance is None:
+        url = f"sqlite:///{resolve_database_path()}"
+        _db_instance = NRGDatabaseV2(url=url)
+        _db_instance.create_tables()
+    return _db_instance
 
 
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    """Log every request with method, path, status, and duration."""
+
+    async def dispatch(self, request: Request, call_next):
+        start = time.time()
+        response = await call_next(request)
+        duration = (time.time() - start) * 1000
+        logger.info(
+            "%s %s — %s — %.2fms",
+            request.method,
+            request.url.path,
+            response.status_code,
+            duration,
+        )
+        return response
+
 
 app = FastAPI(
     title="National Research Graph API",
@@ -54,6 +110,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(GZipMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(AuthContextMiddleware, jwt_handler=jwt_handler)
 
 
@@ -130,7 +187,7 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
             raise HTTPException(
-                status_code=403,
+                status_code=400,
                 detail=f"Security violation: {validation['reason']}"
             )
 
@@ -167,6 +224,8 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             "provenance": result.get("provenance", {}),
             "conversation_history": result.get("conversation_history", []),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Workflow execution error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -194,10 +253,13 @@ async def health_llm():
             "Respond with 'OK' only.",
             []
         )
+        settings = getattr(client, 'settings', None)
+        provider = getattr(settings, 'provider', 'unknown') if settings else 'unknown'
+        model = getattr(settings, 'model', 'unknown') if settings else 'unknown'
         return {
             "ready": True,
-            "provider": getattr(client, 'settings', {}).get('provider', 'unknown'),
-            "model": getattr(client, 'settings', {}).get('model', 'unknown'),
+            "provider": provider,
+            "model": model,
             "test_response": test_response[:10] if test_response else None
         }
     except LLMConfigError as e:
@@ -257,19 +319,33 @@ async def health_qdrant():
 
 @app.get("/researchers")
 async def get_researchers(
-    state: str = None,
-    research_area: str = None,
+    state: Optional[str] = None,
+    research_area: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
     token_payload: dict = Depends(get_current_user)
 ):
-    """Protected endpoint with role-specific data shaping."""
+    """Protected endpoint with role-specific data shaping and pagination."""
+    cache_key = f"researchers:{state}:{research_area}:{limit}:{offset}:{token_payload.get('role','')}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     db = _get_db()
-    researchers = db.query_researchers(state=state, research_area=research_area)
-    return filter_researcher_records(researchers, token_payload)
+    researchers = db.query_researchers(state=state, research_area=research_area, limit=limit, offset=offset)
+    result = filter_researcher_records(researchers, token_payload)
+    _api_cache.set(cache_key, result, ttl=15)
+    return result
 
 
 @app.get("/stats")
 async def get_stats(token_payload: dict = Depends(get_current_user)):
     """Get system statistics for dashboards."""
+    cache_key = f"stats:{token_payload.get('role','')}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     db = _get_db()
     stats = db.get_stats()
 
@@ -279,19 +355,22 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
     lab_count = stats.get("labs", 0)
     research_areas = stats.get("research_areas", [])
 
-    # Get state distribution
+    # Get state distribution via ORM
     with db.get_session() as session:
-        from sqlalchemy import text
-        result = session.execute(text(
-            "SELECT state, COUNT(*) as count FROM researchers "
-            "GROUP BY state ORDER BY count DESC LIMIT 10"
-        ))
+        from sqlalchemy import func
+        result = (
+            session.query(Researcher.state, func.count(Researcher.researcher_id).label("count"))
+            .group_by(Researcher.state)
+            .order_by(func.count(Researcher.researcher_id).desc())
+            .limit(10)
+            .all()
+        )
         states = [{"state": row[0], "count": row[1]} for row in result]
 
     role = token_payload.get("role", "researcher")
 
     if role == "government":
-        return {
+        result = {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
             "total_institutions": institution_count,
@@ -300,37 +379,53 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
             "state_distribution": states,
         }
     elif role == "industry":
-        return {
+        result = {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
             "research_areas": [ra["area"] for ra in research_areas[:5]],
         }
     else:
-        return {
+        result = {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
             "total_institutions": institution_count,
         }
 
+    _api_cache.set(cache_key, result, ttl=30)
+    return result
+
 
 @app.get("/publications")
 async def get_publications(
-    year: int = None,
+    year: Optional[int] = None,
     limit: int = 10,
+    offset: int = 0,
     token_payload: dict = Depends(get_current_user)
 ):
-    """Get publications list."""
+    """Get publications list with pagination."""
+    cache_key = f"publications:{year}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     db = _get_db()
-    publications = db.query_publications(year=year, limit=limit)
-    return {"publications": publications}
+    publications = db.query_publications(year=year, limit=limit, offset=offset)
+    result = {"publications": publications}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
 
 
 @app.get("/query/graph")
 async def get_graph_data(
-    topic: str = None,
+    topic: Optional[str] = None,
     token_payload: dict = Depends(get_current_user)
 ):
     """Get graph data for research network visualization."""
+    cache_key = f"graph:{topic or 'all'}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
     db = _get_db()
 
     nodes = []
@@ -449,7 +544,9 @@ async def get_graph_data(
                     "weight": 1
                 })
 
-    return {"nodes": nodes, "edges": edges, "warnings": warnings}
+    result = {"nodes": nodes, "edges": edges, "warnings": warnings}
+    _api_cache.set(cache_key, result, ttl=30)
+    return result
 
 
 # DPDP Compliance Endpoints
@@ -537,9 +634,9 @@ async def verify_audit_chain(token_payload: dict = Depends(get_current_user)):
 
 @app.get("/audit/events")
 async def get_audit_events(
-    user_id: str = None,
-    action: str = None,
-    since: str = None,
+    user_id: Optional[str] = None,
+    action: Optional[str] = None,
+    since: Optional[str] = None,
     limit: int = 100,
     token_payload: dict = Depends(get_current_user)
 ):

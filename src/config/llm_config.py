@@ -5,11 +5,11 @@ from __future__ import annotations
 import os
 import time
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import lru_cache
-from typing import Protocol, Optional
+from typing import Optional, Protocol
 
-import requests
+import requests  # type: ignore[import-untyped]
 
 from src.security.egress.guard import create_sovereign_client
 
@@ -184,7 +184,7 @@ class NvidiaLLMClient:
         if choices:
             content = choices[0].get("message", {}).get("content")
             if content:
-                return content
+                return str(content)
         raise RuntimeError("NVIDIA API response did not include content")
 
 
@@ -229,7 +229,7 @@ class OpenAIResponsesClient:
         # Handle OpenAI Responses API format
         # First try the convenience output_text property
         if "output_text" in payload and payload["output_text"]:
-            return payload["output_text"]
+            return str(payload["output_text"])
         
         # Then try to extract from output array
         if "output" in payload:
@@ -239,7 +239,7 @@ class OpenAIResponsesClient:
                     if isinstance(content, list):
                         for content_item in content:
                             if content_item.get("type") == "output_text" and content_item.get("text"):
-                                return content_item["text"]
+                                return str(content_item["text"])
                     elif isinstance(content, str):
                         return content
         
@@ -345,7 +345,7 @@ class AzureOpenAIClient:
         if choices:
             content = choices[0].get("message", {}).get("content")
             if content:
-                return content
+                return str(content)
         raise RuntimeError("Azure OpenAI response did not include a message content")
 
 
@@ -369,7 +369,8 @@ class GeminiGenAIClient:
     ) -> str:
         from langchain_core.messages import HumanMessage, SystemMessage
 
-        history = []
+        from langchain_core.messages import BaseMessage
+        history: list[BaseMessage] = []
         for turn in conversation_history[-3:]:
             if turn.get("query"):
                 history.append(HumanMessage(content=turn["query"]))
@@ -392,7 +393,10 @@ class GeminiGenAIClient:
         )
 
         response = self.llm.invoke(messages)
-        return response.content
+        content = response.content
+        if isinstance(content, str):
+            return content
+        return str(content)
 
 
 @lru_cache(maxsize=8)
@@ -432,7 +436,7 @@ class SovereignLLMMesh:
 
     def _load_mesh_config(self) -> LLMMeshConfig:
         """Load mesh configuration from environment."""
-        fallback_order_str = _env("LLM_FALLBACK_ORDER", "nvidia,gemini,openai")
+        fallback_order_str = _env("LLM_FALLBACK_ORDER", "nvidia,gemini,openai") or "nvidia,gemini,openai"
         fallback_order = [p.strip() for p in fallback_order_str.split(",")]
 
         return LLMMeshConfig(
@@ -443,7 +447,7 @@ class SovereignLLMMesh:
             request_timeout_seconds=int(_env("LLM_REQUEST_TIMEOUT_SECONDS", "30") or "30"),
         )
 
-    def _initialize_clients(self):
+    def _initialize_clients(self) -> None:
         """Initialize all configured LLM clients."""
         all_providers = [self.mesh_config.primary_provider] + self.mesh_config.fallback_order
 
@@ -474,7 +478,7 @@ class SovereignLLMMesh:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: list[dict] = None,
+        conversation_history: Optional[list[dict]] = None,
     ) -> str:
         """
         Generate response with automatic fallback.
