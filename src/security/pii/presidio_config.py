@@ -1,6 +1,6 @@
 """Presidio PII detection with lazy loading to avoid import failures."""
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Any
 
 
 class PresidioConfig:
@@ -18,31 +18,16 @@ class PresidioConfig:
         if self._initialized:
             return
         try:
-            import spacy
-            from presidio_analyzer import AnalyzerEngine
+            from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
             from presidio_analyzer.nlp_engine import NlpEngineProvider
             from presidio_analyzer.recognizer_registry import RecognizerRegistry
-            from presidio_analyzer.predefined_recognizers import (
-                CreditCardRecognizer,
-                CryptoRecognizer,
-                DateRecognizer,
-                EmailRecognizer,
-                IbanRecognizer,
-                IpRecognizer,
-                MedicalLicenseRecognizer,
-                PhoneRecognizer,
-                UrlRecognizer,
-            )
         except ImportError:
             self._initialized = True
             return
 
         self.nlp_engine = self._setup_nlp_engine(NlpEngineProvider)
         self.analyzer = self._setup_analyzer(
-            AnalyzerEngine, RecognizerRegistry,
-            CreditCardRecognizer, CryptoRecognizer, DateRecognizer,
-            EmailRecognizer, IbanRecognizer, IpRecognizer,
-            MedicalLicenseRecognizer, PhoneRecognizer, UrlRecognizer,
+            AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern
         )
         self._initialized = True
 
@@ -50,29 +35,46 @@ class PresidioConfig:
         provider = NlpEngineProvider()
         return provider.create_engine()
 
-    def _setup_analyzer(self, AnalyzerEngine, RecognizerRegistry,
-                        CreditCardRecognizer, CryptoRecognizer, DateRecognizer,
-                        EmailRecognizer, IbanRecognizer, IpRecognizer,
-                        MedicalLicenseRecognizer, PhoneRecognizer, UrlRecognizer):
+    def _setup_analyzer(self, AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern):
         registry = RecognizerRegistry()
+        # Load all predefined recognizers (EMAIL, PHONE, CREDIT_CARD, etc.)
+        registry.load_predefined_recognizers()
 
-        standard_recognizers = [
-            CreditCardRecognizer(),
-            CryptoRecognizer(),
-            DateRecognizer(),
-            EmailRecognizer(),
-            IbanRecognizer(),
-            IpRecognizer(),
-            MedicalLicenseRecognizer(),
-            PhoneRecognizer(),
-            UrlRecognizer(),
-        ]
+        # Indian PAN: 5 letters + 4 digits + 1 letter (e.g., ABCDE1234F)
+        pan_recognizer = PatternRecognizer(
+            supported_entity="IN_PAN",
+            patterns=[
+                Pattern(
+                    name="pan_basic",
+                    regex=r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",
+                    score=0.9,
+                )
+            ],
+            context=["pan", "permanent", "account", "number"],
+            supported_language="en",
+        )
 
-        indian_recognizers = [InPanRecognizer(), InAadhaarRecognizer()]
-        all_recognizers = standard_recognizers + indian_recognizers
+        # Indian Aadhaar: 12 digits, often grouped as 4-4-4
+        aadhaar_recognizer = PatternRecognizer(
+            supported_entity="IN_AADHAAR",
+            patterns=[
+                Pattern(
+                    name="aadhaar_grouped",
+                    regex=r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b",
+                    score=0.95,
+                )
+            ],
+            context=["aadhaar", "uidai", "identity", "card"],
+            supported_language="en",
+        )
+
+        registry.add_recognizer(pan_recognizer)
+        registry.add_recognizer(aadhaar_recognizer)
 
         analyzer = AnalyzerEngine(
-            nlp_engine=self.nlp_engine, registry=registry, default_score_threshold=0.5
+            nlp_engine=self.nlp_engine,
+            registry=registry,
+            default_score_threshold=0.5,
         )
         return analyzer
 
@@ -104,8 +106,8 @@ class PresidioConfig:
 
     def _fallback_analyze(self, text: str) -> List[Dict]:
         results = []
-        for recognizer in [InPanRecognizer(), InAadhaarRecognizer()]:
-            for match in recognizer.analyze(text):
+        for recognizer in [_InPanRecognizer(), _InAadhaarRecognizer()]:
+            for match in recognizer.analyze(text):  # type: ignore[attr-defined]
                 results.append({
                     "entity_type": match["entity"],
                     "start": match["start"],
@@ -119,12 +121,12 @@ class PresidioConfig:
         self._ensure_initialized()
         if self.analyzer is None:
             return ["IN_PAN", "IN_AADHAAR"]
-        return self.analyzer.get_supported_entities()
+        return list(self.analyzer.get_supported_entities())
 
     def validate_dpdp_compliance(self, text: str) -> Dict:
         pii_entities = self.analyze_text(text)
 
-        compliance_report = {
+        compliance_report: dict[str, Any] = {
             "compliant": len(pii_entities) == 0,
             "pii_detected": len(pii_entities) > 0,
             "entities": pii_entities,
@@ -142,8 +144,8 @@ class PresidioConfig:
         return compliance_report
 
 
-class InPanRecognizer:
-    """Indian PAN number recognizer."""
+class _InPanRecognizer:
+    """Indian PAN number recognizer (fallback when Presidio unavailable)."""
 
     def __init__(self):
         self.pattern = r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b"
@@ -167,8 +169,8 @@ class InPanRecognizer:
         return results
 
 
-class InAadhaarRecognizer:
-    """Indian Aadhaar number recognizer."""
+class _InAadhaarRecognizer:
+    """Indian Aadhaar number recognizer (fallback when Presidio unavailable)."""
 
     def __init__(self):
         self.pattern = r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"

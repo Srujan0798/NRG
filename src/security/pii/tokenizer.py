@@ -2,7 +2,7 @@ import os
 import re
 import hashlib
 import base64
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -16,8 +16,18 @@ class PIITokenizer:
     def __init__(self, encryption_key: Optional[bytes] = None):
         """Initialize PII tokenizer with optional encryption key."""
         if encryption_key is None:
-            password = os.getenv("PII_ENCRYPTION_KEY", "").encode() or b"dev-only-key"
-            salt = os.getenv("PII_ENCRYPTION_SALT", "").encode() or b"dev-only-salt"
+            key_env = os.getenv("PII_ENCRYPTION_KEY", "")
+            salt_env = os.getenv("PII_ENCRYPTION_SALT", "")
+            if not key_env:
+                if os.environ.get("NRG_ENV", "dev") != "dev":
+                    raise RuntimeError(
+                        "PII_ENCRYPTION_KEY must be set in production environments"
+                    )
+                import secrets
+                key_env = secrets.token_hex(32)
+                salt_env = secrets.token_hex(16)
+            password = key_env.encode()
+            salt = salt_env.encode() or secrets.token_bytes(16)
             kdf = PBKDF2HMAC(
                 algorithm=hashes.SHA256(),
                 length=32,
@@ -54,10 +64,9 @@ class PIITokenizer:
             "phone": r"\b[6-9][0-9]{9}\b",
         }
 
-    def detect_pii(self, text: str) -> List[Dict[str, str]]:
+    def detect_pii(self, text: str) -> List[Dict[str, Any]]:
         """Detect all PII entities in text."""
         detected = []
-        text_lower = text.lower()
 
         for pii_type, pattern in self.pii_patterns.items():
             matches = pattern.finditer(text)
@@ -135,14 +144,14 @@ class PIITokenizer:
         else:
             try:
                 return self.cipher.decrypt(token.encode()).decode()
-            except:
+            except Exception:
                 return "[DECRYPTION_FAILED]"
 
     def validate_dpdp_compliance(self, text: str) -> Dict:
         """Validate text for DPDP 2023 compliance."""
         detected_pii = self.detect_pii(text)
 
-        compliance_report = {
+        compliance_report: dict[str, Any] = {
             "compliant": len(detected_pii) == 0,
             "pii_detected": len(detected_pii) > 0,
             "pii_entities": detected_pii,

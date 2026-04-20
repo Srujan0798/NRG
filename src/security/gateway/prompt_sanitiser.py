@@ -56,7 +56,7 @@ class PromptSanitiser:
         """Detect PII in the given text and return the type if found."""
         for pii_type, pattern in self.pii_patterns.items():
             if pattern.search(text):
-                return pii_type
+                return str(pii_type)
         return None
 
     def detect_injection(self, text: str) -> bool:
