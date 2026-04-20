@@ -1,6 +1,7 @@
 # NRG — National Research Graph
 
 > **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
+> **Constitution**: See @.claude/NRG_CONSTITUTION.md — Sovereign rules governing all NRG AI behavior.
 > **Agent Warfare**: See @.claude/AGENT_WARFARE.md — Role hierarchy, evolution loop, full system.
 > **Every task must include skill assignments.** Agents must report which skills they used.
 
