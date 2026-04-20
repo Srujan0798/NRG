@@ -21,8 +21,8 @@ You are auditing the **National Research Graph (NRG)** project — a sovereign A
 
 Read ALL of these before producing any output:
 1. `Core_Idea_Clean.md` — the vision (5-layer architecture)
-2. `Sovereign_AI_Protocols_Clean.md` — three-layer technical blueprint
-3. `Sovereign_Infrastructure_Blueprint.md` — full implementation plan (8-month roadmap)
+2. `docs/archive/Sovereign_AI_Protocols_Clean.md` — three-layer technical blueprint
+3. `docs/archive/Sovereign_Infrastructure_Blueprint.md` — full implementation plan (8-month roadmap)
 4. `docs/architecture/ARCHITECTURE.md` — canonical architecture spec
 5. `docs/reports/FINAL_STATUS_REPORT.md` — current honest status
 6. `src/api/main.py` — the FastAPI server
@@ -94,10 +94,10 @@ Run: `.venv/bin/python -m pytest tests/ -v --tb=short 2>&1 | tail -40`
 Report exactly how many pass, fail, and error. Fix the critical failures.
 
 ### 8. KNOWLEDGE GRAPH — DEAD CODE?
-`src/knowledge_graph/loader.py` and `traversals.py` reference Neo4j. Is this integrated into the workflow? Or is it dead code that exists but is never called?
+`experiments/knowledge_graph/loader.py` and `traversals.py` reference Neo4j. Is this integrated into the workflow? Or is it experimental code that exists but is never called?
 
 ### 9. DATABASE SEED DATA QUALITY
-`nrg_research.db` has 200 researchers, 24 institutions, 500 publications, 50 labs, 100 funding records. But `researcher_publications`, `keywords`, `publication_keywords`, `researcher_labs` are ALL EMPTY (0 rows). The relational data has no connections. Text-to-SQL queries about "publications by researcher X" will return nothing.
+`nrg_research.db` has 200 researchers, 24 institutions, 500 publications, 50 labs, 100 funding records. Junction tables `researcher_publications` (666 rows), `researcher_labs` (284 rows), `publication_keywords` (1276 rows), and `keywords` (64 rows) are populated. Text-to-SQL queries about "publications by researcher X" will return real results.
 
 ### 10. AUDIT LOG INTEGRATION
 `src/audit/__init__.py` has the HMAC chain logic. But is it actually called anywhere in the pipeline? Is every query logged? Every SQL execution? Every LLM call? Or is it standalone code that never gets invoked?
