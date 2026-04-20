@@ -50,8 +50,17 @@ node_modules/
 .npm
 frontend/dist/
 frontend/build/
+frontend/test-results/
+
+# Stale root-level artifacts
+nrg_checkpoints.db
+nrg_research.db
+.qwen/
 
 .idea/
 .vscode/
 *.sublime-*
 .venv311/
+TASKS_COMPLETED.md
+TASK_EXECUTION_STATUS.md
+DASHBOARD_URLS.md
