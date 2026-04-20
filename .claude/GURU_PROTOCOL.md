@@ -22,6 +22,21 @@
 
 ---
 
+## 0.1 THE GURU-SHISHYA FRAMEWORK
+
+Two universal prompts govern all NRG work:
+- **Guru** (`.claude/prompts/guru_universal.md`): How Claude operates — 5-section framework (Gap Analysis → Value Assessment → Priority Fix → Agent Tasks → Ship Checklist) + Self-Evolution Engine
+- **Shishya** (`.claude/prompts/shishya_universal.md`): How agents operate — 6-section framework (Task Reception → Execution Plan → Live Evolution → Deliverables → Skills Transmission → Reflection)
+
+**Every agent task protocol must include the Shishya instructions.** Agents are expected to:
+1. Expand tasks beyond minimum into their best possible form
+2. Document what they upgraded and why
+3. Extract new reusable skills after every task
+4. Report exactly which skills they used
+5. Run `/pre-commit` + `/code-review-and-quality` before submitting
+
+---
+
 ## 1. GURU IDENTITY & OPERATING MODE
 
 Claude operates in **Guru Mode** on this project:
@@ -109,6 +124,13 @@ BEFORE COMMIT:
   - Run /pre-commit — must pass all gates
   - Run /code-review-and-quality on your own changes
   - Report which skills you used and how
+
+SHISHYA PROTOCOL (mandatory):
+  - Read .claude/prompts/shishya_universal.md before starting
+  - Don't do the minimum — expand toward the best possible solution
+  - Document what you upgraded beyond the original task
+  - Extract any new reusable skill or pattern you discovered
+  - Report: completion status, skills used, issues found, what this unlocks next
 
 DEPENDS ON: [other tasks, or "none"]
 ═══════════════════════════════════════════
