@@ -7,7 +7,6 @@ Production-grade middleware that auto-injects user tier into every query
 import logging
 import sys
 from typing import Dict, Any, Optional
-import json
 
 # Configure logging
 logging.basicConfig(
@@ -50,7 +49,7 @@ class RBACMiddleware:
         return tier_mapping.get(persona, [3])
 
     def inject_postgresql_filter(
-        self, query: str, params: Dict[str, Any] = None
+        self, query: str, params: Optional[Dict[str, Any]] = None
     ) -> tuple:
         """
         Inject access control into PostgreSQL query
@@ -115,11 +114,6 @@ def main():
 
     # In a real implementation, this would be integrated with the application
     # to automatically inject access control into all database queries
-
-    # Example usage would be:
-    # middleware = RBACMiddleware(user_tier=2)
-    # query = middleware.inject_postgresql_filter("SELECT * FROM researchers")
-    # print("RBAC middleware ready for use")
 
 
 if __name__ == "__main__":
