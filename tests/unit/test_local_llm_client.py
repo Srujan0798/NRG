@@ -1,4 +1,11 @@
+import pytest
+
 import src.config.local_llm as local_llm
+
+
+@pytest.fixture(autouse=True)
+def clear_llama_health_cache():
+    local_llm._llama_cpp_health_cache = None
 
 
 class HealthyLlamaClient:

@@ -7,7 +7,7 @@ test.describe('Government Persona E2E Flow', () => {
 
   test.beforeAll(async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'government', password: 'government-pass' },
+      data: { username: 'gov_user', password: 'gov-pass' },
     });
     if (response.ok()) {
       const data = await response.json();
@@ -17,7 +17,7 @@ test.describe('Government Persona E2E Flow', () => {
 
   test('login as government user and receive tokens', async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'government', password: 'government-pass' },
+      data: { username: 'gov_user', password: 'gov-pass' },
     });
     expect(response.ok()).toBeTruthy();
     const data = await response.json();

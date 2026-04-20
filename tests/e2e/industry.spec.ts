@@ -7,7 +7,7 @@ test.describe('Industry Persona E2E Flow', () => {
 
   test.beforeAll(async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'industry', password: 'industry-pass' },
+      data: { username: 'industry_user', password: 'industry-pass' },
     });
     if (response.ok()) {
       const data = await response.json();
@@ -17,7 +17,7 @@ test.describe('Industry Persona E2E Flow', () => {
 
   test('login as industry user and receive tokens', async ({ request }) => {
     const response = await request.post(`${API_BASE}/login`, {
-      data: { username: 'industry', password: 'industry-pass' },
+      data: { username: 'industry_user', password: 'industry-pass' },
     });
     expect(response.ok()).toBeTruthy();
     const data = await response.json();
