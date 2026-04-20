@@ -5,9 +5,7 @@ Test suite for vector ingestion pipeline validation
 
 import logging
 import sys
-from typing import List, Dict, Any
 import unittest
-import os
 
 # Configure logging
 logging.basicConfig(

@@ -1,6 +1,5 @@
 """Tests for orchestration receiver, router, executor, and state nodes."""
 
-import pytest
 from unittest.mock import patch, MagicMock
 from src.orchestration.state import NRGState
 
@@ -95,6 +94,25 @@ class TestRouterNode:
         result = router_node({"user_query": "test", "plan": None})
         assert "routing_decision" in result
         assert "intent" in result
+
+    def test_router_ambiguous_best(self):
+        from src.orchestration.nodes.router import router_node
+        result = router_node({"user_query": "Who is the best researcher in AI?"})
+        assert result["is_ambiguous"] is True
+        assert any("best" in c for c in result.get("clarifications", []))
+        assert result["intent"] == "hybrid"
+
+    def test_router_ambiguous_compare(self):
+        from src.orchestration.nodes.router import router_node
+        result = router_node({"user_query": "Compare IIT Bombay and IISc"})
+        assert result["is_ambiguous"] is True
+        assert any("compare" in c for c in result.get("clarifications", []))
+
+    def test_router_not_ambiguous(self):
+        from src.orchestration.nodes.router import router_node
+        result = router_node({"user_query": "List researchers in Gujarat"})
+        assert result["is_ambiguous"] is False
+        assert result["intent"] == "structured"
 
 
 class TestExecutorNode:
