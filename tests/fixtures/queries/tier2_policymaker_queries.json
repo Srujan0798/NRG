@@ -1,0 +1,2440 @@
+[
+  {
+    "query_id": "T2Q-00001",
+    "persona": "Tier2_Policymaker",
+    "intent": "national_funding_trend",
+    "natural_language_query": "What is the total research funding released by the Government of India across all agencies for each fiscal year from FY2020-21 to FY2026-27? For each year, show the total amount in INR crores, number of transactions, and year-over-year growth percentage. I need this for the Parliamentary Standing Committee report on R&D expenditure.",
+    "expected_sql_tables": [
+      "funding_transactions"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "671fc68b-6add-409b-80e7-1822df211b53",
+        "query_id": "T2Q-00001",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.98,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "TXN-003457",
+          "TXN-000261",
+          "TXN-000245",
+          "TXN-000768",
+          "TXN-001792",
+          "TXN-001906",
+          "TXN-004140",
+          "TXN-004932",
+          "TXN-000218",
+          "TXN-004598",
+          "TXN-001629",
+          "TXN-005866",
+          "TXN-005324",
+          "TXN-005746",
+          "TXN-004465",
+          "TXN-003437",
+          "TXN-001806",
+          "TXN-003680",
+          "TXN-004828",
+          "TXN-002279"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "fiscal_year_trend": [
+        {
+          "fiscal_year": "FY2020-21",
+          "total_released_inr_crores": 3441.78,
+          "transaction_count": 395,
+          "yoy_growth_pct": null
+        },
+        {
+          "fiscal_year": "FY2021-22",
+          "total_released_inr_crores": 6860.98,
+          "transaction_count": 791,
+          "yoy_growth_pct": 99.3
+        },
+        {
+          "fiscal_year": "FY2022-23",
+          "total_released_inr_crores": 9368.03,
+          "transaction_count": 1114,
+          "yoy_growth_pct": 36.5
+        },
+        {
+          "fiscal_year": "FY2023-24",
+          "total_released_inr_crores": 10113.32,
+          "transaction_count": 1230,
+          "yoy_growth_pct": 8.0
+        },
+        {
+          "fiscal_year": "FY2024-25",
+          "total_released_inr_crores": 10512.46,
+          "transaction_count": 1269,
+          "yoy_growth_pct": 3.9
+        },
+        {
+          "fiscal_year": "FY2025-26",
+          "total_released_inr_crores": 11334.1,
+          "transaction_count": 1429,
+          "yoy_growth_pct": 7.8
+        },
+        {
+          "fiscal_year": "FY2026-27",
+          "total_released_inr_crores": 10080.27,
+          "transaction_count": 1110,
+          "yoy_growth_pct": -11.1
+        }
+      ],
+      "cumulative_total_inr_crores": 61710.94,
+      "average_annual_inr_crores": 8815.85,
+      "peak_year": "FY2025-26"
+    }
+  },
+  {
+    "query_id": "T2Q-00002",
+    "persona": "Tier2_Policymaker",
+    "intent": "agency_funding_distribution",
+    "natural_language_query": "Provide a comprehensive breakdown of research funding by each government agency. For every agency (DST, SERB, DBT, MeitY, ANRF, DRDO, ISRO, CSIR, etc.), show: total amount released, percentage share of total national funding, number of projects funded, and average funding per project. This is for the DST annual report.",
+    "expected_sql_tables": [
+      "funding_transactions",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "2e95f1fb-24af-4211-9899-9fd0f9ff5457",
+        "query_id": "T2Q-00002",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.97,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "TXN-006631",
+          "TXN-007122",
+          "TXN-000054",
+          "TXN-006217",
+          "TXN-006602",
+          "TXN-001308",
+          "TXN-005720",
+          "TXN-003463",
+          "TXN-002788",
+          "TXN-002277",
+          "TXN-001274",
+          "TXN-001764",
+          "TXN-006255",
+          "TXN-002758",
+          "TXN-000838",
+          "TXN-000760",
+          "TXN-003113",
+          "TXN-000793",
+          "TXN-002941",
+          "TXN-006943"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "total_national_funding_inr_crores": 61710.94,
+      "agencies": [
+        {
+          "agency": "DST",
+          "total_released_inr_crores": 15516.49,
+          "percentage_share": 25.1,
+          "projects_funded": 899,
+          "avg_per_project_inr_crores": 17.26
+        },
+        {
+          "agency": "SERB",
+          "total_released_inr_crores": 12267.55,
+          "percentage_share": 19.9,
+          "projects_funded": 698,
+          "avg_per_project_inr_crores": 17.58
+        },
+        {
+          "agency": "DBT",
+          "total_released_inr_crores": 6095.63,
+          "percentage_share": 9.9,
+          "projects_funded": 330,
+          "avg_per_project_inr_crores": 18.47
+        },
+        {
+          "agency": "MeitY",
+          "total_released_inr_crores": 4925.86,
+          "percentage_share": 8.0,
+          "projects_funded": 279,
+          "avg_per_project_inr_crores": 17.66
+        },
+        {
+          "agency": "ANRF",
+          "total_released_inr_crores": 4614.68,
+          "percentage_share": 7.5,
+          "projects_funded": 260,
+          "avg_per_project_inr_crores": 17.75
+        },
+        {
+          "agency": "DRDO",
+          "total_released_inr_crores": 3479.69,
+          "percentage_share": 5.6,
+          "projects_funded": 194,
+          "avg_per_project_inr_crores": 17.94
+        },
+        {
+          "agency": "Gujarat Govt",
+          "total_released_inr_crores": 3131.99,
+          "percentage_share": 5.1,
+          "projects_funded": 181,
+          "avg_per_project_inr_crores": 17.3
+        },
+        {
+          "agency": "ISRO",
+          "total_released_inr_crores": 2944.97,
+          "percentage_share": 4.8,
+          "projects_funded": 174,
+          "avg_per_project_inr_crores": 16.93
+        },
+        {
+          "agency": "Industry",
+          "total_released_inr_crores": 2465.58,
+          "percentage_share": 4.0,
+          "projects_funded": 137,
+          "avg_per_project_inr_crores": 18.0
+        },
+        {
+          "agency": "CSIR",
+          "total_released_inr_crores": 1905.79,
+          "percentage_share": 3.1,
+          "projects_funded": 104,
+          "avg_per_project_inr_crores": 18.32
+        },
+        {
+          "agency": "ICMR",
+          "total_released_inr_crores": 1621.37,
+          "percentage_share": 2.6,
+          "projects_funded": 78,
+          "avg_per_project_inr_crores": 20.79
+        },
+        {
+          "agency": "MHRD",
+          "total_released_inr_crores": 1392.23,
+          "percentage_share": 2.3,
+          "projects_funded": 86,
+          "avg_per_project_inr_crores": 16.19
+        },
+        {
+          "agency": "DST-NSM",
+          "total_released_inr_crores": 683.92,
+          "percentage_share": 1.1,
+          "projects_funded": 41,
+          "avg_per_project_inr_crores": 16.68
+        },
+        {
+          "agency": "MoEFCC",
+          "total_released_inr_crores": 665.19,
+          "percentage_share": 1.1,
+          "projects_funded": 39,
+          "avg_per_project_inr_crores": 17.06
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00003",
+    "persona": "Tier2_Policymaker",
+    "intent": "state_research_ecosystem",
+    "natural_language_query": "Map India's research ecosystem at the state level. For each state, provide: number of researchers, number of research labs, number of projects led by researchers in that state, total funding received, and average h-index. Sort by researcher count descending. I need this for the NITI Aayog's state-level innovation index.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "73ef492e-4870-473e-adea-94a37452bef4",
+        "query_id": "T2Q-00003",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.96,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01409",
+          "RES-02473",
+          "RES-01084",
+          "RES-00178",
+          "RES-01882",
+          "RES-02197",
+          "RES-00512",
+          "RES-01551",
+          "RES-00323",
+          "RES-02262",
+          "RES-01201",
+          "RES-01482",
+          "RES-02365",
+          "RES-00788",
+          "RES-00285"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "total_states": 32,
+      "top_states": [
+        {
+          "state": "Gujarat",
+          "researchers": 430,
+          "labs": 56,
+          "projects": 1809,
+          "total_funding": 6249.5500000000075,
+          "avg_h_index": 19.1
+        },
+        {
+          "state": "Delhi",
+          "researchers": 299,
+          "labs": 38,
+          "projects": 257,
+          "total_funding": 3469.2000000000016,
+          "avg_h_index": 18.8
+        },
+        {
+          "state": "Maharashtra",
+          "researchers": 278,
+          "labs": 37,
+          "projects": 214,
+          "total_funding": 3311.0500000000025,
+          "avg_h_index": 20.4
+        },
+        {
+          "state": "Karnataka",
+          "researchers": 247,
+          "labs": 38,
+          "projects": 193,
+          "total_funding": 2847.28,
+          "avg_h_index": 19.7
+        },
+        {
+          "state": "Tamil Nadu",
+          "researchers": 218,
+          "labs": 41,
+          "projects": 191,
+          "total_funding": 2486.7199999999993,
+          "avg_h_index": 19.3
+        },
+        {
+          "state": "Uttar Pradesh",
+          "researchers": 163,
+          "labs": 23,
+          "projects": 129,
+          "total_funding": 1715.7499999999998,
+          "avg_h_index": 16.7
+        },
+        {
+          "state": "West Bengal",
+          "researchers": 148,
+          "labs": 20,
+          "projects": 119,
+          "total_funding": 1673.3899999999994,
+          "avg_h_index": 19.3
+        },
+        {
+          "state": "Telangana",
+          "researchers": 117,
+          "labs": 20,
+          "projects": 90,
+          "total_funding": 1352.61,
+          "avg_h_index": 18.7
+        },
+        {
+          "state": "Odisha",
+          "researchers": 74,
+          "labs": 12,
+          "projects": 50,
+          "total_funding": 770.8100000000002,
+          "avg_h_index": 17.7
+        },
+        {
+          "state": "Uttarakhand",
+          "researchers": 63,
+          "labs": 7,
+          "projects": 51,
+          "total_funding": 649.1799999999998,
+          "avg_h_index": 16.2
+        },
+        {
+          "state": "Punjab",
+          "researchers": 56,
+          "labs": 4,
+          "projects": 51,
+          "total_funding": 704.54,
+          "avg_h_index": 21.7
+        },
+        {
+          "state": "Assam",
+          "researchers": 53,
+          "labs": 5,
+          "projects": 49,
+          "total_funding": 610.8900000000001,
+          "avg_h_index": 18.8
+        },
+        {
+          "state": "Madhya Pradesh",
+          "researchers": 47,
+          "labs": 4,
+          "projects": 48,
+          "total_funding": 507.86,
+          "avg_h_index": 19.0
+        },
+        {
+          "state": "Kerala",
+          "researchers": 46,
+          "labs": 11,
+          "projects": 44,
+          "total_funding": 528.78,
+          "avg_h_index": 19.8
+        },
+        {
+          "state": "Rajasthan",
+          "researchers": 38,
+          "labs": 3,
+          "projects": 31,
+          "total_funding": 401.5200000000001,
+          "avg_h_index": 15.5
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00004",
+    "persona": "Tier2_Policymaker",
+    "intent": "research_area_growth_trend",
+    "natural_language_query": "Analyze the year-over-year funding growth across the top 10 research areas. For each area, show funding by project start year (2020-2026). Identify which areas are growing fastest and which are declining. This informs our next 5-year national research priority framework.",
+    "expected_sql_tables": [
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "d643e06d-c92f-44d0-b9f4-5feca7113538",
+        "query_id": "T2Q-00004",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-00188",
+          "PRJ-02709",
+          "PRJ-00934",
+          "PRJ-03167",
+          "PRJ-01186",
+          "PRJ-00327",
+          "PRJ-00954",
+          "PRJ-00414",
+          "PRJ-01557",
+          "PRJ-01139",
+          "PRJ-01858",
+          "PRJ-02604",
+          "PRJ-03417",
+          "PRJ-01495",
+          "PRJ-00667"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "research_area_funding_trends": [
+        {
+          "research_area": "AI/ML",
+          "total_funding_inr_crores": 5861.9,
+          "yearly_breakdown": {
+            "2020": 1207.36,
+            "2021": 954.79,
+            "2022": 1104.48,
+            "2023": 868.53,
+            "2024": 865.97,
+            "2025": 860.77
+          },
+          "latest_year_funding": 860.77
+        },
+        {
+          "research_area": "Robotics",
+          "total_funding_inr_crores": 3536.15,
+          "yearly_breakdown": {
+            "2020": 825.85,
+            "2021": 378.08,
+            "2022": 637.03,
+            "2023": 412.02,
+            "2024": 417.21,
+            "2025": 865.96
+          },
+          "latest_year_funding": 865.96
+        },
+        {
+          "research_area": "Biotechnology",
+          "total_funding_inr_crores": 3126.24,
+          "yearly_breakdown": {
+            "2020": 612.28,
+            "2021": 438.59,
+            "2022": 570.0,
+            "2023": 471.38,
+            "2024": 507.86,
+            "2025": 526.13
+          },
+          "latest_year_funding": 526.13
+        },
+        {
+          "research_area": "Computer Vision",
+          "total_funding_inr_crores": 3066.82,
+          "yearly_breakdown": {
+            "2020": 343.44,
+            "2021": 739.72,
+            "2022": 385.04,
+            "2023": 513.48,
+            "2024": 591.98,
+            "2025": 493.16
+          },
+          "latest_year_funding": 493.16
+        },
+        {
+          "research_area": "Sustainable Energy",
+          "total_funding_inr_crores": 2982.62,
+          "yearly_breakdown": {
+            "2020": 319.19,
+            "2021": 452.19,
+            "2022": 344.25,
+            "2023": 577.2,
+            "2024": 579.96,
+            "2025": 709.83
+          },
+          "latest_year_funding": 709.83
+        },
+        {
+          "research_area": "Natural Language Processing",
+          "total_funding_inr_crores": 2682.04,
+          "yearly_breakdown": {
+            "2020": 399.88,
+            "2021": 418.28,
+            "2022": 506.55,
+            "2023": 428.08,
+            "2024": 503.73,
+            "2025": 425.52
+          },
+          "latest_year_funding": 425.52
+        },
+        {
+          "research_area": "Healthcare AI",
+          "total_funding_inr_crores": 2375.25,
+          "yearly_breakdown": {
+            "2020": 257.65,
+            "2021": 599.47,
+            "2022": 326.78,
+            "2023": 364.56,
+            "2024": 280.04,
+            "2025": 546.75
+          },
+          "latest_year_funding": 546.75
+        },
+        {
+          "research_area": "Renewable Energy",
+          "total_funding_inr_crores": 2190.49,
+          "yearly_breakdown": {
+            "2020": 353.6,
+            "2021": 454.83,
+            "2022": 532.18,
+            "2023": 286.23,
+            "2024": 292.44,
+            "2025": 271.21
+          },
+          "latest_year_funding": 271.21
+        },
+        {
+          "research_area": "Advanced Materials",
+          "total_funding_inr_crores": 2127.77,
+          "yearly_breakdown": {
+            "2020": 328.09,
+            "2021": 434.53,
+            "2022": 262.55,
+            "2023": 491.27,
+            "2024": 348.07,
+            "2025": 263.26
+          },
+          "latest_year_funding": 263.26
+        },
+        {
+          "research_area": "VLSI & Semiconductor Design",
+          "total_funding_inr_crores": 1771.26,
+          "yearly_breakdown": {
+            "2020": 200.98,
+            "2021": 262.12,
+            "2022": 259.88,
+            "2023": 525.58,
+            "2024": 245.36,
+            "2025": 277.34
+          },
+          "latest_year_funding": 277.34
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00005",
+    "persona": "Tier2_Policymaker",
+    "intent": "gender_diversity_analysis",
+    "natural_language_query": "Analyze gender diversity in Indian research. Provide: overall male-to-female ratio, female researcher percentage by research area (top 10 areas by female count), and the areas with the highest and lowest female representation. This is for the Ministry of Women and Child Development's report on women in STEM.",
+    "expected_sql_tables": [
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "1b67f1d0-f587-43f0-89c8-d1bd9597856e",
+        "query_id": "T2Q-00005",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01517",
+          "RES-01456",
+          "RES-00859",
+          "RES-01094",
+          "RES-00293",
+          "RES-02496",
+          "RES-00701",
+          "RES-02188",
+          "RES-01003",
+          "RES-00670",
+          "RES-01894",
+          "RES-01555",
+          "RES-01106",
+          "RES-02282",
+          "RES-00900"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "overall_statistics": {
+        "total_researchers": 2500,
+        "male_count": 1240,
+        "female_count": 1260,
+        "female_percentage": 50.4
+      },
+      "area_wise_diversity": [
+        {
+          "research_area": "AI/ML",
+          "male_count": 115,
+          "female_count": 110,
+          "female_percentage": 48.9
+        },
+        {
+          "research_area": "Sustainable Energy",
+          "male_count": 65,
+          "female_count": 71,
+          "female_percentage": 52.2
+        },
+        {
+          "research_area": "Robotics",
+          "male_count": 65,
+          "female_count": 65,
+          "female_percentage": 50.0
+        },
+        {
+          "research_area": "Renewable Energy",
+          "male_count": 42,
+          "female_count": 61,
+          "female_percentage": 59.2
+        },
+        {
+          "research_area": "Biotechnology",
+          "male_count": 63,
+          "female_count": 56,
+          "female_percentage": 47.1
+        },
+        {
+          "research_area": "Healthcare AI",
+          "male_count": 44,
+          "female_count": 51,
+          "female_percentage": 53.7
+        },
+        {
+          "research_area": "Natural Language Processing",
+          "male_count": 59,
+          "female_count": 47,
+          "female_percentage": 44.3
+        },
+        {
+          "research_area": "Cybersecurity",
+          "male_count": 35,
+          "female_count": 46,
+          "female_percentage": 56.8
+        },
+        {
+          "research_area": "Advanced Materials",
+          "male_count": 54,
+          "female_count": 46,
+          "female_percentage": 46.0
+        },
+        {
+          "research_area": "Computer Vision",
+          "male_count": 49,
+          "female_count": 45,
+          "female_percentage": 47.9
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00006",
+    "persona": "Tier2_Policymaker",
+    "intent": "project_completion_rate",
+    "natural_language_query": "For each major funding agency, what is the ratio of ongoing to completed projects? Show the total projects, ongoing count, completed count, and completion rate percentage. Identify agencies with the lowest completion rates for potential intervention. I need this for the PMO review of scheme effectiveness.",
+    "expected_sql_tables": [
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "49e6a9af-429e-4bb3-850c-72d94fbf6285",
+        "query_id": "T2Q-00006",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-02805",
+          "PRJ-01329",
+          "PRJ-03453",
+          "PRJ-03148",
+          "PRJ-03179",
+          "PRJ-00230",
+          "PRJ-00939",
+          "PRJ-03367",
+          "PRJ-00132",
+          "PRJ-03298",
+          "PRJ-01293",
+          "PRJ-01644",
+          "PRJ-01097",
+          "PRJ-00272",
+          "PRJ-00865"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "agency_completion_rates": [
+        {
+          "agency": "DST",
+          "total_projects": 899,
+          "ongoing": 374,
+          "completed": 525,
+          "completion_rate_pct": 58.4,
+          "needs_intervention": false
+        },
+        {
+          "agency": "SERB",
+          "total_projects": 698,
+          "ongoing": 272,
+          "completed": 426,
+          "completion_rate_pct": 61.0,
+          "needs_intervention": false
+        },
+        {
+          "agency": "DBT",
+          "total_projects": 330,
+          "ongoing": 140,
+          "completed": 190,
+          "completion_rate_pct": 57.6,
+          "needs_intervention": false
+        },
+        {
+          "agency": "MeitY",
+          "total_projects": 279,
+          "ongoing": 113,
+          "completed": 166,
+          "completion_rate_pct": 59.5,
+          "needs_intervention": false
+        },
+        {
+          "agency": "ANRF",
+          "total_projects": 260,
+          "ongoing": 115,
+          "completed": 145,
+          "completion_rate_pct": 55.8,
+          "needs_intervention": false
+        },
+        {
+          "agency": "DRDO",
+          "total_projects": 194,
+          "ongoing": 78,
+          "completed": 116,
+          "completion_rate_pct": 59.8,
+          "needs_intervention": false
+        },
+        {
+          "agency": "Gujarat Govt",
+          "total_projects": 181,
+          "ongoing": 81,
+          "completed": 100,
+          "completion_rate_pct": 55.2,
+          "needs_intervention": false
+        },
+        {
+          "agency": "ISRO",
+          "total_projects": 174,
+          "ongoing": 69,
+          "completed": 105,
+          "completion_rate_pct": 60.3,
+          "needs_intervention": false
+        },
+        {
+          "agency": "Industry",
+          "total_projects": 137,
+          "ongoing": 60,
+          "completed": 77,
+          "completion_rate_pct": 56.2,
+          "needs_intervention": false
+        },
+        {
+          "agency": "CSIR",
+          "total_projects": 104,
+          "ongoing": 37,
+          "completed": 67,
+          "completion_rate_pct": 64.4,
+          "needs_intervention": false
+        },
+        {
+          "agency": "MHRD",
+          "total_projects": 86,
+          "ongoing": 37,
+          "completed": 49,
+          "completion_rate_pct": 57.0,
+          "needs_intervention": false
+        },
+        {
+          "agency": "ICMR",
+          "total_projects": 78,
+          "ongoing": 28,
+          "completed": 50,
+          "completion_rate_pct": 64.1,
+          "needs_intervention": false
+        },
+        {
+          "agency": "DST-NSM",
+          "total_projects": 41,
+          "ongoing": 16,
+          "completed": 25,
+          "completion_rate_pct": 61.0,
+          "needs_intervention": false
+        },
+        {
+          "agency": "MoEFCC",
+          "total_projects": 39,
+          "ongoing": 11,
+          "completed": 28,
+          "completion_rate_pct": 71.8,
+          "needs_intervention": false
+        }
+      ],
+      "national_average_completion_pct": 59.1
+    }
+  },
+  {
+    "query_id": "T2Q-00007",
+    "persona": "Tier2_Policymaker",
+    "intent": "state_policy_dashboard",
+    "natural_language_query": "Generate a comprehensive research policy dashboard for Gujarat state. Include: total researchers, total labs, total projects, total sanctioned funding, average h-index, top 5 institutions by researcher count, top 5 research areas, and IIT Gandhinagar's share of state output. This is for the Gujarat Science & Technology Council review.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects",
+      "labs_institutions"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "83d5210f-5697-4904-8c10-d83ceb115aa1",
+        "query_id": "T2Q-00007",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.95,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00004",
+          "RES-00012",
+          "RES-00020",
+          "RES-00028",
+          "RES-00040",
+          "RES-00042",
+          "RES-00050",
+          "RES-00059",
+          "RES-00064",
+          "RES-00067",
+          "LAB-0004",
+          "LAB-0039",
+          "LAB-0050",
+          "LAB-0056",
+          "LAB-0063"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "state": "Gujarat",
+      "summary": {
+        "total_researchers": 430,
+        "total_laboratories": 56,
+        "total_projects": 1809,
+        "total_sanctioned_funding_inr_crores": 34988.24,
+        "total_researcher_funding_inr_crores": 6249.55,
+        "avg_h_index": 19.1,
+        "total_documents": 1065
+      },
+      "top_institutions": [
+        [
+          "IIT Gandhinagar",
+          231
+        ],
+        [
+          "Gujarat University",
+          24
+        ],
+        [
+          "Nirma University",
+          22
+        ],
+        [
+          "IIM Ahmedabad",
+          17
+        ],
+        [
+          "CEPT University",
+          13
+        ]
+      ],
+      "top_research_areas": [
+        [
+          "AI/ML",
+          34
+        ],
+        [
+          "Robotics",
+          29
+        ],
+        [
+          "Natural Language Processing",
+          23
+        ],
+        [
+          "Sustainable Energy",
+          23
+        ],
+        [
+          "Computer Vision",
+          22
+        ]
+      ],
+      "iit_gandhinagar_share": {
+        "researchers": 231,
+        "percentage_of_state": 53.7,
+        "laboratories": 40
+      }
+    }
+  },
+  {
+    "query_id": "T2Q-00008",
+    "persona": "Tier2_Policymaker",
+    "intent": "industry_funding_analysis",
+    "natural_language_query": "Analyze the industry-funded research landscape in India. How many projects are funded by Industry? What is the total amount? Which research areas attract the most industry funding? Which states lead in industry-funded research? Compare industry funding with government funding as a percentage of total. This is for the 'Industry-Academia Collaboration' policy brief.",
+    "expected_sql_tables": [
+      "projects",
+      "funding_transactions",
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "56ea6031-9553-4766-b775-00afe72dd399",
+        "query_id": "T2Q-00008",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-00018",
+          "PRJ-00026",
+          "PRJ-00035",
+          "PRJ-00051",
+          "PRJ-00069",
+          "PRJ-00074",
+          "PRJ-00111",
+          "PRJ-00190",
+          "PRJ-00207",
+          "PRJ-00241"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "industry_funding_summary": {
+        "total_projects": 137,
+        "total_sanctioned_inr_crores": 2465.58,
+        "percentage_of_total_projects": 3.9,
+        "top_research_areas": [
+          [
+            "AI/ML",
+            11
+          ],
+          [
+            "Advanced Materials",
+            9
+          ],
+          [
+            "Computer Vision",
+            9
+          ],
+          [
+            "Sustainable Energy",
+            7
+          ],
+          [
+            "Optoelectronics",
+            7
+          ]
+        ],
+        "top_states": [
+          [
+            "Gujarat",
+            76
+          ],
+          [
+            "Tamil Nadu",
+            9
+          ],
+          [
+            "Delhi",
+            8
+          ],
+          [
+            "Karnataka",
+            7
+          ],
+          [
+            "Maharashtra",
+            6
+          ]
+        ]
+      },
+      "comparison_with_government": {
+        "government_projects": 3363,
+        "industry_projects": 137,
+        "industry_share_pct": 3.9
+      }
+    }
+  },
+  {
+    "query_id": "T2Q-00009",
+    "persona": "Tier2_Policymaker",
+    "intent": "high_impact_researcher_mapping",
+    "natural_language_query": "Identify all researchers with an h-index of 40 or above. For this elite group, provide: total count, distribution by state, distribution by institution, distribution by research area, and the top 10 by h-index. This is for the National Science Awards nomination committee.",
+    "expected_sql_tables": [
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "21c98feb-1774-4795-b4ba-ef9873e1a0d1",
+        "query_id": "T2Q-00009",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00019",
+          "RES-00020",
+          "RES-00022",
+          "RES-00031",
+          "RES-00040",
+          "RES-00041",
+          "RES-00053",
+          "RES-00072",
+          "RES-00074",
+          "RES-00083",
+          "RES-00084",
+          "RES-00089",
+          "RES-00127",
+          "RES-00154",
+          "RES-00177"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "h_index_threshold": 40,
+      "total_high_impact_researchers": 180,
+      "percentage_of_total": 7.2,
+      "state_distribution": [
+        [
+          "Gujarat",
+          30
+        ],
+        [
+          "Maharashtra",
+          26
+        ],
+        [
+          "Delhi",
+          24
+        ],
+        [
+          "Tamil Nadu",
+          20
+        ],
+        [
+          "Karnataka",
+          18
+        ],
+        [
+          "Telangana",
+          11
+        ],
+        [
+          "Punjab",
+          8
+        ],
+        [
+          "West Bengal",
+          7
+        ],
+        [
+          "Uttar Pradesh",
+          5
+        ],
+        [
+          "Assam",
+          4
+        ]
+      ],
+      "institution_distribution": [
+        [
+          "IIT Gandhinagar",
+          17
+        ],
+        [
+          "IIT Bombay",
+          11
+        ],
+        [
+          "IIT Delhi",
+          9
+        ],
+        [
+          "IISc Bangalore",
+          9
+        ],
+        [
+          "IIT Madras",
+          8
+        ],
+        [
+          "TIFR Mumbai",
+          5
+        ],
+        [
+          "ISRO",
+          5
+        ],
+        [
+          "IIT Ropar",
+          4
+        ],
+        [
+          "NIT Trichy",
+          4
+        ],
+        [
+          "Anna University",
+          4
+        ]
+      ],
+      "area_distribution": [
+        [
+          "Natural Language Processing",
+          11
+        ],
+        [
+          "Biotechnology",
+          10
+        ],
+        [
+          "AI/ML",
+          10
+        ],
+        [
+          "Advanced Materials",
+          10
+        ],
+        [
+          "Sustainable Energy",
+          8
+        ],
+        [
+          "Process Systems Engineering",
+          8
+        ],
+        [
+          "VLSI & Semiconductor Design",
+          8
+        ],
+        [
+          "Cybersecurity",
+          7
+        ],
+        [
+          "Smart Manufacturing",
+          7
+        ],
+        [
+          "Renewable Energy",
+          6
+        ]
+      ],
+      "top_10_researchers": [
+        {
+          "researcher_id": "RES-01222",
+          "full_name": "Ms. Dhruv Dutta",
+          "gender": "M",
+          "affiliation": "NIT Rourkela",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "secondary_research_areas": [
+            "Cybersecurity"
+          ],
+          "state": "Odisha",
+          "years_experience": 33,
+          "h_index": 74,
+          "total_funding_received_inr_crores": 32.71,
+          "email": "ddutta@nitrkl.ac.in",
+          "phone": "+91 81791 05851",
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-00724",
+          "full_name": "Urmila Mittal",
+          "gender": "F",
+          "affiliation": "IIT Guwahati",
+          "department": "Data Science",
+          "primary_research_area": "Sustainable Energy",
+          "secondary_research_areas": [
+            "Autonomous Vehicles",
+            "Natural Language Processing"
+          ],
+          "state": "Assam",
+          "years_experience": 32,
+          "h_index": 68,
+          "total_funding_received_inr_crores": 34.12,
+          "email": "urmila95@iitg.ac.in",
+          "phone": "+91 98932 60889",
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-00470",
+          "full_name": "Asst. Prof. Anita Garg",
+          "gender": "F",
+          "affiliation": "IIT (BHU) Varanasi",
+          "department": "Chemistry",
+          "primary_research_area": "Sustainable Energy",
+          "secondary_research_areas": [
+            "Quantum Computing",
+            "AI/ML"
+          ],
+          "state": "Uttar Pradesh",
+          "years_experience": 30,
+          "h_index": 67,
+          "total_funding_received_inr_crores": 34.11,
+          "email": "anita.garg@iitbhu.ac.in",
+          "phone": null,
+          "tier_access": "Tier3_Industry"
+        },
+        {
+          "researcher_id": "RES-01772",
+          "full_name": "Disha Krishnan",
+          "gender": "F",
+          "affiliation": "CSIR-IHBT",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Natural Language Processing",
+          "secondary_research_areas": [],
+          "state": "Himachal Pradesh",
+          "years_experience": 28,
+          "h_index": 64,
+          "total_funding_received_inr_crores": 32.34,
+          "email": "disha.krishnan@ihbt.res.in",
+          "phone": null,
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-01748",
+          "full_name": "Prof. Anita Ravi Mittal",
+          "gender": "F",
+          "affiliation": "IIT Bombay",
+          "department": "Aerospace Engineering",
+          "primary_research_area": "Smart Manufacturing",
+          "secondary_research_areas": [
+            "Natural Language Processing"
+          ],
+          "state": "Maharashtra",
+          "years_experience": 28,
+          "h_index": 63,
+          "total_funding_received_inr_crores": 28.5,
+          "email": "anita411@iitb.ac.in",
+          "phone": "+91 91361 66856",
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-02024",
+          "full_name": "Vatsal Barman",
+          "gender": "M",
+          "affiliation": "NIT Surathkal",
+          "department": "Electrical Engineering",
+          "primary_research_area": "Quantum Computing",
+          "secondary_research_areas": [
+            "AI/ML",
+            "Robotics"
+          ],
+          "state": "Karnataka",
+          "years_experience": 26,
+          "h_index": 63,
+          "total_funding_received_inr_crores": 24.38,
+          "email": "vatsal938@nitk.ac.in",
+          "phone": "+91 88645 30300",
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-00020",
+          "full_name": "Ms. Reyansh Rahul Gowda",
+          "gender": "M",
+          "affiliation": "BARC",
+          "department": "Chemistry",
+          "primary_research_area": "Structural Engineering",
+          "secondary_research_areas": [
+            "Robotics",
+            "Computational Biology"
+          ],
+          "state": "Gujarat",
+          "years_experience": 25,
+          "h_index": 62,
+          "total_funding_received_inr_crores": 31.76,
+          "email": "reyansh.gowda@barc.gov.in",
+          "phone": "+91 76648 13568",
+          "tier_access": "Tier1_Researcher"
+        },
+        {
+          "researcher_id": "RES-00154",
+          "full_name": "Falgun Bhavsar",
+          "gender": "M",
+          "affiliation": "Jadavpur University",
+          "department": "Physics",
+          "primary_research_area": "Robotics",
+          "secondary_research_areas": [
+            "Nanotechnology",
+            "Climate Science",
+            "AI/ML"
+          ],
+          "state": "West Bengal",
+          "years_experience": 26,
+          "h_index": 62,
+          "total_funding_received_inr_crores": 22.91,
+          "email": "falgun.bhavsar@jdvu.ac.in",
+          "phone": "+91 87325 33467",
+          "tier_access": "Tier2_Policymaker"
+        },
+        {
+          "researcher_id": "RES-01888",
+          "full_name": "Swati Behera",
+          "gender": "F",
+          "affiliation": "VIT Vellore",
+          "department": "Physics",
+          "primary_research_area": "Healthcare AI",
+          "secondary_research_areas": [
+            "Computer Vision",
+            "Organic Chemistry"
+          ],
+          "state": "Tamil Nadu",
+          "years_experience": 29,
+          "h_index": 62,
+          "total_funding_received_inr_crores": 32.95,
+          "email": "swati994@vit.ac.in",
+          "phone": null,
+          "tier_access": "Tier2_Policymaker"
+        },
+        {
+          "researcher_id": "RES-01649",
+          "full_name": "Chandra Mehta Naidu",
+          "gender": "M",
+          "affiliation": "Gujarat Technological University",
+          "department": "Data Science",
+          "primary_research_area": "Robotics",
+          "secondary_research_areas": [
+            "VLSI & Semiconductor Design",
+            "Cybersecurity",
+            "Computational Biology"
+          ],
+          "state": "Gujarat",
+          "years_experience": 30,
+          "h_index": 61,
+          "total_funding_received_inr_crores": 39.58,
+          "email": "chandra846@gtu.ac.in",
+          "phone": null,
+          "tier_access": "Tier3_Industry"
+        }
+      ],
+      "top_10_details": [
+        {
+          "researcher_id": "RES-01222",
+          "full_name": "Ms. Dhruv Dutta",
+          "affiliation": "NIT Rourkela",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 74,
+          "total_funding_inr_crores": 32.71,
+          "state": "Odisha"
+        },
+        {
+          "researcher_id": "RES-00724",
+          "full_name": "Urmila Mittal",
+          "affiliation": "IIT Guwahati",
+          "department": "Data Science",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 68,
+          "total_funding_inr_crores": 34.12,
+          "state": "Assam"
+        },
+        {
+          "researcher_id": "RES-00470",
+          "full_name": "Asst. Prof. Anita Garg",
+          "affiliation": "IIT (BHU) Varanasi",
+          "department": "Chemistry",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 67,
+          "total_funding_inr_crores": 34.11,
+          "state": "Uttar Pradesh"
+        },
+        {
+          "researcher_id": "RES-01772",
+          "full_name": "Disha Krishnan",
+          "affiliation": "CSIR-IHBT",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Natural Language Processing",
+          "h_index": 64,
+          "total_funding_inr_crores": 32.34,
+          "state": "Himachal Pradesh"
+        },
+        {
+          "researcher_id": "RES-01748",
+          "full_name": "Prof. Anita Ravi Mittal",
+          "affiliation": "IIT Bombay",
+          "department": "Aerospace Engineering",
+          "primary_research_area": "Smart Manufacturing",
+          "h_index": 63,
+          "total_funding_inr_crores": 28.5,
+          "state": "Maharashtra"
+        },
+        {
+          "researcher_id": "RES-02024",
+          "full_name": "Vatsal Barman",
+          "affiliation": "NIT Surathkal",
+          "department": "Electrical Engineering",
+          "primary_research_area": "Quantum Computing",
+          "h_index": 63,
+          "total_funding_inr_crores": 24.38,
+          "state": "Karnataka"
+        },
+        {
+          "researcher_id": "RES-00020",
+          "full_name": "Ms. Reyansh Rahul Gowda",
+          "affiliation": "BARC",
+          "department": "Chemistry",
+          "primary_research_area": "Structural Engineering",
+          "h_index": 62,
+          "total_funding_inr_crores": 31.76,
+          "state": "Gujarat"
+        },
+        {
+          "researcher_id": "RES-00154",
+          "full_name": "Falgun Bhavsar",
+          "affiliation": "Jadavpur University",
+          "department": "Physics",
+          "primary_research_area": "Robotics",
+          "h_index": 62,
+          "total_funding_inr_crores": 22.91,
+          "state": "West Bengal"
+        },
+        {
+          "researcher_id": "RES-01888",
+          "full_name": "Swati Behera",
+          "affiliation": "VIT Vellore",
+          "department": "Physics",
+          "primary_research_area": "Healthcare AI",
+          "h_index": 62,
+          "total_funding_inr_crores": 32.95,
+          "state": "Tamil Nadu"
+        },
+        {
+          "researcher_id": "RES-01649",
+          "full_name": "Chandra Mehta Naidu",
+          "affiliation": "Gujarat Technological University",
+          "department": "Data Science",
+          "primary_research_area": "Robotics",
+          "h_index": 61,
+          "total_funding_inr_crores": 39.58,
+          "state": "Gujarat"
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00010",
+    "persona": "Tier2_Policymaker",
+    "intent": "publication_output_trend",
+    "natural_language_query": "What is the national research publication output trend from 2020 to 2026? For each year, show the total number of documents published and the year-over-year growth rate. Also break down by category (AI/ML, Robotics, Sustainable Energy, Biotech, Quantum, Agriculture). Identify the fastest-growing category. This is for the SCOPUS-indexed publication target review.",
+    "expected_sql_tables": [],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "a593e0ee-9814-4e88-a4a0-62aea3a19ed7",
+        "query_id": "T2Q-00010",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "DOC-01162",
+          "DOC-01795",
+          "DOC-01471",
+          "DOC-00645",
+          "DOC-00436",
+          "DOC-01343",
+          "DOC-01023",
+          "DOC-00811",
+          "DOC-01317",
+          "DOC-00940",
+          "DOC-00293",
+          "DOC-00543",
+          "DOC-00286",
+          "DOC-00506",
+          "DOC-01526"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "yearly_trend": [
+        {
+          "year": 2020,
+          "total_documents": 56,
+          "yoy_growth_pct": null
+        },
+        {
+          "year": 2021,
+          "total_documents": 84,
+          "yoy_growth_pct": 50.0
+        },
+        {
+          "year": 2022,
+          "total_documents": 241,
+          "yoy_growth_pct": 186.9
+        },
+        {
+          "year": 2023,
+          "total_documents": 382,
+          "yoy_growth_pct": 58.5
+        },
+        {
+          "year": 2024,
+          "total_documents": 514,
+          "yoy_growth_pct": 34.6
+        },
+        {
+          "year": 2025,
+          "total_documents": 393,
+          "yoy_growth_pct": -23.5
+        },
+        {
+          "year": 2026,
+          "total_documents": 130,
+          "yoy_growth_pct": -66.9
+        }
+      ],
+      "category_breakdown": {
+        "AI/ML & Intelligent Systems": {
+          "2020": 14,
+          "2021": 14,
+          "2022": 38,
+          "2023": 62,
+          "2024": 89,
+          "2025": 63,
+          "2026": 20
+        },
+        "Robotics & Autonomous Systems": {
+          "2020": 10,
+          "2021": 14,
+          "2022": 42,
+          "2023": 48,
+          "2024": 82,
+          "2025": 77,
+          "2026": 27
+        },
+        "Sustainable Energy & Climate Tech": {
+          "2020": 11,
+          "2021": 12,
+          "2022": 38,
+          "2023": 69,
+          "2024": 84,
+          "2025": 70,
+          "2026": 16
+        },
+        "Biotechnology & Healthcare": {
+          "2020": 8,
+          "2021": 17,
+          "2022": 46,
+          "2023": 71,
+          "2024": 76,
+          "2025": 62,
+          "2026": 20
+        },
+        "Quantum Computing & Advanced Materials": {
+          "2020": 4,
+          "2021": 15,
+          "2022": 43,
+          "2023": 67,
+          "2024": 91,
+          "2025": 61,
+          "2026": 19
+        },
+        "Agriculture 4.0 & Food Security": {
+          "2020": 9,
+          "2021": 12,
+          "2022": 34,
+          "2023": 65,
+          "2024": 92,
+          "2025": 60,
+          "2026": 28
+        }
+      },
+      "total_documents": 1800
+    }
+  },
+  {
+    "query_id": "T2Q-00011",
+    "persona": "Tier2_Policymaker",
+    "intent": "funding_utilization_efficiency",
+    "natural_language_query": "Analyze the fund utilization efficiency of each major research funding agency. For each agency, calculate the total sanctioned amount, total released amount, and the utilization percentage (released/sanctioned). Sort by total released. Flag agencies with utilization below 50%. This is for the CAG audit preparation.",
+    "expected_sql_tables": [
+      "funding_transactions",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "deafdedb-7715-41e4-8d85-fd4a6b788427",
+        "query_id": "T2Q-00011",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "TXN-004599",
+          "TXN-004416",
+          "TXN-002153",
+          "TXN-006120",
+          "TXN-004789",
+          "TXN-003510",
+          "TXN-004781",
+          "TXN-003272",
+          "TXN-002966",
+          "TXN-001797",
+          "TXN-001134",
+          "TXN-004175",
+          "TXN-004043",
+          "TXN-000745",
+          "TXN-006192"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "agency_utilization": [
+        {
+          "agency": "DST",
+          "sanctioned": 15516.49,
+          "released": 15516.49,
+          "utilization_pct": 100.0,
+          "project_count": 899,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "SERB",
+          "sanctioned": 12267.55,
+          "released": 12267.55,
+          "utilization_pct": 100.0,
+          "project_count": 698,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "DBT",
+          "sanctioned": 6095.63,
+          "released": 6095.63,
+          "utilization_pct": 100.0,
+          "project_count": 330,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "MeitY",
+          "sanctioned": 4925.86,
+          "released": 4925.86,
+          "utilization_pct": 100.0,
+          "project_count": 279,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "ANRF",
+          "sanctioned": 4614.68,
+          "released": 4614.68,
+          "utilization_pct": 100.0,
+          "project_count": 260,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "DRDO",
+          "sanctioned": 3479.69,
+          "released": 3479.69,
+          "utilization_pct": 100.0,
+          "project_count": 194,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "Gujarat Govt",
+          "sanctioned": 3131.99,
+          "released": 3131.99,
+          "utilization_pct": 100.0,
+          "project_count": 181,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "ISRO",
+          "sanctioned": 2944.97,
+          "released": 2944.97,
+          "utilization_pct": 100.0,
+          "project_count": 174,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "Industry",
+          "sanctioned": 2465.58,
+          "released": 2465.58,
+          "utilization_pct": 100.0,
+          "project_count": 137,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "CSIR",
+          "sanctioned": 1905.79,
+          "released": 1905.79,
+          "utilization_pct": 100.0,
+          "project_count": 104,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "ICMR",
+          "sanctioned": 1621.37,
+          "released": 1621.37,
+          "utilization_pct": 100.0,
+          "project_count": 78,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "MHRD",
+          "sanctioned": 1392.23,
+          "released": 1392.23,
+          "utilization_pct": 100.0,
+          "project_count": 86,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "DST-NSM",
+          "sanctioned": 683.92,
+          "released": 683.92,
+          "utilization_pct": 100.0,
+          "project_count": 41,
+          "low_utilization_flag": false
+        },
+        {
+          "agency": "MoEFCC",
+          "sanctioned": 665.19,
+          "released": 665.19,
+          "utilization_pct": 100.0,
+          "project_count": 39,
+          "low_utilization_flag": false
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00012",
+    "persona": "Tier2_Policymaker",
+    "intent": "inter_state_collaboration",
+    "natural_language_query": "Analyze inter-state research collaboration patterns. Identify the top 10 state-pairs that collaborate on research projects (where PI and co-PI are from different states). For each pair, show the number of collaborative projects. Also show the total number of inter-state projects versus intra-state projects. This informs our regional cooperation policy.",
+    "expected_sql_tables": [
+      "projects",
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "3bbeb0d4-96d3-4275-8753-01b4598c598c",
+        "query_id": "T2Q-00012",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-00001",
+          "PRJ-00001",
+          "PRJ-00001",
+          "PRJ-00003",
+          "PRJ-00003",
+          "PRJ-00004",
+          "PRJ-00004",
+          "PRJ-00004",
+          "PRJ-00005",
+          "PRJ-00006",
+          "PRJ-00006",
+          "PRJ-00007",
+          "PRJ-00009",
+          "PRJ-00009",
+          "PRJ-00010"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "collaboration_summary": {
+        "total_inter_state_projects": 4949,
+        "unique_state_pairs": 478
+      },
+      "top_collaborating_state_pairs": [
+        {
+          "state_a": "Gujarat",
+          "state_b": "Delhi",
+          "collaborative_project_count": 323
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Maharashtra",
+          "collaborative_project_count": 314
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Karnataka",
+          "collaborative_project_count": 304
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Tamil Nadu",
+          "collaborative_project_count": 263
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Uttar Pradesh",
+          "collaborative_project_count": 206
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "West Bengal",
+          "collaborative_project_count": 179
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Telangana",
+          "collaborative_project_count": 130
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Odisha",
+          "collaborative_project_count": 104
+        },
+        {
+          "state_a": "Gujarat",
+          "state_b": "Punjab",
+          "collaborative_project_count": 80
+        },
+        {
+          "state_a": "Delhi",
+          "state_b": "Gujarat",
+          "collaborative_project_count": 72
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T2Q-00013",
+    "persona": "Tier2_Policymaker",
+    "intent": "institution_type_research_density",
+    "natural_language_query": "Create a research area density matrix across institution types (IITs, NITs, IISc, CSIR Labs, DRDO, ISRO, IISERs, Central Universities, State Universities, Others). For each institution type, show the top 5 research areas by researcher count. This is for the institutional capacity mapping exercise under the National Education Policy.",
+    "expected_sql_tables": [
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "1a0797a5-8903-4e89-af7c-5699c36ba571",
+        "query_id": "T2Q-00013",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00193",
+          "RES-00450",
+          "RES-00627",
+          "RES-00656",
+          "RES-01730",
+          "RES-02443",
+          "RES-00261",
+          "RES-01577",
+          "RES-01564",
+          "RES-02441",
+          "RES-01918",
+          "RES-02168",
+          "RES-01030",
+          "RES-02267",
+          "RES-00048"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "institution_type_research_matrix": {
+        "IITs": {
+          "total_researchers": 1222,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              114
+            ],
+            [
+              "Sustainable Energy",
+              66
+            ],
+            [
+              "Robotics",
+              62
+            ],
+            [
+              "Healthcare AI",
+              57
+            ],
+            [
+              "Biotechnology",
+              57
+            ]
+          ]
+        },
+        "NITs": {
+          "total_researchers": 328,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              30
+            ],
+            [
+              "Robotics",
+              18
+            ],
+            [
+              "Sustainable Energy",
+              18
+            ],
+            [
+              "Renewable Energy",
+              18
+            ],
+            [
+              "Natural Language Processing",
+              15
+            ]
+          ]
+        },
+        "Other": {
+          "total_researchers": 206,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              17
+            ],
+            [
+              "Sustainable Energy",
+              14
+            ],
+            [
+              "Cybersecurity",
+              10
+            ],
+            [
+              "Biotechnology",
+              9
+            ],
+            [
+              "IoT & Embedded Systems",
+              8
+            ]
+          ]
+        },
+        "State Univ": {
+          "total_researchers": 194,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              17
+            ],
+            [
+              "Sustainable Energy",
+              13
+            ],
+            [
+              "Nanotechnology",
+              10
+            ],
+            [
+              "Renewable Energy",
+              9
+            ],
+            [
+              "Computer Vision",
+              9
+            ]
+          ]
+        },
+        "CSIR Labs": {
+          "total_researchers": 169,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              16
+            ],
+            [
+              "Biotechnology",
+              12
+            ],
+            [
+              "Sustainable Energy",
+              9
+            ],
+            [
+              "Robotics",
+              8
+            ],
+            [
+              "Natural Language Processing",
+              8
+            ]
+          ]
+        },
+        "IISERs": {
+          "total_researchers": 114,
+          "top_research_areas": [
+            [
+              "Biotechnology",
+              8
+            ],
+            [
+              "VLSI & Semiconductor Design",
+              8
+            ],
+            [
+              "AI/ML",
+              7
+            ],
+            [
+              "Drug Discovery",
+              6
+            ],
+            [
+              "Natural Language Processing",
+              6
+            ]
+          ]
+        },
+        "IISc": {
+          "total_researchers": 96,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              9
+            ],
+            [
+              "Drug Discovery",
+              7
+            ],
+            [
+              "Robotics",
+              6
+            ],
+            [
+              "Sustainable Energy",
+              5
+            ],
+            [
+              "Nanotechnology",
+              5
+            ]
+          ]
+        },
+        "ISRO": {
+          "total_researchers": 49,
+          "top_research_areas": [
+            [
+              "Geotechnical Engineering",
+              4
+            ],
+            [
+              "Biotechnology",
+              4
+            ],
+            [
+              "Advanced Materials",
+              4
+            ],
+            [
+              "AI/ML",
+              3
+            ],
+            [
+              "Quantum Computing",
+              3
+            ]
+          ]
+        },
+        "DRDO": {
+          "total_researchers": 45,
+          "top_research_areas": [
+            [
+              "Robotics",
+              5
+            ],
+            [
+              "Renewable Energy",
+              3
+            ],
+            [
+              "Healthcare AI",
+              3
+            ],
+            [
+              "AI/ML",
+              3
+            ],
+            [
+              "Biotechnology",
+              2
+            ]
+          ]
+        },
+        "State Inst": {
+          "total_researchers": 33,
+          "top_research_areas": [
+            [
+              "Robotics",
+              5
+            ],
+            [
+              "AI/ML",
+              4
+            ],
+            [
+              "VLSI & Semiconductor Design",
+              3
+            ],
+            [
+              "Drug Discovery",
+              3
+            ],
+            [
+              "Quantum Computing",
+              2
+            ]
+          ]
+        },
+        "Central Univ": {
+          "total_researchers": 27,
+          "top_research_areas": [
+            [
+              "AI/ML",
+              4
+            ],
+            [
+              "Sustainable Energy",
+              3
+            ],
+            [
+              "Advanced Materials",
+              3
+            ],
+            [
+              "Robotics",
+              2
+            ],
+            [
+              "Computer Vision",
+              2
+            ]
+          ]
+        },
+        "AIIMS": {
+          "total_researchers": 17,
+          "top_research_areas": [
+            [
+              "Nanotechnology",
+              2
+            ],
+            [
+              "Polymer Science",
+              2
+            ],
+            [
+              "Climate Science",
+              2
+            ],
+            [
+              "Natural Language Processing",
+              2
+            ],
+            [
+              "Control Systems",
+              1
+            ]
+          ]
+        }
+      }
+    }
+  },
+  {
+    "query_id": "T2Q-00014",
+    "persona": "Tier2_Policymaker",
+    "intent": "early_career_researcher_analysis",
+    "natural_language_query": "Analyze the early career researcher segment (0-5 years experience). What percentage have received funding? What is the average funding amount? How does their average h-index compare to the overall average? Which institutions have the most early career researchers? This informs the SERB Start-up Research Grant allocation strategy.",
+    "expected_sql_tables": [
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "1bc6bb25-fee9-44a0-b60c-96d0fb7e2a4c",
+        "query_id": "T2Q-00014",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00003",
+          "RES-00008",
+          "RES-00012",
+          "RES-00015",
+          "RES-00024",
+          "RES-00030",
+          "RES-00048",
+          "RES-00052",
+          "RES-00069",
+          "RES-00077"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "early_career_analysis": {
+        "total_early_career_researchers": 398,
+        "percentage_of_total": 15.9,
+        "funded_count": 398,
+        "funded_percentage": 100.0,
+        "avg_funding_inr_crores": 6.09,
+        "avg_h_index": 6.6,
+        "overall_avg_h_index": 19.0,
+        "top_institutions": [
+          [
+            "IIT Gandhinagar",
+            32
+          ],
+          [
+            "IIT Delhi",
+            18
+          ],
+          [
+            "IIT Kanpur",
+            17
+          ],
+          [
+            "IIT Bombay",
+            15
+          ],
+          [
+            "IIT Madras",
+            14
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "query_id": "T2Q-00015",
+    "persona": "Tier2_Policymaker",
+    "intent": "national_priority_alignment",
+    "natural_language_query": "Assess the national research ecosystem's alignment with India's strategic priority areas: AI/ML, Quantum Computing, Sustainable Energy, Biotechnology, Semiconductor. For each priority, provide: number of researchers, number of projects, total funding, and number of published documents. Rank them by investment level. This is for the National Research Foundation's strategic plan.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "ff53463c-0689-4657-a900-20cab3f3f43b",
+        "query_id": "T2Q-00015",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier2_Policymaker",
+        "confidence_score": 0.94,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-02787",
+          "PRJ-02953",
+          "PRJ-00470",
+          "PRJ-02793",
+          "PRJ-02200",
+          "PRJ-03076",
+          "PRJ-01093",
+          "PRJ-03149",
+          "PRJ-02626",
+          "PRJ-01394"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "priority_areas_assessment": [
+        {
+          "priority_area": "AI/ML",
+          "researchers": 225,
+          "projects": 301,
+          "documents": 251,
+          "funding": 5861.9
+        },
+        {
+          "priority_area": "Biotechnology",
+          "researchers": 119,
+          "projects": 183,
+          "documents": 394,
+          "funding": 3126.24
+        },
+        {
+          "priority_area": "Sustainable Energy",
+          "researchers": 136,
+          "projects": 170,
+          "documents": 313,
+          "funding": 2982.62
+        },
+        {
+          "priority_area": "Semiconductor",
+          "researchers": 70,
+          "projects": 111,
+          "documents": 182,
+          "funding": 1771.26
+        },
+        {
+          "priority_area": "Quantum Computing",
+          "researchers": 71,
+          "projects": 96,
+          "documents": 177,
+          "funding": 1712.55
+        }
+      ],
+      "total_strategic_investment_inr_crores": 15454.57
+    }
+  }
+]

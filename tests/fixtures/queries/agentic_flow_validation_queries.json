@@ -1,0 +1,2434 @@
+{
+  "test_suite_metadata": {
+    "name": "National Research Intelligence Database - India",
+    "test_suite_name": "Agentic Flow Validation Queries",
+    "version": "1.0.0",
+    "purpose": "Validate Text-to-SQL + RAG + synthesis + verification pipeline",
+    "lead_institution": "IIT Gandhinagar",
+    "total_queries": 50,
+    "persona_distribution": {
+      "Tier1_Researcher": 20,
+      "Tier2_Policymaker": 15,
+      "Tier3_Industry": 15
+    }
+  },
+
+  "queries": [
+
+    // ============================================================
+    // TIER 1 RESEARCHER QUERIES (20) - Granular, direct links, contacts
+    // ============================================================
+
+    {
+      "query_id": "T1-Q001",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find researchers at IIT Gandhinagar working on quantum computing who have h-index above 30 and have received funding above 5 crores in the last 3 years. I need their email contacts and current project titles.",
+      "complexity": "medium",
+      "intent": "Find specific researchers by institution, expertise, metrics",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "primary_research_area": "Quantum Computing",
+        "h_index_min": 30,
+        "funding_min": 5,
+        "funding_year_range": "2023-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "researcher_lookup",
+        "results": {
+          "found_count": 3,
+          "researchers": [
+            {
+              "researcher_id": "RES-000042",
+              "full_name": "Priya Patel",
+              "affiliation": "IIT Gandhinagar",
+              "department": "Computer Science & Engineering",
+              "primary_research_area": "Quantum Computing",
+              "secondary_research_areas": ["Quantum Information Science", "Machine Learning"],
+              "h_index": 45,
+              "years_experience": 15,
+              "total_funding_received_inr_crores": 8.5,
+              "email": "priya.patel@iitgn.ac.in",
+              "phone": "+91-98765-43210",
+              "tier_access": "Tier1_Researcher",
+              "active_projects": [
+                {
+                  "project_id": "PROJ-2024-000123",
+                  "title": "Development of Quantum Error Correction Systems",
+                  "funding_agency": "DST-SERB",
+                  "sanctioned_amount_inr_crores": 12.5,
+                  "status": "Ongoing",
+                  "start_date": "2024-01-15",
+                  "end_date": "2026-12-31"
+                }
+              ],
+              "source_audit": {
+                "database": "researchers.csv",
+                "row_index": 42,
+                "foreign_keys": ["PROJ-2024-000123"]
+              }
+            },
+            {
+              "researcher_id": "RES-000156",
+              "full_name": "Vikram Sharma",
+              "affiliation": "IIT Gandhinagar",
+              "department": "Electrical Engineering",
+              "primary_research_area": "Quantum Computing",
+              "secondary_research_areas": ["Quantum Communication", "Superconducting Qubits"],
+              "h_index": 38,
+              "years_experience": 12,
+              "total_funding_received_inr_crores": 6.2,
+              "email": "vikram.sharma@iitgn.ac.in",
+              "phone": "+91-98291-12345",
+              "tier_access": "Tier1_Researcher",
+              "active_projects": [
+                {
+                  "project_id": "PROJ-2023-000456",
+                  "title": "Quantum Key Distribution Networks",
+                  "funding_agency": "ANRF",
+                  "sanctioned_amount_inr_crores": 8.0,
+                  "status": "Ongoing",
+                  "start_date": "2023-06-01",
+                  "end_date": "2026-05-31"
+                }
+              ],
+              "source_audit": {
+                "database": "researchers.csv",
+                "row_index": 156,
+                "foreign_keys": ["PROJ-2023-000456"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "Contact Dr. Priya Patel for quantum error correction collaboration. Dr. Vikram Sharma leads quantum communication research with active ANRF funding."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q002",
+      "persona": "Tier1_Researcher",
+      "query_text": "List all co-authors on publications about deep learning for medical imaging that were published in 2024. Show their affiliations and h-index scores. I need contact information for potential collaboration.",
+      "complexity": "medium",
+      "intent": "Find collaboration partners by publication topic and year",
+      "tables_needed": ["researchers", "publications"],
+      "filters": {
+        "research_area": "Deep Learning",
+        "sub_topic": "Medical Imaging",
+        "publication_year": 2024
+      },
+      "ideal_json_output": {
+        "query_type": "collaboration_partner_search",
+        "results": {
+          "found_count": 15,
+          "publications_matched": 28,
+          "authors": [
+            {
+              "researcher_id": "RES-000234",
+              "full_name": "Anita Kumar",
+              "affiliation": "IIT Bombay",
+              "h_index": 52,
+              "joint_publications_count": 5,
+              "email": "anita.kumar@iitb.ac.in",
+              "recent_publications": [
+                {
+                  "publication_id": "PUB-2024-00892",
+                  "title": "Deep Learning Framework for Early Cancer Detection",
+                  "journal": "Nature Machine Intelligence",
+                  "publication_year": 2024,
+                  "citations": 45,
+                  "doi": "10.1038/s42256-024-00892"
+                }
+              ],
+              "source_audit": {
+                "database": "publications.csv",
+                "matched_records": ["PUB-2024-00892", "PUB-2024-00915", "PUB-2024-01023"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "Dr. Anita Kumar (IIT Bombay) has published extensively on AI for medical imaging with 52 h-index. Consider reaching out for multi-institutional collaboration on cancer detection research."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q003",
+      "persona": "Tier1_Researcher",
+      "query_text": "Show me all ongoing projects in Gujarat focused on sustainable energy with funding above 10 crores. Include the PI details, co-investigators, and lab infrastructure being used.",
+      "complexity": "high",
+      "intent": "Map large sustainable energy projects with full team",
+      "tables_needed": ["projects", "researchers", "labs_institutions"],
+      "filters": {
+        "location_state": "Gujarat",
+        "research_area": "Sustainable Energy",
+        "amount_min": 10,
+        "status": "Ongoing"
+      },
+      "ideal_json_output": {
+        "query_type": "project_mapping",
+        "results": {
+          "found_count": 8,
+          "total_funding_crores": 127.5,
+          "projects": [
+            {
+              "project_id": "PROJ-2024-000789",
+              "title": "Green Hydrogen Production using Solar Electrolysis",
+              "principal_investigator": {
+                "researcher_id": "RES-000345",
+                "full_name": "Rajiv Mehta",
+                "affiliation": "IIT Gandhinagar",
+                "h_index": 58,
+                "email": "rajiv.mehta@iitgn.ac.in"
+              },
+              "co_investigators": [
+                {"researcher_id": "RES-000456", "full_name": "Sunita Sharma", "affiliation": "IIT Gandhinagar"},
+                {"researcher_id": "RES-000567", "full_name": "Anil Patel", "affiliation": "Gujarat University"},
+                {"researcher_id": "RES-000678", "full_name": "Priya Singh", "affiliation": "CSIR-IMTECH"}
+              ],
+              "sanctioned_amount_inr_crores": 18.5,
+              "funding_agency": "National Green Hydrogen Mission",
+              "start_date": "2024-03-01",
+              "end_date": "2027-02-28",
+              "conducted_at": {
+                "lab_id": "LAB-00045",
+                "lab_name": "Excellence Center for Sustainable Energy",
+                "affiliation": "IIT Gandhinagar",
+                "infrastructure_budget_crores": 25.0
+              },
+              "source_audit": {
+                "database": "projects.csv",
+                "row_index": 789,
+                "foreign_keys": ["RES-000345", "RES-000456", "RES-000567", "RES-000678", "LAB-00045"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "8 ongoing sustainable energy projects in Gujarat totaling ₹127.5 Cr. IIT Gandhinagar leads 5 projects. Consider the Green Hydrogen project for potential collaboration on solar electrolysis technology."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q004",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find researchers who have collaborated on CRISPR-related projects with both CSIR labs and IIT Gandhinagar in the last 2 years. Show the collaboration strength scores.",
+      "complexity": "high",
+      "intent": "Map cross-institutional collaborations on biotech",
+      "tables_needed": ["collaborations", "researchers", "projects"],
+      "filters": {
+        "research_area": "Genomics",
+        "keywords": ["CRISPR", "Gene Editing"],
+        "collaboration_type": "Joint Research",
+        "years_range": "2024-2026",
+        "institutions": ["CSIR-IMTECH", "IIT Gandhinagar"]
+      },
+      "ideal_json_output": {
+        "query_type": "collaboration_network_analysis",
+        "results": {
+          "found_count": 12,
+          "collaboration_clusters": [
+            {
+              "cluster_id": "CLUST-001",
+              "members": [
+                {"researcher_id": "RES-000789", "full_name": "Meena Gupta", "affiliation": "IIT Gandhinagar", "h_index": 42},
+                {"researcher_id": "RES-000012", "full_name": "Suresh Kumar", "affiliation": "CSIR-IMTECH", "h_index": 55}
+              ],
+              "joint_projects": 3,
+              "joint_publications": 12,
+              "years_active": 3,
+              "strength_score": 0.87,
+              "source_audit": {
+                "database": "collaborations.csv",
+                "matched_records": ["COLLAB-0000123", "COLLAB-0000456"],
+                "projects": ["PROJ-2024-00123", "PROJ-2025-00089"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "12 researchers form collaboration clusters between IITGN and CSIR. Dr. Meena Gupta (IITGN) and Dr. Suresh Kumar (CSIR-IMTECH) show highest collaboration strength (0.87) with 12 joint publications."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q005",
+      "persona": "Tier1_Researcher",
+      "query_text": "Get the full research profile of RES-000042 including their publications, patents, current projects, and collaboration network. I need detailed metrics for a paper citation.",
+      "complexity": "low",
+      "intent": "Comprehensive researcher profile",
+      "tables_needed": ["researchers", "projects", "publications", "patents", "collaborations"],
+      "filters": {
+        "researcher_id": "RES-000042"
+      },
+      "ideal_json_output": {
+        "query_type": "researcher_profile",
+        "results": {
+          "researcher": {
+            "researcher_id": "RES-000042",
+            "full_name": "Priya Patel",
+            "affiliation": "IIT Gandhinagar",
+            "department": "Computer Science & Engineering",
+            "primary_research_area": "Machine Learning",
+            "secondary_research_areas": ["Artificial Intelligence", "Computer Vision", "Natural Language Processing"],
+            "state": "Gujarat",
+            "years_experience": 15,
+            "h_index": 45,
+            "total_funding_received_inr_crores": 8.5,
+            "email": "priya.patel@iitgn.ac.in",
+            "phone": "+91-98765-43210",
+            "tier_access": "Tier1_Researcher",
+            "orcid_id": "0000-0002-4521-8834",
+            "scopus_author_id": "57234567890"
+          },
+          "publications": [
+            {
+              "publication_id": "PUB-2024-00042",
+              "title": "Advanced AI Systems for Healthcare Applications",
+              "journal": "Nature Machine Intelligence",
+              "publication_year": 2024,
+              "citations": 67,
+              "impact_factor": 18.5,
+              "doi": "10.1038/s42256-024-00042"
+            }
+          ],
+          "patents": [
+            {
+              "patent_id": "PAT-2024-00042",
+              "title": "Method and System for AI-Driven Medical Diagnosis",
+              "status": "Granted",
+              "application_number": "IN/2024/012345",
+              "grant_date": "2024-08-15"
+            }
+          ],
+          "projects": [
+            {
+              "project_id": "PROJ-2024-000123",
+              "title": "Advanced AI Systems for Healthcare Applications",
+              "role": "Principal Investigator",
+              "funding_agency": "DST-SERB",
+              "amount_crores": 12.5,
+              "status": "Ongoing"
+            }
+          ],
+          "collaborations": {
+            "total_collaborators": 23,
+            "international_collaborations": 5,
+            "iitgn_collab_ratio": 0.65,
+            "gujarat_strong_ties": 8
+          },
+          "source_audit": {
+            "database": "researchers.csv",
+            "row_index": 42,
+            "foreign_keys": ["PUB-2024-00042", "PAT-2024-00042", "PROJ-2024-000123"]
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q006",
+      "persona": "Tier1_Researcher",
+      "query_text": "What are the top 10 most cited publications from IIT Gandhinagar in the last 3 years? Show authors, journals, and DOI links.",
+      "complexity": "medium",
+      "intent": "Find high-impact publications by institution",
+      "tables_needed": ["publications", "researchers"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "year_range": "2023-2026",
+        "sort_by": "citations",
+        "limit": 10
+      },
+      "ideal_json_output": {
+        "query_type": "publication_ranking",
+        "results": {
+          "top_publications": [
+            {
+              "rank": 1,
+              "publication_id": "PUB-2023-00123",
+              "title": "Deep Learning Framework for Diabetic Retinopathy Detection",
+              "authors": ["Priya Patel", "Vikram Sharma", "Anita Kumar"],
+              "author_ids": ["RES-000042", "RES-000156", "RES-000789"],
+              "journal": "Nature Medicine",
+              "publication_year": 2023,
+              "citations": 187,
+              "impact_factor": 82.9,
+              "doi": "10.1038/s41591-023-00123"
+            },
+            {
+              "rank": 2,
+              "publication_id": "PUB-2024-00045",
+              "title": "Quantum Error Correction in Noisy Intermediate-Scale Quantum Systems",
+              "authors": ["Rajiv Mehta", "Sunita Singh"],
+              "author_ids": ["RES-000345", "RES-000456"],
+              "journal": "Science",
+              "publication_year": 2024,
+              "citations": 142,
+              "impact_factor": 56.9,
+              "doi": "10.1126/science.2024.00045"
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "Top publications from IITGN average 89 citations. Dr. Priya Patel's diabetic retinopathy detection paper leads with 187 citations in Nature Medicine."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q007",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find labs with graphene research capabilities in Gujarat. Show their infrastructure budget, director details, and recent publications.",
+      "complexity": "medium",
+      "intent": "Find lab infrastructure for specific research area",
+      "tables_needed": ["labs_institutions", "researchers"],
+      "filters": {
+        "location_state": "Gujarat",
+        "research_focus": "Graphene",
+        "sort_by": "infrastructure_budget"
+      },
+      "ideal_json_output": {
+        "query_type": "lab_capability_search",
+        "results": {
+          "found_count": 4,
+          "labs": [
+            {
+              "lab_id": "LAB-00012",
+              "lab_name": "National Research Center for Graphene Applications",
+              "lab_type": "National Research Center",
+              "affiliation": "IIT Gandhinagar",
+              "location_state": "Gujarat",
+              "director": {
+                "researcher_id": "RES-000234",
+                "full_name": "Anita Kumar",
+                "h_index": 62,
+                "email": "anita.kumar@iitgn.ac.in"
+              },
+              "research_focus_areas": ["Graphene Applications", "Nanomaterials", "Advanced Materials"],
+              "established_year": 2018,
+              "infrastructure_budget_inr_crores": 78.5,
+              "accreditation": "NBA",
+              "publications_per_year": 45,
+              "source_audit": {
+                "database": "labs_institutions.csv",
+                "row_index": 12,
+                "foreign_keys": ["RES-000234"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "4 labs in Gujarat focus on graphene research. The National Research Center for Graphene Applications (IITGN) leads with ₹78.5 Cr infrastructure budget and Dr. Anita Kumar as director."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q008",
+      "persona": "Tier1_Researcher",
+      "query_text": "Who are the top 5 researchers in India working on both AI and healthcare with h-index above 50? Show their current affiliations and recent project funding.",
+      "complexity": "medium",
+      "intent": "Find top researchers by expertise combination",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "primary_research_area": ["Artificial Intelligence", "Machine Learning"],
+        "secondary_research_areas_contains": "Healthcare",
+        "h_index_min": 50,
+        "sort_by": "h_index",
+        "limit": 5
+      },
+      "ideal_json_output": {
+        "query_type": "top_researcher_search",
+        "results": {
+          "found_count": 5,
+          "researchers": [
+            {
+              "rank": 1,
+              "researcher_id": "RES-000123",
+              "full_name": "Sanjay Gupta",
+              "affiliation": "IIT Bombay",
+              "primary_research_area": "Artificial Intelligence",
+              "secondary_research_areas": ["Healthcare AI", "Medical Imaging", "Drug Discovery"],
+              "h_index": 72,
+              "years_experience": 25,
+              "total_funding_inr_crores": 45.8,
+              "recent_project": {
+                "project_id": "PROJ-2024-00078",
+                "title": "AI-Driven Drug Discovery Platform",
+                "funding_agency": "DBT India",
+                "amount_crores": 25.0
+              },
+              "source_audit": {
+                "database": "researchers.csv",
+                "row_index": 123
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "5 researchers have h-index >50 in AI+Healthcare. Dr. Sanjay Gupta (IIT Bombay) leads with 72 h-index and ₹45.8 Cr total funding, currently leading a ₹25 Cr DBT project."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q009",
+      "persona": "Tier1_Researcher",
+      "query_text": "Show me all DST-SERB funded projects in the quantum computing domain that are ongoing. Include the PI, co-PIs, and funding amounts.",
+      "complexity": "medium",
+      "intent": "Map funding by agency and research area",
+      "tables_needed": ["projects", "researchers"],
+      "filters": {
+        "funding_agency": "DST-SERB",
+        "research_area": "Quantum Computing",
+        "status": "Ongoing"
+      },
+      "ideal_json_output": {
+        "query_type": "funded_project_search",
+        "results": {
+          "found_count": 12,
+          "total_funding_crores": 156.8,
+          "projects": [
+            {
+              "project_id": "PROJ-2024-00123",
+              "title": "Superconducting Qubit Fabrication for Quantum Computing",
+              "principal_investigator": {
+                "researcher_id": "RES-000456",
+                "full_name": "Vikram Sharma",
+                "affiliation": "IIT Gandhinagar",
+                "h_index": 38
+              },
+              "co_investigators": [
+                {"researcher_id": "RES-000567", "full_name": "Priya Patel", "affiliation": "IIT Gandhinagar"},
+                {"researcher_id": "RES-000678", "full_name": "Anil Kumar", "affiliation": "IIT Bombay"}
+              ],
+              "sanctioned_amount_inr_crores": 18.5,
+              "start_date": "2024-01-15",
+              "end_date": "2027-01-14",
+              "source_audit": {
+                "database": "projects.csv",
+                "row_index": 123,
+                "foreign_keys": ["RES-000456", "RES-000567", "RES-000678"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "12 ongoing DST-SERB projects in quantum computing totaling ₹156.8 Cr. IIT Gandhinagar leads 4 projects. Average funding ₹13.1 Cr per project."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q010",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find all patents granted to IIT Gandhinagar researchers in the last 2 years. Show the inventors, patent type, claims count, and commercial potential.",
+      "complexity": "medium",
+      "intent": "Track patent activity by institution",
+      "tables_needed": ["patents", "researchers"],
+      "filters": {
+        "applicant_institution": "IIT Gandhinagar",
+        "year_range": "2024-2026",
+        "status": "Granted"
+      },
+      "ideal_json_output": {
+        "query_type": "patent_search",
+        "results": {
+          "found_count": 18,
+          "patents": [
+            {
+              "patent_id": "PAT-2024-00123",
+              "title": "Method and System for AI-Driven Medical Diagnosis",
+              "inventors": [
+                {"researcher_id": "RES-000042", "full_name": "Priya Patel", "affiliation": "IIT Gandhinagar"},
+                {"researcher_id": "RES-000156", "full_name": "Vikram Sharma", "affiliation": "IIT Gandhinagar"}
+              ],
+              "patent_office": "Indian Patent Office",
+              "application_number": "IN/2024/012345",
+              "filing_date": "2024-01-15",
+              "grant_date": "2024-08-20",
+              "status": "Granted",
+              "patent_type": "Invention",
+              "claims_count": 25,
+              "commercial_potential": "High - Healthcare AI diagnostic tool",
+              "source_audit": {
+                "database": "patents.csv",
+                "row_index": 123
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "18 patents granted to IITGN in last 2 years. Healthcare AI and quantum computing dominate. Dr. Priya Patel's medical diagnosis patent has high commercial potential."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q011",
+      "persona": "Tier1_Researcher",
+      "query_text": "Who are the potential collaborators for a project on autonomous robotics at IIT Gandhinagar? Show researchers with expertise in robotics, control systems, and AI with collaboration scores above 0.6.",
+      "complexity": "high",
+      "intent": "Find collaboration candidates for specific project",
+      "tables_needed": ["researchers", "collaborations"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "primary_research_area": ["Robotics", "Autonomous Systems"],
+        "secondary_research_areas_contains": ["AI", "Control Systems"],
+        "collaboration_score_min": 0.6
+      },
+      "ideal_json_output": {
+        "query_type": "collaboration_candidate_search",
+        "results": {
+          "found_count": 8,
+          "candidates": [
+            {
+              "researcher_id": "RES-000234",
+              "full_name": "Anita Kumar",
+              "primary_research_area": "Robotics",
+              "secondary_research_areas": ["AI", "Computer Vision", "Control Systems"],
+              "h_index": 45,
+              "collaboration_score": 0.78,
+              "active_collaborations": 12,
+              "international_collaborations": 3,
+              "is_iitgn_affiliated": true,
+              "contact": {
+                "email": "anita.kumar@iitgn.ac.in",
+                "phone": "+91-98765-12345"
+              },
+              "source_audit": {
+                "database": "collaborations.csv",
+                "matched_records": ["COLLAB-000123", "COLLAB-000456"]
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "8 researchers at IITGN match your criteria. Dr. Anita Kumar has highest collaboration score (0.78) with 12 active collaborations. Recommended for autonomous robotics project leadership."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q012",
+      "persona": "Tier1_Researcher",
+      "query_text": "Get the funding transaction history for PROJ-2024-000123. Show all disbursements, amounts, dates, and utilization certificate status.",
+      "complexity": "low",
+      "intent": "Track funding disbursement for specific project",
+      "tables_needed": ["projects", "funding_transactions"],
+      "filters": {
+        "project_id": "PROJ-2024-000123"
+      },
+      "ideal_json_output": {
+        "query_type": "funding_transaction_history",
+        "results": {
+          "project": {
+            "project_id": "PROJ-2024-000123",
+            "title": "Advanced AI Systems for Healthcare Applications",
+            "funding_agency": "DST-SERB",
+            "sanctioned_amount_inr_crores": 12.5,
+            "principal_investigator": "RES-000042"
+          },
+          "transactions": [
+            {
+              "transaction_id": "TXN-2024-0001231",
+              "fiscal_year": 2024,
+              "quarter": 1,
+              "amount_released_inr_crores": 3.0,
+              "disbursement_date": "2024-04-15",
+              "agency": "DST-SERB",
+              "utilization_certificate_received": "Yes",
+              "status": "Utilized"
+            },
+            {
+              "transaction_id": "TXN-2024-0001232",
+              "fiscal_year": 2024,
+              "quarter": 3,
+              "amount_released_inr_crores": 4.5,
+              "disbursement_date": "2024-10-20",
+              "agency": "DST-SERB",
+              "utilization_certificate_received": "Yes",
+              "status": "Released"
+            }
+          ],
+          "total_released_inr_crores": 7.5,
+          "pending_amount_inr_crores": 5.0,
+          "utilization_percentage": 60.0,
+          "source_audit": {
+            "database": "funding_transactions.csv",
+            "matched_records": ["TXN-2024-0001231", "TXN-2024-0001232"]
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q013",
+      "persona": "Tier1_Researcher",
+      "query_text": "Show all publications by researcher RES-000042 with their citation counts, impact factors, and DOI links. Create a ranked list by citations.",
+      "complexity": "low",
+      "intent": "Get researcher publication record",
+      "tables_needed": ["researchers", "publications"],
+      "filters": {
+        "researcher_id": "RES-000042",
+        "sort_by": "citations",
+        "order": "desc"
+      },
+      "ideal_json_output": {
+        "query_type": "researcher_publications",
+        "results": {
+          "researcher": {
+            "researcher_id": "RES-000042",
+            "full_name": "Priya Patel",
+            "affiliation": "IIT Gandhinagar",
+            "total_publications": 45,
+            "total_citations": 892
+          },
+          "publications": [
+            {
+              "rank": 1,
+              "publication_id": "PUB-2024-00042",
+              "title": "Advanced AI Systems for Healthcare Applications",
+              "journal": "Nature Machine Intelligence",
+              "publication_year": 2024,
+              "volume": 6,
+              "issue": 3,
+              "pages": "123-145",
+              "citations": 67,
+              "impact_factor": 18.5,
+              "doi": "10.1038/s42256-024-00042",
+              "publication_type": "Journal Article",
+              "source_audit": {
+                "database": "publications.csv",
+                "row_index": 42
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "Dr. Priya Patel has 45 publications with 892 total citations. Average 19.8 citations per publication. Top paper on AI healthcare has 67 citations."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q014",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find researchers at NITs working on sustainable energy who have collaborated with IIT Gandhinagar researchers. Show the collaboration strength and joint outputs.",
+      "complexity": "high",
+      "intent": "Map cross-institutional collaborations",
+      "tables_needed": ["researchers", "collaborations"],
+      "filters": {
+        "institution_type": "NIT",
+        "primary_research_area": "Sustainable Energy",
+        "collaboration_type": "Joint Research",
+        "partner_affiliation": "IIT Gandhinagar"
+      },
+      "ideal_json_output": {
+        "query_type": "cross_institutional_collaboration_search",
+        "results": {
+          "found_count": 15,
+          "collaborations": [
+            {
+              "collaboration_id": "COLLAB-000123",
+              "researcher_1": {
+                "researcher_id": "RES-000234",
+                "full_name": "Anita Kumar",
+                "affiliation": "NIT Surathkal"
+              },
+              "researcher_2": {
+                "researcher_id": "RES-000042",
+                "full_name": "Priya Patel",
+                "affiliation": "IIT Gandhinagar"
+              },
+              "collaboration_type": "Joint Research",
+              "years_active": 4,
+              "joint_publications": 12,
+              "joint_projects": 3,
+              "strength_score": 0.85,
+              "is_international": false,
+              "gujarat_connection": true,
+              "source_audit": {
+                "database": "collaborations.csv",
+                "row_index": 123
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "15 NIT researchers collaborate with IITGN on sustainable energy. NIT Surathkal and IIT Gandhinagar show strongest ties (0.85 strength score). Average 8 joint publications per collaboration."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q015",
+      "persona": "Tier1_Researcher",
+      "query_text": "List all AI/ML projects funded by industry partners (Google, Microsoft, Intel, etc.) in the last 3 years. Show the PI, amount, and deliverables timeline.",
+      "complexity": "medium",
+      "intent": "Track industry-funded AI research",
+      "tables_needed": ["projects", "researchers"],
+      "filters": {
+        "funding_agency": ["Google Research India", "Microsoft Research Lab India", "Intel India"],
+        "research_area": ["Artificial Intelligence", "Machine Learning"],
+        "year_range": "2023-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "industry_funded_project_search",
+        "results": {
+          "found_count": 25,
+          "total_funding_crores": 342.5,
+          "projects": [
+            {
+              "project_id": "PROJ-2024-00234",
+              "title": "Federated Learning for Privacy-Preserving AI",
+              "principal_investigator": {
+                "researcher_id": "RES-000345",
+                "full_name": "Rajiv Mehta",
+                "affiliation": "IIT Gandhinagar"
+              },
+              "funding_agency": "Google Research India",
+              "sanctioned_amount_inr_crores": 18.0,
+              "start_date": "2024-03-01",
+              "end_date": "2026-02-28",
+              "status": "Ongoing",
+              "deliverables": ["Privacy-preserving ML framework", "Benchmark datasets"],
+              "source_audit": {
+                "database": "projects.csv",
+                "row_index": 234
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "25 AI/ML projects funded by industry totaling ₹342.5 Cr. Google leads with 10 projects. IIT Gandhinagar receives 30% of industry AI funding. Average project size ₹13.7 Cr."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q016",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find all co-authors of researcher RES-000042 and create a collaboration network map showing the strength of each connection.",
+      "complexity": "medium",
+      "intent": "Map researcher collaboration network",
+      "tables_needed": ["researchers", "collaborations"],
+      "filters": {
+        "researcher_id": "RES-000042",
+        "relationship_type": "COLLABORATES_WITH"
+      },
+      "ideal_json_output": {
+        "query_type": "collaboration_network_map",
+        "results": {
+          "central_researcher": {
+            "researcher_id": "RES-000042",
+            "full_name": "Priya Patel",
+            "affiliation": "IIT Gandhinagar"
+          },
+          "collaborators": [
+            {
+              "researcher_id": "RES-000156",
+              "full_name": "Vikram Sharma",
+              "affiliation": "IIT Bombay",
+              "collaboration_type": "Joint Research",
+              "years_active": 5,
+              "joint_publications": 18,
+              "joint_projects": 4,
+              "strength_score": 0.92,
+              "is_international": true,
+              "is_iitgn_collab": false,
+              "gujarat_strong_tie": false
+            },
+            {
+              "researcher_id": "RES-000789",
+              "full_name": "Anita Kumar",
+              "affiliation": "IIT Gandhinagar",
+              "collaboration_type": "Co-Supervision",
+              "years_active": 3,
+              "joint_publications": 12,
+              "joint_projects": 2,
+              "strength_score": 0.85,
+              "is_international": false,
+              "is_iitgn_collab": true,
+              "gujarat_strong_tie": true
+            }
+          ],
+          "network_metrics": {
+            "total_collaborators": 23,
+            "avg_strength_score": 0.68,
+            "international_collaborators": 5,
+            "iitgn_collaborators": 8,
+            "gujarat_strong_ties": 6
+          },
+          "source_audit": {
+            "database": "collaborations.csv",
+            "matched_records": ["COLLAB-000123", "COLLAB-000234", "COLLAB-000345"]
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q017",
+      "persona": "Tier1_Researcher",
+      "query_text": "What is the total funding received by researchers at IIT Gandhinagar in the last 5 years? Break it down by research domain and funding agency.",
+      "complexity": "medium",
+      "intent": "Aggregate funding by institution and domain",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "year_range": "2020-2025"
+      },
+      "ideal_json_output": {
+        "query_type": "funding_aggregation",
+        "results": {
+          "institution": "IIT Gandhinagar",
+          "total_funding_inr_crores": 1567.8,
+          "by_research_domain": [
+            {"domain": "Artificial Intelligence", "funding_crores": 456.2, "project_count": 45},
+            {"domain": "Sustainable Energy", "funding_crores": 312.5, "project_count": 28},
+            {"domain": "Biotechnology", "funding_crores": 234.8, "project_count": 22},
+            {"domain": "Quantum Computing", "funding_crores": 198.5, "project_count": 18},
+            {"domain": "Advanced Materials", "funding_crores": 156.3, "project_count": 15}
+          ],
+          "by_funding_agency": [
+            {"agency": "DST-SERB", "funding_crores": 456.2, "project_count": 52},
+            {"agency": "ANRF", "funding_crores": 312.5, "project_count": 38},
+            {"agency": "DBT India", "funding_crores": 234.8, "project_count": 28},
+            {"agency": "Industry", "funding_crores": 198.5, "project_count": 24},
+            {"agency": "Gujarat State", "funding_crores": 156.3, "project_count": 18}
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv",
+            "matched_researchers": 156,
+            "matched_projects": 128
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q018",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find the most productive labs in Gujarat focused on biotechnology. Show their publication output, patent count, and infrastructure investment.",
+      "complexity": "medium",
+      "intent": "Rank lab productivity by research area",
+      "tables_needed": ["labs_institutions", "publications", "patents"],
+      "filters": {
+        "location_state": "Gujarat",
+        "research_focus_contains": "Biotechnology",
+        "sort_by": "publications_per_year"
+      },
+      "ideal_json_output": {
+        "query_type": "lab_productivity_ranking",
+        "results": {
+          "found_count": 12,
+          "labs": [
+            {
+              "rank": 1,
+              "lab_id": "LAB-00023",
+              "lab_name": "Center of Excellence for Biotechnology",
+              "affiliation": "Gujarat University",
+              "director": {
+                "researcher_id": "RES-000456",
+                "full_name": "Priya Singh"
+              },
+              "publications_per_year": 85,
+              "patents_granted": 15,
+              "infrastructure_budget_crores": 65.0,
+              "research_focus_areas": ["Genomics", "Drug Discovery", "Healthcare AI"],
+              "source_audit": {
+                "database": "labs_institutions.csv",
+                "row_index": 23
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "12 biotech labs in Gujarat. Gujarat University Center of Excellence leads with 85 publications/year and 15 patents. Total infrastructure investment ₹420 Cr across all labs."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q019",
+      "persona": "Tier1_Researcher",
+      "query_text": "Show all international collaborations involving IIT Gandhinagar researchers in the last 3 years. List partner institutions, countries, and collaboration strength.",
+      "complexity": "medium",
+      "intent": "Track international partnerships",
+      "tables_needed": ["researchers", "collaborations"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "is_international": true,
+        "year_range": "2023-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "international_collaboration_search",
+        "results": {
+          "found_count": 35,
+          "total_collaborations": 45,
+          "by_country": [
+            {"country": "USA", "collaborations": 18, "institutions": ["MIT", "Stanford", "UC Berkeley"]},
+            {"country": "Germany", "collaborations": 12, "institutions": ["Max Planck", "TU Munich"]},
+            {"country": "UK", "collaborations": 8, "institutions": ["Cambridge", "Oxford"]},
+            {"country": "Japan", "collaborations": 5, "institutions": ["RIKEN", "Kyoto University"]},
+            {"country": "Singapore", "collaborations": 2, "institutions": ["NUS", "NTU"]}
+          ],
+          "collaborations": [
+            {
+              "collaboration_id": "COLLAB-INT-000123",
+              "iitgn_researcher": {
+                "researcher_id": "RES-000042",
+                "full_name": "Priya Patel"
+              },
+              "partner_institution": "MIT",
+              "partner_country": "USA",
+              "collaboration_type": "Joint Research",
+              "years_active": 3,
+              "joint_publications": 15,
+              "strength_score": 0.88,
+              "source_audit": {
+                "database": "collaborations.csv",
+                "row_index": 123
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "35 IITGN researchers have 45 international collaborations. USA leads with 18 collaborations (MIT, Stanford). Average collaboration strength 0.72."
+        }
+      }
+    },
+
+    {
+      "query_id": "T1-Q020",
+      "persona": "Tier1_Researcher",
+      "query_text": "Find researchers who have expertise in both machine learning and genomics with h-index above 35. Show their current projects and available slots for collaboration.",
+      "complexity": "high",
+      "intent": "Find multi-domain experts for interdisciplinary research",
+      "tables_needed": ["researchers", "projects", "collaborations"],
+      "filters": {
+        "primary_research_area": "Machine Learning",
+        "secondary_research_areas_contains": ["Genomics", "Bioinformatics"],
+        "h_index_min": 35
+      },
+      "ideal_json_output": {
+        "query_type": "interdisciplinary_expert_search",
+        "results": {
+          "found_count": 6,
+          "researchers": [
+            {
+              "researcher_id": "RES-000789",
+              "full_name": "Anita Kumar",
+              "affiliation": "IIT Gandhinagar",
+              "primary_research_area": "Machine Learning",
+              "secondary_research_areas": ["Genomics", "Bioinformatics", "Drug Discovery"],
+              "h_index": 48,
+              "years_experience": 18,
+              "total_funding_crores": 12.5,
+              "active_projects": 3,
+              "collaboration_availability": "Open",
+              "current_projects": [
+                {
+                  "project_id": "PROJ-2024-00156",
+                  "title": "AI-Driven Genomic Analysis Platform",
+                  "status": "Ongoing",
+                  "slots_for_collaboration": 2
+                }
+              ],
+              "source_audit": {
+                "database": "researchers.csv",
+                "row_index": 789
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "6 researchers bridge ML and genomics with h-index >35. Dr. Anita Kumar (IITGN) leads with 48 h-index and has 2 open collaboration slots on genomic analysis platform."
+        }
+      }
+    },
+
+    // ============================================================
+    // TIER 2 POLICYMAKER QUERIES (15) - High-level trends, aggregates, policy
+    // ============================================================
+
+    {
+      "query_id": "T2-Q001",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the total research funding allocated to Gujarat state in the last 5 years across all agencies? Break it down by research domain and funding source.",
+      "complexity": "medium",
+      "intent": "Aggregate state-level funding",
+      "tables_needed": ["projects", "labs_institutions"],
+      "filters": {
+        "location_state": "Gujarat",
+        "year_range": "2020-2025"
+      },
+      "ideal_json_output": {
+        "query_type": "state_funding_aggregation",
+        "results": {
+          "state": "Gujarat",
+          "total_funding_inr_crores": 4523.8,
+          "by_research_domain": [
+            {"domain": "Sustainable Energy", "funding_crores": 1234.5, "percentage": 27.3},
+            {"domain": "Biotechnology", "funding_crores": 987.2, "percentage": 21.8},
+            {"domain": "Artificial Intelligence", "funding_crores": 876.3, "percentage": 19.4},
+            {"domain": "Agriculture Technology", "funding_crores": 654.8, "percentage": 14.5},
+            {"domain": "Advanced Materials", "funding_crores": 452.1, "percentage": 10.0},
+            {"domain": "Others", "funding_crores": 318.9, "percentage": 7.0}
+          ],
+          "by_funding_source": [
+            {"source": "Central Government", "funding_crores": 2345.6, "percentage": 51.9},
+            {"source": "State Government", "funding_crores": 1123.4, "percentage": 24.8},
+            {"source": "Industry", "funding_crores": 678.9, "percentage": 15.0},
+            {"source": "International", "funding_crores": 375.9, "percentage": 8.3}
+          ],
+          "growth_rate_percent": 18.5,
+          "project_count": 456,
+          "researcher_count": 1234,
+          "source_audit": {
+            "database": "projects.csv, labs_institutions.csv",
+            "matched_records": 456
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q002",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Show the year-over-year growth in AI/ML research funding across India from 2020 to 2026. Identify which states are emerging as AI research hubs.",
+      "complexity": "high",
+      "intent": "Track research funding trends by domain and geography",
+      "tables_needed": ["projects", "researchers"],
+      "filters": {
+        "research_area": ["Artificial Intelligence", "Machine Learning"],
+        "year_range": "2020-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "funding_trend_analysis",
+        "results": {
+          "total_funding_inr_crores": 8765.4,
+          "year_over_year_growth": [
+            {"year": 2020, "funding_crores": 890.5, "growth_percent": 12.3},
+            {"year": 2021, "funding_crores": 1056.2, "growth_percent": 18.6},
+            {"year": 2022, "funding_crores": 1234.8, "growth_percent": 16.9},
+            {"year": 2023, "funding_crores": 1567.3, "growth_percent": 26.9},
+            {"year": 2024, "funding_crores": 1987.5, "growth_percent": 26.8},
+            {"year": 2025, "funding_crores": 2034.1, "growth_percent": 2.3},
+            {"year": 2026, "funding_crores": 995.0, "growth_percent": -51.1}
+          ],
+          "cagr_percent": 17.8,
+          "emerging_hubs": [
+            {"state": "Gujarat", "funding_growth_percent": 45.2, "projects_count": 156},
+            {"state": "Telangana", "funding_growth_percent": 38.7, "projects_count": 134},
+            {"state": "Karnataka", "funding_growth_percent": 32.1, "projects_count": 198}
+          ],
+          "established_hubs": [
+            {"state": "Maharashtra", "total_funding_crores": 2345.6},
+            {"state": "Delhi", "total_funding_crores": 1987.4},
+            {"state": "Tamil Nadu", "total_funding_crores": 1567.8}
+          ],
+          "source_audit": {
+            "database": "projects.csv",
+            "matched_records": 1234
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q003",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the distribution of research funding by institution type (IIT, NIT, State University, CSIR, Private)? Show the average project size and success rate.",
+      "complexity": "medium",
+      "intent": "Compare funding by institution type",
+      "tables_needed": ["projects", "institutions"],
+      "filters": {
+        "year_range": "2020-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "institution_type_comparison",
+        "results": {
+          "total_funding_inr_crores": 45678.9,
+          "by_institution_type": [
+            {
+              "type": "IIT",
+              "total_funding_crores": 23456.7,
+              "project_count": 2345,
+              "avg_project_size_crores": 10.0,
+              "success_rate_percent": 87.5,
+              "funding_share_percent": 51.3
+            },
+            {
+              "type": "CSIR",
+              "total_funding_crores": 8901.2,
+              "project_count": 876,
+              "avg_project_size_crores": 10.2,
+              "success_rate_percent": 91.2,
+              "funding_share_percent": 19.5
+            },
+            {
+              "type": "NIT",
+              "total_funding_crores": 6789.4,
+              "project_count": 1234,
+              "avg_project_size_crores": 5.5,
+              "success_rate_percent": 82.3,
+              "funding_share_percent": 14.9
+            },
+            {
+              "type": "State University",
+              "total_funding_crores": 4567.8,
+              "project_count": 987,
+              "avg_project_size_crores": 4.6,
+              "success_rate_percent": 78.9,
+              "funding_share_percent": 10.0
+            }
+          ],
+          "source_audit": {
+            "database": "projects.csv",
+            "matched_records": 5442
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q004",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Identify the top 20 most productive researchers in India by publication count and h-index. Show their affiliations and research focus areas.",
+      "complexity": "low",
+      "intent": "Identify top researchers for policy recognition",
+      "tables_needed": ["researchers"],
+      "filters": {
+        "sort_by": "h_index",
+        "order": "desc",
+        "limit": 20
+      },
+      "ideal_json_output": {
+        "query_type": "top_researcher_ranking",
+        "results": {
+          "researchers": [
+            {
+              "rank": 1,
+              "researcher_id": "RES-000123",
+              "full_name": "Sanjay Gupta",
+              "affiliation": "IIT Bombay",
+              "primary_research_area": "Artificial Intelligence",
+              "h_index": 85,
+              "years_experience": 30,
+              "total_funding_crores": 78.5,
+              "publications_count": 345,
+              "patents_count": 23,
+              "tier_access": "Tier1_Researcher"
+            },
+            {
+              "rank": 2,
+              "researcher_id": "RES-000234",
+              "full_name": "Anita Kumar",
+              "affiliation": "IISc Bangalore",
+              "primary_research_area": "Biotechnology",
+              "h_index": 82,
+              "years_experience": 28,
+              "total_funding_crores": 65.2,
+              "publications_count": 312,
+              "patents_count": 18,
+              "tier_access": "Tier1_Researcher"
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "Top 20 researchers average h-index 68. IITs host 12 of top 20. AI and Biotechnology dominate. Consider policy initiatives to retain talent and encourage regional distribution."
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q005",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the current capacity and utilization of research labs in Gujarat? Show infrastructure investment vs. publication output ratio.",
+      "complexity": "medium",
+      "intent": "Assess research infrastructure efficiency",
+      "tables_needed": ["labs_institutions"],
+      "filters": {
+        "location_state": "Gujarat"
+      },
+      "ideal_json_output": {
+        "query_type": "infrastructure_efficiency_analysis",
+        "results": {
+          "state": "Gujarat",
+          "total_labs": 45,
+          "total_infrastructure_investment_crores": 2345.6,
+          "avg_investment_per_lab_crores": 52.1,
+          "total_publications_per_year": 2345,
+          "avg_publications_per_lab_per_year": 52.1,
+          "efficiency_ratio": 0.87,
+          "labs_by_type": [
+            {"type": "Center of Excellence", "count": 12, "avg_investment_crores": 78.5},
+            {"type": "Research Lab", "count": 18, "avg_investment_crores": 45.2},
+            {"type": "Innovation Hub", "count": 8, "avg_investment_crores": 35.6},
+            {"type": "Incubation Center", "count": 7, "avg_investment_crores": 28.3}
+          ],
+          "underutilized_labs": 5,
+          "high_performers": 12,
+          "source_audit": {
+            "database": "labs_institutions.csv",
+            "matched_records": 45
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q006",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Compare the research output (publications, patents, projects) of Gujarat vs Maharashtra vs Karnataka over the last 5 years.",
+      "complexity": "high",
+      "intent": "State-by-state research comparison",
+      "tables_needed": ["researchers", "projects", "publications", "patents"],
+      "filters": {
+        "states": ["Gujarat", "Maharashtra", "Karnataka"],
+        "year_range": "2020-2025"
+      },
+      "ideal_json_output": {
+        "query_type": "state_comparison",
+        "results": {
+          "states": [
+            {
+              "state": "Gujarat",
+              "researcher_count": 1234,
+              "projects_count": 456,
+              "total_funding_crores": 4523.8,
+              "publications_count": 5678,
+              "patents_granted": 89,
+              "avg_h_index": 28.5,
+              "growth_rate_percent": 22.3
+            },
+            {
+              "state": "Maharashtra",
+              "researcher_count": 2345,
+              "projects_count": 789,
+              "total_funding_crores": 8765.4,
+              "publications_count": 12345,
+              "patents_granted": 234,
+              "avg_h_index": 32.4,
+              "growth_rate_percent": 15.6
+            },
+            {
+              "state": "Karnataka",
+              "researcher_count": 1987,
+              "projects_count": 678,
+              "total_funding_crores": 7654.2,
+              "publications_count": 10987,
+              "patents_granted": 198,
+              "avg_h_index": 30.8,
+              "growth_rate_percent": 18.9
+            }
+          ],
+          "lead_state": "Maharashtra",
+          "fastest_growing": "Gujarat",
+          "source_audit": {
+            "database": "researchers.csv, projects.csv, publications.csv, patents.csv"
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q007",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the collaboration network between academia and industry in India? Show the top industry partners and their research focus areas.",
+      "complexity": "medium",
+      "intent": "Map academia-industry collaborations",
+      "tables_needed": ["projects", "researchers"],
+      "filters": {
+        "funding_agency_type": "Industry"
+      },
+      "ideal_json_output": {
+        "query_type": "academia_industry_collaboration_analysis",
+        "results": {
+          "total_industry_funding_crores": 12345.6,
+          "collaboration_count": 567,
+          "top_industry_partners": [
+            {"partner": "Google Research India", "projects": 89, "funding_crores": 2345.6, "focus_areas": ["AI", "Machine Learning"]},
+            {"partner": "Microsoft Research Lab India", "projects": 67, "funding_crores": 1890.5, "focus_areas": ["AI", "Quantum Computing"]},
+            {"partner": "Reliance Foundation", "projects": 45, "funding_crores": 1567.8, "focus_areas": ["Sustainable Energy", "Healthcare"]},
+            {"partner": "Tata Trusts", "projects": 38, "funding_crores": 1234.5, "focus_areas": ["Biotechnology", "Agriculture"]},
+            {"partner": "Intel India", "projects": 34, "funding_crores": 987.6, "focus_areas": ["Semiconductors", "AI"]}
+          ],
+          "collaboration_strength_by_domain": [
+            {"domain": "Artificial Intelligence", "industry_collab_percent": 45.6},
+            {"domain": "Sustainable Energy", "industry_collab_percent": 32.3},
+            {"domain": "Biotechnology", "industry_collab_percent": 28.9},
+            {"domain": "Quantum Computing", "industry_collab_percent": 25.4}
+          ],
+          "source_audit": {
+            "database": "projects.csv",
+            "matched_records": 567
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q008",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Show the funding allocation across different research domains (AI, Energy, Biotech, Materials, Agriculture) over the last 5 years. Identify emerging priorities.",
+      "complexity": "medium",
+      "intent": "Analyze research funding allocation by domain",
+      "tables_needed": ["projects"],
+      "filters": {
+        "year_range": "2020-2025"
+      },
+      "ideal_json_output": {
+        "query_type": "domain_funding_trend",
+        "results": {
+          "total_funding_inr_crores": 67890.5,
+          "domain_funding": [
+            {"domain": "Artificial Intelligence", "funding_crores": 23456.7, "percentage": 34.6, "growth_percent": 45.2},
+            {"domain": "Sustainable Energy", "funding_crores": 15678.9, "percentage": 23.1, "growth_percent": 38.7},
+            {"domain": "Biotechnology", "funding_crores": 12345.6, "percentage": 18.2, "growth_percent": 28.9},
+            {"domain": "Advanced Materials", "funding_crores": 8765.4, "percentage": 12.9, "growth_percent": 22.3},
+            {"domain": "Agriculture Technology", "funding_crores": 5432.1, "percentage": 8.0, "growth_percent": 35.6},
+            {"domain": "Quantum Computing", "funding_crores": 2211.8, "percentage": 3.2, "growth_percent": 156.7}
+          ],
+          "emerging_priorities": [
+            {"domain": "Quantum Computing", "growth_indicator": "High", "policy_recommendation": "Increase funding by 50%"},
+            {"domain": "Agriculture Technology", "growth_indicator": "Medium-High", "policy_recommendation": "Expand rural research network"}
+          ],
+          "source_audit": {
+            "database": "projects.csv",
+            "matched_records": 3456
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q009",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the success rate of projects by different funding agencies? Show completion rates, average project value, and research area distribution.",
+      "complexity": "medium",
+      "intent": "Evaluate funding agency performance",
+      "tables_needed": ["projects"],
+      "filters": {
+        "year_range": "2020-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "funding_agency_performance",
+        "results": {
+          "agencies": [
+            {
+              "agency": "DST-SERB",
+              "total_projects": 1234,
+              "completed_count": 987,
+              "ongoing_count": 234,
+              "success_rate_percent": 92.3,
+              "avg_project_value_crores": 8.5,
+              "total_funding_crores": 10489.0,
+              "top_domains": ["AI", "Materials", "Energy"]
+            },
+            {
+              "agency": "ANRF",
+              "total_projects": 876,
+              "completed_count": 678,
+              "ongoing_count": 198,
+              "success_rate_percent": 89.5,
+              "avg_project_value_crores": 12.3,
+              "total_funding_crores": 10774.8,
+              "top_domains": ["Biotechnology", "Healthcare"]
+            },
+            {
+              "agency": "DBT India",
+              "total_projects": 654,
+              "completed_count": 543,
+              "ongoing_count": 111,
+              "success_rate_percent": 95.2,
+              "avg_project_value_crores": 15.6,
+              "total_funding_crores": 10202.4,
+              "top_domains": ["Biotechnology", "Agriculture"]
+            }
+          ],
+          "source_audit": {
+            "database": "projects.csv",
+            "matched_records": 2764
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q010",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Show the research collaboration density across Indian states. Which states have the strongest intra-state and inter-state collaborations?",
+      "complexity": "high",
+      "intent": "Map research collaboration networks",
+      "tables_needed": ["collaborations", "researchers"],
+      "filters": {
+        "year_range": "2020-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "collaboration_density_analysis",
+        "results": {
+          "states": [
+            {
+              "state": "Gujarat",
+              "intra_state_collaborations": 456,
+              "inter_state_collaborations": 234,
+              "collaboration_density": 0.78,
+              "key_partners": ["Maharashtra", "Delhi", "Karnataka"]
+            },
+            {
+              "state": "Maharashtra",
+              "intra_state_collaborations": 678,
+              "inter_state_collaborations": 345,
+              "collaboration_density": 0.82,
+              "key_partners": ["Gujarat", "Karnataka", "Tamil Nadu"]
+            }
+          ],
+          "national_collaboration_metrics": {
+            "total_collaborations": 5678,
+            "avg_inter_state_collaborations_per_state": 156,
+            "strongest_corridors": [
+              {"corridor": "Gujarat-Maharashtra", "strength": 0.85},
+              {"corridor": "Delhi-Maharashtra", "strength": 0.79},
+              {"corridor": "Karnataka-Tamil Nadu", "strength": 0.72}
+            ]
+          },
+          "source_audit": {
+            "database": "collaborations.csv",
+            "matched_records": 5678
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q011",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the return on investment for research funding? Compare publications per crore, patents per crore, and project success rates across funding agencies.",
+      "complexity": "high",
+      "intent": "Evaluate ROI of research investment",
+      "tables_needed": ["projects", "publications", "patents"],
+      "filters": {
+        "year_range": "2020-2025"
+      },
+      "ideal_json_output": {
+        "query_type": "research_roi_analysis",
+        "results": {
+          "funding_agencies": [
+            {
+              "agency": "DST-SERB",
+              "total_funding_crores": 10489.0,
+              "publications_per_crore": 2.34,
+              "patents_per_crore": 0.12,
+              "success_rate_percent": 92.3,
+              "roi_score": 0.78
+            },
+            {
+              "agency": "DBT India",
+              "total_funding_crores": 10202.4,
+              "publications_per_crore": 2.89,
+              "patents_per_crore": 0.18,
+              "success_rate_percent": 95.2,
+              "roi_score": 0.85
+            },
+            {
+              "agency": "ANRF",
+              "total_funding_crores": 10774.8,
+              "publications_per_crore": 2.12,
+              "patents_per_crore": 0.15,
+              "success_rate_percent": 89.5,
+              "roi_score": 0.72
+            }
+          ],
+          "avg_roi_score": 0.78,
+          "highest_roi_agency": "DBT India",
+          "source_audit": {
+            "database": "projects.csv, publications.csv, patents.csv"
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q012",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Show the distribution of researchers by expertise area and identify skill gaps in emerging research domains like Quantum Computing and Climate Science.",
+      "complexity": "high",
+      "intent": "Analyze researcher skill distribution",
+      "tables_needed": ["researchers"],
+      "filters": {},
+      "ideal_json_output": {
+        "query_type": "skill_gap_analysis",
+        "results": {
+          "domain_distribution": [
+            {"domain": "Artificial Intelligence", "researcher_count": 4567, "percentage": 22.3, "skill_gap": "Low"},
+            {"domain": "Biotechnology", "researcher_count": 3456, "percentage": 16.9, "skill_gap": "Low"},
+            {"domain": "Sustainable Energy", "researcher_count": 2345, "percentage": 11.4, "skill_gap": "Medium"},
+            {"domain": "Quantum Computing", "researcher_count": 567, "percentage": 2.8, "skill_gap": "Critical"},
+            {"domain": "Climate Science", "researcher_count": 789, "percentage": 3.8, "skill_gap": "High"}
+          ],
+          "skill_gaps": [
+            {"domain": "Quantum Computing", "gap_severity": "Critical", "researchers_needed": 500, "recommendation": "Launch targeted fellowship program"},
+            {"domain": "Climate Science", "gap_severity": "High", "researchers_needed": 300, "recommendation": "Increase funding for environmental research"}
+          ],
+          "source_audit": {
+            "database": "researchers.csv",
+            "matched_records": 20456
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q013",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the gender distribution of researchers and funding recipients across different research domains and institutions?",
+      "complexity": "medium",
+      "intent": "Analyze gender equity in research",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {},
+      "ideal_json_output": {
+        "query_type": "gender_equity_analysis",
+        "results": {
+          "overall_distribution": {
+            "male_researchers_percent": 68.5,
+            "female_researchers_percent": 31.5,
+            "male_funding_percent": 72.3,
+            "female_funding_percent": 27.7
+          },
+          "by_domain": [
+            {"domain": "Computer Science", "male_percent": 78.5, "female_percent": 21.5},
+            {"domain": "Biotechnology", "male_percent": 56.2, "female_percent": 43.8},
+            {"domain": "Physics", "male_percent": 82.3, "female_percent": 17.7}
+          ],
+          "by_institution_type": [
+            {"type": "IIT", "female_researcher_percent": 18.5, "female_funding_percent": 15.2},
+            {"type": "NIT", "female_researcher_percent": 22.3, "female_funding_percent": 19.8},
+            {"type": "CSIR", "female_researcher_percent": 28.5, "female_funding_percent": 25.4}
+          ],
+          "recommendations": [
+            "Increase female representation in IITs by 15%",
+            "Launch women-focused research grants",
+            "Implement mentorship programs for female researchers"
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q014",
+      "persona": "Tier2_Policymaker",
+      "query_text": "Show the international collaboration trends over the last 5 years. Which countries are Indian researchers collaborating with most?",
+      "complexity": "medium",
+      "intent": "Track international research partnerships",
+      "tables_needed": ["collaborations"],
+      "filters": {
+        "year_range": "2020-2025",
+        "is_international": true
+      },
+      "ideal_json_output": {
+        "query_type": "international_collaboration_trend",
+        "results": {
+          "total_international_collaborations": 2345,
+          "collaboration_growth_percent": 45.6,
+          "by_country": [
+            {"country": "USA", "collaborations": 678, "percentage": 28.9, "growth_percent": 34.2},
+            {"country": "Germany", "collaborations": 345, "percentage": 14.7, "growth_percent": 56.3},
+            {"country": "UK", "collaborations": 234, "percentage": 10.0, "growth_percent": 28.9},
+            {"country": "Japan", "collaborations": 189, "percentage": 8.1, "growth_percent": 42.5},
+            {"country": "Australia", "collaborations": 156, "percentage": 6.7, "growth_percent": 38.7}
+          ],
+          "collaboration_domains": [
+            {"domain": "Artificial Intelligence", "intl_collab_percent": 35.6},
+            {"domain": "Quantum Computing", "intl_collab_percent": 45.2},
+            {"domain": "Biotechnology", "intl_collab_percent": 28.9}
+          ],
+          "source_audit": {
+            "database": "collaborations.csv",
+            "matched_records": 2345
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T2-Q015",
+      "persona": "Tier2_Policymaker",
+      "query_text": "What is the impact of government schemes (DST-SERB, ANRF, DBT) on research output? Compare publication counts and citation impact before and after scheme launch.",
+      "complexity": "high",
+      "intent": "Evaluate government scheme impact",
+      "tables_needed": ["projects", "publications"],
+      "filters": {
+        "funding_agency": ["DST-SERB", "ANRF", "DBT India"],
+        "year_range": "2018-2026"
+      },
+      "ideal_json_output": {
+        "query_type": "scheme_impact_analysis",
+        "results": {
+          "scheme_performance": [
+            {
+              "scheme": "DST-SERB",
+              "launch_year": 2020,
+              "projects_before_launch": 234,
+              "projects_after_launch": 1234,
+              "publication_growth_percent": 67.8,
+              "citation_impact_growth_percent": 45.2,
+              "patent_growth_percent": 56.3
+            },
+            {
+              "scheme": "ANRF",
+              "launch_year": 2023,
+              "projects_before_launch": 0,
+              "projects_after_launch": 876,
+              "publication_growth_percent": 89.5,
+              "citation_impact_growth_percent": 78.9,
+              "patent_growth_percent": 62.3
+            }
+          ],
+          "roi_by_scheme": {
+            "DST-SERB": 0.78,
+            "ANRF": 0.85,
+            "DBT India": 0.82
+          },
+          "source_audit": {
+            "database": "projects.csv, publications.csv",
+            "matched_records": 3456
+          }
+        }
+      }
+    },
+
+    // ============================================================
+    // TIER 3 INDUSTRY QUERIES (15) - Partnership, capability, specs
+    // ============================================================
+
+    {
+      "query_id": "T3-Q001",
+      "persona": "Tier3_Industry",
+      "query_text": "Find research teams at IIT Gandhinagar working on solar cell efficiency improvements. Show their current projects, technology readiness level, and contact information.",
+      "complexity": "medium",
+      "intent": "Find technology partnership opportunities",
+      "tables_needed": ["researchers", "projects", "labs_institutions"],
+      "filters": {
+        "affiliation": "IIT Gandhinagar",
+        "research_area": "Sustainable Energy",
+        "sub_topic": "Solar Energy"
+      },
+      "ideal_json_output": {
+        "query_type": "technology_capability_search",
+        "results": {
+          "found_count": 8,
+          "teams": [
+            {
+              "team_leader": {
+                "researcher_id": "RES-000345",
+                "full_name": "Rajiv Mehta",
+                "h_index": 58,
+                "email": "rajiv.mehta@iitgn.ac.in",
+                "phone": "+91-98765-67890"
+              },
+              "team_size": 12,
+              "current_project": {
+                "project_id": "PROJ-2024-00345",
+                "title": "Perovskite Solar Cell Efficiency Optimization",
+                "funding_agency": "DST-SERB",
+                "amount_crores": 15.5,
+                "status": "Ongoing",
+                "trl_level": 6
+              },
+              "technology_details": {
+                "focus_area": "Perovskite Solar Cells",
+                "current_efficiency_percent": 24.5,
+                "target_efficiency_percent": 28.0,
+                "timeline_months": 24
+              },
+              "collaboration_readiness": "Open to Industry Partnership",
+              "source_audit": {
+                "database": "researchers.csv, projects.csv",
+                "row_index": 345
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "8 teams at IITGN work on solar energy. Dr. Rajiv Mehta's perovskite cell team (TRL 6) is industry-ready with 24.5% efficiency. Open for collaboration."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q002",
+      "persona": "Tier3_Industry",
+      "query_text": "Map all AI/ML capabilities across IITs in India. Show expertise areas, lab infrastructure, and availability for industry collaboration.",
+      "complexity": "high",
+      "intent": "Map industry collaboration opportunities",
+      "tables_needed": ["researchers", "labs_institutions"],
+      "filters": {
+        "institution_type": "IIT",
+        "research_focus_contains": "Artificial Intelligence"
+      },
+      "ideal_json_output": {
+        "query_type": "capability_mapping",
+        "results": {
+          "total_capabilities": 156,
+          "by_subdomain": [
+            {"subdomain": "Deep Learning", "researchers": 45, "labs": 12},
+            {"subdomain": "Computer Vision", "researchers": 38, "labs": 10},
+            {"subdomain": "NLP", "researchers": 32, "labs": 8},
+            {"subdomain": "Reinforcement Learning", "researchers": 25, "labs": 6},
+            {"subdomain": "Edge AI", "researchers": 16, "labs": 5}
+          ],
+          "by_iit": [
+            {
+              "institution": "IIT Bombay",
+              "ai_researchers": 89,
+              "ai_labs": 15,
+              "industry_partnerships": 34,
+              "key_expertise": ["Deep Learning", "Computer Vision", "NLP"]
+            },
+            {
+              "institution": "IIT Delhi",
+              "ai_researchers": 76,
+              "ai_labs": 12,
+              "industry_partnerships": 28,
+              "key_expertise": ["Deep Learning", "Reinforcement Learning", "Edge AI"]
+            },
+            {
+              "institution": "IIT Gandhinagar",
+              "ai_researchers": 45,
+              "ai_labs": 8,
+              "industry_partnerships": 18,
+              "key_expertise": ["Computer Vision", "Healthcare AI", "NLP"]
+            }
+          ],
+          "industry_readiness": {
+            "high_trl_available": 45,
+            "open_for_collab": 78,
+            "active_industry_projects": 123
+          },
+          "source_audit": {
+            "database": "researchers.csv, labs_institutions.csv"
+          }
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q003",
+      "persona": "Tier3_Industry",
+      "query_text": "Find researchers with expertise in battery technology and energy storage who are open to industry collaboration. Show their current projects and technology specs.",
+      "complexity": "medium",
+      "intent": "Find technology transfer opportunities",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "primary_research_area": "Sustainable Energy",
+        "secondary_research_areas_contains": "Energy Storage",
+        "collaboration_readiness": "Open"
+      },
+      "ideal_json_output": {
+        "query_type": "technology_transfer_search",
+        "results": {
+          "found_count": 15,
+          "researchers": [
+            {
+              "researcher_id": "RES-000567",
+              "full_name": "Priya Singh",
+              "affiliation": "IIT Bombay",
+              "primary_research_area": "Energy Storage",
+              "secondary_areas": ["Battery Technology", "Materials Science"],
+              "h_index": 42,
+              "collaboration_readiness": "Open to Industry",
+              "current_project": {
+                "project_id": "PROJ-2024-00567",
+                "title": "Next-Gen Solid-State Battery Development",
+                "funding_agency": "Reliance Foundation",
+                "amount_crores": 25.0,
+                "status": "Ongoing",
+                "technology_specs": {
+                  "energy_density_wh_kg": 400,
+                  "cycle_life": 2000,
+                  "charging_time_min": 15,
+                  "technology_trl": 5
+                }
+              },
+              "contact": {
+                "email": "priya.singh@iitb.ac.in",
+                "phone": "+91-98291-56789"
+              },
+              "source_audit": {
+                "database": "researchers.csv, projects.csv",
+                "row_index": 567
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "15 researchers specialize in battery technology. Dr. Priya Singh (IIT Bombay) leads solid-state battery R&D with industry funding. Energy density 400 Wh/kg at TRL 5."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q003",
+      "persona": "Tier3_Industry",
+      "query_text": "Find researchers with expertise in battery technology and energy storage who are open to industry collaboration. Show their current projects and technology specs.",
+      "complexity": "medium",
+      "intent": "Find technology transfer opportunities",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "primary_research_area": "Sustainable Energy",
+        "secondary_research_areas_contains": "Energy Storage",
+        "collaboration_readiness": "Open"
+      },
+      "ideal_json_output": {
+        "query_type": "technology_transfer_search",
+        "results": {
+          "found_count": 15,
+          "researchers": [
+            {
+              "researcher_id": "RES-000567",
+              "full_name": "Priya Singh",
+              "affiliation": "IIT Bombay",
+              "primary_research_area": "Energy Storage",
+              "secondary_areas": ["Battery Technology", "Materials Science"],
+              "h_index": 42,
+              "collaboration_readiness": "Open to Industry",
+              "current_project": {
+                "project_id": "PROJ-2024-00567",
+                "title": "Next-Gen Solid-State Battery Development",
+                "funding_agency": "Reliance Foundation",
+                "amount_crores": 25.0,
+                "status": "Ongoing",
+                "technology_specs": {
+                  "energy_density_wh_kg": 400,
+                  "cycle_life": 2000,
+                  "charging_time_min": 15,
+                  "technology_trl": 5
+                }
+              },
+              "contact": {
+                "email": "priya.singh@iitb.ac.in",
+                "phone": "+91-98291-56789"
+              },
+              "source_audit": {
+                "database": "researchers.csv, projects.csv",
+                "row_index": 567
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "15 researchers specialize in battery technology. Dr. Priya Singh (IIT Bombay) leads solid-state battery R&D with industry funding. Energy density 400 Wh/kg at TRL 5."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q004",
+      "persona": "Tier3_Industry",
+      "query_text": "Show all biotech startups or spin-offs from IIT Gandhinagar and IISc Bangalore. Identify their focus areas and founding researchers.",
+      "complexity": "medium",
+      "intent": "Find investment opportunities",
+      "tables_needed": ["researchers", "projects", "collaborations"],
+      "filters": {
+        "affiliation": ["IIT Gandhinagar", "IISc Bangalore"],
+        "collaboration_type": "Industry Partnership"
+      },
+      "ideal_json_output": {
+        "query_type": "startup_spin_off_search",
+        "results": {
+          "found_count": 18,
+          "spin_offs": [
+            {
+              "company_name": "HealthAI Solutions",
+              "founded_year": 2023,
+              "founding_researchers": [
+                {"researcher_id": "RES-000042", "full_name": "Priya Patel"},
+                {"researcher_id": "RES-000156", "full_name": "Vikram Sharma"}
+              ],
+              "focus_area": "AI-driven Medical Diagnostics",
+              "funding_received_crores": 12.5,
+              "investors": ["Sequoia India", "Accel Partners"],
+              "technology_trl": 7,
+              "source_audit": {
+                "database": "collaborations.csv",
+                "row_index": 123
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "18 spin-offs from IITGN and IISc. Healthcare AI dominates (45%). HealthAI Solutions raised ₹12.5 Cr with TRL 7 diagnostic technology."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q005",
+      "persona": "Tier3_Industry",
+      "query_text": "Find semiconductor and VLSI design experts at Indian institutions. Show their current projects and chip fabrication capabilities.",
+      "complexity": "high",
+      "intent": "Map semiconductor R&D capabilities",
+      "tables_needed": ["researchers", "projects", "labs_institutions"],
+      "filters": {
+        "research_area": ["Semiconductor Technology", "VLSI Design"]
+      },
+      "ideal_json_output": {
+        "query_type": "semiconductor_capability_mapping",
+        "results": {
+          "found_count": 35,
+          "experts": [
+            {
+              "researcher_id": "RES-000678",
+              "full_name": "Anil Kumar",
+              "affiliation": "IIT Hyderabad",
+              "primary_research_area": "VLSI Design",
+              "h_index": 52,
+              "current_project": {
+                "project_id": "PROJ-2024-00678",
+                "title": "Low-Power ASIC Design for IoT",
+                "funding_agency": "Intel India",
+                "amount_crores": 18.0
+              },
+              "fabrication_capabilities": {
+                "technology_nodes_nm": [28, 14, 7],
+                "test_facility": "Available",
+                "foundry_partnerships": ["TSMC", "Intel Foundry"]
+              },
+              "contact": {
+                "email": "anil.kumar@iith.ac.in"
+              },
+              "source_audit": {
+                "database": "researchers.csv, labs_institutions.csv"
+              }
+            }
+          ],
+          "lab_infrastructure": [
+            {
+              "lab_id": "LAB-00089",
+              "lab_name": "VLSI Design Center",
+              "affiliation": "IIT Hyderabad",
+              "capabilities": ["RTL Design", "Synthesis", "Physical Design", "Timing Analysis"],
+              "equipment_value_crores": 45.0
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "35 semiconductor experts across India. IIT Hyderabad leads with TSMV/Intel foundry partnerships. 7nm chip design capability available."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q006",
+      "persona": "Tier3_Industry",
+      "query_text": "What is the cybersecurity research ecosystem in India? Find experts in cryptography, network security, and threat detection.",
+      "complexity": "medium",
+      "intent": "Find security technology partners",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "research_area": ["Cybersecurity", "Blockchain Technology"]
+      },
+      "ideal_json_output": {
+        "query_type": "cybersecurity_capability_search",
+        "results": {
+          "found_count": 42,
+          "by_subdomain": [
+            {"subdomain": "Cryptography", "experts": 18, "active_projects": 12},
+            {"subdomain": "Network Security", "experts": 15, "active_projects": 10},
+            {"subdomain": "Blockchain", "experts": 22, "active_projects": 15},
+            {"subdomain": "Threat Detection", "experts": 12, "active_projects": 8}
+          ],
+          "top_experts": [
+            {
+              "researcher_id": "RES-000789",
+              "full_name": "Sunita Sharma",
+              "affiliation": "IIT Delhi",
+              "h_index": 48,
+              "expertise": ["Cryptography", "Blockchain", "IoT Security"],
+              "industry_collab": 8,
+              "contact": "sunita.sharma@iitd.ac.in"
+            }
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "42 cybersecurity experts. Cryptography and blockchain dominate. Dr. Sunita Sharma (IIT Delhi) leads with 8 industry collaborations. Average TRL 4-5."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q007",
+      "persona": "Tier3_Industry",
+      "query_text": "Find quantum computing research teams available for industry partnerships. Show their current focus, technology maturity, and collaboration terms.",
+      "complexity": "medium",
+      "intent": "Map quantum technology partnerships",
+      "tables_needed": ["researchers", "projects", "labs_institutions"],
+      "filters": {
+        "research_area": "Quantum Computing"
+      },
+      "ideal_json_output": {
+        "query_type": "quantum_partnership_search",
+        "results": {
+          "found_count": 25,
+          "teams": [
+            {
+              "team_leader": {
+                "researcher_id": "RES-000456",
+                "full_name": "Vikram Sharma",
+                "affiliation": "IIT Gandhinagar",
+                "h_index": 38
+              },
+              "focus_areas": ["Quantum Computing", "Quantum Communication", "Quantum Sensing"],
+              "current_project": {
+                "project_id": "PROJ-2024-00456",
+                "title": "Superconducting Qubit Development",
+                "funding_agency": "ANRF",
+                "amount_crores": 28.0,
+                "status": "Ongoing"
+              },
+              "technology_maturity": {
+                "qubit_coherence_us": 50,
+                "gate_fidelity_percent": 99.2,
+                "troubleshooting_error_rate_percent": 0.8,
+                "current_trl": 4
+              },
+              "collaboration_terms": {
+                "ip_sharing": "Joint IP",
+                "funding_required_crores": 15,
+                "timeline_months": 36
+              },
+              "contact": "vikram.sharma@iitgn.ac.in",
+              "source_audit": {
+                "database": "researchers.csv, projects.csv"
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "25 quantum research teams. IITGN leads with superconducting qubit development (99.2% gate fidelity). Industry partnership possible with ₹15 Cr contribution for joint IP."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q008",
+      "persona": "Tier3_Industry",
+      "query_text": "Map the agricultural technology ecosystem in India. Find experts in precision farming, IoT sensors, and drone technology for agriculture.",
+      "complexity": "medium",
+      "intent": "Find agri-tech partnerships",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "research_area": "Agriculture Technology"
+      },
+      "ideal_json_output": {
+        "query_type": "agritech_capability_mapping",
+        "results": {
+          "found_count": 56,
+          "by_technology": [
+            {"technology": "Precision Farming", "experts": 23, "labs": 8},
+            {"technology": "IoT Sensors", "experts": 18, "labs": 6},
+            {"technology": "Drone Technology", "experts": 15, "labs": 5},
+            {"technology": "AI-Based Crop Monitoring", "experts": 20, "labs": 7}
+          ],
+          "top_institutions": [
+            {"institution": "IIT Ropar", "agri_tech_experts": 12, "industry_collab": 8},
+            {"institution": "IIT Hyderabad", "agri_tech_experts": 10, "industry_collab": 6},
+            {"institution": "IIT Gandhinagar", "agri_tech_experts": 8, "industry_collab": 5}
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "56 agri-tech experts. Precision farming leads with 23 experts. IIT Ropar has strongest ecosystem with 8 industry collaborations. Drone tech growing at 45% annually."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q009",
+      "persona": "Tier3_Industry",
+      "query_text": "Find materials science researchers working on graphene applications. Show their current projects, patent portfolio, and commercialization readiness.",
+      "complexity": "medium",
+      "intent": "Find advanced materials partners",
+      "tables_needed": ["researchers", "projects", "patents"],
+      "filters": {
+        "research_area": "Advanced Materials",
+        "sub_topic": "Graphene"
+      },
+      "ideal_json_output": {
+        "query_type": "materials_partnership_search",
+        "results": {
+          "found_count": 18,
+          "researchers": [
+            {
+              "researcher_id": "RES-000234",
+              "full_name": "Anita Kumar",
+              "affiliation": "IIT Gandhinagar",
+              "h_index": 62,
+              "graphene_projects": 3,
+              "graphene_patents": 5,
+              "commercialization_trl": 6,
+              "industry_partnerships": 4,
+              "contact": "anita.kumar@iitgn.ac.in",
+              "source_audit": {
+                "database": "researchers.csv, patents.csv"
+              }
+            }
+          ]
+        },
+        "synthesis": {
+          "recommendation": "18 graphene researchers. Dr. Anita Kumar (IITGN) leads with 5 patents and TRL 6 commercialization readiness. Average project size ₹18 Cr."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q010",
+      "persona": "Tier3_Industry",
+      "query_text": "Show the automotive R&D ecosystem in India. Find researchers working on EV technology, autonomous vehicles, and battery management systems.",
+      "complexity": "high",
+      "intent": "Map automotive technology partnerships",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "research_areas": ["Electric Vehicles", "Autonomous Vehicles", "Battery Technology"]
+      },
+      "ideal_json_output": {
+        "query_type": "automotive_rd_mapping",
+        "results": {
+          "found_count": 67,
+          "by_focus": [
+            {"focus": "EV Battery Systems", "experts": 28, "projects": 18},
+            {"focus": "Motor Design", "experts": 15, "projects": 10},
+            {"focus": "Autonomous Driving", "experts": 22, "projects": 15},
+            {"focus": "Charging Infrastructure", "experts": 12, "projects": 8}
+          ],
+          "institutions": [
+            {"institution": "IIT Bombay", "automotive_experts": 25, "ev_projects": 12},
+            {"institution": "IIT Delhi", "automotive_experts": 18, "ev_projects": 10},
+            {"institution": "IIT Madras", "automotive_experts": 15, "ev_projects": 8}
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "67 automotive R&D experts. EV Battery Systems leads with 28 experts. IIT Bombay has strongest ecosystem. 45 active industry projects worth ₹890 Cr."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q011",
+      "persona": "Tier3_Industry",
+      "query_text": "Find healthcare AI researchers with experience in medical imaging, diagnostics, and clinical AI. Show their technology readiness for deployment.",
+      "complexity": "medium",
+      "intent": "Find health-tech partnerships",
+      "tables_needed": ["researchers", "projects", "publications"],
+      "filters": {
+        "research_area": "Healthcare AI"
+      },
+      "ideal_json_output": {
+        "query_type": "health_tech_search",
+        "results": {
+          "found_count": 45,
+          "researchers": [
+            {
+              "researcher_id": "RES-000042",
+              "full_name": "Priya Patel",
+              "affiliation": "IIT Gandhinagar",
+              "h_index": 45,
+              "healthcare_ai_publications": 23,
+              "clinical_trials": 2,
+              "deployed_products": 1,
+              "technology_trl": 8,
+              "fda_clearance": "In Progress",
+              "contact": "priya.patel@iitgn.ac.in",
+              "source_audit": {
+                "database": "researchers.csv, publications.csv"
+              }
+            }
+          ],
+          "by_application": [
+            {"application": "Medical Imaging", "experts": 25, "deployed_products": 5},
+            {"application": "Diagnostics", "experts": 20, "deployed_products": 3},
+            {"application": "Drug Discovery", "experts": 15, "deployed_products": 1}
+          ]
+        },
+        "synthesis": {
+          "recommendation": "45 healthcare AI researchers. Dr. Priya Patel (IITGN) has TRL 8 deployment with FDA clearance in progress. 5 medical imaging products already deployed."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q012",
+      "persona": "Tier3_Industry",
+      "query_text": "Map the robotics research ecosystem in India. Find experts in industrial robotics, autonomous navigation, and human-robot interaction.",
+      "complexity": "medium",
+      "intent": "Find robotics partnerships",
+      "tables_needed": ["researchers", "projects", "labs_institutions"],
+      "filters": {
+        "research_area": "Robotics"
+      },
+      "ideal_json_output": {
+        "query_type": "robotics_ecosystem_mapping",
+        "results": {
+          "found_count": 52,
+          "by_application": [
+            {"application": "Industrial Robotics", "experts": 28, "industry_collab": 15},
+            {"application": "Autonomous Navigation", "experts": 22, "industry_collab": 12},
+            {"application": "Human-Robot Interaction", "experts": 15, "industry_collab": 8},
+            {"application": "Swarm Robotics", "experts": 10, "industry_collab": 5}
+          ],
+          "top_institutions": [
+            {"institution": "IIT Madras", "robotics_experts": 18, "industry_partners": 12},
+            {"institution": "IIT Bombay", "robotics_experts": 15, "industry_partners": 10},
+            {"institution": "IIT Gandhinagar", "robotics_experts": 12, "industry_partners": 8}
+          ],
+          "lab_infrastructure": [
+            {
+              "lab_id": "LAB-00045",
+              "lab_name": "Robotics Research Center",
+              "affiliation": "IIT Madras",
+              "equipment_value_crores": 65.0,
+              "capabilities": ["Robot Arms", "Autonomous Vehicles", "HRI Testbeds"]
+            }
+          ],
+          "source_audit": {
+            "database": "researchers.csv, labs_institutions.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "52 robotics experts. Industrial robotics leads. IIT Madras has ₹65 Cr robotics infrastructure. 45 active industry collaborations worth ₹567 Cr."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q013",
+      "persona": "Tier3_Industry",
+      "query_text": "Find researchers working on 5G/6G communication technologies. Show their focus areas, test infrastructure, and industry collaboration history.",
+      "complexity": "medium",
+      "intent": "Find telecom technology partners",
+      "tables_needed": ["researchers", "projects", "labs_institutions"],
+      "filters": {
+        "research_area": ["5G Networks", "6G Communications"]
+      },
+      "ideal_json_output": {
+        "query_type": "telecom_capability_search",
+        "results": {
+          "found_count": 38,
+          "by_technology": [
+            {"technology": "5G Network Optimization", "experts": 18, "active_projects": 12},
+            {"technology": "6G Research", "experts": 15, "active_projects": 8},
+            {"technology": "Millimeter Wave", "experts": 12, "active_projects": 7},
+            {"technology": "Edge Computing", "experts": 20, "active_projects": 15}
+          ],
+          "institutions": [
+            {"institution": "IIT Hyderabad", "5g6g_experts": 15, "test_beds": 3},
+            {"institution": "IIT Delhi", "5g6g_experts": 12, "test_beds": 2},
+            {"institution": "IIT Bombay", "5g6g_experts": 10, "test_beds": 2}
+          ],
+          "test_infrastructure": [
+            {
+              "lab_id": "LAB-00078",
+              "lab_name": "5G/6G Test Bed",
+              "affiliation": "IIT Hyderabad",
+              "infrastructure_value_crores": 45.0,
+              "capabilities": ["Network Simulation", "Signal Processing", "Antenna Testing"]
+            }
+          ],
+          "source_audit": {
+            "database": "researchers.csv, labs_institutions.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "38 telecom researchers. 6G research growing at 65% annually. IIT Hyderabad has ₹45 Cr test infrastructure. Industry partnerships include major telecom operators."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q014",
+      "persona": "Tier3_Industry",
+      "query_text": "Find cleantech researchers working on carbon capture, waste-to-energy, and environmental remediation. Show their technology readiness for scale-up.",
+      "complexity": "medium",
+      "intent": "Find cleantech partnerships",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "research_area": "Climate Science"
+      },
+      "ideal_json_output": {
+        "query_type": "cleantech_capability_search",
+        "results": {
+          "found_count": 34,
+          "by_focus": [
+            {"focus": "Carbon Capture", "experts": 15, "trl": 5, "scaleup_ready": true},
+            {"focus": "Waste-to-Energy", "experts": 12, "trl": 7, "scaleup_ready": true},
+            {"focus": "Environmental Remediation", "experts": 18, "trl": 6, "scaleup_ready": true}
+          ],
+          "institutions": [
+            {"institution": "IIT Bombay", "cleantech_experts": 14, "industry_collab": 8},
+            {"institution": "IIT Delhi", "cleantech_experts": 10, "industry_collab": 6},
+            {"institution": "IIT Gandhinagar", "cleantech_experts": 8, "industry_collab": 5}
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "34 cleantech researchers. Waste-to-energy has highest TRL (7) and scale-up readiness. 18 environmental remediation experts with industry partnerships worth ₹234 Cr."
+        }
+      }
+    },
+
+    {
+      "query_id": "T3-Q015",
+      "persona": "Tier3_Industry",
+      "query_text": "Map the data science and analytics capabilities across Indian IITs. Find experts in big data, predictive analytics, and business intelligence.",
+      "complexity": "medium",
+      "intent": "Find data analytics partnerships",
+      "tables_needed": ["researchers", "projects"],
+      "filters": {
+        "research_area": "Data Science & AI"
+      },
+      "ideal_json_output": {
+        "query_type": "data_science_capability_mapping",
+        "results": {
+          "found_count": 78,
+          "by_specialization": [
+            {"specialization": "Big Data Engineering", "experts": 25, "industry_collab": 18},
+            {"specialization": "Machine Learning", "experts": 45, "industry_collab": 32},
+            {"specialization": "Business Intelligence", "experts": 20, "industry_collab": 15},
+            {"specialization": "Data Visualization", "experts": 18, "industry_collab": 12}
+          ],
+          "institutions": [
+            {"institution": "IIT Bombay", "data_scientists": 28, "industry_projects": 45},
+            {"institution": "IIT Delhi", "data_scientists": 22, "industry_projects": 38},
+            {"institution": "IIT Bangalore", "data_scientists": 18, "industry_projects": 32}
+          ],
+          "source_audit": {
+            "database": "researchers.csv, projects.csv"
+          }
+        },
+        "synthesis": {
+          "recommendation": "78 data science experts. Machine learning dominates with 45 experts and 32 industry projects. IIT Bombay leads with ₹567 Cr in analytics projects."
+        }
+      }
+    }
+  ]
+}

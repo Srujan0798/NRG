@@ -12,6 +12,8 @@ from src.data.database import get_sqlite_connection, resolve_database_path
 
 logger = logging.getLogger(__name__)
 
+PII_COLUMNS = {"email", "phone"}
+
 
 class SQLiteSandbox:
     """Read-only sandbox for SQLite execution."""
@@ -58,6 +60,17 @@ class SQLiteSandbox:
             columns = [desc[0] for desc in cursor.description] if cursor.description else []
             formatted_results = [dict(row) for row in rows]
             conn.close()
+
+            if user_tier > 1:
+                columns = [column for column in columns if column.lower() not in PII_COLUMNS]
+                formatted_results = [
+                    {
+                        key: value
+                        for key, value in row.items()
+                        if key.lower() not in PII_COLUMNS
+                    }
+                    for row in formatted_results
+                ]
 
             self._log_audit(
                 {

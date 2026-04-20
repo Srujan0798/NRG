@@ -13,6 +13,7 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 DEFAULT_MODEL = "BAAI/bge-m3"
+FALLBACK_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 INDIC_MODEL = "ai4bharat/IndicBERTv2-SS"
 
 INDIAN_LANG_CODES = {"hi", "bn", "gu", "kn", "ml", "mr", "ne", "pa", "ta", "te", "ur"}
@@ -144,6 +145,24 @@ class Embedder:
         except Exception as e:
             logger.warning(f"Primary model load failed: {e}")
             self._primary_model = None
+
+        if self._primary_model is None:
+            fallback_model = os.getenv("EMBEDDING_FALLBACK_MODEL", FALLBACK_MODEL)
+            if fallback_model and fallback_model != self.model_name:
+                try:
+                    from sentence_transformers import SentenceTransformer
+
+                    self._primary_model = SentenceTransformer(fallback_model)
+                    self.model_name = fallback_model
+                    logger.warning(
+                        "Using fallback embedding model: %s", fallback_model
+                    )
+                except Exception as e:
+                    logger.warning(f"Fallback model load failed: {e}")
+
+        if os.getenv("EMBEDDING_DISABLE_INDIC") or self.model_name == FALLBACK_MODEL:
+            self._indic_model = None
+            return
 
         try:
             from sentence_transformers import SentenceTransformer

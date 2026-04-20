@@ -1,0 +1,4605 @@
+[
+  {
+    "query_id": "T3Q-00001",
+    "persona": "Tier3_Industry",
+    "intent": "partnership_capability_search",
+    "natural_language_query": "I represent a leading Indian IT company looking for AI/ML research partners at IIT Gandhinagar. Give me: (a) list of all AI/ML researchers with their expertise, h-index, and contact info, (b) relevant labs and their capabilities, (c) ongoing AI/ML projects that could benefit from industry collaboration, (d) any published research on applied AI/ML. I want to set up a CoE.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "f602b2e6-19f8-4e8e-842c-cea4f0aaf485",
+        "query_id": "T3Q-00001",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00050",
+          "RES-00076",
+          "RES-00095",
+          "RES-00137",
+          "RES-00196",
+          "RES-00265",
+          "RES-00315",
+          "RES-00367",
+          "LAB-0050",
+          "LAB-0090",
+          "LAB-0272"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "partnership_assessment": {
+        "institution": "IIT Gandhinagar",
+        "research_area": "AI/ML"
+      },
+      "researchers": [
+        {
+          "researcher_id": "RES-01339",
+          "full_name": "Hitesh Bhavsar",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemical Engineering",
+          "primary_research_area": "Thermal Engineering",
+          "h_index": 57,
+          "total_funding_inr_crores": 31.88,
+          "state": "Gujarat",
+          "email": "hitesh_bhavsar@iitgn.ac.in",
+          "phone": "+91 84866 90234"
+        },
+        {
+          "researcher_id": "RES-00958",
+          "full_name": "Pruthviraj Patel",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Mechanical Engineering",
+          "primary_research_area": "AI/ML",
+          "h_index": 54,
+          "total_funding_inr_crores": 28.21,
+          "state": "Gujarat",
+          "email": "pruthviraj.patel@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00315",
+          "full_name": "Kalpesh Singh Srinivasan",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Mechanical Engineering",
+          "primary_research_area": "AI/ML",
+          "h_index": 51,
+          "total_funding_inr_crores": 32.82,
+          "state": "Gujarat",
+          "email": "ksrinivasan@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-01963",
+          "full_name": "Ms. Shashank Sunil Rao",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemistry",
+          "primary_research_area": "Nanotechnology",
+          "h_index": 35,
+          "total_funding_inr_crores": 25.98,
+          "state": "Gujarat",
+          "email": "shashank_rao@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00463",
+          "full_name": "Faisal Tripathi Bansal",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemical Engineering",
+          "primary_research_area": "AI/ML",
+          "h_index": 34,
+          "total_funding_inr_crores": 17.65,
+          "state": "Gujarat",
+          "email": "faisal810@iitgn.ac.in",
+          "phone": "+91 86479 03378"
+        },
+        {
+          "researcher_id": "RES-02235",
+          "full_name": "Ms. Bhavna Rao Bhatnagar",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Humanities & Social Sciences",
+          "primary_research_area": "Natural Language Processing",
+          "h_index": 34,
+          "total_funding_inr_crores": 20.68,
+          "state": "Gujarat",
+          "email": "bhavna.bhatnagar@iitgn.ac.in",
+          "phone": "+91 98862 33824"
+        },
+        {
+          "researcher_id": "RES-00721",
+          "full_name": "Hitesh Dhar",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Civil Engineering",
+          "primary_research_area": "Power Electronics",
+          "h_index": 33,
+          "total_funding_inr_crores": 18.46,
+          "state": "Gujarat",
+          "email": "hdhar@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00095",
+          "full_name": "Ms. Yogendra Dhillon",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Mechanical Engineering",
+          "primary_research_area": "Cognitive Neuroscience",
+          "h_index": 31,
+          "total_funding_inr_crores": 25.24,
+          "state": "Gujarat",
+          "email": "yogendra767@iitgn.ac.in",
+          "phone": "+91 87481 93218"
+        },
+        {
+          "researcher_id": "RES-02059",
+          "full_name": "Sarita Parikh",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemical Engineering",
+          "primary_research_area": "Catalysis & Reaction Engineering",
+          "h_index": 31,
+          "total_funding_inr_crores": 16.03,
+          "state": "Gujarat",
+          "email": "sarita242@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00401",
+          "full_name": "Ms. Ila Reddy Srinivasan",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Computer Science & Engineering",
+          "primary_research_area": "AI/ML",
+          "h_index": 30,
+          "total_funding_inr_crores": 17.2,
+          "state": "Gujarat",
+          "email": "isrinivasan@iitgn.ac.in"
+        }
+      ],
+      "laboratories": [
+        {
+          "lab_id": "LAB-0050",
+          "lab_name": "Deep Learning Technology Park",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "AI/ML",
+            "IoT & Embedded Systems",
+            "Satellite Communication"
+          ],
+          "director_researcher_id": "RES-00990"
+        },
+        {
+          "lab_id": "LAB-0090",
+          "lab_name": "Agri-Informatics Design Studio",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "Agriculture Tech",
+            "Computer Vision",
+            "AI/ML"
+          ],
+          "director_researcher_id": "RES-02475"
+        },
+        {
+          "lab_id": "LAB-0272",
+          "lab_name": "IITGN Deep Learning Technology Park",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "AI/ML",
+            "Blockchain Technology",
+            "Sustainable Energy"
+          ],
+          "director_researcher_id": "RES-01298"
+        },
+        {
+          "lab_id": "LAB-0308",
+          "lab_name": "Thermal Sciences Testing & Validation Facility",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "Thermal Engineering",
+            "AI/ML"
+          ],
+          "director_researcher_id": "RES-01131"
+        },
+        {
+          "lab_id": "LAB-0314",
+          "lab_name": "IITGN National Artificial Intelligence Facility",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "AI/ML",
+            "Structural Engineering"
+          ],
+          "director_researcher_id": "RES-00591"
+        },
+        {
+          "lab_id": "LAB-0336",
+          "lab_name": "IITGN Deep Learning Simulation Centre",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "AI/ML",
+            "Nanotechnology"
+          ],
+          "director_researcher_id": "RES-01787"
+        }
+      ],
+      "ongoing_projects": [
+        {
+          "project_id": "PRJ-00242",
+          "title": "Integrated AI/ML System for Climate Adaptation",
+          "principal_investigator": "Mahesh Farooqui",
+          "principal_investigator_id": "RES-02201",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 33.05,
+          "status": "Ongoing",
+          "start_date": "2024-11-23",
+          "end_date": "2026-05-17",
+          "research_area": "AI/ML",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00366",
+          "title": "Efficient AI/ML for Developing Nations",
+          "principal_investigator": "Mahesh Farooqui",
+          "principal_investigator_id": "RES-02201",
+          "funding_agency": "DRDO",
+          "sanctioned_amount_inr_crores": 27.89,
+          "status": "Ongoing",
+          "start_date": "2020-01-29",
+          "end_date": "2021-01-23",
+          "research_area": "AI/ML",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-00512",
+          "title": "Next-gen AI/ML for Developing Nations",
+          "principal_investigator": "Prof. Lubna Iyer",
+          "principal_investigator_id": "RES-01161",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 25.64,
+          "status": "Ongoing",
+          "start_date": "2024-10-05",
+          "end_date": "2026-12-31",
+          "research_area": "AI/ML",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00569",
+          "title": "Adaptive AI/ML for North-East India",
+          "principal_investigator": "Tukaram Ghorpade",
+          "principal_investigator_id": "RES-00748",
+          "funding_agency": "ISRO",
+          "sanctioned_amount_inr_crores": 10.66,
+          "status": "Ongoing",
+          "start_date": "2023-06-21",
+          "end_date": "2026-06-05",
+          "research_area": "AI/ML",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-00581",
+          "title": "Framework for Intelligent AI/ML",
+          "principal_investigator": "Asst. Prof. Mohan Kulkarni",
+          "principal_investigator_id": "RES-01698",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 10.58,
+          "status": "Ongoing",
+          "start_date": "2024-07-10",
+          "end_date": "2026-12-27",
+          "research_area": "AI/ML",
+          "co_pi_count": 3
+        }
+      ],
+      "partnership_readiness_score": 95
+    }
+  },
+  {
+    "query_id": "T3Q-00002",
+    "persona": "Tier3_Industry",
+    "intent": "expert_directory_for_rd",
+    "natural_language_query": "Our company is building a quantum computing division and needs to identify India's top quantum computing researchers. List the top 15 by h-index with their affiliations, departments, email contacts, and total funding. Also list relevant labs and recent publications. We want to hire consultants and explore joint patent filing opportunities.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "6ec70a59-0021-40c2-9eb5-daaa002e730c",
+        "query_id": "T3Q-00002",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-02024",
+          "RES-01912",
+          "RES-01159",
+          "RES-00635",
+          "RES-00744",
+          "RES-01749",
+          "RES-00787",
+          "RES-01662",
+          "RES-00206",
+          "RES-00736",
+          "RES-00145",
+          "RES-01993",
+          "RES-02326",
+          "RES-00289",
+          "RES-01949",
+          "LAB-0010",
+          "LAB-0017",
+          "LAB-0026",
+          "LAB-0035",
+          "LAB-0049"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "expert_directory": {
+        "research_area": "Quantum Computing",
+        "total_researchers_nationally": 71,
+        "top_experts": [
+          {
+            "researcher_id": "RES-02024",
+            "full_name": "Vatsal Barman",
+            "affiliation": "NIT Surathkal",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 63,
+            "total_funding_inr_crores": 24.38,
+            "state": "Karnataka",
+            "email": "vatsal938@nitk.ac.in",
+            "phone": "+91 88645 30300"
+          },
+          {
+            "researcher_id": "RES-01912",
+            "full_name": "Dr. Zeenat Singh Saraf",
+            "affiliation": "ISRO",
+            "department": "Chemical Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 55,
+            "total_funding_inr_crores": 21.34,
+            "state": "Karnataka",
+            "email": "zeenat.saraf@isro.gov.in"
+          },
+          {
+            "researcher_id": "RES-01159",
+            "full_name": "Aarohi Tiwari",
+            "affiliation": "IIT Madras",
+            "department": "Mathematics",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 45,
+            "total_funding_inr_crores": 21.71,
+            "state": "Tamil Nadu",
+            "email": "aarohi405@iitm.ac.in",
+            "phone": "+91 84614 41320"
+          },
+          {
+            "researcher_id": "RES-00635",
+            "full_name": "Prof. Sunita Gill",
+            "affiliation": "IIT Bombay",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 43,
+            "total_funding_inr_crores": 17.27,
+            "state": "Maharashtra",
+            "email": "sunita.gill@iitb.ac.in",
+            "phone": "+91 88865 18645"
+          },
+          {
+            "researcher_id": "RES-00744",
+            "full_name": "Vihaan Iyer",
+            "affiliation": "ISRO",
+            "department": "Civil Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 40,
+            "total_funding_inr_crores": 20.65,
+            "state": "Karnataka",
+            "email": "vihaan717@isro.gov.in",
+            "phone": "+91 76812 51601"
+          },
+          {
+            "researcher_id": "RES-01749",
+            "full_name": "Tanvi Murthy",
+            "affiliation": "Banaras Hindu University",
+            "department": "Electronics & Communication",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 38,
+            "total_funding_inr_crores": 22.35,
+            "state": "Uttar Pradesh",
+            "email": "tanvi.murthy@bhu.ac.in",
+            "phone": "+91 71208 78787"
+          },
+          {
+            "researcher_id": "RES-00787",
+            "full_name": "Mr. Devaraj Siddiqui",
+            "affiliation": "NIT Trichy",
+            "department": "Materials Science",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 36,
+            "total_funding_inr_crores": 15.54,
+            "state": "Tamil Nadu",
+            "email": "devaraj.siddiqui@nitt.edu"
+          },
+          {
+            "researcher_id": "RES-01662",
+            "full_name": "Pramod Saxena",
+            "affiliation": "IIT Gandhinagar",
+            "department": "Materials Science & Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 36,
+            "total_funding_inr_crores": 26.88,
+            "state": "Gujarat",
+            "email": "pramod.saxena@iitgn.ac.in",
+            "phone": "+91 88503 48400"
+          },
+          {
+            "researcher_id": "RES-00206",
+            "full_name": "Prof. Usha Mukherjee",
+            "affiliation": "IIT Bhilai",
+            "department": "Physics",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 35,
+            "total_funding_inr_crores": 19.13,
+            "state": "Chhattisgarh",
+            "email": "usha_mukherjee@iitbhilai.ac.in",
+            "phone": "+91 90607 62668"
+          },
+          {
+            "researcher_id": "RES-00736",
+            "full_name": "Laksh Kumar",
+            "affiliation": "University of Hyderabad",
+            "department": "Data Science",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 31,
+            "total_funding_inr_crores": 15.43,
+            "state": "Telangana",
+            "email": "laksh489@uohyd.ac.in",
+            "phone": "+91 73414 63449"
+          },
+          {
+            "researcher_id": "RES-00145",
+            "full_name": "Assoc. Prof. Myra Suresh Jadhav",
+            "affiliation": "IISER Bhopal",
+            "department": "Civil Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 28,
+            "total_funding_inr_crores": 11.37,
+            "state": "Madhya Pradesh",
+            "email": "myra316@iiserb.ac.in",
+            "phone": "+91 71909 73889"
+          },
+          {
+            "researcher_id": "RES-01993",
+            "full_name": "Assoc. Prof. Meena Kulkarni",
+            "affiliation": "NIT Andhra Pradesh",
+            "department": "Biotechnology",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 28,
+            "total_funding_inr_crores": 18.02,
+            "state": "Andhra Pradesh",
+            "email": "meena.kulkarni@nitap.ac.in",
+            "phone": "+91 87733 76955"
+          },
+          {
+            "researcher_id": "RES-02326",
+            "full_name": "Asst. Prof. Anita Gupta Balasubramanian",
+            "affiliation": "IIT Kharagpur",
+            "department": "Environmental Engineering",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 28,
+            "total_funding_inr_crores": 11.64,
+            "state": "West Bengal",
+            "email": "abalasubramanian@iitkgp.ac.in",
+            "phone": "+91 91260 57929"
+          },
+          {
+            "researcher_id": "RES-00289",
+            "full_name": "Dr. Kavya Bhatnagar",
+            "affiliation": "IIT Bombay",
+            "department": "Mathematics",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 27,
+            "total_funding_inr_crores": 16.08,
+            "state": "Maharashtra",
+            "email": "kavya.bhatnagar@iitb.ac.in",
+            "phone": "+91 86842 77128"
+          },
+          {
+            "researcher_id": "RES-01949",
+            "full_name": "Hiral Sharma Iyengar",
+            "affiliation": "CSIR-IICT",
+            "department": "Artificial Intelligence",
+            "primary_research_area": "Quantum Computing",
+            "h_index": 27,
+            "total_funding_inr_crores": 16.83,
+            "state": "Telangana",
+            "email": "hiral.iyengar@iict.res.in",
+            "phone": "+91 86971 72122"
+          }
+        ],
+        "relevant_laboratories": [
+          {
+            "lab_id": "LAB-0010",
+            "lab_name": "Quantum Materials Systems Laboratory",
+            "affiliation": "IIT Madras",
+            "location_state": "Tamil Nadu",
+            "research_focus_areas": [
+              "Quantum Computing",
+              "Organic Chemistry"
+            ],
+            "director_researcher_id": "RES-02239"
+          },
+          {
+            "lab_id": "LAB-0017",
+            "lab_name": "Interdisciplinary Digital Health Lab",
+            "affiliation": "IIT Kanpur",
+            "location_state": "Uttar Pradesh",
+            "research_focus_areas": [
+              "Healthcare AI",
+              "Quantum Computing"
+            ],
+            "director_researcher_id": "RES-01688"
+          },
+          {
+            "lab_id": "LAB-0026",
+            "lab_name": "IITK Computational Quantum Materials Facility",
+            "affiliation": "IIT Kanpur",
+            "location_state": "Uttar Pradesh",
+            "research_focus_areas": [
+              "Quantum Computing",
+              "Sustainable Energy",
+              "Geotechnical Engineering"
+            ],
+            "director_researcher_id": "RES-01070"
+          },
+          {
+            "lab_id": "LAB-0035",
+            "lab_name": "IIT Quantum Information Technology Park",
+            "affiliation": "IIT Bhubaneswar",
+            "location_state": "Odisha",
+            "research_focus_areas": [
+              "Quantum Computing",
+              "Robotics"
+            ],
+            "director_researcher_id": "RES-02146"
+          },
+          {
+            "lab_id": "LAB-0049",
+            "lab_name": "Anna Quantum Materials Innovation Hub",
+            "affiliation": "Anna University",
+            "location_state": "Tamil Nadu",
+            "research_focus_areas": [
+              "Quantum Computing",
+              "5G/6G Communications"
+            ],
+            "director_researcher_id": "RES-02323"
+          }
+        ],
+        "recent_publications": [
+          {
+            "document_id": "DOC-01201",
+            "title": "Superconducting Qubit Design for Scalable Quantum Processors",
+            "publication_year": 2022,
+            "category": "Quantum Computing & Advanced Materials",
+            "keywords": [
+              "National Quantum Mission",
+              "Semiconductor India",
+              "AFM",
+              "Shor code",
+              "HEA"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 5
+          },
+          {
+            "document_id": "DOC-01202",
+            "title": "Quantum Key Distribution Network for Indian Defence Communications",
+            "publication_year": 2023,
+            "category": "Quantum Computing & Advanced Materials",
+            "keywords": [
+              "E91",
+              "phosphorene",
+              "superconducting qubit",
+              "VASP",
+              "semiconductor"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 3
+          },
+          {
+            "document_id": "DOC-01203",
+            "title": "Topological Insulators for Low-Power Quantum Electronics",
+            "publication_year": 2024,
+            "category": "Quantum Computing & Advanced Materials",
+            "keywords": [
+              "threshold theorem",
+              "finFET",
+              "quantum annealing",
+              "sputtering",
+              "DFT"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 4
+          },
+          {
+            "document_id": "DOC-01204",
+            "title": "Variational Quantum Eigensolver for Molecular Simulation",
+            "publication_year": 2024,
+            "category": "Quantum Computing & Advanced Materials",
+            "keywords": [
+              "T1 relaxation",
+              "quantum sensing",
+              "E91",
+              "superconducting qubit",
+              "high-entropy alloy"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-01205",
+            "title": "Quantum Error Correction Using Surface Codes on Indian Testbed",
+            "publication_year": 2023,
+            "category": "Quantum Computing & Advanced Materials",
+            "keywords": [
+              "post-quantum cryptography",
+              "silicon photonics",
+              "topological insulator",
+              "CVD",
+              "carrier mobility"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 3
+          }
+        ]
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00003",
+    "persona": "Tier3_Industry",
+    "intent": "technology_transfer_opportunity",
+    "natural_language_query": "Identify completed Sustainable Energy research projects that are ready for technology transfer. Focus on projects with budgets above Rs. 10 crore. For each, provide the PI contact details, project title, research area, funding agency, and total budget. Our renewable energy company wants to license these technologies.",
+    "expected_sql_tables": [
+      "projects",
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "574b7351-a0a1-4e19-8a99-35710bd15682",
+        "query_id": "T3Q-00003",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-02067",
+          "PRJ-02844",
+          "PRJ-00792",
+          "PRJ-01556",
+          "PRJ-01274",
+          "PRJ-02061",
+          "PRJ-01664",
+          "PRJ-01173",
+          "PRJ-02846",
+          "PRJ-00191",
+          "RES-00249",
+          "RES-00768",
+          "RES-00793",
+          "RES-02427",
+          "RES-01052",
+          "RES-01504",
+          "RES-01172",
+          "RES-00454",
+          "RES-00794",
+          "RES-00228"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "technology_transfer_candidates": [
+        {
+          "project_id": "PRJ-02067",
+          "title": "Design and Implementation of Scalable Sustainable Energy",
+          "principal_investigator": "Prashant Puranik",
+          "principal_investigator_id": "RES-00249",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 53.61,
+          "status": "Completed",
+          "start_date": "2024-04-27",
+          "end_date": "2026-12-31",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 3,
+          "pi_email": "ppuranik@iitd.ac.in",
+          "pi_phone": null,
+          "commercial_readiness_score": 100
+        },
+        {
+          "project_id": "PRJ-02844",
+          "title": "Privacy-preserving Sustainable Energy for Gujarat Solar Parks",
+          "principal_investigator": "Dr. Huma Verma Saha",
+          "principal_investigator_id": "RES-00768",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 49.27,
+          "status": "Completed",
+          "start_date": "2023-12-29",
+          "end_date": "2025-06-21",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 1,
+          "pi_email": "huma_saha@iitb.ac.in",
+          "pi_phone": null,
+          "commercial_readiness_score": 99.3
+        },
+        {
+          "project_id": "PRJ-00792",
+          "title": "Experimental Study of Autonomous Sustainable Energy",
+          "principal_investigator": "Chandra Nathwani",
+          "principal_investigator_id": "RES-00793",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 46.23,
+          "status": "Completed",
+          "start_date": "2021-08-10",
+          "end_date": "2024-01-27",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 4,
+          "pi_email": "chandra795@iitr.ac.in",
+          "pi_phone": null,
+          "commercial_readiness_score": 96.2
+        },
+        {
+          "project_id": "PRJ-01556",
+          "title": "Sustainable Sustainable Energy for Gangetic Plains",
+          "principal_investigator": "Nisarg Gill",
+          "principal_investigator_id": "RES-02427",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 43.61,
+          "status": "Completed",
+          "start_date": "2023-09-13",
+          "end_date": "2025-03-06",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 1,
+          "pi_email": "nisarg.gill@isro.gov.in",
+          "pi_phone": "+91 89367 23709",
+          "commercial_readiness_score": 93.6
+        },
+        {
+          "project_id": "PRJ-01274",
+          "title": "Real-time Sustainable Energy: A Comprehensive Framework",
+          "principal_investigator": "Asst. Prof. Gajanan Rane",
+          "principal_investigator_id": "RES-01052",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 41.21,
+          "status": "Completed",
+          "start_date": "2025-11-06",
+          "end_date": "2026-12-31",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 2,
+          "pi_email": "gajanan307@iitb.ac.in",
+          "pi_phone": "+91 73458 78961",
+          "commercial_readiness_score": 91.2
+        },
+        {
+          "project_id": "PRJ-02061",
+          "title": "Green Analysis of Sustainable Energy in South Asian Region",
+          "principal_investigator": "Namita Chavda",
+          "principal_investigator_id": "RES-01504",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 40.85,
+          "status": "Completed",
+          "start_date": "2020-04-11",
+          "end_date": "2021-10-03",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 2,
+          "pi_email": "namita820@iitgn.ac.in",
+          "pi_phone": "+91 74999 94804",
+          "commercial_readiness_score": 90.8
+        },
+        {
+          "project_id": "PRJ-01664",
+          "title": "Robust Sustainable Energy for Food Security",
+          "principal_investigator": "Nirmal Agarwal",
+          "principal_investigator_id": "RES-01172",
+          "funding_agency": "DRDO",
+          "sanctioned_amount_inr_crores": 35.42,
+          "status": "Completed",
+          "start_date": "2023-02-10",
+          "end_date": "2025-01-30",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 1,
+          "pi_email": "nirmal.agarwal@nitdgp.ac.in",
+          "pi_phone": "+91 88117 67776",
+          "commercial_readiness_score": 85.4
+        },
+        {
+          "project_id": "PRJ-01173",
+          "title": "Framework for Novel Sustainable Energy",
+          "principal_investigator": "Assoc. Prof. Rajendra Pankaj Mistry",
+          "principal_investigator_id": "RES-00454",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 31.86,
+          "status": "Completed",
+          "start_date": "2025-11-02",
+          "end_date": "2026-12-31",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 1,
+          "pi_email": "rajendra_mistry@iitgn.ac.in",
+          "pi_phone": "+91 88579 57055",
+          "commercial_readiness_score": 81.9
+        },
+        {
+          "project_id": "PRJ-02846",
+          "title": "Hybrid Sustainable Energy for Food Security",
+          "principal_investigator": "Fariya Pandey",
+          "principal_investigator_id": "RES-00794",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 31.43,
+          "status": "Completed",
+          "start_date": "2021-08-17",
+          "end_date": "2023-08-07",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 1,
+          "pi_email": "fariya_pandey@cept.ac.in",
+          "pi_phone": null,
+          "commercial_readiness_score": 81.4
+        },
+        {
+          "project_id": "PRJ-00191",
+          "title": "Scalable Sustainable Energy for Indian Healthcare",
+          "principal_investigator": "Mukesh Joshi",
+          "principal_investigator_id": "RES-00228",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 30.49,
+          "status": "Completed",
+          "start_date": "2024-01-21",
+          "end_date": "2026-07-09",
+          "research_area": "Sustainable Energy",
+          "co_pi_count": 2,
+          "pi_email": "mukesh.joshi@iitgn.ac.in",
+          "pi_phone": "+91 88768 93545",
+          "commercial_readiness_score": 80.5
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T3Q-00004",
+    "persona": "Tier3_Industry",
+    "intent": "regional_capability_assessment",
+    "natural_language_query": "We are establishing a Robotics Center of Excellence in Gujarat. Map all robotics research capabilities in the state: researchers (with contact info), labs (with facilities), ongoing projects (with PI details and budgets), and published research. We need to identify anchor partners from both IIT Gandhinagar and other Gujarat institutions.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "ae27434e-e03c-45f2-aba0-4b9e83360660",
+        "query_id": "T3Q-00004",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00082",
+          "RES-00134",
+          "RES-00249",
+          "RES-00336",
+          "RES-00431",
+          "RES-00738",
+          "RES-00792",
+          "RES-00799",
+          "RES-00816",
+          "RES-00887",
+          "RES-00912",
+          "RES-01136",
+          "RES-01153",
+          "RES-01160",
+          "RES-01295",
+          "RES-01300",
+          "RES-01351",
+          "RES-01383",
+          "RES-01501",
+          "RES-01570",
+          "RES-01649",
+          "RES-01682",
+          "RES-01752",
+          "RES-01754",
+          "RES-01958",
+          "RES-02031",
+          "RES-02302",
+          "RES-02369",
+          "RES-02495",
+          "LAB-0080",
+          "LAB-0216",
+          "LAB-0261"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "regional_capability_report": {
+        "state": "Gujarat",
+        "focus_area": "Robotics"
+      },
+      "researchers": [
+        {
+          "researcher_id": "RES-01649",
+          "full_name": "Chandra Mehta Naidu",
+          "affiliation": "Gujarat Technological University",
+          "department": "Data Science",
+          "primary_research_area": "Robotics",
+          "h_index": 61,
+          "total_funding_inr_crores": 39.58,
+          "state": "Gujarat",
+          "email": "chandra846@gtu.ac.in"
+        },
+        {
+          "researcher_id": "RES-00431",
+          "full_name": "Dr. Vihaan Gowda",
+          "affiliation": "Gujarat University",
+          "department": "Physics",
+          "primary_research_area": "Robotics",
+          "h_index": 53,
+          "total_funding_inr_crores": 25.73,
+          "state": "Gujarat",
+          "email": "vihaan128@gujaratuniversity.ac.in",
+          "phone": "+91 87466 75397"
+        },
+        {
+          "researcher_id": "RES-01752",
+          "full_name": "Huma Subramanian",
+          "affiliation": "BITS Pilani",
+          "department": "Data Science",
+          "primary_research_area": "Robotics",
+          "h_index": 36,
+          "total_funding_inr_crores": 26.99,
+          "state": "Gujarat",
+          "email": "hsubramanian@bits-pilani.ac.in",
+          "phone": "+91 82818 16237"
+        },
+        {
+          "researcher_id": "RES-00792",
+          "full_name": "Mr. Khusboo Rahul Dutta",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemistry",
+          "primary_research_area": "Robotics",
+          "h_index": 33,
+          "total_funding_inr_crores": 21.81,
+          "state": "Gujarat",
+          "email": "khusboo336@iitgn.ac.in",
+          "phone": "+91 91663 02151"
+        },
+        {
+          "researcher_id": "RES-01501",
+          "full_name": "Assoc. Prof. Kavya Kamble",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Materials Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 32,
+          "total_funding_inr_crores": 22.37,
+          "state": "Gujarat",
+          "email": "kavya.kamble@iitgn.ac.in",
+          "phone": "+91 77429 13331"
+        },
+        {
+          "researcher_id": "RES-00816",
+          "full_name": "Prof. Trupti Kini",
+          "affiliation": "IIIT Surat",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 30,
+          "total_funding_inr_crores": 12.42,
+          "state": "Gujarat",
+          "email": "trupti.kini@iiitsurat.ac.in",
+          "phone": "+91 98248 39143"
+        },
+        {
+          "researcher_id": "RES-01136",
+          "full_name": "Mr. Vidhi Saha",
+          "affiliation": "Banaras Hindu University",
+          "department": "Data Science",
+          "primary_research_area": "Robotics",
+          "h_index": 25,
+          "total_funding_inr_crores": 25.22,
+          "state": "Gujarat",
+          "email": "vsaha@bhu.ac.in",
+          "phone": "+91 77753 71572"
+        },
+        {
+          "researcher_id": "RES-02302",
+          "full_name": "Gajanan Bagul",
+          "affiliation": "Nirma University",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 25,
+          "total_funding_inr_crores": 21.3,
+          "state": "Gujarat",
+          "email": "gajanan.bagul@nirmauni.ac.in",
+          "phone": "+91 82330 97318"
+        },
+        {
+          "researcher_id": "RES-00799",
+          "full_name": "Wasna Chatterjee",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Civil Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 24,
+          "total_funding_inr_crores": 20.76,
+          "state": "Gujarat",
+          "email": "wasna.chatterjee@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00887",
+          "full_name": "Ms. Arjun Chopra",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Materials Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 21,
+          "total_funding_inr_crores": 15.53,
+          "state": "Gujarat",
+          "email": "arjun551@iitgn.ac.in",
+          "phone": "+91 93902 91052"
+        },
+        {
+          "researcher_id": "RES-01351",
+          "full_name": "Asst. Prof. Gunjan Naidu",
+          "affiliation": "ISRO",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 21,
+          "total_funding_inr_crores": 13.64,
+          "state": "Gujarat",
+          "email": "gunjan.naidu@isro.gov.in"
+        },
+        {
+          "researcher_id": "RES-00134",
+          "full_name": "Neha Singh",
+          "affiliation": "Gujarat University",
+          "department": "Agricultural Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 20,
+          "total_funding_inr_crores": 13.64,
+          "state": "Gujarat",
+          "email": "neha.singh@gujaratuniversity.ac.in",
+          "phone": "+91 85278 70584"
+        },
+        {
+          "researcher_id": "RES-01383",
+          "full_name": "Ravi Patil",
+          "affiliation": "CEPT University",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 17,
+          "total_funding_inr_crores": 13.8,
+          "state": "Gujarat",
+          "email": "ravi694@cept.ac.in",
+          "phone": "+91 95894 43831"
+        },
+        {
+          "researcher_id": "RES-01570",
+          "full_name": "Dipti Iyer",
+          "affiliation": "NIT Surathkal",
+          "department": "Mathematics",
+          "primary_research_area": "Robotics",
+          "h_index": 17,
+          "total_funding_inr_crores": 14.09,
+          "state": "Gujarat",
+          "email": "diyer@nitk.ac.in",
+          "phone": "+91 75471 37544"
+        },
+        {
+          "researcher_id": "RES-01295",
+          "full_name": "Tanya Garg",
+          "affiliation": "Gujarat Technological University",
+          "department": "Civil Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 14,
+          "total_funding_inr_crores": 10.13,
+          "state": "Gujarat",
+          "email": "tgarg@gtu.ac.in"
+        },
+        {
+          "researcher_id": "RES-01754",
+          "full_name": "Prof. Tukaram Pathan",
+          "affiliation": "DRDO",
+          "department": "Materials Science",
+          "primary_research_area": "Robotics",
+          "h_index": 14,
+          "total_funding_inr_crores": 10.96,
+          "state": "Gujarat",
+          "email": "tukaram10@drdo.gov.in",
+          "phone": "+91 74356 37038"
+        },
+        {
+          "researcher_id": "RES-00336",
+          "full_name": "Ms. Krishna Deepak Patil",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Cognitive Science",
+          "primary_research_area": "Robotics",
+          "h_index": 13,
+          "total_funding_inr_crores": 11.26,
+          "state": "Gujarat",
+          "email": "krishna.patil@iitgn.ac.in",
+          "phone": "+91 76763 23560"
+        },
+        {
+          "researcher_id": "RES-01682",
+          "full_name": "Nikhil Rather",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Cognitive Science",
+          "primary_research_area": "Robotics",
+          "h_index": 12,
+          "total_funding_inr_crores": 14.93,
+          "state": "Gujarat",
+          "email": "nikhil871@iitgn.ac.in",
+          "phone": "+91 91469 30960"
+        },
+        {
+          "researcher_id": "RES-01958",
+          "full_name": "Bhupendra Rahul Dutta",
+          "affiliation": "IISc Bangalore",
+          "department": "Agricultural Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 11,
+          "total_funding_inr_crores": 9.39,
+          "state": "Gujarat",
+          "email": "bdutta@iisc.ac.in"
+        },
+        {
+          "researcher_id": "RES-00082",
+          "full_name": "Mr. Dipti Pawar",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Chemical Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 10,
+          "total_funding_inr_crores": 6.7,
+          "state": "Gujarat",
+          "email": "dipti589@iitgn.ac.in",
+          "phone": "+91 83794 38885"
+        },
+        {
+          "researcher_id": "RES-01153",
+          "full_name": "Amrita Kulkarni",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Mathematics",
+          "primary_research_area": "Robotics",
+          "h_index": 10,
+          "total_funding_inr_crores": 14.99,
+          "state": "Gujarat",
+          "email": "akulkarni@iitgn.ac.in",
+          "phone": "+91 85880 61689"
+        },
+        {
+          "researcher_id": "RES-01160",
+          "full_name": "Padma Panigrahi",
+          "affiliation": "IIT (BHU) Varanasi",
+          "department": "Mathematics",
+          "primary_research_area": "Robotics",
+          "h_index": 10,
+          "total_funding_inr_crores": 9.89,
+          "state": "Gujarat",
+          "email": "padma.panigrahi@iitbhu.ac.in",
+          "phone": "+91 85431 38157"
+        },
+        {
+          "researcher_id": "RES-02495",
+          "full_name": "Daxesh Pathan",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Computer Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 9,
+          "total_funding_inr_crores": 12.96,
+          "state": "Gujarat",
+          "email": "daxesh597@iitgn.ac.in",
+          "phone": "+91 80354 24100"
+        },
+        {
+          "researcher_id": "RES-02031",
+          "full_name": "Ipsita Kumar",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Mathematics",
+          "primary_research_area": "Robotics",
+          "h_index": 8,
+          "total_funding_inr_crores": 8.34,
+          "state": "Gujarat",
+          "email": "ipsita.kumar@iitgn.ac.in",
+          "phone": "+91 86144 99652"
+        },
+        {
+          "researcher_id": "RES-00738",
+          "full_name": "Assoc. Prof. Chintan Malik",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Computer Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 7,
+          "total_funding_inr_crores": 5.79,
+          "state": "Gujarat",
+          "email": "chintan199@iitgn.ac.in"
+        },
+        {
+          "researcher_id": "RES-00249",
+          "full_name": "Prashant Puranik",
+          "affiliation": "IIT Delhi",
+          "department": "Physics",
+          "primary_research_area": "Robotics",
+          "h_index": 6,
+          "total_funding_inr_crores": 7.99,
+          "state": "Gujarat",
+          "email": "ppuranik@iitd.ac.in"
+        },
+        {
+          "researcher_id": "RES-02369",
+          "full_name": "Gunjan Gogoi",
+          "affiliation": "IIT Kanpur",
+          "department": "Computer Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 4,
+          "total_funding_inr_crores": 13.05,
+          "state": "Gujarat",
+          "email": "gunjan79@iitk.ac.in"
+        },
+        {
+          "researcher_id": "RES-01300",
+          "full_name": "Damayanti Kaur",
+          "affiliation": "IIT Gandhinagar",
+          "department": "Materials Science & Engineering",
+          "primary_research_area": "Robotics",
+          "h_index": 3,
+          "total_funding_inr_crores": 4.44,
+          "state": "Gujarat",
+          "email": "damayanti.kaur@iitgn.ac.in",
+          "phone": "+91 76212 36530"
+        },
+        {
+          "researcher_id": "RES-00912",
+          "full_name": "Bina Parikh",
+          "affiliation": "Gujarat Technological University",
+          "department": "Chemistry",
+          "primary_research_area": "Robotics",
+          "h_index": 1,
+          "total_funding_inr_crores": 7.1,
+          "state": "Gujarat",
+          "email": "bina119@gtu.ac.in"
+        }
+      ],
+      "laboratories": [
+        {
+          "lab_id": "LAB-0080",
+          "lab_name": "IITGN Agri-Informatics Technology Park",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "Agriculture Tech",
+            "Robotics",
+            "Computer Vision"
+          ],
+          "director_researcher_id": "RES-01781"
+        },
+        {
+          "lab_id": "LAB-0216",
+          "lab_name": "IITGN Robotics & Automation Design Studio",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "Robotics"
+          ],
+          "director_researcher_id": "RES-01067"
+        },
+        {
+          "lab_id": "LAB-0261",
+          "lab_name": "IITGN Centre of Excellence in Robotics & Automation",
+          "affiliation": "IIT Gandhinagar",
+          "location_state": "Gujarat",
+          "research_focus_areas": [
+            "Robotics"
+          ],
+          "director_researcher_id": "RES-01594"
+        }
+      ],
+      "ongoing_projects": [
+        {
+          "project_id": "PRJ-00017",
+          "title": "Integrated Robotics System for Gujarat Water Grid",
+          "principal_investigator": "Zara Mishra Menon",
+          "principal_investigator_id": "RES-01831",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 1.28,
+          "status": "Ongoing",
+          "start_date": "2025-10-13",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-00108",
+          "title": "Domain-specific Robotics for Gujarat Water Grid",
+          "principal_investigator": "Asst. Prof. Gunjan Naidu",
+          "principal_investigator_id": "RES-01351",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 17.69,
+          "status": "Ongoing",
+          "start_date": "2024-11-27",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-00202",
+          "title": "Scalable Robotics for Indian Agriculture 4.0",
+          "principal_investigator": "Mr. Vidhi Saha",
+          "principal_investigator_id": "RES-01136",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 43.75,
+          "status": "Ongoing",
+          "start_date": "2023-05-30",
+          "end_date": "2025-11-15",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00482",
+          "title": "Real-time Robotics for Indian Railway Safety Applications",
+          "principal_investigator": "Ravi Patil",
+          "principal_investigator_id": "RES-01383",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 29.94,
+          "status": "Ongoing",
+          "start_date": "2025-08-18",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00541",
+          "title": "Sustainable Robotics: A Comprehensive Framework",
+          "principal_investigator": "Ravi Patil",
+          "principal_investigator_id": "RES-01383",
+          "funding_agency": "ISRO",
+          "sanctioned_amount_inr_crores": 5.65,
+          "status": "Ongoing",
+          "start_date": "2025-02-12",
+          "end_date": "2026-02-07",
+          "research_area": "Robotics",
+          "co_pi_count": 4
+        },
+        {
+          "project_id": "PRJ-00547",
+          "title": "Robust Robotics for Transportation",
+          "principal_investigator": "Damayanti Kaur",
+          "principal_investigator_id": "RES-01300",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 17.89,
+          "status": "Ongoing",
+          "start_date": "2025-03-26",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00549",
+          "title": "Sustainable Robotics for Indian Context",
+          "principal_investigator": "Gunjan Gogoi",
+          "principal_investigator_id": "RES-02369",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 31.82,
+          "status": "Ongoing",
+          "start_date": "2022-10-22",
+          "end_date": "2025-10-06",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-00552",
+          "title": "Smart Robotics for Disaster Management",
+          "principal_investigator": "Tanya Garg",
+          "principal_investigator_id": "RES-01295",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 33.83,
+          "status": "Ongoing",
+          "start_date": "2025-10-27",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00584",
+          "title": "High-performance Robotics for Space Exploration",
+          "principal_investigator": "Assoc. Prof. Chintan Malik",
+          "principal_investigator_id": "RES-00738",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 11.22,
+          "status": "Ongoing",
+          "start_date": "2022-04-02",
+          "end_date": "2024-03-22",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00622",
+          "title": "Scalable Robotics for Sustainable Mining",
+          "principal_investigator": "Mr. Khusboo Rahul Dutta",
+          "principal_investigator_id": "RES-00792",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 20.61,
+          "status": "Ongoing",
+          "start_date": "2025-09-25",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-00648",
+          "title": "Integrated Robotics System for Sustainable Mining",
+          "principal_investigator": "Mr. Dipti Pawar",
+          "principal_investigator_id": "RES-00082",
+          "funding_agency": "ISRO",
+          "sanctioned_amount_inr_crores": 8.01,
+          "status": "Ongoing",
+          "start_date": "2022-09-20",
+          "end_date": "2026-08-30",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00811",
+          "title": "Integrated Robotics System for Indian Healthcare",
+          "principal_investigator": "Gajanan Bagul",
+          "principal_investigator_id": "RES-02302",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 4.36,
+          "status": "Ongoing",
+          "start_date": "2022-11-22",
+          "end_date": "2025-05-10",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-00822",
+          "title": "AI-driven Robotics for Indian Healthcare",
+          "principal_investigator": "Ipsita Kumar",
+          "principal_investigator_id": "RES-02031",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 12.08,
+          "status": "Ongoing",
+          "start_date": "2020-06-10",
+          "end_date": "2022-05-31",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-01075",
+          "title": "Novel Neuromorphic Robotics using Digital Twin",
+          "principal_investigator": "Huma Subramanian",
+          "principal_investigator_id": "RES-01752",
+          "funding_agency": "MHRD",
+          "sanctioned_amount_inr_crores": 54.12,
+          "status": "Ongoing",
+          "start_date": "2020-01-30",
+          "end_date": "2021-01-24",
+          "research_area": "Robotics",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-01109",
+          "title": "Framework for Sustainable Robotics",
+          "principal_investigator": "Dr. Vihaan Gowda",
+          "principal_investigator_id": "RES-00431",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 6.61,
+          "status": "Ongoing",
+          "start_date": "2025-12-02",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-01171",
+          "title": "Autonomous Robotics: From Bench to Field",
+          "principal_investigator": "Prof. Trupti Kini",
+          "principal_investigator_id": "RES-00816",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 23.53,
+          "status": "Ongoing",
+          "start_date": "2022-07-01",
+          "end_date": "2023-12-23",
+          "research_area": "Robotics",
+          "co_pi_count": 4
+        },
+        {
+          "project_id": "PRJ-01442",
+          "title": "Low-cost Robotics for Gujarat Solar Parks",
+          "principal_investigator": "Bhupendra Rahul Dutta",
+          "principal_investigator_id": "RES-01958",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 12.16,
+          "status": "Ongoing",
+          "start_date": "2024-09-02",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-01518",
+          "title": "Integrated Robotics System for Smart Cities",
+          "principal_investigator": "Ipsita Kumar",
+          "principal_investigator_id": "RES-02031",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 1.78,
+          "status": "Ongoing",
+          "start_date": "2021-02-14",
+          "end_date": "2022-08-08",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-01590",
+          "title": "Framework for Micro-scale Robotics",
+          "principal_investigator": "Prof. Trupti Kini",
+          "principal_investigator_id": "RES-00816",
+          "funding_agency": "DRDO",
+          "sanctioned_amount_inr_crores": 14.86,
+          "status": "Ongoing",
+          "start_date": "2024-10-03",
+          "end_date": "2026-09-23",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-01801",
+          "title": "Next-gen Robotics for Urban India",
+          "principal_investigator": "Bina Parikh",
+          "principal_investigator_id": "RES-00912",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 29.55,
+          "status": "Ongoing",
+          "start_date": "2024-02-16",
+          "end_date": "2026-02-05",
+          "research_area": "Robotics",
+          "co_pi_count": 4
+        },
+        {
+          "project_id": "PRJ-01934",
+          "title": "High-performance Robotics for Pollution Control",
+          "principal_investigator": "Chandra Mehta Naidu",
+          "principal_investigator_id": "RES-01649",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 5.61,
+          "status": "Ongoing",
+          "start_date": "2020-02-17",
+          "end_date": "2022-02-06",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02064",
+          "title": "Hybrid Robotics for Smart Cities",
+          "principal_investigator": "Padma Panigrahi",
+          "principal_investigator_id": "RES-01160",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 32.17,
+          "status": "Ongoing",
+          "start_date": "2022-05-13",
+          "end_date": "2025-04-27",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-02145",
+          "title": "Sustainable Robotics for Indo-Pacific",
+          "principal_investigator": "Dr. Vihaan Gowda",
+          "principal_investigator_id": "RES-00431",
+          "funding_agency": "Industry",
+          "sanctioned_amount_inr_crores": 31.95,
+          "status": "Ongoing",
+          "start_date": "2025-05-13",
+          "end_date": "2026-05-08",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02407",
+          "title": "Privacy-preserving Robotics for Rural Development",
+          "principal_investigator": "Gajanan Bagul",
+          "principal_investigator_id": "RES-02302",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 6.44,
+          "status": "Ongoing",
+          "start_date": "2022-08-28",
+          "end_date": "2025-08-12",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-02428",
+          "title": "Distributed Analysis of Robotics in Coastal Ecosystems",
+          "principal_investigator": "Amrita Kulkarni",
+          "principal_investigator_id": "RES-01153",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 46.74,
+          "status": "Ongoing",
+          "start_date": "2025-11-04",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02498",
+          "title": "High-performance Robotics for Gujarat Textile Industry",
+          "principal_investigator": "Ipsita Kumar",
+          "principal_investigator_id": "RES-02031",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 17.23,
+          "status": "Ongoing",
+          "start_date": "2022-11-17",
+          "end_date": "2025-11-01",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-02507",
+          "title": "Robust Robotics for Agriculture",
+          "principal_investigator": "Ipsita Kumar",
+          "principal_investigator_id": "RES-02031",
+          "funding_agency": "ISRO",
+          "sanctioned_amount_inr_crores": 19.94,
+          "status": "Ongoing",
+          "start_date": "2023-08-24",
+          "end_date": "2025-08-13",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-02633",
+          "title": "Optimization of Robotics for Defense",
+          "principal_investigator": "Prof. Lubna Iyer",
+          "principal_investigator_id": "RES-01161",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 32.36,
+          "status": "Ongoing",
+          "start_date": "2025-04-26",
+          "end_date": "2026-10-18",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02695",
+          "title": "Sustainable Robotics for Make in India",
+          "principal_investigator": "Mr. Mehak Bhatt Brahmbhatt",
+          "principal_investigator_id": "RES-00485",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 37.78,
+          "status": "Ongoing",
+          "start_date": "2024-12-11",
+          "end_date": "2026-06-04",
+          "research_area": "Robotics",
+          "co_pi_count": 0
+        },
+        {
+          "project_id": "PRJ-02744",
+          "title": "Domain-specific Robotics for Gujarat Solar Parks",
+          "principal_investigator": "Gajanan Bagul",
+          "principal_investigator_id": "RES-02302",
+          "funding_agency": "MHRD",
+          "sanctioned_amount_inr_crores": 6.01,
+          "status": "Ongoing",
+          "start_date": "2025-07-18",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02769",
+          "title": "Framework for Context-aware Robotics",
+          "principal_investigator": "Gajanan Bagul",
+          "principal_investigator_id": "RES-02302",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 40.68,
+          "status": "Ongoing",
+          "start_date": "2023-11-10",
+          "end_date": "2026-04-28",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02907",
+          "title": "Blockchain-enabled Analysis of Robotics in Tribal Communities",
+          "principal_investigator": "Bina Parikh",
+          "principal_investigator_id": "RES-00912",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 33.6,
+          "status": "Ongoing",
+          "start_date": "2020-10-12",
+          "end_date": "2023-03-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-02955",
+          "title": "Self-supervised Analysis of Robotics in Indian Context",
+          "principal_investigator": "Ipsita Kumar",
+          "principal_investigator_id": "RES-02031",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 5.72,
+          "status": "Ongoing",
+          "start_date": "2025-08-02",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-03003",
+          "title": "Privacy-preserving Robotics for Indian Agriculture 4.0",
+          "principal_investigator": "Ms. Krishna Deepak Patil",
+          "principal_investigator_id": "RES-00336",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 24.69,
+          "status": "Ongoing",
+          "start_date": "2020-09-30",
+          "end_date": "2025-09-04",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-03018",
+          "title": "Experimental Study of High-performance Robotics",
+          "principal_investigator": "Asst. Prof. Ritu Doshi",
+          "principal_investigator_id": "RES-01058",
+          "funding_agency": "DRDO",
+          "sanctioned_amount_inr_crores": 22.71,
+          "status": "Ongoing",
+          "start_date": "2023-06-15",
+          "end_date": "2026-05-30",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-03122",
+          "title": "Hybrid Robotics for Agriculture",
+          "principal_investigator": "Mr. Dipti Pawar",
+          "principal_investigator_id": "RES-00082",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 2.29,
+          "status": "Ongoing",
+          "start_date": "2025-09-14",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-03173",
+          "title": "High-performance Robotics for Rural Development",
+          "principal_investigator": "Mr. Dipti Pawar",
+          "principal_investigator_id": "RES-00082",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 16.71,
+          "status": "Ongoing",
+          "start_date": "2025-05-03",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-03186",
+          "title": "Novel Macro-scale Robotics using Microfluidics",
+          "principal_investigator": "Bina Parikh",
+          "principal_investigator_id": "RES-00912",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 25.57,
+          "status": "Ongoing",
+          "start_date": "2023-08-25",
+          "end_date": "2025-08-14",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-03190",
+          "title": "Hybrid Robotics for Space Exploration",
+          "principal_investigator": "Prashant Puranik",
+          "principal_investigator_id": "RES-00249",
+          "funding_agency": "Industry",
+          "sanctioned_amount_inr_crores": 49.73,
+          "status": "Ongoing",
+          "start_date": "2025-04-09",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-03291",
+          "title": "Domain-specific Robotics for Rural Development",
+          "principal_investigator": "Prof. Trupti Kini",
+          "principal_investigator_id": "RES-00816",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 16.7,
+          "status": "Ongoing",
+          "start_date": "2024-10-04",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-03375",
+          "title": "Development of Nano-scale Robotics for E-waste Management",
+          "principal_investigator": "Mr. Vidhi Saha",
+          "principal_investigator_id": "RES-01136",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 6.27,
+          "status": "Ongoing",
+          "start_date": "2025-08-19",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-03399",
+          "title": "Sustainable Robotics for Western Ghats",
+          "principal_investigator": "Prof. Tukaram Pathan",
+          "principal_investigator_id": "RES-01754",
+          "funding_agency": "MHRD",
+          "sanctioned_amount_inr_crores": 18.22,
+          "status": "Ongoing",
+          "start_date": "2025-09-27",
+          "end_date": "2026-12-31",
+          "research_area": "Robotics",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-03417",
+          "title": "Novel Macro-scale Robotics using Digital Twin",
+          "principal_investigator": "Dr. Wardah Ravi Mehta",
+          "principal_investigator_id": "RES-00288",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 21.1,
+          "status": "Ongoing",
+          "start_date": "2024-01-14",
+          "end_date": "2026-12-29",
+          "research_area": "Robotics",
+          "co_pi_count": 2
+        }
+      ],
+      "coe_readiness_assessment": {
+        "total_researchers": 29,
+        "total_labs": 3,
+        "total_ongoing_projects": 43,
+        "recommended_anchor_institution": "IIT Gandhinagar"
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00005",
+    "persona": "Tier3_Industry",
+    "intent": "talent_pool_identification",
+    "natural_language_query": "Our semiconductor design company needs to build a talent pipeline from Indian academia. Identify top VLSI & Semiconductor Design researchers with their affiliations, h-index, experience level, and contact information. Also list relevant labs with fabrication capabilities and ongoing projects in this area. We want to recruit PhDs and set up internships.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "88ba6ee8-2917-4e32-93ee-03aeb17741ed",
+        "query_id": "T3Q-00005",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01815",
+          "RES-01293",
+          "RES-01850",
+          "RES-00997",
+          "RES-01617",
+          "RES-01894",
+          "RES-02496",
+          "RES-00531",
+          "RES-00763",
+          "RES-00701",
+          "RES-00647",
+          "RES-00260"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "talent_pool_report": {
+        "research_area": "VLSI & Semiconductor Design",
+        "total_researchers": 70,
+        "top_candidates": [
+          {
+            "researcher_id": "RES-01815",
+            "full_name": "Ms. Falguni Deepak Shah",
+            "affiliation": "TIFR Mumbai",
+            "department": "Chemical Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 60,
+            "total_funding_inr_crores": 27.78,
+            "state": "Maharashtra",
+            "email": "falguni_shah@tifr.res.in",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-01293",
+            "full_name": "Lalita Deshpande",
+            "affiliation": "IIIT Hyderabad",
+            "department": "Civil Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 57,
+            "total_funding_inr_crores": 30.16,
+            "state": "Telangana",
+            "email": "lalita.deshpande@iiit.ac.in",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-01850",
+            "full_name": "Vijaya Nair Puranik",
+            "affiliation": "Jadavpur University",
+            "department": "Chemical Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 53,
+            "total_funding_inr_crores": 25.21,
+            "state": "West Bengal",
+            "email": "vijaya760@jdvu.ac.in",
+            "phone": "+91 93882 29990",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00997",
+            "full_name": "Gopal Sanjay Badgujar",
+            "affiliation": "DAE",
+            "department": "Data Science",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 49,
+            "total_funding_inr_crores": 21.92,
+            "state": "Maharashtra",
+            "email": "gopal266@dae.gov.in",
+            "phone": "+91 98353 82259",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-01617",
+            "full_name": "Prof. Tushar Goyal",
+            "affiliation": "Gujarat University",
+            "department": "Agricultural Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 48,
+            "total_funding_inr_crores": 23.21,
+            "state": "Gujarat",
+            "email": "tgoyal@gujaratuniversity.ac.in",
+            "phone": "+91 78395 65470",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-01894",
+            "full_name": "Dr. Nitin Balasubramanian",
+            "affiliation": "IIT Bombay",
+            "department": "Computer Science & Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 46,
+            "total_funding_inr_crores": 23.58,
+            "state": "Maharashtra",
+            "email": "nitin.balasubramanian@iitb.ac.in",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-02496",
+            "full_name": "Reyansh Menon Mir",
+            "affiliation": "IIT Delhi",
+            "department": "Centre for Applied Research in Electronics",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 43,
+            "total_funding_inr_crores": 21.07,
+            "state": "Delhi",
+            "email": "reyansh.mir@iitd.ac.in",
+            "phone": "+91 83328 04152",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00531",
+            "full_name": "Assoc. Prof. Kiran Dhillon",
+            "affiliation": "Thapar Institute",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 40,
+            "total_funding_inr_crores": 18.99,
+            "state": "Punjab",
+            "email": "kiran.dhillon@thapar.edu",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00763",
+            "full_name": "Lalit Trivedi",
+            "affiliation": "JIPMER Puducherry",
+            "department": "Civil Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 39,
+            "total_funding_inr_crores": 19.12,
+            "state": "Puducherry",
+            "email": "lalit.trivedi@jipmer.edu.in",
+            "phone": "+91 78218 62128",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00701",
+            "full_name": "Dr. Sagar Sunil Agarwal",
+            "affiliation": "NIT Durgapur",
+            "department": "Environmental Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 37,
+            "total_funding_inr_crores": 15.54,
+            "state": "West Bengal",
+            "email": "sagar_agarwal@nitdgp.ac.in",
+            "phone": "+91 93164 88684",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00647",
+            "full_name": "Assoc. Prof. Siddharth Sharma Bordoloi",
+            "affiliation": "IIT Kharagpur",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 33,
+            "total_funding_inr_crores": 15.22,
+            "state": "West Bengal",
+            "email": "siddharth259@iitkgp.ac.in",
+            "experience_level": "Senior"
+          },
+          {
+            "researcher_id": "RES-00260",
+            "full_name": "Lalita Mehta",
+            "affiliation": "NIT Karnataka",
+            "department": "Computer Science & Engineering",
+            "primary_research_area": "VLSI & Semiconductor Design",
+            "h_index": 32,
+            "total_funding_inr_crores": 14.11,
+            "state": "Karnataka",
+            "email": "lalita.mehta@nitk.ac.in",
+            "phone": "+91 87631 56840",
+            "experience_level": "Senior"
+          }
+        ],
+        "available_laboratories": [],
+        "total_projects_in_area": 111,
+        "avg_project_budget_inr_crores": 15.96
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00006",
+    "persona": "Tier3_Industry",
+    "intent": "drug_discovery_pipeline_assessment",
+    "natural_language_query": "Our pharmaceutical company is evaluating India's biotechnology research pipeline for potential licensing deals. Identify the top-funded biotechnology researchers, the highest-budget biotech projects (both ongoing and completed), and recent publications in biotech & healthcare. Focus on researchers with practical drug discovery experience. Include PI contact details.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "10a4f74b-44cf-40df-86cb-d59fdf0719fb",
+        "query_id": "T3Q-00006",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00361",
+          "RES-01672",
+          "RES-00585",
+          "RES-01665",
+          "RES-01365",
+          "RES-01572",
+          "RES-01890",
+          "RES-01309",
+          "RES-01227",
+          "RES-01609",
+          "PRJ-02786",
+          "PRJ-02619",
+          "PRJ-01285",
+          "PRJ-02896",
+          "PRJ-00679"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "pipeline_assessment": {
+        "research_area": "Biotechnology",
+        "top_funded_researchers": [
+          {
+            "researcher_id": "RES-00361",
+            "full_name": "Rashmi Joshi",
+            "affiliation": "IISER Bhopal",
+            "department": "Computer Science & Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 46,
+            "total_funding_inr_crores": 25.73,
+            "state": "Madhya Pradesh",
+            "email": "rashmi_joshi@iiserb.ac.in",
+            "phone": "+91 94606 89435"
+          },
+          {
+            "researcher_id": "RES-01672",
+            "full_name": "Parul Pai",
+            "affiliation": "IIT Hyderabad",
+            "department": "Artificial Intelligence",
+            "primary_research_area": "Biotechnology",
+            "h_index": 48,
+            "total_funding_inr_crores": 25.02,
+            "state": "Telangana",
+            "email": "ppai@iith.ac.in",
+            "phone": "+91 85862 75940"
+          },
+          {
+            "researcher_id": "RES-00585",
+            "full_name": "Kinjal Desai Mishra",
+            "affiliation": "Pandit Deendayal Energy University",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 32,
+            "total_funding_inr_crores": 24.56,
+            "state": "Gujarat",
+            "email": "kinjal_mishra@pdpu.ac.in",
+            "phone": "+91 78456 70151"
+          },
+          {
+            "researcher_id": "RES-01665",
+            "full_name": "Jitendra JanI",
+            "affiliation": "IIT Delhi",
+            "department": "Chemical Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 42,
+            "total_funding_inr_crores": 24.24,
+            "state": "Delhi",
+            "email": "jjani@iitd.ac.in"
+          },
+          {
+            "researcher_id": "RES-01365",
+            "full_name": "Esha Rastogi",
+            "affiliation": "IIT Kharagpur",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Biotechnology",
+            "h_index": 45,
+            "total_funding_inr_crores": 22.93,
+            "state": "West Bengal",
+            "email": "esha.rastogi@iitkgp.ac.in",
+            "phone": "+91 78213 45233"
+          },
+          {
+            "researcher_id": "RES-01572",
+            "full_name": "Khusboo Karthik Saraf",
+            "affiliation": "IISER Pune",
+            "department": "Agricultural Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 51,
+            "total_funding_inr_crores": 22.78,
+            "state": "Maharashtra",
+            "email": "khusboo_saraf@iiserpune.ac.in",
+            "phone": "+91 82363 82643"
+          },
+          {
+            "researcher_id": "RES-01890",
+            "full_name": "Mr. Qamar Rao",
+            "affiliation": "DAE",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 26,
+            "total_funding_inr_crores": 21.41,
+            "state": "Maharashtra",
+            "email": "qamar.rao@dae.gov.in",
+            "phone": "+91 93206 51368"
+          },
+          {
+            "researcher_id": "RES-01309",
+            "full_name": "Mr. Mehul Chavan",
+            "affiliation": "CSIR-IMMT",
+            "department": "Physics",
+            "primary_research_area": "Biotechnology",
+            "h_index": 36,
+            "total_funding_inr_crores": 20.65,
+            "state": "Odisha",
+            "email": "mehul224@immt.res.in",
+            "phone": "+91 81790 20020"
+          },
+          {
+            "researcher_id": "RES-01227",
+            "full_name": "Nikhil Nayak",
+            "affiliation": "CEPT University",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Biotechnology",
+            "h_index": 32,
+            "total_funding_inr_crores": 20.51,
+            "state": "Gujarat",
+            "email": "nikhil186@cept.ac.in",
+            "phone": "+91 71259 80798"
+          },
+          {
+            "researcher_id": "RES-01609",
+            "full_name": "Chandni Mishra Khan",
+            "affiliation": "IIT Gandhinagar",
+            "department": "Mathematics",
+            "primary_research_area": "Biotechnology",
+            "h_index": 11,
+            "total_funding_inr_crores": 20.46,
+            "state": "Gujarat",
+            "email": "chandni705@iitgn.ac.in",
+            "phone": "+91 72408 21253"
+          }
+        ],
+        "high_budget_projects": [
+          {
+            "project_id": "PRJ-02786",
+            "title": "Edge-based Biotechnology: A Multi-Disciplinary Approach",
+            "principal_investigator": "Asst. Prof. Ashok Kumar Kumar",
+            "principal_investigator_id": "RES-01960",
+            "funding_agency": "ANRF",
+            "sanctioned_amount_inr_crores": 59.59,
+            "status": "Completed",
+            "start_date": "2020-06-10",
+            "end_date": "2021-12-02",
+            "research_area": "Biotechnology",
+            "co_pi_count": 3
+          },
+          {
+            "project_id": "PRJ-02619",
+            "title": "Scalable Biotechnology for Gujarat Textile Industry",
+            "principal_investigator": "Prof. Lata Bawa",
+            "principal_investigator_id": "RES-00678",
+            "funding_agency": "DBT",
+            "sanctioned_amount_inr_crores": 54.1,
+            "status": "Ongoing",
+            "start_date": "2023-12-17",
+            "end_date": "2026-12-31",
+            "research_area": "Biotechnology",
+            "co_pi_count": 3
+          },
+          {
+            "project_id": "PRJ-01285",
+            "title": "Robust Biotechnology for Gujarat Textile Industry",
+            "principal_investigator": "Ms. Suresh Saxena",
+            "principal_investigator_id": "RES-01149",
+            "funding_agency": "DBT",
+            "sanctioned_amount_inr_crores": 49.35,
+            "status": "Ongoing",
+            "start_date": "2023-09-30",
+            "end_date": "2026-09-14",
+            "research_area": "Biotechnology",
+            "co_pi_count": 4
+          },
+          {
+            "project_id": "PRJ-02896",
+            "title": "High-performance Biotechnology for Gujarat Water Grid",
+            "principal_investigator": "Kinjal Desai Mishra",
+            "principal_investigator_id": "RES-00585",
+            "funding_agency": "SERB",
+            "sanctioned_amount_inr_crores": 49.31,
+            "status": "Completed",
+            "start_date": "2020-12-08",
+            "end_date": "2022-06-01",
+            "research_area": "Biotechnology",
+            "co_pi_count": 2
+          },
+          {
+            "project_id": "PRJ-00679",
+            "title": "Next-gen Biotechnology for Tribal Communities",
+            "principal_investigator": "Assoc. Prof. Eknath Gaikwad",
+            "principal_investigator_id": "RES-02388",
+            "funding_agency": "DBT",
+            "sanctioned_amount_inr_crores": 40.52,
+            "status": "Ongoing",
+            "start_date": "2020-02-02",
+            "end_date": "2024-01-12",
+            "research_area": "Biotechnology",
+            "co_pi_count": 1
+          },
+          {
+            "project_id": "PRJ-00554",
+            "title": "Smart Biotechnology for Indian Agriculture 4.0",
+            "principal_investigator": "Asst. Prof. Kunal Roy",
+            "principal_investigator_id": "RES-01036",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 39.76,
+            "status": "Completed",
+            "start_date": "2022-03-02",
+            "end_date": "2025-02-14",
+            "research_area": "Biotechnology",
+            "co_pi_count": 3
+          },
+          {
+            "project_id": "PRJ-00464",
+            "title": "Development of IoT-integrated Biotechnology for Indian Healthcare",
+            "principal_investigator": "Ms. Girish Nikhil Raju",
+            "principal_investigator_id": "RES-01545",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 36.21,
+            "status": "Ongoing",
+            "start_date": "2024-09-12",
+            "end_date": "2026-12-31",
+            "research_area": "Biotechnology",
+            "co_pi_count": 4
+          },
+          {
+            "project_id": "PRJ-01591",
+            "title": "Integrated Biotechnology System for Public Health",
+            "principal_investigator": "Shrenik Desai Bhatt",
+            "principal_investigator_id": "RES-00777",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 36.19,
+            "status": "Ongoing",
+            "start_date": "2020-04-12",
+            "end_date": "2022-04-02",
+            "research_area": "Biotechnology",
+            "co_pi_count": 1
+          }
+        ],
+        "recent_publications": [
+          {
+            "document_id": "DOC-00903",
+            "title": "AI-Powered Early Detection of Diabetic Retinopathy in Rural India",
+            "publication_year": 2024,
+            "category": "Biotechnology & Healthcare",
+            "keywords": [
+              "stem cell",
+              "NGS",
+              "proteomics",
+              "dengue",
+              "malaria"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-00905",
+            "title": "Point-of-Care Biosensors for Waterborne Disease Detection",
+            "publication_year": 2025,
+            "category": "Biotechnology & Healthcare",
+            "keywords": [
+              "CRISPR",
+              "NGS",
+              "X-ray crystallography",
+              "diabetes",
+              "mass spectrometry"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 3
+          },
+          {
+            "document_id": "DOC-00908",
+            "title": "Proteomics-Driven Biomarker Discovery for Oral Cancer",
+            "publication_year": 2024,
+            "category": "Biotechnology & Healthcare",
+            "keywords": [
+              "SAR",
+              "16S rRNA",
+              "biomaterial",
+              "molecular dynamics",
+              "CRISPR"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-00909",
+            "title": "Synthetic Biology for Production of Anti-Malarial Compounds",
+            "publication_year": 2025,
+            "category": "Biotechnology & Healthcare",
+            "keywords": [
+              "receptor",
+              "single-cell",
+              "microbiome",
+              "IoT health",
+              "AI diagnostics"
+            ],
+            "access_tier": "Tier3",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-00911",
+            "title": "Phage Therapy as Alternative to Antibiotics for Multi-Drug Resistant Infections",
+            "publication_year": 2024,
+            "category": "Biotechnology & Healthcare",
+            "keywords": [
+              "cancer",
+              "scaffold",
+              "metabolic engineering",
+              "cardiovascular",
+              "transcriptomics"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 4
+          }
+        ],
+        "total_area_funding_inr_crores": 3126.24
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00007",
+    "persona": "Tier3_Industry",
+    "intent": "competitive_intelligence_institution",
+    "natural_language_query": "Compare IIT Gandhinagar and IIT Bombay as potential AI/ML research partners. In areas: AI/ML, Computer Vision, Natural Language Processing, provide a side-by-side comparison of: total researchers in these areas, average h-index, total projects, total funding, ongoing projects, and number of labs. We want to decide which institution to partner with for our AI Center of Excellence.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects",
+      "labs_institutions"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "91d95efd-2fa2-493c-8897-8490319f7c5a",
+        "query_id": "T3Q-00007",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00002",
+          "RES-00050",
+          "RES-00223",
+          "RES-00257",
+          "RES-00286",
+          "RES-00315",
+          "RES-00369",
+          "RES-00401",
+          "RES-00427",
+          "RES-00453",
+          "RES-00459",
+          "RES-00460",
+          "RES-00463",
+          "RES-00557",
+          "RES-00577"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "competitive_comparison": {
+        "focus_areas": [
+          "AI/ML",
+          "Computer Vision",
+          "Natural Language Processing"
+        ],
+        "institutions": {
+          "IIT Gandhinagar": {
+            "total_researchers": 231,
+            "target_area_researchers": 39,
+            "avg_h_index": 20.2,
+            "total_projects": 150,
+            "total_funding_inr_crores": 3159.38,
+            "ongoing_projects": 58
+          },
+          "IIT Bombay": {
+            "total_researchers": 122,
+            "target_area_researchers": 27,
+            "avg_h_index": 19.0,
+            "total_projects": 23,
+            "total_funding_inr_crores": 340.37,
+            "ongoing_projects": 5
+          }
+        },
+        "recommendation": "IIT Gandhinagar",
+        "recommendation_rationale": "Higher total funding and researcher count in target areas"
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00008",
+    "persona": "Tier3_Industry",
+    "intent": "applied_research_discovery",
+    "natural_language_query": "Find all ongoing projects in applied research areas: Healthcare AI, Smart Manufacturing, Cybersecurity, Agriculture Tech. For each project, provide the PI name, institution, email, project title, budget, funding agency, and expected end date. Our corporate R&D team wants to evaluate co-development opportunities with the PIs. Sort by budget descending.",
+    "expected_sql_tables": [
+      "projects",
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "77932718-94a7-41bc-93d8-c7a6ee3dbc6c",
+        "query_id": "T3Q-00008",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-01367",
+          "PRJ-00139",
+          "PRJ-01040",
+          "PRJ-00714",
+          "PRJ-00504",
+          "PRJ-01453",
+          "PRJ-01451",
+          "PRJ-02018",
+          "PRJ-01881",
+          "PRJ-03463"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "applied_research_opportunities": [
+        {
+          "project_id": "PRJ-01367",
+          "title": "Robust Healthcare AI for Manufacturing",
+          "principal_investigator": "Srinivas Rane",
+          "principal_investigator_id": "RES-00570",
+          "funding_agency": "DRDO",
+          "sanctioned_amount_inr_crores": 54.03,
+          "status": "Ongoing",
+          "start_date": "2025-06-23",
+          "end_date": "2026-12-31",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 1,
+          "pi_email": "srinivas653@iitd.ac.in",
+          "pi_institution": "IIT Delhi"
+        },
+        {
+          "project_id": "PRJ-00139",
+          "title": "Integrated Agriculture Tech System for Indian Healthcare",
+          "principal_investigator": "Prachi Kamath",
+          "principal_investigator_id": "RES-01134",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 51.76,
+          "status": "Ongoing",
+          "start_date": "2025-07-15",
+          "end_date": "2026-12-31",
+          "research_area": "Agriculture Tech",
+          "co_pi_count": 0,
+          "pi_email": "pkamath@iitgn.ac.in",
+          "pi_institution": "IIT Gandhinagar"
+        },
+        {
+          "project_id": "PRJ-01040",
+          "title": "Integrated Healthcare AI System for Public Health",
+          "principal_investigator": "Mahesh Das",
+          "principal_investigator_id": "RES-00903",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 49.96,
+          "status": "Ongoing",
+          "start_date": "2025-01-19",
+          "end_date": "2026-07-13",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 1,
+          "pi_email": "mahesh.das@iitgn.ac.in",
+          "pi_institution": "IIT Gandhinagar"
+        },
+        {
+          "project_id": "PRJ-00714",
+          "title": "Low-cost Agriculture Tech for Indian Railway Safety",
+          "principal_investigator": "Dhruv Ghorpade",
+          "principal_investigator_id": "RES-00054",
+          "funding_agency": "ISRO",
+          "sanctioned_amount_inr_crores": 49.06,
+          "status": "Ongoing",
+          "start_date": "2024-03-25",
+          "end_date": "2026-03-15",
+          "research_area": "Agriculture Tech",
+          "co_pi_count": 3,
+          "pi_email": "dhruv.ghorpade@nitpy.ac.in",
+          "pi_institution": "NIT Puducherry"
+        },
+        {
+          "project_id": "PRJ-00504",
+          "title": "Design and Implementation of Low-cost Healthcare AI",
+          "principal_investigator": "Dr. Padma Patra",
+          "principal_investigator_id": "RES-00971",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 47.74,
+          "status": "Ongoing",
+          "start_date": "2022-03-02",
+          "end_date": "2025-02-14",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 1,
+          "pi_email": "padma.patra@iitr.ac.in",
+          "pi_institution": "IIT Roorkee"
+        },
+        {
+          "project_id": "PRJ-01453",
+          "title": "High-performance Smart Manufacturing for E-waste Management",
+          "principal_investigator": "Mr. Om Barot",
+          "principal_investigator_id": "RES-01632",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 40.1,
+          "status": "Ongoing",
+          "start_date": "2024-05-16",
+          "end_date": "2026-12-31",
+          "research_area": "Smart Manufacturing",
+          "co_pi_count": 1,
+          "pi_email": "obarot@iitgn.ac.in",
+          "pi_institution": "IIT Gandhinagar"
+        },
+        {
+          "project_id": "PRJ-01451",
+          "title": "Efficient Healthcare AI for Indian Context",
+          "principal_investigator": "Assoc. Prof. Lalita Vikram Chavan",
+          "principal_investigator_id": "RES-00223",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 37.62,
+          "status": "Ongoing",
+          "start_date": "2022-10-23",
+          "end_date": "2026-12-31",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 0,
+          "pi_email": "lalita.chavan@iitb.ac.in",
+          "pi_institution": "IIT Bombay"
+        },
+        {
+          "project_id": "PRJ-02018",
+          "title": "Domain-specific Healthcare AI for Food Security",
+          "principal_investigator": "Sanjay Chatterjee",
+          "principal_investigator_id": "RES-02242",
+          "funding_agency": "Industry",
+          "sanctioned_amount_inr_crores": 36.34,
+          "status": "Ongoing",
+          "start_date": "2023-03-06",
+          "end_date": "2026-12-31",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 1,
+          "pi_email": "schatterjee@iitb.ac.in",
+          "pi_institution": "IIT Bombay"
+        },
+        {
+          "project_id": "PRJ-01881",
+          "title": "Hybrid Agriculture Tech for Indian Healthcare",
+          "principal_investigator": "Asst. Prof. Reyansh Kale",
+          "principal_investigator_id": "RES-00764",
+          "funding_agency": "CSIR",
+          "sanctioned_amount_inr_crores": 35.84,
+          "status": "Ongoing",
+          "start_date": "2022-10-21",
+          "end_date": "2025-10-05",
+          "research_area": "Agriculture Tech",
+          "co_pi_count": 2,
+          "pi_email": "reyansh.kale@iitgn.ac.in",
+          "pi_institution": "IIT Gandhinagar"
+        },
+        {
+          "project_id": "PRJ-03463",
+          "title": "Multi-modal Healthcare AI for Semi-arid Regions",
+          "principal_investigator": "Ms. Sushma Menon Dhawan",
+          "principal_investigator_id": "RES-00195",
+          "funding_agency": "SERB",
+          "sanctioned_amount_inr_crores": 33.71,
+          "status": "Ongoing",
+          "start_date": "2023-12-12",
+          "end_date": "2026-05-30",
+          "research_area": "Healthcare AI",
+          "co_pi_count": 4,
+          "pi_email": "sushma.dhawan@dae.gov.in",
+          "pi_institution": "DAE"
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T3Q-00009",
+    "persona": "Tier3_Industry",
+    "intent": "patent_ready_technology_assessment",
+    "natural_language_query": "Identify high-value completed research projects (budget >= Rs. 30 crore) that may have patentable outcomes. For each, provide: project title, research area, PI name and contact, sanctioned budget, funding agency, and completion date. Our IP team wants to evaluate these for potential licensing or joint patent filing.",
+    "expected_sql_tables": [
+      "projects",
+      "researchers"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "ea3ec84d-f3f0-4aed-8fb5-14c9824270ea",
+        "query_id": "T3Q-00009",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "PRJ-01603",
+          "PRJ-01064",
+          "PRJ-01328",
+          "PRJ-00780",
+          "PRJ-00520",
+          "PRJ-01229",
+          "PRJ-00394",
+          "PRJ-00870",
+          "PRJ-02786",
+          "PRJ-03499",
+          "RES-02369",
+          "RES-01147",
+          "RES-02069",
+          "RES-00252",
+          "RES-01071",
+          "RES-01218",
+          "RES-00485",
+          "RES-02244",
+          "RES-01960",
+          "RES-00859"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "patent_opportunities": [
+        {
+          "project_id": "PRJ-01603",
+          "title": "Framework for Robust Robotics",
+          "principal_investigator": "Gunjan Gogoi",
+          "principal_investigator_id": "RES-02369",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 65.69,
+          "status": "Completed",
+          "start_date": "2020-10-04",
+          "end_date": "2024-09-13",
+          "research_area": "Robotics",
+          "co_pi_count": 1,
+          "pi_email": "gunjan79@iitk.ac.in",
+          "pi_phone": null,
+          "ip_readiness_score": 92.6
+        },
+        {
+          "project_id": "PRJ-01064",
+          "title": "Self-supervised Analysis of AI/ML in North-East India",
+          "principal_investigator": "Madhuri Brahmbhatt",
+          "principal_investigator_id": "RES-01147",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 65.34,
+          "status": "Completed",
+          "start_date": "2020-08-04",
+          "end_date": "2021-07-30",
+          "research_area": "AI/ML",
+          "co_pi_count": 3,
+          "pi_email": "madhuri761@cbri.res.in",
+          "pi_phone": "+91 97348 32894",
+          "ip_readiness_score": 92.3
+        },
+        {
+          "project_id": "PRJ-01328",
+          "title": "Scalable Climate Science for Defense",
+          "principal_investigator": "Asst. Prof. Sara Khosa",
+          "principal_investigator_id": "RES-02069",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 63.14,
+          "status": "Completed",
+          "start_date": "2021-08-04",
+          "end_date": "2023-07-25",
+          "research_area": "Climate Science",
+          "co_pi_count": 2,
+          "pi_email": "skhosa@iiitsurat.ac.in",
+          "pi_phone": null,
+          "ip_readiness_score": 90.5
+        },
+        {
+          "project_id": "PRJ-00780",
+          "title": "Privacy-preserving Polymer Science for Agriculture",
+          "principal_investigator": "Uddhav Bansal",
+          "principal_investigator_id": "RES-00252",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 61.87,
+          "status": "Completed",
+          "start_date": "2025-07-13",
+          "end_date": "2026-12-31",
+          "research_area": "Polymer Science",
+          "co_pi_count": 1,
+          "pi_email": "uddhav397@nirmauni.ac.in",
+          "pi_phone": null,
+          "ip_readiness_score": 89.5
+        },
+        {
+          "project_id": "PRJ-00520",
+          "title": "Experimental Study of Distributed Blockchain Technology",
+          "principal_investigator": "Ms. Rudra Dhar",
+          "principal_investigator_id": "RES-01071",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 61.74,
+          "status": "Completed",
+          "start_date": "2024-03-28",
+          "end_date": "2025-03-23",
+          "research_area": "Blockchain Technology",
+          "co_pi_count": 2,
+          "pi_email": "rudra.dhar@iitgn.ac.in",
+          "pi_phone": "+91 94259 52641",
+          "ip_readiness_score": 89.4
+        },
+        {
+          "project_id": "PRJ-01229",
+          "title": "Integrated Power Electronics System for Space Exploration",
+          "principal_investigator": "Nikhil Wani",
+          "principal_investigator_id": "RES-01218",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 61.55,
+          "status": "Completed",
+          "start_date": "2021-09-05",
+          "end_date": "2023-02-27",
+          "research_area": "Power Electronics",
+          "co_pi_count": 0,
+          "pi_email": "nwani@iitb.ac.in",
+          "pi_phone": null,
+          "ip_readiness_score": 89.2
+        },
+        {
+          "project_id": "PRJ-00394",
+          "title": "Federated Analysis of Environmental Biotechnology in Western Ghats",
+          "principal_investigator": "Mr. Mehak Bhatt Brahmbhatt",
+          "principal_investigator_id": "RES-00485",
+          "funding_agency": "ICMR",
+          "sanctioned_amount_inr_crores": 59.91,
+          "status": "Completed",
+          "start_date": "2020-04-10",
+          "end_date": "2022-03-31",
+          "research_area": "Environmental Biotechnology",
+          "co_pi_count": 2,
+          "pi_email": "mehak.brahmbhatt@iith.ac.in",
+          "pi_phone": "+91 98541 40102",
+          "ip_readiness_score": 87.9
+        },
+        {
+          "project_id": "PRJ-00870",
+          "title": "AI-driven Natural Language Processing for Gujarat Water Grid",
+          "principal_investigator": "Assoc. Prof. Trupti Pawar",
+          "principal_investigator_id": "RES-02244",
+          "funding_agency": "DBT",
+          "sanctioned_amount_inr_crores": 59.62,
+          "status": "Completed",
+          "start_date": "2021-02-07",
+          "end_date": "2023-01-28",
+          "research_area": "Natural Language Processing",
+          "co_pi_count": 1,
+          "pi_email": "trupti.pawar@iitgn.ac.in",
+          "pi_phone": "+91 72653 33846",
+          "ip_readiness_score": 87.7
+        },
+        {
+          "project_id": "PRJ-02786",
+          "title": "Edge-based Biotechnology: A Multi-Disciplinary Approach",
+          "principal_investigator": "Asst. Prof. Ashok Kumar Kumar",
+          "principal_investigator_id": "RES-01960",
+          "funding_agency": "ANRF",
+          "sanctioned_amount_inr_crores": 59.59,
+          "status": "Completed",
+          "start_date": "2020-06-10",
+          "end_date": "2021-12-02",
+          "research_area": "Biotechnology",
+          "co_pi_count": 3,
+          "pi_email": "akumar@nitc.ac.in",
+          "pi_phone": "+91 72531 19878",
+          "ip_readiness_score": 87.7
+        },
+        {
+          "project_id": "PRJ-03499",
+          "title": "Efficient Optoelectronics for Tribal Communities",
+          "principal_investigator": "Asst. Prof. Sai Kumar",
+          "principal_investigator_id": "RES-00859",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 59.5,
+          "status": "Completed",
+          "start_date": "2020-05-05",
+          "end_date": "2022-10-22",
+          "research_area": "Optoelectronics",
+          "co_pi_count": 1,
+          "pi_email": "sai523@iitgn.ac.in",
+          "pi_phone": "+91 96285 17985",
+          "ip_readiness_score": 87.6
+        }
+      ]
+    }
+  },
+  {
+    "query_id": "T3Q-00010",
+    "persona": "Tier3_Industry",
+    "intent": "startup_researcher_matching",
+    "natural_language_query": "Our climate tech startup needs to connect with India's top climate science and sustainable energy researchers. Find researchers with high h-index in these areas, their contact details, ongoing projects that align with carbon capture / green energy / climate modeling. Also provide recent publications. We are exploring equity-based research partnerships.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "d442dd0c-d404-4a44-9c6b-fa27d7c860a0",
+        "query_id": "T3Q-00010",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01222",
+          "RES-00724",
+          "RES-00470",
+          "RES-01232",
+          "RES-01659",
+          "RES-01804",
+          "RES-02138",
+          "RES-00548"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "researcher_matches": [
+        {
+          "researcher_id": "RES-01222",
+          "full_name": "Ms. Dhruv Dutta",
+          "affiliation": "NIT Rourkela",
+          "department": "Environmental Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 74,
+          "total_funding_inr_crores": 32.71,
+          "state": "Odisha",
+          "email": "ddutta@nitrkl.ac.in",
+          "phone": "+91 81791 05851"
+        },
+        {
+          "researcher_id": "RES-00724",
+          "full_name": "Urmila Mittal",
+          "affiliation": "IIT Guwahati",
+          "department": "Data Science",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 68,
+          "total_funding_inr_crores": 34.12,
+          "state": "Assam",
+          "email": "urmila95@iitg.ac.in",
+          "phone": "+91 98932 60889"
+        },
+        {
+          "researcher_id": "RES-00470",
+          "full_name": "Asst. Prof. Anita Garg",
+          "affiliation": "IIT (BHU) Varanasi",
+          "department": "Chemistry",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 67,
+          "total_funding_inr_crores": 34.11,
+          "state": "Uttar Pradesh",
+          "email": "anita.garg@iitbhu.ac.in"
+        },
+        {
+          "researcher_id": "RES-01232",
+          "full_name": "Prof. Jyoti Bhosale",
+          "affiliation": "CSIR-IICT",
+          "department": "Chemistry",
+          "primary_research_area": "Climate Science",
+          "h_index": 59,
+          "total_funding_inr_crores": 25.84,
+          "state": "Telangana",
+          "email": "jyoti_bhosale@iict.res.in"
+        },
+        {
+          "researcher_id": "RES-01659",
+          "full_name": "Malti Nair",
+          "affiliation": "IIT Madras",
+          "department": "Ocean Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 59,
+          "total_funding_inr_crores": 32.84,
+          "state": "Tamil Nadu",
+          "email": "malti.nair@iitm.ac.in",
+          "phone": "+91 86581 89716"
+        },
+        {
+          "researcher_id": "RES-01804",
+          "full_name": "Asst. Prof. Shraddha Pathan",
+          "affiliation": "IIT Bombay",
+          "department": "Mechanical Engineering",
+          "primary_research_area": "Climate Science",
+          "h_index": 55,
+          "total_funding_inr_crores": 25.81,
+          "state": "Maharashtra",
+          "email": "shraddha.pathan@iitb.ac.in"
+        },
+        {
+          "researcher_id": "RES-02138",
+          "full_name": "Wasim Nikhil Mishra",
+          "affiliation": "Thapar Institute",
+          "department": "Computer Science & Engineering",
+          "primary_research_area": "Climate Science",
+          "h_index": 55,
+          "total_funding_inr_crores": 28.82,
+          "state": "Punjab",
+          "email": "wasim880@thapar.edu",
+          "phone": "+91 78662 05839"
+        },
+        {
+          "researcher_id": "RES-00548",
+          "full_name": "Prof. Priti Menon Panda",
+          "affiliation": "IIT Madras",
+          "department": "Metallurgical & Materials Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 54,
+          "total_funding_inr_crores": 23.64,
+          "state": "Tamil Nadu",
+          "email": "ppanda@iitm.ac.in",
+          "phone": "+91 75351 89235"
+        },
+        {
+          "researcher_id": "RES-02099",
+          "full_name": "Rahul Desai Saha",
+          "affiliation": "University of Hyderabad",
+          "department": "Civil Engineering",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 49,
+          "total_funding_inr_crores": 21.21,
+          "state": "Telangana",
+          "email": "rahul.saha@uohyd.ac.in"
+        },
+        {
+          "researcher_id": "RES-00773",
+          "full_name": "Hemant Joshi Bose",
+          "affiliation": "IISc Bangalore",
+          "department": "Pharmaceutical Sciences",
+          "primary_research_area": "Sustainable Energy",
+          "h_index": 47,
+          "total_funding_inr_crores": 23.35,
+          "state": "Karnataka",
+          "email": "hemant.bose@iisc.ac.in",
+          "phone": "+91 96603 57342"
+        }
+      ],
+      "aligned_projects": [
+        {
+          "project_id": "PRJ-00015",
+          "title": "Privacy-preserving Climate Science: Industry-Academia Collaboration",
+          "principal_investigator": "Pratik Goud",
+          "principal_investigator_id": "RES-01787",
+          "funding_agency": "Gujarat Govt",
+          "sanctioned_amount_inr_crores": 28.93,
+          "status": "Ongoing",
+          "start_date": "2022-10-23",
+          "end_date": "2024-04-15",
+          "research_area": "Climate Science",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00066",
+          "title": "Integrated Climate Science System for Manufacturing",
+          "principal_investigator": "Navneet Badgujar",
+          "principal_investigator_id": "RES-01525",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 48.71,
+          "status": "Ongoing",
+          "start_date": "2024-08-25",
+          "end_date": "2026-02-16",
+          "research_area": "Climate Science",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00074",
+          "title": "Robust Climate Science: Scaling Solutions",
+          "principal_investigator": "Wasim Kale",
+          "principal_investigator_id": "RES-00233",
+          "funding_agency": "Industry",
+          "sanctioned_amount_inr_crores": 7.83,
+          "status": "Ongoing",
+          "start_date": "2025-08-04",
+          "end_date": "2026-12-31",
+          "research_area": "Climate Science",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00086",
+          "title": "Efficient Climate Science for Western Ghats",
+          "principal_investigator": "Asst. Prof. Sara Khosa",
+          "principal_investigator_id": "RES-02069",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 45.87,
+          "status": "Ongoing",
+          "start_date": "2024-08-04",
+          "end_date": "2026-12-31",
+          "research_area": "Climate Science",
+          "co_pi_count": 3
+        },
+        {
+          "project_id": "PRJ-00134",
+          "title": "Sustainable Climate Science for Post-COVID Recovery",
+          "principal_investigator": "Kabir Joshi Reddy",
+          "principal_investigator_id": "RES-01686",
+          "funding_agency": "MeitY",
+          "sanctioned_amount_inr_crores": 18.11,
+          "status": "Ongoing",
+          "start_date": "2024-05-14",
+          "end_date": "2026-12-31",
+          "research_area": "Climate Science",
+          "co_pi_count": 2
+        },
+        {
+          "project_id": "PRJ-00143",
+          "title": "Scalable Climate Science for Public Health",
+          "principal_investigator": "Pratik Goud",
+          "principal_investigator_id": "RES-01787",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 20.13,
+          "status": "Ongoing",
+          "start_date": "2025-12-12",
+          "end_date": "2026-12-31",
+          "research_area": "Climate Science",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00208",
+          "title": "Multi-modal Climate Science for South Asian Region",
+          "principal_investigator": "Daxesh Lone",
+          "principal_investigator_id": "RES-00149",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 23.32,
+          "status": "Ongoing",
+          "start_date": "2023-01-23",
+          "end_date": "2025-07-11",
+          "research_area": "Climate Science",
+          "co_pi_count": 1
+        },
+        {
+          "project_id": "PRJ-00227",
+          "title": "Optimization of Climate Science for Agriculture",
+          "principal_investigator": "Dr. Darshan Barua",
+          "principal_investigator_id": "RES-02331",
+          "funding_agency": "DST",
+          "sanctioned_amount_inr_crores": 6.67,
+          "status": "Ongoing",
+          "start_date": "2021-06-15",
+          "end_date": "2023-12-02",
+          "research_area": "Climate Science",
+          "co_pi_count": 3
+        }
+      ],
+      "recent_publications": [
+        {
+          "document_id": "DOC-00601",
+          "title": "Perovskite-Silicon Tandem Solar Cells for Indian Solar Parks",
+          "publication_year": 2025,
+          "category": "Sustainable Energy & Climate Tech",
+          "keywords": [
+            "offshore wind",
+            "photovoltaic",
+            "PCE",
+            "DMFC",
+            "sea level rise"
+          ],
+          "access_tier": "Tier2",
+          "researcher_count": 4
+        },
+        {
+          "document_id": "DOC-00602",
+          "title": "Green Hydrogen Production via Photoelectrochemical Water Splitting",
+          "publication_year": 2025,
+          "category": "Sustainable Energy & Climate Tech",
+          "keywords": [
+            "liquid hydrogen",
+            "inverter",
+            "grid integration",
+            "wind resource assessment",
+            "climate model"
+          ],
+          "access_tier": "Tier1",
+          "researcher_count": 4
+        },
+        {
+          "document_id": "DOC-00605",
+          "title": "Bifacial Solar Panel Optimization for Arid Regions of Rajasthan",
+          "publication_year": 2026,
+          "category": "Sustainable Energy & Climate Tech",
+          "keywords": [
+            "IPCC",
+            "supercapacitor",
+            "REPower",
+            "blade design",
+            "transformer"
+          ],
+          "access_tier": "Tier3",
+          "researcher_count": 2
+        },
+        {
+          "document_id": "DOC-00607",
+          "title": "Smart Grid Integration of Distributed Solar in Indian Villages",
+          "publication_year": 2024,
+          "category": "Sustainable Energy & Climate Tech",
+          "keywords": [
+            "electrolysis",
+            "sodium-ion",
+            "supercapacitor",
+            "offshore wind",
+            "metal hydride"
+          ],
+          "access_tier": "Tier1",
+          "researcher_count": 4
+        },
+        {
+          "document_id": "DOC-00608",
+          "title": "Carbon Capture and Utilization from Indian Thermal Power Plants",
+          "publication_year": 2025,
+          "category": "Sustainable Energy & Climate Tech",
+          "keywords": [
+            "vanadium",
+            "water splitting",
+            "biochar",
+            "CCUS",
+            "sodium-ion"
+          ],
+          "access_tier": "Tier2",
+          "researcher_count": 3
+        }
+      ],
+      "partnership_model_suggestion": "Equity-based joint development with milestone-linked IP sharing"
+    }
+  },
+  {
+    "query_id": "T3Q-00011",
+    "persona": "Tier3_Industry",
+    "intent": "lab_equipment_capability_search",
+    "natural_language_query": "Our materials science company needs access to Nanotechnology research facilities. List all labs in India focused on Nanotechnology, including their institution, state, director contact info, and ALL research focus areas (to understand full capability). Also show active researchers and ongoing projects in this area. We want to book testing time.",
+    "expected_sql_tables": [
+      "labs_institutions",
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "18306c9f-65c8-45f7-a1e7-7e65a83e736a",
+        "query_id": "T3Q-00011",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "LAB-0004",
+          "LAB-0061",
+          "LAB-0064",
+          "LAB-0085",
+          "LAB-0193",
+          "LAB-0237",
+          "LAB-0292",
+          "LAB-0336",
+          "RES-00007",
+          "RES-00008",
+          "RES-00026",
+          "RES-00076",
+          "RES-00089"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "facility_search_results": {
+        "capability_area": "Nanotechnology",
+        "laboratories": [
+          {
+            "lab_id": "LAB-0004",
+            "lab_name": "Semiconductor Fabrication Research Centre",
+            "affiliation": "IIT Gandhinagar",
+            "location_state": "Gujarat",
+            "research_focus_areas": [
+              "VLSI & Semiconductor Design",
+              "Thermal Engineering",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-00482",
+            "director_name": "Eshwari Mishra",
+            "director_email": "eshwari.mishra@iitgn.ac.in"
+          },
+          {
+            "lab_id": "LAB-0061",
+            "lab_name": "Smart Thermal Sciences Laboratory",
+            "affiliation": "DRDO",
+            "location_state": "Delhi",
+            "research_focus_areas": [
+              "Thermal Engineering",
+              "Nanotechnology",
+              "Geotechnical Engineering"
+            ],
+            "director_researcher_id": "RES-01311",
+            "director_name": "Mr. Reshma Joshi Patra",
+            "director_email": "reshma_patra@drdo.gov.in"
+          },
+          {
+            "lab_id": "LAB-0064",
+            "lab_name": "Centre of Excellence in Optics & Photonics",
+            "affiliation": "ISRO",
+            "location_state": "Karnataka",
+            "research_focus_areas": [
+              "Optoelectronics",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-01534",
+            "director_name": "Ashok Banerjee",
+            "director_email": "ashok.banerjee@isro.gov.in"
+          },
+          {
+            "lab_id": "LAB-0085",
+            "lab_name": "Control & Automation Technology Park",
+            "affiliation": "IIIT Bangalore",
+            "location_state": "Karnataka",
+            "research_focus_areas": [
+              "Control Systems",
+              "Genomics & Proteomics",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-02027",
+            "director_name": "Dr. Chitra Kale",
+            "director_email": "chitra657@iiitb.ac.in"
+          },
+          {
+            "lab_id": "LAB-0193",
+            "lab_name": "Centre for Advanced Polymer Science",
+            "affiliation": "NIT Andhra Pradesh",
+            "location_state": "Andhra Pradesh",
+            "research_focus_areas": [
+              "Polymer Science",
+              "Nanotechnology",
+              "Environmental Biotechnology"
+            ],
+            "director_researcher_id": "RES-02458",
+            "director_name": "Nisha Gowda",
+            "director_email": "nisha_gowda@nitap.ac.in"
+          },
+          {
+            "lab_id": "LAB-0237",
+            "lab_name": "Centre of Excellence in Mathematical Computing",
+            "affiliation": "Banaras Hindu University",
+            "location_state": "Uttar Pradesh",
+            "research_focus_areas": [
+              "Mathematical Modeling",
+              "Geotechnical Engineering",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-00276",
+            "director_name": "Asst. Prof. Navneet Pandey",
+            "director_email": "navneet645@bhu.ac.in"
+          },
+          {
+            "lab_id": "LAB-0292",
+            "lab_name": "IITB Interdisciplinary Artificial Intelligence Lab",
+            "affiliation": "IIT Bombay",
+            "location_state": "Maharashtra",
+            "research_focus_areas": [
+              "AI/ML",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-02453",
+            "director_name": "Jayashree Iyer Deshpande",
+            "director_email": "jayashree_deshpande@iitb.ac.in"
+          },
+          {
+            "lab_id": "LAB-0336",
+            "lab_name": "IITGN Deep Learning Simulation Centre",
+            "affiliation": "IIT Gandhinagar",
+            "location_state": "Gujarat",
+            "research_focus_areas": [
+              "AI/ML",
+              "Nanotechnology"
+            ],
+            "director_researcher_id": "RES-01787",
+            "director_name": "Pratik Goud",
+            "director_email": "pratik257@iitgn.ac.in"
+          }
+        ],
+        "active_researchers": 74,
+        "ongoing_projects": 38,
+        "top_researcher_contacts": [
+          {
+            "researcher_id": "RES-00217",
+            "full_name": "Prof. Indranil Solanki",
+            "affiliation": "NIT Trichy",
+            "department": "Biotechnology",
+            "primary_research_area": "Nanotechnology",
+            "h_index": 58,
+            "total_funding_inr_crores": 27.23,
+            "state": "Tamil Nadu",
+            "email": "indranil819@nitt.edu",
+            "phone": "+91 76334 61307"
+          },
+          {
+            "researcher_id": "RES-02399",
+            "full_name": "Dr. Rizwan JanI",
+            "affiliation": "NIT Calicut",
+            "department": "Biotechnology",
+            "primary_research_area": "Nanotechnology",
+            "h_index": 54,
+            "total_funding_inr_crores": 23.7,
+            "state": "Kerala",
+            "email": "rizwan291@nitc.ac.in",
+            "phone": "+91 94722 98589"
+          },
+          {
+            "researcher_id": "RES-01124",
+            "full_name": "Gunjan Deshpande",
+            "affiliation": "NIT Hamirpur",
+            "department": "Agricultural Engineering",
+            "primary_research_area": "Nanotechnology",
+            "h_index": 49,
+            "total_funding_inr_crores": 31.81,
+            "state": "Himachal Pradesh",
+            "email": "gunjan.deshpande@nith.ac.in"
+          },
+          {
+            "researcher_id": "RES-01047",
+            "full_name": "Gayatri Krishnan",
+            "affiliation": "IISc Bangalore",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Nanotechnology",
+            "h_index": 47,
+            "total_funding_inr_crores": 25.15,
+            "state": "Karnataka",
+            "email": "gayatri190@iisc.ac.in",
+            "phone": "+91 75410 84734"
+          },
+          {
+            "researcher_id": "RES-00089",
+            "full_name": "Ms. Priti Joshi Chavhan",
+            "affiliation": "IIT Bombay",
+            "department": "Civil Engineering",
+            "primary_research_area": "Nanotechnology",
+            "h_index": 43,
+            "total_funding_inr_crores": 20.99,
+            "state": "Maharashtra",
+            "email": "priti_chavhan@iitb.ac.in",
+            "phone": "+91 84883 43175"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00012",
+    "persona": "Tier3_Industry",
+    "intent": "research_consortium_builder",
+    "natural_language_query": "We are building a multi-institution research consortium for a national mission covering Sustainable Energy, AI/ML, Biotechnology. For each area, identify the top 5 institutions by project count, total funding, and key researcher contacts (top 3 by h-index with email). Help us design the consortium structure with anchor institutions for each thrust area.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "26faa39d-21fe-4fe7-ad96-171433779071",
+        "query_id": "T3Q-00012",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01222",
+          "RES-00724",
+          "RES-00470",
+          "RES-01824",
+          "RES-00914",
+          "RES-00958",
+          "RES-01572",
+          "RES-01672",
+          "RES-02277"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "consortium_blueprint": {
+        "Sustainable Energy": {
+          "top_institutions": [
+            [
+              "IIT Gandhinagar",
+              39
+            ],
+            [
+              "IIT Bombay",
+              12
+            ],
+            [
+              "CEPT University",
+              11
+            ],
+            [
+              "NIT Durgapur",
+              8
+            ],
+            [
+              "IIT Roorkee",
+              8
+            ]
+          ],
+          "total_projects": 170,
+          "total_funding_inr_crores": 2982.62,
+          "key_researchers": [
+            {
+              "researcher_id": "RES-01222",
+              "full_name": "Ms. Dhruv Dutta",
+              "affiliation": "NIT Rourkela",
+              "department": "Environmental Engineering",
+              "primary_research_area": "Sustainable Energy",
+              "h_index": 74,
+              "total_funding_inr_crores": 32.71,
+              "state": "Odisha",
+              "email": "ddutta@nitrkl.ac.in",
+              "phone": "+91 81791 05851"
+            },
+            {
+              "researcher_id": "RES-00724",
+              "full_name": "Urmila Mittal",
+              "affiliation": "IIT Guwahati",
+              "department": "Data Science",
+              "primary_research_area": "Sustainable Energy",
+              "h_index": 68,
+              "total_funding_inr_crores": 34.12,
+              "state": "Assam",
+              "email": "urmila95@iitg.ac.in",
+              "phone": "+91 98932 60889"
+            },
+            {
+              "researcher_id": "RES-00470",
+              "full_name": "Asst. Prof. Anita Garg",
+              "affiliation": "IIT (BHU) Varanasi",
+              "department": "Chemistry",
+              "primary_research_area": "Sustainable Energy",
+              "h_index": 67,
+              "total_funding_inr_crores": 34.11,
+              "state": "Uttar Pradesh",
+              "email": "anita.garg@iitbhu.ac.in"
+            }
+          ]
+        },
+        "AI/ML": {
+          "top_institutions": [
+            [
+              "IIT Gandhinagar",
+              68
+            ],
+            [
+              "Gujarat University",
+              13
+            ],
+            [
+              "IIM Ahmedabad",
+              12
+            ],
+            [
+              "IIT Kharagpur",
+              12
+            ],
+            [
+              "IIT Bombay",
+              11
+            ]
+          ],
+          "total_projects": 301,
+          "total_funding_inr_crores": 5861.9,
+          "key_researchers": [
+            {
+              "researcher_id": "RES-01824",
+              "full_name": "Ms. Sheetal Vikram Gupta",
+              "affiliation": "NIT Calicut",
+              "department": "Civil Engineering",
+              "primary_research_area": "AI/ML",
+              "h_index": 61,
+              "total_funding_inr_crores": 30.09,
+              "state": "Kerala",
+              "email": "sheetal.gupta@nitc.ac.in"
+            },
+            {
+              "researcher_id": "RES-00914",
+              "full_name": "Ms. Isha Iyer Bhatt",
+              "affiliation": "NIT Delhi",
+              "department": "Mechanical Engineering",
+              "primary_research_area": "AI/ML",
+              "h_index": 59,
+              "total_funding_inr_crores": 31.51,
+              "state": "Delhi",
+              "email": "ibhatt@nitdelhi.ac.in",
+              "phone": "+91 82367 33466"
+            },
+            {
+              "researcher_id": "RES-00958",
+              "full_name": "Pruthviraj Patel",
+              "affiliation": "IIT Gandhinagar",
+              "department": "Mechanical Engineering",
+              "primary_research_area": "AI/ML",
+              "h_index": 54,
+              "total_funding_inr_crores": 28.21,
+              "state": "Gujarat",
+              "email": "pruthviraj.patel@iitgn.ac.in"
+            }
+          ]
+        },
+        "Biotechnology": {
+          "top_institutions": [
+            [
+              "IIT Gandhinagar",
+              47
+            ],
+            [
+              "CSIR-CSIO",
+              7
+            ],
+            [
+              "IIT Madras",
+              6
+            ],
+            [
+              "IIT Patna",
+              6
+            ],
+            [
+              "IIT Roorkee",
+              6
+            ]
+          ],
+          "total_projects": 183,
+          "total_funding_inr_crores": 3126.24,
+          "key_researchers": [
+            {
+              "researcher_id": "RES-01572",
+              "full_name": "Khusboo Karthik Saraf",
+              "affiliation": "IISER Pune",
+              "department": "Agricultural Engineering",
+              "primary_research_area": "Biotechnology",
+              "h_index": 51,
+              "total_funding_inr_crores": 22.78,
+              "state": "Maharashtra",
+              "email": "khusboo_saraf@iiserpune.ac.in",
+              "phone": "+91 82363 82643"
+            },
+            {
+              "researcher_id": "RES-01672",
+              "full_name": "Parul Pai",
+              "affiliation": "IIT Hyderabad",
+              "department": "Artificial Intelligence",
+              "primary_research_area": "Biotechnology",
+              "h_index": 48,
+              "total_funding_inr_crores": 25.02,
+              "state": "Telangana",
+              "email": "ppai@iith.ac.in",
+              "phone": "+91 85862 75940"
+            },
+            {
+              "researcher_id": "RES-02277",
+              "full_name": "Tanya Manish Sahu",
+              "affiliation": "CSIR-CBRI",
+              "department": "Artificial Intelligence",
+              "primary_research_area": "Biotechnology",
+              "h_index": 48,
+              "total_funding_inr_crores": 19.01,
+              "state": "Uttarakhand",
+              "email": "tanya.sahu@cbri.res.in",
+              "phone": "+91 90340 33956"
+            }
+          ]
+        }
+      },
+      "suggested_structure": {
+        "total_thrust_areas": 3,
+        "anchor_institutions": {
+          "Sustainable Energy": "IIT Gandhinagar",
+          "AI/ML": "IIT Gandhinagar",
+          "Biotechnology": "IIT Gandhinagar"
+        },
+        "estimated_consortium_budget_inr_crores": 11970.76
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00013",
+    "persona": "Tier3_Industry",
+    "intent": "sector_specific_expert_directory",
+    "natural_language_query": "Our bank is building an in-house cybersecurity R&D team and needs academic advisors. Find India's top cybersecurity researchers: name, affiliation, h-index, email, and phone. Also list their ongoing projects, published research, and areas of specialization within cybersecurity. We need at least 3 advisors for our RBI-compliant security framework.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "21b86c17-f685-44d2-8922-902ec54b1395",
+        "query_id": "T3Q-00013",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01650",
+          "RES-00084",
+          "RES-01967",
+          "RES-01818",
+          "RES-00074",
+          "RES-02323",
+          "RES-00837",
+          "RES-00662",
+          "RES-00413",
+          "RES-01311"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "expert_directory": {
+        "domain": "Cybersecurity",
+        "total_researchers_nationally": 81,
+        "top_advisors": [
+          {
+            "researcher_id": "RES-01650",
+            "full_name": "Vatsal Bhat",
+            "affiliation": "TIFR Mumbai",
+            "department": "Materials Science",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 56,
+            "total_funding_inr_crores": 31.11,
+            "state": "Maharashtra",
+            "email": "vatsal325@tifr.res.in",
+            "phone": "+91 88913 79635"
+          },
+          {
+            "researcher_id": "RES-00084",
+            "full_name": "Ms. Mehul Chopra Raju",
+            "affiliation": "DAE",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 55,
+            "total_funding_inr_crores": 31.51,
+            "state": "Maharashtra",
+            "email": "mehul_raju@dae.gov.in",
+            "phone": "+91 88748 19756"
+          },
+          {
+            "researcher_id": "RES-01967",
+            "full_name": "Anita Rather",
+            "affiliation": "IIT Indore",
+            "department": "Computer Science & Engineering",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 54,
+            "total_funding_inr_crores": 21.3,
+            "state": "Madhya Pradesh",
+            "email": "arather@iiti.ac.in"
+          },
+          {
+            "researcher_id": "RES-01818",
+            "full_name": "Qamar Dash",
+            "affiliation": "IIT Madras",
+            "department": "Mathematics",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 51,
+            "total_funding_inr_crores": 23.08,
+            "state": "Tamil Nadu",
+            "email": "qdash@iitm.ac.in",
+            "phone": "+91 88528 75790"
+          },
+          {
+            "researcher_id": "RES-00074",
+            "full_name": "Geeta Goyal",
+            "affiliation": "NIT Trichy",
+            "department": "Mathematics",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 46,
+            "total_funding_inr_crores": 21.95,
+            "state": "Tamil Nadu",
+            "email": "geeta.goyal@nitt.edu",
+            "phone": "+91 81830 25444"
+          },
+          {
+            "researcher_id": "RES-02323",
+            "full_name": "Kavya Sidhu",
+            "affiliation": "Anna University",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 45,
+            "total_funding_inr_crores": 24.0,
+            "state": "Tamil Nadu",
+            "email": "kavya.sidhu@annauniv.edu",
+            "phone": "+91 83534 47248"
+          },
+          {
+            "researcher_id": "RES-00837",
+            "full_name": "Hemant Gupta Garg",
+            "affiliation": "Ashoka University",
+            "department": "Civil Engineering",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 42,
+            "total_funding_inr_crores": 26.5,
+            "state": "Gujarat",
+            "email": "hemant_garg@ashoka.edu.in"
+          },
+          {
+            "researcher_id": "RES-00662",
+            "full_name": "Ms. Rajat Iyengar",
+            "affiliation": "NIT Andhra Pradesh",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 37,
+            "total_funding_inr_crores": 20.37,
+            "state": "Andhra Pradesh",
+            "email": "rajat.iyengar@nitap.ac.in",
+            "phone": "+91 94497 42322"
+          },
+          {
+            "researcher_id": "RES-00413",
+            "full_name": "Prof. Qudsiya Sunil Krishnan",
+            "affiliation": "BARC",
+            "department": "Physics",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 33,
+            "total_funding_inr_crores": 16.15,
+            "state": "Maharashtra",
+            "email": "qkrishnan@barc.gov.in",
+            "phone": "+91 96493 42650"
+          },
+          {
+            "researcher_id": "RES-01311",
+            "full_name": "Mr. Reshma Joshi Patra",
+            "affiliation": "DRDO",
+            "department": "Data Science",
+            "primary_research_area": "Cybersecurity",
+            "h_index": 33,
+            "total_funding_inr_crores": 21.08,
+            "state": "Delhi",
+            "email": "reshma_patra@drdo.gov.in",
+            "phone": "+91 74974 98378"
+          }
+        ],
+        "ongoing_relevant_projects": [
+          {
+            "project_id": "PRJ-00011",
+            "title": "Green Cybersecurity: From Bench to Field",
+            "principal_investigator": "Ojaswi Dhar",
+            "principal_investigator_id": "RES-01312",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 7.83,
+            "status": "Ongoing",
+            "start_date": "2025-02-26",
+            "end_date": "2026-12-31",
+            "research_area": "Cybersecurity",
+            "co_pi_count": 1
+          },
+          {
+            "project_id": "PRJ-00114",
+            "title": "Sustainable Analysis of Cybersecurity in Digital India",
+            "principal_investigator": "Om Pathak",
+            "principal_investigator_id": "RES-00970",
+            "funding_agency": "DBT",
+            "sanctioned_amount_inr_crores": 33.09,
+            "status": "Ongoing",
+            "start_date": "2022-11-07",
+            "end_date": "2025-10-22",
+            "research_area": "Cybersecurity",
+            "co_pi_count": 1
+          },
+          {
+            "project_id": "PRJ-00282",
+            "title": "Privacy-preserving Cybersecurity for Transportation",
+            "principal_investigator": "Tanya Dash",
+            "principal_investigator_id": "RES-00611",
+            "funding_agency": "DRDO",
+            "sanctioned_amount_inr_crores": 12.61,
+            "status": "Ongoing",
+            "start_date": "2024-11-08",
+            "end_date": "2026-10-29",
+            "research_area": "Cybersecurity",
+            "co_pi_count": 2
+          },
+          {
+            "project_id": "PRJ-00296",
+            "title": "Design and Implementation of Edge-based Cybersecurity",
+            "principal_investigator": "Ms. Gauri Joshi Gowda",
+            "principal_investigator_id": "RES-01843",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 7.17,
+            "status": "Ongoing",
+            "start_date": "2025-02-12",
+            "end_date": "2026-12-31",
+            "research_area": "Cybersecurity",
+            "co_pi_count": 1
+          },
+          {
+            "project_id": "PRJ-00333",
+            "title": "Design and Implementation of Real-time Cybersecurity",
+            "principal_investigator": "Ms. Durga Shukla",
+            "principal_investigator_id": "RES-00439",
+            "funding_agency": "Gujarat Govt",
+            "sanctioned_amount_inr_crores": 23.31,
+            "status": "Ongoing",
+            "start_date": "2022-06-30",
+            "end_date": "2026-06-09",
+            "research_area": "Cybersecurity",
+            "co_pi_count": 4
+          }
+        ],
+        "recent_publications": [
+          {
+            "document_id": "DOC-00096",
+            "title": "Robust Adversarial ML for Cybersecurity Threat Detection: An Integrated Approach",
+            "publication_year": 2025,
+            "category": "AI/ML & Intelligent Systems",
+            "keywords": [
+              "Indian languages",
+              "zero-shot",
+              "reinforcement learning",
+              "RLHF",
+              "OCR"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 4
+          },
+          {
+            "document_id": "DOC-00136",
+            "title": "Robust Adversarial ML for Cybersecurity Threat Detection: Theory and Practice",
+            "publication_year": 2022,
+            "category": "AI/ML & Intelligent Systems",
+            "keywords": [
+              "LSTM",
+              "homomorphic encryption",
+              "transformer",
+              "recurrent",
+              "transfer learning"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 3
+          },
+          {
+            "document_id": "DOC-00176",
+            "title": "Enhancing Cybersecurity Threat Detection via Digital Twin Technology",
+            "publication_year": 2024,
+            "category": "AI/ML & Intelligent Systems",
+            "keywords": [
+              "GAN",
+              "neural networks",
+              "Indic NLP",
+              "self-supervised learning",
+              "multi-head attention"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-00216",
+            "title": "Implementation of Robust Adversarial ML for Cybersecurity Threat Detection in the Indian Context",
+            "publication_year": 2023,
+            "category": "AI/ML & Intelligent Systems",
+            "keywords": [
+              "document summarization",
+              "Indian languages",
+              "federated learning",
+              "Bengali",
+              "GPU optimization"
+            ],
+            "access_tier": "Tier2",
+            "researcher_count": 2
+          },
+          {
+            "document_id": "DOC-00276",
+            "title": "Robust Adversarial ML for Cybersecurity Threat Detection: A Systems-Level Approach",
+            "publication_year": 2023,
+            "category": "AI/ML & Intelligent Systems",
+            "keywords": [
+              "instruction tuning",
+              "sentence embedding",
+              "vector database",
+              "TensorFlow",
+              "text-to-speech"
+            ],
+            "access_tier": "Tier1",
+            "researcher_count": 3
+          }
+        ]
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00014",
+    "persona": "Tier3_Industry",
+    "intent": "agritech_solution_discovery",
+    "natural_language_query": "Our agri-business company wants to adopt precision agriculture technologies from Indian academia. Find: (a) top-funded agriculture tech researchers with contact details, (b) relevant labs, (c) completed projects with practical outcomes (budget > Rs. 5 crore), and (d) any research on IoT in agriculture, drone-based crop monitoring, or AI in farming. We want to pilot 2-3 technologies in our farms.",
+    "expected_sql_tables": [
+      "researchers",
+      "labs_institutions",
+      "projects"
+    ],
+    "expected_rag_collections": [
+      "research_documents"
+    ],
+    "ideal_response": {
+      "meta": {
+        "response_id": "b5d2d553-93df-4d14-8175-604b8f78c5a8",
+        "query_id": "T3Q-00014",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.92,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-01297",
+          "RES-01527",
+          "RES-01710",
+          "RES-00603",
+          "RES-00615",
+          "RES-00232",
+          "RES-00467",
+          "RES-00575",
+          "LAB-0018",
+          "LAB-0057",
+          "LAB-0080",
+          "LAB-0081",
+          "LAB-0084"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "agritech_landscape": {
+        "top_researchers": [
+          {
+            "researcher_id": "RES-01297",
+            "full_name": "Harshal Verma",
+            "affiliation": "IIT Delhi",
+            "department": "Chemical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 42,
+            "total_funding_inr_crores": 21.29,
+            "state": "Delhi",
+            "email": "harshal.verma@iitd.ac.in",
+            "phone": "+91 91179 03552"
+          },
+          {
+            "researcher_id": "RES-01527",
+            "full_name": "Prof. Rajendra Swamy",
+            "affiliation": "Nirma University",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 21,
+            "total_funding_inr_crores": 19.94,
+            "state": "Gujarat",
+            "email": "rajendra.swamy@nirmauni.ac.in",
+            "phone": "+91 93250 45536"
+          },
+          {
+            "researcher_id": "RES-01710",
+            "full_name": "Geeta Deepak Gogoi",
+            "affiliation": "IIT Gandhinagar",
+            "department": "Chemical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 25,
+            "total_funding_inr_crores": 19.87,
+            "state": "Gujarat",
+            "email": "geeta.gogoi@iitgn.ac.in",
+            "phone": "+91 70431 18478"
+          },
+          {
+            "researcher_id": "RES-00603",
+            "full_name": "Sanjay Shah Kulkarni",
+            "affiliation": "IIT Gandhinagar",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 26,
+            "total_funding_inr_crores": 19.85,
+            "state": "Gujarat",
+            "email": "sanjay.kulkarni@iitgn.ac.in",
+            "phone": "+91 96250 87493"
+          },
+          {
+            "researcher_id": "RES-00615",
+            "full_name": "Asst. Prof. Shashi Sran",
+            "affiliation": "CSIR-NEERI",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 43,
+            "total_funding_inr_crores": 19.43,
+            "state": "Maharashtra",
+            "email": "shashi.sran@neeri.res.in"
+          },
+          {
+            "researcher_id": "RES-00232",
+            "full_name": "Shraddha Gupta Hariharan",
+            "affiliation": "IIT Hyderabad",
+            "department": "Electrical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 34,
+            "total_funding_inr_crores": 19.18,
+            "state": "Telangana",
+            "email": "shraddha192@iith.ac.in"
+          },
+          {
+            "researcher_id": "RES-00467",
+            "full_name": "Parul Singhal",
+            "affiliation": "University of Hyderabad",
+            "department": "Chemical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 28,
+            "total_funding_inr_crores": 19.07,
+            "state": "Telangana",
+            "email": "parul_singhal@uohyd.ac.in",
+            "phone": "+91 76654 57991"
+          },
+          {
+            "researcher_id": "RES-00575",
+            "full_name": "Vidhi Pawar",
+            "affiliation": "IISER Thiruvananthapuram",
+            "department": "Pharmaceutical Sciences",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 36,
+            "total_funding_inr_crores": 19.05,
+            "state": "Kerala",
+            "email": "vpawar@iisertvm.ac.in",
+            "phone": "+91 73587 44480"
+          },
+          {
+            "researcher_id": "RES-01782",
+            "full_name": "Prof. Siddharth Khan",
+            "affiliation": "AIIMS Delhi",
+            "department": "Mechanical Engineering",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 36,
+            "total_funding_inr_crores": 18.51,
+            "state": "Delhi",
+            "email": "skhan@aiims.edu"
+          },
+          {
+            "researcher_id": "RES-01169",
+            "full_name": "Dr. Prachi Amin",
+            "affiliation": "NIT Warangal",
+            "department": "Mathematics",
+            "primary_research_area": "Agriculture Tech",
+            "h_index": 18,
+            "total_funding_inr_crores": 18.45,
+            "state": "Telangana",
+            "email": "prachi.amin@nitw.ac.in",
+            "phone": "+91 73777 61937"
+          }
+        ],
+        "relevant_laboratories": [
+          {
+            "lab_id": "LAB-0018",
+            "lab_name": "Centre of Excellence in Precision Agriculture",
+            "affiliation": "IIT Madras",
+            "location_state": "Tamil Nadu",
+            "research_focus_areas": [
+              "Agriculture Tech"
+            ],
+            "director_researcher_id": "RES-02263"
+          },
+          {
+            "lab_id": "LAB-0057",
+            "lab_name": "IIT National Agri-Informatics Facility",
+            "affiliation": "IIT Roorkee",
+            "location_state": "Uttarakhand",
+            "research_focus_areas": [
+              "Agriculture Tech",
+              "Biotechnology"
+            ],
+            "director_researcher_id": "RES-01812"
+          },
+          {
+            "lab_id": "LAB-0080",
+            "lab_name": "IITGN Agri-Informatics Technology Park",
+            "affiliation": "IIT Gandhinagar",
+            "location_state": "Gujarat",
+            "research_focus_areas": [
+              "Agriculture Tech",
+              "Robotics",
+              "Computer Vision"
+            ],
+            "director_researcher_id": "RES-01781"
+          },
+          {
+            "lab_id": "LAB-0081",
+            "lab_name": "INI Centre for Advanced Agri-Informatics",
+            "affiliation": "INI Chandigarh",
+            "location_state": "Chandigarh",
+            "research_focus_areas": [
+              "Agriculture Tech"
+            ],
+            "director_researcher_id": "RES-01135"
+          },
+          {
+            "lab_id": "LAB-0084",
+            "lab_name": "JNU Laboratory for Agri-Informatics",
+            "affiliation": "JNU Delhi",
+            "location_state": "Delhi",
+            "research_focus_areas": [
+              "Agriculture Tech",
+              "Cybersecurity",
+              "Computer Vision"
+            ],
+            "director_researcher_id": "RES-00412"
+          }
+        ],
+        "completed_high_budget_projects": [
+          {
+            "project_id": "PRJ-00849",
+            "title": "Real-time Agriculture Tech for Food Security Applications",
+            "principal_investigator": "Assoc. Prof. Utsav Bose",
+            "principal_investigator_id": "RES-00920",
+            "funding_agency": "ICMR",
+            "sanctioned_amount_inr_crores": 49.81,
+            "status": "Completed",
+            "start_date": "2020-06-11",
+            "end_date": "2022-11-28",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 2,
+            "pi_email": "utsav885@gujaratuniversity.ac.in"
+          },
+          {
+            "project_id": "PRJ-00908",
+            "title": "Hybrid Agriculture Tech for Gujarat Water Grid",
+            "principal_investigator": "Assoc. Prof. Lalita Kapoor",
+            "principal_investigator_id": "RES-01450",
+            "funding_agency": "DRDO",
+            "sanctioned_amount_inr_crores": 43.71,
+            "status": "Completed",
+            "start_date": "2020-05-03",
+            "end_date": "2025-04-07",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 1,
+            "pi_email": "lalita109@iitg.ac.in"
+          },
+          {
+            "project_id": "PRJ-01486",
+            "title": "Framework for Scalable Agriculture Tech",
+            "principal_investigator": "Saba Kamath",
+            "principal_investigator_id": "RES-00990",
+            "funding_agency": "DBT",
+            "sanctioned_amount_inr_crores": 28.8,
+            "status": "Completed",
+            "start_date": "2021-04-26",
+            "end_date": "2024-04-10",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 1,
+            "pi_email": "saba.kamath@iitgn.ac.in"
+          },
+          {
+            "project_id": "PRJ-02348",
+            "title": "Privacy-preserving Agriculture Tech for Transportation",
+            "principal_investigator": "Asst. Prof. Reyansh Kale",
+            "principal_investigator_id": "RES-00764",
+            "funding_agency": "MHRD",
+            "sanctioned_amount_inr_crores": 28.64,
+            "status": "Completed",
+            "start_date": "2020-12-21",
+            "end_date": "2024-11-30",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 3,
+            "pi_email": "reyansh.kale@iitgn.ac.in"
+          },
+          {
+            "project_id": "PRJ-02862",
+            "title": "Smart Agriculture Tech for Indian Agriculture 4.0",
+            "principal_investigator": "Shraddha Gupta Hariharan",
+            "principal_investigator_id": "RES-00232",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 28.55,
+            "status": "Completed",
+            "start_date": "2020-06-10",
+            "end_date": "2024-05-20",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 1,
+            "pi_email": "shraddha192@iith.ac.in"
+          },
+          {
+            "project_id": "PRJ-01564",
+            "title": "Novel Intelligent Agriculture Tech using Edge Computing",
+            "principal_investigator": "Sanjay Shah Kulkarni",
+            "principal_investigator_id": "RES-00603",
+            "funding_agency": "DST",
+            "sanctioned_amount_inr_crores": 27.98,
+            "status": "Completed",
+            "start_date": "2024-05-26",
+            "end_date": "2025-05-21",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 1,
+            "pi_email": "sanjay.kulkarni@iitgn.ac.in"
+          },
+          {
+            "project_id": "PRJ-03483",
+            "title": "Multi-modal Agriculture Tech for North-East India",
+            "principal_investigator": "Asst. Prof. Simran Rao",
+            "principal_investigator_id": "RES-02237",
+            "funding_agency": "ISRO",
+            "sanctioned_amount_inr_crores": 27.81,
+            "status": "Completed",
+            "start_date": "2022-09-22",
+            "end_date": "2025-03-10",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 1,
+            "pi_email": "srao@iitgn.ac.in"
+          },
+          {
+            "project_id": "PRJ-02315",
+            "title": "Development of Portable Agriculture Tech for Gujarat Pharmaceutical Sector",
+            "principal_investigator": "Mr. Sai Deepak Dhal",
+            "principal_investigator_id": "RES-01644",
+            "funding_agency": "SERB",
+            "sanctioned_amount_inr_crores": 27.59,
+            "status": "Completed",
+            "start_date": "2020-09-09",
+            "end_date": "2021-09-04",
+            "research_area": "Agriculture Tech",
+            "co_pi_count": 0,
+            "pi_email": "sai667@jdvu.ac.in"
+          }
+        ],
+        "technology_readiness_level": "TRL 4-6 (Lab to Field Validation)"
+      }
+    }
+  },
+  {
+    "query_id": "T3Q-00015",
+    "persona": "Tier3_Industry",
+    "intent": "comprehensive_capability_matrix",
+    "natural_language_query": "Generate a comprehensive capability matrix for all major research areas in India. For each area, show: researcher count, project count, total funding, average h-index, leading institution, and number of specialized labs. Sort by total funding descending. Our company wants to outsource R&D and needs a full map of India's academic research capabilities.",
+    "expected_sql_tables": [
+      "researchers",
+      "projects",
+      "labs_institutions"
+    ],
+    "expected_rag_collections": [],
+    "ideal_response": {
+      "meta": {
+        "response_id": "9d97e967-38e5-4451-9b37-3190859d4d18",
+        "query_id": "T3Q-00015",
+        "generated_at": "2026-04-19T06:55:20Z",
+        "access_tier_validated": "Tier3_Industry",
+        "confidence_score": 0.96,
+        "processing_pipeline": [
+          "intent_classification",
+          "text_to_sql",
+          "rag_retrieval",
+          "knowledge_graph_traversal",
+          "response_synthesis",
+          "hallucination_verification"
+        ],
+        "source_ids": [
+          "RES-00457",
+          "RES-01203",
+          "RES-01781",
+          "RES-00648",
+          "RES-01859",
+          "RES-00014",
+          "RES-01079",
+          "RES-02051",
+          "RES-00732",
+          "RES-02080",
+          "RES-00436",
+          "RES-01223",
+          "RES-02495",
+          "RES-00815",
+          "RES-00627",
+          "RES-01532",
+          "RES-00662",
+          "RES-02210",
+          "RES-02173",
+          "RES-00003"
+        ],
+        "disclaimer": "Synthetic data for NRID validation. No real PII."
+      },
+      "capability_matrix": [
+        {
+          "research_area": "AI/ML",
+          "researcher_count": 225,
+          "project_count": 301,
+          "total_funding_inr_crores": 5861.9,
+          "avg_h_index": 19.2,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 32,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Biotechnology",
+          "researcher_count": 119,
+          "project_count": 183,
+          "total_funding_inr_crores": 3126.24,
+          "avg_h_index": 18.5,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 23,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Computer Vision",
+          "researcher_count": 94,
+          "project_count": 174,
+          "total_funding_inr_crores": 3066.82,
+          "avg_h_index": 18.9,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 21,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Advanced Materials",
+          "researcher_count": 100,
+          "project_count": 118,
+          "total_funding_inr_crores": 2127.77,
+          "avg_h_index": 18.2,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 27,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Agriculture Tech",
+          "researcher_count": 58,
+          "project_count": 92,
+          "total_funding_inr_crores": 1566.72,
+          "avg_h_index": 17.9,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 19,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Climate Science",
+          "researcher_count": 74,
+          "project_count": 80,
+          "total_funding_inr_crores": 1480.23,
+          "avg_h_index": 20.0,
+          "top_institution": "IIT Madras",
+          "lab_count": 21,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "5G/6G Communications",
+          "researcher_count": 38,
+          "project_count": 70,
+          "total_funding_inr_crores": 1432.5,
+          "avg_h_index": 18.1,
+          "top_institution": "IIT Delhi",
+          "lab_count": 11,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Control Systems",
+          "researcher_count": 45,
+          "project_count": 77,
+          "total_funding_inr_crores": 1415.32,
+          "avg_h_index": 15.8,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 17,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Cybersecurity",
+          "researcher_count": 81,
+          "project_count": 93,
+          "total_funding_inr_crores": 1388.3,
+          "avg_h_index": 18.9,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 29,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Computational Biology",
+          "researcher_count": 42,
+          "project_count": 58,
+          "total_funding_inr_crores": 1037.63,
+          "avg_h_index": 18.9,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 18,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Autonomous Vehicles",
+          "researcher_count": 55,
+          "project_count": 57,
+          "total_funding_inr_crores": 1009.13,
+          "avg_h_index": 16.1,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 12,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Catalysis & Reaction Engineering",
+          "researcher_count": 26,
+          "project_count": 53,
+          "total_funding_inr_crores": 943.1,
+          "avg_h_index": 23.4,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 16,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Blockchain Technology",
+          "researcher_count": 19,
+          "project_count": 39,
+          "total_funding_inr_crores": 809.3,
+          "avg_h_index": 16.6,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 8,
+          "outsourcing_recommendation": "High Priority"
+        },
+        {
+          "research_area": "Cognitive Neuroscience",
+          "researcher_count": 21,
+          "project_count": 29,
+          "total_funding_inr_crores": 488.8,
+          "avg_h_index": 18.3,
+          "top_institution": "IIT Gandhinagar",
+          "lab_count": 12,
+          "outsourcing_recommendation": "Medium Priority"
+        },
+        {
+          "research_area": "Astrophysics",
+          "researcher_count": 27,
+          "project_count": 21,
+          "total_funding_inr_crores": 358.15,
+          "avg_h_index": 17.3,
+          "top_institution": "IIT Delhi",
+          "lab_count": 8,
+          "outsourcing_recommendation": "Medium Priority"
+        }
+      ],
+      "total_research_areas_covered": 15,
+      "total_national_research_funding_inr_crores": 26111.91
+    }
+  }
+]

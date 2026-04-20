@@ -4,7 +4,7 @@ import os
 import logging
 from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchValue
+from qdrant_client.models import Filter, FieldCondition, MatchAny, MatchValue
 
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,10 @@ class Retriever:
         topics: Optional[List[str]] = None,
     ) -> Filter:
         """Build filter for access control."""
-        must_conditions: list[Any] = []
+        allowed_tiers = self._allowed_access_tiers(user_tier)
+        must_conditions: list[Any] = [
+            FieldCondition(key="access_tier", match=MatchAny(any=allowed_tiers))
+        ]
 
         if institution:
             must_conditions.append(
@@ -44,9 +47,20 @@ class Retriever:
                     FieldCondition(key="topics", match=MatchValue(value=topic))
                 )
 
-        if must_conditions:
-            return Filter(must=must_conditions)
-        return Filter(must=[])
+        return Filter(must=must_conditions)
+
+    def _allowed_access_tiers(self, user_tier: int) -> list[int]:
+        """Return data tiers visible to a user tier.
+
+        Tier 1 is the most privileged persona, tier 3 is public/industry-shaped.
+        """
+        if user_tier == 1:
+            return [1, 2, 3]
+        if user_tier == 2:
+            return [2, 3]
+        if user_tier == 3:
+            return [3]
+        return [3]
 
     def retrieve(
         self,
@@ -108,10 +122,19 @@ class Retriever:
             metadata.append(
                 {
                     "source_id": str(payload.get("source_id", payload.get("document_id", ""))),
+                    "document_id": str(payload.get("document_id", payload.get("source_id", ""))),
+                    "chunk_index": payload.get("chunk_index"),
+                    "chunk_id": payload.get("chunk_id"),
+                    "title": payload.get("title", ""),
+                    "publication_year": payload.get("publication_year", payload.get("year")),
+                    "researcher_ids": payload.get("researcher_ids", []),
+                    "keywords": payload.get("keywords", []),
                     "source_type": payload.get("source_type", payload.get("type", "")),
                     "access_tier": payload.get("access_tier", 3),
                     "institution": payload.get("institution", payload.get("affiliation", "")),
+                    "affiliation": payload.get("affiliation", payload.get("institution", "")),
                     "topics": payload.get("topics", payload.get("research_area_tags", [])),
+                    "research_area_tags": payload.get("research_area_tags", payload.get("topics", [])),
                 }
             )
             scores.append(result.score)
@@ -163,9 +186,7 @@ class Retriever:
 
     def query(self, query_text: str, user_tier: int = 1, top_k: int = 5) -> Dict[str, Any]:
         """Convenience method: embed text and retrieve in one call."""
-        import os
         from .embedder import Embedder
-        os.environ["EMBEDDER_DETERMINISTIC"] = "1"
         embedder = Embedder()
         try:
             return self.retrieve_text(query_text, embedder, user_tier, top_k)

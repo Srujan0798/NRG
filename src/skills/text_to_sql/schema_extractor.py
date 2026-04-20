@@ -2,6 +2,7 @@
 
 import os
 from typing import List, Dict, Any, Optional
+from pathlib import Path
 from sqlalchemy import create_engine, inspect
 
 
@@ -99,6 +100,10 @@ class SchemaExtractor:
 
             prompt_parts.append("")
 
+        hints = _load_schema_hints()
+        if hints:
+            prompt_parts.extend(["", "SCHEMA HINTS:", hints])
+
         return "\n".join(prompt_parts)
 
     def get_relevant_tables(self, query: str) -> List[str]:
@@ -121,6 +126,10 @@ class SchemaExtractor:
                 "journal",
                 "conference",
             ],
+            "projects": ["project", "pi", "co-pi", "co pi", "principal investigator", "ongoing", "completed"],
+            "patents": ["patent", "inventor", "filing", "grant", "technology transfer", "ip"],
+            "collaborations": ["collaboration", "partner", "network", "cross-institutional"],
+            "research_documents": ["document", "research document", "full text", "category"],
             "funding_records": ["funding", "grant", "fund", "budget"],
             "institutions": ["institution", "university", "iit", "nit", "college"],
             "keywords": ["topic", "keyword", "specialization"],
@@ -139,10 +148,25 @@ class SchemaExtractor:
 
         # If no specific tables matched, return commonly useful tables
         if not relevant:
-            default_tables = {"researchers", "institutions", "labs"}
+            default_tables = {
+                "researchers",
+                "institutions",
+                "labs",
+                "projects",
+                "publications",
+                "funding_records",
+            }
             relevant = {t for t in all_tables if t in default_tables}
 
         return list(relevant) if relevant else all_tables
 
     def close(self):
         self.engine.dispose()
+
+
+def _load_schema_hints() -> str:
+    hints_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_hints.md"
+    try:
+        return hints_path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""

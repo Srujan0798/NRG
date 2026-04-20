@@ -14,6 +14,8 @@ Sovereign AI platform for India's 600GB research database. 3 personas (researche
 - **Run frontend**: `cd frontend && npm run dev`
 - **Docker full stack**: `docker-compose up`
 - **Check audit chain**: `.venv/bin/python scripts/audit_investigate.py`
+- **Run migrations**: `alembic upgrade head`
+- **Create migration**: `alembic revision --autogenerate -m "msg"`
 
 ## Architecture (6-Node LangGraph Pipeline)
 ```

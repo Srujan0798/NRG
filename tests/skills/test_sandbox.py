@@ -126,3 +126,29 @@ def test_close_disposes_engine(monkeypatch):
     sb = sandbox_module.Sandbox("sqlite:///:memory:")
     sb.close()
     assert disposed == [True]
+
+
+def test_execute_sql_helper_returns_rows(monkeypatch):
+    monkeypatch.setattr(
+        sandbox_module, "create_engine", lambda cs, **kw: FakeEngine(
+            rows=[(5,)], columns=["count"]
+        )
+    )
+    result = sandbox_module.execute_sql("SELECT COUNT(*) AS count FROM researchers")
+    assert result["row_count"] == 1
+    assert result["results"][0]["count"] == 5
+
+
+def test_sandbox_uses_database_url_when_present(monkeypatch):
+    seen = {}
+
+    def _capture_engine(connection_string, **kwargs):
+        seen["connection_string"] = connection_string
+        return FakeEngine()
+
+    monkeypatch.setenv("DATABASE_URL", "postgresql://demo:demo@localhost:5432/nrg")
+    monkeypatch.setattr(sandbox_module, "create_engine", _capture_engine)
+
+    sandbox_module.Sandbox()
+
+    assert seen["connection_string"] == "postgresql://demo:demo@localhost:5432/nrg"

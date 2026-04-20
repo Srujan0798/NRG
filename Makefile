@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv
+.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model
 
 PYTHON := .venv/bin/python
 
@@ -57,5 +57,8 @@ clean:
 
 dev:
 	@$(PYTHON) -m uvicorn src.api.main:app --reload --port 8000
+
+spacy-model:
+	@$(PYTHON) -m spacy download en_core_web_sm
 
 .DEFAULT_GOAL := help
