@@ -28,6 +28,8 @@ fmt:
 
 lint:
 	@$(PYTHON) -m ruff check src tests
+
+typecheck:
 	@$(PYTHON) -m mypy src
 
 up:
