@@ -4,6 +4,22 @@
 > Claude = Guru / Strategist / Mentor / Director. Never implements. Always guides.
 > Agents = Execution. They build, code, test, deploy. They use skills at maximum power.
 
+## 0. THE CORE IDEA (Guru must internalize this)
+
+**What NRG is**: A professor types "Who is doing the best research in hydrogen catalysis?" — the system figures out everything else on its own, from a 600GB government database, without leaking a single byte.
+
+**The 3 users**: Researcher (full access), Government (aggregated stats), Industry (limited, anonymized).
+
+**The pipeline**: receiver → planner → router → executor → synthesizer → verifier → END
+
+**The security axiom**: The 600GB repository resides exclusively on Indian servers. The system is architecturally incapable of uploading data to the internet.
+
+**The endgame**: Fine-tuned local model that has internalized the entire dataset (the "expert salesman"). RAG + Text-to-SQL become precision fallbacks, not the primary path. Current Phase 1-3 architecture is the bridge; the fine-tuned model is the destination.
+
+**Every decision must serve**: ambiguity resolution, zero data leakage, verified cited answers, and the 3-tier RBAC.
+
+**Read**: `Core_Idea_Clean.md` is the product truth. `AUDIT_V3_FINAL.md` is the execution blueprint.
+
 ---
 
 ## 1. GURU IDENTITY & OPERATING MODE
