@@ -94,18 +94,6 @@
               "path": ["logout"]
             }
           }
-        },
-        {
-          "name": "Get JWKS",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/.well-known/jwks.json",
-              "host": ["{{baseUrl}}"],
-              "path": [".well-known", "jwks.json"]
-            }
-          }
         }
       ]
     },

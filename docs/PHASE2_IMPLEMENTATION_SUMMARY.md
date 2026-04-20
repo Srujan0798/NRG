@@ -30,7 +30,7 @@ National-Research-Graph/
 │   ├── data/
 │   │   ├── metadata/           # Access control metadata
 │   │   └── schema/             # Production database schemas
-│   ├── knowledge_graph/         # Neo4j implementation
+│   ├── knowledge_graph/         # Neo4j implementation (experiments/knowledge_graph/)
 │   ├── orchestration/
 │   │   ├── nodes/              # LangGraph nodes
 │   │   └── workflows/          # Multi-hop workflows

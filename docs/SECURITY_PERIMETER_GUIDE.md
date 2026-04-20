@@ -356,7 +356,8 @@ curl -X POST http://localhost:8000/query \
 3. **Refresh Token**: `POST /refresh`
 ```bash
 curl -X POST http://localhost:8000/refresh \
-  -H "Authorization: Bearer $REFRESH_TOKEN"
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "$REFRESH_TOKEN"}'
 ```
 
 ## License & Compliance

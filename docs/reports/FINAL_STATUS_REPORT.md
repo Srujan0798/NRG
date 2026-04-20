@@ -8,7 +8,7 @@
 
 ## Implementation Status: Phase 1 PoC Complete
 
-- ✅ LangGraph orchestration pipeline (receiver → router → executor → synthesizer)
+- ✅ LangGraph orchestration pipeline (receiver → planner → router → executor → synthesizer → verifier)
 - ✅ Text-to-SQL sandbox with read-only enforcement
 - ✅ Schema extractor (metadata-only to LLM, zero data exposure)
 - ✅ PII tokenizer with Indian-specific patterns (Aadhaar, PAN, phone)

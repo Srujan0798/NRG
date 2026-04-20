@@ -48,9 +48,9 @@
 **Status**: CODE COMPLETE
 
 **Files Created**:
-- ✅ `src/knowledge_graph/schema.cypher` - Neo4j schema with 5 node types (212 lines)
-- ✅ `src/knowledge_graph/loader.py` - Production-grade batch loader (354 lines)
-- ✅ `src/knowledge_graph/traversals.py` - All 10 traversal patterns (295 lines)
+- ✅ `experiments/knowledge_graph/schema.cypher` - Neo4j schema with 5 node types (212 lines)
+- ✅ `experiments/knowledge_graph/loader.py` - Production-grade batch loader (354 lines)
+- ✅ `experiments/knowledge_graph/traversals.py` - All 10 traversal patterns (295 lines)
 - ✅ `docs/schema/knowledge_graph_design.md` - Full design documentation (351 lines)
 - ✅ `docs/adr/ADR-003-graph-database-choice.md` - Neo4j decision rationale (84 lines)
 

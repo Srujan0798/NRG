@@ -1,236 +1,240 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "info": {
     "title": "National Research Graph API",
-    "description": "Sovereign AI platform for Indian research intelligence. Three-tier access: researcher, government, industry. All raw research data stays on Indian soil.",
-    "version": "1.0.0",
-    "contact": {
-      "name": "NRG Platform Team"
-    }
+    "description": "Sovereign AI platform for Indian research intelligence",
+    "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost:8000",
-      "description": "Development server"
-    },
-    {
-      "url": "https://api.nrg.india",
-      "description": "Production server"
-    }
-  ],
   "paths": {
     "/login": {
       "post": {
-        "tags": ["Authentication"],
-        "summary": "Authenticate user and issue token pair",
-        "operationId": "login",
+        "summary": "Login",
+        "description": "Authenticate a user and return access/refresh tokens.",
+        "operationId": "login_login_post",
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["username", "password"],
-                "properties": {
-                  "username": {"type": "string", "example": "researcher_user"},
-                  "password": {"type": "string", "example": "researcher-pass"}
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
-        },
-        "responses": {
-          "200": {
-            "description": "Authentication successful",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "access_token": {"type": "string"},
-                    "refresh_token": {"type": "string"},
-                    "token_type": {"type": "string", "example": "bearer"},
-                    "expires_in": {"type": "integer", "example": 1800},
-                    "user": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"type": "string"},
-                        "username": {"type": "string"},
-                        "role": {"type": "string", "enum": ["researcher", "government", "industry"]},
-                        "tier": {"type": "integer"},
-                        "researcher_id": {"type": "string"}
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {"description": "Invalid credentials"}
         }
       }
     },
     "/refresh": {
       "post": {
-        "tags": ["Authentication"],
-        "summary": "Refresh access token",
-        "operationId": "refreshTokens",
+        "summary": "Refresh Tokens",
+        "operationId": "refresh_tokens_refresh_post",
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["refresh_token"],
-                "properties": {
-                  "refresh_token": {"type": "string"}
+                "$ref": "#/components/schemas/RefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
-        },
-        "responses": {
-          "200": {"description": "New token pair issued"},
-          "401": {"description": "Invalid or expired refresh token"}
         }
       }
     },
     "/logout": {
       "post": {
-        "tags": ["Authentication"],
-        "summary": "Revoke tokens and logout",
-        "operationId": "logout",
-        "security": [{"BearerAuth": []}],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "refresh_token": {"type": "string"}
-                }
-              }
+        "summary": "Logout",
+        "operationId": "logout_logout_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
             }
           }
-        },
-        "responses": {
-          "200": {"description": "Tokens revoked"}
-        }
-      }
-    },
-    "/query": {
-      "post": {
-        "tags": ["Query"],
-        "summary": "Conversational research query through LangGraph orchestration",
-        "operationId": "query",
-        "security": [{"BearerAuth": []}],
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["query"],
-                "properties": {
-                  "query": {"type": "string", "example": "Find ML researchers in Karnataka"},
-                  "session_id": {"type": "string", "description": "Optional session ID for multi-turn"}
-                }
+                "$ref": "#/components/schemas/LogoutRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Query response with citations",
+            "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "query_id": {"type": "string"},
-                    "session_id": {"type": "string"},
-                    "response": {"type": "string"},
-                    "status": {"type": "string"},
-                    "tier": {"type": "integer"},
-                    "intent": {"type": "string"},
-                    "routing_decision": {"type": "string"},
-                    "verification_status": {"type": "boolean"},
-                    "warnings": {"type": "array", "items": {"type": "object"}},
-                    "retrieval_sources": {"type": "array", "items": {"type": "string"}},
-                    "citations": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string"},
-                          "title": {"type": "string"},
-                          "authors": {"type": "array", "items": {"type": "string"}},
-                          "year": {"type": "integer"},
-                          "relevance_score": {"type": "number"}
-                        }
-                      }
-                    },
-                    "conversation_history": {"type": "array"},
-                    "provenance": {
-                      "type": "object",
-                      "properties": {
-                        "planner": {"type": "string"},
-                        "synth": {"type": "string"},
-                        "verifier": {"type": "string"}
-                      }
-                    }
-                  }
-                }
+                "schema": {}
               }
             }
           },
-          "403": {"description": "Security violation (PII/injection blocked)"},
-          "500": {"description": "Internal error"}
-        }
-      }
-    },
-    "/query/graph": {
-      "get": {
-        "tags": ["Query"],
-        "summary": "Get research network graph for visualization",
-        "operationId": "getGraphData",
-        "security": [{"BearerAuth": []}],
-        "parameters": [
-          {"name": "topic", "in": "query", "schema": {"type": "string"}, "description": "Topic to build graph around"}
-        ],
-        "responses": {
-          "200": {
-            "description": "Graph data",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "nodes": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {"type": "string"},
-                          "label": {"type": "string"},
-                          "type": {"type": "string", "enum": ["paper", "author", "institution", "topic"]}
-                        }
-                      }
-                    },
-                    "edges": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "source": {"type": "string"},
-                          "target": {"type": "string"},
-                          "type": {"type": "string"},
-                          "weight": {"type": "number"}
-                        }
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query": {
+      "post": {
+        "summary": "Query With Langgraph",
+        "description": "Process query using LangGraph orchestration",
+        "operationId": "query_with_langgraph_query_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/llm": {
+      "get": {
+        "summary": "Health Llm",
+        "description": "Check LLM provider health.",
+        "operationId": "health_llm_health_llm_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/db": {
+      "get": {
+        "summary": "Health Db",
+        "description": "Check database readiness via SQLAlchemy ORM.",
+        "operationId": "health_db_health_db_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/qdrant": {
+      "get": {
+        "summary": "Health Qdrant",
+        "description": "Check Qdrant readiness without hiding connection failures.",
+        "operationId": "health_qdrant_health_qdrant_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -239,91 +243,195 @@
     },
     "/researchers": {
       "get": {
-        "tags": ["Data"],
-        "summary": "List researchers (tier-shaped)",
-        "operationId": "getResearchers",
-        "security": [{"BearerAuth": []}],
+        "summary": "Get Researchers",
+        "description": "Protected endpoint with role-specific data shaping.",
+        "operationId": "get_researchers_researchers_get",
         "parameters": [
-          {"name": "state", "in": "query", "schema": {"type": "string"}},
-          {"name": "research_area", "in": "query", "schema": {"type": "string"}}
+          {
+            "name": "state",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "State"
+            }
+          },
+          {
+            "name": "research_area",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Research Area"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
         ],
         "responses": {
-          "200": {"description": "List of researchers shaped by access tier"}
-        }
-      }
-    },
-    "/publications": {
-      "get": {
-        "tags": ["Data"],
-        "summary": "List publications (tier-shaped)",
-        "operationId": "getPublications",
-        "security": [{"BearerAuth": []}],
-        "parameters": [
-          {"name": "year", "in": "query", "schema": {"type": "integer"}},
-          {"name": "limit", "in": "query", "schema": {"type": "integer", "default": 10}}
-        ],
-        "responses": {
-          "200": {"description": "List of publications"}
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
         }
       }
     },
     "/stats": {
       "get": {
-        "tags": ["Data"],
-        "summary": "System statistics (tier-shaped)",
-        "operationId": "getStats",
-        "security": [{"BearerAuth": []}],
-        "responses": {
-          "200": {"description": "Dashboard statistics"}
-        }
-      }
-    },
-    "/health": {
-      "get": {
-        "tags": ["Health"],
-        "summary": "Basic liveness check",
-        "operationId": "healthCheck",
-        "responses": {"200": {"description": "Service is healthy"}}
-      }
-    },
-    "/health/llm": {
-      "get": {
-        "tags": ["Health"],
-        "summary": "LLM provider readiness",
-        "operationId": "healthLLM",
+        "summary": "Get Stats",
+        "description": "Get system statistics for dashboards.",
+        "operationId": "get_stats_stats_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "LLM status",
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "planner": {
-                      "type": "object",
-                      "properties": {
-                        "provider": {"type": "string"},
-                        "model": {"type": "string"},
-                        "ready": {"type": "boolean"}
-                      }
-                    },
-                    "synth": {
-                      "type": "object",
-                      "properties": {
-                        "provider": {"type": "string"},
-                        "url": {"type": "string"},
-                        "ready": {"type": "boolean"}
-                      }
-                    },
-                    "verifier": {
-                      "type": "object",
-                      "properties": {
-                        "provider": {"type": "string"},
-                        "model": {"type": "string"},
-                        "ready": {"type": "boolean"}
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/publications": {
+      "get": {
+        "summary": "Get Publications",
+        "description": "Get publications list.",
+        "operationId": "get_publications_publications_get",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "title": "Year"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/query/graph": {
+      "get": {
+        "summary": "Get Graph Data",
+        "description": "Get graph data for research network visualization.",
+        "operationId": "get_graph_data_query_graph_get",
+        "parameters": [
+          {
+            "name": "topic",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Topic"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -333,95 +441,91 @@
     },
     "/consent": {
       "post": {
-        "tags": ["DPDP Compliance"],
-        "summary": "Grant consent for data processing (DPDP 2023)",
-        "operationId": "grantConsent",
-        "security": [{"BearerAuth": []}],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["scope"],
-                "properties": {
-                  "scope": {"type": "string", "enum": ["research", "analytics", "third_party_sharing"]}
+        "summary": "Grant Consent",
+        "description": "Grant consent for data processing (DPDP 2023).",
+        "operationId": "grant_consent_consent_post",
+        "parameters": [
+          {
+            "name": "scope",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scope"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
-        },
-        "responses": {
-          "200": {"description": "Consent granted"},
-          "400": {"description": "Invalid scope"}
         }
       }
     },
     "/consent/{scope}": {
       "delete": {
-        "tags": ["DPDP Compliance"],
-        "summary": "Revoke consent (DPDP 2023)",
-        "operationId": "revokeConsent",
-        "security": [{"BearerAuth": []}],
+        "summary": "Revoke Consent",
+        "description": "Revoke consent for data processing (DPDP 2023).",
+        "operationId": "revoke_consent_consent__scope__delete",
         "parameters": [
-          {"name": "scope", "in": "path", "required": true, "schema": {"type": "string"}}
+          {
+            "name": "scope",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scope"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
         ],
         "responses": {
-          "200": {"description": "Consent revoked"},
-          "404": {"description": "Consent not found"}
-        }
-      }
-    },
-    "/me/consents": {
-      "get": {
-        "tags": ["DPDP Compliance"],
-        "summary": "List all consents for current user",
-        "operationId": "listConsents",
-        "security": [{"BearerAuth": []}],
-        "responses": {
-          "200": {"description": "User consents"}
-        }
-      }
-    },
-    "/me/data": {
-      "get": {
-        "tags": ["DPDP Compliance"],
-        "summary": "Export all user data (DPDP right to access)",
-        "operationId": "exportUserData",
-        "security": [{"BearerAuth": []}],
-        "responses": {
-          "200": {"description": "User data export"}
-        }
-      },
-      "delete": {
-        "tags": ["DPDP Compliance"],
-        "summary": "Erase all user data (DPDP right to erasure)",
-        "operationId": "eraseUserData",
-        "security": [{"BearerAuth": []}],
-        "responses": {
-          "200": {"description": "Data erased"}
-        }
-      }
-    },
-    "/audit/verify": {
-      "get": {
-        "tags": ["Admin"],
-        "summary": "Verify audit chain integrity",
-        "operationId": "verifyAuditChain",
-        "security": [{"BearerAuth": []}],
-        "responses": {
           "200": {
-            "description": "Chain verification result",
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {"type": "boolean"},
-                    "broken_indices": {"type": "array", "items": {"type": "integer"}},
-                    "last_sealed_at": {"type": "string"},
-                    "current_head_hash": {"type": "string"}
-                  }
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -429,21 +533,224 @@
         }
       }
     },
-    "/.well-known/jwks.json": {
+    "/me/consents": {
       "get": {
-        "tags": ["Authentication"],
-        "summary": "JSON Web Key Set for JWT verification",
-        "operationId": "getJWKS",
+        "summary": "List Consents",
+        "description": "List all consents for current user.",
+        "operationId": "list_consents_me_consents_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "JWKS",
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "keys": {"type": "array", "items": {"type": "object"}}
-                  }
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/data": {
+      "get": {
+        "summary": "Export User Data",
+        "description": "Export all user data (DPDP right to access).",
+        "operationId": "export_user_data_me_data_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Erase User Data",
+        "description": "Erase all user data (DPDP right to erasure).",
+        "operationId": "erase_user_data_me_data_delete",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit/verify": {
+      "get": {
+        "summary": "Verify Audit Chain",
+        "description": "Verify audit chain integrity (admin only).",
+        "operationId": "verify_audit_chain_audit_verify_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/audit/events": {
+      "get": {
+        "summary": "Get Audit Events",
+        "description": "Get audit events (admin only).",
+        "operationId": "get_audit_events_audit_events_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Action"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Since"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -453,11 +760,124 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "BearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+    "schemas": {
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "LogoutRequest": {
+        "properties": {
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "title": "LogoutRequest"
+      },
+      "QueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "session_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "QueryRequest"
+      },
+      "RefreshRequest": {
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "title": "Refresh Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "refresh_token"
+        ],
+        "title": "RefreshRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }
