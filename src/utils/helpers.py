@@ -6,7 +6,7 @@ Utility functions for common operations
 import hashlib
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Dict, Any, List
 import uuid
 
@@ -30,7 +30,7 @@ def json_serialize(obj: Any) -> str:
 
 def get_timestamp() -> str:
     """Get current timestamp in ISO format"""
-    return datetime.utcnow().isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def validate_required_fields(data: Dict[str, Any], required_fields: List[str]) -> tuple:

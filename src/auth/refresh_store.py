@@ -100,6 +100,10 @@ class RefreshTokenStore:
 
         return {"user_id": user_id, "expires_at": expires_at}
 
+    def verify(self, token: str) -> Optional[dict]:
+        """Alias for validate(), matching the auth integration contract."""
+        return self.validate(token)
+
     def revoke(self, token: str, replaced_by: Optional[str] = None) -> bool:
         """Revoke a refresh token."""
         conn = get_sqlite_connection(str(self.db_path))
@@ -142,3 +146,6 @@ class RefreshTokenStore:
         row = cursor.fetchone()
         conn.close()
         return row is not None and row[0]
+
+
+RefreshStore = RefreshTokenStore

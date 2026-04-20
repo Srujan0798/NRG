@@ -20,13 +20,22 @@ from src.auth.middleware import (
     filter_researcher_records,
     get_current_user,
 )
-from src.data.database import NRGDatabase, get_sqlite_connection, resolve_database_path
+from src.data.database import resolve_database_path
+from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.audit import log_query as audit_log_query
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def _get_db() -> NRGDatabaseV2:
+    url = f"sqlite:///{resolve_database_path()}"
+    db = NRGDatabaseV2(url=url)
+    db.create_tables()
+    return db
+
 
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
@@ -150,6 +159,9 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             "intent": result.get("intent"),
             "routing_decision": result.get("routing_decision"),
             "verification_status": result.get("verification_status", False),
+            "plan": result.get("plan"),
+            "planner_metadata": result.get("planner_metadata", {}),
+            "citations": result.get("citations", []),
             "warnings": result.get("warnings", result.get("errors", [])),
             "retrieval_sources": result.get("retrieval_sources", []),
             "provenance": result.get("provenance", {}),
@@ -196,19 +208,16 @@ async def health_llm():
 
 @app.get("/health/db")
 async def health_db():
-    """Check canonical SQLite database readiness."""
+    """Check database readiness via SQLAlchemy ORM."""
     try:
-        db_path = resolve_database_path()
-        conn = get_sqlite_connection()
-        researcher_count = conn.execute("SELECT COUNT(*) FROM researchers").fetchone()[0]
-        publication_count = conn.execute("SELECT COUNT(*) FROM publications").fetchone()[0]
-        conn.close()
+        db = _get_db()
+        stats = db.get_stats()
         return {
             "ready": True,
-            "dialect": "sqlite",
-            "path": str(db_path),
-            "researcher_count": researcher_count,
-            "publication_count": publication_count,
+            "dialect": db.dialect,
+            "path": str(resolve_database_path()),
+            "researcher_count": stats.get("researchers", 0),
+            "publication_count": stats.get("publications", 0),
         }
     except Exception as e:
         return {
@@ -253,7 +262,7 @@ async def get_researchers(
     token_payload: dict = Depends(get_current_user)
 ):
     """Protected endpoint with role-specific data shaping."""
-    db = NRGDatabase()
+    db = _get_db()
     researchers = db.query_researchers(state=state, research_area=research_area)
     return filter_researcher_records(researchers, token_payload)
 
@@ -261,38 +270,26 @@ async def get_researchers(
 @app.get("/stats")
 async def get_stats(token_payload: dict = Depends(get_current_user)):
     """Get system statistics for dashboards."""
-    conn = get_sqlite_connection()
+    db = _get_db()
+    stats = db.get_stats()
 
-    # Get counts
-    cursor = conn.execute("SELECT COUNT(*) FROM researchers")
-    researcher_count = cursor.fetchone()[0]
-
-    cursor = conn.execute("SELECT COUNT(*) FROM publications")
-    publication_count = cursor.fetchone()[0]
-
-    cursor = conn.execute("SELECT COUNT(*) FROM institutions")
-    institution_count = cursor.fetchone()[0]
-
-    cursor = conn.execute("SELECT COUNT(*) FROM labs")
-    lab_count = cursor.fetchone()[0]
-
-    # Get research area distribution
-    cursor = conn.execute(
-        "SELECT research_area, COUNT(*) as count FROM researchers WHERE research_area IS NOT NULL GROUP BY research_area ORDER BY count DESC LIMIT 10"
-    )
-    research_areas = [{"area": row[0], "count": row[1]} for row in cursor.fetchall()]
+    researcher_count = stats.get("researchers", 0)
+    publication_count = stats.get("publications", 0)
+    institution_count = stats.get("institutions", 0)
+    lab_count = stats.get("labs", 0)
+    research_areas = stats.get("research_areas", [])
 
     # Get state distribution
-    cursor = conn.execute(
-        "SELECT state, COUNT(*) as count FROM researchers GROUP BY state ORDER BY count DESC LIMIT 10"
-    )
-    states = [{"state": row[0], "count": row[1]} for row in cursor.fetchall()]
-
-    conn.close()
+    with db.get_session() as session:
+        from sqlalchemy import text
+        result = session.execute(text(
+            "SELECT state, COUNT(*) as count FROM researchers "
+            "GROUP BY state ORDER BY count DESC LIMIT 10"
+        ))
+        states = [{"state": row[0], "count": row[1]} for row in result]
 
     role = token_payload.get("role", "researcher")
 
-    # Return tier-appropriate data
     if role == "government":
         return {
             "total_researchers": researcher_count,
@@ -308,7 +305,7 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
             "total_publications": publication_count,
             "research_areas": [ra["area"] for ra in research_areas[:5]],
         }
-    else:  # researcher
+    else:
         return {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
@@ -323,22 +320,8 @@ async def get_publications(
     token_payload: dict = Depends(get_current_user)
 ):
     """Get publications list."""
-    conn = get_sqlite_connection()
-
-    query = "SELECT * FROM publications WHERE 1=1"
-    params = []
-
-    if year:
-        query += " AND year = ?"
-        params.append(year)
-
-    query += " ORDER BY year DESC LIMIT ?"
-    params.append(limit)
-
-    cursor = conn.execute(query, params)
-    publications = [dict(row) for row in cursor.fetchall()]
-    conn.close()
-
+    db = _get_db()
+    publications = db.query_publications(year=year, limit=limit)
     return {"publications": publications}
 
 
@@ -348,7 +331,7 @@ async def get_graph_data(
     token_payload: dict = Depends(get_current_user)
 ):
     """Get graph data for research network visualization."""
-    conn = get_sqlite_connection()
+    db = _get_db()
 
     nodes = []
     edges = []
@@ -366,97 +349,105 @@ async def get_graph_data(
         })
         return node_id
 
-    # Get researchers with their publications, optionally scoped by topic.
-    graph_query = """
-        SELECT DISTINCT r.researcher_id, r.name, r.research_area, r.state,
-                        r.institution_id, p.publication_id, p.title, p.year
-        FROM researchers r
-        LEFT JOIN researcher_publications rp ON r.researcher_id = rp.researcher_id
-        LEFT JOIN publications p ON rp.publication_id = p.publication_id
-        WHERE r.research_area IS NOT NULL
-    """
-    params = []
-    if topic:
-        graph_query += " AND (LOWER(r.research_area) LIKE ? OR LOWER(p.title) LIKE ?)"
-        topic_pattern = f"%{topic.lower()}%"
-        params.extend([topic_pattern, topic_pattern])
-    graph_query += " LIMIT 50"
-    cursor = conn.execute(graph_query, params)
+    with db.get_session() as session:
+        from sqlalchemy import text as sa_text
 
-    researchers = {}
-    researcher_institution_ids = set()
-    publications = {}
+        graph_query = sa_text("""
+            SELECT DISTINCT r.researcher_id, r.name, r.research_area, r.state,
+            r.institution_id, p.publication_id, p.title, p.year
+            FROM researchers r
+            LEFT JOIN researcher_publications rp ON r.researcher_id = rp.researcher_id
+            LEFT JOIN publications p ON rp.publication_id = p.publication_id
+            WHERE r.research_area IS NOT NULL
+        """)
+        params = {}
+        if topic:
+            graph_query = sa_text("""
+                SELECT DISTINCT r.researcher_id, r.name, r.research_area, r.state,
+                r.institution_id, p.publication_id, p.title, p.year
+                FROM researchers r
+                LEFT JOIN researcher_publications rp ON r.researcher_id = rp.researcher_id
+                LEFT JOIN publications p ON rp.publication_id = p.publication_id
+                WHERE r.research_area IS NOT NULL
+                AND (LOWER(r.research_area) LIKE :topic_pattern OR LOWER(p.title) LIKE :topic_pattern)
+            """)
+            params = {"topic_pattern": f"%{topic.lower()}%"}
 
-    for row in cursor.fetchall():
-        researcher_id = row['researcher_id']
-        if researcher_id not in researchers:
-            rid = add_node(row['name'], 'author',
-                          area=row['research_area'], state=row['state'])
-            researchers[researcher_id] = rid
-            if row['institution_id']:
-                researcher_institution_ids.add(row['institution_id'])
+        graph_query_str = str(graph_query) + " LIMIT 50"
+        result = session.execute(sa_text(graph_query_str), params)
 
-        if row['publication_id']:
-            pub_id = row['publication_id']
-            if pub_id not in publications:
-                pid = add_node(row['title'][:50], 'paper', year=row['year'])
-                publications[pub_id] = pid
+        researchers = {}
+        researcher_institution_ids = set()
+        publications = {}
 
-            # Add edge: author -> paper
-            edges.append({
-                "source": researchers[researcher_id],
-                "target": publications[pub_id],
-                "type": "authored",
-                "weight": 1
-            })
+        for row in result:
+            researcher_id = row[0]
+            if researcher_id not in researchers:
+                rid = add_node(row[1], 'author', area=row[2], state=row[3])
+                researchers[researcher_id] = rid
+                if row[4]:
+                    researcher_institution_ids.add(row[4])
+
+            if row[5]:
+                pub_id = row[5]
+                if pub_id not in publications:
+                    pid = add_node(row[6][:50] if row[6] else '', 'paper', year=row[7])
+                    publications[pub_id] = pid
+
+                edges.append({
+                    "source": researchers[researcher_id],
+                    "target": publications[pub_id],
+                    "type": "authored",
+                    "weight": 1
+                })
 
     warnings = []
     if topic and not researchers:
-        conn.close()
         warnings.append({
             "message": f"No graph data found for topic '{topic}'",
             "topic": topic,
         })
         return {"nodes": [], "edges": [], "warnings": warnings}
 
-    # Get institutions for the matched researcher neighborhood. Generic graph
-    # requests keep a small sample for initial exploration.
     institutions = {}
-    if researcher_institution_ids:
-        placeholders = ",".join("?" for _ in researcher_institution_ids)
-        cursor = conn.execute(
-            f"SELECT institution_id, name, state FROM institutions WHERE institution_id IN ({placeholders})",
-            list(researcher_institution_ids),
-        )
-    else:
-        cursor = conn.execute("""
-            SELECT institution_id, name, state FROM institutions LIMIT 20
-        """)
+    with db.get_session() as session:
+        from sqlalchemy import text as sa_text2
+        if researcher_institution_ids:
+            placeholders = ",".join(f":iid{i}" for i in range(len(researcher_institution_ids)))
+            iid_params = {f"iid{i}": iid for i, iid in enumerate(researcher_institution_ids)}
+            inst_result = session.execute(
+                sa_text2(f"SELECT institution_id, name, state FROM institutions WHERE institution_id IN ({placeholders})"),
+                iid_params,
+            )
+        else:
+            inst_result = session.execute(sa_text2(
+                "SELECT institution_id, name, state FROM institutions LIMIT 20"
+            ))
 
-    for row in cursor.fetchall():
-        iid = add_node(row['name'], 'institution', state=row['state'])
-        institutions[row['institution_id']] = iid
+        for row in inst_result:
+            iid = add_node(row[1], 'institution', state=row[2])
+            institutions[row[0]] = iid
 
-    # Link researchers to their institutions.
-    if researchers:
-        placeholders = ",".join("?" for _ in researchers)
-        cursor = conn.execute(
-            f"SELECT researcher_id, institution_id FROM researchers WHERE researcher_id IN ({placeholders})",
-            list(researchers),
-        )
-    else:
-        cursor = conn.execute("SELECT researcher_id, institution_id FROM researchers LIMIT 50")
+        if researchers:
+            r_placeholders = ",".join(f":rid{i}" for i in range(len(researchers)))
+            r_params = {f"rid{i}": rid for i, rid in enumerate(researchers)}
+            aff_result = session.execute(
+                sa_text2(f"SELECT researcher_id, institution_id FROM researchers WHERE researcher_id IN ({r_placeholders})"),
+                r_params,
+            )
+        else:
+            aff_result = session.execute(sa_text2(
+                "SELECT researcher_id, institution_id FROM researchers LIMIT 50"
+            ))
 
-    for row in cursor.fetchall():
-        if row['researcher_id'] in researchers and row['institution_id'] in institutions:
-            edges.append({
-                "source": researchers[row['researcher_id']],
-                "target": institutions[row['institution_id']],
-                "type": "affiliated",
-                "weight": 1
-            })
-
-    conn.close()
+        for row in aff_result:
+            if row[0] in researchers and row[1] in institutions:
+                edges.append({
+                    "source": researchers[row[0]],
+                    "target": institutions[row[1]],
+                    "type": "affiliated",
+                    "weight": 1
+                })
 
     return {"nodes": nodes, "edges": edges, "warnings": warnings}
 

@@ -4,12 +4,15 @@ import logging
 import os
 import re
 from typing import TypedDict
+from pathlib import Path
 
 from src.config.llm_config import get_llm_client
 from src.config.local_llm import get_local_llm_client
 from src.audit import log_llm_call
 
 logger = logging.getLogger(__name__)
+SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
+CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
 
 SENSITIVE_KEY_TERMS = (
     "email",
@@ -169,6 +172,7 @@ def synthesizer_node(state):
 
     return {
         "synthesized_response": synthesized,
+        "citations": _extract_citations(synthesized),
         "verification_status": verification,
         "context_summary": context_summary,
         "provenance": provenance,
@@ -304,9 +308,17 @@ def _build_system_prompt(
 ) -> str:
     safe_sql_results = _minimise_sql_results(sql_results)
     safe_chunks = _minimise_chunks(chunks)
-    return f"""You are the National Research Graph AI.
+    base_prompt = (
+        SYNTH_PROMPT_PATH.read_text()
+        if SYNTH_PROMPT_PATH.exists()
+        else "You are the National Research Graph AI."
+    )
+    return f"""{base_prompt}
+
 Synthesize a response for a Tier {user_tier} user.
 Use only the provided data. If no data is provided, say so.
+Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
+drawn from the provided evidence list. Never fabricate citations.
 Prior Session Context: {context_summary or "none"}
 Data Sources: {sources}
 SQL Evidence: {safe_sql_results}
@@ -533,12 +545,13 @@ def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> 
         area = row.get("research_area", "N/A")
         state = row.get("state", "N/A")
         institution = row.get("institution_id", row.get("institution", "N/A"))
+        citation = _citation_for_row(row)
 
         if shown == 0:
             lines.append(f"  #  {'Name':<30} {'Area':<15} {'Location'}")
             lines.append("  " + "-" * 56)
 
-        lines.append(f"  {i:2}. {name:<30} {area:<15} {state}")
+        lines.append(f"  {i:2}. {name:<30} {area:<15} {state} {citation}")
 
         if user_tier == 1 and institution != "N/A":
             lines.append(f"      Institution: {institution}")
@@ -567,11 +580,12 @@ def _format_publication_table(lines: list, sql_results: list) -> list:
         title = row.get("title", "Unknown Title")
         year = row.get("year", "N/A")
         authors = row.get("authors", row.get("author", "N/A"))
+        citation = _citation_for_row(row)
 
         if len(title) > 50:
             title = title[:47] + "..."
 
-        lines.append(f"  {i}. {title}")
+        lines.append(f"  {i}. {title} {citation}")
         lines.append(f"      Year: {year} | Authors: {authors}")
 
     if len(sql_results) > 15:
@@ -595,7 +609,7 @@ def _format_generic_table(lines: list, sql_results: list) -> list:
                 parts.append(f"{key}: {value}")
 
         if parts:
-            lines.append(f"  {i}. " + " | ".join(parts[:4]))
+            lines.append(f"  {i}. " + " | ".join(parts[:4]) + f" {_citation_for_row(row)}")
         lines.append("")
 
     if len(sql_results) > 15:
@@ -610,9 +624,32 @@ def _format_chunks(lines: list, chunks: list) -> list:
         if len(content) > 200:
             content = content[:197] + "..."
         lines.append(f"  Excerpt {i}:")
-        lines.append(f"    {content}")
+        lines.append(f"    {content} {_citation_for_chunk(chunk, i)}")
         lines.append("")
 
     if len(chunks) > 3:
         lines.append(f"  [+ {len(chunks) - 3} more excerpts available]")
     return lines
+
+
+def _citation_for_row(row: dict) -> str:
+    for key in ("publication_id", "researcher_id", "funding_id", "lab_id", "institution_id"):
+        if row.get(key):
+            return f"[cite:{row[key]}:0]"
+    return "[cite:structured:0]"
+
+
+def _citation_for_chunk(chunk, index: int) -> str:
+    if isinstance(chunk, dict):
+        pub_id = chunk.get("publication_id") or chunk.get("pub_id") or chunk.get("source_id") or f"chunk_{index}"
+        chunk_id = chunk.get("chunk_id") or chunk.get("id") or str(index)
+        return f"[cite:{pub_id}:{chunk_id}]"
+    return f"[cite:chunk_{index}:{index}]"
+
+
+def _extract_citations(response: str) -> list[dict]:
+    """Regex-extract [cite:...] tokens and build Citation objects."""
+    return [
+        {"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id}
+        for pub_id, chunk_id in CITATION_PATTERN.findall(response or "")
+    ]

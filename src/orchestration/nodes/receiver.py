@@ -2,7 +2,7 @@
 
 from typing import TypedDict
 import uuid
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 class ReceiverState(TypedDict):
@@ -59,7 +59,7 @@ def receiver_node(state):
         "user_query": user_query,
         "user_tier": user_tier,
         "conversation_history": conversation_history,
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
 
 

@@ -11,6 +11,8 @@ from typing import Protocol, Optional
 
 import requests
 
+from src.security.egress.guard import create_sovereign_client
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +53,11 @@ class LLMClient(Protocol):
         user_prompt: str,
         conversation_history: list[dict],
     ) -> str: ...
+
+
+def _inspect_cloud_payload(payload: dict) -> None:
+    """Enforce sovereignty before any cloud LLM egress."""
+    create_sovereign_client().inspect_payload(payload)
 
 
 def _env(name: str, default: str | None = None) -> str | None:
@@ -153,6 +160,14 @@ class NvidiaLLMClient:
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
 
+        payload = {
+            "model": self.settings.model,
+            "messages": messages,
+            "temperature": 0.2,
+            "max_tokens": 800,
+        }
+        _inspect_cloud_payload(payload)
+
         # Use NVIDIA API endpoint directly
         response = requests.post(
             "https://integrate.api.nvidia.com/v1/chat/completions",
@@ -160,12 +175,7 @@ class NvidiaLLMClient:
                 "Authorization": f"Bearer {self.settings.api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": self.settings.model,
-                "messages": messages,
-                "temperature": 0.2,
-                "max_tokens": 800,
-            },
+            json=payload,
             timeout=self.settings.request_timeout_seconds,
         )
         response.raise_for_status()
@@ -196,18 +206,21 @@ class OpenAIResponsesClient:
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
 
+        payload = {
+            "model": self.settings.model,
+            "instructions": system_prompt,
+            "input": messages,
+            "temperature": 0.2,
+        }
+        _inspect_cloud_payload(payload)
+
         response = requests.post(
             self.settings.base_url or "https://api.openai.com/v1/responses",
             headers={
                 "Authorization": f"Bearer {self.settings.api_key}",
                 "Content-Type": "application/json",
             },
-            json={
-                "model": self.settings.model,
-                "instructions": system_prompt,
-                "input": messages,
-                "temperature": 0.2,
-            },
+            json=payload,
             timeout=self.settings.request_timeout_seconds,
         )
         response.raise_for_status()
@@ -252,6 +265,14 @@ class AnthropicMessagesClient:
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
 
+        payload = {
+            "model": self.settings.model,
+            "max_tokens": 800,
+            "system": system_prompt,
+            "messages": messages,
+        }
+        _inspect_cloud_payload(payload)
+
         response = requests.post(
             self.settings.base_url or "https://api.anthropic.com/v1/messages",
             headers={
@@ -259,12 +280,7 @@ class AnthropicMessagesClient:
                 "anthropic-version": "2023-06-01",
                 "content-type": "application/json",
             },
-            json={
-                "model": self.settings.model,
-                "max_tokens": 800,
-                "system": system_prompt,
-                "messages": messages,
-            },
+            json=payload,
             timeout=self.settings.request_timeout_seconds,
         )
         response.raise_for_status()
@@ -308,16 +324,19 @@ class AzureOpenAIClient:
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
 
+        payload = {
+            "messages": messages,
+            "temperature": 0.2,
+        }
+        _inspect_cloud_payload(payload)
+
         response = requests.post(
             url,
             headers={
                 "api-key": self.settings.api_key,
                 "Content-Type": "application/json",
             },
-            json={
-                "messages": messages,
-                "temperature": 0.2,
-            },
+            json=payload,
             timeout=self.settings.request_timeout_seconds,
         )
         response.raise_for_status()
@@ -362,17 +381,28 @@ class GeminiGenAIClient:
             *history,
             HumanMessage(content=user_prompt)
         ]
+        _inspect_cloud_payload(
+            {
+                "model": self.settings.model,
+                "messages": [
+                    {"type": message.__class__.__name__, "content": message.content}
+                    for message in messages
+                ],
+            }
+        )
 
         response = self.llm.invoke(messages)
         return response.content
 
 
-@lru_cache(maxsize=1)
-def get_llm_client() -> LLMClient | None:
+@lru_cache(maxsize=8)
+def get_llm_client(provider_name: str | None = None) -> LLMClient | None:
     try:
-        settings = load_llm_settings()
-    except LLMConfigError:
+        settings = load_llm_settings(provider_name)
+    except LLMConfigError as e:
+        logger.warning("NO LLM CONFIGURED: %s", e)
         return None
+    logger.info("LLM client ready: provider=%s model=%s", settings.provider, settings.model)
 
     if settings.provider == "nvidia":
         return NvidiaLLMClient(settings)

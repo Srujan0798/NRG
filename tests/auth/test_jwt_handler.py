@@ -81,3 +81,41 @@ def test_demo_password_environment_names_are_supported(monkeypatch):
 
     user = handler.authenticate_user("researcher_user", "demo-researcher-pass")
     assert user["role"] == "researcher"
+
+
+def test_refresh_token_survives_handler_restart_with_store(tmp_path, monkeypatch):
+    db_path = tmp_path / "tokens.db"
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
+
+    user = {
+        "user_id": "user-persisted",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    first_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    tokens = first_handler.issue_token_pair(user)
+
+    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    claims = restarted_handler.verify_refresh_token(tokens["refresh_token"])
+
+    assert claims["sub"] == "user-persisted"
+
+
+def test_logout_revokes_refresh_token_in_store(tmp_path, monkeypatch):
+    db_path = tmp_path / "tokens.db"
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
+
+    user = {
+        "user_id": "user-revoked",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    tokens = handler.issue_token_pair(user)
+    handler.revoke_token(tokens["refresh_token"])
+
+    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    with pytest.raises(AuthError):
+        restarted_handler.verify_refresh_token(tokens["refresh_token"])

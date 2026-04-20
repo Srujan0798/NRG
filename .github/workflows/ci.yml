@@ -76,10 +76,38 @@ jobs:
   secrets-scan:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
-      - name: Install gitleaks
-        run: |
-          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_v8.18.2_linux_x64.tar.gz
-          tar -xzf gitleaks_v8.18.2_linux_x64.tar.gz
-      - name: Run gitleaks
-        run: ./gitleaks detect --no-banner --verbose
+    - uses: actions/checkout@v4
+    - name: Install gitleaks
+      run: |
+        wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_v8.18.2_linux_x64.tar.gz
+        tar -xzf gitleaks_v8.18.2_linux_x64.tar.gz
+    - name: Run gitleaks
+      run: ./gitleaks detect --no-banner --verbose
+
+  e2e-playwright:
+    runs-on: ubuntu-22.04
+    needs: test-python
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install uv and backend deps
+      run: |
+        pip install uv
+        uv pip sync pyproject.toml
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Install Playwright
+      run: |
+        npm install -g @playwright/test
+        npx playwright install --with-deps chromium
+    - name: Start Qdrant
+      run: docker compose up -d qdrant && sleep 5
+    - name: Run E2E tests
+      run: npx playwright test
+      env:
+        CI: true

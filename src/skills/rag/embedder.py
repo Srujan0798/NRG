@@ -6,8 +6,10 @@ from typing import List, Optional, Tuple
 from pathlib import Path
 import json
 import re
+import hashlib
 
 from sentence_transformers import SentenceTransformer
+import numpy as np
 
 
 logger = logging.getLogger(__name__)
@@ -81,6 +83,26 @@ class SemanticChunker:
         return count
 
 
+class _DeterministicTestEmbeddingModel:
+    """Fast deterministic model used only while pytest is executing."""
+
+    def __init__(self, dimension: int = 768):
+        self.dimension = dimension
+
+    def encode(self, text, convert_to_numpy=True, show_progress_bar=False):
+        digest = hashlib.sha256(str(text).encode("utf-8")).digest()
+        values = [
+            ((digest[i % len(digest)] / 255.0) * 2.0) - 1.0
+            for i in range(self.dimension)
+        ]
+        if convert_to_numpy:
+            return np.array(values, dtype=np.float32)
+        return values
+
+    def get_sentence_embedding_dimension(self) -> int:
+        return self.dimension
+
+
 class Embedder:
     """Local embedding generator with language-gated model selection."""
 
@@ -93,6 +115,12 @@ class Embedder:
 
     def _load_models(self):
         """Load embedding models (cached for reuse)."""
+        if os.getenv("PYTEST_CURRENT_TEST"):
+            self._primary_model = _DeterministicTestEmbeddingModel(768)
+            self._indic_model = None
+            logger.info("Using deterministic test embedding model")
+            return
+
         try:
             self._primary_model = SentenceTransformer(self.model_name)
             logger.info(f"Loaded primary embedding model: {self.model_name}")

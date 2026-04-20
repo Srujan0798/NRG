@@ -5,7 +5,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 import uuid
 import json
-from datetime import datetime
+from datetime import datetime, UTC
 
 from src.audit import log_sql as audit_log_sql
 from src.data.database import get_sqlite_connection, resolve_database_path
@@ -46,7 +46,7 @@ class SQLiteSandbox:
                 "query_id": query_id,
                 "sql": sql,
                 "user_tier": user_tier,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
                 "status": "executing",
             }
         )
@@ -63,7 +63,7 @@ class SQLiteSandbox:
                 {
                     "query_id": query_id,
                     "row_count": len(formatted_results),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "status": "success",
                 }
             )
@@ -90,7 +90,7 @@ class SQLiteSandbox:
                 {
                     "query_id": query_id,
                     "error": str(e),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                     "status": "error",
                 }
             )

@@ -6,7 +6,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime, date
+from datetime import datetime, date, UTC
 from pathlib import Path
 from typing import Optional, Any
 
@@ -35,7 +35,7 @@ class AuditEvent:
     ):
         self.event_id = event_id or str(uuid.uuid4())[:8]
         self.event_type = event_type
-        self.timestamp = timestamp or datetime.utcnow().isoformat()
+        self.timestamp = timestamp or datetime.now(UTC).isoformat()
         self.user_id = user_id
         self.query = query
         self.sql = sql
