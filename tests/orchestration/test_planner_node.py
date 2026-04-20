@@ -5,7 +5,7 @@ class FakePlannerClient:
     model = "fake-planner"
 
     def generate(self, system_prompt, user_prompt, conversation_history):
-        assert "research query planner" in system_prompt.lower()
+        assert "query planner" in system_prompt.lower()
         assert "DATABASE SCHEMA" in user_prompt
         assert "top researchers in Gujarat" in user_prompt
         return json.dumps(

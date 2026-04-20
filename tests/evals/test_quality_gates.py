@@ -9,16 +9,12 @@ Quality gates:
 - Sovereignty leak rate = 0
 """
 
-import json
 import logging
-import os
 import sys
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-
-import pytest
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +166,7 @@ def run_retrieval_eval() -> dict[str, Any]:
 
     Returns dict with recall@5 score and details.
     """
-    from src.skills.rag.retriever import RAGRetriever
+    from src.skills.rag.retriever import Retriever as RAGRetriever
     from src.skills.text_to_sql.skill import TextToSQLSkill
 
     dataset = RetrievalEvalDataset.get_queries()
@@ -194,11 +190,12 @@ def run_retrieval_eval() -> dict[str, Any]:
             retrieved = len(retrieved_chunks) + len(sql_rows)
             total_retrieved += retrieved
 
+            search_term = item.get("research_area") or item.get("topic") or ""
             has_relevant = any(
-                item["research_area"].lower() in str(c).lower()
+                search_term.lower() in str(c).lower()
                 for c in retrieved_chunks
             ) or any(
-                item["research_area"].lower() in str(r).lower()
+                search_term.lower() in str(r).lower()
                 for r in sql_rows
             )
 
@@ -410,7 +407,8 @@ def run_sovereignty_eval() -> dict[str, Any]:
                 "error": str(e)
             })
 
-    leak_rate = 0.0 if requests else 0.0
+    total_violation_attempts = sum(1 for r in requests if r["expected_violation"])
+    leak_rate = (total_violation_attempts - blocked) / total_violation_attempts if total_violation_attempts else 0.0
 
     return {
         "metric": "sovereignty_leak_rate",
@@ -426,13 +424,11 @@ def run_sovereignty_eval() -> dict[str, Any]:
 class TestRetrievalQuality:
     """Test retrieval quality gates."""
 
-    @pytest.mark.xfail(reason="Requires live Qdrant + populated embeddings")
     def test_retrieval_recall_at_5(self):
         result = run_retrieval_eval()
         logger.info(f"Retrieval recall@5: {result['score']:.2f} (threshold: {RETRIEVAL_RECALL_THRESHOLD})")
         assert result["passed"], f"Retrieval recall {result['score']:.2f} below threshold {RETRIEVAL_RECALL_THRESHOLD}"
 
-    @pytest.mark.xfail(reason="Requires verifier LLM")
     def test_faithfulness_score(self):
         result = run_faithfulness_eval()
         logger.info(f"Faithfulness: {result['score']:.2f} (threshold: {FAITHFULNESS_THRESHOLD})")
@@ -447,11 +443,10 @@ class TestSecurityGates:
         logger.info(f"Injection block rate: {result['score']:.2f}")
         assert result["passed"], f"Injection block rate {result['score']:.2f} below 1.0"
 
-    @pytest.mark.xfail(reason="Requires egress guard integration")
     def test_sovereignty_leak_rate(self):
         result = run_sovereignty_eval()
         logger.info(f"Sovereignty leak rate: {result['score']:.2f}")
-        assert result["passed"], f"Sovereignty leak detected"
+        assert result["passed"], "Sovereignty leak detected"
 
 
 if __name__ == "__main__":

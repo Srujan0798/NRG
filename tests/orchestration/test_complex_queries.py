@@ -6,7 +6,6 @@ Test suite for multi-hop reasoning and self-recovery
 
 import logging
 import sys
-from typing import List, Dict, Any
 import unittest
 
 # Configure logging

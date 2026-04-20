@@ -50,3 +50,33 @@ def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
     assert payload["ready"] is True
     assert payload["host"] == "localhost"
     assert payload["collection"] == "nrg_research"
+
+
+class TestAPIMemoryCache:
+    def test_cache_get_set(self):
+        cache = api_main._APIMemoryCache(default_ttl=60)
+        cache.set("key1", {"data": 42})
+        assert cache.get("key1") == {"data": 42}
+
+    def test_cache_expires(self):
+        cache = api_main._APIMemoryCache(default_ttl=0)
+        cache.set("key1", {"data": 42})
+        import time
+        time.sleep(0.05)
+        assert cache.get("key1") is None
+
+    def test_cache_invalidate_prefix(self):
+        cache = api_main._APIMemoryCache(default_ttl=60)
+        cache.set("stats:researcher", 1)
+        cache.set("stats:industry", 2)
+        cache.set("researchers:gujarat", 3)
+        cache.invalidate(prefix="stats:")
+        assert cache.get("stats:researcher") is None
+        assert cache.get("stats:industry") is None
+        assert cache.get("researchers:gujarat") == 3
+
+    def test_cache_invalidate_all(self):
+        cache = api_main._APIMemoryCache(default_ttl=60)
+        cache.set("a", 1)
+        cache.invalidate()
+        assert cache.get("a") is None

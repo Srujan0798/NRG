@@ -7,7 +7,6 @@ from unittest.mock import patch, MagicMock
 from src.config.llm_config import (
     load_llm_settings,
     LLMConfigError,
-    LLMSettings,
     _env,
     _inspect_cloud_payload,
     get_llm_client,

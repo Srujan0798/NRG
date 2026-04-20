@@ -98,7 +98,7 @@ def test_researchers_endpoint_applies_role_based_filtering(monkeypatch):
         def __init__(self, *_args, **_kwargs):
             pass
 
-        def query_researchers(self, state=None, research_area=None):
+        def query_researchers(self, state=None, research_area=None, limit=50, offset=0):
             return sample_records
 
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
@@ -136,3 +136,72 @@ def test_researchers_endpoint_applies_role_based_filtering(monkeypatch):
     assert industry_payload["role"] == "industry"
     assert industry_payload["results"][0]["licensed"] is True
     assert "email" not in industry_payload["results"][0]
+
+
+def test_researchers_endpoint_pagination(monkeypatch):
+    monkeypatch.setattr(api_main, "workflow", StubWorkflow())
+    api_main._api_cache.invalidate("researchers:")
+
+    sample_records = [
+        {"researcher_id": f"r{i}", "name": f"Dr. {i}", "state": "GJ", "research_area": "AI", "year_joined": 2020, "email": None, "phone": None, "orcid": None}
+        for i in range(5)
+    ]
+
+    class FakeDB:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def query_researchers(self, state=None, research_area=None, limit=50, offset=0):
+            return sample_records[offset:offset + limit]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    client = TestClient(api_main.app)
+
+    tokens = _login(client, "researcher_user", "researcher-pass")
+
+    # Default limit=50 returns all
+    resp = client.get("/researchers", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    assert len(resp.json()["results"]) == 5
+
+    # limit=2 returns first 2
+    resp = client.get("/researchers?limit=2", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    assert len(resp.json()["results"]) == 2
+    assert resp.json()["results"][0]["name"] == "Dr. 0"
+
+    # offset=2 skips first 2
+    resp = client.get("/researchers?limit=2&offset=2", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    assert len(resp.json()["results"]) == 2
+    assert resp.json()["results"][0]["name"] == "Dr. 2"
+
+
+def test_publications_endpoint_pagination(monkeypatch):
+    monkeypatch.setattr(api_main, "workflow", StubWorkflow())
+    api_main._api_cache.invalidate("publications:")
+
+    sample_pubs = [
+        {"publication_id": f"p{i}", "title": f"Paper {i}", "year": 2024 - i, "venue": "Conf"}
+        for i in range(5)
+    ]
+
+    class FakeDB:
+        def __init__(self, *_args, **_kwargs):
+            pass
+
+        def query_publications(self, year=None, limit=10, offset=0):
+            filtered = [p for p in sample_pubs if year is None or p["year"] == year]
+            return filtered[offset:offset + limit]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    client = TestClient(api_main.app)
+
+    tokens = _login(client, "researcher_user", "researcher-pass")
+
+    resp = client.get("/publications?limit=2", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    payload = resp.json()
+    assert len(payload["publications"]) == 2
+    assert payload["publications"][0]["title"] == "Paper 0"
+
+    resp = client.get("/publications?limit=2&offset=2", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    payload = resp.json()
+    assert len(payload["publications"]) == 2
+    assert payload["publications"][0]["title"] == "Paper 2"

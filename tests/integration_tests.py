@@ -4,9 +4,7 @@ Integration tests for complete workflow validation
 """
 
 import logging
-import sys
 import unittest
-from typing import Dict, Any
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
