@@ -65,6 +65,30 @@ export default defineConfig({
       '/health/qdrant': {
         target: 'http://localhost:8000',
         changeOrigin: true
+      },
+      '/projects': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/patents': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/collaborations': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/funding': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/labs': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
+      },
+      '/research-documents': {
+        target: 'http://localhost:8000',
+        changeOrigin: true
       }
     }
   },

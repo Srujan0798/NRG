@@ -33,10 +33,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    profiles:
-      - dev
-      - prod
-      - qdrant
 
   redis:
     image: redis:7-alpine
@@ -48,10 +44,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    profiles:
-      - dev
-      - prod
-      - redis
 
   api:
     build:
@@ -81,9 +73,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
-    profiles:
-      - dev
-      - prod
 
   frontend:
     build:
@@ -97,9 +86,6 @@ services:
     depends_on:
       api:
         condition: service_healthy
-    profiles:
-      - dev
-      - prod
 
   kong:
     image: kong:3.6

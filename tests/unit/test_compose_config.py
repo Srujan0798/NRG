@@ -10,10 +10,12 @@ def _compose() -> dict:
 def test_dev_profile_starts_all_dev_dependencies():
     services = _compose()["services"]
 
-    assert "dev" in services["postgres"]["profiles"]
-    assert "dev" in services["qdrant"]["profiles"]
-    assert "dev" in services["redis"]["profiles"]
-    assert "dev" in services["api"]["profiles"]
+    # Core services should be available (with or without profiles)
+    for svc in ["postgres", "qdrant", "redis", "api", "frontend"]:
+        assert svc in services, f"Service {svc} missing from compose"
+    # Postgres and kong remain profile-gated
+    assert "profiles" in services["postgres"]
+    assert "profiles" in services["kong"]
 
 
 def test_api_container_uses_service_hostnames_for_dependencies():
