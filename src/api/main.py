@@ -191,9 +191,16 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
                 detail=f"Security violation: {validation['reason']}"
             )
 
-        # Audit: log inbound query at API boundary
+        # Check cache for identical queries (same user tier)
         user_tier = token_payload.get("tier", 1)
         user_id = token_payload.get("sub", "anonymous")
+        cache_key = f"query:{hash(request.query)}:{user_tier}"
+        cached = _api_cache.get(cache_key)
+        if cached is not None:
+            cached["cached"] = True
+            return cached
+
+        # Audit: log inbound query at API boundary
         try:
             audit_log_query(user_id, request.query)
         except Exception:
@@ -207,7 +214,7 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             user_id=user_id,
         )
         
-        return {
+        response_payload = {
             "query_id": result.get("query_id", str(uuid.uuid4())),
             "session_id": result.get("session_id"),
             "response": result.get("synthesized_response", ""),
@@ -225,6 +232,8 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             "synthesis_method": result.get("synthesis_method", "unknown"),
             "conversation_history": result.get("conversation_history", []),
         }
+        _api_cache.set(cache_key, response_payload, ttl=30)
+        return response_payload
     except HTTPException:
         raise
     except Exception as e:

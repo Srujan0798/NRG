@@ -13,6 +13,7 @@ from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
 SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
+LOCAL_SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system_local.md"
 CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
 
 SENSITIVE_KEY_TERMS = (
@@ -202,6 +203,7 @@ def _synthesize(
             sql_results=sql_results,
             chunks=chunks,
             context_summary=context_summary,
+            use_local_prompt=True,
         )
         user_prompt = f"User Query: {query}"
         try:
@@ -289,14 +291,18 @@ def _build_system_prompt(
     sql_results: list,
     chunks: list,
     context_summary: str,
+    use_local_prompt: bool = False,
 ) -> str:
     safe_sql_results = _minimise_sql_results(sql_results)
     safe_chunks = _minimise_chunks(chunks)
-    base_prompt = (
-        SYNTH_PROMPT_PATH.read_text()
-        if SYNTH_PROMPT_PATH.exists()
-        else "You are the National Research Graph AI."
-    )
+    if use_local_prompt and LOCAL_SYNTH_PROMPT_PATH.exists():
+        base_prompt = LOCAL_SYNTH_PROMPT_PATH.read_text()
+    else:
+        base_prompt = (
+            SYNTH_PROMPT_PATH.read_text()
+            if SYNTH_PROMPT_PATH.exists()
+            else "You are the National Research Graph AI."
+        )
     return f"""{base_prompt}
 
 Synthesize a response for a Tier {user_tier} user.
