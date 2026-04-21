@@ -26,7 +26,7 @@
 
 Two universal prompts govern all NRG work:
 - **Guru** (`.claude/prompts/guru_universal.md`): How Claude operates — 5-section framework (Gap Analysis → Value Assessment → Priority Fix → Agent Tasks → Ship Checklist) + Self-Evolution Engine
-- **Shishya** (`.claude/prompts/shishya_universal.md`): How agents operate — 6-section framework (Task Reception → Execution Plan → Live Evolution → Deliverables → Skills Transmission → Reflection)
+- **Shishya** (`.agents/prompts/shishya_universal.md`): How agents operate — 6-section framework (Task Reception → Execution Plan → Live Evolution → Deliverables → Skills Transmission → Reflection)
 
 **Every agent task protocol must include the Shishya instructions.** Agents are expected to:
 1. Expand tasks beyond minimum into their best possible form
@@ -260,6 +260,6 @@ When the Founder asks anything, the Guru:
 | Security as afterthought | `/security-audit` + `/security-auditor` at every cycle |
 | Docs drift from code | `/docs-sync` catches it |
 | Same mistakes repeated | `/self-evolve` updates rules to prevent recurrence |
-| One skill per agent | 10 global + 13 project skills = 23 total |
+| One skill per agent | 39 Claude + 52 Agent skills = 91 total |
 | No institutional knowledge | Memory brain grows every sprint |
 | Manual review | Automated review pipeline (pre-commit → code-review → security → performance) |

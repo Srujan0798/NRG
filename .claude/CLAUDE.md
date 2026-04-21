@@ -45,12 +45,13 @@ receiver → planner → router → executor → synthesizer → verifier → EN
 - Tier 3 (industry): Limited, anonymized data
 
 ## Database
-- Dev: SQLite at `src/data/nrg_research.db` (200 researchers, 500 pubs, 24 institutions, 50 labs)
+- Dev: SQLite at `nrg_research.db` (5,615 researchers, 12,000 pubs, 889 labs, 8,049 projects, 3,000 patents, 5,000 collaborations)
 - Prod: PostgreSQL via DATABASE_URL env var
-- Junction tables: researcher_publications (689), researcher_labs (278), publication_keywords (1202)
+- Source data: `/Users/srujansai/Desktop/NRG DB/National_Research_Database/` (50K+ records, 3,310 research papers)
+- 3 ID namespaces coexist: Gemini (`RES_1001`), Glm (`RES-00001`), Minimax (`RES-000000`)
 
 ## Testing
-- 170 tests passing, 0 failures
+- 446 tests passing, 0 failures
 - Test with: `PYTEST_CURRENT_TEST=1 .venv/bin/python -m pytest tests/ -q`
 - Coverage target: 60%+
 
@@ -75,22 +76,25 @@ Every cycle follows: PLAN → EXECUTE → AUDIT → EVOLVE
 - `/self-evolve` — After each sprint, updates rules/memory/skills.
 See `.claude/AGENT_WARFARE.md` for full system design.
 
-## All Skills (Slash Commands)
-| Command | Purpose |
-|---------|---------|
-| `/test-suite` | Run all tests + coverage |
-| `/audit-check` | Verify HMAC audit chain |
-| `/deploy-local` | Spin up full stack |
-| `/code-review` | Deep quality + security review |
-| `/security-audit` | Full OWASP + sovereignty scan |
-| `/pre-commit` | Quality gate before every commit |
-| `/post-deploy` | Smoke test after deployment |
-| `/self-evolve` | Analyze sprint + update system |
-| `/architect` | Architecture decisions + ADRs |
-| `/sprint-plan` | Plan next sprint tasks |
-| `/bug-hunt` | Systematic root cause analysis |
-| `/performance` | Benchmark + regression detection |
-| `/docs-sync` | Detect doc-code drift |
+## Skills — 39 Claude + 52 Agent (91 total)
+
+### NRG Core (13)
+| `/test-suite` | `/audit-check` | `/deploy-local` | `/code-review` | `/security-audit` |
+| `/pre-commit` | `/post-deploy` | `/self-evolve` | `/architect` | `/sprint-plan` |
+| `/bug-hunt` | `/performance` | `/docs-sync` |
+
+### Claude Cowork (12 Claude-only)
+| `/architecture-adr` | `/testing-strategy` | `/tech-debt` | `/system-design` |
+| `/standup` | `/write-spec` | `/stakeholder-update` | `/metrics-review` |
+| `/roadmap-update` | `/compliance-check` | `/incident-response` | `/doc-coauthoring` |
+
+### Community + Ultra-Dex (14 shared)
+| `/python-backend` | `/code-review-and-quality` | `/security-auditor` | `/frontend-react-best-practices` |
+| `/webapp-testing` | `/prompt-engineering-patterns` | `/dockerfile-validator` | `/database-migrations-sql-migrations` |
+| `/typescript-advanced-types` | `/nodejs-backend-patterns` | `/changelog-generator` | `/claude-api` | `/mcp-builder` |
+
+### Agent-Only (see `.agents/skills/` — 52 total)
+Agents have additional skills: `debug`, `deploy-checklist`, `explore-data`, `sql-queries`, `statistical-analysis`, `validate-data`, `build-dashboard`, `create-viz`, `data-visualization`, `accessibility-review`, `ux-copy`, `design-critique`, `frontend-design`, `react-composition-patterns`, `web-design-guidelines`, `documentation`, `database-schema-designer`, `test-driven-development`, and more.
 
 ## DO NOT
 - Commit .env files or secrets
