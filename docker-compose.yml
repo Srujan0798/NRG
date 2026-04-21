@@ -1,104 +1,220 @@
+# ==============================================================================
+# NRG Docker Compose - Development/Testing configuration
+# Usage: docker compose --profile dev up
+# ==============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: nrg-postgres
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-nrg}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nrg_secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nrg_default_password}
       POSTGRES_DB: ${POSTGRES_DB:-nrg}
+      POSTGRES_INITDB_ARGS: "-c wal_level=logical -c max_connections=200"
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/seed:/docker-entrypoint-initdb.d
+      - ./db/seed:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nrg"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nrg} -d ${POSTGRES_DB:-nrg}"]
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
     profiles:
       - dev
       - postgres
+      - data
 
+  # ---------------------------------------------------------------------------
+  # Qdrant Vector Database
+  # ---------------------------------------------------------------------------
   qdrant:
     image: qdrant/qdrant:v1.11.3
     container_name: nrg-qdrant
+    restart: unless-stopped
     ports:
-      - "6333:6333"
-      - "6334:6334"
+      - "${QDRANT_PORT:-6333}:6333"
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:6333/readyz"]
-      interval: 5s
+      interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
+  # ---------------------------------------------------------------------------
+  # Redis Cache
+  # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: nrg-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
+      test: ["CMD", "redis-cli", "--raw", "incr", "healthcheck"]
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
+  # ---------------------------------------------------------------------------
+  # NRG API Service
+  # ---------------------------------------------------------------------------
   api:
     build:
       context: .
       dockerfile: Dockerfile.api
+      args:
+        - BUILDKIT_INLINE_CACHE=1
     container_name: nrg-api
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     env_file:
-      - .env
+      - .env.${APP_ENV:-dev}
     environment:
-      - DATABASE_URL=${DATABASE_URL:-sqlite:///app/nrg_research.db}
-      - QDRANT_HOST=qdrant
-      - QDRANT_PORT=6333
+      - APP_ENV=${APP_ENV:-dev}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nrg}}
+      - QDRANT_HOST=${QDRANT_HOST:-qdrant}
+      - QDRANT_PORT=${QDRANT_PORT:-6333}
+      - QDRANT_COLLECTION=${QDRANT_COLLECTION:-nrg_research}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
+      - EMBEDDING_FALLBACK_MODEL=${EMBEDDING_FALLBACK_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
       - REDIS_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+      - UVICORN_WORKERS=4
+      - UVICORN_GRACEFUL_TIMEOUT=30
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
-      - ./nrg_research.db:/app/nrg_research.db
       - ./infrastructure/kong/ssl:/app/infrastructure/kong/ssl:ro
     depends_on:
       qdrant:
         condition: service_healthy
       redis:
         condition: service_healthy
+      postgres:
+        condition: service_healthy
+        required: false
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/all"]
+      interval: 15s
+      timeout: 10s
       retries: 5
-      start_period: 15s
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G
 
+  # ---------------------------------------------------------------------------
+  # Frontend (React built, served by nginx)
+  # ---------------------------------------------------------------------------
   frontend:
     build:
       context: ./frontend
       dockerfile: ../Dockerfile.frontend
+      args:
+        - NODE_ENV=production
     container_name: nrg-frontend
+    restart: unless-stopped
     ports:
-      - "3000:80"
+      - "${FRONTEND_PORT:-3000}:80"
     environment:
-      - VITE_API_BASE_URL=http://localhost:8000
+      - NODE_ENV=production
     depends_on:
       api:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
+  # ---------------------------------------------------------------------------
+  # Nginx Reverse Proxy (production load balancer / SSL termination)
+  # ---------------------------------------------------------------------------
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: nrg-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infrastructure/nginx/ssl:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      frontend:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    profiles:
+      - prod
+
+  # ---------------------------------------------------------------------------
+  # Kong API Gateway (dev/staging only)
+  # ---------------------------------------------------------------------------
   kong:
     image: kong:3.6
     container_name: nrg-kong
+    restart: unless-stopped
     environment:
       KONG_DATABASE: "off"
       KONG_DECLARATIVE_CONFIG: /kong/kong.yaml
-      KONG_LOG_LEVEL: info
+      KONG_LOG_LEVEL: ${KONG_LOG_LEVEL:-info}
       KONG_PLUGINS: bundled,rate-limiting-advanced
-      KONG_NGINX_WORKER_PROCESSES: "2"
+      KONG_NGINX_WORKER_PROCESSES: ${KONG_WORKERS:-2}
     ports:
-      - "8080:8000"
-      - "8443:8443"
+      - "${KONG_PORT:-8080}:8000"
+      - "${KONG_SSL_PORT:-8443}:8443"
       - "8001:8001"
       - "8444:8444"
     volumes:
@@ -110,10 +226,27 @@ services:
       - dev
       - prod
 
+# ==============================================================================
+# Volumes - persistent data
+# ==============================================================================
 volumes:
   postgres_data:
+    driver: local
   qdrant_data:
+    driver: local
+  redis_data:
+    driver: local
+  nginx_logs:
+    driver: local
 
+# ==============================================================================
+# Networks
+# ==============================================================================
 networks:
   default:
     name: nrg-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
