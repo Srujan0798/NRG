@@ -1,13 +1,15 @@
-"""Synthesizer Node - LLM synthesis of retrieved data."""
+"""Synthesizer Node - LLM synthesis of retrieved data with streaming and token budgeting."""
+
+from __future__ import annotations
 
 import logging
 import os
 import re
-from typing import Any, TypedDict
+from typing import Any, TypedDict, Generator
 from pathlib import Path
 
 from src.config.llm_config import get_llm_client
-from src.config.local_llm import get_local_llm_client
+from src.config.local_llm import get_local_llm_client, LlamaCppClient
 from src.audit import log_llm_call
 from src.observability.langfuse_tracer import trace_llm_call
 
@@ -41,6 +43,137 @@ REDACTION_PATTERNS = (
     re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL),
 )
 
+TOKEN_BUDGET_CONFIG = {
+    "max_input_tokens": 4000,
+    "max_output_tokens": 800,
+    "warning_threshold": 0.8,
+}
+
+_context_window_sizes = {
+    "nvidia": 8192,
+    "openai": 128000,
+    "anthropic": 200000,
+    "azure": 128000,
+    "gemini": 128000,
+    "local": 4096,
+}
+
+
+class TokenBudget:
+    """Track and limit per-query token spend."""
+
+    def __init__(self, max_input: int = 4000, max_output: int = 800):
+        self.max_input_tokens = max_input
+        self.max_output_tokens = max_output
+        self.input_tokens_used = 0
+        self.output_tokens_used = 0
+        self.total_cost = 0.0
+        self.provider = "unknown"
+        self.model = "unknown"
+
+    def estimate_tokens(self, text: str) -> int:
+        """Rough token estimation (1 token ≈ 4 chars)."""
+        return len(text) // 4
+
+    def check_budget(self, prompt: str, estimated_response_tokens: int = 200) -> tuple[bool, str]:
+        """Check if request fits within budget."""
+        prompt_tokens = self.estimate_tokens(prompt)
+
+        if prompt_tokens > self.max_input_tokens:
+            return False, f"Prompt exceeds budget: {prompt_tokens} > {self.max_input_tokens}"
+        if estimated_response_tokens > self.max_output_tokens:
+            return False, f"Response exceeds budget: {estimated_response_tokens} > {self.max_output_tokens}"
+        return True, "ok"
+
+    def record_usage(self, input_tokens: int, output_tokens: int, cost: float = 0.0):
+        """Record actual token usage."""
+        self.input_tokens_used = input_tokens
+        self.output_tokens_used = output_tokens
+        self.total_cost += cost
+
+    def to_dict(self) -> dict:
+        return {
+            "input_tokens_used": self.input_tokens_used,
+            "output_tokens_used": self.output_tokens_used,
+            "total_tokens": self.input_tokens_used + self.output_tokens_used,
+            "total_cost_usd": self.total_cost,
+            "provider": self.provider,
+            "model": self.model,
+            "budget_remaining": {
+                "input": self.max_input_tokens - self.input_tokens_used,
+                "output": self.max_output_tokens - self.output_tokens_used,
+            },
+        }
+
+
+class ContextWindowManager:
+    """Intelligently manage conversation history within context window limits."""
+
+    def __init__(self, max_context_tokens: int = 4096):
+        self.max_context_tokens = max_context_tokens
+        self.current_tokens = 0
+
+    def estimate_turn_tokens(self, turn: dict) -> int:
+        """Estimate tokens for a conversation turn."""
+        query_len = len(turn.get("query", "") or "")
+        response_len = len(turn.get("response", "") or "")
+        return (query_len + response_len) // 4
+
+    def trim_history(self, history: list[dict], system_prompt: str = "", user_query: str = "") -> list[dict]:
+        """Intelligently trim conversation history to fit context window."""
+        if not history:
+            return []
+
+        system_tokens = self.estimate_turn_tokens({"query": "", "response": system_prompt})
+        query_tokens = self.estimate_turn_tokens({"query": user_query, "response": ""})
+
+        available = self.max_context_tokens - system_tokens - query_tokens - 500
+
+        trimmed: list[dict] = []
+        total_tokens = 0
+
+        for turn in reversed(history):
+            turn_tokens = self.estimate_turn_tokens(turn)
+            if total_tokens + turn_tokens <= available:
+                trimmed.insert(0, turn)
+                total_tokens += turn_tokens
+            else:
+                if len(trimmed) == 0 and turn_tokens < available:
+                    trimmed.insert(0, turn)
+                break
+
+        if len(trimmed) < len(history):
+            logger.info("Context trimmed: %d turns -> %d turns", len(history), len(trimmed))
+
+        return trimmed
+
+    def summarize_old_turns(self, history: list[dict], max_turns: int = 3) -> list[dict]:
+        """Summarize older turns while keeping recent ones intact."""
+        if len(history) <= max_turns:
+            return history
+
+        recent = history[-max_turns:]
+        older = history[:-max_turns]
+
+        summary = {
+            "query": f"[Summary of {len(older)} earlier turns]",
+            "response": _summarize_turns(older) if older else "",
+        }
+
+        return [summary] + recent
+
+
+def _summarize_turns(turns: list[dict]) -> str:
+    """Create a brief summary of older turns."""
+    if not turns:
+        return ""
+    topics = []
+    for turn in turns:
+        q = turn.get("query", "")[:50]
+        if q:
+            topics.append(q)
+    return f"Previously discussed: {'; '.join(topics[:3])}"
+
 
 class SynthesizerState(TypedDict):
     """State passed from synthesizer node."""
@@ -52,7 +185,6 @@ class SynthesizerState(TypedDict):
 @trace_llm_call("synthesizer")
 def synthesizer_node(state):
     """Synthesize retrieved data into coherent response."""
-    # Extract user query from state object
     if hasattr(state, "user_query"):
         user_query = state.user_query
     elif isinstance(state, dict):
@@ -60,7 +192,6 @@ def synthesizer_node(state):
     else:
         user_query = ""
 
-    # Extract other state values
     if hasattr(state, "sql_results"):
         sql_results = state.sql_results
     elif isinstance(state, dict):
@@ -103,7 +234,6 @@ def synthesizer_node(state):
     else:
         routing_decision = ""
 
-
     data_sources = []
 
     if sql_results:
@@ -140,6 +270,210 @@ def synthesizer_node(state):
         "synthesis_method": provenance.get("synth", "unknown"),
     }
 
+
+def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
+    """Streaming synthesizer that yields SSE events for progressive response delivery.
+
+    Yields dicts with 'event' and 'data' keys for SSE formatting:
+    - event: 'token', 'done', 'error'
+    - data: token text, final response, or error message
+    """
+    if hasattr(state, "user_query"):
+        user_query = state.user_query
+    elif isinstance(state, dict):
+        user_query = state.get("user_query", "")
+    else:
+        user_query = ""
+
+    if hasattr(state, "sql_results"):
+        sql_results = state.sql_results
+    elif isinstance(state, dict):
+        sql_results = state.get("sql_results", [])
+    else:
+        sql_results = []
+
+    if hasattr(state, "retrieved_chunks"):
+        retrieved_chunks = state.retrieved_chunks
+    elif isinstance(state, dict):
+        retrieved_chunks = state.get("retrieved_chunks", [])
+    else:
+        retrieved_chunks = []
+
+    if hasattr(state, "user_tier"):
+        user_tier = state.user_tier
+    elif isinstance(state, dict):
+        user_tier = state.get("user_tier", 1)
+    else:
+        user_tier = 1
+
+    if hasattr(state, "conversation_history"):
+        conversation_history = state.conversation_history
+    elif isinstance(state, dict):
+        conversation_history = state.get("conversation_history", [])
+    else:
+        conversation_history = []
+
+    if hasattr(state, "intent"):
+        intent = state.intent
+    elif isinstance(state, dict):
+        intent = state.get("intent", "")
+    else:
+        intent = ""
+
+    if hasattr(state, "routing_decision"):
+        routing_decision = state.routing_decision
+    elif isinstance(state, dict):
+        routing_decision = state.get("routing_decision", "")
+    else:
+        routing_decision = ""
+
+    data_sources = []
+    if sql_results:
+        data_sources.append(f"Structured data: {len(sql_results)} records")
+    if retrieved_chunks:
+        data_sources.append(f"Unstructured data: {len(retrieved_chunks)} chunks")
+
+    context_summary = _build_context_summary(conversation_history)
+
+    if not data_sources:
+        synthesized = _fallback_response(user_query, context_summary)
+        yield {"event": "done", "data": synthesized}
+        return {
+            "synthesized_response": synthesized,
+            "citations": _extract_citations(synthesized),
+            "verification_status": False,
+            "context_summary": context_summary,
+            "provenance": {"synth": "rule_based", "cloud_synthesis_used": False},
+            "synthesis_method": "rule_based",
+        }
+
+    budget = TokenBudget(
+        max_input=int(TOKEN_BUDGET_CONFIG["max_input_tokens"]),
+        max_output=int(TOKEN_BUDGET_CONFIG["max_output_tokens"]),
+    )
+
+    context_manager = ContextWindowManager(max_context_tokens=_context_window_sizes.get("openai", 4096))
+    trimmed_history = context_manager.trim_history(
+        conversation_history,
+        system_prompt="synthesis prompt",
+        user_query=user_query,
+    )
+
+    cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
+    client = get_llm_client() if cloud_allowed else None
+
+    streaming_response = ""
+
+    if client:
+        system_prompt = _build_system_prompt(
+            user_tier=user_tier,
+            sources=data_sources,
+            sql_results=sql_results,
+            chunks=retrieved_chunks,
+            context_summary=context_summary,
+        )
+
+        budget.provider = getattr(client, "provider", "unknown") if hasattr(client, "provider") else "cloud"
+        budget.model = getattr(client, "model", "unknown") if hasattr(client, "model") else "cloud"
+
+        within_budget, budget_msg = budget.check_budget(system_prompt + user_query)
+        if not within_budget:
+            logger.warning("Budget exceeded: %s, falling back to local", budget_msg)
+
+        if hasattr(client, "generate_streaming"):
+            try:
+                for token in client.generate_streaming(
+                    system_prompt,
+                    user_query,
+                    trimmed_history,
+                ):
+                    streaming_response += token
+                    yield {"event": "token", "data": token}
+
+                yield {"event": "done", "data": streaming_response}
+                return {
+                    "synthesized_response": streaming_response,
+                    "citations": _extract_citations(streaming_response),
+                    "verification_status": True,
+                    "context_summary": context_summary,
+                    "provenance": {"synth": "cloud_llm_streaming", "cloud_synthesis_used": True},
+                    "synthesis_method": "cloud_llm_streaming",
+                    "token_budget": budget.to_dict(),
+                }
+            except Exception as e:
+                logger.warning("Streaming failed: %s, trying non-streaming", e)
+
+        try:
+            response = client.generate(
+                system_prompt,
+                user_query,
+                trimmed_history,
+            )
+            response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
+            streaming_response = response
+            yield {"event": "done", "data": response}
+            return {
+                "synthesized_response": response,
+                "citations": _extract_citations(response),
+                "verification_status": True,
+                "context_summary": context_summary,
+                "provenance": {"synth": "cloud_llm", "cloud_synthesis_used": True},
+                "synthesis_method": "cloud_llm",
+                "token_budget": budget.to_dict(),
+            }
+        except Exception as e:
+            logger.warning("Cloud LLM failed: %s", e)
+
+    local_client = get_local_llm_client()
+    if local_client and isinstance(local_client, LlamaCppClient):
+        system_prompt = _build_system_prompt(
+            user_tier=user_tier,
+            sources=data_sources,
+            sql_results=sql_results,
+            chunks=retrieved_chunks,
+            context_summary=context_summary,
+            use_local_prompt=True,
+        )
+
+        budget.provider = "local"
+        budget.model = "llama.cpp"
+
+        try:
+            for token in local_client.generate_streaming(
+                system_prompt,
+                user_query,
+                trimmed_history,
+            ):
+                streaming_response += token
+                yield {"event": "token", "data": token}
+
+            yield {"event": "done", "data": streaming_response}
+            return {
+                "synthesized_response": streaming_response,
+                "citations": _extract_citations(streaming_response),
+                "verification_status": True,
+                "context_summary": context_summary,
+                "provenance": {"synth": "local_llm_streaming", "cloud_synthesis_used": False},
+                "synthesis_method": "local_llm_streaming",
+                "token_budget": budget.to_dict(),
+            }
+        except Exception as e:
+            logger.warning("Local streaming failed: %s", e)
+
+    synthesized = _fallback_synthesis(
+        user_query, sql_results, retrieved_chunks, context_summary, intent, routing_decision, user_tier
+    )
+    yield {"event": "done", "data": synthesized}
+    return {
+        "synthesized_response": synthesized,
+        "citations": _extract_citations(synthesized),
+        "verification_status": True,
+        "context_summary": context_summary,
+        "provenance": {"synth": "rule_based", "cloud_synthesis_used": False},
+        "synthesis_method": "rule_based",
+        "token_budget": budget.to_dict(),
+    }
+
 def _synthesize(
     query: str,
     sources: list,
@@ -171,6 +505,7 @@ def _synthesize(
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
             )
+            response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
             # Audit: log cloud LLM synthesis call
             try:
                 log_llm_call(
@@ -612,3 +947,125 @@ def _extract_citations(response: str) -> list[dict]:
         {"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id}
         for pub_id, chunk_id in CITATION_PATTERN.findall(response or "")
     ]
+
+
+def build_adaptive_system_prompt(
+    user_tier: int,
+    sources: list,
+    sql_results: list,
+    chunks: list,
+    context_summary: str,
+    provider: str = "unknown",
+    model: str = "unknown",
+) -> str:
+    """Build an adaptive system prompt based on the target LLM's context window.
+
+    Smaller context models (local LLMs) get condensed prompts with less evidence
+    and more direct instructions. Larger context models get full prompts.
+    """
+    context_size = _context_window_sizes.get(provider.lower(), 4096)
+
+    safe_sql_results = _minimise_sql_results(sql_results)
+    safe_chunks = _minimise_chunks(chunks)
+
+    if context_size <= 4096:
+        return _build_condensed_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+    elif context_size <= 8192:
+        return _build_standard_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+    else:
+        return _build_full_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+
+
+def _build_condensed_prompt(
+    user_tier: int,
+    sources: list,
+    sql_results: list,
+    chunks: list,
+    context_summary: str,
+) -> str:
+    """Condensed prompt for small context local LLMs (4K tokens or less)."""
+    safe_sql = sql_results[:5] if sql_results else []
+    safe_chunks = chunks[:3] if chunks else []
+
+    sql_str = str(safe_sql)[:500] if safe_sql else "None"
+    chunk_str = str(safe_chunks)[:500] if safe_chunks else "None"
+
+    return f"""You are NRG AI. Answer user queries using ONLY the provided data.
+If data is insufficient, say so. Cite sources as [cite:id:chunk].
+
+Rules:
+- Keep response under 200 words
+- Use bullet points when possible
+- Cite EVERY factual claim: [cite:pub_id:chunk_id] or [cite:structured:0]
+
+Data Sources: {sources}
+SQL Data: {sql_str}
+Document Data: {chunk_str}
+Context: {context_summary or 'none'}
+Tier: {user_tier}
+"""
+
+
+def _build_standard_prompt(
+    user_tier: int,
+    sources: list,
+    sql_results: list,
+    chunks: list,
+    context_summary: str,
+) -> str:
+    """Standard prompt for medium context models (8K tokens)."""
+    safe_sql = sql_results[:8] if sql_results else []
+    safe_chunks = chunks[:4] if chunks else []
+
+    return f"""You are the National Research Graph AI. Answer research queries using ONLY the provided evidence.
+
+IMPORTANT RULES:
+- Every factual claim MUST be cited: [cite:pub_id:chunk_id] or [cite:structured:0]
+- Never fabricate or extrapolate beyond the evidence
+- If evidence is insufficient, clearly state limitations
+- SQL aggregate results (count, sum) ARE direct answers - state them clearly
+
+Response format:
+- Start with direct answer to the query
+- Follow with supporting evidence citations
+- Use tables for structured data comparisons
+
+User Tier {user_tier} access level applied.
+
+Data Sources: {sources}
+Evidence (SQL): {safe_sql}
+Evidence (Documents): {safe_chunks}
+Session Context: {context_summary or 'none'}
+"""
+
+
+def _build_full_prompt(
+    user_tier: int,
+    sources: list,
+    sql_results: list,
+    chunks: list,
+    context_summary: str,
+) -> str:
+    """Full prompt for large context models (128K+ tokens)."""
+    if LOCAL_SYNTH_PROMPT_PATH.exists():
+        base_prompt = LOCAL_SYNTH_PROMPT_PATH.read_text()
+    else:
+        base_prompt = SYNTH_PROMPT_PATH.read_text() if SYNTH_PROMPT_PATH.exists() else "You are the National Research Graph AI."
+
+    return f"""{base_prompt}
+
+Synthesize a response for a Tier {user_tier} user.
+Use only the provided data. If no data is provided, say so.
+Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
+drawn from the provided evidence list. Never fabricate citations.
+
+IMPORTANT:
+- When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
+- For SQL-only results with no specific row ID, use citation [cite:structured:0].
+- For document excerpts, use the citation shown in the Document Evidence (e.g., [cite:DOC-00123:0]).
+
+Prior Session Context: {context_summary or "none"}
+Data Sources: {sources}
+SQL Evidence: {sql_results}
+Document Evidence: {chunks}
+"""
