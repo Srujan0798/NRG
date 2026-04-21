@@ -211,6 +211,11 @@ async def login(request: LoginRequest, raw_request: Request = None):
 
     tokens = jwt_handler.issue_token_pair(user)
 
+    from src.services.consent import ConsentService
+    consent_service = ConsentService()
+    if not consent_service.has_consent(user["user_id"], "research_access"):
+        consent_service.grant_consent(user["user_id"], "research_access")
+
     tier = user.get("tier", 1)
     allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
         user["user_id"], tier, client_ip
