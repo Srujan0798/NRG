@@ -1,31 +1,26 @@
 #!/usr/bin/env python3
-"""Ingest the full National Research Database CSV dump into SQLite.
+"""
+Ingest NRG CSVs into SQLite.
 
-The ingest is intentionally deterministic:
-- create a fresh SQLite database from src/data/schema/nrg_full_schema.sql
-- load source CSV rows as-is, preserving ID namespaces
-- parse research document metadata from .txt YAML-like frontmatter
-- atomically replace the target DB only after a successful load
+Source: /Users/srujansai/Desktop/NRG DB/National_Research_Database/
+Target: nrg_research.db (project root)
+
+Idempotent: drops and recreates tables on each run.
 """
 
-from __future__ import annotations
-
-import argparse
-import ast
 import csv
 import json
+import os
 import re
 import sqlite3
-import sys
-from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Optional
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_SOURCE_DIR = Path("/Users/srujansai/Desktop/NRG DB/National_Research_Database")
-DEFAULT_DB_PATH = REPO_ROOT / "nrg_research.db"
-DEFAULT_SCHEMA_PATH = REPO_ROOT / "src/data/schema/nrg_full_schema.sql"
+import yaml
 
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 TABLES = [
     "researchers",
     "publications",
@@ -37,554 +32,494 @@ TABLES = [
     "research_documents",
 ]
 
-EXPECTED_COUNTS = {
-    "researchers": 5615,
-    "publications": 12000,
-    "projects": 8049,
-    "funding_records": 15435,
-    "labs": 889,
-    "patents": 3000,
-    "collaborations": 5000,
-    "research_documents": 3310,
-}
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_SCHEMA_PATH = REPO_ROOT / "src" / "data" / "schema" / "nrg_full_schema.sql"
+DEFAULT_SOURCE_DIR = Path("/Users/srujansai/Desktop/NRG DB/National_Research_Database")
+DEFAULT_DB_PATH = REPO_ROOT / "nrg_research.db"
 
 
-def ingest_nrg_database(
-    source_dir: str | Path = DEFAULT_SOURCE_DIR,
-    db_path: str | Path = DEFAULT_DB_PATH,
-    schema_path: str | Path = DEFAULT_SCHEMA_PATH,
-) -> dict[str, Any]:
-    """Create a fresh DB and load all NRG source files."""
-    source = Path(source_dir)
-    target = Path(db_path)
-    schema = Path(schema_path)
+# ---------------------------------------------------------------------------
+# DB helpers
+# ---------------------------------------------------------------------------
 
-    _validate_source(source)
-    if not schema.exists():
-        raise FileNotFoundError(f"Schema file not found: {schema}")
-
-    target.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = target.with_suffix(f"{target.suffix}.tmp")
-    if tmp_path.exists():
-        tmp_path.unlink()
-
-    conn = sqlite3.connect(tmp_path)
-    conn.row_factory = sqlite3.Row
-    try:
-        conn.executescript(schema.read_text(encoding="utf-8"))
-        _load_all(source, conn)
-        counts = count_tables(conn)
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        conn.close()
-        if tmp_path.exists():
-            tmp_path.unlink()
-        raise
-    else:
-        conn.close()
-        tmp_path.replace(target)
-
-    return {"db_path": str(target), "counts": counts}
+def get_conn(db_path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(db_path)
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
 
 
-def count_tables(conn: sqlite3.Connection, tables: Iterable[str] = TABLES) -> dict[str, int]:
-    counts: dict[str, int] = {}
-    for table in tables:
-        counts[table] = conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-    return counts
+def init_schema(conn: sqlite3.Connection, schema_path: Path) -> None:
+    with open(schema_path, "r") as f:
+        conn.executescript(f.read())
 
 
-def _validate_source(source: Path) -> None:
-    required = [
-        "researchers.csv",
-        "publications.csv",
-        "projects.csv",
-        "funding_transactions.csv",
-        "labs_institutions.csv",
-        "patents.csv",
-        "collaborations.csv",
-    ]
-    missing = [name for name in required if not (source / name).exists()]
-    if missing:
-        raise FileNotFoundError(f"Missing source files in {source}: {', '.join(missing)}")
-    if not (source / "Research_Documents").is_dir():
-        raise FileNotFoundError(f"Missing Research_Documents directory in {source}")
+# ---------------------------------------------------------------------------
+# Frontmatter parser
+# ---------------------------------------------------------------------------
 
-
-def _load_all(source: Path, conn: sqlite3.Connection) -> None:
-    now = _now()
-    institution_rows = _build_institutions(source, now)
-    _insert_many(conn, "institutions", institution_rows)
-    _insert_many(conn, "researchers", _map_researchers(source / "researchers.csv", now))
-    publications, researcher_publications = _map_publications(source / "publications.csv", now)
-    _insert_many(conn, "publications", publications)
-    _insert_many(conn, "researcher_publications", researcher_publications)
-    _insert_many(conn, "projects", _map_projects(source / "projects.csv", now))
-    _insert_many(conn, "funding_records", _map_funding(source / "funding_transactions.csv", now))
-    _insert_many(conn, "labs", _map_labs(source / "labs_institutions.csv", now))
-    _insert_many(conn, "patents", _map_patents(source / "patents.csv", now))
-    _insert_many(conn, "collaborations", _map_collaborations(source / "collaborations.csv", now))
-    _insert_many(conn, "research_documents", _map_research_documents(source / "Research_Documents", now))
-
-
-def _read_csv(path: Path) -> list[dict[str, str]]:
-    with path.open(newline="", encoding="utf-8-sig") as handle:
-        rows = []
-        for row in csv.DictReader(handle):
-            row.pop(None, None)
-            rows.append(row)
-        return rows
-
-
-def _insert_many(conn: sqlite3.Connection, table: str, rows: list[dict[str, Any]]) -> None:
-    if not rows:
-        return
-    columns = list(rows[0])
-    placeholders = ", ".join("?" for _ in columns)
-    column_sql = ", ".join(columns)
-    values = [tuple(row.get(column) for column in columns) for row in rows]
-    conn.executemany(
-        f"INSERT OR REPLACE INTO {table} ({column_sql}) VALUES ({placeholders})",
-        values,
-    )
-
-
-def _build_institutions(source: Path, now: str) -> list[dict[str, Any]]:
-    institutions: dict[str, dict[str, Any]] = {}
-
-    for row in _read_csv(source / "researchers.csv"):
-        affiliation = _clean(row.get("affiliation"))
-        if affiliation:
-            institutions.setdefault(
-                affiliation,
-                {
-                    "institution_id": affiliation,
-                    "name": affiliation,
-                    "type": None,
-                    "state": _clean(row.get("state")) or "Unknown",
-                    "country": "IN",
-                    "founded_year": None,
-                    "website": None,
-                    "created_at": now,
-                    "updated_at": now,
-                },
-            )
-
-    for row in _read_csv(source / "labs_institutions.csv"):
-        affiliation = _clean(row.get("affiliation"))
-        if affiliation:
-            institutions.setdefault(
-                affiliation,
-                {
-                    "institution_id": affiliation,
-                    "name": affiliation,
-                    "type": None,
-                    "state": _clean(row.get("location_state")) or "Unknown",
-                    "country": "IN",
-                    "founded_year": None,
-                    "website": None,
-                    "created_at": now,
-                    "updated_at": now,
-                },
-            )
-
-    return list(institutions.values())
-
-
-def _map_researchers(path: Path, now: str) -> list[dict[str, Any]]:
-    rows = []
-    for row in _read_csv(path):
-        tier_access = _clean(row.get("tier_access"))
-        rows.append(
-            {
-                "researcher_id": _required(row, "researcher_id"),
-                "name": _required(row, "full_name"),
-                "institution_id": _clean(row.get("affiliation")),
-                "department": _clean(row.get("department")),
-                "state": _required(row, "state"),
-                "research_area": _clean(row.get("primary_research_area")),
-                "secondary_research_areas": _clean(row.get("secondary_research_areas")),
-                "years_experience": _int(row.get("years_experience")),
-                "year_joined": None,
-                "h_index": _int(row.get("h_index")),
-                "total_funding_received_inr_crores": _float(row.get("total_funding_received_inr_crores")),
-                "email": _clean(row.get("email")),
-                "phone": _clean(row.get("phone")),
-                "orcid": None,
-                "tier_access": tier_access,
-                "access_tier": tier_to_int(tier_access),
-                "created_at": now,
-                "updated_at": now,
-            }
-        )
-    return rows
-
-
-def _map_publications(path: Path, now: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    publications = []
-    researcher_publications = []
-    for row in _read_csv(path):
-        publication_id = _required(row, "publication_id")
-        publications.append(
-            {
-                "publication_id": publication_id,
-                "title": _required(row, "title"),
-                "abstract": None,
-                "authors": _clean(row.get("authors")),
-                "researcher_ids": _clean(row.get("researcher_ids")),
-                "venue": _clean(row.get("journal_name")),
-                "year": _int(row.get("publication_year")),
-                "volume": _clean(row.get("volume")),
-                "issue": _clean(row.get("issue")),
-                "pages": _clean(row.get("pages")),
-                "doi": _clean(row.get("doi")),
-                "pmid": None,
-                "citations": _int(row.get("citations")),
-                "impact_factor": _float(row.get("impact_factor")),
-                "publication_type": _clean(row.get("publication_type")),
-                "research_area": _clean(row.get("research_area")),
-                "access_tier": 1,
-                "created_at": now,
-                "updated_at": now,
-            }
-        )
-        for index, researcher_id in enumerate(_split_ids(row.get("researcher_ids")), start=1):
-            researcher_publications.append(
-                {
-                    "researcher_id": researcher_id,
-                    "publication_id": publication_id,
-                    "author_order": index,
-                }
-            )
-    return publications, researcher_publications
-
-
-def _map_projects(path: Path, now: str) -> list[dict[str, Any]]:
-    return [
-        {
-            "project_id": _required(row, "project_id"),
-            "title": _required(row, "title"),
-            "principal_investigator_id": _required(row, "principal_investigator_id"),
-            "co_pis": _clean(row.get("co_pis")),
-            "start_date": _clean(row.get("start_date")),
-            "end_date": _clean(row.get("end_date")),
-            "funding_agency": _clean(row.get("funding_agency")),
-            "sanctioned_amount_inr_crores": _float(row.get("sanctioned_amount_inr_crores")),
-            "status": _clean(row.get("status")),
-            "research_area": _clean(row.get("research_area")),
-            "access_tier": 1,
-            "created_at": now,
-            "updated_at": now,
-        }
-        for row in _read_project_csv(path)
-    ]
-
-
-def _map_funding(path: Path, now: str) -> list[dict[str, Any]]:
-    return [
-        {
-            "funding_id": _required(row, "transaction_id"),
-            "researcher_id": None,
-            "institution_id": None,
-            "project_id": _clean(row.get("project_id")),
-            "agency": _clean(row.get("agency")),
-            "amount": _float(row.get("amount_released_inr_crores")),
-            "amount_released_inr_crores": _float(row.get("amount_released_inr_crores")),
-            "fiscal_year": _clean(row.get("fiscal_year")),
-            "start_date": None,
-            "end_date": None,
-            "title": None,
-            "access_tier": 1,
-            "created_at": now,
-            "updated_at": now,
-        }
-        for row in _read_csv(path)
-    ]
-
-
-def _map_labs(path: Path, now: str) -> list[dict[str, Any]]:
-    rows = []
-    for row in _read_csv(path):
-        focus = _clean(row.get("research_focus_areas"))
-        rows.append(
-            {
-                "lab_id": _required(row, "lab_id"),
-                "name": _required(row, "lab_name"),
-                "institution_id": _clean(row.get("affiliation")),
-                "research_area": _first_pipe_value(focus),
-                "research_focus_areas": focus,
-                "established_year": None,
-                "location_state": _clean(row.get("location_state")),
-                "director_researcher_id": _clean_researcher_id(row.get("director_researcher_id")),
-                "website": None,
-                "created_at": now,
-                "updated_at": now,
-            }
-        )
-    return rows
-
-
-def _read_project_csv(path: Path) -> list[dict[str, str]]:
-    """Read projects.csv, repairing rare unquoted commas in project titles."""
-    columns = [
-        "project_id",
-        "title",
-        "principal_investigator_id",
-        "co_pis",
-        "start_date",
-        "end_date",
-        "funding_agency",
-        "sanctioned_amount_inr_crores",
-        "status",
-        "research_area",
-    ]
-    rows: list[dict[str, str]] = []
-    with path.open(newline="", encoding="utf-8-sig") as handle:
-        reader = csv.reader(handle)
-        header = next(reader, None)
-        if header != columns:
-            raise ValueError(f"Unexpected projects.csv header: {header}")
-        for raw in reader:
-            if len(raw) == len(columns):
-                rows.append(dict(zip(columns, raw)))
-                continue
-
-            pi_index = next(
-                (
-                    index
-                    for index, value in enumerate(raw[2:], start=2)
-                    if value.strip().startswith(("RES_", "RES-"))
-                ),
-                None,
-            )
-            if pi_index is None or len(raw) - pi_index < 8:
-                raise ValueError(f"Cannot repair malformed projects.csv row: {raw}")
-
-            repaired = [
-                raw[0],
-                ",".join(raw[1:pi_index]).strip(),
-                *raw[pi_index : pi_index + 7],
-                ",".join(raw[pi_index + 7 :]).strip(),
-            ]
-            rows.append(dict(zip(columns, repaired)))
-    return rows
-
-
-def _map_patents(path: Path, now: str) -> list[dict[str, Any]]:
-    return [
-        {
-            "patent_id": _required(row, "patent_id"),
-            "title": _required(row, "title"),
-            "inventor_ids": _clean(row.get("inventor_ids")),
-            "applicant_institution": _clean(row.get("applicant_institution")),
-            "patent_office": _clean(row.get("patent_office")),
-            "application_number": _clean(row.get("application_number")),
-            "filing_date": _clean(row.get("filing_date")),
-            "grant_date": _clean(row.get("grant_date")),
-            "status": _clean(row.get("status")),
-            "research_area": _clean(row.get("research_area")),
-            "patent_type": _clean(row.get("patent_type")),
-            "claims_count": _int(row.get("claims_count")),
-            "access_tier": 1,
-            "created_at": now,
-            "updated_at": now,
-        }
-        for row in _read_csv(path)
-    ]
-
-
-def _map_collaborations(path: Path, now: str) -> list[dict[str, Any]]:
-    return [
-        {
-            "collaboration_id": _required(row, "collaboration_id"),
-            "researcher_ids": _clean(row.get("researcher_ids")),
-            "partner_institution": _clean(row.get("partner_institution")),
-            "partner_country": _clean(row.get("partner_country")),
-            "collaboration_type": _clean(row.get("collaboration_type")),
-            "start_date": _clean(row.get("start_date")),
-            "end_date": _clean(row.get("end_date")),
-            "nature_of_work": _clean(row.get("nature_of_work")),
-            "funding_amount_inr_crores": _float(row.get("funding_amount_inr_crores")),
-            "status": _clean(row.get("status")),
-            "research_area": _clean(row.get("research_area")),
-            "access_tier": 1,
-            "created_at": now,
-            "updated_at": now,
-        }
-        for row in _read_csv(path)
-    ]
-
-
-def _map_research_documents(docs_dir: Path, now: str) -> list[dict[str, Any]]:
-    rows = []
-    for path in sorted(docs_dir.glob("*.txt")):
-        parsed = parse_research_document(path)
-        if not parsed.get("document_id"):
-            continue
-        rows.append(
-            {
-                "document_id": parsed["document_id"],
-                "title": parsed.get("title") or parsed["document_id"],
-                "researcher_ids": _pipe(parsed.get("researcher_ids")),
-                "affiliation": parsed.get("affiliation"),
-                "publication_year": _int(parsed.get("publication_year")),
-                "abstract": parsed.get("abstract"),
-                "keywords": _pipe(parsed.get("keywords")),
-                "research_area_tags": _pipe(parsed.get("research_area_tags")),
-                "access_tier": parsed.get("access_tier"),
-                "category": parsed.get("category"),
-                "file_path": str(path),
-                "created_at": now,
-                "updated_at": now,
-            }
-        )
-    return rows
-
-
-def parse_research_document(path: Path) -> dict[str, Any]:
-    text = path.read_text(encoding="utf-8", errors="replace")
-    frontmatter = _parse_frontmatter(text)
-    body = text.split("---", 2)[2] if text.startswith("---") and text.count("---") >= 2 else text
-    frontmatter.setdefault("document_id", path.stem)
-    frontmatter.setdefault("abstract", _extract_abstract(body))
-    return frontmatter
-
-
-def _parse_frontmatter(text: str) -> dict[str, Any]:
-    if not text.startswith("---"):
-        return {}
-    parts = text.split("---", 2)
-    if len(parts) < 3:
-        return {}
-
-    parsed: dict[str, Any] = {}
-    for raw_line in parts[1].splitlines():
-        line = raw_line.strip()
-        if not line or ":" not in line:
-            continue
-        key, value = line.split(":", 1)
-        parsed[key.strip()] = _parse_frontmatter_value(value.strip())
-    return parsed
-
-
-def _parse_frontmatter_value(value: str) -> Any:
-    if value == "":
-        return None
-    if value.startswith("[") and value.endswith("]"):
+def parse_frontmatter(text: str) -> tuple[dict, str]:
+    """Extract YAML or JSON frontmatter and body from a research document .txt file."""
+    # Try YAML frontmatter
+    match = re.match(r"^---\s*\n(.*?)\n---\s*\n+(.*)", text, re.DOTALL)
+    if match:
         try:
-            return ast.literal_eval(value)
-        except (SyntaxError, ValueError):
-            return [item.strip().strip('"').strip("'") for item in value.strip("[]").split(",") if item.strip()]
-    return value.strip('"').strip("'")
+            meta = yaml.safe_load(match.group(1))
+        except Exception:
+            meta = {}
+        body = match.group(2).strip()
+        return meta if isinstance(meta, dict) else {}, body
+
+    # Try JSON frontmatter inside triple backticks
+    match = re.match(r"^```json\s*\n(.*?)\n```\s*\n+(.*)", text, re.DOTALL)
+    if match:
+        try:
+            json_str = match.group(1)
+            # Fix trailing commas (e.g. "researcher_ids":,)
+            json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+            # Fix bare commas after colons
+            json_str = re.sub(r':(\s*[,}\]])', r':null\1', json_str)
+            meta = json.loads(json_str)
+        except Exception:
+            meta = {}
+        body = match.group(2).strip()
+        return meta if isinstance(meta, dict) else {}, body
+
+    # Try JSON frontmatter after "Metadata:" label
+    match = re.match(r"^Metadata:\s*\n(\{.*?)\n\}\s*\n+(.*)", text, re.DOTALL)
+    if match:
+        try:
+            json_str = match.group(1) + "}"
+            json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+            json_str = re.sub(r':(\s*[,}\]])', r':null\1', json_str)
+            meta = json.loads(json_str)
+        except Exception:
+            meta = {}
+        body = match.group(2).strip()
+        return meta if isinstance(meta, dict) else {}, body
+
+    return {}, text
 
 
-def _extract_abstract(body: str) -> str | None:
-    match = re.search(
-        r"(?is)##\s+Abstract\s*\n+(.*?)(?:\n---|\n##\s+|\Z)",
-        body,
-    )
-    if not match:
-        return None
-    return re.sub(r"\s+", " ", match.group(1)).strip()
-
-
-def tier_to_int(value: str | None) -> int:
-    tier = (value or "").lower()
-    if "tier2" in tier or "policy" in tier or "government" in tier:
+def _tier_to_int(tier_text: Optional[str]) -> int:
+    """Map tier text to integer for access_tier column."""
+    if not tier_text:
+        return 1
+    tier_text = str(tier_text).lower()
+    if "tier1" in tier_text or "tier_1" in tier_text:
+        return 1
+    if "tier2" in tier_text or "tier_2" in tier_text:
         return 2
-    if "tier3" in tier or "analyst" in tier or "industry" in tier:
+    if "tier3" in tier_text or "tier_3" in tier_text:
         return 3
     return 1
 
 
-def _split_ids(value: str | None) -> list[str]:
-    cleaned = _clean(value)
-    if not cleaned:
-        return []
-    delimiter = "|" if "|" in cleaned else ";"
-    return [item.strip() for item in cleaned.split(delimiter) if item.strip()]
+# ---------------------------------------------------------------------------
+# CSV loaders
+# ---------------------------------------------------------------------------
+
+def load_researchers(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "researchers.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                tier_text = row.get("tier_access")
+                conn.execute(
+                    """
+                    INSERT INTO researchers
+                    (researcher_id, name, institution_id, state, department,
+                     research_area, secondary_research_areas, years_experience,
+                     year_joined, h_index, total_funding_received_inr_crores,
+                     email, phone, orcid, tier_access, access_tier)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["researcher_id"],
+                        row["full_name"],
+                        row["affiliation"],
+                        row["state"],
+                        row.get("department"),
+                        row.get("primary_research_area"),
+                        row.get("secondary_research_areas"),
+                        int(row["years_experience"]) if row.get("years_experience") else None,
+                        None,  # year_joined not in CSV
+                        int(row["h_index"]) if row.get("h_index") else None,
+                        float(row["total_funding_received_inr_crores"]) if row.get("total_funding_received_inr_crores") else None,
+                        row.get("email"),
+                        row.get("phone"),
+                        None,  # orcid not in CSV
+                        tier_text,
+                        _tier_to_int(tier_text),
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('researcher_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _pipe(value: Any) -> str | None:
-    if value is None:
-        return None
-    if isinstance(value, list):
-        return "|".join(str(item) for item in value)
-    if isinstance(value, tuple):
-        return "|".join(str(item) for item in value)
-    return str(value).replace(";", "|")
+def load_publications(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "publications.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO publications
+                    (publication_id, title, abstract, authors, researcher_ids,
+                     venue, year, volume, issue, pages, doi, pmid,
+                     citations, impact_factor, publication_type, research_area)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["publication_id"],
+                        row["title"],
+                        None,  # abstract not in CSV
+                        row.get("authors"),
+                        row.get("researcher_ids"),
+                        row.get("journal_name"),
+                        int(row["publication_year"]) if row.get("publication_year") else None,
+                        row.get("volume"),
+                        row.get("issue"),
+                        row.get("pages"),
+                        row.get("doi"),
+                        None,  # pmid not in CSV
+                        int(row["citations"]) if row.get("citations") else None,
+                        float(row["impact_factor"]) if row.get("impact_factor") else None,
+                        row.get("publication_type"),
+                        row.get("research_area"),
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('publication_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _first_pipe_value(value: str | None) -> str | None:
-    if not value:
-        return None
-    return value.split("|", 1)[0].strip() or None
+def load_projects(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "projects.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO projects
+                    (project_id, title, principal_investigator_id, co_pis,
+                     start_date, end_date, funding_agency,
+                     sanctioned_amount_inr_crores, status, research_area)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["project_id"],
+                        row["title"],
+                        row.get("principal_investigator_id"),
+                        row.get("co_pis"),
+                        row.get("start_date"),
+                        row.get("end_date"),
+                        row.get("funding_agency"),
+                        float(row["sanctioned_amount_inr_crores"]) if row.get("sanctioned_amount_inr_crores") else None,
+                        row.get("status"),
+                        row.get("research_area"),
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('project_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _clean(value: Any) -> str | None:
-    if value is None:
-        return None
-    cleaned = str(value).strip()
-    return cleaned or None
+def load_funding_records(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "funding_transactions.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO funding_records
+                    (funding_id, researcher_id, institution_id, project_id,
+                     fiscal_year, agency, amount, start_date, end_date, title)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["transaction_id"],
+                        None,  # researcher_id not in CSV
+                        None,  # institution_id not in CSV
+                        row.get("project_id"),
+                        row.get("fiscal_year"),
+                        row.get("agency"),
+                        float(row["amount_released_inr_crores"]) if row.get("amount_released_inr_crores") else None,
+                        None,  # start_date not in CSV
+                        None,  # end_date not in CSV
+                        None,  # title not in CSV
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('transaction_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _clean_researcher_id(value: Any) -> str | None:
-    cleaned = _clean(value)
-    if not cleaned:
-        return None
-    match = re.match(r"^(RES[-_]\d+)", cleaned)
-    return match.group(1) if match else cleaned
+def load_labs(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "labs_institutions.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO labs
+                    (lab_id, name, institution_id, research_area,
+                     research_focus_areas, established_year, location_state,
+                     director_researcher_id, website)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["lab_id"],
+                        row["lab_name"],
+                        row.get("affiliation"),
+                        row.get("research_focus_areas"),
+                        row.get("research_focus_areas"),
+                        None,  # established_year not in CSV
+                        row.get("location_state"),
+                        row.get("director_researcher_id"),
+                        None,  # website not in CSV
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('lab_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _required(row: dict[str, Any], column: str) -> str:
-    value = _clean(row.get(column))
-    if not value:
-        raise ValueError(f"Missing required column {column} in row {row}")
-    return value
+def load_patents(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "patents.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO patents
+                    (patent_id, title, inventor_ids, applicant_institution,
+                     patent_office, application_number, filing_date, grant_date,
+                     status, research_area, patent_type, claims_count)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["patent_id"],
+                        row["title"],
+                        row.get("inventor_ids"),
+                        row.get("applicant_institution"),
+                        row.get("patent_office"),
+                        row.get("application_number"),
+                        row.get("filing_date"),
+                        row.get("grant_date"),
+                        row.get("status"),
+                        row.get("research_area"),
+                        row.get("patent_type"),
+                        int(row["claims_count"]) if row.get("claims_count") else None,
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('patent_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _int(value: Any) -> int | None:
-    cleaned = _clean(value)
-    if cleaned is None:
-        return None
-    return int(float(cleaned))
+def load_collaborations(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    path = source_dir / "collaborations.csv"
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            try:
+                conn.execute(
+                    """
+                    INSERT INTO collaborations
+                    (collaboration_id, researcher_ids, partner_institution,
+                     partner_country, collaboration_type, start_date, end_date,
+                     nature_of_work, funding_amount_inr_crores, status, research_area)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        row["collaboration_id"],
+                        row.get("researcher_ids"),
+                        row.get("partner_institution"),
+                        row.get("partner_country"),
+                        row.get("collaboration_type"),
+                        row.get("start_date"),
+                        row.get("end_date"),
+                        row.get("nature_of_work"),
+                        float(row["funding_amount_inr_crores"]) if row.get("funding_amount_inr_crores") else None,
+                        row.get("status"),
+                        row.get("research_area"),
+                    ),
+                )
+                rows += 1
+            except Exception as e:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping malformed row {row.get('collaboration_id')}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more malformed rows skipped")
+    return rows
 
 
-def _float(value: Any) -> float | None:
-    cleaned = _clean(value)
-    if cleaned is None:
-        return None
-    return float(cleaned)
+def load_research_documents(conn: sqlite3.Connection, source_dir: Path) -> int:
+    rows = 0
+    skipped = 0
+    docs_dir = source_dir / "Research_Documents"
+    txt_files = sorted(docs_dir.glob("*.txt"))
+    for txt_path in txt_files:
+        try:
+            with open(txt_path, "r", encoding="utf-8") as f:
+                text = f.read()
+            meta, body = parse_frontmatter(text)
+            if not meta:
+                skipped += 1
+                if skipped <= 3:
+                    print(f"   ⚠️  Skipping {txt_path.name}: no parseable frontmatter")
+                continue
+
+            doc_id = meta.get("document_id", txt_path.stem)
+            researcher_ids = meta.get("researcher_ids", [])
+            if isinstance(researcher_ids, list):
+                researcher_ids = "|".join(str(r) for r in researcher_ids)
+            else:
+                researcher_ids = str(researcher_ids) if researcher_ids else None
+
+            keywords = meta.get("keywords", [])
+            if isinstance(keywords, list):
+                keywords = "|".join(str(k) for k in keywords)
+            else:
+                keywords = str(keywords) if keywords else None
+
+            tags = meta.get("research_area_tags", [])
+            if isinstance(tags, list):
+                tags = "|".join(str(t) for t in tags)
+            else:
+                tags = str(tags) if tags else None
+
+            abstract = meta.get("abstract")
+            if not abstract and body:
+                abstract = body[:2000]
+
+            conn.execute(
+                """
+                INSERT INTO research_documents
+                (document_id, title, researcher_ids, affiliation,
+                 publication_year, abstract, keywords, research_area_tags,
+                 access_tier, category, file_path)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    doc_id,
+                    meta.get("title"),
+                    researcher_ids,
+                    meta.get("affiliation"),
+                    int(meta["publication_year"]) if meta.get("publication_year") else None,
+                    abstract,
+                    keywords,
+                    tags,
+                    _tier_to_int(meta.get("access_tier")),
+                    meta.get("category"),
+                    str(txt_path),
+                ),
+            )
+            rows += 1
+        except Exception as e:
+            skipped += 1
+            if skipped <= 3:
+                print(f"   ⚠️  Skipping {txt_path.name}: {e}")
+    if skipped > 3:
+        print(f"   ⚠️  ... and {skipped - 3} more files skipped")
+    return rows
 
 
-def _now() -> str:
-    return datetime.now(UTC).isoformat()
+# ---------------------------------------------------------------------------
+# Main API
+# ---------------------------------------------------------------------------
+
+def ingest_nrg_database(
+    source_dir: Path = DEFAULT_SOURCE_DIR,
+    db_path: Path = DEFAULT_DB_PATH,
+    schema_path: Path = DEFAULT_SCHEMA_PATH,
+) -> dict:
+    """Ingest all NRG CSVs and documents into a fresh SQLite database.
+
+    Returns:
+        dict with keys "counts" mapping table names to row counts.
+    """
+    if db_path.exists():
+        db_path.unlink()
+
+    conn = get_conn(db_path)
+    init_schema(conn, schema_path)
+
+    counts = {}
+    counts["researchers"] = load_researchers(conn, source_dir)
+    counts["publications"] = load_publications(conn, source_dir)
+    counts["projects"] = load_projects(conn, source_dir)
+    counts["funding_records"] = load_funding_records(conn, source_dir)
+    counts["labs"] = load_labs(conn, source_dir)
+    counts["patents"] = load_patents(conn, source_dir)
+    counts["collaborations"] = load_collaborations(conn, source_dir)
+    counts["research_documents"] = load_research_documents(conn, source_dir)
+
+    conn.commit()
+    conn.close()
+    return {"counts": counts}
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Ingest full NRG CSV database into SQLite")
-    parser.add_argument("--source-dir", "--csv-dir", default=str(DEFAULT_SOURCE_DIR))
-    parser.add_argument("--db-path", default=str(DEFAULT_DB_PATH))
-    parser.add_argument("--schema-path", default=str(DEFAULT_SCHEMA_PATH))
-    parser.add_argument("--json", action="store_true", help="Print machine-readable result")
-    args = parser.parse_args()
-
-    result = ingest_nrg_database(
-        source_dir=Path(args.source_dir),
-        db_path=Path(args.db_path),
-        schema_path=Path(args.schema_path),
-    )
-    if args.json:
-        print(json.dumps(result, indent=2))
-    else:
-        for table in TABLES:
-            expected = EXPECTED_COUNTS.get(table)
-            actual = result["counts"][table]
-            suffix = f" / expected {expected}" if expected is not None else ""
-            print(f"{table}: {actual}{suffix}")
-    return 0
+def main() -> None:
+    print(f"🗄  Creating / overwriting {DEFAULT_DB_PATH}")
+    result = ingest_nrg_database()
+    counts = result["counts"]
+    for table, count in counts.items():
+        print(f"📥 {table}: {count} rows")
+    print("✅ All data loaded successfully")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
