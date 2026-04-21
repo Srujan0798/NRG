@@ -6,6 +6,7 @@ interface AuthContextType {
   session: AuthSession | null
   isLoading: boolean
   loginError: string | null
+  backendAvailable: boolean
   login: (username: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
   refreshSession: () => Promise<AuthSession | null>
@@ -25,6 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<AuthSession | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [backendAvailable, setBackendAvailable] = useState(true)
 
   useEffect(() => {
     const storedSession = authService.getStoredSession()
@@ -33,6 +35,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setSession(storedSession)
       setIsLoading(false)
     })
+  }, [])
+
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        const res = await fetch('/health', { signal: AbortSignal.timeout(5000) })
+        setBackendAvailable(res.ok)
+      } catch {
+        setBackendAvailable(false)
+      }
+    }
+    checkBackend()
+    const interval = setInterval(checkBackend, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   const login = async (username: string, password: string): Promise<boolean> => {
@@ -77,6 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     isLoading,
     loginError,
+    backendAvailable,
     login,
     logout,
     refreshSession
