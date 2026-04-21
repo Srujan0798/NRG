@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model
+.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model migrate migrate-create clean-db
 
 PYTHON := .venv/bin/python
 
@@ -60,5 +60,17 @@ dev:
 
 spacy-model:
 	@$(PYTHON) -m spacy download en_core_web_sm
+
+migrate:
+	@DATABASE_URL=sqlite:///src/data/nrg_research.db $(PYTHON) -m alembic upgrade head
+
+migrate-create:
+	@DATABASE_URL=$(DATABASE_URL) $(PYTHON) -m alembic revision --autogenerate -m "$(MSG)"
+
+migrate-down:
+	@DATABASE_URL=sqlite:///src/data/nrg_research.db $(PYTHON) -m alembic downgrade -1
+
+clean-db:
+	@rm -f src/data/nrg_research.db && echo "Database removed."
 
 .DEFAULT_GOAL := help
