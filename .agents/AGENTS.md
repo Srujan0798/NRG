@@ -14,7 +14,7 @@ You are the Shishya (disciple/executor). You receive tasks from the Guru (Claude
 4. **Check current state**: Run `git status` and `git log --oneline -10`
 
 ## Your Skills
-You have 35 skills in `.agents/skills/`. Each skill has a `SKILL.md` with instructions.
+You have **52 skills** in `.agents/skills/`. Each skill has a `SKILL.md` with instructions.
 
 **Key skills you MUST use:**
 | Skill | When | Path |
@@ -27,7 +27,7 @@ You have 35 skills in `.agents/skills/`. Each skill has a `SKILL.md` with instru
 | `webapp-testing` | Writing tests | `.agents/skills/webapp-testing/SKILL.md` |
 | `test-suite` | Running all tests | `.agents/skills/test-suite/SKILL.md` |
 
-Browse all 35: `ls .agents/skills/`
+Browse all 52: `ls .agents/skills/`
 
 ## Task Protocol Format
 Every task you receive will have:

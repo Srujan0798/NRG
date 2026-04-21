@@ -159,23 +159,22 @@ After every sprint, the EVOLVE phase updates these files. Next sprint starts wit
 
 ---
 
-## Skill Inventory
+## Skill Inventory (91 total: 39 Claude + 52 Agent)
 
-| Skill | Trigger | What It Does | Used By |
-|-------|---------|-------------|---------|
-| `/test-suite` | Before commit, after deploy | Run all tests + coverage | All agents |
-| `/audit-check` | Weekly, after incidents | Verify HMAC audit chain integrity | Guardian |
-| `/deploy-local` | Dev testing | Spin up full stack locally | DevOps agent |
-| `/code-review` | Every PR/commit | Quality + security + pattern review | Mentor agent |
-| `/security-audit` | After each sprint | Full OWASP + PII + injection scan | Guardian |
-| `/pre-commit` | Before EVERY commit | Lint + test + security gate | All agents |
-| `/post-deploy` | After deployment | Smoke test + health check | DevOps agent |
-| `/self-evolve` | After each sprint | Analyze + update rules + memory | Guardian |
-| `/architect` | Major decisions | Architecture review + ADR creation | CTO agent |
-| `/sprint-plan` | Start of each sprint | Prioritize + assign tasks | Architect |
-| `/bug-hunt` | When things break | Systematic root cause analysis | Any agent |
-| `/performance` | After features land | Benchmark + regression check | DevOps agent |
-| `/docs-sync` | After code changes | Keep docs aligned with code | Any agent |
+### Core NRG Skills (13 — both Claude + Agents)
+| `/test-suite` | `/audit-check` | `/deploy-local` | `/code-review` | `/security-audit` |
+| `/pre-commit` | `/post-deploy` | `/self-evolve` | `/architect` | `/sprint-plan` |
+| `/bug-hunt` | `/performance` | `/docs-sync` |
+
+### Claude Cowork Skills (12 Claude + 14 Agent)
+Claude: `/architecture-adr`, `/testing-strategy`, `/tech-debt`, `/system-design`, `/standup`, `/write-spec`, `/stakeholder-update`, `/metrics-review`, `/roadmap-update`, `/compliance-check`, `/incident-response`, `/doc-coauthoring`
+Agents: `/debug`, `/deploy-checklist`, `/documentation`, `/explore-data`, `/sql-queries`, `/statistical-analysis`, `/validate-data`, `/build-dashboard`, `/create-viz`, `/data-visualization`, `/accessibility-review`, `/ux-copy`, `/design-critique`, `/incident-response`
+
+### Community + Ultra-Dex Skills (14 shared + extras)
+Shared: `/python-backend`, `/code-review-and-quality`, `/security-auditor`, `/frontend-react-best-practices`, `/webapp-testing`, `/prompt-engineering-patterns`, `/dockerfile-validator`, `/database-migrations-sql-migrations`, `/typescript-advanced-types`, `/nodejs-backend-patterns`, `/changelog-generator`, `/claude-api`, `/mcp-builder`
+Agent-only extras: `/frontend-design`, `/react-composition-patterns`, `/web-design-guidelines`, `/database-schema-designer`, `/test-driven-development`, `/deployment-pipeline-design`, and more
+
+Full list: `ls .claude/skills/` (Claude) or `ls .agents/skills/` (Agents)
 
 ---
 
