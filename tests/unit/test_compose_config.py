@@ -23,13 +23,13 @@ def test_api_container_uses_service_hostnames_for_dependencies():
     environment = api["environment"]
 
     assert api["build"]["dockerfile"] == "Dockerfile.api"
-    assert api["env_file"] == [".env"]
-    assert "QDRANT_HOST=qdrant" in environment
-    assert "QDRANT_PORT=6333" in environment
+    assert api["env_file"] == [".env.${APP_ENV:-dev}"]
+    assert "QDRANT_HOST=${QDRANT_HOST:-qdrant}" in environment
+    assert "QDRANT_PORT=${QDRANT_PORT:-6333}" in environment
     assert "REDIS_URL=redis://redis:6379/0" in environment
 
 
 def test_kong_uses_non_conflicting_public_port():
     ports = _compose()["services"]["kong"]["ports"]
 
-    assert "8080:8000" in ports
+    assert "${KONG_PORT:-8080}:8000" in ports
