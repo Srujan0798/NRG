@@ -3,19 +3,27 @@ FastAPI Server for National Research Graph API
 Integrated with LangGraph, PII Detection, and RBAC
 """
 
+import os
+import asyncio
+import time
+from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+from typing import Any, Optional
+
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel
-from typing import Optional, Any
-import uuid
-import os
-import logging
-import time
-from datetime import UTC, datetime
-from qdrant_client import QdrantClient
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+from qdrant_client import QdrantClient
+import uuid
 
+from src.api.logging_config import configure_logging, get_logger
+from src.api.middleware.security import (
+    SecurityHeadersMiddleware,
+    brute_force_protection,
+)
 from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
     AuthContextMiddleware,
@@ -26,10 +34,12 @@ from src.data.database import resolve_database_path
 from src.data.database_v2 import NRGDatabase as NRGDatabaseV2, Researcher
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
+from src.security.rate_limiter import check_tier_rate_limit
 from src.audit import log_query as audit_log_query
+from src.observability.metrics import instrument_app, get_metrics_content_type
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
+logger = get_logger(__name__)
 
 
 class _APIMemoryCache:
@@ -79,20 +89,43 @@ def _get_db() -> NRGDatabaseV2:
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Graceful shutdown handler - drains connections before exit."""
+    logger.info("Starting NRG API server...")
+    yield
+    logger.info("Received shutdown signal, draining connections...")
+    await drain_connections()
+    logger.info("Shutdown complete, exiting.")
+
+
+async def drain_connections():
+    """Complete in-flight requests before shutdown."""
+    # Small delay to allow SIGTERM to propagate and load balancer to drain
+    await asyncio.sleep(0.5)
+
+
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
-    """Log every request with method, path, status, and duration."""
+    """Log every request with method, path, status, and duration in structured JSON."""
 
     async def dispatch(self, request: Request, call_next):
         start = time.time()
+        request_id = str(uuid.uuid4())
         response = await call_next(request)
         duration = (time.time() - start) * 1000
         logger.info(
-            "%s %s — %s — %.2fms",
-            request.method,
-            request.url.path,
-            response.status_code,
-            duration,
+            "request completed",
+            extra={
+                "request_id": request_id,
+                "method": request.method,
+                "path": request.url.path,
+                "status": response.status_code,
+                "duration_ms": round(duration, 2),
+                "client_ip": request.client.host if request.client else None,
+            }
         )
+        response.headers["X-Request-ID"] = request_id
         return response
 
 
@@ -100,18 +133,26 @@ app = FastAPI(
     title="National Research Graph API",
     version="1.0.0",
     description="Sovereign AI platform for Indian research intelligence",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=os.getenv("CORS_ORIGINS", "http://localhost:3000").split(","),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Session-ID"],
 )
 app.add_middleware(GZipMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(AuthContextMiddleware, jwt_handler=jwt_handler)
+
+# Prometheus instrumentation — must happen after app creation, before startup
+try:
+    instrument_app(app)
+except Exception:
+    logger.warning("Prometheus instrumentation failed — metrics disabled")
 
 
 class LoginRequest(BaseModel):
@@ -128,15 +169,54 @@ class LogoutRequest(BaseModel):
 
 
 @app.post("/login")
-async def login(request: LoginRequest):
+async def login(request: LoginRequest, raw_request: Request = None):
     """Authenticate a user and return access/refresh tokens."""
+    client_ip = None
+    if raw_request:
+        client_ip = raw_request.client.host if raw_request.client else None
+
+    is_locked, lockout_msg = brute_force_protection.check_login_failure(request.username)
+    if is_locked:
+        logger.warning(
+            "Login blocked - account locked: user=%s ip=%s",
+            request.username,
+            client_ip,
+        )
+        headers = {"Retry-After": "900"}
+        raise HTTPException(status_code=429, detail=lockout_msg, headers=headers)
+
     try:
         user = jwt_handler.authenticate_user(request.username, request.password)
+        brute_force_protection.record_success(request.username)
     except AuthError as exc:
+        brute_force_protection.record_failure(request.username)
+        remaining = brute_force_protection._failure_count.get(request.username.lower(), 0)
+        logger.warning(
+            "Login failed",
+            user=request.username,
+            ip=client_ip,
+            attempts=remaining,
+        )
+        if remaining >= 3:
+            try:
+                from src.audit import get_audit_log, AuditEvent
+                get_audit_log().append(AuditEvent(
+                    event_type="brute_force_attempt",
+                    user_id=request.username,
+                    result={"ip": client_ip, "attempts": remaining},
+                ))
+            except Exception:
+                pass
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 
     tokens = jwt_handler.issue_token_pair(user)
-    return {
+
+    tier = user.get("tier", 1)
+    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+        user["user_id"], tier, client_ip
+    )
+
+    response_data = {
         **tokens,
         "user": {
             "id": user["user_id"],
@@ -145,13 +225,32 @@ async def login(request: LoginRequest):
             "tier": user["tier"],
             "researcher_id": user.get("researcher_id"),
         },
+        "rate_limit": {
+            "limit": int(rate_headers.get("X-RateLimit-Limit", 100)),
+            "remaining": remaining,
+            "reset": reset_time,
+        },
     }
+    return response_data
 
 
 @app.post("/refresh")
-async def refresh_tokens(request: RefreshRequest):
+async def refresh_tokens(request: RefreshRequest, raw_request: Request = None):
     try:
-        return jwt_handler.refresh_access_token(request.refresh_token)
+        result = jwt_handler.refresh_access_token(request.refresh_token)
+
+        try:
+            from src.security.token_rotation import get_rotation_logs
+            logs = get_rotation_logs()
+            if logs:
+                logger.info(
+                    "Token refreshed successfully: last_rotation=%s",
+                    logs[-1].get("timestamp", "unknown"),
+                )
+        except Exception:
+            pass
+
+        return result
     except AuthError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 
@@ -179,10 +278,43 @@ class QueryRequest(BaseModel):
     session_id: Optional[str] = None
 
 @app.post("/query")
-async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depends(get_current_user)):
-    """Process query using LangGraph orchestration"""
+async def query_with_langgraph(
+    request: QueryRequest,
+    token_payload: dict = Depends(get_current_user),
+    raw_request: Request = None,
+):
+    """Process query using LangGraph orchestration with full security hardening."""
+    client_ip = None
+    if raw_request and raw_request.client:
+        client_ip = raw_request.client.host
+
+    user_tier = token_payload.get("tier", 1)
+    user_id = token_payload.get("sub", "anonymous")
+
+    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+        user_id, user_tier, client_ip
+    )
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded",
+            headers=rate_headers,
+        )
+
+    if user_tier == 2:
+        from src.api.middleware.security import IPAllowlist
+        if not IPAllowlist.is_allowed(client_ip or ""):
+            logger.warning(
+                "Government tier access blocked for non-whitelisted IP: ip=%s user=%s",
+                client_ip,
+                user_id,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="IP not allowed for government tier access",
+            )
+
     try:
-        # Security: Validate query for PII and prompt injection
         validation = prompt_sanitiser.validate_query({"query": request.query})
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
@@ -191,29 +323,32 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
                 detail=f"Security violation: {validation['reason']}"
             )
 
-        # Check cache for identical queries (same user tier)
-        user_tier = token_payload.get("tier", 1)
-        user_id = token_payload.get("sub", "anonymous")
+        from src.services.consent import ConsentService
+        consent_service = ConsentService()
+        if not consent_service.has_consent(user_id, "research_access"):
+            raise HTTPException(
+                status_code=403,
+                detail="Consent required: Please grant research_access consent before querying data"
+            )
+
         cache_key = f"query:{hash(request.query)}:{user_tier}"
         cached = _api_cache.get(cache_key)
         if cached is not None:
             cached["cached"] = True
             return cached
 
-        # Audit: log inbound query at API boundary
         try:
             audit_log_query(user_id, request.query)
         except Exception:
             logger.warning("Audit log_query failed at API layer", exc_info=True)
 
-        # Pass tier to workflow
         result = workflow.run(
             request.query,
             user_tier=user_tier,
             session_id=request.session_id,
             user_id=user_id,
         )
-        
+
         response_payload = {
             "query_id": result.get("query_id", str(uuid.uuid4())),
             "session_id": result.get("session_id"),
@@ -326,6 +461,58 @@ async def health_qdrant():
             "collection": collection,
             "error": str(e),
         }
+
+@app.get("/health/all")
+async def health_all():
+    """Combined health check for all services."""
+    import httpx
+
+    checks = {
+        "api": {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()},
+        "local_llm": {"status": "unknown"},
+        "qdrant": {"status": "unknown"},
+        "redis": {"status": "unknown"},
+    }
+
+    # Local LLM
+    try:
+        r = httpx.get("http://localhost:8080/health", timeout=2.0)
+        checks["local_llm"] = r.json()
+        checks["local_llm"]["status"] = "healthy" if r.json().get("model_loaded") else "degraded"
+    except Exception as e:
+        checks["local_llm"] = {"status": "unhealthy", "error": str(e)}
+
+    # Qdrant
+    try:
+        host = os.getenv("QDRANT_HOST", "localhost")
+        port = int(os.getenv("QDRANT_PORT", "6333"))
+        client = QdrantClient(host=host, port=port, timeout=2.0)
+        cols = client.get_collections()
+        checks["qdrant"] = {"status": "healthy", "collections": [c.name for c in getattr(cols, "collections", [])]}
+    except Exception as e:
+        checks["qdrant"] = {"status": "unhealthy", "error": str(e)}
+
+    # Redis
+    try:
+        from src.caching.redis_layer import _get_redis
+        redis_client = _get_redis()
+        if redis_client and redis_client.ping():
+            checks["redis"] = {"status": "healthy"}
+        else:
+            checks["redis"] = {"status": "unhealthy", "error": "No connection"}
+    except Exception as e:
+        checks["redis"] = {"status": "unhealthy", "error": str(e)}
+
+    overall = all(c.get("status") == "healthy" for c in checks.values())
+    return {"status": "healthy" if overall else "degraded", "services": checks}
+
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    content_type, metrics_output = get_metrics_content_type()
+    return Response(content=metrics_output, media_type=content_type)
+
 
 @app.get("/researchers")
 async def get_researchers(
