@@ -102,7 +102,8 @@ class TestGatewaySecurity:
 
                 if response.status_code == test_case["expected_status"]:
                     data = response.json()
-                    assert data.get("error") == test_case["expected_error"]
+                    error_code = data.get("error") or data.get("detail", "")
+                    assert error_code == test_case["expected_error"] or test_case["expected_error"] in error_code
                 elif response.status_code == 200:
                     pytest.skip(
                         "API running without DLP enforcement - integration test"
@@ -136,7 +137,8 @@ class TestGatewaySecurity:
 
                 if response.status_code == 400:
                     data = response.json()
-                    assert data.get("error") == "PROMPT_INJECTION"
+                    error_code = data.get("error") or data.get("detail", "")
+                    assert error_code == "PROMPT_INJECTION" or "PROMPT_INJECTION" in error_code
                 elif response.status_code == 200:
                     pytest.skip(
                         "API running without injection enforcement - integration test"

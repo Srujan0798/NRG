@@ -39,7 +39,8 @@ class TestLoadLLMSettings:
             load_llm_settings("unsupported_provider")
 
     def test_openai_settings_loaded(self):
-        with patch.dict(os.environ, {"OPENAI_API_KEY": "test-key"}, clear=False):
+        env = {"OPENAI_API_KEY": "test-key", "OPENAI_MODEL": "gpt-4o"}
+        with patch.dict(os.environ, env, clear=True):
             settings = load_llm_settings("openai")
             assert settings.provider == "openai"
             assert settings.api_key == "test-key"
@@ -98,6 +99,7 @@ class TestInspectCloudPayload:
 
 class TestGetLLMClient:
     def test_returns_none_on_config_error(self):
+        get_llm_client.cache_clear()
         with patch.dict(os.environ, {}, clear=True):
             result = get_llm_client()
             assert result is None

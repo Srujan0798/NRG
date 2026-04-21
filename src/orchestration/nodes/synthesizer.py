@@ -9,6 +9,7 @@ from pathlib import Path
 from src.config.llm_config import get_llm_client
 from src.config.local_llm import get_local_llm_client
 from src.audit import log_llm_call
+from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
 SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
@@ -47,6 +48,7 @@ class SynthesizerState(TypedDict):
     verification_status: bool
 
 
+@trace_llm_call("synthesizer")
 def synthesizer_node(state):
     """Synthesize retrieved data into coherent response."""
     # Extract user query from state object
@@ -116,49 +118,6 @@ def synthesizer_node(state):
         verification = False
         provenance = {"synth": "rule_based", "cloud_synthesis_used": False}
     else:
-        # Cloud verification is gated the same way as cloud synthesis.
-        cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
-        client = get_llm_client() if cloud_allowed else None
-        if client:
-            verification_prompt = (
-                "Verify this claim against minimized evidence only: "
-                f"{_minimise_sql_results(sql_results[:3])}"
-            )
-            try:
-                # Use query as user_prompt for context
-                verification_resp = client.generate(verification_prompt, user_query, _coerce_history(context_summary))
-                # Audit: log verification LLM call
-                try:
-                    log_llm_call(
-                        "synthesizer",
-                        verification_prompt,
-                        {
-                            "response": verification_resp[:500] if verification_resp else "",
-                            "cloud_synthesis_used": False,
-                            "mode": "cloud_verification",
-                            "evidence_counts": {
-                                "sql_rows": len(sql_results),
-                                "chunks": len(retrieved_chunks),
-                            },
-                            "redaction_counts": _redaction_counts(sql_results, retrieved_chunks),
-                        },
-                        getattr(client, "model", "unknown"),
-                    )
-                except Exception:
-                    logger.warning("Audit log_llm_call failed for verification", exc_info=True)
-                if "UNCERTAIN" in verification_resp.upper():
-                    return {
-                        "synthesized_response": "IITGN AI requires more data to verify.",
-                        "verification_status": False,
-                        "context_summary": context_summary,
-                        "provenance": {
-                            "synth": "cloud_verification",
-                            "cloud_synthesis_used": False,
-                        },
-                    }
-            except Exception as e:
-                logger.warning(f"Verification step failed: {e}")
-
         synthesized, provenance = _synthesize(
             user_query,
             data_sources,
@@ -177,6 +136,7 @@ def synthesizer_node(state):
         "verification_status": verification,
         "context_summary": context_summary,
         "provenance": provenance,
+        "synthesis_method": provenance.get("synth", "unknown"),
     }
 
 def _synthesize(
@@ -343,6 +303,12 @@ Synthesize a response for a Tier {user_tier} user.
 Use only the provided data. If no data is provided, say so.
 Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
 drawn from the provided evidence list. Never fabricate citations.
+
+IMPORTANT:
+- When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
+- For SQL-only results with no specific row ID, use citation [cite:structured:0].
+- For document excerpts, use the citation shown in the Document Evidence (e.g., [cite:DOC-00123:0]).
+
 Prior Session Context: {context_summary or "none"}
 Data Sources: {sources}
 SQL Evidence: {safe_sql_results}

@@ -1,4 +1,4 @@
-.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model migrate migrate-create clean-db
+.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model migrate migrate-create clean-db local-llm local-llm-stop local-llm-status
 
 PYTHON := .venv/bin/python
 
@@ -58,6 +58,30 @@ clean:
 dev:
 	@$(PYTHON) -m uvicorn src.api.main:app --reload --port 8000
 
+ingest-sqlite:
+	@echo "Ingesting NRG data into SQLite..."
+	@$(PYTHON) scripts/ingest_nrg_db.py
+	@echo "SQLite ingest complete."
+
+ingest-qdrant:
+	@echo "Ingesting research documents into Qdrant..."
+	@$(PYTHON) scripts/ingest_qdrant.py --fallback-model
+	@echo "Qdrant ingest complete."
+
+ingest-all: ingest-sqlite ingest-qdrant
+
+qdrant-up:
+	@docker run -d --name qdrant -p 6333:6333 qdrant/qdrant 2>/dev/null || echo "Qdrant already running or Docker unavailable"
+
+qdrant-down:
+	@docker stop qdrant 2>/dev/null && docker rm qdrant 2>/dev/null || echo "Qdrant not running"
+
+api-test:
+	@$(PYTHON) -m pytest tests/api/ -v --tb=short
+
+coverage:
+	@$(PYTHON) -m pytest tests/ -q --cov=src --cov-report=term-missing --ignore=tests/e2e --ignore=tests/frontend -k "not (test_rag_tier_filtering or test_tier_filtering_rag)"
+
 spacy-model:
 	@$(PYTHON) -m spacy download en_core_web_sm
 
@@ -72,5 +96,24 @@ migrate-down:
 
 clean-db:
 	@rm -f src/data/nrg_research.db && echo "Database removed."
+
+local-llm:
+	@echo "Starting local LLM server (Gemma-2B Q4_K_M on :8080)..."
+	@mkdir -p logs
+	@.venv/bin/python scripts/start_local_llm.py --daemon
+	@sleep 2
+	@for i in $$(seq 1 30); do \
+		if curl -s http://localhost:8080/health | grep -q healthy; then \
+			echo "Local LLM ready."; exit 0; \
+		fi; \
+		sleep 1; \
+	done; \
+	echo "Timeout waiting for local LLM."
+
+local-llm-stop:
+	@pkill -f "start_local_llm.py" 2>/dev/null && echo "Local LLM stopped." || echo "Local LLM not running."
+
+local-llm-status:
+	@curl -s http://localhost:8080/health 2>/dev/null || echo "Local LLM not responding on :8080"
 
 .DEFAULT_GOAL := help

@@ -38,6 +38,7 @@ class NRGState:
     warnings: list = field(default_factory=list)
     retrieval_sources: list = field(default_factory=list)
     provenance: dict = field(default_factory=dict)
+    synthesis_method: str = "unknown"
 
     user_tier: int = 1
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())

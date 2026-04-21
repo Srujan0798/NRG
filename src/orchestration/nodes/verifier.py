@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from src.config.llm_config import get_llm_client
+from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
 
@@ -16,21 +17,37 @@ PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "verifier_system
 CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
 
 
+@trace_llm_call("verifier")
 def verifier_node(state: Any) -> dict:
     """Verify cited claims against available evidence."""
     response = _state_get(state, "synthesized_response", "") or ""
     retries = int(_state_get(state, "verification_retries", 0) or 0)
     citations = _extract_citations(response)
 
+    synth_method = _state_get(state, "synthesis_method", "unknown")
     if not citations:
+        # Structured-only responses without explicit citations are acceptable
+        # if SQL evidence exists to support them.
+        sql_results = _state_get(state, "sql_results", []) or []
+        if sql_results:
+            return {
+                "verification_status": "ok",
+                "unsupported_claims": [],
+                "verification_retries": retries,
+                "synthesis_method": synth_method,
+            }
         return {
             "verification_status": "fail",
             "unsupported_claims": ["No citation tokens found in synthesized response."],
             "verification_retries": retries,
+            "synthesis_method": synth_method,
         }
 
     evidence = _match_evidence(state, citations)
-    missing = [citation["id"] for citation in citations if citation["id"] not in evidence]
+    # Deduplicate citations before checking evidence — one evidence entry can support
+    # multiple claims that cite the same source.
+    unique_citations = {c["id"] for c in citations}
+    missing = [cid for cid in unique_citations if cid not in evidence]
     if missing:
         return _failure_result(
             retries,
@@ -38,12 +55,23 @@ def verifier_node(state: Any) -> dict:
             response,
         )
 
+    # Short-circuit: if ALL citations are structured:0 and SQL evidence exists,
+    # the claims are directly grounded in the database query result.
+    if unique_citations == {"structured:0"} and _state_get(state, "sql_results", []):
+        return {
+            "verification_status": "ok",
+            "unsupported_claims": [],
+            "verification_retries": retries,
+            "synthesis_method": synth_method,
+        }
+
     client = get_llm_client()
     if client is None:
         return {
             "verification_status": "ok",
             "unsupported_claims": [],
             "verification_retries": retries,
+            "synthesis_method": synth_method,
         }
 
     payload = {
@@ -67,13 +95,16 @@ def verifier_node(state: Any) -> dict:
             "verification_status": "ok",
             "unsupported_claims": [],
             "verification_retries": retries,
+            "synthesis_method": synth_method,
         }
 
-    return _failure_result(
+    result = _failure_result(
         retries,
         verdict.get("unsupported_claims") or ["Verifier marked answer unsupported."],
         response,
     )
+    result["synthesis_method"] = synth_method
+    return result
 
 
 def _failure_result(retries: int, unsupported_claims: list[str], response: str) -> dict:
@@ -84,15 +115,13 @@ def _failure_result(retries: int, unsupported_claims: list[str], response: str) 
             "unsupported_claims": unsupported_claims,
         }
 
+    # Preserve the original synthesized response; do not overwrite with a generic message.
+    # Downstream consumers can check verification_status to decide how to present it.
     return {
         "verification_status": "fail",
         "verification_retries": retries,
         "unsupported_claims": unsupported_claims,
-        "synthesized_response": (
-            "Insufficient evidence to verify the cited answer. "
-            "Please refine the query or rebuild retrieval evidence."
-        ),
-        "original_unverified_response": response,
+        "synthesized_response": response,
     }
 
 

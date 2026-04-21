@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from src.audit import log_llm_call, log_plan
 from src.config.llm_config import get_llm_client
+from src.observability.langfuse_tracer import trace_llm_call
 from src.skills.text_to_sql.sqlite_schema_extractor import SQLiteSchemaExtractor
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class Plan(BaseModel):
     expected_output_shape: str = ""
 
 
+@trace_llm_call("planner")
 def planner_node(state: Any) -> dict:
     """Build a schema-only execution plan for downstream router/executor."""
     user_query = _state_get(state, "user_query", "")

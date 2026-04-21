@@ -55,9 +55,9 @@ def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
     assert result["intent"] == "hybrid"
     assert result["routing_decision"] == "text_to_sql+rag"
     assert result["sql_results"] == [{"name": "Dr. Rao", "state": "GJ"}]
-    assert result["retrieved_chunks"] == [
-        "Robotics research in Gujarat is growing rapidly."
-    ]
+    assert len(result["retrieved_chunks"]) == 1
+    chunk = result["retrieved_chunks"][0]
+    assert chunk["chunk_text"] == "Robotics research in Gujarat is growing rapidly."
     assert result["provenance"] == {
         "synth": "rule_based",
         "cloud_synthesis_used": False,
