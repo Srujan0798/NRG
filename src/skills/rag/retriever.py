@@ -17,11 +17,11 @@ class RetrieverUnavailable(RuntimeError):
 class Retriever:
     """Local Qdrant retriever with access-tier filtering."""
 
-    def __init__(self, host: Optional[str] = None, port: Optional[int] = None):
+    def __init__(self, host: Optional[str] = None, port: Optional[int] = None, timeout: float = 10.0):
         self.host = host or os.getenv("QDRANT_HOST", "localhost")
         self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
 
-        self.client = QdrantClient(host=self.host, port=self.port)
+        self.client = QdrantClient(host=self.host, port=self.port, timeout=int(timeout))
         self.collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     def _build_filter(

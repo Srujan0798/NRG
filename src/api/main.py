@@ -222,6 +222,7 @@ async def query_with_langgraph(request: QueryRequest, token_payload: dict = Depe
             "warnings": result.get("warnings", result.get("errors", [])),
             "retrieval_sources": result.get("retrieval_sources", []),
             "provenance": result.get("provenance", {}),
+            "synthesis_method": result.get("synthesis_method", "unknown"),
             "conversation_history": result.get("conversation_history", []),
         }
     except HTTPException:
@@ -411,6 +412,134 @@ async def get_publications(
     db = _get_db()
     publications = db.query_publications(year=year, limit=limit, offset=offset)
     result = {"publications": publications}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/projects")
+async def get_projects(
+    status: Optional[str] = None,
+    research_area: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get projects with pagination and filtering."""
+    cache_key = f"projects:{status}:{research_area}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    projects = db.query_projects(status=status, research_area=research_area, limit=limit, offset=offset)
+    result = {"projects": projects, "count": len(projects)}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/patents")
+async def get_patents(
+    status: Optional[str] = None,
+    research_area: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get patents with pagination and filtering."""
+    cache_key = f"patents:{status}:{research_area}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    patents = db.query_patents(status=status, research_area=research_area, limit=limit, offset=offset)
+    result = {"patents": patents, "count": len(patents)}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/collaborations")
+async def get_collaborations(
+    partner_country: Optional[str] = None,
+    collaboration_type: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get collaborations with pagination and filtering."""
+    cache_key = f"collaborations:{partner_country}:{collaboration_type}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    collaborations = db.query_collaborations(
+        partner_country=partner_country, collaboration_type=collaboration_type, limit=limit, offset=offset
+    )
+    result = {"collaborations": collaborations, "count": len(collaborations)}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/funding")
+async def get_funding(
+    agency: Optional[str] = None,
+    fiscal_year: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get funding records with pagination and filtering."""
+    cache_key = f"funding:{agency}:{fiscal_year}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    funding = db.query_funding_records(agency=agency, fiscal_year=fiscal_year, limit=limit, offset=offset)
+    result = {"funding_records": funding, "count": len(funding)}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/labs")
+async def get_labs(
+    state: Optional[str] = None,
+    research_area: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get labs with pagination and filtering."""
+    cache_key = f"labs:{state}:{research_area}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    labs = db.query_labs(state=state, research_area=research_area, limit=limit, offset=offset)
+    result = {"labs": labs, "count": len(labs)}
+    _api_cache.set(cache_key, result, ttl=20)
+    return result
+
+
+@app.get("/research-documents")
+async def get_research_documents(
+    year: Optional[int] = None,
+    category: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+    token_payload: dict = Depends(get_current_user)
+):
+    """Get research documents with pagination and filtering."""
+    cache_key = f"research_documents:{year}:{category}:{limit}:{offset}"
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    db = _get_db()
+    docs = db.query_research_documents(year=year, category=category, limit=limit, offset=offset)
+    result = {"research_documents": docs, "count": len(docs)}
     _api_cache.set(cache_key, result, ttl=20)
     return result
 

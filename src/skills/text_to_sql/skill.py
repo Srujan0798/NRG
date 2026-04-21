@@ -36,7 +36,7 @@ class TierAwareSqlRewriter:
     Rewrites SQL to enforce tier-based access control using sqlglot.
 
     - Parses SQL and rejects non-SELECT
-    - Injects WHERE access_tier <= :user_tier for TIER_AWARE_TABLES
+    - Injects WHERE access_tier >= :user_tier for TIER_AWARE_TABLES
     - Enforces outer LIMIT 200
     """
 
@@ -98,7 +98,7 @@ class TierAwareSqlRewriter:
         for table in parsed.find_all(exp.Table):
             if table.name and table.name.lower() in tables:
                 table_ref = table.alias_or_name
-                condition = exp.LTE(
+                condition = exp.GTE(
                     this=exp.column("access_tier", table=table_ref),
                     expression=exp.Literal.number(user_tier),
                 )
@@ -108,7 +108,7 @@ class TierAwareSqlRewriter:
                 )
 
         if tier_condition is None:
-            tier_condition = exp.LTE(
+            tier_condition = exp.GTE(
                 this=exp.column("access_tier"),
                 expression=exp.Literal.number(user_tier),
             )

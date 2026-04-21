@@ -103,8 +103,26 @@ def executor_node(state) -> dict:
         try:
             rag_skill = _get_rag_skill()
             rag_result = rag_skill.retrieve(user_query, user_tier=user_tier, top_k=5)
-            results["retrieved_chunks"] = rag_result.get("chunks", [])
-            results["retrieval_metadata"] = rag_result.get("metadata", [])
+            chunks = rag_result.get("chunks", [])
+            metadata = rag_result.get("metadata", [])
+            # Zip chunks with metadata so synthesizer + verifier can cite properly.
+            # Handles both string chunks (real retriever) and dict chunks (stubs/tests).
+            zipped_chunks = []
+            for idx, (chunk, meta) in enumerate(zip(chunks, metadata)):
+                if isinstance(chunk, dict):
+                    zipped_chunks.append(chunk)
+                else:
+                    zipped_chunks.append(
+                        {
+                            "chunk_text": chunk,
+                            "chunk_id": meta.get("chunk_id", str(idx)),
+                            "publication_id": meta.get("source_id") or meta.get("document_id", f"chunk_{idx}"),
+                            "title": meta.get("title", ""),
+                            "source_id": meta.get("source_id") or meta.get("document_id", ""),
+                        }
+                    )
+            results["retrieved_chunks"] = zipped_chunks if zipped_chunks else chunks
+            results["retrieval_metadata"] = metadata
             if results["retrieved_chunks"] or results["retrieval_metadata"]:
                 results["retrieval_sources"].append("rag")
         except Exception as exc:

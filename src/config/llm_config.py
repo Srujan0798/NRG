@@ -90,7 +90,7 @@ def load_llm_settings(provider_name: str | None = None) -> LLMSettings:
         return LLMSettings(
             provider=provider,
             api_key=api_key,
-            model=_env("GEMINI_MODEL", "gemini-1.5-flash") or "gemini-1.5-flash",
+            model=_env("GEMINI_MODEL", "gemini-2.0-flash") or "gemini-2.0-flash",
             base_url=None,
             request_timeout_seconds=timeout,
         )

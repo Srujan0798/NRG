@@ -26,7 +26,7 @@ def test_rewriter_injects_tier_filter_and_limit_for_tier_aware_tables():
     )
 
     normalized = rewritten.lower()
-    assert "access_tier <= 2" in normalized
+    assert "access_tier >= 2" in normalized
     assert "state = 'gujarat'" in normalized
     assert f"limit {MAX_LIMIT}" in normalized
 

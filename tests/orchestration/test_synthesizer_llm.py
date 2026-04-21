@@ -43,6 +43,10 @@ def test_synthesizer_falls_back_on_llm_failure(monkeypatch):
         "src.orchestration.nodes.synthesizer.get_llm_client",
         lambda: FailingClient(),
     )
+    monkeypatch.setattr(
+        "src.orchestration.nodes.synthesizer.get_local_llm_client",
+        lambda: None,
+    )
 
     result = synthesizer_node(
         {
