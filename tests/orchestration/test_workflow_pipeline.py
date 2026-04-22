@@ -4,6 +4,18 @@ import src.orchestration.nodes.executor as executor_module
 import src.orchestration.nodes.synthesizer as synthesizer_module
 
 
+def _clear_query_cache():
+    """Clear Redis query cache to prevent cross-test contamination."""
+    try:
+        from src.caching.redis_layer import _get_redis
+        client = _get_redis()
+        if client:
+            for key in client.scan_iter(match="query:*"):
+                client.delete(key)
+    except Exception:
+        pass
+
+
 class StubTextToSQLSkill:
     def execute(self, user_query: str, user_tier: int = 1):
         return {
@@ -35,6 +47,15 @@ class FailingRAGSkill:
 
 
 def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
+    _clear_query_cache()
+    # Clear executor skill caches so monkeypatch is respected
+    executor_module._sql_skill_instance = None
+    executor_module._sql_skill_class_id = None
+    executor_module._rag_skill_instance = None
+    executor_module._rag_skill_class_id = None
+
+    monkeypatch.setattr(executor_module, "RAGSkill", FailingRAGSkill)
+
     monkeypatch.setattr(graph_module, "log_query", lambda *args, **kwargs: None)
     monkeypatch.setattr(executor_module, "log_sql", lambda *args, **kwargs: None)
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
@@ -72,6 +93,15 @@ def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
 
 
 def test_workflow_surfaces_rag_failures_as_warnings(monkeypatch):
+    _clear_query_cache()
+    # Clear executor skill caches so monkeypatch is respected
+    executor_module._sql_skill_instance = None
+    executor_module._sql_skill_class_id = None
+    executor_module._rag_skill_instance = None
+    executor_module._rag_skill_class_id = None
+
+    monkeypatch.setattr(executor_module, "RAGSkill", FailingRAGSkill)
+
     monkeypatch.setattr(graph_module, "log_query", lambda *args, **kwargs: None)
     monkeypatch.setattr(executor_module, "log_sql", lambda *args, **kwargs: None)
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)

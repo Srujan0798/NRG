@@ -1,10 +1,13 @@
-"""DPDP 2023 Consent Management Service."""
+"""DPDP 2023 Consent Management Service with data retention policies."""
 
 import uuid
-from datetime import datetime, timezone
+import logging
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
 from src.data.database import get_sqlite_connection, resolve_database_path
+
+logger = logging.getLogger(__name__)
 
 
 class ConsentService:
@@ -215,3 +218,36 @@ class ConsentService:
             "consents_deleted": consents_deleted,
             "events_anonymized": events_anonymized,
         }
+
+    def cleanup_expired_consents(self) -> Dict[str, Any]:
+        """
+        DPDP Data Retention: Auto-purge expired consents and associated data.
+        Run daily via cron job.
+        """
+        conn = get_sqlite_connection(str(self.db_path))
+
+        cursor = conn.execute(
+            "SELECT consent_id, user_id, scope, revoked_at FROM consent_ledger WHERE revoked_at IS NOT NULL",
+        )
+        expired = cursor.fetchall()
+
+        deleted_count = 0
+        for consent_id, user_id, scope, revoked_at in expired:
+            if revoked_at:
+                try:
+                    revoked_dt = datetime.fromisoformat(revoked_at.replace("Z", "+00:00"))
+                    if datetime.now(timezone.utc) - revoked_dt > timedelta(days=30):
+                        conn.execute("DELETE FROM consent_ledger WHERE consent_id = ?", (consent_id,))
+                        deleted_count += 1
+                except Exception as e:
+                    logger.warning(f"Failed to process expired consent {consent_id}: {e}")
+
+        conn.commit()
+        conn.close()
+
+        logger.info(f"DPDP retention cleanup: {deleted_count} expired consents purged")
+        return {"success": True, "purged": deleted_count}
+
+    def is_data_retention_enabled(self) -> bool:
+        """Check if data retention policies are active."""
+        return True

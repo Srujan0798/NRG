@@ -1,29 +1,29 @@
-import React from 'react';
+import React from 'react'
 
 export interface GlassCardProps {
-  children: React.ReactNode;
-  accent?: 'researcher' | 'government' | 'industry' | 'sovereign';
-  title?: string;
-  description?: string;
-  icon?: React.ReactNode;
-  onClick?: () => void;
-  className?: string;
-  hover?: boolean;
+  children: React.ReactNode
+  accent?: 'researcher' | 'government' | 'industry' | 'sovereign'
+  title?: string
+  description?: string
+  icon?: React.ReactNode
+  onClick?: () => void
+  className?: string
+  hover?: boolean
 }
 
 const ACCENT_MAP: Record<string, string> = {
-  researcher: 'border-l-researcher-500',
-  government: 'border-l-government-500',
-  industry: 'border-l-industry-500',
-  sovereign: 'border-l-sovereign-500',
-};
+  researcher: '#6366f1',
+  government: '#2563eb',
+  industry:   '#10b981',
+  sovereign:  '#ff6b35',
+}
 
-const ICON_BG_MAP: Record<string, string> = {
-  researcher: 'bg-researcher-100 text-researcher-700',
-  government: 'bg-government-100 text-government-700',
-  industry: 'bg-industry-100 text-industry-700',
-  sovereign: 'bg-sovereign-100 text-sovereign-700',
-};
+const ACCENT_BG_MAP: Record<string, string> = {
+  researcher: 'bg-researcher-50',
+  government: 'bg-government-50',
+  industry:   'bg-industry-50',
+  sovereign:  'bg-saffron-50',
+}
 
 export function GlassCard({
   children,
@@ -35,11 +35,13 @@ export function GlassCard({
   className = '',
   hover = true,
 }: GlassCardProps) {
+  const accentColor = ACCENT_MAP[accent]
+
   return (
     <div
       className={`
-        iitgn-glass-card border-l-4 ${ACCENT_MAP[accent]} 
-        ${hover ? 'cursor-pointer hover:shadow-xl hover:-translate-y-1' : ''}
+        nrg-glass p-6
+        ${hover ? 'cursor-pointer' : ''}
         ${className}
       `}
       onClick={onClick}
@@ -48,19 +50,24 @@ export function GlassCard({
       onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
     >
       {(title || icon) && (
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3 mb-4">
           {icon && (
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${ICON_BG_MAP[accent]}`}>
+            <div
+              className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${ACCENT_BG_MAP[accent]}`}
+              style={{ color: accentColor }}
+            >
               {icon}
             </div>
           )}
-          <div>
-            {title && <h3 className="text-lg font-semibold text-gray-800">{title}</h3>}
-            {description && <p className="text-sm text-gray-500">{description}</p>}
-          </div>
+          {title && (
+            <div>
+              <h3 className="text-base font-semibold text-nrg-text">{title}</h3>
+              {description && <p className="text-xs text-nrg-muted mt-0.5">{description}</p>}
+            </div>
+          )}
         </div>
       )}
       {children}
     </div>
-  );
+  )
 }

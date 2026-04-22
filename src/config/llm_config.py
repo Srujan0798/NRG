@@ -95,6 +95,18 @@ def load_llm_settings(provider_name: str | None = None) -> LLMSettings:
             request_timeout_seconds=timeout,
         )
 
+    if provider == "minimax":
+        api_key = _env("MINIMAX_API_KEY")
+        if not api_key:
+            raise LLMConfigError("MINIMAX_API_KEY is required for provider 'minimax'")
+        return LLMSettings(
+            provider=provider,
+            api_key=api_key,
+            model=_env("MINIMAX_MODEL", "minimax-m2.7") or "minimax-m2.7",
+            base_url=_env("MINIMAX_BASE_URL", "https://api.minimaxi.chat/v1") or "https://api.minimaxi.chat/v1",
+            request_timeout_seconds=timeout,
+        )
+
     if provider == "openai":
         api_key = _env("OPENAI_API_KEY")
         if not api_key:
@@ -168,7 +180,6 @@ class NvidiaLLMClient:
         }
         _inspect_cloud_payload(payload)
 
-        # Use NVIDIA API endpoint directly
         response = requests.post(
             "https://integrate.api.nvidia.com/v1/chat/completions",
             headers={
@@ -186,6 +197,58 @@ class NvidiaLLMClient:
             if content:
                 return str(content)
         raise RuntimeError("NVIDIA API response did not include content")
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[dict],
+    ):
+        """Streaming generator for NVIDIA API."""
+        messages = [{"role": "system", "content": system_prompt}]
+        for turn in conversation_history[-3:]:
+            if turn.get("query"):
+                messages.append({"role": "user", "content": turn["query"]})
+            if turn.get("response"):
+                messages.append({"role": "assistant", "content": turn["response"]})
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.settings.model,
+            "messages": messages,
+            "temperature": 0.2,
+            "max_tokens": 800,
+            "stream": True,
+        }
+        _inspect_cloud_payload(payload)
+
+        with requests.post(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {self.settings.api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+            stream=True,
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if line:
+                    line = line.decode("utf-8")
+                    if line.startswith("data: "):
+                        data = line[6:]
+                        if data == "[DONE]":
+                            break
+                        try:
+                            import json as _json
+                            chunk = _json.loads(data)
+                            delta = chunk.get("choices", [{}])[0].get("delta", {})
+                            content = delta.get("content", "")
+                            if content:
+                                yield content
+                        except Exception:
+                            continue
 
 
 class OpenAIResponsesClient:
@@ -225,13 +288,10 @@ class OpenAIResponsesClient:
         )
         response.raise_for_status()
         payload = response.json()
-        
-        # Handle OpenAI Responses API format
-        # First try the convenience output_text property
+
         if "output_text" in payload and payload["output_text"]:
             return str(payload["output_text"])
-        
-        # Then try to extract from output array
+
         if "output" in payload:
             for item in payload["output"]:
                 if item.get("type") == "message":
@@ -242,9 +302,66 @@ class OpenAIResponsesClient:
                                 return str(content_item["text"])
                     elif isinstance(content, str):
                         return content
-        
-        # Fallback to empty string if no text found
+
         return ""
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[dict],
+    ):
+        """Streaming generator for OpenAI Responses API."""
+        messages = []
+        for turn in conversation_history[-3:]:
+            if turn.get("query"):
+                messages.append({"role": "user", "content": turn["query"]})
+            if turn.get("response"):
+                messages.append({"role": "assistant", "content": turn["response"]})
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.settings.model,
+            "instructions": system_prompt,
+            "input": messages,
+            "temperature": 0.2,
+            "stream": True,
+        }
+        _inspect_cloud_payload(payload)
+
+        with requests.post(
+            self.settings.base_url or "https://api.openai.com/v1/responses",
+            headers={
+                "Authorization": f"Bearer {self.settings.api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+            stream=True,
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if line:
+                    line = line.decode("utf-8")
+                    if line.startswith("data: "):
+                        data = line[6:]
+                        if data == "[DONE]":
+                            break
+                        try:
+                            import json as _json
+                            chunk = _json.loads(data)
+                            if "output_text" in chunk:
+                                yield chunk["output_text"]
+                            elif "output" in chunk:
+                                for item in chunk["output"]:
+                                    if item.get("type") == "message":
+                                        content = item.get("content", [])
+                                        if isinstance(content, list):
+                                            for ci in content:
+                                                if ci.get("type") == "output_text" and ci.get("text"):
+                                                    yield ci["text"]
+                        except Exception:
+                            continue
 
 
 class AnthropicMessagesClient:
@@ -295,6 +412,59 @@ class AnthropicMessagesClient:
             if text_parts:
                 return "\n".join(text_parts).strip()
         raise RuntimeError("Anthropic response did not include text content")
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[dict],
+    ):
+        """Streaming generator for Anthropic Messages API."""
+        messages = []
+        for turn in conversation_history[-3:]:
+            if turn.get("query"):
+                messages.append({"role": "user", "content": turn["query"]})
+            if turn.get("response"):
+                messages.append({"role": "assistant", "content": turn["response"]})
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.settings.model,
+            "max_tokens": 800,
+            "system": system_prompt,
+            "messages": messages,
+            "stream": True,
+        }
+        _inspect_cloud_payload(payload)
+
+        with requests.post(
+            self.settings.base_url or "https://api.anthropic.com/v1/messages",
+            headers={
+                "x-api-key": self.settings.api_key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+            stream=True,
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if line:
+                    line = line.decode("utf-8")
+                    if line.startswith("data: "):
+                        data = line[6:]
+                        if data == "[DONE]":
+                            break
+                        try:
+                            import json as _json
+                            chunk = _json.loads(data)
+                            if chunk.get("type") == "content_block_delta":
+                                delta = chunk.get("delta", {})
+                                if delta.get("type") == "text_delta":
+                                    yield delta.get("text", "")
+                        except Exception:
+                            continue
 
 
 class AzureOpenAIClient:
@@ -418,8 +588,110 @@ def get_llm_client(provider_name: str | None = None) -> LLMClient | None:
         return AzureOpenAIClient(settings)
     if settings.provider == "gemini":
         return GeminiGenAIClient(settings)
+    if settings.provider == "minimax":
+        return MinimaxLLMClient(settings)
 
     return None
+
+
+class MinimaxLLMClient:
+    """MiniMax API client (Coding Plan key supports minimax-m2.7)."""
+
+    def __init__(self, settings: LLMSettings):
+        self.settings = settings
+        self.base_url = (settings.base_url or "https://api.minimaxi.chat/v1").rstrip("/")
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[dict],
+    ) -> str:
+        messages = [{"role": "system", "content": system_prompt}]
+        for turn in conversation_history[-3:]:
+            if turn.get("query"):
+                messages.append({"role": "user", "content": turn["query"]})
+            if turn.get("response"):
+                messages.append({"role": "assistant", "content": turn["response"]})
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.settings.model,
+            "messages": messages,
+            "temperature": 0.2,
+            "max_tokens": 800,
+        }
+        _inspect_cloud_payload(payload)
+
+        response = requests.post(
+            f"{self.base_url}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {self.settings.api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        choices = payload.get("choices", [])
+        if choices:
+            content = choices[0].get("message", {}).get("content")
+            if content:
+                return str(content)
+        raise RuntimeError("MiniMax API response did not include content")
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[dict],
+    ):
+        """Streaming generator for MiniMax API."""
+        messages = [{"role": "system", "content": system_prompt}]
+        for turn in conversation_history[-3:]:
+            if turn.get("query"):
+                messages.append({"role": "user", "content": turn["query"]})
+            if turn.get("response"):
+                messages.append({"role": "assistant", "content": turn["response"]})
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.settings.model,
+            "messages": messages,
+            "temperature": 0.2,
+            "max_tokens": 800,
+            "stream": True,
+        }
+        _inspect_cloud_payload(payload)
+
+        with requests.post(
+            f"{self.base_url}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {self.settings.api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+            stream=True,
+        ) as response:
+            response.raise_for_status()
+            for line in response.iter_lines():
+                if line:
+                    line = line.decode("utf-8")
+                    if line.startswith("data: "):
+                        data = line[6:]
+                        if data == "[DONE]":
+                            break
+                        try:
+                            import json as _json
+                            chunk = _json.loads(data)
+                            delta = chunk.get("choices", [{}])[0].get("delta", {})
+                            content = delta.get("content", "")
+                            if content:
+                                yield content
+                        except Exception:
+                            continue
 
 
 class SovereignLLMMesh:
@@ -465,6 +737,8 @@ class SovereignLLMMesh:
                     self.clients[provider] = AzureOpenAIClient(settings)
                 elif provider == "gemini":
                     self.clients[provider] = GeminiGenAIClient(settings)
+                elif provider == "minimax":
+                    self.clients[provider] = MinimaxLLMClient(settings)
 
                 logger.info(f"✅ LLM Mesh: {provider} client initialized")
 

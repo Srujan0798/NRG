@@ -51,7 +51,7 @@ receiver → planner → router → executor → synthesizer → verifier → EN
 - 3 ID namespaces coexist: Gemini (`RES_1001`), Glm (`RES-00001`), Minimax (`RES-000000`)
 
 ## Testing
-- 446 tests passing, 0 failures
+- 642 tests (collection), core tests passing
 - Test with: `PYTEST_CURRENT_TEST=1 .venv/bin/python -m pytest tests/ -q`
 - Coverage target: 60%+
 

@@ -1,11 +1,17 @@
-FROM python:3.11-slim AS runtime
+# ==============================================================================
+# Multi-stage Dockerfile for NRG API
+# Stage 1: Builder - compile dependencies and assets
+# Stage 2: Runner - minimal runtime image
+# ==============================================================================
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+# ------------------------------------------------------------------------------
+# Stage 1: Builder
+# ------------------------------------------------------------------------------
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     gcc \
@@ -13,18 +19,64 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-COPY pyproject.toml README.md ./
+# Install Python build tools
+RUN pip install --upgrade pip wheel setuptools
+
+# Copy project files
+COPY pyproject.toml .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -e .
+
+# Copy source code
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 
-RUN pip install --upgrade pip wheel && pip install .
+# ------------------------------------------------------------------------------
+# Stage 2: Runner - Production image
+# ------------------------------------------------------------------------------
+FROM python:3.11-slim AS runner
 
-RUN groupadd -r app && useradd -r -g app app && chown -R app:app /app
+# Security: non-root user setup
+RUN groupadd -r app && useradd -r -g app app
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+COPY --from=builder /root/.cache /root/.cache
+
+# Copy application code
+COPY --from=builder /app/src/ ./src/
+COPY --from=builder /app/scripts/ ./scripts/
+COPY --from=builder /app/pyproject.toml .
+
+# Create non-root user ownership
+RUN chown -R app:app /app
+
 USER app
+
+# Environment variables for production
+ENV PATH=/root/.local/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONFAULTHANDLER=0 \
+    UVICORN_WORKERS=4 \
+    UVICORN_GRACEFUL_TIMEOUT=30 \
+    UVICORN_TIMEOUT_KEEP_ALIVE=5
 
 EXPOSE 8000
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+# Health check - uses the actual health endpoint
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 --start-interval=5s \
     CMD curl -f http://localhost:8000/health || exit 1
 
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Graceful shutdown with SIGTERM handling
+# uvicorn --timeout-keep-alive is set for in-flight request draining
+CMD ["sh", "-c", "uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-4} --timeout-keep-alive ${UVICORN_TIMEOUT_KEEP_ALIVE:-5} --graceful-timeout ${UVICORN_GRACEFUL_TIMEOUT:-30}"]

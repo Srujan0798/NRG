@@ -14,7 +14,8 @@ class TestPlannerNode:
     def test_returns_fallback_when_no_client(self):
         with patch("src.orchestration.nodes.planner._get_planner_client", return_value=None):
             result = planner_node({"user_query": "test", "conversation_history": []})
-            assert result["plan"] is None
+            assert result["plan"] is not None
+            assert "subqueries" in result["plan"]
             assert result["planner_metadata"]["mode"] == "heuristic_fallback"
 
     def test_returns_plan_from_llm(self):
@@ -33,7 +34,8 @@ class TestPlannerNode:
         mock_client.generate.side_effect = RuntimeError("LLM unavailable")
         with patch("src.orchestration.nodes.planner._get_planner_client", return_value=mock_client):
             result = planner_node({"user_query": "test", "conversation_history": []})
-            assert result["plan"] is None
+            assert result["plan"] is not None
+            assert "subqueries" in result["plan"]
             assert result["planner_metadata"]["mode"] == "heuristic_fallback"
 
     def test_state_get_dict(self):

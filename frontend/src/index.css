@@ -1,107 +1,358 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* IITGN Sovereign Design Tokens */
+/* ============================
+   NRG SOVEREIGN DESIGN TOKENS
+   ============================ */
 @layer base {
   :root {
-    --iitgn-glass-bg: rgba(255, 255, 255, 0.7);
-    --iitgn-glass-border: rgba(255, 255, 255, 0.3);
-    --iitgn-glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    --iitgn-glass-blur: 12px;
+    --nrg-navy-900: #060e1c;
+    --nrg-navy-800: #0b1428;
+    --nrg-navy-700: #101a34;
+    --nrg-navy-600: #15213c;
+    --nrg-navy-500: #1a2744;
+    --nrg-navy-400: #234d99;
+    --nrg-navy-300: #5979b3;
+    --nrg-navy-200: #8fa5cc;
+    --nrg-navy-100: #c5d1e5;
+    --nrg-navy-50:  #e8edf5;
+
+    --nrg-saffron-500: #ff6b35;
+    --nrg-saffron-400: #ff8b4a;
+    --nrg-saffron-300: #ffbc89;
+    --nrg-gold-500:    #c49538;
+
+    --nrg-bg:        #f7f9fc;
+    --nrg-surface:   #ffffff;
+    --nrg-text:     #0f172a;
+    --nrg-muted:    #64748b;
+    --nrg-border:   #e2e8f0;
+    --nrg-shadow:   rgba(26, 39, 68, 0.08);
+
+    --glass-bg:     rgba(255, 255, 255, 0.82);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --glass-shadow: 0 8px 32px rgba(26, 39, 68, 0.06);
+    --glass-blur:   20px;
+
+    --radius-sm:  6px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+
+    --transition-fast:   150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base:   250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring:  400ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .dark {
+    --nrg-bg:        #060e1c;
+    --nrg-surface:   #0f1729;
+    --nrg-text:     #f1f5f9;
+    --nrg-muted:    #94a3b8;
+    --nrg-border:   rgba(255,255,255,0.08);
+    --nrg-shadow:   rgba(0, 0, 0, 0.3);
+
+    --glass-bg:     rgba(26, 39, 68, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   }
 
   * {
     @apply box-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--nrg-bg);
+    color: var(--nrg-text);
+    transition: background var(--transition-base), color var(--transition-base);
+  }
+}
+
+/* ============================
+   NRG BRAND COMPONENTS
+   ============================ */
+@layer components {
+
+  /* Ashoka Chakra — spinner for loading states */
+  .nrg-ashoka-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(255,107,53,0.15);
+    border-top-color: #ff6b35;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
   }
 
+  /* Skeleton shimmer with NRG palette */
+  .nrg-skeleton {
+    background: linear-gradient(
+      90deg,
+      #e8edf5 25%,
+      #f7f9fc 50%,
+      #e8edf5 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+  .dark .nrg-skeleton {
+    background: linear-gradient(
+      90deg,
+      #1a2744 25%,
+      #243655 50%,
+      #1a2744 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Glassmorphism card */
+  .nrg-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--glass-shadow);
+    transition: box-shadow var(--transition-spring),
+                transform var(--transition-spring),
+                background var(--transition-base);
+  }
+
+  .nrg-glass:hover {
+    box-shadow: 0 16px 48px rgba(26, 39, 68, 0.12), 0 4px 16px rgba(26, 39, 68, 0.06);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.9);
+  }
+
+  .dark .nrg-glass:hover {
+    background: rgba(26, 39, 68, 0.85);
+  }
+
+  /* Stat card with saffron accent */
+  .nrg-stat-card {
+    @apply relative overflow-hidden rounded-2xl p-5 border transition-all duration-300;
+    background: var(--nrg-surface);
+    border-color: var(--nrg-border);
+    box-shadow: var(--nrg-shadow);
+  }
+
+  .nrg-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: linear-gradient(180deg, #ff6b35 0%, #ff8b4a 100%);
+    border-radius: 4px 0 0 4px;
+  }
+
+  .nrg-stat-card:hover {
+    box-shadow: 0 8px 32px rgba(26, 39, 68, 0.12);
+    transform: translateY(-1px);
+  }
+
+  /* Sovereign badge — the tier indicator */
+  .nrg-tier-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border;
+    border-color: rgba(255, 107, 53, 0.3);
+    background: rgba(255, 107, 53, 0.08);
+    color: #c44a14;
+    animation: pulseRing 2.5s ease-out infinite;
+  }
+
+  .dark .nrg-tier-badge {
+    border-color: rgba(255, 107, 53, 0.4);
+    background: rgba(255, 107, 53, 0.15);
+    color: #ff8b4a;
+  }
+
+  /* Button — primary (saffron) */
+  .nrg-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm;
+    background: linear-gradient(135deg, #ff6b35 0%, #e85a1c 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    transition: all var(--transition-spring);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nrg-btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+  }
+
+  .nrg-btn-primary:hover::after { opacity: 1; }
+  .nrg-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  }
+  .nrg-btn-primary:active { transform: translateY(0); }
+
+  /* Button — secondary (navy outline) */
+  .nrg-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm border-2;
+    border-color: var(--nrg-navy-500);
+    color: var(--nrg-navy-500);
+    background: transparent;
+    transition: all var(--transition-spring);
+  }
+
+  .nrg-btn-secondary:hover {
+    background: var(--nrg-navy-500);
+    color: white;
+  }
+
+  /* Persona accent borders */
+  .nrg-accent-researcher { border-left: 4px solid #6366f1; }
+  .nrg-accent-government  { border-left: 4px solid #2563eb; }
+  .nrg-accent-industry    { border-left: 4px solid #10b981; }
+  .nrg-accent-sovereign   { border-left: 4px solid #ff6b35; }
+
+  /* Tab — active underline style */
+  .nrg-tab {
+    @apply px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200;
+    color: var(--nrg-muted);
+    border-color: transparent;
+  }
+  .nrg-tab:hover { color: var(--nrg-text); border-color: rgba(255,107,53,0.3); }
+  .nrg-tab.active {
+    color: #ff6b35;
+    border-color: #ff6b35;
+  }
+
+  /* Input */
+  .nrg-input {
+    @apply w-full px-4 py-3 rounded-xl border text-sm transition-all duration-200;
+    background: var(--nrg-surface);
+    border-color: var(--nrg-border);
+    color: var(--nrg-text);
+    outline: none;
+  }
+  .nrg-input:focus {
+    border-color: #ff6b35;
+    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.12);
+  }
+
+  /* Chart container */
+  .nrg-chart-container {
+    background: var(--nrg-surface);
+    border: 1px solid var(--nrg-border);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--nrg-shadow);
+  }
+
+  /* DPDP consent gate glow */
+  .nrg-dpdp-gate {
+    position: relative;
+    overflow: hidden;
+  }
+  .nrg-dpdp-gate::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border: 2px solid rgba(255, 107, 53, 0.4);
+    border-radius: inherit;
+    animation: borderGlow 2s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* Hero gradient */
+  .nrg-hero-bg {
+    background: radial-gradient(ellipse at 20% 0%, rgba(255,107,53,0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(26,39,68,0.25) 0%, transparent 50%),
+                linear-gradient(135deg, var(--nrg-bg) 0%, var(--nrg-surface) 50%, var(--nrg-bg) 100%);
+  }
+
+  /* Devanagari typography */
   .font-devanagari {
     font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
   }
-}
 
-@layer components {
-  /* Glass-morphism Card (IITGN Standard) */
-  .iitgn-glass-card {
-    @apply rounded-2xl border p-6 transition-all duration-300;
-    background: var(--iitgn-glass-bg);
-    backdrop-filter: blur(var(--iitgn-glass-blur));
-    -webkit-backdrop-filter: blur(var(--iitgn-glass-blur));
-    border-color: var(--iitgn-glass-border);
-    box-shadow: var(--iitgn-glass-shadow);
-  }
-
-  .iitgn-glass-card:hover {
-    @apply shadow-lg;
-    transform: translateY(-2px);
-    background: rgba(255, 255, 255, 0.8);
-  }
-
-  /* Tier Badge Standard */
-  .iitgn-tier-badge {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border;
-    animation: tier-pulse 2s ease-in-out infinite;
-  }
-
-  /* DPDP Consent Gate */
-  .iitgn-dpdp-gate {
-    @apply relative overflow-hidden;
-  }
-
-  .iitgn-dpdp-gate::before {
-    content: '';
-    @apply absolute inset-0 border-2 border-sovereign-300 rounded-xl;
-    animation: dpdp-glow 1.5s ease-in-out infinite;
-  }
-
-  /* Skeleton Loader Standard */
-  .iitgn-skeleton {
-    @apply animate-pulse bg-gray-200 rounded;
-  }
-
-  /* Persona Accent Border */
-  .iitgn-accent-researcher {
-    @apply border-l-4 border-researcher-500;
-  }
-
-  .iitgn-accent-government {
-    @apply border-l-4 border-government-500;
-  }
-
-  .iitgn-accent-industry {
-    @apply border-l-4 border-industry-500;
-  }
-
-  /* Graph Container */
-  .iitgn-graph-container {
-    @apply w-full h-96 rounded-xl border border-gray-200 bg-white overflow-hidden;
+  /* Display headings */
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
   }
 }
 
+/* ============================
+   UTILITIES
+   ============================ */
 @layer utilities {
-  .text-shadow-sm {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  .fade-in-up {
+    opacity: 0;
+    animation: fadeInUp 0.5s ease-out forwards;
   }
 
-  .scrollbar-thin {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Custom scrollbar */
+  .scrollbar-nrg {
     scrollbar-width: thin;
+    scrollbar-color: rgba(26, 39, 68, 0.2) transparent;
   }
-
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
+  .scrollbar-nrg::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-nrg::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-nrg::-webkit-scrollbar-thumb {
+    background: rgba(26, 39, 68, 0.2);
     border-radius: 3px;
   }
+
+  .dark .scrollbar-nrg {
+    scrollbar-color: rgba(255, 107, 53, 0.2) transparent;
+  }
+  .dark .scrollbar-nrg::-webkit-scrollbar-thumb {
+    background: rgba(255, 107, 53, 0.2);
+  }
 }
+
+/* ============================
+   WCAG C2 FIXES
+   ============================ */
+   .nrg-tier-badge {
+     color: #c44a14;
+   }
+   .nrg-saffron-text {
+     color: #c44a14;
+   }
+   .nrg-tab.active {
+     color: #c44a14;
+     border-color: #c44a14;
+   }
+
+   *:focus-visible {
+     outline: 2px solid #c44a14;
+     outline-offset: 2px;
+     border-radius: 4px;
+   }
+
+   @media (prefers-reduced-motion: reduce) {
+     *,
+     *::before,
+     *::after {
+       animation-duration: 0.01ms !important;
+       animation-iteration-count: 1 !important;
+       transition-duration: 0.01ms !important;
+       scroll-behavior: auto !important;
+     }
+   }

@@ -3,18 +3,48 @@
 This guard wraps all outbound HTTP clients and inspects payloads to ensure
 no raw publication content (full_text, abstract) is sent to cloud LLMs.
 Only schema prompts, user queries, and metadata may traverse the boundary.
+
+Includes ALERTING: logs + notifies on violation attempts.
 """
 
 import hashlib
 import logging
 import os
 import re
-from typing import Any, Optional
+from typing import Any, Callable, Optional
 from functools import wraps
+from datetime import datetime, UTC
 import httpx
 from src.audit import AuditEvent, get_audit_log
 
 logger = logging.getLogger(__name__)
+
+alert_callback: Optional[Callable[[dict], None]] = None
+
+
+def set_alert_callback(callback: Callable[[dict], None]) -> None:
+    """Set a callback for egress violation alerts (e.g., Slack, email)."""
+    global alert_callback
+    alert_callback = callback
+
+
+def _send_alert(violation: "SovereigntyViolation", url: str, payload: dict) -> None:
+    """Send alert on sovereignty violation attempt."""
+    alert_data = {
+        "type": "egress_guard_violation",
+        "severity": "CRITICAL",
+        "reason": violation.reason,
+        "blocked_field": violation.blocked_field,
+        "url": url,
+        "timestamp": str(datetime.now(UTC)),
+    }
+    logger.critical(f"SECURITY ALERT: {alert_data}")
+
+    if alert_callback:
+        try:
+            alert_callback(alert_data)
+        except Exception as e:
+            logger.error(f"Failed to send egress alert: {e}")
 
 
 SOVEREIGN_ALLOWLIST = frozenset({
@@ -140,8 +170,8 @@ class SovereignHTTPXClient:
             self._log_violation(exc, "payload_inspection")
             raise
 
-    def _log_violation(self, violation: SovereigntyViolation, url: str) -> None:
-        """Log sovereignty violation to audit trail."""
+    def _log_violation(self, violation: SovereigntyViolation, url: str, payload: dict = None) -> None:
+        """Log sovereignty violation to audit trail + send alert."""
         try:
             get_audit_log().append(
                 AuditEvent(
@@ -156,6 +186,8 @@ class SovereignHTTPXClient:
             )
         except Exception:
             logger.warning("Failed to log sovereignty violation", exc_info=True)
+
+        _send_alert(violation, url, payload or {})
 
         logger.error(
             "SOVEREIGNTY VIOLATION BLOCKED: %s | field: %s | URL: %s",
@@ -172,7 +204,7 @@ class SovereignHTTPXClient:
             try:
                 self._inspect_payload(json_data)
             except SovereigntyViolation as e:
-                self._log_violation(e, url)
+                self._log_violation(e, url, json_data)
                 raise
 
         return self._inner.post(url, **kwargs)

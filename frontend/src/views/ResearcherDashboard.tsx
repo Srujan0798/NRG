@@ -1,381 +1,494 @@
-import { useState, useEffect, useCallback } from 'react';
-import { PermissionBoundary } from '../components/PermissionBoundary';
-import { TierBadge } from '../components/TierBadge';
-import { SkeletonLoader } from '../components/SkeletonLoader';
-import { DPDPConsentDialog } from '../components/DPDPConsentDialog';
-import { DPDPAuditLog } from '../components/DPDPAuditLog';
-import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel';
-import { SecurityMonitor } from '../components/SecurityMonitor';
-import { ForceGraph } from '../components/ForceGraph';
-import { GlassCard } from '../components/GlassCard';
-import { AnswerPanel } from '../components/AnswerPanel';
-import { useAuth } from '../hooks/useAuth';
-import { useQueryStore } from '../stores/queryStore';
-import { useDPDPStore } from '../stores/dpdpStore';
-import { queryService, GraphNode, QueryResponse } from '../services/queryService';
-import { useQuery } from '@tanstack/react-query';
-// import { FixedSizeList } from 'react-window';
+import React, { useState, useCallback, useMemo, memo } from 'react'
+import { motion } from 'framer-motion'
+import { PermissionBoundary } from '../components/PermissionBoundary'
+import { TierBadge } from '../components/TierBadge'
+import { SkeletonLoader } from '../components/Skeleton'
+import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
+import { DPDPAuditLog } from '../components/DPDPAuditLog'
+import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel'
+import { SecurityMonitor } from '../components/SecurityMonitor'
+import { GlassCard } from '../components/GlassCard'
+import { AnswerPanel } from '../components/AnswerPanel'
+import { GraphView } from '../components/GraphView'
+import { StatsCard } from '../components/StatsCard'
+import { ErrorState } from '../components/ErrorState'
+import { ResearchAreasBarChart } from '../components/DataViz'
+import { FundingTrendsLineChart } from '../components/DataViz'
+import { useAuth } from '../hooks/useAuth'
+import { useQueryStore } from '../stores/queryStore'
+import { useDPDPStore } from '../stores/dpdpStore'
+import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { useQuery } from '@tanstack/react-query'
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, AreaChart, Area, CartesianGrid
+} from 'recharts'
+import {
+  Search, Users, FileText, Building, TrendingUp, Shield,
+  Sun as SunIcon, Moon as MoonIcon, BookOpen, History, RefreshCw
+} from 'lucide-react'
+import type { Theme } from '../hooks/useTheme'
 
-export function ResearcherDashboard() {
-  const { user } = useAuth();
-  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching, setLastResult } = useQueryStore();
-  const { grantConsent, addAuditEntry } = useDPDPStore();
-  
-  const [showDPDPConsent, setShowDPDPConsent] = useState(false);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'graph' | 'dpdp' | 'audit'>('dashboard');
-  const [graphData, setGraphData] = useState(queryService.emptyGraphData());
-  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
-  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
-  const [queryError, setQueryError] = useState<string | null>(null);
+interface ResearcherDashboardProps {
+  onThemeToggle: () => void
+  theme: Theme
+}
 
-  // React Query for publications - now from real API
+const TABS = [
+  { key: 'dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', icon: '📊' },
+  { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ', icon: '🕸️' },
+  { key: 'dpdp', label: 'Data Rights', labelHi: 'डेटा अधिकार', icon: '🔒' },
+  { key: 'audit', label: 'Audit Log', labelHi: 'ऑडिट लॉग', icon: '📋' },
+] as const
+
+const SaffronSpinner = ({ style }: { style?: React.CSSProperties }) => (
+  <div
+    className="w-9 h-9 rounded-full border-3 border-saffron-200 border-t-saffron-500 animate-spin"
+    style={style}
+  />
+)
+
+const MiniBarChart = memo(function MiniBarChart({
+  data,
+  color = '#ff6b35',
+}: {
+  data: { label: string; value: number }[]
+  color?: string
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={120}>
+      <BarChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
+        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} maxBarSize={28} />
+        <XAxis
+          dataKey="label"
+          tick={{ fontSize: 10, fill: 'var(--nrg-muted)' }}
+          axisLine={false}
+          tickLine={false}
+        />
+        <Tooltip
+          contentStyle={{
+            background: 'var(--nrg-surface)',
+            border: '1px solid var(--nrg-border)',
+            borderRadius: 8,
+            fontSize: 12,
+          }}
+        />
+      </BarChart>
+    </ResponsiveContainer>
+  )
+})
+
+export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboardProps) {
+  const { user } = useAuth()
+  const {
+    history, currentQuery, isSearching,
+    setCurrentQuery, addToHistory, setIsSearching, setLastResult,
+  } = useQueryStore()
+  const { grantConsent, addAuditEntry } = useDPDPStore()
+
+  const [showDPDPConsent, setShowDPDPConsent] = useState(false)
+  const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('dashboard')
+  const [graphData, setGraphData] = useState(queryService.emptyGraphData())
+  const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
+  const [queryError, setQueryError] = useState<string | null>(null)
+  const [graphTopic, setGraphTopic] = useState('machine learning')
+
   const { data: publicationsData, isLoading: pubsLoading } = useQuery({
     queryKey: ['publications', user?.id],
     queryFn: () => queryService.fetchPublications(10),
     staleTime: 5 * 60 * 1000,
     enabled: !!user,
-  });
+  })
 
-  const publications = publicationsData?.publications || [];
-
-  // React Query for stats
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['stats', user?.id],
     queryFn: () => queryService.fetchStats(),
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000,
     enabled: !!user,
-  });
+  })
 
-  const graphTopic = currentQuery.trim() || 'machine learning';
   const { data: graphApiData, isLoading: graphLoading } = useQuery({
     queryKey: ['graph', graphTopic, user?.id],
     queryFn: () => queryService.fetchGraphData(graphTopic),
     staleTime: 30 * 1000,
     enabled: !!user && activeTab === 'graph',
-  });
+  })
 
-  useEffect(() => {
-    if (graphApiData) {
-      setGraphData(graphApiData);
-    }
-  }, [graphApiData]);
+  const publications = publicationsData?.publications || []
 
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return;
-
-    setIsSearching(true);
-    setQueryResult(null);
-    setQueryError(null);
+    if (!currentQuery.trim()) return
+    setIsSearching(true)
+    setQueryResult(null)
+    setQueryError(null)
     try {
-      const result = await queryService.query({ query: currentQuery });
-      setQueryResult(result);
-      setLastResult(result);
-      addToHistory({
-        query: currentQuery,
-        persona: 'researcher',
-        resultsCount: result.verification_status ? 10 : 0
-      });
-      addAuditEntry({
-        action: 'data_accessed',
-        persona: user?.role || 'researcher',
-        details: `Query: ${currentQuery}`
-      });
-    } catch (error: any) {
-      console.error('Search error:', error);
-      const message = error.response?.data?.detail || error.response?.data?.message || error.message || 'Search failed';
-      setQueryError(message);
-      // Surface DLP/Security messages safely
-      addToHistory({
-        query: currentQuery,
-        persona: 'researcher',
-        resultsCount: 0,
-        error: message
-      });
+      const result = await queryService.query({ query: currentQuery })
+      setQueryResult(result)
+      setLastResult(result)
+      addToHistory({ query: currentQuery, persona: 'researcher', resultsCount: result.verification_status ? 10 : 0 })
+      addAuditEntry({ action: 'data_accessed', persona: 'researcher', details: `Query: ${currentQuery}` })
+    } catch (err: any) {
+      const message = err.response?.data?.detail || err.response?.data?.message || err.message || 'Search failed'
+      setQueryError(message)
+      addToHistory({ query: currentQuery, persona: 'researcher', resultsCount: 0, error: message })
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult, user]);
+  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult])
 
   const handleNodeClick = useCallback((node: GraphNode) => {
-    setSelectedNode(node);
-    setCurrentQuery(node.label);
-  }, [setCurrentQuery]);
+    setSelectedNode(node)
+    setCurrentQuery(node.label)
+  }, [setCurrentQuery])
 
-  // Row renderer for virtualized publication list
-  const RowRenderer = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
-    if (!publications) return null;
-    const pub = publications[index];
-    return (
-      <div style={style} className="px-1 py-1">
-        <div className="bg-white rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition">
-          <div className="text-sm font-medium text-gray-800 truncate">{pub.title}</div>
-          <div className="flex gap-3 mt-1 text-xs text-gray-500">
-            <span>📅 {pub.year}</span>
-            <span>📊 {pub.citations} citations</span>
-          </div>
-        </div>
-      </div>
-    );
-  }, [publications]);
+  const handleRetry = useCallback(() => {
+    setQueryError(null)
+    handleSearch()
+  }, [handleSearch])
+
+  const pieColors = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1']
+  const researchAreaChartData = (statsData?.research_area_distribution || []).slice(0, 6).map((a: any) => ({
+    area: a.area?.length > 12 ? a.area.slice(0, 10) + '…' : a.area,
+    count: a.count,
+  }))
 
   return (
-    <div className="iitgn-researcher-dashboard min-h-screen bg-gradient-to-br from-slate-50 via-researcher-50 to-gray-100">
-      {/* Devanagari Header with Glass Effect */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 font-devanagari">
-              राष्ट्रीय गवेषण मंच
-            </h1>
-            <p className="text-xs text-gray-500 tracking-wide">
-              National Research Intelligence Platform · Researcher Workspace
-            </p>
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-navy-800/95 backdrop-blur-md border-b border-slate-200 dark:border-navy-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg"
+              whileHover={{ scale: 1.05, rotate: 2 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            >
+              <span className="text-white font-bold text-lg">न</span>
+            </motion.div>
+            <div>
+              <h1 className="text-lg font-bold text-slate-900 dark:text-white font-devanagari">राष्ट्रीय गवेषण मंच</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Researcher Workspace · शोधकर्ता कार्यस्थान</p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             {user && <TierBadge tier={user.tier} role={user.role} />}
+            <motion.button
+              onClick={onThemeToggle}
+              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-navy-600 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-violet-500 hover:border-violet-300 transition-all duration-200"
+              aria-label="Toggle theme"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+            </motion.button>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <nav className="max-w-7xl mx-auto px-4 flex gap-1 -mb-px">
-          {(['dashboard', 'graph', 'dpdp', 'audit'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition ${
-                activeTab === tab
-                  ? 'border-researcher-500 text-researcher-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 -mb-px overflow-x-auto">
+          {TABS.map((tab) => (
+            <motion.button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
               }`}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {tab === 'dashboard' && '📊 '}
-              {tab === 'graph' && '🕸️ '}
-              {tab === 'dpdp' && '🔒 '}
-              {tab === 'audit' && '📋 '}
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
+              <span>{tab.icon}</span>
+              {tab.label}
+              <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
+            </motion.button>
           ))}
-        </nav>
+        </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Dashboard Tab */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Search Card */}
-            <GlassCard accent="researcher" title="Knowledge Graph Query" description="Search across national research publications">
-              <div className="flex gap-2">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Search size={18} className="text-violet-500" />
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Knowledge Graph Query</h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">ज्ञान ग्राफ प्रश्न</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
                 <input
                   type="text"
                   value={currentQuery}
                   onChange={(e) => setCurrentQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Enter research topic, author, or DOI..."
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-researcher-500 focus:border-researcher-500 transition text-sm"
+                  placeholder="Enter research topic, author, institution, or DOI…"
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
                 />
-          <button
-            onClick={handleSearch}
-            disabled={isSearching || !currentQuery}
-            className="px-6 py-2.5 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSearching ? 'Searching...' : 'Search'}
-          </button>
-        </div>
-
-        {/* Query Results Display */}
-        {isSearching && (
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <div className="animate-spin h-4 w-4 border-2 border-researcher-500 border-t-transparent rounded-full"></div>
-              Processing query through NRG LangGraph...
-            </div>
-          </div>
-        )}
-
-        {queryError && (
-          <div className="mt-4 p-4 bg-rose-50 rounded-lg border border-rose-200">
-            <div className="flex items-start gap-2">
-              <span className="text-rose-500">⚠️</span>
-              <div className="text-sm text-rose-700">
-                <span className="font-semibold">Error:</span> {queryError}
+                <motion.button
+                  onClick={handleSearch}
+                  disabled={isSearching || !currentQuery.trim()}
+                  className="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {isSearching ? (
+                    <span className="flex items-center gap-2">
+                      <SaffronSpinner style={{ width: 16, height: 16, borderWidth: 2 }} />
+                      Processing…
+                    </span>
+                  ) : (
+                    'Search'
+                  )}
+                </motion.button>
               </div>
-            </div>
-          </div>
-        )}
 
-        {queryResult && (
-          <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                Research Intelligence Response
-              </h3>
+              {isSearching && (
+                <div className="mt-4 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+                  <SaffronSpinner />
+                  <span>Processing query through NRG LangGraph orchestration…</span>
+                </div>
+              )}
+
+              {queryError && (
+                <div className="mt-4">
+                  <ErrorState
+                    title="Query Failed"
+                    message={queryError}
+                    severity="error"
+                    onRetry={handleRetry}
+                  />
+                </div>
+              )}
+
+              {queryResult && !queryError && (
+                <div className="mt-4">
+                  <AnswerPanel
+                    response={queryResult.response}
+                    citations={queryResult.citations || []}
+                    provenance={queryResult.provenance}
+                    warnings={queryResult.warnings}
+                    verification_status={queryResult.verification_status}
+                  />
+                </div>
+              )}
             </div>
-            <div className="p-4">
-              <AnswerPanel
-                response={queryResult.response}
-                citations={queryResult.citations || []}
-                provenance={queryResult.provenance}
-                warnings={queryResult.warnings}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                label="Total Researchers"
+                labelHi="कुल शोधकर्ता"
+                value={statsData?.total_researchers || 5615}
+                sublabel="Across 181 institutions"
+                accentColor="#6366f1"
+                icon={<Users size={20} />}
+                delay={0}
+              />
+              <StatsCard
+                label="Publications"
+                labelHi="प्रकाशन"
+                value={statsData?.total_publications || 12847}
+                sublabel="Peer-reviewed works"
+                accentColor="#2563eb"
+                icon={<FileText size={20} />}
+                delay={100}
+              />
+              <StatsCard
+                label="Institutions"
+                labelHi="संस्थान"
+                value={statsData?.total_institutions || 181}
+                sublabel="Academic + Research"
+                accentColor="#10b981"
+                icon={<Building size={20} />}
+                delay={200}
+              />
+              <StatsCard
+                label="Your Queries"
+                labelHi="आपके प्रश्न"
+                value={history.length}
+                sublabel="This session"
+                accentColor="#ff6b35"
+                icon={<History size={20} />}
+                delay={300}
               />
             </div>
-          </div>
-        )}
-      </GlassCard>
 
-      {/* Quick Stats + Publications */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Stats */}
-        <div className="space-y-4">
-          <GlassCard accent="researcher" title="Quick Stats">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-researcher-50 p-3 rounded-lg text-center border border-researcher-100">
-                <div className="text-xl font-bold text-researcher-700">
-                  {statsLoading ? '...' : statsData?.total_researchers || 0}
-                </div>
-                <div className="text-xs text-researcher-500">Researchers</div>
-              </div>
-              <div className="bg-green-50 p-3 rounded-lg text-center border border-green-100">
-                <div className="text-xl font-bold text-green-700">
-                  {statsLoading ? '...' : statsData?.total_publications || 0}
-                </div>
-                <div className="text-xs text-green-500">Publications</div>
-              </div>
-              <div className="bg-amber-50 p-3 rounded-lg text-center border border-amber-100">
-                <div className="text-xl font-bold text-amber-700">
-                  {statsLoading ? '...' : statsData?.total_institutions || 0}
-                </div>
-                <div className="text-xs text-amber-500">Institutions</div>
-              </div>
-              <div className="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
-                <div className="text-xl font-bold text-purple-700">
-                  {history.length}
-                </div>
-                <div className="text-xs text-purple-500">Your Queries</div>
-              </div>
-                  </div>
-                </GlassCard>
-
-                <SecurityMonitor />
-              </div>
-
-{/* Publications (Virtualized) */}
-              <GlassCard accent="researcher" title="My Publications" className="lg:col-span-2">
-                {pubsLoading ? (
-                  <SkeletonLoader type="list" count={3} />
-                ) : publications && publications.length > 0 ? (
-                  <div className="h-40 overflow-y-auto scrollbar-thin">
-                    {publications.map((pub: any, index: number) => (
-                      <div key={index} className="px-1 py-1">
-                        <div className="bg-white rounded-lg border border-gray-100 p-3 hover:bg-gray-50 transition">
-                          <div className="text-sm font-medium text-gray-800 truncate">{pub.title}</div>
-                          <div className="flex gap-3 mt-1 text-xs text-gray-500">
-                            <span>📅 {pub.year}</span>
-                            <span>📊 {pub.citations} citations</span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="space-y-4">
+                <GlassCard accent="researcher" title="My Publications" description="Recent works from your profile">
+                  {pubsLoading ? (
+                    <SkeletonLoader type="list" count={4} />
+                  ) : publications.length > 0 ? (
+                    <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-nrg">
+                      {publications.map((pub: any, i: number) => (
+                        <motion.div
+                          key={i}
+                          className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-navy-700 bg-slate-50 dark:bg-navy-700/30 hover:border-violet-200 hover:bg-violet-50/50 dark:hover:border-violet-700 transition-all cursor-pointer"
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.06 }}
+                          whileHover={{ x: 4 }}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-sm font-bold">
+                            {pub.year?.toString().slice(-2) || '?'}
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-400 text-center py-8">No publications yet.</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{pub.title}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{pub.authors?.slice(0, 2).join(', ')}</p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{pub.citations || 0}</p>
+                            <p className="text-xs text-slate-400">citations</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-10 text-slate-400">
+                      <BookOpen size={40} className="mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">No publications found.</p>
+                    </div>
+                  )}
+                </GlassCard>
+              </div>
+
+              <div className="lg:col-span-2 space-y-4">
+                {researchAreaChartData.length > 0 && (
+                  <ResearchAreasBarChart
+                    data={researchAreaChartData.map((d, i) => ({ ...d, color: pieColors[i % pieColors.length] }))}
+                    title="Top Research Areas"
+                    titleHi="शीर्ष शोध क्षेत्र"
+                    subtitle="Distribution by specialization"
+                  />
                 )}
-              </GlassCard>
+
+                {history.length > 0 && (
+                  <GlassCard accent="sovereign" title="Recent Queries" description="Your query history this session">
+                    <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-nrg">
+                      {history.slice(0, 6).map((entry) => (
+                        <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-navy-700/50 last:border-0">
+                          <div className={`w-2 h-2 rounded-full shrink-0 ${entry.error ? 'bg-red-400' : 'bg-violet-400'}`} />
+                          <span className="flex-1 text-sm text-slate-900 dark:text-slate-100 truncate font-medium">{entry.query}</span>
+                          <span className="text-xs text-slate-500 shrink-0">
+                            {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <span className={`text-xs font-medium shrink-0 ${entry.error ? 'text-red-500' : 'text-green-600'}`}>
+                            {entry.error ? 'Failed' : `${entry.resultsCount} results`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </GlassCard>
+                )}
+              </div>
             </div>
 
-            {/* Query History */}
-            {history.length > 0 && (
-              <GlassCard accent="sovereign" title="Recent Queries">
-                <div className="space-y-2">
-                  {history.slice(0, 5).map((entry) => (
-                    <div key={entry.id} className="text-sm py-2 border-b border-gray-100 last:border-0">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-700 truncate font-medium">{entry.query}</span>
-                        <span className="text-gray-400 text-xs ml-4">{new Date(entry.timestamp).toLocaleTimeString()}</span>
-                      </div>
-                      {entry.error ? (
-                        <div className="mt-1 text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">
-                          🛡️ Security Message: {entry.error}
-                        </div>
-                      ) : (
-                        <div className="text-gray-400 text-xs mt-0.5">{entry.resultsCount} results found</div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </GlassCard>
-            )}
-          </div>
+            <SecurityMonitor />
+          </motion.div>
         )}
 
-        {/* Graph Tab */}
         {activeTab === 'graph' && (
-          <div className="space-y-6">
-            <GlassCard accent="researcher" title="Research Knowledge Graph" description="Drag nodes to explore · Click to query">
-              {graphLoading && (
-                <div className="mb-3 text-sm text-gray-500">Loading graph for "{graphTopic}"...</div>
-              )}
-              {graphData.warnings && graphData.warnings.length > 0 && (
-                <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                  {graphData.warnings.map((warning, index) => (
-                    <div key={index}>{warning.message}</div>
-                  ))}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <GraphView
+              data={graphData}
+              width={1100}
+              height={600}
+              onNodeClick={handleNodeClick}
+              availableYears={[2019, 2020, 2021, 2022, 2023, 2024]}
+              availableTopics={['machine learning', 'biotechnology', 'quantum computing', 'neural networks', 'renewable energy']}
+            />
+
+            {selectedNode && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600"
+              >
+                <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-sm font-bold">
+                  {selectedNode.label[0]?.toUpperCase()}
                 </div>
-              )}
-              <ForceGraph data={graphData} width={1100} height={500} onNodeClick={handleNodeClick} />
-              {selectedNode && (
-                <div className="mt-4 bg-gray-50 rounded-lg p-3 text-sm border border-gray-200">
-                  <span className="font-medium text-gray-800 truncate">{selectedNode.label}</span>
-                  <span className="ml-2 text-gray-500 capitalize">({selectedNode.type})</span>
-                  {selectedNode.year && <span className="ml-2 text-gray-500">· {selectedNode.year}</span>}
-                  {selectedNode.citations !== undefined && <span className="ml-2 text-gray-500">· {selectedNode.citations} citations</span>}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{selectedNode.label}</p>
+                  <p className="text-xs text-slate-500 capitalize">
+                    {selectedNode.type}
+                    {selectedNode.year && ` · FY${selectedNode.year}`}
+                    {selectedNode.citations !== undefined && ` · ${selectedNode.citations} citations`}
+                  </p>
                 </div>
-              )}
-            </GlassCard>
-          </div>
+                <motion.button
+                  onClick={() => setCurrentQuery(selectedNode.label)}
+                  className="px-4 py-2 rounded-xl text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 hover:bg-violet-200 transition-colors"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Query
+                </motion.button>
+              </motion.div>
+            )}
+          </motion.div>
         )}
 
-        {/* DPDP Tab */}
         {activeTab === 'dpdp' && (
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
             <DPDPWithdrawalPanel />
-            <GlassCard accent="sovereign" title="Data Protection Overview">
-              <div className="space-y-3 text-sm text-gray-700">
-                <div className="bg-green-50 p-3 rounded-lg border border-green-100">
-                  <div className="font-medium text-green-800">✅ Consent Status</div>
-                  <div className="text-green-700 mt-1">
-                    Your data access is managed per India's DPDP Act 2023. All queries are logged with purpose limitation.
+            <GlassCard accent="sovereign" title="Data Protection & Privacy" description="Your rights under India's DPDP Act 2023 · आपके अधिकार">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
+                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-sm">✓</div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-200">Consent Active</p>
+                    <p className="text-xs text-green-600 dark:text-green-400">Your data access is managed per DPDP Act 2023.</p>
                   </div>
                 </div>
-                <button
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
+                    <p className="font-medium text-slate-900 dark:text-white mb-1">Purpose Limitation</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs">Your data is used only for research analysis you have consented to.</p>
+                  </div>
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
+                    <p className="font-medium text-slate-900 dark:text-white mb-1">Right to Withdraw</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-xs">You can withdraw consent at any time. Your data will be removed within 30 days.</p>
+                  </div>
+                </div>
+                <motion.button
                   onClick={() => setShowDPDPConsent(true)}
-                  className="w-full px-4 py-2 bg-researcher-600 text-white rounded-lg hover:bg-researcher-700 transition text-sm font-medium"
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-md hover:shadow-lg"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  Grant New Consent for Data Access
-                </button>
+                  Grant New Data Access Consent
+                </motion.button>
               </div>
             </GlassCard>
-          </div>
+          </motion.div>
         )}
 
-        {/* Audit Tab */}
         {activeTab === 'audit' && (
-          <div className="space-y-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <DPDPAuditLog />
-          </div>
+          </motion.div>
         )}
       </main>
 
-      {/* DPDP Consent Dialog */}
       <DPDPConsentDialog
         isOpen={showDPDPConsent}
-        onApprove={() => {
-          grantConsent('Research data analysis', 365);
-          setShowDPDPConsent(false);
-        }}
+        onApprove={() => { grantConsent('Research data analysis', 365); setShowDPDPConsent(false) }}
         onDeny={() => setShowDPDPConsent(false)}
       />
     </div>
-  );
+  )
 }
+
+export default ResearcherDashboard

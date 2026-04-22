@@ -1,119 +1,171 @@
-.PHONY: bootstrap up down test seed lint fmt e2e clean ingest benchmark venv spacy-model migrate migrate-create clean-db local-llm local-llm-stop local-llm-status
+# ==============================================================================
+# NRG Makefile - Development and Deployment Commands
+# ==============================================================================
 
-PYTHON := .venv/bin/python
+.PHONY: help install dev build test lint clean logs health
 
+# Default target
 help:
-	@echo "NRG Makefile Commands"
-	@echo "==================="
-	@echo "make bootstrap - Install dependencies and setup environment"
-	@echo "make up - Start all services (docker)"
-	@echo "make down - Stop all services"
-	@echo "make test - Run test suite"
-	@echo "make seed - Seed database with sample data"
-	@echo "make lint - Run linters"
-	@echo "make fmt - Format code"
-	@echo "make clean - Remove generated files"
+	@echo "NRG - National Research Graph"
+	@echo ""
+	@echo "Development:"
+	@echo "  make install         Install dependencies"
+	@echo "  make dev            Start development environment"
+	@echo "  make dev-backend    Start backend only"
+	@echo "  make dev-frontend   Start frontend only"
+	@echo ""
+	@echo "Build:"
+	@echo "  make build          Build Docker images"
+	@echo "  make build-api      Build API Docker image"
+	@echo "  make build-frontend Build frontend Docker image"
+	@echo ""
+	@echo "Test:"
+	@echo "  make test           Run all tests"
+	@echo "  make test-python     Run Python tests"
+	@echo "  make test-frontend   Run frontend tests"
+	@echo "  make test-e2e       Run E2E tests"
+	@echo "  make lint           Run linters"
+	@echo ""
+	@echo "Operations:"
+	@echo "  make logs           View logs"
+	@echo "  make health         Check health endpoints"
+	@echo "  make clean          Clean up containers and volumes"
+	@echo "  make seed           Seed database"
+	@echo ""
+	@echo "Production:"
+	@echo "  make prod           Start production environment"
+	@echo "  make prod-build     Build for production"
+	@echo ""
 
-bootstrap: venv
+# ==============================================================================
+# Development
+# ==============================================================================
 
-venv:
-	@bash scripts/bootstrap.sh
-
-test:
-	@$(PYTHON) -m pytest -q
-
-fmt:
-	@$(PYTHON) -m black src tests
-	@$(PYTHON) -m ruff check --fix src tests
-
-lint:
-	@$(PYTHON) -m ruff check src tests
-
-typecheck:
-	@$(PYTHON) -m mypy src
-
-up:
-	docker compose --profile dev up -d
-	@echo "Services started. API: http://localhost:8000, UI: http://localhost:3000"
-
-down:
-	docker compose down --volumes --remove-orphans 2>/dev/null || true
-	@echo "Services stopped."
-
-seed:
-	@echo "Seeding database..."
-	@$(PYTHON) scripts/seed_relations.py
-	@echo "Database seeded."
-
-clean:
-	rm -rf .venv
-	rm -rf __pycache__/
-	rm -rf .pytest_cache/
-	rm -rf .ruff_cache/
-	rm -rf .mypy_cache/
-	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	find . -type f -name "*.pyc" -delete
-	@echo "Clean complete."
+install:
+	pip install uv
+	uv pip install -e ".[dev]"
 
 dev:
-	@$(PYTHON) -m uvicorn src.api.main:app --reload --port 8000
+	docker compose up -d
+	@echo "Services started. API: http://localhost:8000, Frontend: http://localhost:3000"
 
-ingest-sqlite:
-	@echo "Ingesting NRG data into SQLite..."
-	@$(PYTHON) scripts/ingest_nrg_db.py
-	@echo "SQLite ingest complete."
+dev-backend:
+	docker compose up -d postgres qdrant redis api
+	@echo "Backend running at http://localhost:8000"
 
-ingest-qdrant:
-	@echo "Ingesting research documents into Qdrant..."
-	@$(PYTHON) scripts/ingest_qdrant.py --fallback-model
-	@echo "Qdrant ingest complete."
+dev-frontend:
+	docker compose up -d frontend
+	@echo "Frontend running at http://localhost:3000"
 
-ingest-all: ingest-sqlite ingest-qdrant
+down:
+	docker compose down
 
-qdrant-up:
-	@docker run -d --name qdrant -p 6333:6333 qdrant/qdrant 2>/dev/null || echo "Qdrant already running or Docker unavailable"
+# ==============================================================================
+# Building
+# ==============================================================================
 
-qdrant-down:
-	@docker stop qdrant 2>/dev/null && docker rm qdrant 2>/dev/null || echo "Qdrant not running"
+build:
+	docker compose build
 
-api-test:
-	@$(PYTHON) -m pytest tests/api/ -v --tb=short
+build-api:
+	docker compose build api
 
-coverage:
-	@$(PYTHON) -m pytest tests/ -q --cov=src --cov-report=term-missing --ignore=tests/e2e --ignore=tests/frontend -k "not (test_rag_tier_filtering or test_tier_filtering_rag)"
+build-frontend:
+	docker compose build frontend
 
-spacy-model:
-	@$(PYTHON) -m spacy download en_core_web_sm
+build-prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml build
 
-migrate:
-	@DATABASE_URL=sqlite:///src/data/nrg_research.db $(PYTHON) -m alembic upgrade head
+# ==============================================================================
+# Testing
+# ==============================================================================
 
-migrate-create:
-	@DATABASE_URL=$(DATABASE_URL) $(PYTHON) -m alembic revision --autogenerate -m "$(MSG)"
+test:
+	uv pip install pytest pytest-cov pytest-xdist
+	pytest tests/ -v --tb=short -n auto
 
-migrate-down:
-	@DATABASE_URL=sqlite:///src/data/nrg_research.db $(PYTHON) -m alembic downgrade -1
+test-python:
+	uv pip install pytest pytest-cov
+	pytest tests/ -v --tb=short
 
-clean-db:
-	@rm -f src/data/nrg_research.db && echo "Database removed."
+test-frontend:
+	cd frontend && npm run test
 
-local-llm:
-	@echo "Starting local LLM server (Gemma-2B Q4_K_M on :8080)..."
-	@mkdir -p logs
-	@.venv/bin/python scripts/start_local_llm.py --daemon
-	@sleep 2
-	@for i in $$(seq 1 30); do \
-		if curl -s http://localhost:8080/health | grep -q healthy; then \
-			echo "Local LLM ready."; exit 0; \
-		fi; \
-		sleep 1; \
-	done; \
-	echo "Timeout waiting for local LLM."
+test-e2e:
+	cd frontend && npm run test:e2e
 
-local-llm-stop:
-	@pkill -f "start_local_llm.py" 2>/dev/null && echo "Local LLM stopped." || echo "Local LLM not running."
+lint:
+	uv pip install ruff mypy
+	ruff check src tests
+	mypy src
 
-local-llm-status:
-	@curl -s http://localhost:8080/health 2>/dev/null || echo "Local LLM not responding on :8080"
+# ==============================================================================
+# Operations
+# ==============================================================================
+
+logs:
+	docker compose logs -f
+
+logs-api:
+	docker compose logs -f api
+
+logs-frontend:
+	docker compose logs -f frontend
+
+health:
+	@echo "Checking health endpoints..."
+	@curl -s http://localhost:8000/health || echo "API not responding"
+	@curl -s http://localhost:8000/health/all || echo "Health check failed"
+	@echo ""
+	@echo "Frontend: $$(docker compose exec -T frontend wget -q --spider http://localhost/ && echo 'OK' || echo 'FAIL')"
+
+clean:
+	docker compose down -v --remove-orphans
+	docker system prune -f
+
+seed:
+	python scripts/seed_database.py
+
+# ==============================================================================
+# Production
+# ==============================================================================
+
+prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+	@echo "Production environment running"
+
+prod-logs:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml logs -f
+
+prod-restart:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml restart
+
+prod-down:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+
+# ==============================================================================
+# Database
+# ==============================================================================
+
+db-migrate:
+	python scripts/migrate.py
+
+db-reset:
+	docker compose down -v
+	docker compose up -d postgres
+	@echo "Waiting for postgres..." && sleep 5
+	python scripts/seed_database.py
+
+# ==============================================================================
+# Development helpers
+# ==============================================================================
+
+fmt:
+	uv pip install black isort
+	black src tests
+	isort src tests
+
+secure-scan:
+	./gitleaks detect --no-banner --verbose
 
 .DEFAULT_GOAL := help

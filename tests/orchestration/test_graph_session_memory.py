@@ -1,4 +1,5 @@
 from src.orchestration.graph import NRGWorkflow
+from src.caching.redis_layer import _get_redis
 
 
 class FakeCompiledGraph:
@@ -17,6 +18,12 @@ class FakeCompiledGraph:
 
 
 def test_workflow_reuses_session_id_and_passes_prior_turns():
+    # Clear any cached query results from Redis so graph.invoke is actually called
+    redis_client = _get_redis()
+    if redis_client:
+        for key in redis_client.scan_iter(match="query:*"):
+            redis_client.delete(key)
+
     workflow = NRGWorkflow()
     fake_graph = FakeCompiledGraph()
     workflow.graph = fake_graph

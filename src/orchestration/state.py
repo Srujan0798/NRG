@@ -19,6 +19,8 @@ class NRGState:
     plan: Optional[dict] = None
     planner_metadata: dict = field(default_factory=dict)
     routing_decision: Optional[str] = None
+    routing_confidence: float = 0.0
+    routing_rationale: list = field(default_factory=list)
     context_summary: Optional[str] = None
 
     sql_query: Optional[str] = None
@@ -32,6 +34,8 @@ class NRGState:
     verification_status: Any = False
     verification_retries: int = 0
     unsupported_claims: list = field(default_factory=list)
+    faithfulness_score: float = 0.0
+    score_breakdown: dict = field(default_factory=dict)
 
     trace: list = field(default_factory=list)
     errors: list = field(default_factory=list)
@@ -39,6 +43,8 @@ class NRGState:
     retrieval_sources: list = field(default_factory=list)
     provenance: dict = field(default_factory=dict)
     synthesis_method: str = "unknown"
+    token_budget: dict = field(default_factory=dict)
+    execution_time_ms: dict = field(default_factory=dict)
 
     user_tier: int = 1
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())

@@ -50,33 +50,40 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     monkeypatch.setattr(api_main, "workflow", stub_workflow)
     monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: None)
 
-    client = TestClient(api_main.app)
-    response = client.post(
-        "/query",
-        json={"query": "Find robotics researchers", "session_id": "session-123"},
-        headers=_auth_headers(client),
-    )
+    from src.services.consent import ConsentService
+    original_has_consent = ConsentService.has_consent
+    ConsentService.has_consent = lambda self, uid, scope: True
 
-    assert response.status_code == 200
-    payload = response.json()
-    assert payload["query_id"] == "query-123"
-    assert payload["session_id"] == "session-123"
-    assert payload["intent"] == "structured"
-    assert payload["routing_decision"] == "text_to_sql"
-    assert payload["response"] == "orchestrated answer"
-    assert payload["warnings"] == [
-        {
-            "skill": "rag",
-            "error_type": "RetrieverUnavailable",
-            "message": "Qdrant unavailable",
-        }
-    ]
-    assert payload["provenance"]["synth"] == "rule_based"
-    assert payload["provenance"]["cloud_synthesis_used"] is False
-    assert payload["retrieval_sources"] == ["structured"]
-    assert len(stub_workflow.calls) == 1
-    call = stub_workflow.calls[0]
-    assert call["query"] == "Find robotics researchers"
-    assert call["user_tier"] == 1
-    assert call["session_id"] == "session-123"
-    assert "user_id" in call
+    try:
+        client = TestClient(api_main.app)
+        response = client.post(
+            "/query",
+            json={"query": "Find robotics researchers", "session_id": "session-123"},
+            headers=_auth_headers(client),
+        )
+
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["query_id"] == "query-123"
+        assert payload["session_id"] == "session-123"
+        assert payload["intent"] == "structured"
+        assert payload["routing_decision"] == "text_to_sql"
+        assert payload["response"] == "orchestrated answer"
+        assert payload["warnings"] == [
+            {
+                "skill": "rag",
+                "error_type": "RetrieverUnavailable",
+                "message": "Qdrant unavailable",
+            }
+        ]
+        assert payload["provenance"]["synth"] == "rule_based"
+        assert payload["provenance"]["cloud_synthesis_used"] is False
+        assert payload["retrieval_sources"] == ["structured"]
+        assert len(stub_workflow.calls) == 1
+        call = stub_workflow.calls[0]
+        assert call["query"] == "Find robotics researchers"
+        assert call["user_tier"] == 1
+        assert call["session_id"] == "session-123"
+        assert "user_id" in call
+    finally:
+        ConsentService.has_consent = original_has_consent

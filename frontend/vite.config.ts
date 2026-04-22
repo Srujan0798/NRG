@@ -95,6 +95,16 @@ export default defineConfig({
   build: {
     outDir: '../dist/frontend',
     sourcemap: true,
-    minify: 'terser'
+    minify: 'terser',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-d3': ['d3-force', 'd3-zoom', 'd3-drag', 'd3-selection'],
+          'vendor-recharts': ['recharts'],
+          'vendor-motion': ['framer-motion'],
+        }
+      }
+    }
   }
 })
