@@ -160,6 +160,9 @@ class TestAuditChainIntegrity:
         valid_before, errors_before, _ = log.verify_chain()
         assert valid_before is False
 
+        import sys
+        _project_root = str(Path(__file__).parent.parent.parent)
+        sys.path.insert(0, _project_root)
         from scripts.audit_rebuild import rebuild_chain
 
         audit_dir = str(Path(log.chain_file).parent)
@@ -272,9 +275,12 @@ class TestAuditChainRebuildScript:
 
     def test_rebuild_script_check_mode(self, temp_audit_dir):
         """Test rebuild script in check mode."""
+        import sys
+        from pathlib import Path as P
+        sys.path.insert(0, str(P(__file__).parent.parent.parent))
         from scripts.audit_rebuild import verify_chain_file
 
-        chain_file = Path(temp_audit_dir) / "chain.jsonl"
+        chain_file = P(temp_audit_dir) / "chain.jsonl"
         chain_file.write_text('{"event_type": "test", "hash": "abc"}\n')
 
         valid, errors = verify_chain_file(str(chain_file), "test-key")
@@ -288,7 +294,7 @@ class TestAuditChainRebuildScript:
         sys.path.insert(0, str(P(__file__).parent.parent.parent))
         from scripts.audit_rebuild import rebuild_chain
 
-        chain_file = Path(temp_audit_dir) / "chain.jsonl"
+        chain_file = P(temp_audit_dir) / "chain.jsonl"
 
         with open(chain_file, "w") as f:
             for i in range(20):
