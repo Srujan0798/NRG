@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import atexit
 import logging
 import sys
 import threading
@@ -23,6 +24,16 @@ _sql_skill_class_id: int | None = None
 _rag_skill_instance: RAGSkill | None = None
 _rag_skill_class_id: int | None = None
 _lock = threading.Lock()
+
+_parallel_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="executor")
+
+def _shutdown_executor():
+    """Clean shutdown of executor thread pool."""
+    global _parallel_executor
+    _parallel_executor.shutdown(wait=False)
+    logger.info("Executor thread pool shut down")
+
+atexit.register(_shutdown_executor)
 
 
 @dataclass
@@ -176,9 +187,9 @@ def executor_node(state) -> dict:
 
 
 def _execute_parallel(user_query: str, user_tier: int) -> dict:
-    """Execute SQL and RAG in parallel for hybrid queries."""
-    sql_future = concurrent.futures.ThreadPoolExecutor(max_workers=1).submit(_execute_sql, user_query, user_tier)
-    rag_future = concurrent.futures.ThreadPoolExecutor(max_workers=1).submit(_execute_rag, user_query, user_tier)
+    """Execute SQL and RAG in parallel for hybrid queries using shared thread pool."""
+    sql_future = _parallel_executor.submit(_execute_sql, user_query, user_tier)
+    rag_future = _parallel_executor.submit(_execute_rag, user_query, user_tier)
 
     sql_result, sql_time = sql_future.result()
     rag_result, rag_time = rag_future.result()
