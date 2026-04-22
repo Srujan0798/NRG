@@ -696,8 +696,9 @@ class MinimaxLLMClient:
 
 class SovereignLLMMesh:
     """
-    Sovereign LLM Mesh with automatic fallback.
+    Sovereign LLM Mesh with automatic fallback and circuit breaker.
     Tries providers in order: primary → fallback1 → fallback2 → ...
+    Circuit breaker trips after 3 failures in 5 min, recovers after 60s cooldown.
     Ensures high availability for IITGN production.
     """
 
@@ -705,6 +706,12 @@ class SovereignLLMMesh:
         self.clients: dict[str, LLMClient] = {}
         self.mesh_config = self._load_mesh_config()
         self._initialize_clients()
+        self._circuit_state: dict[str, str] = {p: "closed" for p in self.clients}
+        self._failure_history: dict[str, list[float]] = {p: [] for p in self.clients}
+        self._failure_lock = threading.Lock()
+        self._circuit_failure_threshold = 3
+        self._circuit_cooldown_seconds = 60
+        self._circuit_window_seconds = 300
 
     def _load_mesh_config(self) -> LLMMeshConfig:
         """Load mesh configuration from environment."""
@@ -748,6 +755,37 @@ class SovereignLLMMesh:
         if not self.clients:
             raise LLMConfigError("No LLM providers available in mesh")
 
+    def _is_provider_circuit_open(self, provider: str) -> bool:
+        """Check if circuit breaker is open for a provider."""
+        with self._failure_lock:
+            state = self._circuit_state.get(provider, "closed")
+            if state == "closed":
+                return False
+            if state == "half_open":
+                return False
+            return True
+
+    def _record_failure(self, provider: str) -> None:
+        """Record a failure and potentially trip the circuit breaker."""
+        with self._failure_lock:
+            now = time.time()
+            self._failure_history.setdefault(provider, []).append(now)
+            self._failure_history[provider] = [
+                t for t in self._failure_history[provider]
+                if now - t < self._circuit_window_seconds
+            ]
+            if len(self._failure_history[provider]) >= self._circuit_failure_threshold:
+                self._circuit_state[provider] = "open"
+                logger.warning(f"🔌 Circuit breaker OPEN for {provider} after {len(self._failure_history[provider])} failures")
+
+    def _record_success(self, provider: str) -> None:
+        """Record a success and close the circuit breaker."""
+        with self._failure_lock:
+            self._failure_history[provider] = []
+            if self._circuit_state.get(provider) != "closed":
+                logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
+            self._circuit_state[provider] = "closed"
+
     def generate(
         self,
         system_prompt: str,
@@ -755,8 +793,8 @@ class SovereignLLMMesh:
         conversation_history: Optional[list[dict]] = None,
     ) -> str:
         """
-        Generate response with automatic fallback.
-        Tries primary provider, then falls back to others in order.
+        Generate response with automatic fallback and circuit breaker.
+        Circuit breaker skips providers that are failing.
         """
         conversation_history = conversation_history or []
         provider_order = [self.mesh_config.primary_provider] + self.mesh_config.fallback_order
@@ -769,6 +807,10 @@ class SovereignLLMMesh:
 
         for attempt in range(self.mesh_config.max_retries):
             for provider in available_providers:
+                if self._is_provider_circuit_open(provider):
+                    logger.debug(f"⏭️ Skipping {provider} - circuit breaker open")
+                    continue
+
                 try:
                     client = self.clients[provider]
                     response = client.generate(
@@ -778,11 +820,13 @@ class SovereignLLMMesh:
                     )
 
                     if len(response) > 0:
+                        self._record_success(provider)
                         logger.info(f"✅ LLM Mesh: Response from {provider} (attempt {attempt + 1})")
                         return response
 
                 except Exception as e:
                     last_error = e
+                    self._record_failure(provider)
                     logger.warning(f"⚠️ LLM Mesh: {provider} failed (attempt {attempt + 1}): {e}")
 
                     if isinstance(e, LLMConfigError):
@@ -801,10 +845,11 @@ class SovereignLLMMesh:
         return list(self.clients.keys())
 
     def health_check(self) -> dict:
-        """Check health of all LLM providers in mesh."""
+        """Check health of all LLM providers in mesh including circuit breaker state."""
         health = {}
 
         for provider, client in self.clients.items():
+            circuit_state = self._circuit_state.get(provider, "closed")
             try:
                 test_response = client.generate(
                     system_prompt="You are a test system.",
@@ -813,12 +858,16 @@ class SovereignLLMMesh:
                 )
                 health[provider] = {
                     "status": "healthy",
-                    "response_length": len(test_response)
+                    "circuit": circuit_state,
+                    "response_length": len(test_response),
+                    "failures_last_5min": len(self._failure_history.get(provider, [])),
                 }
             except Exception as e:
                 health[provider] = {
                     "status": "unhealthy",
-                    "error": str(e)
+                    "circuit": circuit_state,
+                    "error": str(e),
+                    "failures_last_5min": len(self._failure_history.get(provider, [])),
                 }
 
         return health
