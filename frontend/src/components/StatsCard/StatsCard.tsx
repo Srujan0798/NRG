@@ -10,6 +10,7 @@ interface StatsCardProps {
   accentColor?: string
   delay?: number
   format?: 'number' | 'currency' | 'percent'
+  'data-testid'?: string
 }
 
 function useAnimatedCounter(
@@ -85,6 +86,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   accentColor = '#ff6b35',
   delay = 0,
   format = 'number',
+  'data-testid': testId,
 }) => {
   const animatedValue = useAnimatedCounter(value, 1600, delay)
   const isHindi = !!labelHi
@@ -98,6 +100,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay / 1000, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      data-testid={testId}
     >
       <div className="absolute top-0 right-0 w-32 h-32 opacity-5 rounded-bl-full" style={{ background: accentColor }} />
 

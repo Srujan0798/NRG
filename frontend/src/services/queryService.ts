@@ -10,14 +10,20 @@ export interface QueryRequest {
 
 export interface Citation {
   id: string;
-  source: string;
+  source?: string;
   pub_id?: string;
   chunk_id?: string;
-  title: string;
-  authors: string[];
-  year: number;
-  relevance_score: number;
+  title?: string;
+  authors?: string[];
+  year?: number;
+  relevance_score?: number;
   chunk_text?: string;
+  doi?: string | null;
+  journal?: string | null;
+  abstract?: string | null;
+  citation_count?: number;
+  research_area?: string | null;
+  enriched?: boolean;
 }
 
 export interface QueryWarning {
@@ -44,6 +50,7 @@ export interface QueryResponse {
   intent?: string;
   routing_decision?: string;
   verification_status: boolean;
+  citation_validity?: number;
   citations?: Citation[];
   warnings?: QueryWarning[];
   retrieval_sources?: string[];

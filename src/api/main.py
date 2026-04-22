@@ -34,12 +34,73 @@ from src.data.database import resolve_database_path
 from src.data.database_v2 import NRGDatabase as NRGDatabaseV2, Researcher
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
-from src.security.rate_limiter import check_tier_rate_limit
+from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
 from src.observability.metrics import instrument_app, get_metrics_content_type
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
+
+
+def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
+    """Redact PII from API response fields.
+
+    Scans response text fields for Aadhaar, PAN, phone, email patterns
+    and replaces them with placeholders.
+
+    Returns:
+        (redacted_response, list_of_redacted_pii_types)
+    """
+    import re
+
+    pii_patterns = {
+        "AADHAAR": re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"),
+        "PAN": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b"),
+        "PHONE": re.compile(r"\b[6-9][0-9]{9}\b"),
+        "EMAIL": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
+    }
+
+    redacted_types: list[str] = []
+    redacted_response = response_data.copy()
+
+    def _redact_text(text: str) -> tuple[str, list[str]]:
+        """Redact PII from text, return (redacted_text, redacted_types)."""
+        if not isinstance(text, str):
+            return text, []
+        found_types = []
+        result = text
+        for pii_type, pattern in pii_patterns.items():
+            if pattern.search(result):
+                placeholder = f"[{pii_type}_REDACTED]"
+                result = pattern.sub(placeholder, result)
+                found_types.append(pii_type)
+        return result, found_types
+
+    text_fields_to_check = ["response", "warnings"]
+    for field in text_fields_to_check:
+        if field in redacted_response and isinstance(redacted_response[field], str):
+            redacted_response[field], found = _redact_text(redacted_response[field])
+            redacted_types.extend(found)
+
+    if "citations" in redacted_response and isinstance(redacted_response["citations"], list):
+        redacted_citations = []
+        for citation in redacted_response["citations"]:
+            if isinstance(citation, dict):
+                redacted_citation = citation.copy()
+                for key in ["text", "context", "paper_title"]:
+                    if key in redacted_citation and isinstance(redacted_citation[key], str):
+                        redacted_citation[key], found = _redact_text(redacted_citation[key])
+                        redacted_types.extend(found)
+                redacted_citations.append(redacted_citation)
+            else:
+                redacted_citations.append(citation)
+        redacted_response["citations"] = redacted_citations
+
+    if redacted_types:
+        redacted_types = list(set(redacted_types))
+        logger.info("PII redaction applied to response: %s", redacted_types)
+
+    return redacted_response, redacted_types
 
 
 class _APIMemoryCache:
@@ -178,9 +239,9 @@ async def login(request: LoginRequest, raw_request: Request = None):
     is_locked, lockout_msg = brute_force_protection.check_login_failure(request.username)
     if is_locked:
         logger.warning(
-            "Login blocked - account locked: user=%s ip=%s",
-            request.username,
-            client_ip,
+            "Login blocked - account locked",
+            user=request.username,
+            ip=client_ip,
         )
         headers = {"Retry-After": "900"}
         raise HTTPException(status_code=429, detail=lockout_msg, headers=headers)
@@ -306,6 +367,16 @@ async def query_with_langgraph(
             headers=rate_headers,
         )
 
+    allowed_endpoint, remaining_endpoint, reset_endpoint, endpoint_headers = check_endpoint_rate_limit(
+        "/query", user_id
+    )
+    if not allowed_endpoint:
+        raise HTTPException(
+            status_code=429,
+            detail="Query rate limit exceeded (10/min). Please wait before submitting another query.",
+            headers={**rate_headers, **endpoint_headers},
+        )
+
     if user_tier == 2:
         from src.api.middleware.security import IPAllowlist
         if not IPAllowlist.is_allowed(client_ip or ""):
@@ -363,6 +434,7 @@ async def query_with_langgraph(
             "intent": result.get("intent"),
             "routing_decision": result.get("routing_decision"),
             "verification_status": result.get("verification_status", False),
+            "citation_validity": result.get("citation_validity", 1.0),
             "plan": result.get("plan"),
             "planner_metadata": result.get("planner_metadata", {}),
             "citations": result.get("citations", []),
@@ -372,6 +444,13 @@ async def query_with_langgraph(
             "synthesis_method": result.get("synthesis_method", "unknown"),
             "conversation_history": result.get("conversation_history", []),
         }
+
+        response_payload, redacted_pii = _redact_pii_from_response(response_payload)
+        if redacted_pii:
+            response_payload["warnings"] = response_payload.get("warnings", []) + [
+                f"PII redaction applied to response: {', '.join(redacted_pii)}"
+            ]
+
         _api_cache.set(cache_key, response_payload, ttl=30)
         return response_payload
     except HTTPException:
@@ -382,7 +461,26 @@ async def query_with_langgraph(
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()}
+    from src.skills.rag.retriever import Retriever, RetrieverUnavailable
+    retriever_health = {"status": "not_checked"}
+    try:
+        retriever = Retriever()
+        retriever_health = retriever.health_check()
+    except Exception as exc:
+        retriever_health = {"status": "error", "message": str(exc)}
+
+    overall = "healthy"
+    if retriever_health.get("status") == "unhealthy":
+        overall = "unhealthy"
+    elif retriever_health.get("status") == "degraded":
+        overall = "degraded"
+
+    return {
+        "status": overall,
+        "timestamp": datetime.now(UTC).isoformat(),
+        "consent_service": "operational",
+        "retriever": retriever_health,
+    }
 
 
 @app.get("/health/llm")
@@ -477,6 +575,7 @@ async def health_all():
         "local_llm": {"status": "unknown"},
         "qdrant": {"status": "unknown"},
         "redis": {"status": "unknown"},
+        "consent_service": {"status": "unknown"},
     }
 
     # Local LLM
@@ -507,6 +606,15 @@ async def health_all():
             checks["redis"] = {"status": "unhealthy", "error": "No connection"}
     except Exception as e:
         checks["redis"] = {"status": "unhealthy", "error": str(e)}
+
+    # Consent Service
+    try:
+        from src.services.consent import ConsentService
+        cs = ConsentService()
+        consents = cs.list_consents("__health_check__")
+        checks["consent_service"] = {"status": "operational", "scopes": list(cs.SCOPES.keys())}
+    except Exception as e:
+        checks["consent_service"] = {"status": "unhealthy", "error": str(e)}
 
     overall = all(c.get("status") == "healthy" for c in checks.values())
     return {"status": "healthy" if overall else "degraded", "services": checks}
@@ -883,13 +991,14 @@ async def get_graph_data(
 @app.post("/consent")
 async def grant_consent(
     scope: str,
+    retention_days: int = 365,
     token_payload: dict = Depends(get_current_user)
 ):
     """Grant consent for data processing (DPDP 2023)."""
     from src.services.consent import ConsentService
     service = ConsentService()
     user_id = token_payload.get("sub", "anonymous")
-    result = service.grant_consent(user_id, scope)
+    result = service.grant_consent(user_id, scope, retention_days)
     if result["success"]:
         return result
     raise HTTPException(status_code=400, detail=result["error"])
@@ -936,6 +1045,17 @@ async def erase_user_data(token_payload: dict = Depends(get_current_user)):
     service = ConsentService()
     user_id = token_payload.get("sub", "anonymous")
     return service.erase_user_data(user_id)
+
+
+@app.get("/admin/dpdp/stats")
+async def get_dpdp_admin_stats(token_payload: dict = Depends(get_current_user)):
+    """DPDP compliance admin dashboard stats."""
+    role = token_payload.get("role", "")
+    if role not in ("admin", "government"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    from src.services.consent import ConsentService
+    service = ConsentService()
+    return service.get_admin_stats()
 
 
 # Admin Audit Endpoints

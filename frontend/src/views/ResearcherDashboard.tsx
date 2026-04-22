@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, memo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { PermissionBoundary } from '../components/PermissionBoundary'
 import { TierBadge } from '../components/TierBadge'
@@ -7,22 +7,19 @@ import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { DPDPAuditLog } from '../components/DPDPAuditLog'
 import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel'
 import { SecurityMonitor } from '../components/SecurityMonitor'
+import { ConsentBanner } from '../components/ConsentBanner'
+import { DPDPPanel } from '../components/DPDPPanel'
 import { GlassCard } from '../components/GlassCard'
 import { AnswerPanel } from '../components/AnswerPanel'
 import { GraphView } from '../components/GraphView'
 import { StatsCard } from '../components/StatsCard'
 import { ErrorState } from '../components/ErrorState'
 import { ResearchAreasBarChart } from '../components/DataViz'
-import { FundingTrendsLineChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
 import { useQuery } from '@tanstack/react-query'
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, CartesianGrid
-} from 'recharts'
 import {
   Search, Users, FileText, Building, TrendingUp, Shield,
   Sun as SunIcon, Moon as MoonIcon, BookOpen, History, RefreshCw
@@ -48,45 +45,16 @@ const SaffronSpinner = ({ style }: { style?: React.CSSProperties }) => (
   />
 )
 
-const MiniBarChart = memo(function MiniBarChart({
-  data,
-  color = '#ff6b35',
-}: {
-  data: { label: string; value: number }[]
-  color?: string
-}) {
-  return (
-    <ResponsiveContainer width="100%" height={120}>
-      <BarChart data={data} margin={{ top: 4, right: 4, bottom: 4, left: -20 }}>
-        <Bar dataKey="value" fill={color} radius={[4, 4, 0, 0]} maxBarSize={28} />
-        <XAxis
-          dataKey="label"
-          tick={{ fontSize: 10, fill: 'var(--nrg-muted)' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          contentStyle={{
-            background: 'var(--nrg-surface)',
-            border: '1px solid var(--nrg-border)',
-            borderRadius: 8,
-            fontSize: 12,
-          }}
-        />
-      </BarChart>
-    </ResponsiveContainer>
-  )
-})
-
 export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboardProps) {
   const { user } = useAuth()
   const {
     history, currentQuery, isSearching,
     setCurrentQuery, addToHistory, setIsSearching, setLastResult,
   } = useQueryStore()
-  const { grantConsent, addAuditEntry } = useDPDPStore()
+  const { grantConsent, addAuditEntry, getConsentStatus } = useDPDPStore()
 
-  const [showDPDPConsent, setShowDPDPConsent] = useState(false)
+  const hasExistingConsent = getConsentStatus('Research data analysis')?.granted
+  const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('dashboard')
   const [graphData, setGraphData] = useState(queryService.emptyGraphData())
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
@@ -114,6 +82,12 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     staleTime: 30 * 1000,
     enabled: !!user && activeTab === 'graph',
   })
+
+  useEffect(() => {
+    if (graphApiData) {
+      setGraphData(graphApiData)
+    }
+  }, [graphApiData])
 
   const publications = publicationsData?.publications || []
 
@@ -204,6 +178,15 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
           ))}
         </div>
       </header>
+
+      <ConsentBanner
+        role="researcher"
+        onManageConsent={() => setActiveTab('dpdp')}
+        expiringCount={useDPDPStore((s) => {
+          const threshold = Date.now() + 30 * 24 * 60 * 60 * 1000;
+          return Object.values(s.consents).filter((c) => c.expiresAt && c.expiresAt < threshold && c.granted).length;
+        })}
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'dashboard' && (
@@ -338,17 +321,17 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{pub.title}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{pub.authors?.slice(0, 2).join(', ')}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{typeof pub.authors === 'string' ? pub.authors.split(',').slice(0, 2).join(', ') : Array.isArray(pub.authors) ? pub.authors.slice(0, 2).join(', ') : ''}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{pub.citations || 0}</p>
-                            <p className="text-xs text-slate-400">citations</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500">citations</p>
                           </div>
                         </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-10 text-slate-400">
+                    <div className="text-center py-10 text-slate-400 dark:text-slate-500">
                       <BookOpen size={40} className="mx-auto mb-3 opacity-50" />
                       <p className="text-sm">No publications found.</p>
                     </div>
@@ -442,36 +425,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <DPDPWithdrawalPanel />
-            <GlassCard accent="sovereign" title="Data Protection & Privacy" description="Your rights under India's DPDP Act 2023 · आपके अधिकार">
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700">
-                  <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-sm">✓</div>
-                  <div>
-                    <p className="text-sm font-semibold text-green-800 dark:text-green-200">Consent Active</p>
-                    <p className="text-xs text-green-600 dark:text-green-400">Your data access is managed per DPDP Act 2023.</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
-                    <p className="font-medium text-slate-900 dark:text-white mb-1">Purpose Limitation</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">Your data is used only for research analysis you have consented to.</p>
-                  </div>
-                  <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
-                    <p className="font-medium text-slate-900 dark:text-white mb-1">Right to Withdraw</p>
-                    <p className="text-slate-500 dark:text-slate-400 text-xs">You can withdraw consent at any time. Your data will be removed within 30 days.</p>
-                  </div>
-                </div>
-                <motion.button
-                  onClick={() => setShowDPDPConsent(true)}
-                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-md hover:shadow-lg"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  Grant New Data Access Consent
-                </motion.button>
-              </div>
-            </GlassCard>
+            <DPDPPanel role="researcher" />
           </motion.div>
         )}
 
