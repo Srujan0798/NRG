@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, SimulationNodeDatum } from 'd3-force'
 import { zoom, zoomIdentity, ZoomBehavior } from 'd3-zoom'
 import { drag, DragBehavior } from 'd3-drag'
@@ -12,6 +12,12 @@ export interface ForceGraphProps {
   onNodeClick?: (node: GraphNode) => void
 }
 
+export interface ForceGraphHandle {
+  zoomIn: () => void
+  zoomOut: () => void
+  resetZoom: () => void
+}
+
 interface D3GraphNode extends SimulationNodeDatum {
   id: string
   label: string
@@ -21,17 +27,17 @@ interface D3GraphNode extends SimulationNodeDatum {
 }
 
 const NODE_COLORS: Record<string, string> = {
-  paper:      '#6366f1',
-  author:     '#10b981',
-  institution:'#2563eb',
-  topic:      '#ff6b35',
+  paper: '#6366f1',
+  author: '#10b981',
+  institution: '#2563eb',
+  topic: '#ff6b35',
 }
 
 const TYPE_LABELS: Record<string, string> = {
-  paper:      'Publication',
-  author:     'Researcher',
-  institution:'Institution',
-  topic:      'Topic',
+  paper: 'Publication',
+  author: 'Researcher',
+  institution: 'Institution',
+  topic: 'Topic',
 }
 
 const FILTER_OPTIONS = [
@@ -42,7 +48,10 @@ const FILTER_OPTIONS = [
   { key: 'topic', label: 'Topics' },
 ]
 
-export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: ForceGraphProps) {
+export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function ForceGraph(
+  { data, width = 800, height = 500, onNodeClick },
+  ref
+) {
   const svgRef = useRef<SVGSVGElement>(null)
   const gRef = useRef<SVGGElement | null>(null)
   const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
@@ -178,7 +187,7 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
       })
 
     node.append('text')
-      .text((d) => d.label.length > 16 ? d.label.slice(0, 14) + '…' : d.label)
+      .text((d) => d.label.length > 16 ? d.label.slice(0, 14) + '...' : d.label)
       .attr('x', 14)
       .attr('y', 4)
       .attr('font-size', '10px')
@@ -217,6 +226,22 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
     renderGraph()
   }, [renderGraph])
 
+  const zoomIn = useCallback(() => {
+    if (!svgRef.current || !zoomRef.current) return
+    select(svgRef.current)
+      .transition()
+      .duration(300)
+      .call(zoomRef.current.scaleBy, 1.5)
+  }, [])
+
+  const zoomOut = useCallback(() => {
+    if (!svgRef.current || !zoomRef.current) return
+    select(svgRef.current)
+      .transition()
+      .duration(300)
+      .call(zoomRef.current.scaleBy, 0.67)
+  }, [])
+
   const resetZoom = useCallback(() => {
     if (!svgRef.current || !zoomRef.current) return
     select(svgRef.current)
@@ -224,6 +249,12 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
       .duration(500)
       .call(zoomRef.current.transform, zoomIdentity)
   }, [])
+
+  useImperativeHandle(ref, () => ({
+    zoomIn,
+    zoomOut,
+    resetZoom,
+  }))
 
   return (
     <div className="space-y-3">
@@ -254,7 +285,7 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
             min={1990}
             max={2026}
           />
-          <span className="text-xs text-nrg-muted">—</span>
+          <span className="text-xs text-nrg-muted">-</span>
           <input
             type="number"
             value={yearRange[1]}
@@ -290,7 +321,7 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
           className="select-none"
           style={{ cursor: 'grab' }}
           role="img"
-          aria-label={`Knowledge graph with ${filteredNodes.length} nodes and ${filteredEdges.length} edges. Node types: Publications (indigo), Researchers (emerald), Institutions (blue), Topics (saffron).`}
+          aria-label={`Knowledge graph with ${filteredNodes.length} nodes and ${filteredEdges.length} edges`}
         />
 
         {tooltip && (
@@ -319,4 +350,4 @@ export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: For
       </div>
     </div>
   )
-}
+})

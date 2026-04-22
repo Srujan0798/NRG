@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ForceGraph } from '../ForceGraph'
+import { ForceGraph, ForceGraphHandle } from '../ForceGraph'
 import { GraphNode, GraphData } from '../../services/queryService'
 import { ZoomIn, ZoomOut, RotateCcw, Filter, X } from 'lucide-react'
 
@@ -37,6 +37,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+  const graphRef = useRef<ForceGraphHandle>(null)
 
   const handleNodeClick = (node: GraphNode) => {
     setSelectedNode(node)
@@ -60,7 +61,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           <Filter size={18} />
         </motion.button>
         <motion.button
-          onClick={() => {}}
+          onClick={() => graphRef.current?.zoomIn()}
           className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -68,7 +69,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           <ZoomIn size={18} />
         </motion.button>
         <motion.button
-          onClick={() => {}}
+          onClick={() => graphRef.current?.zoomOut()}
           className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -76,7 +77,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           <ZoomOut size={18} />
         </motion.button>
         <motion.button
-          onClick={() => {}}
+          onClick={() => graphRef.current?.resetZoom()}
           className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -102,6 +103,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
       <div style={{ width, height }}>
         <ForceGraph
+          ref={graphRef}
           data={data}
           width={width}
           height={height - 40}

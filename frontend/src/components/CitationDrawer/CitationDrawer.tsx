@@ -87,6 +87,24 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
         chunkId: cite.chunk_id || '',
       }
 
+      if (cite.title && cite.authors?.length) {
+        setDetails({
+          title: cite.title,
+          year: cite.year || 0,
+          authors: cite.authors,
+          chunk_text: cite.chunk_text || `Chunk ${parsed.chunkId} content`,
+          pub_id: cite.pub_id || parsed.pubId || 'unknown',
+          chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',
+          institution: cite.research_area || 'Unknown Institution',
+          citations: cite.citation_count || 0,
+          doi: cite.doi || 'Not available',
+          journal: cite.journal || 'Unknown Journal',
+          abstract: cite.abstract || null,
+        })
+        setLoading(false)
+        return
+      }
+
       if (parsed.pubId) {
         try {
           const pubData = await queryService.fetchPublications(100)
@@ -105,6 +123,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
               journal: pub.venue || 'Unknown Journal',
               abstract: pub.abstract || null,
             })
+            setLoading(false)
             return
           }
         } catch {}
@@ -117,11 +136,11 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
         chunk_text: cite.chunk_text || `Chunk content for ${parsed.chunkId || 'unknown'}`,
         pub_id: cite.pub_id || parsed.pubId || 'unknown',
         chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',
-        institution: 'Unknown Institution',
-        citations: 0,
-        doi: 'Not available',
-        journal: 'Unknown Journal',
-        abstract: null,
+        institution: cite.research_area || 'Unknown Institution',
+        citations: cite.citation_count || 0,
+        doi: cite.doi || 'Not available',
+        journal: cite.journal || 'Unknown Journal',
+        abstract: cite.abstract || null,
       })
     } finally {
       setLoading(false)

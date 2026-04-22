@@ -205,6 +205,68 @@ class Retriever:
         except Exception:
             return {"name": self.collection_name, "status": "not_found"}
 
+    def health_check(self) -> Dict[str, Any]:
+        """Comprehensive health check: connection, collection, index build status."""
+        result = {
+            "status": "ok",
+            "collection": self.collection_name,
+            "qdrant_reachable": False,
+            "collection_exists": False,
+            "index_built": False,
+            "vectors_indexed": 0,
+            "vectors_total": 0,
+            "latency_ms": None,
+            "issues": [],
+        }
+
+        import time
+        start = time.perf_counter()
+
+        try:
+            info = self.client.get_collection(self.collection_name)
+            result["qdrant_reachable"] = True
+            result["collection_exists"] = True
+            result["vectors_total"] = info.points_count or 0
+            result["vectors_indexed"] = info.indexed_vectors_count or 0
+
+            if result["vectors_total"] == 0:
+                result["issues"].append("Collection is empty")
+            elif result["vectors_indexed"] < result["vectors_total"]:
+                result["issues"].append(
+                    f"HNSW index incomplete: {result['vectors_indexed']}/{result['vectors_total']} vectors indexed"
+                )
+                result["status"] = "degraded"
+            else:
+                result["index_built"] = True
+
+            params = info.config.params
+            if hasattr(params, "vectors"):
+                vector_cfg = params.vectors
+                if hasattr(vector_cfg, "size"):
+                    result["vector_size"] = vector_cfg.size
+                elif isinstance(vector_cfg, dict):
+                    result["vector_size"] = next(
+                        (v.size for v in vector_cfg.values() if hasattr(v, "size")), None
+                    )
+
+            hnsw = info.config.hnsw_config
+            if hnsw:
+                result["hnsw_m"] = getattr(hnsw, "m", None)
+                result["hnsw_ef_construct"] = getattr(hnsw, "ef_construct", None)
+
+        except Exception as exc:
+            result["status"] = "unhealthy"
+            result["issues"].append(f"Connection failed: {exc}")
+
+        result["latency_ms"] = round((time.perf_counter() - start) * 1000, 2)
+
+        if not result["issues"]:
+            result["status"] = "ok"
+        elif result["status"] != "unhealthy":
+            result["status"] = "degraded"
+
+        return result
+
     def upsert(self, ids: List[str], embeddings: List[List[float]], payloads: List[Dict[str, Any]]):
         """Upsert vectors into Qdrant collection."""
         try:

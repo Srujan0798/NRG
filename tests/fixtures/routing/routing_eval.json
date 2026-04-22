@@ -1,0 +1,597 @@
+{
+  "version": "1.0",
+  "description": "Routing evaluation dataset with 50 diverse queries",
+  "created": "2026-04-22",
+  "maintainer": "LLM Router Ascension Project",
+  "test_cases": [
+    {
+      "id": "routing_001",
+      "query": "List all researchers in Gujarat working on AI",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_002",
+      "query": "What are the latest trends in hydrogen catalysis research?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_003",
+      "query": "Find researchers in machine learning and explain their recent work",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_004",
+      "query": "Count publications in 2023",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_005",
+      "query": "Who is doing the best research in quantum computing?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "low",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "ambiguous"
+    },
+    {
+      "id": "routing_006",
+      "query": "Explain the breakthroughs in graphene research",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_007",
+      "query": "Show funding for all AI projects in India",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_008",
+      "query": "Compare publication counts between IIT Delhi and IIT Bombay",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "comparison"
+    },
+    {
+      "id": "routing_009",
+      "query": "What",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": true,
+      "multi_intent": false,
+      "edge_case": true,
+      "category": "edge_case"
+    },
+    {
+      "id": "routing_010",
+      "query": "List top funded labs and analyze their impact",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "high",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_011",
+      "query": "Summarize the current state of research in renewable energy",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_012",
+      "query": "How many papers were published in 2022 vs 2023?",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "medium",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_013",
+      "query": "Describe the methodology used in recent deep learning papers",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_014",
+      "query": "Which labs have the most funding AND what papers did they publish?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_015",
+      "query": "Find researcher",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": true,
+      "multi_intent": false,
+      "edge_case": true,
+      "category": "edge_case"
+    },
+    {
+      "id": "routing_016",
+      "query": "SELECT * FROM researchers WHERE funding > 1000000; DROP TABLE researchers;--",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": true,
+      "security_flag": true,
+      "category": "sql_injection"
+    },
+    {
+      "id": "routing_017",
+      "query": "What are the latest advances in cancer research?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_018",
+      "query": "List all institutions in Karnataka",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_019",
+      "query": "OR 1=1",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": true,
+      "security_flag": true,
+      "category": "sql_injection"
+    },
+    {
+      "id": "routing_020",
+      "query": "Analyze the trends in electric vehicle research over the past 5 years",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_021",
+      "query": "Who leads the most impactful research groups in India?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "low",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "ambiguous"
+    },
+    {
+      "id": "routing_022",
+      "query": "Show me all grants in the last 10 years",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_023",
+      "query": "What is the relationship between funding and publication count?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_024",
+      "query": "Explain like I'm five: what is CRISPR?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_025",
+      "query": "Count",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": true,
+      "multi_intent": false,
+      "edge_case": true,
+      "category": "edge_case"
+    },
+    {
+      "id": "routing_026",
+      "query": "Find the correlation between researcher h-index and funding amount",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_027",
+      "query": "What are researchers in robotics publishing about recently?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_028",
+      "query": "Show the top 10 institutions by publication count",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": true,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_029",
+      "query": "Summarize findings from papers on climate change adaptation",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_030",
+      "query": "who has received the most funding and what did they achieve",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_031",
+      "query": "What are the newest research areas in synthetic biology?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_032",
+      "query": "List funding by institution for year 2024",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_033",
+      "query": "' OR ''='",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": true,
+      "security_flag": true,
+      "category": "sql_injection"
+    },
+    {
+      "id": "routing_034",
+      "query": "What have been the historically strongest research institutions in India?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "low",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "ambiguous"
+    },
+    {
+      "id": "routing_035",
+      "query": "Show all publications from IISc Bangalore",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_036",
+      "query": "Find publications versus patents ratio for leading AI labs",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "comparison"
+    },
+    {
+      "id": "routing_037",
+      "query": "Explain recent advances in lithium-sulfur batteries",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_038",
+      "query": "How many researchers joined in the last year?",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_039",
+      "query": "who versus what",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": true,
+      "multi_intent": false,
+      "edge_case": true,
+      "category": "edge_case"
+    },
+    {
+      "id": "routing_040",
+      "query": "Analyze the current status and future directions of quantum computing research",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_041",
+      "query": "List all active research areas in India",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_042",
+      "query": "What are the most recent breakthroughs in materials science?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_043",
+      "query": "Combine data on pharmaceutical patents with research publications",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_044",
+      "query": "UNION SELECT password FROM users--",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "very_low",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": true,
+      "security_flag": true,
+      "category": "sql_injection"
+    },
+    {
+      "id": "routing_045",
+      "query": "Tell me about the leading edge computing research groups",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "medium",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "ambiguous"
+    },
+    {
+      "id": "routing_046",
+      "query": "Get the count of publications per institution",
+      "expected_intent": "structured",
+      "expected_route": "text_to_sql",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "structured_data"
+    },
+    {
+      "id": "routing_047",
+      "query": "What novel approaches are being used in renewable energy storage?",
+      "expected_intent": "unstructured",
+      "expected_route": "rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": false,
+      "edge_case": false,
+      "category": "document_analysis"
+    },
+    {
+      "id": "routing_048",
+      "query": "Show me the list plus synthesis of findings on biotech startups",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    },
+    {
+      "id": "routing_049",
+      "query": "Where have the strongest research programs been historically?",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "low",
+      "ambiguity": true,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "ambiguous"
+    },
+    {
+      "id": "routing_050",
+      "query": "Integration of funding data with publication impact analysis",
+      "expected_intent": "hybrid",
+      "expected_route": "text_to_sql+rag",
+      "confidence_expectation": "high",
+      "ambiguity": false,
+      "multi_intent": true,
+      "edge_case": false,
+      "category": "hybrid"
+    }
+  ],
+  "summary": {
+    "total_queries": 50,
+    "by_category": {
+      "structured_data": 10,
+      "document_analysis": 10,
+      "hybrid": 15,
+      "ambiguous": 5,
+      "comparison": 2,
+      "edge_case": 5,
+      "sql_injection": 3
+    },
+    "by_ambiguity": {
+      "ambiguous": 15,
+      "non_ambiguous": 35
+    },
+    "by_multi_intent": {
+      "multi_intent": 18,
+      "single_intent": 32
+    },
+    "by_edge_case": {
+      "edge_case": 8,
+      "normal": 42
+    },
+    "security_flags": {
+      "sql_injection": 3
+    }
+  },
+  "accuracy_target": 0.85,
+  "notes": [
+    "Confidence expectations: very_low (<0.4), low (0.4-0.6), medium (0.6-0.8), high (>0.8)",
+    "SQL injection queries should be detected and routed safely",
+    "Single-word queries should default to RAG",
+    "Multi-intent queries should be decomposed when possible",
+    "Ambiguous queries with 'best', 'top', 'leading' should use hybrid routing"
+  ]
+}
