@@ -14,6 +14,8 @@ import { AnswerPanel } from '../components/AnswerPanel'
 import { GraphView } from '../components/GraphView'
 import { StatsCard } from '../components/StatsCard'
 import { ErrorState } from '../components/ErrorState'
+import { ErrorBoundary } from '../components/ErrorBoundary'
+import { WidgetErrorBoundary } from '../components/WidgetErrorBoundary'
 import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useQueryStore } from '../stores/queryStore'
@@ -91,6 +93,11 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
   const publications = publicationsData?.publications || []
 
+  const consentExpiringCount = useDPDPStore((s) => {
+    const threshold = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    return Object.values(s.consents).filter((c) => c.expiresAt && c.expiresAt < threshold && c.granted).length;
+  })
+
   const handleSearch = useCallback(async () => {
     if (!currentQuery.trim()) return
     setIsSearching(true)
@@ -128,7 +135,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   }))
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+    <ErrorBoundary title="Researcher Dashboard failed to load">
+      <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-navy-800/95 backdrop-blur-md border-b border-slate-200 dark:border-navy-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -170,6 +178,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
+              data-testid={`tab-${tab.key}`}
             >
               <span>{tab.icon}</span>
               {tab.label}
@@ -182,10 +191,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
       <ConsentBanner
         role="researcher"
         onManageConsent={() => setActiveTab('dpdp')}
-        expiringCount={useDPDPStore((s) => {
-          const threshold = Date.now() + 30 * 24 * 60 * 60 * 1000;
-          return Object.values(s.consents).filter((c) => c.expiresAt && c.expiresAt < threshold && c.granted).length;
-        })}
+        expiringCount={consentExpiringCount}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -211,6 +217,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="Enter research topic, author, institution, or DOI…"
                   className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+                  data-testid="researcher-search-input"
                 />
                 <motion.button
                   onClick={handleSearch}
@@ -218,6 +225,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   className="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  data-testid="researcher-search-submit"
                 >
                   {isSearching ? (
                     <span className="flex items-center gap-2">
@@ -261,44 +269,50 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatsCard
-                label="Total Researchers"
-                labelHi="कुल शोधकर्ता"
-                value={statsData?.total_researchers || 5615}
-                sublabel="Across 181 institutions"
-                accentColor="#6366f1"
-                icon={<Users size={20} />}
-                delay={0}
-              />
-              <StatsCard
-                label="Publications"
-                labelHi="प्रकाशन"
-                value={statsData?.total_publications || 12847}
-                sublabel="Peer-reviewed works"
-                accentColor="#2563eb"
-                icon={<FileText size={20} />}
-                delay={100}
-              />
-              <StatsCard
-                label="Institutions"
-                labelHi="संस्थान"
-                value={statsData?.total_institutions || 181}
-                sublabel="Academic + Research"
-                accentColor="#10b981"
-                icon={<Building size={20} />}
-                delay={200}
-              />
-              <StatsCard
-                label="Your Queries"
-                labelHi="आपके प्रश्न"
-                value={history.length}
-                sublabel="This session"
-                accentColor="#ff6b35"
-                icon={<History size={20} />}
-                delay={300}
-              />
-            </div>
+            <WidgetErrorBoundary title="Stats cards failed to load">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <StatsCard
+                  label="Total Researchers"
+                  labelHi="कुल शोधकर्ता"
+                  value={statsData?.total_researchers ?? 5615}
+                  sublabel="Across 181 institutions"
+                  accentColor="#6366f1"
+                  icon={<Users size={20} />}
+                  delay={0}
+                  data-testid="stat-researchers"
+                />
+                <StatsCard
+                  label="Publications"
+                  labelHi="प्रकाशन"
+                  value={statsData?.total_publications ?? 12847}
+                  sublabel="Peer-reviewed works"
+                  accentColor="#2563eb"
+                  icon={<FileText size={20} />}
+                  delay={100}
+                  data-testid="stat-publications"
+                />
+                <StatsCard
+                  label="Institutions"
+                  labelHi="संस्थान"
+                  value={statsData?.total_institutions ?? 181}
+                  sublabel="Academic + Research"
+                  accentColor="#10b981"
+                  icon={<Building size={20} />}
+                  delay={200}
+                  data-testid="stat-institutions"
+                />
+                <StatsCard
+                  label="Your Queries"
+                  labelHi="आपके प्रश्न"
+                  value={history.length}
+                  sublabel="This session"
+                  accentColor="#ff6b35"
+                  icon={<History size={20} />}
+                  delay={300}
+                  data-testid="stat-queries"
+                />
+              </div>
+            </WidgetErrorBoundary>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="space-y-4">
@@ -380,14 +394,15 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <GraphView
-              data={graphData}
-              width={1100}
-              height={600}
-              onNodeClick={handleNodeClick}
-              availableYears={[2019, 2020, 2021, 2022, 2023, 2024]}
-              availableTopics={['machine learning', 'biotechnology', 'quantum computing', 'neural networks', 'renewable energy']}
-            />
+            <WidgetErrorBoundary title="Knowledge graph failed to load">
+              <GraphView
+                data={graphData}
+                width={1100}
+                height={600}
+                onNodeClick={handleNodeClick}
+                availableYears={[2019, 2020, 2021, 2022, 2023, 2024]}
+                availableTopics={['machine learning', 'biotechnology', 'quantum computing', 'neural networks', 'renewable energy']}
+              />
 
             {selectedNode && (
               <motion.div
@@ -416,6 +431,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 </motion.button>
               </motion.div>
             )}
+            </WidgetErrorBoundary>
           </motion.div>
         )}
 
@@ -425,13 +441,17 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <DPDPPanel role="researcher" />
+            <WidgetErrorBoundary title="Data rights panel failed to load">
+              <DPDPPanel role="researcher" />
+            </WidgetErrorBoundary>
           </motion.div>
         )}
 
         {activeTab === 'audit' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <DPDPAuditLog />
+            <WidgetErrorBoundary title="Audit log failed to load">
+              <DPDPAuditLog />
+            </WidgetErrorBoundary>
           </motion.div>
         )}
       </main>
@@ -442,6 +462,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
         onDeny={() => setShowDPDPConsent(false)}
       />
     </div>
+    </ErrorBoundary>
   )
 }
 
