@@ -462,24 +462,45 @@ async def query_with_langgraph(
 @app.get("/health")
 async def health_check():
     from src.skills.rag.retriever import Retriever, RetrieverUnavailable
+    from src.audit import get_chain_health
+    from src.data.database import NRGDatabase
     retriever_health = {"status": "not_checked"}
+    db_health = {"status": "unknown"}
+    audit_health = {"status": "unknown"}
+
     try:
         retriever = Retriever()
         retriever_health = retriever.health_check()
     except Exception as exc:
         retriever_health = {"status": "error", "message": str(exc)}
 
+    try:
+        db = NRGDatabase()
+        stats = db.get_stats()
+        db_health = {"status": "healthy", "researchers": stats.get("researchers", 0), "publications": stats.get("publications", 0)}
+    except Exception as exc:
+        db_health = {"status": "error", "message": str(exc)}
+
+    try:
+        audit_health = get_chain_health()
+    except Exception as exc:
+        audit_health = {"status": "error", "message": str(exc)}
+
     overall = "healthy"
     if retriever_health.get("status") == "unhealthy":
         overall = "unhealthy"
     elif retriever_health.get("status") == "degraded":
         overall = "degraded"
+    if audit_health.get("chain_valid") is False:
+        overall = "unhealthy"
 
     return {
         "status": overall,
         "timestamp": datetime.now(UTC).isoformat(),
         "consent_service": "operational",
         "retriever": retriever_health,
+        "database": db_health,
+        "audit": audit_health,
     }
 
 
