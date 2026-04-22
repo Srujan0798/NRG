@@ -1,0 +1,154 @@
+# ==============================================================================
+# CI/CD Pipeline for NRG
+# Deploys to staging on PR merge to main, production with manual approval
+# ==============================================================================
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/nrg
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # ===========================================================================
+  # Build and Test
+  # ===========================================================================
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Qdrant
+        run: docker compose -f docker-compose.yml up -d qdrant redis
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+
+      - name: Build API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          target: runner
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          dockerfile: Dockerfile.frontend
+          push: false
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+
+      - name: Run API smoke tests
+        run: |
+          docker run -d --name api-test -e APP_ENV=test ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          sleep 10
+          curl -sf http://localhost:8000/health && echo "API healthy"
+          docker rm -f api-test
+
+  # ===========================================================================
+  # Deploy to Staging
+  # ===========================================================================
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Push images to ECR
+        run: |
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
+          docker push ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
+
+      - name: Deploy to ECS staging
+        run: |
+          aws ecs update-service --cluster nrg-staging --service nrg-api --force-new-deployment
+          aws ecs update-service --cluster nrg-staging --service nrg-frontend --force-new-deployment
+          aws ecs wait services-stable --cluster nrg-staging --services nrg-api,nrg-frontend
+
+      - name: Run smoke tests
+        run: |
+          for i in {1..10}; do
+            curl -sf https://staging.nrg.gov.in/health && echo "Staging healthy" && break
+            sleep 10
+          done
+
+  # ===========================================================================
+  # Deploy to Production (manual approval required)
+  # ===========================================================================
+  deploy-production:
+    needs: [deploy-staging]
+    runs-on: ubuntu-latest
+    environment: production
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_PROD }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Push images to ECR (production tags)
+        run: |
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:latest
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/nrg-api:latest
+          docker push ${{ secrets.ECR_REGISTRY }}/nrg-frontend:latest
+
+      - name: Deploy to ECS production
+        run: |
+          aws ecs update-service --cluster nrg-prod --service nrg-api --force-new-deployment
+          aws ecs update-service --cluster nrg-prod --service nrg-frontend --force-new-deployment
+          aws ecs wait services-stable --cluster nrg-prod --services nrg-api,nrg-frontend
+
+      - name: Notify deployment
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} -d '{"text":"NRG deployed to production: ${{ github.sha }}"}'

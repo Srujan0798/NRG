@@ -1,129 +1,322 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
-import * as d3 from 'd3';
-import { GraphData, GraphNode, GraphEdge } from '../services/queryService';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, SimulationNodeDatum } from 'd3-force'
+import { zoom, zoomIdentity, ZoomBehavior } from 'd3-zoom'
+import { drag, DragBehavior } from 'd3-drag'
+import { select } from 'd3-selection'
+import { GraphData, GraphNode, GraphEdge } from '../services/queryService'
 
 export interface ForceGraphProps {
-  data: GraphData;
-  width?: number;
-  height?: number;
-  onNodeClick?: (node: GraphNode) => void;
+  data: GraphData
+  width?: number
+  height?: number
+  onNodeClick?: (node: GraphNode) => void
 }
 
-interface D3GraphNode extends d3.SimulationNodeDatum {
-  id: string;
-  label: string;
-  type: 'paper' | 'author' | 'institution' | 'topic';
-  year?: number;
-  citations?: number;
-  x?: number;
-  y?: number;
-  fx?: number | null;
-  fy?: number | null;
+interface D3GraphNode extends SimulationNodeDatum {
+  id: string
+  label: string
+  type: 'paper' | 'author' | 'institution' | 'topic'
+  year?: number
+  citations?: number
 }
 
-export function ForceGraph({ data, width = 800, height = 400, onNodeClick }: ForceGraphProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; node: D3GraphNode } | null>(null);
+const NODE_COLORS: Record<string, string> = {
+  paper:      '#6366f1',
+  author:     '#10b981',
+  institution:'#2563eb',
+  topic:      '#ff6b35',
+}
+
+const TYPE_LABELS: Record<string, string> = {
+  paper:      'Publication',
+  author:     'Researcher',
+  institution:'Institution',
+  topic:      'Topic',
+}
+
+const FILTER_OPTIONS = [
+  { key: 'all', label: 'All' },
+  { key: 'paper', label: 'Publications' },
+  { key: 'author', label: 'Researchers' },
+  { key: 'institution', label: 'Institutions' },
+  { key: 'topic', label: 'Topics' },
+]
+
+export function ForceGraph({ data, width = 800, height = 500, onNodeClick }: ForceGraphProps) {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const gRef = useRef<SVGGElement | null>(null)
+  const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+  const simulationRef = useRef<ReturnType<typeof forceSimulation<D3GraphNode, GraphEdge>> | null>(null)
+
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; node: D3GraphNode } | null>(null)
+  const [activeFilter, setActiveFilter] = useState<string>('all')
+  const [yearRange, setYearRange] = useState<[number, number]>([2000, 2024])
+
+  const filteredNodes = useMemo(() => {
+    return data.nodes.filter((n) => {
+      const typeMatch = activeFilter === 'all' || n.type === activeFilter
+      const yearMatch = n.year ? n.year >= yearRange[0] && n.year <= yearRange[1] : true
+      return typeMatch && yearMatch
+    })
+  }, [data.nodes, activeFilter, yearRange])
+
+  const filteredNodeIds = useMemo(() => new Set(filteredNodes.map(n => n.id)), [filteredNodes])
+
+  const filteredEdges = useMemo(() => {
+    return data.edges.filter(
+      (e) => filteredNodeIds.has(e.source as string) && filteredNodeIds.has(e.target as string)
+    )
+  }, [data.edges, filteredNodeIds])
 
   const renderGraph = useCallback(() => {
-    if (!svgRef.current || !data.nodes.length) return;
+    if (!svgRef.current) return
 
-    const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove();
+    const svg = select(svgRef.current)
+    svg.selectAll('*').remove()
 
-    const g = svg.append('g');
+    if (filteredNodes.length === 0) {
+      svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'var(--nrg-muted)')
+        .attr('font-size', '14px')
+        .text('No nodes match the current filter.')
+      return
+    }
 
-    // Create a copy of the data with d3-compatible properties
-    const d3Nodes: D3GraphNode[] = data.nodes.map(node => {
-      // Create a new object with all properties from the original node
-      const d3Node: any = {
-        id: node.id,
-        label: node.label,
-        type: node.type,
-        year: node.year,
-        citations: node.citations
-      };
-      
-      // Add d3-specific properties
-      d3Node.x = 0;
-      d3Node.y = 0;
-      d3Node.fx = null;
-      d3Node.fy = null;
-      
-      return d3Node;
-    });
+    const g = svg.append('g')
+    gRef.current = g.node()
 
-    const simulation = d3.forceSimulation<D3GraphNode>(d3Nodes)
-      .force('link', d3.forceLink<D3GraphNode, GraphEdge>(data.edges).id(d => d.id).distance(120))
-      .force('charge', d3.forceManyBody().strength(-400))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(30));
+    const d3Nodes: D3GraphNode[] = filteredNodes.map((node) => ({
+      id: node.id,
+      label: node.label,
+      type: node.type,
+      year: node.year,
+      citations: node.citations,
+      x: 0,
+      y: 0,
+      fx: null,
+      fy: null,
+    }))
 
-    // Edges
-    const link = g.selectAll('line')
-      .data(data.edges)
+    const simulation = forceSimulation<D3GraphNode>(d3Nodes)
+      .force('link', forceLink<D3GraphNode, GraphEdge>(filteredEdges as any).id((d: any) => d.id).distance(140))
+      .force('charge', forceManyBody().strength(-450))
+      .force('center', forceCenter(width / 2, height / 2))
+      .force('collision', forceCollide().radius(40))
+
+    simulationRef.current = simulation
+
+    const zoomBehavior = zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.3, 3])
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform)
+      })
+    zoomRef.current = zoomBehavior
+    svg.call(zoomBehavior)
+
+    const defs = svg.append('defs')
+    const pattern = defs.append('pattern')
+      .attr('id', 'grid')
+      .attr('width', 30)
+      .attr('height', 30)
+      .attr('patternUnits', 'userSpaceOnUse')
+    pattern.append('path')
+      .attr('d', 'M 30 0 L 0 0 0 30')
+      .attr('fill', 'none')
+      .attr('stroke', 'var(--nrg-border)')
+      .attr('stroke-width', '0.5')
+      .attr('opacity', '0.5')
+
+    svg.insert('rect', ':first-child')
+      .attr('width', '100%')
+      .attr('height', '100%')
+      .attr('fill', 'url(#grid)')
+
+    const link = g.append('g')
+      .selectAll('line')
+      .data(filteredEdges)
       .join('line')
-      .attr('stroke', '#94a3b8')
+      .attr('stroke', 'var(--nrg-border)')
       .attr('stroke-width', 1)
-      .attr('stroke-opacity', 0.4);
+      .attr('stroke-opacity', 0.6)
 
-    // Nodes
-    const node = g.selectAll('g')
+    const node = g.append('g')
+      .selectAll<SVGGElement, D3GraphNode>('g')
       .data(d3Nodes)
-      .join('g');
+      .join('g')
+      .attr('class', 'cursor-pointer')
+
+    node.append('circle')
+      .attr('r', 12)
+      .attr('fill', (d) => NODE_COLORS[d.type] || '#6366f1')
+      .attr('opacity', 0.15)
+      .attr('class', 'pointer-events-none')
 
     node.append('circle')
       .attr('r', 8)
-      .attr('fill', '#6366f1')
-      .attr('stroke', '#fff')
+      .attr('fill', (d) => NODE_COLORS[d.type] || '#6366f1')
+      .attr('stroke', '#ffffff')
       .attr('stroke-width', 2)
+      .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))')
       .on('mouseover', (event, d) => {
-        setTooltip({ x: event.offsetX, y: event.offsetY, node: d });
+        select(event.currentTarget)
+          .transition().duration(150)
+          .attr('r', 11)
+        setTooltip({ x: event.offsetX, y: event.offsetY, node: d })
       })
-      .on('mouseout', () => setTooltip(null))
-      .on('click', (event, d) => onNodeClick?.(d));
+      .on('mouseout', (event) => {
+        select(event.currentTarget)
+          .transition().duration(150)
+          .attr('r', 8)
+        setTooltip(null)
+      })
+      .on('click', (event, d) => {
+        event.stopPropagation()
+        onNodeClick?.(d)
+      })
 
     node.append('text')
-      .text((d) => d.label.length > 18 ? `${d.label.slice(0, 16)}…` : d.label)
+      .text((d) => d.label.length > 16 ? d.label.slice(0, 14) + '…' : d.label)
       .attr('x', 14)
       .attr('y', 4)
       .attr('font-size', '10px')
-      .attr('fill', '#475569')
-      .attr('pointer-events', 'none');
+      .attr('fill', 'var(--nrg-text)')
+      .attr('pointer-events', 'none')
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d) => (d.source as any).x)
-        .attr('y1', (d) => (d.source as any).y)
-        .attr('x2', (d) => (d.target as any).x)
-        .attr('y2', (d) => (d.target as any).y);
+        .attr('x1', (d) => (d.source as unknown as D3GraphNode).x ?? 0)
+        .attr('y1', (d) => (d.source as unknown as D3GraphNode).y ?? 0)
+        .attr('x2', (d) => (d.target as unknown as D3GraphNode).x ?? 0)
+        .attr('y2', (d) => (d.target as unknown as D3GraphNode).y ?? 0)
+      node.attr('transform', (d) => `translate(${d.x ?? 0},${d.y ?? 0})`)
+    })
 
-      node.attr('transform', (d) => `translate(${d.x},${d.y})`);
-    });
-  }, [data, width, height, onNodeClick]);
+    const dragBehavior = drag<SVGGElement, D3GraphNode>()
+      .on('start', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0.3).restart()
+        d.fx = d.x
+        d.fy = d.y
+      })
+      .on('drag', (event, d) => {
+        d.fx = event.x
+        d.fy = event.y
+      })
+      .on('end', (event, d) => {
+        if (!event.active) simulation.alphaTarget(0)
+        d.fx = null
+        d.fy = null
+      })
+
+    node.call(dragBehavior)
+  }, [filteredNodes, filteredEdges, width, height, onNodeClick])
 
   useEffect(() => {
-    renderGraph();
-  }, [renderGraph]);
+    renderGraph()
+  }, [renderGraph])
+
+  const resetZoom = useCallback(() => {
+    if (!svgRef.current || !zoomRef.current) return
+    select(svgRef.current)
+      .transition()
+      .duration(500)
+      .call(zoomRef.current.transform, zoomIdentity)
+  }, [])
 
   return (
-    <div className="relative iitgn-graph-container">
-      <svg ref={svgRef} width={width} height={height} className="select-none" />
-      
-      {/* Tooltip */}
-      {tooltip && (
-        <div
-          className="absolute z-10 pointer-events-none bg-white rounded-lg shadow-lg border border-gray-200 p-3 text-xs"
-          style={{ left: tooltip.x + 16, top: tooltip.y - 10 }}
-        >
-          <div className="font-semibold text-gray-800 truncate">{tooltip.node.label}</div>
-          <div className="text-gray-500 capitalize">{tooltip.node.type}</div>
-          {tooltip.node.year && <div className="text-gray-500">Year: {tooltip.node.year}</div>}
-          {tooltip.node.citations !== undefined && (
-            <div className="text-gray-500">Citations: {tooltip.node.citations}</div>
-          )}
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex gap-1 p-1 rounded-xl bg-nrg-navy-50 border border-nrg-border">
+          {FILTER_OPTIONS.map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => setActiveFilter(opt.key)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                activeFilter === opt.key
+                  ? 'bg-white text-nrg-text shadow-sm'
+                  : 'text-nrg-muted hover:text-nrg-text'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
-      )}
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-nrg-muted">Year:</span>
+          <input
+            type="number"
+            value={yearRange[0]}
+            onChange={(e) => setYearRange([+e.target.value, yearRange[1]])}
+            className="w-14 px-2 py-1 rounded-lg border border-nrg-border text-xs text-center bg-nrg-surface"
+            min={1990}
+            max={2026}
+          />
+          <span className="text-xs text-nrg-muted">—</span>
+          <input
+            type="number"
+            value={yearRange[1]}
+            onChange={(e) => setYearRange([yearRange[0], +e.target.value])}
+            className="w-14 px-2 py-1 rounded-lg border border-nrg-border text-xs text-center bg-nrg-surface"
+            min={1990}
+            max={2026}
+          />
+        </div>
+
+        <button
+          onClick={resetZoom}
+          className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:text-nrg-text hover:bg-nrg-navy-50 transition-all duration-200"
+        >
+          Reset View
+        </button>
+
+        <div className="flex items-center gap-2 text-xs text-nrg-muted">
+          {Object.entries(NODE_COLORS).map(([type, color]) => (
+            <span key={type} className="flex items-center gap-1">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
+              {TYPE_LABELS[type]}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative rounded-xl overflow-hidden border border-nrg-border" style={{ height }}>
+        <svg
+          ref={svgRef}
+          width={width}
+          height={height}
+          className="select-none"
+          style={{ cursor: 'grab' }}
+          role="img"
+          aria-label={`Knowledge graph with ${filteredNodes.length} nodes and ${filteredEdges.length} edges. Node types: Publications (indigo), Researchers (emerald), Institutions (blue), Topics (saffron).`}
+        />
+
+        {tooltip && (
+          <div
+            className="absolute z-10 pointer-events-none bg-nrg-surface border border-nrg-border rounded-xl shadow-xl p-3 text-xs animate-fade-in-up"
+            style={{
+              left: Math.min(tooltip.x + 16, width - 200),
+              top: Math.max(tooltip.y - 10, 10),
+              maxWidth: 200,
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1">
+              <span
+                className="w-2.5 h-2.5 rounded-full"
+                style={{ background: NODE_COLORS[tooltip.node.type] }}
+              />
+              <span className="font-semibold text-nrg-text">{tooltip.node.label}</span>
+            </div>
+            <div className="space-y-0.5 text-nrg-muted">
+              <p className="capitalize">{TYPE_LABELS[tooltip.node.type]}</p>
+              {tooltip.node.year && <p>Year: {tooltip.node.year}</p>}
+              {tooltip.node.citations !== undefined && <p>Citations: {tooltip.node.citations}</p>}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-  );
+  )
 }

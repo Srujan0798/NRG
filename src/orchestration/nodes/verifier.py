@@ -1,4 +1,4 @@
-"""Verifier node - citation faithfulness checks."""
+"""Verifier node - citation faithfulness checks with numerical scoring."""
 
 from __future__ import annotations
 
@@ -16,50 +16,102 @@ logger = logging.getLogger(__name__)
 PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "verifier_system.md"
 CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
 
+FAITHFULNESS_WEIGHTS = {
+    "citation_present": 0.2,
+    "evidence_match": 0.4,
+    "no_fabrication": 0.3,
+    "tier_compliance": 0.1,
+}
+
 
 @trace_llm_call("verifier")
 def verifier_node(state: Any) -> dict:
-    """Verify cited claims against available evidence."""
+    """Verify cited claims against available evidence with numerical faithfulness score.
+
+    Returns faithfulness_score (0.0-1.0) instead of just pass/fail.
+    Score breakdown:
+    - citation_present: 0.2 (citations exist)
+    - evidence_match: 0.4 (citations have matching evidence)
+    - no_fabrication: 0.3 (no claims without citations)
+    - tier_compliance: 0.1 (no tier violations)
+    """
     response = _state_get(state, "synthesized_response", "") or ""
     retries = int(_state_get(state, "verification_retries", 0) or 0)
     citations = _extract_citations(response)
-
+    sql_results = _state_get(state, "sql_results", []) or []
     synth_method = _state_get(state, "synthesis_method", "unknown")
+
+    score_breakdown = {
+        "citation_present": 0.0,
+        "evidence_match": 0.0,
+        "no_fabrication": 0.0,
+        "tier_compliance": 0.0,
+    }
+
     if not citations:
-        # Structured-only responses without explicit citations are acceptable
-        # if SQL evidence exists to support them.
-        sql_results = _state_get(state, "sql_results", []) or []
         if sql_results:
+            score_breakdown["citation_present"] = FAITHFULNESS_WEIGHTS["citation_present"]
+            score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"]
+            score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+            score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+
+            total_score = sum(score_breakdown.values())
             return {
-                "verification_status": "ok",
+                "verification_status": "ok" if total_score >= 0.7 else "retry",
+                "faithfulness_score": total_score,
+                "score_breakdown": score_breakdown,
                 "unsupported_claims": [],
                 "verification_retries": retries,
                 "synthesis_method": synth_method,
             }
+
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+        score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+        total_score = sum(score_breakdown.values())
+
         return {
             "verification_status": "fail",
+            "faithfulness_score": total_score,
+            "score_breakdown": score_breakdown,
             "unsupported_claims": ["No citation tokens found in synthesized response."],
             "verification_retries": retries,
             "synthesis_method": synth_method,
         }
 
+    score_breakdown["citation_present"] = FAITHFULNESS_WEIGHTS["citation_present"]
+
     evidence = _match_evidence(state, citations)
-    # Deduplicate citations before checking evidence — one evidence entry can support
-    # multiple claims that cite the same source.
     unique_citations = {c["id"] for c in citations}
     missing = [cid for cid in unique_citations if cid not in evidence]
+
     if missing:
-        return _failure_result(
+        missing_ratio = len(missing) / len(unique_citations)
+        score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"] * (1 - missing_ratio)
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"] * (1 - missing_ratio)
+
+        total_score = sum(score_breakdown.values())
+
+        result = _failure_result(
             retries,
             [f"Missing evidence for citation {citation_id}" for citation_id in missing],
             response,
+            total_score,
+            score_breakdown,
         )
+        result["synthesis_method"] = synth_method
+        return result
 
-    # Short-circuit: if ALL citations are structured:0 and SQL evidence exists,
-    # the claims are directly grounded in the database query result.
-    if unique_citations == {"structured:0"} and _state_get(state, "sql_results", []):
+    score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"]
+
+    if unique_citations == {"structured:0"} and sql_results:
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+        score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+        total_score = sum(score_breakdown.values())
+
         return {
             "verification_status": "ok",
+            "faithfulness_score": total_score,
+            "score_breakdown": score_breakdown,
             "unsupported_claims": [],
             "verification_retries": retries,
             "synthesis_method": synth_method,
@@ -67,8 +119,14 @@ def verifier_node(state: Any) -> dict:
 
     client = get_llm_client()
     if client is None:
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+        score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+        total_score = sum(score_breakdown.values())
+
         return {
-            "verification_status": "ok",
+            "verification_status": "ok" if total_score >= 0.7 else "retry",
+            "faithfulness_score": total_score,
+            "score_breakdown": score_breakdown,
             "unsupported_claims": [],
             "verification_retries": retries,
             "synthesis_method": synth_method,
@@ -84,41 +142,70 @@ def verifier_node(state: Any) -> dict:
         verdict = _parse_verdict(raw)
     except Exception as exc:
         logger.warning("Verifier LLM failed; using local citation presence check: %s", exc)
-        return {
-            "verification_status": "ok",
-            "unsupported_claims": [],
-            "verification_retries": retries,
-        }
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+        score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+        total_score = sum(score_breakdown.values())
 
-    if verdict.get("ok") is True:
         return {
-            "verification_status": "ok",
+            "verification_status": "ok" if total_score >= 0.7 else "retry",
+            "faithfulness_score": total_score,
+            "score_breakdown": score_breakdown,
             "unsupported_claims": [],
             "verification_retries": retries,
             "synthesis_method": synth_method,
         }
 
+    if verdict.get("ok") is True:
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
+        score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+        total_score = sum(score_breakdown.values())
+
+        return {
+            "verification_status": "ok",
+            "faithfulness_score": total_score,
+            "score_breakdown": score_breakdown,
+            "unsupported_claims": [],
+            "verification_retries": retries,
+            "synthesis_method": synth_method,
+        }
+
+    llm_claims = verdict.get("unsupported_claims", [])
+    if llm_claims:
+        claim_ratio = min(len(llm_claims) / max(len(unique_citations), 1), 1.0)
+        score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"] * (1 - claim_ratio * 0.5)
+
+    total_score = sum(score_breakdown.values())
     result = _failure_result(
         retries,
-        verdict.get("unsupported_claims") or ["Verifier marked answer unsupported."],
+        llm_claims or ["Verifier marked answer unsupported."],
         response,
+        total_score,
+        score_breakdown,
     )
     result["synthesis_method"] = synth_method
     return result
 
 
-def _failure_result(retries: int, unsupported_claims: list[str], response: str) -> dict:
+def _failure_result(
+    retries: int,
+    unsupported_claims: list[str],
+    response: str,
+    faithfulness_score: float = 0.0,
+    score_breakdown: dict | None = None,
+) -> dict:
     if retries < 1:
         return {
             "verification_status": "retry",
+            "faithfulness_score": faithfulness_score,
+            "score_breakdown": score_breakdown or {},
             "verification_retries": retries + 1,
             "unsupported_claims": unsupported_claims,
         }
 
-    # Preserve the original synthesized response; do not overwrite with a generic message.
-    # Downstream consumers can check verification_status to decide how to present it.
     return {
         "verification_status": "fail",
+        "faithfulness_score": faithfulness_score,
+        "score_breakdown": score_breakdown or {},
         "verification_retries": retries,
         "unsupported_claims": unsupported_claims,
         "synthesized_response": response,

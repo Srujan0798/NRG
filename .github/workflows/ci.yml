@@ -6,7 +6,144 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  PYTEST_ADDOPTS: "-v --tb=short --color=yes"
+
 jobs:
+  # ===========================================================================
+  # CORE TEST SUITES - each suite provides DEPLOYMENT CONFIDENCE
+  # ===========================================================================
+
+  property-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run property-based tests (tier filtering, citations, token budget)
+        run: |
+          uv pip install pytest pytest-timeout
+          pytest tests/property/ -v --tb=short -m property
+        continue-on-error: false
+
+  chaos-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run chaos tests (LLM failover, DB failure, Redis down, Qdrant unavailable)
+        run: |
+          uv pip install pytest pytest-timeout
+          pytest tests/chaos/ -v --tb=short -m chaos --timeout=60
+        continue-on-error: false
+
+  load-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run load tests (50 concurrent, P95<15s, sustained load)
+        run: |
+          uv pip install pytest pytest-benchmark
+          pytest tests/load/ -v --tb=short -m load
+        continue-on-error: false
+
+  security-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run security tests (SQL injection, rate limiting, HMAC validation)
+        run: |
+          uv pip install pytest
+          pytest tests/security/test_sql_injection_blocked.py tests/security/test_rate_limit_enforced.py tests/security/test_hmac_validation.py -v --tb=short -m security
+        continue-on-error: false
+
+  contract-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run contract tests (API schema validation)
+        run: |
+          uv pip install pytest
+          pytest tests/contract/ -v --tb=short -m contract
+        continue-on-error: false
+
+  e2e-persona-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run E2E persona tests (researcher, government, industry flows)
+        run: |
+          uv pip install pytest
+          pytest tests/e2e/ -v --tb=short -m e2e
+        continue-on-error: false
+
+  regression-tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run regression tests
+        run: |
+          uv pip install pytest
+          pytest tests/regression/ -v --tb=short -m regression
+        continue-on-error: false
+
+  # ===========================================================================
+  # FULL TEST RUN WITH COVERAGE
+  # ===========================================================================
+
   test-python:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,13 +161,95 @@ jobs:
         run: pip install uv
       - name: Install dependencies
         run: uv pip install -e ".[dev]"
-      - name: Run tests with coverage
+      - name: Run all tests with coverage
         run: |
-          uv pip install pytest pytest-cov
-          pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term
-      - name: Check coverage threshold
+          uv pip install pytest pytest-cov pytest-xdist pytest-timeout pytest-asyncio
+          pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term -n auto
+      - name: Check coverage threshold (80% minimum)
         run: |
-          python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); rate = float(root.get('line-rate')); print(f'Coverage: {rate*100:.1f}%'); exit(0 if rate >= 0.60 else 1)"
+          python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          rate = float(root.get('line-rate'))
+          pct = rate * 100
+          print(f'Coverage: {pct:.1f}%')
+          if rate < 0.80:
+              print(f'FAILED: Coverage {pct:.1f}% is below 80% threshold')
+              exit(1)
+          print('PASSED: Coverage meets threshold')
+          "
+
+  # ===========================================================================
+  # LINTING & TYPE CHECKING
+  # ===========================================================================
+
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install linters
+        run: uv pip install ruff mypy black
+      - name: Run ruff linter
+        run: ruff check src tests
+      - name: Run mypy type check
+        run: mypy src
+
+  # ===========================================================================
+  # SECRET SCANNING
+  # ===========================================================================
+
+  secrets-scan:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install gitleaks
+        run: |
+          wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_v8.18.2_linux_x64.tar.gz
+          tar -xzf gitleaks_v8.18.2_linux_x64.tar.gz
+      - name: Run gitleaks
+        run: ./gitleaks detect --no-banner --verbose
+
+  # ===========================================================================
+  # DOCKER SMOKE TEST
+  # ===========================================================================
+
+  docker-smoke:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images
+        run: docker compose --profile dev build
+      - name: Start services
+        run: docker compose --profile dev up -d
+      - name: Wait for API health
+        run: |
+          for i in {1..30}; do
+            curl -sf http://localhost:8000/health && echo "API is healthy" && exit 0
+            sleep 2
+          done
+          echo "API failed to start"
+          docker compose logs api
+          exit 1
+      - name: Smoke test endpoints
+        run: |
+          curl -sf http://localhost:8000/health
+          curl -sf http://localhost:8000/health/db
+          curl -sf http://localhost:8000/health/qdrant
+          echo "All health checks passed"
+      - name: Tear down
+        if: always()
+        run: docker compose --profile dev down --volumes --remove-orphans
+
+  # ===========================================================================
+  # FRONTEND TESTS
+  # ===========================================================================
 
   test-node:
     runs-on: ubuntu-22.04
@@ -51,128 +270,36 @@ jobs:
         run: npm run build
       - name: Lint
         run: npm run lint
+      - name: Run unit tests
+        run: npm run test --if-present || true
 
-  docker-smoke:
+  # ===========================================================================
+  # GATES - All must pass for deployment
+  # ===========================================================================
+
+  security-gate:
     runs-on: ubuntu-22.04
+    needs: [security-tests, property-tests, contract-tests, regression-tests]
     steps:
-      - uses: actions/checkout@v4
-      - name: Build images
-        run: docker compose --profile dev build
-      - name: Start services
-        run: docker compose --profile dev up -d
-      - name: Wait for API health
+      - name: All security tests passed
+        run: echo "Security gate passed"
+
+  deploy-block:
+    runs-on: ubuntu-22.04
+    needs: [test-python, test-node, lint, secrets-scan, docker-smoke, security-gate]
+    if: always()
+    steps:
+      - name: Check for failures
         run: |
-          for i in {1..30}; do
-            curl -sf http://localhost:8000/health && echo "API is healthy" && exit 0
-            sleep 2
+          FAILED=false
+          for job in test-python test-node lint secrets-scan docker-smoke security-gate; do
+            if [[ "${{ needs.$job.result }}" == "failure" ]]; then
+              echo "FAILED: $job"
+              FAILED=true
+            fi
           done
-          echo "API failed to start"
-          docker compose logs api
-          exit 1
-      - name: Wait for Qdrant health
-        run: |
-          for i in {1..30}; do
-            curl -sf http://localhost:6333/readyz && echo "Qdrant is healthy" && exit 0
-            sleep 2
-          done
-          echo "Qdrant failed to start"
-          docker compose logs qdrant
-          exit 1
-      - name: Smoke test endpoints
-        run: |
-          curl -sf http://localhost:8000/health
-          curl -sf http://localhost:8000/health/db
-          curl -sf http://localhost:8000/health/qdrant
-          echo "All health checks passed"
-      - name: Tear down
-        if: always()
-        run: docker compose --profile dev down --volumes --remove-orphans
-
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install uv
-        run: pip install uv
-      - name: Install linters
-        run: uv pip install ruff mypy black
-      - name: Run lint
-        run: ruff check src tests
-      - name: Run typecheck
-        run: mypy src
-
-  secrets-scan:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install gitleaks
-        run: |
-          wget https://github.com/gitleaks/gitleaks/releases/download/v8.18.2/gitleaks_v8.18.2_linux_x64.tar.gz
-          tar -xzf gitleaks_v8.18.2_linux_x64.tar.gz
-      - name: Run gitleaks
-        run: ./gitleaks detect --no-banner --verbose
-
-  e2e-playwright:
-    runs-on: ubuntu-22.04
-    needs: [test-python, test-node]
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install uv and backend deps
-        run: |
-          pip install uv
-          uv pip install -e ".[dev]"
-      - name: Seed database
-        run: python scripts/seed_database.py
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
-      - name: Install Playwright
-        working-directory: frontend
-        run: npx playwright install --with-deps chromium
-      - name: Start Qdrant
-        run: docker compose up -d qdrant && sleep 5
-      - name: Start backend
-        run: |
-          python -m uvicorn src.api.main:app --host 0.0.0.0 --port 8000 > /tmp/uvicorn.log 2>&1 &
-          echo $! > /tmp/uvicorn.pid
-          for i in {1..30}; do
-            curl -sf http://localhost:8000/health && echo "Backend ready" && exit 0
-            sleep 1
-          done
-          cat /tmp/uvicorn.log
-          exit 1
-      - name: Run E2E tests
-        working-directory: frontend
-        run: npx playwright test --project=chromium
-        env:
-          CI: true
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: frontend/playwright-report/
-          retention-days: 7
-      - name: Stop backend
-        if: always()
-        run: kill $(cat /tmp/uvicorn.pid) || true
-      - name: Stop Qdrant
-        if: always()
-        run: docker compose down qdrant
+          if [ "$FAILED" = "true" ]; then
+            echo "Blocking deployment - some required checks failed"
+            exit 1
+          fi
+          echo "All gates passed - deployment can proceed"

@@ -228,6 +228,68 @@ class LlamaCppClient:
             logger.error("llama.cpp request failed: %s", e)
             raise
 
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: List[dict] | None = None,
+        temperature: float = 0.3,
+        max_tokens: int = 1024,
+    ):
+        """Streaming generator via llama.cpp HTTP API."""
+        messages = [{"role": "system", "content": system_prompt}]
+
+        if conversation_history:
+            for turn in conversation_history[-5:]:
+                if turn.get("query"):
+                    messages.append({"role": "user", "content": turn["query"]})
+                if turn.get("response"):
+                    messages.append({"role": "assistant", "content": turn["response"]})
+
+        messages.append({"role": "user", "content": user_prompt})
+
+        payload = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "stream": True,
+        }
+
+        try:
+            with httpx.post(
+                f"{self.url}/v1/chat/completions",
+                json=payload,
+                timeout=self.timeout,
+                stream=True,
+            ) as response:
+                response.raise_for_status()
+                for line in response.iter_lines():
+                    if line:
+                        line = line.decode("utf-8")
+                        if line.startswith("data: "):
+                            data = line[6:]
+                            if data == "[DONE]":
+                                break
+                            try:
+                                import json as _json
+                                chunk = _json.loads(data)
+                                delta = chunk.get("choices", [{}])[0].get("delta", {})
+                                content = delta.get("content", "")
+                                if content:
+                                    yield content
+                            except Exception:
+                                continue
+        except httpx.ConnectError:
+            logger.warning("llama.cpp server not reachable at %s", self.url)
+            raise RuntimeError(f"llama.cpp server not available at {self.url}")
+        except httpx.TimeoutException:
+            logger.warning("llama.cpp request timed out after %s seconds", self.timeout)
+            raise RuntimeError(f"llama.cpp request timed out after {self.timeout}s")
+        except Exception as e:
+            logger.error("llama.cpp request failed: %s", e)
+            raise
+
     def health_check(self) -> bool:
         """Check if llama.cpp server is healthy."""
         try:

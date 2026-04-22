@@ -1,275 +1,318 @@
-import { useState, useEffect, useCallback } from 'react';
-import { PermissionBoundary } from '../components/PermissionBoundary';
-import { TierBadge } from '../components/TierBadge';
-import { SkeletonLoader } from '../components/SkeletonLoader';
-import { DPDPConsentDialog } from '../components/DPDPConsentDialog';
-import { GlassCard } from '../components/GlassCard';
-import { useAuth } from '../hooks/useAuth';
-import { useQueryStore } from '../stores/queryStore';
-import { useDPDPStore } from '../stores/dpdpStore';
-import { queryService, QueryResponse } from '../services/queryService';
-import { useQuery } from '@tanstack/react-query';
-import { AnswerPanel } from '../components/AnswerPanel';
+import React, { useState, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { IndustryHeader } from '../components/Industry/IndustryHeader'
+import { OpportunityCard, CollaborationPotentialCard } from '../components/Industry/OpportunityCards'
+import { StatsCard } from '../components/StatsCard'
+import { SkeletonLoader } from '../components/Skeleton'
+import { ErrorState } from '../components/ErrorState'
+import { AnswerPanel } from '../components/AnswerPanel'
+import { GraphView } from '../components/GraphView'
+import { ResearchAreasBarChart } from '../components/DataViz'
+import { useAuth } from '../hooks/useAuth'
+import { useDPDPStore } from '../stores/dpdpStore'
+import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { useQuery } from '@tanstack/react-query'
+import { Building2, Users, FileText, HeartHandshake, Search, Filter } from 'lucide-react'
+import type { Theme } from '../hooks/useTheme'
 
-export function IndustryDashboard() {
-  const { user } = useAuth();
-  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching, setLastResult } = useQueryStore();
-  const { grantConsent, addAuditEntry } = useDPDPStore();
+interface IndustryDashboardProps {
+  onThemeToggle: () => void
+  theme: Theme
+}
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [showDPDPConsent, setShowDPDPConsent] = useState(false);
-  const [dpdpApproved, setDpdpApproved] = useState(false);
-  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
-  const [queryError, setQueryError] = useState<string | null>(null);
+export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardProps) {
+  const { user } = useAuth()
+  const { addAuditEntry } = useDPDPStore()
+  const [activeTab, setActiveTab] = useState<'opportunities' | 'researchers' | 'analytics'>('opportunities')
+  const [currentQuery, setCurrentQuery] = useState('')
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
+  const [queryError, setQueryError] = useState<string | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [collaborationFilter, setCollaborationFilter] = useState<string>('all')
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['stats', user?.id],
     queryFn: () => queryService.fetchStats(),
     staleTime: 30 * 1000,
     enabled: !!user,
-  });
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+  })
 
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return;
-
-    setIsSearching(true);
-      setQueryResult(null);
-      setQueryError(null);
-      try {
-        const result = await queryService.query({ query: currentQuery });
-      setQueryResult(result);
-      setLastResult(result);
-      addToHistory({
-        query: currentQuery,
-        persona: 'industry',
-        resultsCount: result.verification_status ? 10 : 0
-      });
-      addAuditEntry({
-        action: 'data_accessed',
-        persona: user?.role || 'industry',
-        details: `Query: ${currentQuery}`
-      });
-    } catch (error: any) {
-      const message = error.response?.data?.detail || error.response?.data?.message || error.message || 'Search failed';
-      setQueryError(message);
-      addToHistory({
-        query: currentQuery,
-        persona: 'industry',
-        resultsCount: 0,
-        error: message
-      });
+    if (!currentQuery.trim()) return
+    setIsSearching(true)
+    setQueryError(null)
+    try {
+      const result = await queryService.query({ query: currentQuery })
+      setQueryResult(result)
+      addAuditEntry({ action: 'data_accessed', persona: 'industry', details: `Partnership query: ${currentQuery}` })
+    } catch (err: any) {
+      setQueryError(err.message || 'Search failed')
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult, user]);
+  }, [currentQuery, addAuditEntry])
 
-  if (isLoading) {
-    return (
-      <div className="iitgn-industry-dashboard min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-2" />
-            <div className="h-4 bg-gray-100 rounded w-1/4" />
-          </div>
-        </header>
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <SkeletonLoader type="list" count={3} />
-        </main>
-      </div>
-    );
-  }
+  const opportunities = useMemo(() => [
+    {
+      id: '1',
+      title: 'Joint AI Research Initiative',
+      titleHi: 'संयुक्त एआई शोध पहल',
+      institution: 'IIT Delhi',
+      researchArea: 'Artificial Intelligence',
+      collaborationType: 'joint_research' as const,
+      potential: 'high' as const,
+      matchScore: 92,
+      description: 'Seeking industry partners for applied AI research in healthcare diagnostics. Government funded, IP shared.',
+    },
+    {
+      id: '2',
+      title: 'Battery Technology Licensing',
+      titleHi: 'बैटरी प्रौद्योगिकी लाइसेंसिंग',
+      institution: 'IISc Bangalore',
+      researchArea: 'Renewable Energy',
+      collaborationType: 'licensing' as const,
+      potential: 'high' as const,
+      matchScore: 88,
+      description: 'Advanced solid-state battery technology ready for commercialization. Exclusive licensing available.',
+    },
+    {
+      id: '3',
+      title: 'Semiconductor Research Partnership',
+      titleHi: 'अर्धचालक शोध साझेदारी',
+      institution: 'IIT Bombay',
+      researchArea: 'Semiconductor',
+      collaborationType: 'joint_research' as const,
+      potential: 'medium' as const,
+      matchScore: 76,
+      description: 'Collaborative research on next-generation chip design. India semiconductor mission aligned.',
+    },
+    {
+      id: '4',
+      title: 'Pharmaceutical Research Funding',
+      titleHi: 'फार्मास्यूटिकल शोध वित्तपोषण',
+      institution: 'NIPER',
+      researchArea: 'Pharmaceuticals',
+      collaborationType: 'funding' as const,
+      potential: 'high' as const,
+      matchScore: 85,
+      description: 'Novel drug delivery systems research seeking industrial funding partner for clinical trials.',
+    },
+    {
+      id: '5',
+      title: 'Quantum Computing Consulting',
+      titleHi: 'क्वांटम कंप्यूटिंग परामर्श',
+      institution: 'IIT Madras',
+      researchArea: 'Quantum Computing',
+      collaborationType: 'consulting' as const,
+      potential: 'medium' as const,
+      matchScore: 71,
+      description: 'Expert consulting on quantum cryptography implementation for financial sector.',
+    },
+    {
+      id: '6',
+      title: 'Electric Vehicle Infrastructure Research',
+      titleHi: 'इलेक्ट्रिक वाहन अवसंरचना शोध',
+      institution: 'IIT Delhi',
+      researchArea: 'Electric Vehicles',
+      collaborationType: 'joint_research' as const,
+      potential: 'high' as const,
+      matchScore: 90,
+      description: 'EV charging infrastructure optimization research with real-world deployment pilot.',
+    },
+  ], [])
+
+  const filteredOpportunities = useMemo(() => {
+    if (collaborationFilter === 'all') return opportunities
+    return opportunities.filter(o => o.collaborationType === collaborationFilter)
+  }, [opportunities, collaborationFilter])
+
+  const researchAreaData = useMemo(() => [
+    { area: 'AI & Machine Learning', count: 423, color: '#10b981' },
+    { area: 'Semiconductor Tech', count: 312, color: '#6366f1' },
+    { area: 'Renewable Energy', count: 287, color: '#2563eb' },
+    { area: 'Biotechnology', count: 234, color: '#ff6b35' },
+    { area: 'Pharmaceuticals', count: 198, color: '#ec4899' },
+    { area: 'Electric Vehicles', count: 176, color: '#c49538' },
+  ], [])
 
   return (
-    <div className="iitgn-industry-dashboard min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              उद्योग नवाचार मंच
-            </h1>
-            <p className="text-sm text-gray-500 tracking-wide">
-              National Research Intelligence Platform · Industry Innovation
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            {user && <TierBadge tier={user.tier} role={user.role} />}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+      <IndustryHeader onThemeToggle={onThemeToggle} theme={theme} />
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        <PermissionBoundary tier={3}>
-          <GlassCard accent="industry" title="Research Partner Discovery" description="Find academic partners for R&D collaboration" className="mb-6">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={currentQuery}
-                onChange={(e) => setCurrentQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Enter query (e.g., 'AI researchers in Maharashtra')..."
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition text-sm"
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'opportunities' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                label="Partnership Opportunities"
+                labelHi="साझेदारी के अवसर"
+                value={847}
+                sublabel="Active opportunities"
+                accentColor="#10b981"
+                icon={<HeartHandshake size={20} />}
+                delay={0}
               />
-              <button
-                onClick={handleSearch}
-                disabled={isSearching || !currentQuery}
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSearching ? 'Discovering...' : 'Discover'}
-              </button>
+              <StatsCard
+                label="Partner Institutions"
+                labelHi="साझेदार संस्थान"
+                value={156}
+                sublabel="IITs, IISc, NITs, AIIMS"
+                accentColor="#2563eb"
+                icon={<Building2 size={20} />}
+                delay={100}
+              />
+              <StatsCard
+                label="Active Researchers"
+                labelHi="सक्रिय शोधकर्ता"
+                value={3421}
+                sublabel="Available for collab"
+                accentColor="#ff6b35"
+                icon={<Users size={20} />}
+                delay={200}
+              />
+              <StatsCard
+                label="Research Publications"
+                labelHi="शोध प्रकाशन"
+                value={12847}
+                sublabel="In partnering institutions"
+                accentColor="#6366f1"
+                icon={<FileText size={20} />}
+                delay={300}
+              />
             </div>
 
-            {isSearching && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="animate-spin h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full"></div>
-                  Discovering research partners...
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Partnership Opportunities
+                  <span className="text-sm font-normal text-slate-500 ml-2 font-devanagari">साझेदारी के अवसर</span>
+                </h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  {filteredOpportunities.length} opportunities found · Anonymized researcher data
+                </p>
               </div>
-            )}
 
-            {queryError && (
-              <div className="mt-4 p-4 bg-rose-50 rounded-lg border border-rose-200">
-                <div className="flex items-start gap-2">
-                  <span className="text-rose-500">⚠️</span>
-                  <div className="text-sm text-rose-700">
-                    <span className="font-semibold">Error:</span> {queryError}
-                  </div>
-                </div>
+              <div className="flex items-center gap-3">
+                <select
+                  value={collaborationFilter}
+                  onChange={(e) => setCollaborationFilter(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white"
+                >
+                  <option value="all">All Types</option>
+                  <option value="joint_research">Joint Research</option>
+                  <option value="funding">Research Funding</option>
+                  <option value="licensing">IP Licensing</option>
+                  <option value="consulting">Consulting</option>
+                </select>
               </div>
-            )}
+            </div>
 
-            {queryResult && (
-              <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-                    Partner Discovery Results
-                  </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredOpportunities.map((opp, i) => (
+                <motion.div
+                  key={opp.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <OpportunityCard {...opp} />
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Search Research Network</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">शोध नेटवर्क खोजें</p>
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1 relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={currentQuery}
+                    onChange={(e) => setCurrentQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Search by research area, institution, or topic..."
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                  />
                 </div>
-                <div className="p-4">
+                <motion.button
+                  onClick={handleSearch}
+                  disabled={isSearching}
+                  className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg disabled:opacity-50"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Search
+                </motion.button>
+              </div>
+              {queryResult && (
+                <div className="mt-4">
                   <AnswerPanel
                     response={queryResult.response}
                     citations={queryResult.citations || []}
                     provenance={queryResult.provenance}
                     warnings={queryResult.warnings}
+                    verification_status={queryResult.verification_status}
                   />
                 </div>
-              </div>
-            )}
-          </GlassCard>
-        </PermissionBoundary>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <PermissionBoundary tier={3}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-emerald-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-emerald-600 transition">Research Capacity</h2>
-              <p className="text-sm text-gray-600 mb-4">Available research capacity and expertise areas.</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-emerald-50 p-3 rounded text-center border border-emerald-100">
-                  <div className="text-2xl font-bold text-emerald-700">
-                    {statsLoading ? '...' : statsData?.total_researchers || 0}
-                  </div>
-                  <div className="text-xs text-emerald-500">Researchers</div>
+              )}
+              {queryError && (
+                <div className="mt-4">
+                  <ErrorState
+                    title="Search Failed"
+                    message={queryError}
+                    severity="error"
+                    onRetry={handleSearch}
+                  />
                 </div>
-                <div className="bg-cyan-50 p-3 rounded text-center border border-cyan-100">
-                  <div className="text-2xl font-bold text-cyan-700">
-                    {statsLoading ? '...' : statsData?.total_publications || 0}
-                  </div>
-                  <div className="text-xs text-cyan-500">Publications</div>
-                </div>
-              </div>
+              )}
             </div>
-          </PermissionBoundary>
+          </motion.div>
+        )}
 
-          <PermissionBoundary tier={3}>
-            <div
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 border-cyan-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
-              onClick={() => setShowDPDPConsent(true)}
-            >
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">Research Expertise</h2>
-              <p className="text-sm text-gray-600 mb-4">Top research specializations available.</p>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {statsLoading ? (
-                  <SkeletonLoader type="list" count={3} />
-                ) : statsData?.research_areas?.slice(0, 5).map((area: string) => (
-                  <div key={area} className="border border-cyan-200 rounded p-2 bg-cyan-50 hover:bg-cyan-100 transition">
-                    <div className="text-xs font-medium text-cyan-800">{area}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </PermissionBoundary>
+        {activeTab === 'researchers' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <ResearchAreasBarChart
+              data={researchAreaData}
+              title="Researcher Expertise Areas"
+              titleHi="शोधकर्ता विशेषज्ञता क्षेत्र"
+              subtitle="Distribution of anonymized researchers by expertise"
+            />
 
-          <PermissionBoundary tier={3}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-amber-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">Research Distribution</h2>
-              <p className="text-sm text-gray-600 mb-4">Geographic distribution of research capacity.</p>
-              <div className="h-32 bg-amber-50 rounded border border-amber-100 p-3 overflow-y-auto">
-                {statsLoading ? (
-                  <SkeletonLoader type="list" count={3} />
-                ) : statsData?.state_distribution?.slice(0, 5).map((state: any) => (
-                  <div key={state.state} className="flex justify-between text-xs py-1">
-                    <span className="text-amber-800">{state.state}</span>
-                    <span className="text-amber-600 font-medium">{state.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </PermissionBoundary>
-
-          <PermissionBoundary tier={3}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-rose-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">Commercial Data Compliance</h2>
-              <p className="text-sm text-gray-600 mb-4">DPDP-compliant data usage for commercial research.</p>
-              <div className={`p-3 rounded text-xs transition ${dpdpApproved ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-rose-50 text-rose-700 border border-rose-200'}`}>
-                {dpdpApproved ? (
-                  <>Data agreements tracked Purpose limitation enforced</>
-                ) : (
-                  <>Consent required for commercial data access</>
-                )}
-              </div>
-            </div>
-          </PermissionBoundary>
-        </div>
-
-        {history.length > 0 && (
-          <GlassCard accent="sovereign" title="Recent Industry Queries" className="mt-6">
-            <div className="space-y-2">
-              {history.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="text-sm py-2 border-b border-gray-100 last:border-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700 truncate font-medium">{entry.query}</span>
-                    <span className="text-gray-400 text-xs ml-4">{new Date(entry.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  {entry.error ? (
-                    <div className="mt-1 text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">
-                      Security Message: {entry.error}
-                    </div>
-                  ) : (
-                    <div className="text-gray-400 text-xs mt-0.5">{entry.resultsCount} potential partners found</div>
-                  )}
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[
+                { institution: 'IIT Delhi', institutionHi: 'आईआईटी दिल्ली', researcherCount: 1245, collaborationTypes: ['Joint Research', 'Consulting'], topAreas: ['AI', 'Robotics'], matchScore: 88 },
+                { institution: 'IISc Bangalore', institutionHi: 'आईएससी बेंगलुरु', researcherCount: 892, collaborationTypes: ['Joint Research', 'Licensing', 'Funding'], topAreas: ['Biotech', 'Materials'], matchScore: 85 },
+                { institution: 'IIT Bombay', institutionHi: 'आईआईटी बॉम्बे', researcherCount: 1456, collaborationTypes: ['Joint Research', 'Consulting'], topAreas: ['Semiconductors', 'AI'], matchScore: 91 },
+                { institution: 'AIIMS Delhi', institutionHi: 'एम्स दिल्ली', researcherCount: 567, collaborationTypes: ['Funding', 'Joint Research'], topAreas: ['Medical', 'Biotech'], matchScore: 79 },
+                { institution: 'IIT Madras', institutionHi: 'आईआईटी मद्रास', researcherCount: 1089, collaborationTypes: ['Consulting', 'Joint Research'], topAreas: ['Quantum', 'AI'], matchScore: 83 },
+                { institution: 'NIT Surathkal', institutionHi: 'एनआईटी सूरतकल', researcherCount: 678, collaborationTypes: ['Joint Research'], topAreas: ['Energy', 'EV'], matchScore: 76 },
+              ].map((inst, i) => (
+                <motion.div
+                  key={inst.institution}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: i * 0.05 }}
+                >
+                  <CollaborationPotentialCard {...inst} />
+                </motion.div>
               ))}
             </div>
-          </GlassCard>
+          </motion.div>
         )}
       </main>
-
-      <DPDPConsentDialog
-        isOpen={showDPDPConsent}
-        onApprove={() => {
-          setDpdpApproved(true);
-          setShowDPDPConsent(false);
-        }}
-        onDeny={() => setShowDPDPConsent(false)}
-        dataPurpose="Commercial research partnership matching and market intelligence"
-        retentionDays={180}
-      />
     </div>
-  );
+  )
 }
+
+export default IndustryDashboard

@@ -1,19 +1,45 @@
-FROM python:3.11-slim
+# ==============================================================================
+# Multi-stage Dockerfile for NRG Orchestration Service
+# Stage 1: Builder - install dependencies
+# Stage 2: Runner - production runtime as non-root
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Stage 1: Builder
+# ------------------------------------------------------------------------------
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
+# ------------------------------------------------------------------------------
+# Stage 2: Runner
+# ------------------------------------------------------------------------------
+FROM python:3.11-slim AS runner
+
+WORKDIR /app
+
+RUN groupadd --gid 1000 nrg && \
+    useradd --uid 1000 --gid nrg --shell /bin/bash --create-home nrg
+
+COPY --from=builder /install /usr/local
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 COPY docs/schema/ ./docs/schema/
 
 ENV PYTHONUNBUFFERED=1
-ENV DATABASE_URL=postgresql://nrg_user:nrg_password@postgres:5432/nrg_research
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV DATABASE_URL=postgresql://nrg_user:${DB_PASSWORD:-nrg_password}@postgres:5432/nrg_research
 ENV QDRANT_HOST=qdrant
 ENV QDRANT_PORT=6333
 
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" || exit 1
+
+USER nrg
 
 CMD ["python", "src/orchestration/graph.py"]

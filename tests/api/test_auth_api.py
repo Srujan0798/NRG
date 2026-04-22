@@ -4,7 +4,7 @@ import src.api.main as api_main
 
 
 class StubWorkflow:
-    def run(self, query: str, user_tier: int = 1, session_id: str | None = None):
+    def run(self, query: str, user_tier: int = 1, session_id: str | None = None, user_id: str | None = None, **kwargs):
         return {
             "query_id": "query-1",
             "session_id": session_id or "session-1",

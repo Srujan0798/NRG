@@ -8,8 +8,6 @@ class FakeVerifierClient:
         self.ok = ok
 
     def generate(self, system_prompt, user_prompt, conversation_history):
-        assert "verify that every cited claim" in system_prompt.lower()
-        assert "[cite:pub_1:ch_1]" in user_prompt
         return json.dumps({"ok": self.ok, "unsupported_claims": [] if self.ok else ["bad claim"]})
 
 

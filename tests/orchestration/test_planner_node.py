@@ -40,5 +40,6 @@ def test_planner_node_falls_back_when_no_llm(monkeypatch):
 
     result = planner_module.planner_node({"user_query": "anything"})
 
-    assert result["plan"] is None
+    assert result["plan"] is not None
+    assert "subqueries" in result["plan"]
     assert result["planner_metadata"]["mode"] == "heuristic_fallback"

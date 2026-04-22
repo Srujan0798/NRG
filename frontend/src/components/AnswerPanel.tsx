@@ -1,14 +1,19 @@
-import React, { useState, useCallback } from 'react';
-import { CitationDrawer } from './CitationDrawer';
-import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../services/queryService';
-import { parseCitations } from '../utils/parseCitations';
+import React, { useState, useCallback } from 'react'
+import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../services/queryService'
+import { IntelligenceBrief } from './IntelligenceBrief'
+import { CitationDrawer } from './CitationDrawer'
 
 interface AnswerPanelProps {
-  response: string;
-  citations: Citation[];
-  provenance?: QueryProvenance;
-  warnings?: QueryWarning[];
-  onNodeClick?: (node: GraphNode) => void;
+  response: string
+  citations: Citation[]
+  provenance?: QueryProvenance
+  warnings?: QueryWarning[]
+  verification_status?: boolean
+  onNodeClick?: (node: GraphNode) => void
+  isStreaming?: boolean
+  responseId?: string
+  queryText?: string
+  sessionId?: string
 }
 
 export const AnswerPanel: React.FC<AnswerPanelProps> = ({
@@ -16,120 +21,117 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   citations,
   provenance,
   warnings,
+  verification_status,
+  onNodeClick,
+  isStreaming = false,
+  responseId,
+  queryText,
+  sessionId,
 }) => {
-  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const handleCitationClick = (citation: Citation) => {
-    setSelectedCitation(citation);
-    setDrawerOpen(true);
-  };
+  const handleCitationClick = useCallback((citation: Citation) => {
+    setSelectedCitation(citation)
+    setDrawerOpen(true)
+  }, [])
 
-  const handleCloseDrawer = () => {
-    setDrawerOpen(false);
-    setSelectedCitation(null);
-  };
+  const handleExportPDF = useCallback(() => {
+    const summary = response.split('\n')[0]?.substring(0, 300) + '...'
+    
+    const content = `<!DOCTYPE html>
+<html>
+<head>
+  <title>NRG Intelligence Brief</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: #fff; }
+    .header { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: 3px solid #ff6b35; margin-bottom: 30px; }
+    .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #ff6b35, #ff8b4a); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon span { color: white; font-size: 24px; font-weight: bold; }
+    .logo-text { font-size: 24px; font-weight: bold; color: #ff6b35; }
+    .subtitle { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .section { margin-bottom: 24px; }
+    .section-title { font-size: 14px; font-weight: bold; color: #1f2937; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary { font-size: 14px; line-height: 1.7; color: #374151; padding-left: 16px; border-left: 3px solid #ff6b35; }
+    .content { font-size: 13px; line-height: 1.7; color: #374151; white-space: pre-wrap; }
+    .citations { font-size: 12px; color: #6b7280; }
+    .citation-item { padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; }
+    .citation-title { font-weight: 500; color: #1f2937; }
+    .citation-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; text-align: center; }
+    @media print { body { padding: 20px; } .header { border-bottom-color: #ff6b35; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-icon"><span>र</span></div>
+    <div>
+      <div class="logo-text">राष्ट्रीय गवेषण मंच</div>
+      <div class="subtitle">National Research Graph — Intelligence Brief</div>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-title">📋 Summary</div>
+    <div class="summary">${summary}</div>
+  </div>
+  <div class="section">
+    <div class="section-title">📊 Analysis</div>
+    <div class="content">${response}</div>
+  </div>
+  ${citations.length > 0 ? `
+  <div class="section">
+    <div class="section-title">📚 References</div>
+    <div class="citations">
+      ${citations.map((c, i) => `
+        <div class="citation-item">
+          <div class="citation-title">[${i + 1}] ${c.title || 'Unknown Publication'}</div>
+          <div class="citation-meta">
+            ${c.authors?.slice(0, 3).join(', ')}${c.authors && c.authors.length > 3 ? ' et al.' : ''}
+            ${c.year ? ` (${c.year})` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  </div>` : ''}
+  <div class="footer">
+    Generated: ${new Date().toLocaleString()} | NRG Platform — Sovereign Research Intelligence
+  </div>
+</body>
+</html>`
 
-  const parsed = useCallback(() => parseCitations(response, citations), [response, citations]);
-  const parsedResult = parsed();
-  const parsedParts = parsedResult.segments;
-  const orderedCitations = parsedResult.orderedCitations;
+    const blob = new Blob([content], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const a = window.document.createElement('a')
+    a.href = url
+    a.download = `NRG-Intelligence-Brief-${Date.now()}.html`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [response, citations])
 
   return (
     <div className="space-y-4">
-      {/* Provenance Badge */}
-      {provenance && (
-        <div className="flex flex-wrap gap-2 text-xs">
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-            Planner: {provenance.planner || 'unknown'}
-          </span>
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
-            Synth: {provenance.synth || 'unknown'}
-          </span>
-          {provenance.verifier && (
-            <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-              Verifier: {provenance.verifier}
-            </span>
-          )}
-          <span className={`px-2 py-1 rounded-full ${
-            provenance.cloud_synthesis_used
-              ? 'bg-amber-100 text-amber-800'
-              : 'bg-slate-100 text-slate-700'
-          }`}>
-            Cloud: {provenance.cloud_synthesis_used ? 'used' : 'not used'}
-          </span>
-        </div>
-      )}
+      <IntelligenceBrief
+        response={response}
+        citations={citations}
+        provenance={provenance}
+        warnings={warnings}
+        verification_status={verification_status}
+        onNodeClick={onNodeClick}
+        onExportPDF={handleExportPDF}
+        isStreaming={isStreaming}
+        responseId={responseId}
+        queryText={queryText}
+        sessionId={sessionId}
+      />
 
-      {/* Main Response */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
-        <div className="prose prose-slate max-w-none">
-          {parsedParts.map((part, index) => {
-            if (part.type === 'text') {
-              return <span key={index}>{part.content}</span>;
-            }
-            
-            return (
-              <sup
-                key={index}
-                className="cursor-pointer text-blue-600 hover:text-blue-800 font-medium mx-0.5"
-                onClick={() => part.citation && handleCitationClick(part.citation)}
-                title={part.citation?.title || 'Citation'}
-              >
-                [{part.citationNumber || '?'}]
-              </sup>
-            );
-          })}
-        </div>
-
-        {/* Citations List */}
-        {orderedCitations.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-gray-200">
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">References</h4>
-            <ol className="space-y-2 text-sm text-gray-600">
-              {orderedCitations.map((citation, index) => (
-                <li
-                  key={citation.id}
-                  className="cursor-pointer hover:text-blue-600"
-                  onClick={() => handleCitationClick(citation)}
-                >
-                  [{index + 1}] {citation.title || 'Unknown'} 
-                  {citation.year && `(${citation.year})`}
-                  {citation.authors && ` - ${citation.authors.slice(0, 2).join(', ')}`}
-                  {citation.relevance_score && (
-                    <span className="text-gray-400 ml-2">
-                      relevance: {(citation.relevance_score * 100).toFixed(0)}%
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </div>
-        )}
-      </div>
-
-      {/* Warnings */}
-      {warnings && warnings.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-yellow-800 mb-2">Warnings</h4>
-          <ul className="text-sm text-yellow-700 space-y-1">
-            {warnings.map((warning, index) => (
-              <li key={index}>
-                {warning.skill && <span className="font-medium">{warning.skill}: </span>}
-                {warning.node && <span className="font-medium">{warning.node}: </span>}
-                {warning.message || warning.error_type || 'Warning'}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Citation Drawer */}
       <CitationDrawer
         citation={selectedCitation}
         isOpen={drawerOpen}
-        onClose={handleCloseDrawer}
+        onClose={() => setDrawerOpen(false)}
       />
     </div>
-  );
-};
+  )
+}
+
+export default AnswerPanel

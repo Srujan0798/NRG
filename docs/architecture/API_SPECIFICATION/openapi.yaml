@@ -1,0 +1,1069 @@
+openapi: 3.1.0
+info:
+  title: National Research Graph API
+  description: |
+    Sovereign AI platform for Indian research intelligence.
+
+    ## Authentication
+    This API uses JWT (RS256) authentication. Include the access token in the Authorization header:
+    ```
+    Authorization: Bearer <access_token>
+    ```
+
+    ## Rate Limiting
+    Rate limits are enforced per tier:
+    - Tier 1 (Researcher): 100 requests/minute
+    - Tier 2 (Government): 50 requests/minute
+    - Tier 3 (Industry): 20 requests/minute
+
+    Rate limit headers are included in every response:
+    - `X-RateLimit-Limit`: Maximum requests per window
+    - `X-RateLimit-Remaining`: Requests remaining
+    - `X-RateLimit-Reset`: Unix timestamp when the window resets
+
+  version: 1.0.0
+  contact:
+    name: NRG Team
+    email: nrg-support@iitgn.ac.in
+  license:
+    name: Government of India / IIT Gandhinagar
+    url: https://nrg.iitgn.ac.in/license
+
+servers:
+  - url: https://api.nrg.gov.in/v1
+    description: Production
+  - url: https://staging.nrg.gov.in/v1
+    description: Staging
+  - url: http://localhost:8000
+    description: Local Development
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Authentication
+    description: Login, refresh, logout operations
+  - name: Query
+    description: Research query operations
+  - name: Data
+    description: Researcher, publication, and project endpoints
+  - name: Audit
+    description: Audit trail and compliance
+  - name: Admin
+    description: Administrative operations
+
+paths:
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login
+      description: Authenticate a user and receive access/refresh tokens
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: researcher_user
+              password: researcher-pass
+      responses:
+        '200':
+          description: Successful login
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: integer
+              description: Rate limit for this endpoint
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+            X-RateLimit-Reset:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '423':
+          description: Account locked (brute-force protection)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Exchange a refresh token for a new access token
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+            example:
+              refresh_token: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Invalidate the refresh token (blacklist it)
+      operationId: logout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+
+  /query:
+    post:
+      tags:
+        - Query
+      summary: Execute research query
+      description: |
+        Submit a natural language query for research intelligence.
+
+        The query is processed through a 6-node LangGraph pipeline:
+        1. Planner - Intent decomposition
+        2. Router - Path selection (SQL/RAG/KG)
+        3. Executor - Skill execution
+        4. Synthesizer - Response generation
+        5. Verifier - Hallucination check
+        6. Reflector - Audit logging
+
+        For streaming responses, include `Accept: text/event-stream` header.
+      operationId: query
+      parameters:
+        - name: session_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Optional session ID for multi-turn conversations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+            example:
+              query: AI researchers in Gujarat with more than 20 publications
+      responses:
+        '202':
+          description: Query accepted for async processing (for long queries)
+          headers:
+            X-Query-Id:
+              schema:
+                type: string
+              description: Query ID for streaming
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryAcceptedResponse'
+        '200':
+          description: Query completed
+          headers:
+            X-Query-Id:
+              schema:
+                type: string
+            X-Processing-Time-Ms:
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Tier insufficient
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /query/stream/{query_id}:
+    get:
+      tags:
+        - Query
+      summary: Stream query status
+      description: |
+        SSE endpoint for streaming query progress and results.
+
+        Events:
+        - `status`: Progress updates with stage and progress percentage
+        - `complete`: Final response when query is done
+        - `error`: Error occurred during processing
+      operationId: streamQuery
+      parameters:
+        - name: query_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                example: |
+                  event: status
+                  data: {"stage": "planning", "progress": 0.1}
+
+                  event: status
+                  data: {"stage": "routing", "progress": 0.2, "route": "text_to_sql"}
+
+                  event: complete
+                  data: {"response": "...", "citations": [...]}
+        '404':
+          description: Query not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /user/profile:
+    get:
+      tags:
+        - User
+      summary: Get user profile
+      description: Get the current authenticated user's profile
+      operationId: getProfile
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /researchers:
+    get:
+      tags:
+        - Data
+      summary: List researchers
+      description: |
+        Retrieve a paginated list of researchers.
+
+        Results are filtered based on user tier:
+        - Tier 1: Full researcher details including PII
+        - Tier 2: Aggregate data, no PII
+        - Tier 3: Anonymized data only
+      operationId: listResearchers
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: state
+          in: query
+          schema:
+            type: string
+          description: Filter by state
+        - name: institution
+          in: query
+          schema:
+            type: string
+          description: Filter by institution
+        - name: research_area
+          in: query
+          schema:
+            type: string
+          description: Filter by research area
+      responses:
+        '200':
+          description: Researcher list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResearcherListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /publications:
+    get:
+      tags:
+        - Data
+      summary: List publications
+      description: Retrieve a paginated list of publications
+      operationId: listPublications
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: year
+          in: query
+          schema:
+            type: integer
+          description: Filter by publication year
+        - name: area
+          in: query
+          schema:
+            type: string
+          description: Filter by research area
+      responses:
+        '200':
+          description: Publication list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicationListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /stats:
+    get:
+      tags:
+        - Data
+      summary: Get aggregate statistics
+      description: |
+        Get aggregate statistics for the research graph.
+
+        Statistics are aggregated based on user tier:
+        - Tier 1: Full access to all statistics
+        - Tier 2: Aggregate counts and trends
+        - Tier 3: Anonymized, high-level statistics
+      operationId: getStats
+      responses:
+        '200':
+          description: Statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsResponse'
+
+  /consent:
+    post:
+      tags:
+        - Compliance
+      summary: Grant consent
+      description: Grant consent for data processing (DPDP-2023)
+      operationId: grantConsent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentRequest'
+      responses:
+        '200':
+          description: Consent granted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me/consents:
+    get:
+      tags:
+        - Compliance
+      summary: List user consents
+      description: List all consents granted by the current user
+      operationId: listConsents
+      responses:
+        '200':
+          description: Consent list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me/data:
+    get:
+      tags:
+        - Compliance
+      summary: Export user data
+      description: Export all data associated with the current user (DPDP-2023 right to access)
+      operationId: exportUserData
+      responses:
+        '200':
+          description: User data export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataExportResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me/data:
+    delete:
+      tags:
+        - Compliance
+      summary: Delete user data
+      description: Request deletion of user data (DPDP-2023 right to erasure)
+      operationId: deleteUserData
+      responses:
+        '200':
+          description: Data deletion initiated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataDeletionResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /audit/verify:
+    get:
+      tags:
+        - Audit
+      summary: Verify audit chain
+      description: Verify the integrity of the HMAC-SHA256 audit chain
+      operationId: verifyAudit
+      responses:
+        '200':
+          description: Audit chain verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditVerificationResponse'
+        '500':
+          description: Audit chain broken (critical)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: List all users (admin only)
+      description: Get a list of all users in the system
+      operationId: listUsers
+      responses:
+        '200':
+          description: User list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserListResponse'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /admin/stats:
+    get:
+      tags:
+        - Admin
+      summary: Get system statistics (admin only)
+      description: Get system-wide usage statistics
+      operationId: getAdminStats
+      responses:
+        '200':
+          description: System statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStatsResponse'
+        '403':
+          description: Admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Basic health check
+      description: Returns basic health status
+      operationId: health
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /health/all:
+    get:
+      tags:
+        - Health
+      summary: Full health check
+      description: Returns detailed health status of all components
+      operationId: healthAll
+      responses:
+        '200':
+          description: All components healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FullHealthResponse'
+
+  /metrics:
+    get:
+      tags:
+        - Health
+      summary: Prometheus metrics
+      description: Returns Prometheus-format metrics
+      operationId: metrics
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token (RS256)
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: Username
+          example: researcher_user
+        password:
+          type: string
+          description: Password
+          example: researcher-pass
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        refresh_token:
+          type: string
+          description: JWT refresh token
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+          description: Access token expiry in seconds
+        refresh_expires_in:
+          type: integer
+          description: Refresh token expiry in seconds
+        user:
+          $ref: '#/components/schemas/UserInfo'
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    RefreshResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: bearer
+        expires_in:
+          type: integer
+
+    LogoutRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+
+    LogoutResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: revoked
+
+    QueryRequest:
+      type: object
+      required:
+        - query
+      properties:
+        query:
+          type: string
+          description: Natural language query
+          example: AI researchers in Gujarat with more than 20 publications
+        session_id:
+          type: string
+          format: uuid
+          description: Optional session ID for multi-turn conversations
+
+    QueryAcceptedResponse:
+      type: object
+      properties:
+        query_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          example: processing
+        stream_url:
+          type: string
+          format: uri
+          description: SSE endpoint for streaming
+
+    QueryResponse:
+      type: object
+      properties:
+        query_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        response:
+          type: string
+          description: Natural language response
+        status:
+          type: string
+          example: success
+        tier:
+          type: integer
+          description: User tier used for filtering
+        intent:
+          type: string
+          description: Detected query intent
+        routing_decision:
+          type: string
+          description: Selected routing path
+        verification_status:
+          type: boolean
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+        provenance:
+          type: object
+          properties:
+            planner:
+              type: string
+            router:
+              type: string
+            executor:
+              type: string
+            synthesizer:
+              type: string
+            cloud_synthesis_used:
+              type: boolean
+        warnings:
+          type: array
+          items:
+            type: string
+
+    Citation:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        year:
+          type: integer
+        authors:
+          type: array
+          items:
+            type: string
+        venue:
+          type: string
+
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+          enum: [researcher, government, industry, admin]
+        tier:
+          type: integer
+        organization:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        role:
+          type: string
+        tier:
+          type: integer
+        researcher_id:
+          type: string
+
+    ResearcherListResponse:
+      type: object
+      properties:
+        researchers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Researcher'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    Researcher:
+      type: object
+      properties:
+        researcher_id:
+          type: string
+        name:
+          type: string
+        institution_id:
+          type: string
+        state:
+          type: string
+        research_area:
+          type: string
+        year_joined:
+          type: integer
+        h_index:
+          type: integer
+        # Additional fields for Tier 1 only:
+        email:
+          type: string
+          description: Only visible to Tier 1
+        phone:
+          type: string
+          description: Only visible to Tier 1
+
+    PublicationListResponse:
+      type: object
+      properties:
+        publications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Publication'
+        total:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+
+    Publication:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        abstract:
+          type: string
+        year:
+          type: integer
+        venue:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+
+    StatsResponse:
+      type: object
+      properties:
+        total_researchers:
+          type: integer
+        total_publications:
+          type: integer
+        total_institutions:
+          type: integer
+        total_labs:
+          type: integer
+        total_projects:
+          type: integer
+        total_patents:
+          type: integer
+        total_collaborations:
+          type: integer
+
+    ConsentRequest:
+      type: object
+      required:
+        - scope
+      properties:
+        scope:
+          type: string
+          enum: [research_access, data_sharing, contact_allow]
+          description: Consent scope
+
+    ConsentResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        consent_id:
+          type: string
+          format: uuid
+        scope:
+          type: string
+        granted_at:
+          type: string
+          format: date-time
+
+    ConsentListResponse:
+      type: object
+      properties:
+        consents:
+          type: array
+          items:
+            type: object
+            properties:
+              scope:
+                type: string
+              active:
+                type: boolean
+              granted_at:
+                type: string
+                format: date-time
+              description:
+                type: string
+
+    DataExportResponse:
+      type: object
+      properties:
+        user_id:
+          type: string
+        export_timestamp:
+          type: string
+          format: date-time
+        consents:
+          type: array
+        audit_events:
+          type: array
+
+    DataDeletionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        consents_deleted:
+          type: integer
+        events_anonymized:
+          type: integer
+
+    AuditVerificationResponse:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        events_checked:
+          type: integer
+        first_hash:
+          type: string
+        last_hash:
+          type: string
+        broken_indices:
+          type: array
+          items:
+            type: integer
+
+    AdminUserListResponse:
+      type: object
+      properties:
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserProfile'
+        total:
+          type: integer
+
+    AdminStatsResponse:
+      type: object
+      properties:
+        total_queries_today:
+          type: integer
+        active_users:
+          type: integer
+        by_tier:
+          type: object
+          properties:
+            tier_1:
+              type: integer
+            tier_2:
+              type: integer
+            tier_3:
+              type: integer
+        error_rate:
+          type: number
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+
+    FullHealthResponse:
+      type: object
+      properties:
+        api:
+          type: string
+        database:
+          type: string
+        llm:
+          type: object
+          properties:
+            ready:
+              type: boolean
+            provider:
+              type: string
+            model:
+              type: string
+        qdrant:
+          type: string
+        redis:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message
+        code:
+          type: string
+          description: Error code for programmatic handling
+        request_id:
+          type: string
+          description: Request ID for support

@@ -10,6 +10,7 @@ import sqlglot
 from sqlglot import exp
 
 from src.audit import log_llm_call as audit_log_llm_call
+from src.security.query_allowlist import validate_sql_query
 
 
 logger = logging.getLogger(__name__)
@@ -468,7 +469,7 @@ RULES:
 
         return sql
 
-    def execute(self, user_query: str, user_tier: int = 1) -> Dict[str, Any]:
+    def execute(self, user_query: str, user_tier: int = 1, user_id: str = "unknown") -> Dict[str, Any]:
         """
         Execute text-to-sql skill.
 
@@ -479,6 +480,12 @@ RULES:
         schema_prompt = self.extractor.generate_llm_prompt(schema)
 
         sql = self.generate_sql(user_query, schema_prompt)
+
+        if not validate_sql_query(sql, user_id=user_id):
+            from src.security.query_allowlist import get_sql_allowlist
+            logs = get_sql_allowlist().get_blocked_logs(limit=1)
+            reason = logs[-1]["reason"] if logs else "Query blocked by allowlist"
+            raise PermissionError(f"SQL query blocked: {reason}")
 
         sql = self._apply_tier_filter(sql, user_tier)
 

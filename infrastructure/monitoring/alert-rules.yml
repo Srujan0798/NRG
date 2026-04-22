@@ -1,0 +1,224 @@
+groups:
+  - name: nrg_critical
+    rules:
+      - alert: HighLLMErrorRate
+        expr: |
+          (
+            sum(rate(nrg_skill_errors_total{error_type="llm_failure"}[10m]))
+            /
+            sum(rate(nrg_queries_total[10m]))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: critical
+          team: ml-platform
+        annotations:
+          summary: "LLM error rate > 10%"
+          description: "LLM failing for >10% of queries. Check NVIDIA API key quota and local LLM health."
+          runbook_url: "https://wiki.internal/nrg/runbooks/llm-high-error-rate"
+
+      - alert: PostgresDown
+        expr: up{job="nrg-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "NRG API pod is down"
+          description: "All API endpoints unreachable. No new queries can be processed."
+          runbook_url: "https://wiki.internal/nrg/runbooks/postgres-down"
+
+      - alert: AuditChainBroken
+        expr: nrg_audit_chain_ok == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Audit chain integrity compromised"
+          description: "HMAC audit chain broken. Immediate investigation required."
+          runbook_url: "https://wiki.internal/nrg/runbooks/audit-chain-broken"
+
+      - alert: EgressViolation
+        expr: increase(nrg_egress_block_total[5m]) > 0
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Data sovereignty violation blocked"
+          description: "Research data attempted to leave VPC. Egress guard blocked the request."
+          runbook_url: "https://wiki.internal/nrg/runbooks/egress-violation"
+
+      - alert: PromptInjectionSpike
+        expr: increase(nrg_injection_block_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "Prompt injection attack detected"
+          description: "{{ $value }} injection attempts blocked in last 5 minutes."
+          runbook_url: "https://wiki.internal/nrg/runbooks/prompt-injection"
+
+      - alert: QdrantDown
+        expr: up{job="nrg-qdrant"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Qdrant vector database unreachable"
+          description: "Qdrant has been unreachable for 5 minutes. RAG functionality degraded."
+          runbook_url: "https://wiki.internal/nrg/runbooks/qdrant-down"
+
+  - name: nrg_warning
+    rules:
+      - alert: QueryLatencyHigh
+        expr: histogram_quantile(0.95, rate(nrg_query_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Query p95 latency > 30s"
+          description: "95th percentile query latency is {{ $value | humanizeDuration }}. Check RAG retrieval and LLM latency."
+          runbook_url: "https://wiki.internal/nrg/runbooks/query-latency-high"
+
+      - alert: CacheHitRateLow
+        expr: |
+          (
+            rate(nrg_cache_hits_total[10m])
+            /
+            (rate(nrg_cache_hits_total[10m]) + rate(nrg_cache_misses_total[10m]))
+          ) < 0.50
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: "Cache hit rate < 50%"
+          description: "Low cache utilization. Consider warming cache with frequent queries."
+          runbook_url: "https://wiki.internal/nrg/runbooks/cache-hit-rate"
+
+      - alert: LLMFallbackRateHigh
+        expr: |
+          (
+            sum(rate(nrg_llm_fallback_total[15m]))
+            /
+            sum(rate(nrg_queries_total[15m]))
+          ) > 0.20
+        for: 10m
+        labels:
+          severity: warning
+          team: ml-platform
+        annotations:
+          summary: "LLM fallback rate > 20%"
+          description: "Cloud LLM is failing for >20% of queries. Check NVIDIA API status and quota."
+          runbook_url: "https://wiki.internal/nrg/runbooks/llm-fallback-rate"
+
+      - alert: DBLatencyHigh
+        expr: histogram_quantile(0.95, rate(nrg_db_query_latency_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Database p95 query latency > 1s"
+          description: "Slow database queries detected. Check connection pool and query plans."
+          runbook_url: "https://wiki.internal/nrg/runbooks/db-latency"
+
+      - alert: DBConnectionsHigh
+        expr: nrg_db_connections_active / 100 > 0.80
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "DB connections > 80%"
+          description: "Database connection pool is above 80% capacity. Consider scaling."
+          runbook_url: "https://wiki.internal/nrg/runbooks/db-connections"
+
+      - alert: RateLimitThrottling
+        expr: increase(nrg_rate_limited_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate-limit throttle rate"
+          description: "{{ $value }} requests were rate-limited in the last 5 minutes."
+          runbook_url: "https://wiki.internal/nrg/runbooks/rate-limiting"
+
+      - alert: PIISpike
+        expr: increase(nrg_pii_block_total[5m]) > 20
+        for: 3m
+        labels:
+          severity: warning
+          team: security
+        annotations:
+          summary: "PII query spike detected"
+          description: "{{ $value }} PII-containing queries blocked in last 5 minutes."
+          runbook_url: "https://wiki.internal/nrg/runbooks/pii-spike"
+
+      - alert: LocalLLMHealthFlapping
+        expr: changes(llama_cpp_health_status[10m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          team: ml-platform
+        annotations:
+          summary: "Local Llama.cpp health check unstable"
+          description: "Local LLM health is flapping. Synthesis quality may degrade."
+          runbook_url: "https://wiki.internal/nrg/runbooks/local-llm-flapping"
+
+      - alert: SkillLatencyHigh
+        expr: histogram_quantile(0.95, rate(nrg_skill_latency_seconds_bucket[5m])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Skill execution p95 latency > 10s"
+          description: "Skill {{ $labels.skill_name }} is slow. Check SQL query performance."
+          runbook_url: "https://wiki.internal/nrg/runbooks/skill-latency"
+
+  - name: nrg_cost
+    rules:
+      - alert: DailyBudget80Percent
+        expr: |
+          (
+            sum by (day) (increase(nrg_llm_cost_total[1d])) / 100
+          ) > 80
+        for: 1m
+        labels:
+          severity: warning
+          team: finance
+        annotations:
+          summary: "Daily token budget at 80%"
+          description: "Token budget is at 80% for today. Monitor usage."
+          runbook_url: "https://wiki.internal/nrg/runbooks/budget-alert"
+
+      - alert: DailyBudgetExceeded
+        expr: |
+          (
+            sum by (day) (increase(nrg_llm_cost_total[1d])) / 100
+          ) > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: finance
+        annotations:
+          summary: "Daily token budget exceeded"
+          description: "Token budget has been exceeded for today."
+          runbook_url: "https://wiki.internal/nrg/runbooks/budget-alert"
+
+      - alert: MonthlyBudget80Percent
+        expr: |
+          (
+            sum by (month) (increase(nrg_llm_cost_total[30d])) / 100
+          ) > 80
+        for: 1m
+        labels:
+          severity: warning
+          team: finance
+        annotations:
+          summary: "Monthly token budget at 80%"
+          description: "Token budget is at 80% for this month."
+          runbook_url: "https://wiki.internal/nrg/runbooks/budget-alert"

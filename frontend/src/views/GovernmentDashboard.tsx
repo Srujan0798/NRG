@@ -1,287 +1,298 @@
-import { useState, useEffect, useCallback } from 'react';
-import { PermissionBoundary } from '../components/PermissionBoundary';
-import { TierBadge } from '../components/TierBadge';
-import { SkeletonLoader } from '../components/SkeletonLoader';
-import { DPDPConsentDialog } from '../components/DPDPConsentDialog';
-import { GlassCard } from '../components/GlassCard';
-import { useAuth } from '../hooks/useAuth';
-import { useQueryStore } from '../stores/queryStore';
-import { useDPDPStore } from '../stores/dpdpStore';
-import { queryService, QueryResponse } from '../services/queryService';
-import { useQuery } from '@tanstack/react-query';
-import { AnswerPanel } from '../components/AnswerPanel';
+import React, { useState, useCallback, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { GovernmentHeader } from '../components/Government/GovernmentHeader'
+import { SummaryCard, MinistrySummaryCard, AlertCard } from '../components/Government/SummaryCards'
+import { DataTable } from '../components/Government/DataTables'
+import { StatsCard } from '../components/StatsCard'
+import { SkeletonLoader } from '../components/Skeleton'
+import { ErrorState } from '../components/ErrorState'
+import { AnswerPanel } from '../components/AnswerPanel'
+import { GraphView } from '../components/GraphView'
+import { ResearchAreasBarChart } from '../components/DataViz'
+import { FundingTrendsLineChart } from '../components/DataViz'
+import { IndiaMapChoropleth } from '../components/DataViz'
+import { useAuth } from '../hooks/useAuth'
+import { useQueryStore } from '../stores/queryStore'
+import { useDPDPStore } from '../stores/dpdpStore'
+import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { useQuery } from '@tanstack/react-query'
+import { Building, Users, GraduationCap, FileText, Shield, AlertTriangle, TrendingUp } from 'lucide-react'
+import type { Theme } from '../hooks/useTheme'
 
-export function GovernmentDashboard() {
-  const { user } = useAuth();
-  const { history, currentQuery, isSearching, setCurrentQuery, addToHistory, setIsSearching, setLastResult } = useQueryStore();
-  const { grantConsent, addAuditEntry } = useDPDPStore();
+interface GovernmentDashboardProps {
+  onThemeToggle: () => void
+  theme: Theme
+}
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [showDPDPConsent, setShowDPDPConsent] = useState(false);
-  const [dpdpApproved, setDpdpApproved] = useState(false);
-  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null);
-  const [queryError, setQueryError] = useState<string | null>(null);
+const TABS = [
+  { key: 'overview', label: 'Overview', labelHi: 'अवलोकन' },
+  { key: 'policy', label: 'Policy Analysis', labelHi: 'नीति विश्लेषण' },
+  { key: 'institutions', label: 'Institutions', labelHi: 'संस्थान' },
+  { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ' },
+] as const
 
-  // React Query for stats
+export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboardProps) {
+  const { user } = useAuth()
+  const { addAuditEntry } = useDPDPStore()
+  const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('overview')
+  const [currentQuery, setCurrentQuery] = useState('')
+  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
+  const [queryError, setQueryError] = useState<string | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [graphData, setGraphData] = useState(queryService.emptyGraphData())
+
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['stats', user?.id],
     queryFn: () => queryService.fetchStats(),
     staleTime: 30 * 1000,
     enabled: !!user,
-  });
+  })
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
-    return () => clearTimeout(timer);
-  }, []);
+  const { data: publicationsData } = useQuery({
+    queryKey: ['publications', user?.id],
+    queryFn: () => queryService.fetchPublications(100),
+    staleTime: 5 * 60 * 1000,
+    enabled: !!user,
+  })
 
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return;
-
-    setIsSearching(true);
-      setQueryResult(null);
-      setQueryError(null);
-      try {
-        const result = await queryService.query({ query: currentQuery });
-      setQueryResult(result);
-      setLastResult(result);
-      addToHistory({
-        query: currentQuery,
-        persona: 'government',
-        resultsCount: result.verification_status ? 10 : 0
-      });
-      addAuditEntry({
-        action: 'data_accessed',
-        persona: user?.role || 'government',
-        details: `Query: ${currentQuery}`
-      });
-    } catch (error: any) {
-      console.error('Search error:', error);
-      const message = error.response?.data?.detail || error.response?.data?.message || error.message || 'Search failed';
-      setQueryError(message);
-      addToHistory({
-        query: currentQuery,
-        persona: 'government',
-        resultsCount: 0,
-        error: message
-      });
+    if (!currentQuery.trim()) return
+    setIsSearching(true)
+    setQueryError(null)
+    try {
+      const result = await queryService.query({ query: currentQuery })
+      setQueryResult(result)
+      addAuditEntry({ action: 'data_accessed', persona: 'government', details: `Query: ${currentQuery}` })
+    } catch (err: any) {
+      setQueryError(err.message || 'Search failed')
     } finally {
-      setIsSearching(false);
+      setIsSearching(false)
     }
-  }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult, user]);
+  }, [currentQuery, addAuditEntry])
 
-  if (isLoading) {
-    return (
-      <div className="iitgn-government-dashboard min-h-screen bg-gradient-to-br from-slate-50 to-gray-200">
-        <header className="bg-white shadow-sm border-b border-gray-200">
-          <div className="max-w-7xl mx-auto px-4 py-4 animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-2" />
-            <div className="h-4 bg-gray-100 rounded w-1/4" />
-          </div>
-        </header>
-        <main className="max-w-7xl mx-auto px-4 py-8">
-          <SkeletonLoader type="chart" />
-        </main>
-      </div>
-    );
-  }
+  const ministryData = useMemo(() => [
+    { ministry: 'Ministry of Education', ministryHi: 'शिक्षा मंत्रालय', institutionCount: 45, researcherCount: 1234, fundingCr: 250, topArea: 'AI/ML' },
+    { ministry: 'Ministry of Science & Technology', ministryHi: 'विज्ञान और प्रौद्योगिकी मंत्रालय', institutionCount: 32, researcherCount: 892, fundingCr: 180, topArea: 'Biotechnology' },
+    { ministry: 'Ministry of Defence', ministryHi: 'रक्षा मंत्रालय', institutionCount: 18, researcherCount: 567, fundingCr: 320, topArea: 'Aerospace' },
+    { ministry: 'Ministry of Health', ministryHi: 'स्वास्थ्य मंत्रालय', institutionCount: 28, researcherCount: 745, fundingCr: 150, topArea: 'Medical Research' },
+  ], [])
+
+  const stateData = useMemo(() => [
+    { state: 'Maharashtra', stateHi: 'महाराष्ट्र', count: 1523 },
+    { state: 'Delhi', stateHi: 'दिल्ली', count: 1245 },
+    { state: 'Karnataka', stateHi: 'कर्नाटक', count: 987 },
+    { state: 'Tamil Nadu', stateHi: 'तमिलनाडु', count: 876 },
+    { state: 'Telangana', stateHi: 'तेलंगाना', count: 654 },
+    { state: 'Gujarat', stateHi: 'गुजरात', count: 543 },
+    { state: 'West Bengal', stateHi: 'पश्चिम बंगाल', count: 432 },
+    { state: 'Uttar Pradesh', stateHi: 'उत्तर प्रदेश', count: 398 },
+    { state: 'Kerala', stateHi: 'केरल', count: 345 },
+    { state: 'Punjab', stateHi: 'पंजाब', count: 234 },
+  ], [])
+
+  const researchAreaData = useMemo(() => [
+    { area: 'Artificial Intelligence', count: 342, color: '#ff6b35' },
+    { area: 'Biotechnology', count: 287, color: '#2563eb' },
+    { area: 'Renewable Energy', count: 234, color: '#10b981' },
+    { area: 'Aerospace', count: 198, color: '#c49538' },
+    { area: 'Medical Sciences', count: 276, color: '#6366f1' },
+    { area: 'Materials Science', count: 165, color: '#ec4899' },
+  ], [])
+
+  const fundingTrendData = useMemo(() => [
+    { year: 2019, funding: 450, publications: 1200 },
+    { year: 2020, funding: 520, publications: 1450 },
+    { year: 2021, funding: 680, publications: 1680 },
+    { year: 2022, funding: 750, publications: 1920 },
+    { year: 2023, funding: 890, publications: 2150 },
+    { year: 2024, funding: 1050, publications: 2480 },
+  ], [])
 
   return (
-    <div className="iitgn-government-dashboard min-h-screen bg-gradient-to-br from-slate-50 to-gray-200">
-      {/* Devanagari Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              राष्ट्रीय नीति विश्लेषण
-            </h1>
-            <p className="text-sm text-gray-500 tracking-wide">
-              National Research Intelligence Platform · Government Analytics
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            {user && <TierBadge tier={user.tier} role={user.role} />}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+      <GovernmentHeader onThemeToggle={onThemeToggle} theme={theme} />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Query Interface */}
-        <PermissionBoundary tier={2}>
-          <GlassCard accent="government" title="National Research Query" description="Query across aggregated research data" className="mb-6">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={currentQuery}
-                onChange={(e) => setCurrentQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Enter query (e.g., 'Research trends in Gujarat')..."
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm"
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {activeTab === 'overview' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatsCard
+                label="Total Researchers"
+                labelHi="कुल शोधकर्ता"
+                value={5615}
+                sublabel="Across 181 institutions"
+                accentColor="#ff6b35"
+                icon={<Users size={20} />}
+                delay={0}
               />
-              <button
-                onClick={handleSearch}
-                disabled={isSearching || !currentQuery}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSearching ? 'Analyzing...' : 'Query'}
-              </button>
+              <StatsCard
+                label="Publications"
+                labelHi="प्रकाशन"
+                value={12847}
+                sublabel="Peer-reviewed works"
+                accentColor="#2563eb"
+                icon={<FileText size={20} />}
+                delay={100}
+              />
+              <StatsCard
+                label="Funding Disbursed"
+                labelHi="वितरित धन"
+                value={28000000000}
+                sublabel="Since 2019 (₹28,000Cr)"
+                format="currency"
+                accentColor="#10b981"
+                icon={<TrendingUp size={20} />}
+                delay={200}
+              />
+              <StatsCard
+                label="Research Labs"
+                labelHi="शोध प्रयोगशालाएं"
+                value={342}
+                sublabel="Government funded"
+                accentColor="#c49538"
+                icon={<Building size={20} />}
+                delay={300}
+              />
             </div>
 
-            {isSearching && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-                  Analyzing national research data...
-                </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <ResearchAreasBarChart
+                  data={researchAreaData}
+                  title="Research Area Distribution"
+                  titleHi="शोध क्षेत्र वितरण"
+                  subtitle="Top research areas across government institutions"
+                />
               </div>
-            )}
-
-            {queryError && (
-              <div className="mt-4 p-4 bg-rose-50 rounded-lg border border-rose-200">
-                <div className="flex items-start gap-2">
-                  <span className="text-rose-500">⚠️</span>
-                  <div className="text-sm text-rose-700">
-                    <span className="font-semibold">Error:</span> {queryError}
-                  </div>
-                </div>
+              <div>
+                <IndiaMapChoropleth
+                  data={stateData}
+                  title="State Distribution"
+                  titleHi="राज्य वितरण"
+                  subtitle="Research activity by state"
+                />
               </div>
-            )}
+            </div>
 
-            {queryResult && (
-              <div className="mt-4 bg-white rounded-lg border border-gray-200 overflow-hidden">
-                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
-                  <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                    Research Intelligence Report
-                  </h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <FundingTrendsLineChart
+                data={fundingTrendData}
+                title="Funding Trends"
+                titleHi="वित्तीय रुझान"
+                subtitle="Research funding over time (in Crores)"
+              />
+
+              <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+                <div className="mb-4">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Query</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">त्वरित प्रश्न</p>
                 </div>
-                <div className="p-4">
-                  <AnswerPanel
-                    response={queryResult.response}
-                    citations={queryResult.citations || []}
-                    provenance={queryResult.provenance}
-                    warnings={queryResult.warnings}
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={currentQuery}
+                    onChange={(e) => setCurrentQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                    placeholder="Enter policy query..."
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-saffron-500"
                   />
+                  <motion.button
+                    onClick={handleSearch}
+                    disabled={isSearching}
+                    className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md hover:shadow-lg disabled:opacity-50"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    Query
+                  </motion.button>
                 </div>
-              </div>
-            )}
-          </GlassCard>
-        </PermissionBoundary>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* National Metrics */}
-          <PermissionBoundary tier={2}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-600 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-blue-600 transition">📊 National Research Metrics</h2>
-              <p className="text-sm text-gray-600 mb-4">Aggregate publication output and research capacity.</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-blue-50 p-3 rounded text-center border border-blue-100">
-                  <div className="text-2xl font-bold text-blue-700">
-                    {statsLoading ? '...' : statsData?.total_researchers?.toLocaleString() || 0}
+                {queryResult && (
+                  <div className="mt-4">
+                    <AnswerPanel
+                      response={queryResult.response}
+                      citations={queryResult.citations || []}
+                      provenance={queryResult.provenance}
+                      warnings={queryResult.warnings}
+                      verification_status={queryResult.verification_status}
+                    />
                   </div>
-                  <div className="text-xs text-blue-500">Researchers</div>
-                </div>
-                <div className="bg-green-50 p-3 rounded text-center border border-green-100">
-                  <div className="text-2xl font-bold text-green-700">
-                    {statsLoading ? '...' : statsData?.total_publications?.toLocaleString() || 0}
+                )}
+                {queryError && (
+                  <div className="mt-4">
+                    <ErrorState
+                      title="Query Failed"
+                      message={queryError}
+                      severity="error"
+                      onRetry={handleSearch}
+                    />
                   </div>
-                  <div className="text-xs text-green-500">Publications</div>
-                </div>
-              </div>
-            </div>
-          </PermissionBoundary>
-
-          {/* Research Areas Distribution */}
-          <PermissionBoundary tier={2}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-teal-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 group">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2 group-hover:text-teal-600 transition">📋 Research Areas</h2>
-              <p className="text-sm text-gray-600 mb-4">Distribution by research specialization.</p>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {statsLoading ? (
-                  <SkeletonLoader type="list" count={3} />
-                ) : statsData?.research_area_distribution?.slice(0, 5).map((area: any) => (
-                  <div key={area.area} className="flex justify-between items-center text-xs bg-teal-50 p-2 rounded border border-teal-100">
-                    <span className="text-teal-800 font-medium">{area.area}</span>
-                    <span className="text-teal-600">{area.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </PermissionBoundary>
-
-          {/* State Distribution */}
-          <PermissionBoundary tier={2}>
-            <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-orange-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">🗺️ State Distribution</h2>
-              <p className="text-sm text-gray-600 mb-4">Geographic distribution of researchers.</p>
-              <div className="space-y-2 max-h-40 overflow-y-auto">
-                {statsLoading ? (
-                  <SkeletonLoader type="list" count={3} />
-                ) : statsData?.state_distribution?.slice(0, 5).map((state: any) => (
-                  <div key={state.state} className="flex justify-between items-center text-xs bg-orange-50 p-2 rounded border border-orange-100">
-                    <span className="text-orange-800 font-medium">{state.state}</span>
-                    <span className="text-orange-600">{state.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </PermissionBoundary>
-
-          {/* DPDP Compliance Dashboard */}
-          <PermissionBoundary tier={2}>
-            <div
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer"
-              onClick={() => setShowDPDPConsent(true)}
-            >
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">🔒 Sovereign Data Compliance</h2>
-              <p className="text-sm text-gray-600 mb-4">DPDP Act 2023 compliance monitoring and audit trails.</p>
-              <div className={`p-3 rounded text-xs transition ${dpdpApproved ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                {dpdpApproved ? (
-                  <>✅ Audit logs active · Consent framework operational</>
-                ) : (
-                  <>⚠️ Authorization required for full audit access</>
                 )}
               </div>
             </div>
-          </PermissionBoundary>
-        </div>
 
-        {/* Query History */}
-        {history.length > 0 && (
-          <GlassCard accent="sovereign" title="Recent Government Queries" className="mt-6">
-            <div className="space-y-2">
-              {history.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="text-sm py-2 border-b border-gray-100 last:border-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700 truncate font-medium">{entry.query}</span>
-                    <span className="text-gray-400 text-xs ml-4">{new Date(entry.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                  {entry.error ? (
-                    <div className="mt-1 text-xs text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">
-                      🛡️ Security Message: {entry.error}
-                    </div>
-                  ) : (
-                    <div className="text-gray-400 text-xs mt-0.5">{entry.resultsCount} results found</div>
-                  )}
-                </div>
-              ))}
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                Ministry Summary
+                <span className="text-sm font-normal text-slate-500 ml-2 font-devanagari">मंत्रालय सारांश</span>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {ministryData.map((m, i) => (
+                  <MinistrySummaryCard key={i} {...m} />
+                ))}
+              </div>
             </div>
-          </GlassCard>
+          </motion.div>
+        )}
+
+        {activeTab === 'institutions' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <DataTable
+              title="Institution Directory"
+              titleHi="संस्थान निर्देशिका"
+              columns={[
+                { key: 'institution', label: 'Institution' },
+                { key: 'type', label: 'Type' },
+                { key: 'researchers', label: 'Researchers', align: 'right' },
+                { key: 'publications', label: 'Publications', align: 'right' },
+                { key: 'funding', label: 'Funding (₹Cr)', align: 'right' },
+                { key: 'grade', label: 'NIRF Grade' },
+              ]}
+              data={[
+                { institution: 'Indian Institute of Technology Delhi', type: 'IIT', researchers: 1245, publications: 3420, funding: 180, grade: 'AAA+' },
+                { institution: 'Indian Institute of Science Bangalore', type: 'IISc', researchers: 892, publications: 2890, funding: 150, grade: 'AAA+' },
+                { institution: 'National Institute of Technology', type: 'NIT', researchers: 756, publications: 1234, funding: 85, grade: 'AA+' },
+                { institution: 'All India Institute of Medical Sciences', type: 'AIIMS', researchers: 567, publications: 1567, funding: 120, grade: 'AAA' },
+                { institution: 'Indian Institute of Technology Bombay', type: 'IIT', researchers: 1456, publications: 3980, funding: 210, grade: 'AAA+' },
+              ]}
+            />
+          </motion.div>
+        )}
+
+        {activeTab === 'graph' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <GraphView
+              data={graphData}
+              width={1100}
+              height={600}
+              availableYears={[2019, 2020, 2021, 2022, 2023, 2024]}
+              availableTopics={['AI', 'Biotechnology', 'Aerospace', 'Medical', 'Energy']}
+            />
+          </motion.div>
         )}
       </main>
-
-      {/* DPDP Consent Dialog */}
-      <DPDPConsentDialog
-        isOpen={showDPDPConsent}
-        onApprove={() => {
-          setDpdpApproved(true);
-          setShowDPDPConsent(false);
-        }}
-        onDeny={() => setShowDPDPConsent(false)}
-        dataPurpose="Government analytics and policy impact assessment"
-        retentionDays={730}
-      />
     </div>
-  );
+  )
 }
+
+export default GovernmentDashboard

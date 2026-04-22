@@ -164,10 +164,13 @@ def main():
     workflow = NRGWorkflow(test_mode=args.test_mode)
 
     if args.test_mode:
+        from datetime import datetime
+        current_year = datetime.now().year
+        years_ago = current_year - 3
         test_queries = [
             "Find all robotics researchers in Gujarat",
             "What are the latest advances in sustainable energy at IIT campuses",
-            "Synthesize autonomous robotics research trends and funding data 2021-2024",
+            f"Synthesize autonomous robotics research trends and funding data {years_ago}-{current_year}",
         ]
         for query in test_queries:
             print(f"\n{'=' * 60}\nExecuting: {query}\n{'=' * 60}")
