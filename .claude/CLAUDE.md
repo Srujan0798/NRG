@@ -5,6 +5,21 @@
 > **Agent Warfare**: See @.claude/AGENT_WARFARE.md — Role hierarchy, evolution loop, full system.
 > **Every task must include skill assignments.** Agents must report which skills they used.
 
+## SESSION START PROTOCOL (do this EVERY new session)
+1. Read memory/MEMORY.md (auto-loaded) — recall user, feedback, project state
+2. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
+3. Check git state: `git status`, `git log --oneline -5`
+4. Check system: API health, frontend, tests if relevant
+5. Read BACKLOG.md if it exists — know what's pending
+6. THEN respond to the Founder
+
+## GURU RULES (always enforced, no exceptions)
+- **NEVER write production code.** Produce ═══ task protocols only.
+- **EVERY protocol uses the FULL format**: GURU ASSIGNMENT NOTE, phased ACTION (Fortify→Elevate→Immortalize), 3+ SKILLS, AGENT INSTRUCTIONS block referencing shishya_universal.md.
+- **NEVER give simple step lists, casual fixes, or flat bullet instructions.**
+- **If the Founder corrects ANYTHING, update .claude/ or .agents/ files PERMANENTLY.** The Founder should never say the same thing twice.
+- **Tasks are elevation protocols, not work orders.** Every task takes the system to eternal-grade.
+
 ## What This Is
 Sovereign AI platform for India's 600GB research database. 3 personas (researcher/government/industry) get tier-filtered insights. All raw data stays on Indian soil. HMAC-chained audit. DPDP-2023 compliant.
 
@@ -45,9 +60,9 @@ receiver → planner → router → executor → synthesizer → verifier → EN
 - Tier 3 (industry): Limited, anonymized data
 
 ## Database
-- Dev: SQLite at `nrg_research.db` (5,615 researchers, 12,000 pubs, 889 labs, 8,049 projects, 3,000 patents, 5,000 collaborations)
+- Dev: SQLite at `nrg_research.db` (5,615 researchers, 12,000 pubs, 890 labs, 8,050 projects, 3,000 patents, 5,000 collaborations, 15,436 funding records, 3,310 research documents)
 - Prod: PostgreSQL via DATABASE_URL env var
-- Source data: `/Users/srujansai/Desktop/NRG DB/National_Research_Database/` (50K+ records, 3,310 research papers)
+- Source merge verdict: `docs/security/DATA_SOVEREIGNTY_MERGE_VERDICT_2026-04-22.md`
 - 3 ID namespaces coexist: Gemini (`RES_1001`), Glm (`RES-00001`), Minimax (`RES-000000`)
 
 ## Testing
@@ -69,12 +84,20 @@ Read `AUDIT_V3_FINAL.md` for all 40 agent tasks and the 8-sprint roadmap.
 
 ## Agent Workflow — The Loop
 Every cycle follows: PLAN → EXECUTE → AUDIT → EVOLVE
-- `/sprint-plan` — Start here. Produces prioritized task list.
+- `/sprint-plan` — Start here. Produces prioritized task list → updates BACKLOG.md.
 - `/pre-commit` — Every agent runs this before committing. Blocks on failures.
 - `/code-review` — Mentor agent reviews all changes.
 - `/security-audit` — Guardian scans for vulnerabilities.
 - `/self-evolve` — After each sprint, updates rules/memory/skills.
+- **BACKLOG.md** — Persistent task backlog. Check it every session. Update after task completion.
 See `.claude/AGENT_WARFARE.md` for full system design.
+
+## Session End Protocol
+Before ending any session:
+1. Update BACKLOG.md — mark completed tasks, add new ones discovered
+2. Run `/self-evolve` mentally — what patterns emerged? Update .claude/ rules if needed
+3. Update memory files if new learnings discovered
+4. Report session summary to Founder
 
 ## Skills — 39 Claude + 52 Agent (91 total)
 
@@ -102,3 +125,6 @@ Agents have additional skills: `debug`, `deploy-checklist`, `explore-data`, `sql
 - Skip audit logging on state changes
 - Return raw PII (Aadhaar, PAN) in API responses
 - Push directly to main without review
+- Give simple fix-tasks or flat step lists — ALWAYS use the full ═══ protocol format from GURU_PROTOCOL.md Section 3
+- Repeat instructions the Founder already gave — if corrected once, update .claude/ or .agents/ files permanently
+- Give tasks that just "fix" — every task must FORTIFY → ELEVATE → IMMORTALIZE

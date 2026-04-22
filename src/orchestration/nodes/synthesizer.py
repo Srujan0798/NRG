@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
 LOCAL_SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system_local.md"
 CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
+ALTERNATE_CITATION_PATTERN = re.compile(r"\[ref:([^:\]]+):([^\]]+)\]")
+PLAIN_PUB_ID_PATTERN = re.compile(r"\b(PUB[-\s]?\d+)\b", re.IGNORECASE)
+BRACKETED_CITE_PATTERN = re.compile(r"\[[^\]]*\]")
 
 SENSITIVE_KEY_TERMS = (
     "email",
@@ -942,11 +945,31 @@ def _citation_for_chunk(chunk, index: int) -> str:
 
 
 def _extract_citations(response: str) -> list[dict]:
-    """Regex-extract [cite:...] tokens and build Citation objects."""
-    return [
-        {"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id}
-        for pub_id, chunk_id in CITATION_PATTERN.findall(response or "")
-    ]
+    """Regex-extract [cite:...], [ref:...], and plain PUB-ID tokens (not inside brackets)."""
+    citations: list[dict] = []
+    seen_ids: set[str] = set()
+
+    for pub_id, chunk_id in CITATION_PATTERN.findall(response or ""):
+        cite_id = f"{pub_id}:{chunk_id}"
+        if cite_id not in seen_ids:
+            seen_ids.add(cite_id)
+            citations.append({"id": cite_id, "pub_id": pub_id, "chunk_id": chunk_id})
+
+    for pub_id, chunk_id in ALTERNATE_CITATION_PATTERN.findall(response or ""):
+        cite_id = f"{pub_id}:{chunk_id}"
+        if cite_id not in seen_ids:
+            seen_ids.add(cite_id)
+            citations.append({"id": cite_id, "pub_id": pub_id, "chunk_id": chunk_id})
+
+    text_without_brackets = BRACKETED_CITE_PATTERN.sub(" ", response or "")
+    for match in PLAIN_PUB_ID_PATTERN.finditer(text_without_brackets):
+        pub_id = match.group(1).replace(" ", "-").upper()
+        cite_id = f"{pub_id}:0"
+        if cite_id not in seen_ids:
+            seen_ids.add(cite_id)
+            citations.append({"id": cite_id, "pub_id": pub_id, "chunk_id": "0"})
+
+    return citations
 
 
 def build_adaptive_system_prompt(
