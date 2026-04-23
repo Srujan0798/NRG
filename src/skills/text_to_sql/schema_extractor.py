@@ -1,8 +1,12 @@
-"""Text-to-SQL Schema Extractor - Extract schema metadata only, NO data, policy-filtered."""
+"""Text-to-SQL Schema Extractor - Extract schema metadata only, NO data, policy-filtered.
+
+Supports dual-driver mode: SQLite (development) and PostgreSQL (production).
+Detection is based on DATABASE_URL environment variable.
+"""
 
 import os
 import re
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 from pathlib import Path
 from sqlalchemy import create_engine, inspect
 
@@ -11,6 +15,14 @@ from src.auth.rbac import get_policy_engine
 SENSITIVE_COLUMNS = {
     "email", "phone", "aadhaar_number", "pan_number", "date_of_birth",
     "address", "personal_phone", "alternate_email"
+}
+
+SQLITE_ONLY_TABLES = {
+    "researchers", "institutions", "publications", "funding_records",
+    "projects", "patents", "collaborations", "labs", "keywords",
+    "research_documents", "researcher_publications", "researcher_labs",
+    "publication_keywords", "audit_events", "consent_ledger",
+    "refresh_tokens", "schema_migrations",
 }
 
 SCHEMA_PROBING_PATTERNS = [
@@ -31,9 +43,9 @@ TIER_COLUMN_VISIBILITY = {
         "projects": ["id", "name", "status", "funding"],
     },
     3: {
-        "researchers": ["id", "name", "department", "email", "phone", "aadhaar_number"],
-        "publications": ["id", "title", "year", "venue", "abstract"],
-        "projects": ["id", "name", "status", "funding", "budget"],
+        "researchers": ["id", "name", "department"],
+        "publications": ["id", "title", "year"],
+        "projects": ["id", "name", "status"],
     },
 }
 
@@ -45,6 +57,44 @@ def is_schema_probing_query(query: str) -> bool:
         if re.search(pattern, query_lower):
             return True
     return False
+
+
+def detect_database_driver(connection_string: Optional[str] = None) -> str:
+    """Detect database driver from connection string.
+
+    Returns 'sqlite', 'postgresql', or 'unknown'.
+    """
+    conn_str = connection_string or os.getenv("DATABASE_URL", "")
+
+    if not conn_str:
+        return "unknown"
+
+    if conn_str.startswith("sqlite"):
+        return "sqlite"
+    elif conn_str.startswith("postgresql") or "postgres" in conn_str.lower():
+        return "postgresql"
+    else:
+        return "unknown"
+
+
+def create_schema_extractor(
+    connection_string: Optional[str] = None,
+) -> "SchemaExtractor":
+    """Factory function that returns appropriate schema extractor based on DATABASE_URL.
+
+    SQLite connection: Returns SQLiteSchemaExtractor (from sqlite_schema_extractor.py)
+    PostgreSQL connection: Returns SchemaExtractor (PostgreSQL-native)
+
+    Falls back to PostgreSQL if DATABASE_URL is not set.
+    """
+    from .sqlite_schema_extractor import SQLiteSchemaExtractor
+
+    driver = detect_database_driver(connection_string)
+
+    if driver == "sqlite":
+        return SQLiteSchemaExtractor(connection_string)
+    else:
+        return SchemaExtractor(connection_string)
 
 
 class SchemaExtractor:

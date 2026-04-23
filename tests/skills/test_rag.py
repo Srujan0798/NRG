@@ -15,6 +15,7 @@ class _FakeScoredPoint:
     def __init__(self, payload, score=0.91):
         self.payload = payload
         self.score = score
+        self.vector_score = score
 
 
 class _FakeQdrantClient:

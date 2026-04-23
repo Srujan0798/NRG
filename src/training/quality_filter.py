@@ -135,7 +135,8 @@ class QualityFilter:
         for pair in pairs:
             grade = self.grade_pair(pair)
             pair["quality_grade"] = grade
-            stats[grade] = stats.get(grade, 0)
+            graded.append(pair)
+            stats[grade] = stats.get(grade, 0) + 1
 
         non_reject = [p for p in graded if p.get("quality_grade") != "reject"]
 

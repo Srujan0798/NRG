@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { CitationDrawer } from '../CitationDrawer'
 import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../../services/queryService'
 import { parseCitations } from '../../utils/parseCitations'
+import { toStringArray } from '../../types/api'
 import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download } from 'lucide-react'
 
 interface AnswerPanelProps {
@@ -372,7 +373,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
                         <SourceIcon source={citation.source} />
                         {citation.year && <span className="mr-2">{citation.year}</span>}
-                        {citation.authors?.slice(0, 2).join(', ')}
+                        {toStringArray(citation.authors)?.slice(0, 2).join(', ')}
                       </p>
                     </div>
                   </div>

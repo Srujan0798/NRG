@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Citation } from '../../services/queryService'
 import { queryService } from '../../services/queryService'
+import { toStringArray } from '../../types/api'
 import { X, Copy, ExternalLink, FileText, Database, GitMerge, Shield } from 'lucide-react'
 
 interface CitationDrawerProps {
@@ -91,7 +92,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
         setDetails({
           title: cite.title,
           year: cite.year || 0,
-          authors: cite.authors,
+          authors: toStringArray(cite.authors),
           chunk_text: cite.chunk_text || `Chunk ${parsed.chunkId} content`,
           pub_id: cite.pub_id || parsed.pubId || 'unknown',
           chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',
@@ -113,7 +114,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
             setDetails({
               title: pub.title || cite.title || `Publication ${parsed.pubId}`,
               year: pub.year || cite.year || 0,
-              authors: cite.authors?.length ? cite.authors : ['Author data unavailable'],
+              authors: toStringArray(cite.authors)?.length ? toStringArray(cite.authors) : ['Author data unavailable'],
               chunk_text: cite.chunk_text || `Chunk ${parsed.chunkId} content`,
               pub_id: parsed.pubId,
               chunk_id: parsed.chunkId,
@@ -132,7 +133,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
       setDetails({
         title: cite.title || `Publication ${cite.pub_id || parsed.pubId || 'unknown'}`,
         year: cite.year || 2024,
-        authors: cite.authors?.length ? cite.authors : ['Unknown Author'],
+        authors: toStringArray(cite.authors)?.length ? toStringArray(cite.authors) : ['Unknown Author'],
         chunk_text: cite.chunk_text || `Chunk content for ${parsed.chunkId || 'unknown'}`,
         pub_id: cite.pub_id || parsed.pubId || 'unknown',
         chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',

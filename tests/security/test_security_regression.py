@@ -444,7 +444,7 @@ class TestRBACColumnFiltering:
         result = filter_researcher_records([{"researcher_id": "r1", "name": "Alice"}], claims)
         assert result["tier"] == 1
 
-    def test_tier_2_gets_allowed_columns(self):
+    def test_tier_2_gets_aggregated_output(self):
         claims = {"role": "researcher", "tier": 2, "researcher_id": "r1"}
         records = [{"researcher_id": "r1", "name": "Alice", "email": "alice@iitb.ac.in",
                      "phone": "9876543210", "aadhaar_number": "1234 5678 9012",
@@ -453,11 +453,16 @@ class TestRBACColumnFiltering:
                      "h_index": 10, "orcid": "0000-0001",
                      "secondary_research_areas": ["ML"]}]
         result = filter_researcher_records(records, claims)
-        record = result["results"][0]
-        assert record.get("email") == "alice@iitb.ac.in"
-        assert record.get("phone") == "9876543210"
+        assert result["tier"] == 2
+        assert result["results"]["total_researchers"] == 1
+        sample = result["results"]["sample_records"][0]
+        assert sample.get("institution_id") == "i1"
+        assert sample.get("department") == "CS"
+        assert sample.get("state") == "MH"
+        assert "email" not in sample
+        assert "phone" not in sample
 
-    def test_tier_3_gets_fewer_columns(self):
+    def test_tier_3_gets_anonymized_output(self):
         claims = {"role": "researcher", "tier": 3, "researcher_id": "r1"}
         records = [{"researcher_id": "r1", "name": "Alice", "email": "alice@iitb.ac.in",
                      "phone": "9876543210", "aadhaar_number": "1234 5678 9012",
@@ -465,11 +470,10 @@ class TestRBACColumnFiltering:
                      "research_area": "AI", "years_experience": 5, "year_joined": 2020,
                      "h_index": 10, "orcid": "0000-0001"}]
         result = filter_researcher_records(records, claims)
-        record = result["results"][0]
-        assert record.get("email") is None
-        assert record.get("phone") is None
-        assert record.get("researcher_id") == "r1"
-        assert record.get("name") == "Alice"
+        assert result["tier"] == 3
+        assert result["results"]["total_researchers"] == 1
+        assert "sample_records" not in result["results"]
+        assert result["results"]["note"] == "Individual records anonymized per policy"
 
     def test_government_role_uses_tier(self):
         claims = {"role": "government", "tier": 2}
@@ -480,13 +484,16 @@ class TestRBACColumnFiltering:
         assert result["role"] == "government"
         assert result["tier"] == 2
 
-    def test_industry_role_shows_licensed_flag(self):
-        claims = {"role": "industry", "tier": 2}
+    def test_industry_role_shows_anonymized_data(self):
+        claims = {"role": "industry", "tier": 3}
         records = [{"researcher_id": "r1", "name": "Bob", "institution_id": "i1",
                     "department": "CS", "state": "MH", "research_area": "AI",
                     "years_experience": 3, "year_joined": 2021, "h_index": 5}]
         result = filter_researcher_records(records, claims)
-        assert result["results"][0].get("licensed") is True
+        assert result["role"] == "industry"
+        assert result["tier"] == 3
+        assert result["results"]["total_researchers"] == 1
+        assert "Individual records anonymized" in result["results"]["note"]
 
 
 # =============================================================================
@@ -562,7 +569,7 @@ class TestMiddleware:
              "year_joined": 2021, "h_index": 5, "orcid": "0000-0002",
              "aadhaar_number": "2234 5678 9012"},
         ]
-        claims = {"role": "researcher", "tier": 2, "researcher_id": "r1"}
+        claims = {"role": "researcher", "tier": 1, "researcher_id": "r1"}
         result = filter_researcher_records(records, claims)
         own = result["results"][0]
         other = result["results"][1]

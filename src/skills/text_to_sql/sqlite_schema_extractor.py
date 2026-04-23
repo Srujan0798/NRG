@@ -1,11 +1,9 @@
 """SQLite Schema Extractor - Extract schema metadata only, NO data."""
 
-import sqlite3
-import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
-from src.data.database import get_sqlite_connection, resolve_database_path
+from src.config.database import get_database_manager, DatabaseManager
 
 
 POSTGRESQL_ONLY_TABLES = {
@@ -140,23 +138,17 @@ class SQLiteSchemaExtractor:
     """Extract schema metadata from SQLite without exposing data."""
 
     def __init__(self, db_path: Optional[str] = None):
-        self.db_path = resolve_database_path(db_path)
-        self._thread_local = threading.local()
-
-    def _get_connection(self) -> sqlite3.Connection:
-        """Get thread-local database connection."""
-        if not hasattr(self._thread_local, 'conn') or self._thread_local.conn is None:
-            self._thread_local.conn = get_sqlite_connection(str(self.db_path))
-        return self._thread_local.conn
+        if db_path:
+            self.db_manager = DatabaseManager(f"sqlite:///{db_path}")
+        else:
+            self.db_manager = get_database_manager()
 
     def get_table_names(self) -> List[str]:
         """Get all table names from database (excludes PostgreSQL-only tables)."""
-        conn = self._get_connection()
-        cursor = conn.execute(
+        rows = self.db_manager.fetch_all(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         )
-        tables = [row[0] for row in cursor.fetchall()]
-        return tables
+        return [row["name"] for row in rows]
 
     def get_all_table_names_including_postgres(self) -> List[str]:
         """Get all PostgreSQL table names (for schema bridge awareness)."""
@@ -179,49 +171,42 @@ class SQLiteSchemaExtractor:
 
     def get_columns(self, table_name: str) -> List[Dict[str, Any]]:
         """Get column information for a table."""
-        conn = self._get_connection()
-        cursor = conn.execute(f"PRAGMA table_info({table_name})")
+        rows = self.db_manager.fetch_all(f"PRAGMA table_info({table_name})")
         columns = []
-        for row in cursor.fetchall():
-            # row: (cid, name, type, notnull, dflt_value, pk)
+        for row in rows:
             columns.append({
-                "name": row[1],
-                "type": row[2],
-                "nullable": not row[3],  # notnull = 1 means nullable = False
-                "default": row[4],
-                "pk": row[5] == 1,
+                "name": row["name"],
+                "type": row["type"],
+                "nullable": not row["notnull"],
+                "default": row["dflt_value"],
+                "pk": row["pk"] == 1,
             })
         return columns
 
     def get_foreign_keys(self, table_name: str) -> List[Dict[str, Any]]:
         """Get foreign key information for a table."""
-        conn = self._get_connection()
-        cursor = conn.execute(f"PRAGMA foreign_key_list({table_name})")
+        rows = self.db_manager.fetch_all(f"PRAGMA foreign_key_list({table_name})")
         fks = []
-        for row in cursor.fetchall():
-            # row: (id, seq, table, from, to, on_update, on_delete, match)
+        for row in rows:
             fks.append({
-                "constrained_columns": [row[3]],
-                "referred_table": row[2],
-                "referred_columns": [row[4]] if row[4] else [],
+                "constrained_columns": [row["from"]],
+                "referred_table": row["table"],
+                "referred_columns": [row["to"]] if row["to"] else [],
             })
         return fks
 
     def get_indexes(self, table_name: str) -> List[Dict[str, Any]]:
         """Get index information for a table."""
-        conn = self._get_connection()
-        cursor = conn.execute(f"PRAGMA index_list({table_name})")
+        rows = self.db_manager.fetch_all(f"PRAGMA index_list({table_name})")
         indexes = []
-        for row in cursor.fetchall():
-            # row: (seq, name, unique, origin, partial)
-            index_name = row[1]
-            # Get columns for this index
-            col_cursor = conn.execute(f"PRAGMA index_info({index_name})")
-            columns = [col_row[2] for col_row in col_cursor.fetchall()]
+        for row in rows:
+            index_name = row["name"]
+            col_rows = self.db_manager.fetch_all(f"PRAGMA index_info({index_name})")
+            columns = [col_row["name"] for col_row in col_rows]
             indexes.append({
                 "name": index_name,
                 "columns": columns,
-                "unique": row[2] == 1,
+                "unique": row["unique"] == 1,
             })
         return indexes
 
@@ -404,10 +389,8 @@ class SQLiteSchemaExtractor:
         return None
 
     def close(self):
-        """Close database connection for current thread."""
-        if hasattr(self._thread_local, 'conn') and self._thread_local.conn:
-            self._thread_local.conn.close()
-            self._thread_local.conn = None
+        """Close database connections (no-op with DatabaseManager)."""
+        pass
 
 
 def _load_schema_hints() -> str:
