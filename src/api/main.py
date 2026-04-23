@@ -1292,12 +1292,15 @@ async def api_metrics(request: Request):
     except Exception:
         pass
 
+    node_latency = _get_node_latency_stats()
+
     return {
         "queries": {
             "counts": query_counts,
             "latency_p50_ms": slo_status["latency"]["p50_ms"],
             "latency_p95_ms": slo_status["latency"]["p95_ms"],
             "latency_p99_ms": slo_status["latency"]["p99_ms"],
+            "node_latency": node_latency,
         },
         "llm_providers": {
             "mesh_health": provider_health,
@@ -1317,6 +1320,55 @@ async def api_metrics(request: Request):
         "training_data": training_data,
         "database": _get_db_pool_stats(),
     }
+
+
+def _get_node_latency_stats(limit: int = 500) -> dict:
+    """Compute per-node p50/p95 latency from recent training pairs."""
+    try:
+        from src.training.data_collector import get_training_collector
+        collector = get_training_collector()
+        conn = collector._get_connection()
+        try:
+            cur = conn.execute(
+                "SELECT node_timings FROM training_pairs "
+                "WHERE node_timings IS NOT NULL AND node_timings != '' "
+                "ORDER BY timestamp DESC LIMIT ?",
+                (limit,),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return {}
+
+            import json
+            all_node_data: dict[str, list[float]] = {}
+            for (nt_json,) in rows:
+                try:
+                    timings = json.loads(nt_json)
+                    if isinstance(timings, dict):
+                        for node, ms in timings.items():
+                            if isinstance(ms, (int, float)) and ms > 0:
+                                all_node_data.setdefault(node, []).append(float(ms))
+                except Exception:
+                    continue
+
+            result = {}
+            for node, values in sorted(all_node_data.items()):
+                if len(values) < 3:
+                    continue
+                sorted_vals = sorted(values)
+                n = len(sorted_vals)
+                p50_idx = max(0, int(n * 0.50) - 1)
+                p95_idx = min(n - 1, int(n * 0.95))
+                result[node] = {
+                    "p50_ms": round(sorted_vals[p50_idx], 2),
+                    "p95_ms": round(sorted_vals[p95_idx], 2),
+                    "samples": n,
+                }
+            return result
+        finally:
+            conn.close()
+    except Exception:
+        return {}
 
 
 def _get_db_pool_stats() -> dict:

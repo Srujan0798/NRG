@@ -45,6 +45,7 @@ class NRGState:
     synthesis_method: str = "unknown"
     token_budget: dict = field(default_factory=dict)
     execution_time_ms: dict = field(default_factory=dict)
+    node_timings: dict = field(default_factory=dict)
 
     user_tier: int = 1
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())

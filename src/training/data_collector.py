@@ -199,7 +199,7 @@ class TrainingDataCollector:
         verifier_score = float(s.get("faithfulness_score", 0.0) or 0.0)
         synthesis_method = s.get("synthesis_method", "unknown")
 
-        node_timings = json.dumps(s.get("execution_time_ms", {}), default=str)
+        node_timings = json.dumps(s.get("node_timings", {}), default=str)
         session_id = s.get("session_id")
 
         quality_grade = self._grade_pair(

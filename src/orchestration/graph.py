@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 import uuid
+from functools import wraps
 from pathlib import Path
 from typing import Any
 
@@ -47,6 +49,24 @@ except ModuleNotFoundError:
         return {"verification_status": bool(response)}
 
 
+def _timed_node(node_name: str, fn):
+    """Wrap a node function to record elapsed time in state['node_timings']."""
+    @wraps(fn)
+    def wrapper(state: Any) -> dict:
+        t0 = time.perf_counter()
+        try:
+            result = fn(state)
+        finally:
+            elapsed_ms = (time.perf_counter() - t0) * 1000
+            if isinstance(state, dict):
+                node_timings = state.setdefault("node_timings", {})
+                node_timings[node_name] = round(elapsed_ms, 2)
+            elif hasattr(state, "node_timings"):
+                state.node_timings[node_name] = round(elapsed_ms, 2)
+        return result
+    return wrapper
+
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -69,11 +89,11 @@ class NRGWorkflow:
         workflow = StateGraph(NRGState)
 
         workflow.add_node("receiver", self._receiver_wrapper)
-        workflow.add_node("planner", planner_node)
-        workflow.add_node("router", router_node)
-        workflow.add_node("executor", executor_node)
-        workflow.add_node("synthesizer", synthesizer_node)
-        workflow.add_node("verifier", verifier_node)
+        workflow.add_node("planner", _timed_node("planner", planner_node))
+        workflow.add_node("router", _timed_node("router", router_node))
+        workflow.add_node("executor", _timed_node("executor", executor_node))
+        workflow.add_node("synthesizer", _timed_node("synthesizer", synthesizer_node))
+        workflow.add_node("verifier", _timed_node("verifier", verifier_node))
 
         workflow.set_entry_point("receiver")
         workflow.add_edge("receiver", "planner")
@@ -122,7 +142,14 @@ class NRGWorkflow:
             return workflow.compile()
 
     def _receiver_wrapper(self, state: dict) -> dict:
-        return dict(receiver_node(state))
+        t0 = time.perf_counter()
+        result = dict(receiver_node(state))
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        if isinstance(state, dict):
+            state.setdefault("node_timings", {})["receiver"] = round(elapsed_ms, 2)
+        elif hasattr(state, "node_timings"):
+            state.node_timings["receiver"] = round(elapsed_ms, 2)
+        return result
 
     def _get_session_history(self, session_id: str) -> list[dict]:
         return list(self.session_history.get(session_id, []))
