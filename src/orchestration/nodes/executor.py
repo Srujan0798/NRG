@@ -1,4 +1,4 @@
-"""Executor node - executes skills based on routing decision with parallel hybrid execution."""
+"""Executor node - executes skills based on routing decision with parallel + DAG execution."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import logging
 import sys
 import threading
 import concurrent.futures
+from collections import defaultdict
 from typing import Any
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -14,7 +15,7 @@ from datetime import datetime
 from src.skills.text_to_sql.skill import TextToSQLSkill
 from src.skills.rag.skill import RAGSkill
 from src.audit import log_sql
-from src.orchestration.state import NRGState
+from src.orchestration.state import NRGState, QueryDAG, QueryDAGNode
 from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
@@ -159,15 +160,20 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
 
 @trace_llm_call("executor")
 def executor_node(state) -> dict:
-    """Execute skills based on routing decision with parallel hybrid execution."""
+    """Execute skills based on routing decision with parallel hybrid and DAG execution."""
     if isinstance(state, NRGState):
         user_query = state.user_query
         routing = state.routing_decision or "text_to_sql"
         user_tier = state.user_tier
+        plan = getattr(state, "plan", None) or {}
     else:
         user_query = state.get("user_query", "")
         routing = state.get("routing_decision", "text_to_sql")
         user_tier = state.get("user_tier", 1)
+        plan = state.get("plan", {})
+
+    if plan.get("is_dag") and plan.get("dag_nodes"):
+        return _execute_dag(plan.get("dag_nodes", []), plan.get("dag_root_id", ""), user_tier)
 
     needs_sql = routing in ("text_to_sql", "text_to_sql+rag")
     needs_rag = routing in ("rag", "text_to_sql+rag")
@@ -264,4 +270,116 @@ def _execute_rag_only(user_query: str, user_tier: int) -> dict:
         "warnings": result.get("warnings", []),
         "retrieval_sources": result.get("retrieval_sources", []),
         "execution_time_ms": {"rag": exec_time, "total": exec_time},
+    }
+
+
+def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
+    """Build adjacency list and topological order from DAG nodes.
+    
+    Returns (node_map, execution_order) where execution_order is nodes
+    in topological sort (parents before children).
+    """
+    node_map: dict[str, dict] = {n["id"]: n for n in nodes}
+    in_degree: dict[str, int] = {n["id"]: 0 for n in nodes}
+    children: dict[str, list[str]] = defaultdict(list)
+
+    for n in nodes:
+        for parent_id in n.get("depends_on", []):
+            if parent_id in node_map:
+                children[parent_id].append(n["id"])
+                in_degree[n["id"]] += 1
+
+    queue = [nid for nid, deg in in_degree.items() if deg == 0]
+    order = []
+    while queue:
+        nid = queue.pop(0)
+        order.append(nid)
+        for child_id in children[nid]:
+            in_degree[child_id] -= 1
+            if in_degree[child_id] == 0:
+                queue.append(child_id)
+
+    return node_map, order
+
+
+def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
+    """Execute DAG nodes in topological order, passing parent results as context."""
+    if not dag_nodes:
+        return {
+            "sql_results": [],
+            "retrieved_chunks": [],
+            "retrieval_metadata": [],
+            "errors": [],
+            "warnings": [],
+            "retrieval_sources": [],
+        }
+
+    node_map, exec_order = _build_dag(dag_nodes)
+    results_map: dict[str, dict] = {}
+    all_errors: list[dict] = []
+    all_warnings: list[dict] = []
+    all_sql_results: list = []
+    all_chunks: list = []
+    dag_execution_times: dict[str, float] = {}
+
+    for node_id in exec_order:
+        node = node_map[node_id]
+        if node.get("optional") and node_id not in results_map:
+            continue
+
+        context_parts = []
+        for parent_id in node.get("depends_on", []):
+            if parent_id in results_map:
+                parent_result = results_map[parent_id]
+                context_parts.append(f"[Context from {parent_id}]: ")
+                if parent_result.get("sql_results"):
+                    context_parts.append(f"SQL results: {len(parent_result['sql_results'])} rows; ")
+                if parent_result.get("retrieved_chunks"):
+                    context_parts.append(f"RAG chunks: {len(parent_result['retrieved_chunks'])} items; ")
+
+        enriched_query = node["subquery"]
+        if context_parts:
+            enriched_query = " ".join(context_parts) + "\n\nOriginal query: " + enriched_query
+
+        skill = node.get("skill", "sql")
+        t0 = datetime.now()
+
+        try:
+            if skill == "rag":
+                result, _ = _execute_rag(enriched_query, user_tier)
+            else:
+                result, _ = _execute_sql(enriched_query, user_tier)
+        except Exception as exc:
+            logger.warning("DAG node %s failed: %s", node_id, exc)
+            if not node.get("optional"):
+                all_errors.append({"node": node_id, "error": str(exc)})
+            result = {"sql_results": [], "retrieved_chunks": [], "errors": [str(exc)]}
+
+        dag_execution_times[node_id] = (datetime.now() - t0).total_seconds() * 1000
+        results_map[node_id] = result
+
+        all_errors.extend(result.get("errors", []))
+        all_warnings.extend(result.get("warnings", []))
+        all_sql_results.extend(result.get("sql_results", []))
+        all_chunks.extend(result.get("retrieved_chunks", []))
+
+    total_time = sum(dag_execution_times.values())
+
+    logger.info(
+        "DAG execution completed: %d nodes, %d total ms, %d errors",
+        len(exec_order), total_time, len(all_errors)
+    )
+
+    return {
+        "sql_results": all_sql_results,
+        "retrieved_chunks": all_chunks,
+        "retrieval_metadata": [],
+        "errors": all_errors,
+        "warnings": all_warnings,
+        "retrieval_sources": list(set(
+            src for r in results_map.values() for src in r.get("retrieval_sources", [])
+        )),
+        "execution_time_ms": {**dag_execution_times, "total": total_time},
+        "dag_node_count": len(exec_order),
+        "dag_root_id": root_id,
     }

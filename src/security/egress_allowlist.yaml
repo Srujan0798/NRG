@@ -1,0 +1,314 @@
+# ==============================================================================
+# Egress Schema Allowlist — Protocol #39
+# Whitelists tables and columns that MAY appear in outbound LLM prompts.
+# Everything else is blocked or sanitized by egress_guard.py.
+#
+# Format:
+#   tables:        list of allowed table names (lowercase)
+#   columns:      list of allowed column names (lowercase)
+#   patterns_block: regex patterns that trigger immediate rejection
+#   max_schema_depth: max join depth exposed to LLM (default: 3)
+# ==============================================================================
+
+version: "1.0"
+updated: "2026-04-24"
+
+# ---------- TABLES ----------
+tables:
+  # Core business entities
+  - researchers
+  - publications
+  - institutions
+  - labs
+  - funding_records
+  - projects
+  - patents
+  - collaborations
+  - research_documents
+  - keywords
+  - datasets
+
+  # Junction / relationship tables
+  - researcher_publications
+  - researcher_labs
+  - researcher_collaborations
+  - publication_keywords
+  - lab_institutions
+  - project_funding
+  - dataset_researchers
+
+  # Metadata tables
+  - training_pairs
+  - audit_log
+  - user_registration
+  - consent_records
+  - session_history
+
+  # Aggregated / analytical tables
+  - aggregated_researcher_stats
+  - institutional_rankings
+  - funding_summary
+  - publication_trends
+
+  # Master / reference tables
+  - tb_institute_mstr
+  - tb_academic_year_mstr
+  - tb_course_program_types
+  - tb_goi_ministries_mstr
+
+  # Financial tables
+  - financial_expenses_operational
+  - financial_expenses_capital
+  - seed_funding
+  - innovation_grant_from_govt
+  - fdi_investment
+  - startup_recognition
+  - startup_receiving_vc_investment
+  - startups_turnover_50_lacs
+
+  # Academic tables
+  - academic_courses_details
+  - phd_students
+  - sanctioned_intake
+  - actual_student_strength
+  - placements_and_higher_studies
+  - faculty_details
+  - faculty_strength
+  - fdp_details
+  - expertise
+  - master_expertise
+  - nirf_extracted_table
+  - nirf_pdf_record
+  - nirf_table_row
+
+  # Innovation tables
+  - innovations_at_various_stages_of_technology_readiness_level
+  - incubation_details
+  - combined_ipo_patent_data
+  - ipo_patent_details_flat
+  - patents_details
+
+  # Scraped / imported data
+  - scraped_data
+  - scraped_data_save
+  - scraped_raw_data
+  - advance_search_data
+  - advance_search_data_15_12
+  - advance_search_data_old
+  - tb_institute_scrap_data_url
+
+# ---------- COLUMNS ----------
+columns:
+  # Researcher fields
+  - researcher_id
+  - name
+  - email
+  - phone
+  - designation
+  - department
+  - institution
+  - university_name
+  - state
+  - city
+  - country
+  - pincode
+  - website
+  - research_area
+  - specialization
+  - h_index
+  - citation_count
+  - orcid_id
+  - google_scholar_url
+  - linkedin_url
+  - scholar_url
+  - google_scholar_id
+  - scopus_author_id
+  - rg_ score
+  - publication_count
+  - collaborator_count
+  - active_since
+  - created_at
+  - updated_at
+
+  # Publication fields
+  - publication_id
+  - title
+  - abstract
+  - year
+  - month
+  - venue
+  - journal
+  - conference
+  - doi
+  - isbn
+  - issn
+  - url
+  - citation_count
+  - authors
+  - author_names
+  - corresponding_author
+  - keywords
+  - research_area
+  - open_access
+  - page_start
+  - page_end
+  - volume
+  - issue
+
+  # Institution fields
+  - institution_id
+  - institute
+  - short_name
+  - institute_type
+  - address
+  - approved_by
+  - ranking
+  - nirf_rank
+  - established_year
+
+  # Lab fields
+  - lab_id
+  - lab_name
+  - focus_area
+  - lab_head
+  - equipment
+  - funding_source
+
+  # Funding fields
+  - funding_id
+  - amount
+  - source
+  - funding_agency
+  - start_date
+  - end_date
+  - status
+  - grant_type
+
+  # Patent fields
+  - patent_id
+  - application_number
+  - title_of_invention
+  - status
+  - filing_date
+  - grant_date
+  - inventors
+  - field_of_invention
+
+  # Collaboration fields
+  - collaboration_id
+  - collaborator_name
+  - collaboration_type
+  - start_date
+  - end_date
+
+  # Aggregate / statistical columns
+  - total
+  - count
+  - average
+  - median
+  - max
+  - min
+  - sum
+  - percentile_25
+  - percentile_75
+  - percentile_90
+  - percentile_95
+  - percentile_99
+  - growth_rate
+  - trend_direction
+
+  # Financial columns
+  - salaries
+  - maintenance
+  - seminars
+  - other_operational
+  - total_operational
+  - capital
+  - equipment
+  - library
+  - workshops
+  - total_capital
+  - seed_funding_received
+  - investment_received
+  - dpiit_no
+  - company_turnover
+
+  # Academic columns
+  - program
+  - intake
+  - students_placed
+  - median_package
+  - highest_package
+  - average_package
+  - no_of_higher_studies
+  - total_female_faculty
+  - total_male_faculty
+  - financial_year
+  - as_on_year
+
+# ---------- PATTERNS THAT TRIGGER IMMEDIATE BLOCK ----------
+patterns_block:
+  # Schema probing attempts
+  - '(?i)\b(show|list|describe|explain)\s+(all\s+)?tables\b'
+  - '(?i)\b(show|list|describe)\s+(all\s+)?columns\b'
+  - '(?i)\bselect\s+\*\s+from\b'
+  - '(?i)\binformation_schema\b'
+  - '(?i)\bpg_catalog\b'
+  - '(?i)\bsqlite_master\b'
+  - '(?i)\bexec\s*\('
+  - '(?i)\bexec\s+'
+  - '(?i)\bsp_executesql\b'
+
+  # Credential / key extraction
+  - '(?i)\b(password|secret|token|api_key|apikey)\s*='
+  - '(?i)\bjwt\b'
+  - '(?i)\bbearer\s+'
+  - '(?i)\bauthorization\s*:\s*bearer'
+  - '(?i)\bPOSTGRES_PASSWORD\b'
+  - '(?i)\bDATABASE_URL\b'
+
+  # System metadata probing
+  - '(?i)\b(version|version\(\))\b'
+  - '(?i)\bsystem_information\b'
+  - '(?i)\bcurrent_user\b'
+  - '(?i)\bsession_user\b'
+  - '(?i)\bcurrent_schema\b'
+
+  # Table/column enumeration
+  - '(?i)\b(union|select).+(from|where).+\b--'
+  - '(?i)\bor\s+1\s*=\s*1\b'
+  - '(?i)\b\'\s*or\s+\'1\'\s*=\s*\'1\b'
+  - '(?i)\bdrop\s+(table|database|schema)\b'
+  - '(?i)\btruncate\s+table\b'
+  - '(?i)\binsert\s+into\b'
+  - '(?i)\bupdate\s+.+\s+set\b'
+  - '(?i)\bdelete\s+from\b'
+
+  # Internal system paths
+  - '(?i)/etc/passwd'
+  - '(?i)C:\\Windows'
+  - '(?i)\.ssh/'
+  - '(?i)\.env'
+
+  # PII patterns
+  - '(?i)\b\d{10,}\b'  # Long number strings (potential Aadhaar-like)
+  - '(?i)\b[A-Z0-9]{32,}\b'  # Long alphanumeric (potential API keys)
+  - '(?i)senior.*director.*of'
+  - '(?i)chief.*technology.*officer'
+
+# ---------- LLM SPECIFIC LIMITS ----------
+max_schema_depth: 3
+max_tables_per_prompt: 20
+max_columns_per_table: 15
+
+# ---------- PER-PROVIDER SETTINGS ----------
+provider_limits:
+  anthropic:
+    max_tokens: 4096
+    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."
+  openai:
+    max_tokens: 4096
+    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."
+  azure_openai:
+    max_tokens: 4096
+    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."

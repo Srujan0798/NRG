@@ -8,6 +8,35 @@ from pathlib import Path
 
 
 @dataclass
+class QueryDAGNode:
+    """Single node in a multi-hop query DAG."""
+    id: str
+    subquery: str
+    skill: str  # "sql" | "rag" | "hybrid"
+    depends_on: list[str] = field(default_factory=list)  # parent node IDs
+    tables: list[str] = field(default_factory=list)
+    output_shape: str = "mixed_summary"
+    optional: bool = False  # True if this node can be skipped on failure
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass
+class QueryDAG:
+    """Directed Acyclic Graph for multi-hop query decomposition."""
+    nodes: list[QueryDAGNode] = field(default_factory=list)
+    root_id: str = ""  # ID of the entry node
+
+    def to_dict(self) -> dict:
+        return {
+            "nodes": [n.to_dict() for n in self.nodes],
+            "root_id": self.root_id,
+            "edge_count": sum(len(n.depends_on) for n in self.nodes),
+        }
+
+
+@dataclass
 class NRGState:
     """Central state object for National Research Graph orchestration."""
 
