@@ -53,6 +53,12 @@ Priority matrix:
 
 ### Step 4: Assign to Agent Roles
 
+Every task MUST be classified as one of four verbs (from Eternal Validator audit pattern):
+- **DELETE** — remove dead code / obsolete modules / redundant features
+- **REWRITE** — significant refactor of an existing module
+- **MERGE** — consolidate multiple modules/files into one
+- **BUILD-NEW** — net-new module, feature, or capability
+
 Output format:
 ```
 ## Sprint [N] Plan — [Date Range]
@@ -60,23 +66,29 @@ Output format:
 ### Sprint Goal
 [One sentence: what does success look like?]
 
+### Quality Bar Target
+Which of the 6 Hard Constraints (see `.claude/QUALITY_BAR.md`) does this sprint move? Target score delta per constraint.
+
 ### P1 — Must Complete
-| Task | Agent | Files | Acceptance Criteria |
-|------|-------|-------|-------------------|
-| ... | Backend | ... | ... |
+| Task | Verb | Agent | Files | Acceptance Criteria |
+|------|------|-------|-------|-------------------|
+| ... | BUILD-NEW | Backend | ... | ... |
 
 ### P2 — Should Complete
-| Task | Agent | Files | Acceptance Criteria |
-|------|-------|-------|-------------------|
+| Task | Verb | Agent | Files | Acceptance Criteria |
+|------|------|-------|-------|-------------------|
 
 ### P3 — Stretch
-| Task | Agent | Files | Acceptance Criteria |
+| Task | Verb | Agent | Files | Acceptance Criteria |
 
 ### Dependencies
 [Which tasks block which]
 
 ### Risks
 [What could go wrong]
+
+### Lethal Assumption This Sprint Is Betting On
+[The #1 assumption that would break this sprint if wrong]
 ```
 
 ### Step 5: Produce Task Protocols
