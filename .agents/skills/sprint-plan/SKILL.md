@@ -22,11 +22,15 @@ git log --since="2 weeks ago" --oneline | head -20
 git status -s
 ```
 
-### Step 2: Read the Backlog
+### Step 2: Read the Backlog & Data Sources
 Read these files for remaining work:
-- `AUDIT_V3_FINAL.md` — master task list (40 tasks, check which are done)
-- `Core_Idea_Clean.md` — vision (are we aligned?)
+- `BACKLOG.md` — active task backlog with priorities (P0/P1/P2), scale flags, and protocol status
+- `Core_Idea_Clean.md` — vision (Data Source 1 — are we aligned?)
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` — SQL benchmark (Data Source 2 — 41% accuracy, target 85%)
+- `db_struct.sql` — official PostgreSQL schema (Data Source 3 — 58 tables, 40 missing from dev)
 - Memory files — sprint retrospectives, bug patterns, what failed
+
+**Schema Gap Awareness**: Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables. Any task touching SQL/schema must account for this. See `.claude/CLAUDE.md` "THE 3 DATA SOURCES" for full details.
 
 ### Step 3: Prioritize
 
@@ -76,13 +80,11 @@ Output format:
 ```
 
 ### Step 5: Produce Task Protocols
-For each P1 task, produce a copy-paste-ready task block:
-```
-TASK: [name]
-AGENT: [backend/frontend/ml/devops/security]
-FILES: [exact file paths]
-PROBLEM: [what's wrong]
-ACTION: [what to do]
-ACCEPTANCE: [how to verify it's done]
-DEPENDS ON: [other tasks, or "none"]
-```
+For each P1 task, produce a copy-paste-ready task protocol using the FULL ═══ format from `.claude/GURU_PROTOCOL.md` Section 3. This includes:
+- GURU ASSIGNMENT NOTE (the WHY)
+- Phased ACTION (Fortify → Elevate → Immortalize)
+- 3+ SKILLS with reasons
+- AGENT INSTRUCTIONS block (verbatim from GURU_PROTOCOL.md Section 3)
+- ACCEPTANCE CRITERIA that verify ELEVATION, not just "it works"
+
+**NEVER produce flat step lists or simple fix-tasks.** Every task is an elevation protocol.

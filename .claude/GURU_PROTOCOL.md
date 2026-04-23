@@ -18,7 +18,19 @@
 
 **Every decision must serve**: ambiguity resolution, zero data leakage, verified cited answers, and the 3-tier RBAC.
 
-**Read**: `Core_Idea_Clean.md` is the product truth. `AUDIT_V3_FINAL.md` is the execution blueprint.
+### THE 3 DATA SOURCES (External Inputs That Drive Everything)
+
+Every protocol, every task, every agent must be aware of all 3. Check `.claude/CLAUDE.md` "THE 3 DATA SOURCES" section for full details.
+
+| # | Source | File | Status |
+|---|--------|------|--------|
+| 1 | **Core Idea** (professor/client) | `Core_Idea_Clean.md` | Fully integrated |
+| 2 | **Dhairya SQL Audit** (external engineer) | `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` | Integrated, 41% baseline, benchmark pending |
+| 3 | **Official PostgreSQL Schema** (professor/client) | `db_struct.sql` | 58-table prod schema — Protocol #21 |
+
+**Schema Gap**: Dev SQLite = 18 tables. Prod PostgreSQL = 58 tables. 40 tables missing from dev. ALL Dhairya queries reference PostgreSQL-only tables. See CLAUDE.md for full table list.
+
+**Read**: `Core_Idea_Clean.md` is the product truth. `BACKLOG.md` is the execution backlog. `db_struct.sql` is the authoritative production schema.
 
 ---
 
@@ -143,6 +155,10 @@ AGENT INSTRUCTIONS (include this VERBATIM in every task):
   - Then read: .agents/prompts/shishya_universal.md (your execution protocol)
   - Read the SKILL.md for EVERY skill listed in SKILLS TO USE above
   - Read Core_Idea_Clean.md to understand the sovereign mission
+  - Read BACKLOG.md to understand current priorities and what's done
+  - Check the 3 Data Sources section in .claude/CLAUDE.md — know the schema gap (18 vs 58 tables)
+  - If your task touches SQL, schema, or data: read db_struct.sql (58-table prod schema)
+  - If your task touches Text-to-SQL accuracy: read docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md (17-query benchmark)
   - Don't do the minimum — expand toward the best possible solution
   - Structure your work as: Fortify → Elevate → Immortalize
   - Document what you upgraded beyond the original task
@@ -203,19 +219,24 @@ DEPENDS ON: [other tasks, or "none"]
 
 ```
 PERSISTENT BRAIN (loaded every session):
-├── CLAUDE.md          — Project context, commands, architecture
-├── GURU_PROTOCOL.md   — This file (how to operate)
-├── AGENT_WARFARE.md   — Role hierarchy, workflow design
-└── memory/
-    ├── MEMORY.md              — Index
-    ├── user_profile.md        — Who the Founder is
-    ├── project_nrg.md         — Current state (updated per sprint)
-    ├── feedback_workflow.md   — "Don't implement, give protocols"
-    ├── reference_agent_warfare.md — System reference
-    ├── bugs_patterns.md       — Recurring bugs → prevention (updated by /self-evolve)
-    ├── perf_baselines.md      — Performance benchmarks (updated by /performance)
-    ├── sprint_retrospective.md — What worked/didn't (updated by /self-evolve)
-    └── tech_decisions.md      — ADRs (updated by /architect)
+├── .claude/CLAUDE.md          — Project context, commands, architecture, 3 DATA SOURCES
+├── .claude/GURU_PROTOCOL.md   — This file (how to operate)
+├── .claude/AGENT_WARFARE.md   — Role hierarchy, workflow design
+├── BACKLOG.md                 — Task backlog with priorities, schema gap, scale flags
+└── .claude/memory/            — IN THE REPO (committed + pushed, accessible anywhere)
+    ├── MEMORY.md                      — Index
+    ├── user_profile.md                — Who the Founder is
+    ├── project_nrg.md                 — Current state (updated per sprint)
+    ├── feedback_workflow.md           — "Don't implement, give protocols"
+    ├── feedback_guru_protocol.md      — Protocol format enforcement
+    ├── reference_agent_warfare.md     — System reference
+    ├── reference_three_data_sources.md — The 3 external data inputs
+    ├── reference_dhairya_benchmark.md — Dhairya's 17-query SQL benchmark
+    ├── project_sql_audit_dhairya.md   — SQL audit status and findings
+    ├── bugs_patterns.md               — Recurring bugs → prevention
+    ├── perf_baselines.md              — Performance benchmarks
+    ├── sprint_retrospective.md        — What worked/didn't
+    └── tech_decisions.md              — ADRs
 
 RULES (path-scoped, auto-loaded):
 ├── backend.md         — Python conventions

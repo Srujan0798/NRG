@@ -49,6 +49,14 @@ The 6-node pipeline processes every query: receiver → planner → router → e
   - "synthesize", "combine", "compare" → hybrid
 - Tier-based filtering is applied at the data layer, not just the API layer.
 
+### Schema Awareness (Critical)
+- **Dev**: SQLite `nrg_research.db` — 18 tables (simplified subset)
+- **Prod**: PostgreSQL `db_struct.sql` — 58 tables (authoritative schema from professor)
+- **Gap**: 40 tables missing from dev. SQL generation must be aware of BOTH schemas.
+- All schema hints, SQL prompts, and Text-to-SQL logic must target the 58-table PostgreSQL production schema for correctness.
+- Dhairya's 17-query benchmark (`docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`) references PostgreSQL-only tables — cannot run on dev SQLite.
+- See `.claude/CLAUDE.md` "THE 3 DATA SOURCES" for full details.
+
 ## 4. Synthesis & Verification Cascade
 Use this exact cascade:
 1. **Cloud LLM** (highest quality synthesis) — only with retrieved facts, never raw data.

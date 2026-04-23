@@ -54,6 +54,14 @@ cd /Users/srujansai/Desktop/NRG && .venv/bin/python -c "from src.audit import ve
 ```
 If corrupted → WARN (don't block, but flag).
 
+### 6. Schema Reference Check (if SQL/schema files changed)
+```bash
+cd /Users/srujansai/Desktop/NRG
+# If any schema hint or SQL generation file was modified, verify it references prod schema
+git diff --cached --name-only | grep -E "(schema_hints|schema_extractor|text_to_sql|schema_value)" && echo "SCHEMA FILES CHANGED — verify against db_struct.sql (58-table prod schema), not just 18-table SQLite" || echo "No schema files changed — OK"
+```
+If schema files changed → WARN: Agent must verify changes account for the 58-table PostgreSQL schema (`db_struct.sql`), not just the 18-table dev SQLite. See `.claude/CLAUDE.md` "THE 3 DATA SOURCES".
+
 ## Output
 ```
 PRE-COMMIT GATE
@@ -62,6 +70,7 @@ PRE-COMMIT GATE
   [PASS/FAIL] Tests (X passed, Y failed)
   [PASS/FAIL] Secret scan
   [PASS/WARN] Audit chain
+  [PASS/WARN] Schema reference (if applicable)
 
 VERDICT: CLEAR TO COMMIT / BLOCKED — fix issues above
 ```

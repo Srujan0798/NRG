@@ -54,11 +54,12 @@ The architect (you) is the brain. The agents are the hands. The skills are the p
 
 ### Role Definitions
 
-**ARCHITECT (You — the human)**
+**ARCHITECT (You — the human / Founder)**
 - Sets vision, approves major decisions
 - Reviews agent output at quality gates
 - Resolves conflicts between agent recommendations
-- Owns the Core_Idea_Clean.md and AUDIT_V3_FINAL.md
+- Owns the 3 Data Sources: `Core_Idea_Clean.md` (vision), `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` (SQL benchmark), `db_struct.sql` (prod schema)
+- Owns `BACKLOG.md` (task priorities) and `.claude/CLAUDE.md` (system brain)
 
 **CTO AGENT** — `/architect` skill
 - Makes technology decisions within the vision
@@ -114,8 +115,10 @@ The architect (you) is the brain. The agents are the hands. The skills are the p
 ### How Each Phase Works
 
 **PLAN** → Use `/sprint-plan` skill
-- Read current backlog (AUDIT_V3_FINAL.md remaining tasks)
+- Read current backlog (`BACKLOG.md` — the active task list)
 - Read memory (what failed last time, what's blocked)
+- Check all 3 Data Sources (see `.claude/CLAUDE.md`) — any new inputs from professor/external?
+- Check schema gap: Dev SQLite 18 tables vs Prod PostgreSQL 58 tables
 - Produce prioritized task list with dependencies
 - Architect approves → agents receive tasks
 
@@ -137,6 +140,7 @@ The architect (you) is the brain. The agents are the hands. The skills are the p
 - Updates .claude/rules/ with new patterns discovered
 - Updates CLAUDE.md with new conventions
 - Updates memory with learnings
+- Verifies all 3 Data Sources are current — ask Founder if new external inputs received
 - Produces: "Next sprint should focus on X because Y"
 
 ---
@@ -144,15 +148,19 @@ The architect (you) is the brain. The agents are the hands. The skills are the p
 ## The Memory Brain
 
 ```
-~/.claude/projects/.../memory/
-├── MEMORY.md              ← Index (auto-loaded every session)
-├── user_profile.md        ← Who the architect is
-├── project_nrg.md         ← Current state (updated after each sprint)
-├── feedback_workflow.md   ← How the architect wants to work
-├── bugs_patterns.md       ← Recurring bugs → prevention rules
-├── perf_baselines.md      ← Performance benchmarks to beat
-├── sprint_retrospective.md ← What worked, what didn't, per sprint
-└── tech_decisions.md      ← ADRs made during the project
+.claude/memory/   ← IN THE REPO (committed, pushed, accessible anywhere)
+├── MEMORY.md                      ← Index (auto-loaded every session)
+├── user_profile.md                ← Who the Founder is
+├── project_nrg.md                 ← Current state (updated after each sprint)
+├── feedback_workflow.md           ← How the Founder wants to work
+├── feedback_guru_protocol.md      ← Protocol format enforcement rules
+├── reference_three_data_sources.md ← The 3 external data inputs driving NRG
+├── reference_dhairya_benchmark.md ← Dhairya's 17-query SQL benchmark reference
+├── project_sql_audit_dhairya.md   ← SQL audit status and findings
+├── bugs_patterns.md               ← Recurring bugs → prevention rules
+├── perf_baselines.md              ← Performance benchmarks to beat
+├── sprint_retrospective.md        ← What worked, what didn't, per sprint
+└── tech_decisions.md              ← ADRs made during the project
 ```
 
 After every sprint, the EVOLVE phase updates these files. Next sprint starts with full institutional knowledge.
