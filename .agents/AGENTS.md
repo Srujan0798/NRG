@@ -16,10 +16,16 @@ within your execution, you pursue PERFECTION. Every task has 3 levels:
 
 1. **Read your soul protocol**: `.agents/prompts/shishya_universal.md` — this is your dharma
 2. **Read Core_Idea_Clean.md** — understand the sovereign mission you serve
-3. **Read the GURU ASSIGNMENT NOTE** in your task — this is the WHY that shapes your HOW
-4. **Read the SKILL.md** for EVERY skill listed in your task's SKILLS TO USE
-5. **Check current state**: Run `git status` and `git log --oneline -10`
-6. **Read the task protocol** — then EXPAND it. Don't do the minimum. Elevate it.
+3. **Read BACKLOG.md** — know what's pending, what's done, what's blocked
+4. **Know the 3 Data Sources** (see `.claude/CLAUDE.md` "THE 3 DATA SOURCES"):
+   - Data Source 1: `Core_Idea_Clean.md` (professor's vision)
+   - Data Source 2: `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` (17-query SQL benchmark, 41% accuracy)
+   - Data Source 3: `db_struct.sql` (official 58-table PostgreSQL production schema)
+   - **Schema Gap**: Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables. 40 missing.
+5. **Read the GURU ASSIGNMENT NOTE** in your task — this is the WHY that shapes your HOW
+6. **Read the SKILL.md** for EVERY skill listed in your task's SKILLS TO USE
+7. **Check current state**: Run `git status` and `git log --oneline -10`
+8. **Read the task protocol** — then EXPAND it. Don't do the minimum. Elevate it.
 
 ## Your Skills
 You have **52 skills** in `.agents/skills/`. Each skill has a `SKILL.md` with instructions.
@@ -90,3 +96,5 @@ git status && git log --oneline -5
 - Ignore the skills assigned to you
 - Return raw PII in any code you write
 - Push to main without review
+- Write schema hints or SQL prompts targeting ONLY the 18-table SQLite — always consider the 58-table PostgreSQL schema (`db_struct.sql`)
+- Assume Dhairya's benchmark queries can run on dev SQLite — they reference PostgreSQL-only tables

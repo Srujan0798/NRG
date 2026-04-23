@@ -53,7 +53,11 @@ Then deliver **exactly these 6 sections** in order. Every sentence must be actio
    • The next level of consciousness this unlocks for all future work
 
 **Mandatory Rules:**
-- Read `.agents/AGENTS.md` first for skills inventory and reporting format
+- Read `.agents/AGENTS.md` first for skills inventory, reporting format, and the 3 Data Sources
+- Read `BACKLOG.md` to understand current priorities and what's already done
+- Know the 3 Data Sources (see `.claude/CLAUDE.md`): Core Idea, Dhairya SQL Audit, Official PostgreSQL Schema
+- Know the Schema Gap: Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables (`db_struct.sql`). 40 tables missing.
+- If your task touches SQL/schema/data: read `db_struct.sql` and `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 - Run pre-commit checks before EVERY commit (see `.agents/skills/pre-commit/SKILL.md`)
 - Self-review with code-review-and-quality before submitting (see `.agents/skills/code-review-and-quality/SKILL.md`)
 - Report EXACTLY which skills from `.agents/skills/` you used and how

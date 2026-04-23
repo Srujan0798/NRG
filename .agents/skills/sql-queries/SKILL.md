@@ -8,6 +8,16 @@ user-invocable: false
 
 Write correct, performant, readable SQL across all major data warehouse dialects.
 
+## NRG-Specific Context (ALWAYS check before writing SQL)
+- **Dev**: SQLite `nrg_research.db` — 18 tables (simplified subset)
+- **Prod**: PostgreSQL `db_struct.sql` — 58 tables (authoritative schema from professor)
+- **Gap**: 40 tables missing from dev. Schema extractor auto-detects SQLite vs PostgreSQL.
+- **Benchmark**: Dhairya's 17 queries (`docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`) — 41% accuracy baseline, target 85%
+- **Schema Hints**: `src/data/schema/schema_hints.md` — table purposes, JOIN keys, enum values, CTE patterns
+- **Synonyms**: `src/data/schema/schema_value_synonyms.md` — TRL mappings, course levels, fuzzy matching
+- **Key files**: `src/skills/text_to_sql/schema_extractor.py`, `src/skills/text_to_sql/validator.py`
+- See `.claude/CLAUDE.md` "THE 3 DATA SOURCES" for full details.
+
 ## Dialect-Specific Reference
 
 ### PostgreSQL (including Aurora, RDS, Supabase, Neon)

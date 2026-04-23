@@ -1,0 +1,13 @@
+- [User Profile](user_profile.md) — NRG architect/founder at IIT Gandhinagar, manages coding agents
+- [Project Context](project_nrg.md) — Sovereign AI platform, 40-crore backing, current build status
+- [Workflow Preferences](feedback_workflow.md) — Guru mode: don't implement, give task protocols with skill + shishya assignments
+- [Guru Protocol Enforcement](feedback_guru_protocol.md) — NEVER give simple fix tasks; use full ═══ format with Shishya framework, elevation mindset
+- [Agent System](reference_agent_warfare.md) — 24 Claude + 35 agent skills, self-evolution loop
+- [Guru Protocol](reference_guru_protocol.md) — 5-section Guru framework + 6-section Shishya framework
+- [Installed Skills](reference_installed_skills.md) — Full inventory of all skills for agents
+- [Guru-Shishya Framework](reference_guru_shishya.md) — Universal prompts governing all NRG work
+- [Frontend Crash Patterns](bugs_frontend_crashes.md) — ThemeProvider, hooks-in-effects, string-vs-array API fields
+- [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
+- [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
+- [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
+- [Storage Location Rule](feedback_storage_location.md) — NEVER store in local ~/.claude/, ALWAYS in repo .claude/memory/
