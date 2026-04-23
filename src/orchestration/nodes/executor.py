@@ -31,7 +31,10 @@ def _shutdown_executor():
     """Clean shutdown of executor thread pool."""
     global _parallel_executor
     _parallel_executor.shutdown(wait=False)
-    logger.info("Executor thread pool shut down")
+    try:
+        logger.info("Executor thread pool shut down")
+    except ValueError:
+        pass
 
 atexit.register(_shutdown_executor)
 
