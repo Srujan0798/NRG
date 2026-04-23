@@ -198,6 +198,24 @@
 - docs/demo/deck.pdf created
 - End-to-end demo executable
 
+### AGENT-TASK-41: RBAC Generalizer ✅
+- RBACPolicyEngine with PolicyCache and hot-reload
+- 6 personas in rbac_policies.yaml (researcher, government, industry, peer_reviewer, department_head, student)
+- Removed TIER_COLUMN_VISIBILITY hardcoding from middleware/schema_extractor
+- Policy-driven synthesizer prompt formatting (full/aggregated/anonymized)
+- /api/admin/rbac CRUD endpoints with audit logging
+- Built-in persona protection (cannot deactivate researcher, government, industry)
+- 27 tests in test_rbac_policies.py, 22 tests in test_tier_generalization.py
+
+### AGENT-TASK-42: Fine-Tuning Bridge ✅
+- src/training/data_collector.py: captures query→SQL→response triples
+- src/training/data_formatter.py: formats for ShareGPT/JSONL training
+- src/training/quality_filter.py: GOLD/SILVER/BRONZE/REJECT tiers
+- src/training/export.py: export pipeline to training_pairs.sql
+- scripts/export_training_data.py: CLI export tool
+- db/training_pairs.sql: storage for training data
+- Integrated into orchestration/graph.py capture point
+
 
 ---
 ## 🚀 SYSTEM STATUS
@@ -233,5 +251,5 @@
 ---
 ## 📊 FINAL STATUS
 
-**Total: 40/40 tasks completed (100%)**
+**Total: 42/42 tasks completed (100%)**
 **System: Fully operational and production-ready**

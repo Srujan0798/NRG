@@ -5,11 +5,11 @@
 > **Test Status**: 899 collected, 609 passed, 263 failed, 27 skipped
 > **Data Sources**: 3 external inputs (Core Idea, Dhairya Audit, Official PostgreSQL Schema)
 > **Schema Gap**: Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables (40 missing)
-> **Protocols**: 26 total — 16 completed, 5 assigned (Phase 3), 5 planned (Phase 4)
+> **Protocols**: 26 total — 18 completed, 5 assigned (Phase 3), 3 planned (Phase 4)
 
 ---
 
-## PHASE 3 — ASSIGNED (agents working)
+## PHASE 3 — IN PROGRESS
 
 ### 19. THE TEST REALIGNMENT — Fix 263 Test-Code Mismatches
 - **Agent**: backend / testing
@@ -33,6 +33,7 @@
 - **Benchmark**: Dhairya's 17 queries — 41% accuracy → target 70-85%
 - **Deliverables**: Benchmark regression suite, few-shot examples, self-correction loop, response time <3s
 - **Depends on**: #21 (needs 40 missing tables to exist)
+- **Note**: benchmark currently 17/17 keyword routing; full accuracy depends on #21
 
 ### 11. THE RESILIENT MESH — LLM Provider Hardening
 - **Agent**: backend
@@ -51,13 +52,6 @@
 ---
 
 ## PHASE 4 — PLANNED (assign after Phase 3 verified green)
-
-### 22. THE FINE-TUNING BRIDGE — Training Data Collection Pipeline
-- **Agent**: backend / ml
-- **Status**: PLANNED
-- **Priority**: P0-blocker (endgame path)
-- **Summary**: Capture query→SQL→result→feedback pairs from live pipeline. Quality filter (GOLD/SILVER/BRONZE/REJECT). PII scrubbing. Export to JSONL/ShareGPT for fine-tuning. /api/feedback endpoint for RLHF.
-- **Depends on**: #12 (needs node_timings), #19 (tests green)
 
 ### 23. THE SCALE WALL — SQLite→PostgreSQL + Qdrant Sharding
 - **Agent**: backend / database / devops
@@ -105,6 +99,8 @@
 - [x] #16 THE FINAL GATE — Router 51/51 tests passing, 2-stage routing, eval dataset
 - [x] #17 THE SOVEREIGN SHIELD — Security hardening (PII, JWT, RBAC, schema fingerprint)
 - [x] #18 THE PERFORMANCE CONTRACT — SLO targets, vector drift, load tests
+- [x] #22 THE FINE-TUNING BRIDGE — Training data collector, quality filter (GOLD/SILVER/BRONZE/REJECT), export pipeline, training_pairs.sql
+- [x] #26 THE RBAC GENERALIZER — RBACPolicyEngine + rbac_policies.yaml (6 personas), policy-driven middleware/schema/synthesizer, /api/admin/rbac CRUD, hot-reload
 - [x] **Dhairya Audit Integration** — Report formatted, schema synonyms, CTE templates, validator, query context
 - [x] **Workflow System Sync** — Memory in repo, 3 Data Sources in all files, cross-linked
 - [x] ThemeProvider, StatsCard hook, ResearcherDashboard fixes
@@ -133,11 +129,9 @@ PHASE 3 (NOW — agents assigned):
   PARALLEL:  #11 Resilient Mesh  +  #12 Living Pipeline
 
 PHASE 4 (AFTER Phase 3 verified):
-  PARALLEL:  #22 Fine-Tuning Bridge  +  #23 Scale Wall  +  #26 RBAC Generalizer
-                       ↓                      ↓
-  THEN:            #24 Frontend Resurrection
-                       ↓
-  THEN:            #25 Deployment Gate
+  PARALLEL:  #23 Scale Wall  +  #24 Frontend Resurrection
+                        ↓
+  THEN:      #25 Deployment Gate
 
 ENDGAME:
   Training data collecting → Fine-tune local model → Model internalizes 1TB
@@ -150,13 +144,13 @@ ENDGAME:
 - `[SCHEMA]` 40 PostgreSQL tables missing from dev SQLite — #21 fixes this
 - `[SCALE]` SQLite → PostgreSQL migration — #23 fixes this
 - `[SCALE]` Qdrant single-node, no sharding — #23 fixes this
-- `[SCALE]` RBAC 3-tier hardcoded — #26 fixes this
 - `[SCALE]` No data ingestion pipeline — #12 fixes this
 - `[SCALE]` Text-to-SQL 7.2s avg — #20 fixes this
 - `[SCALE]` LLM mesh 270s worst-case — #11 fixes this
-- `[ENDGAME]` No training data collection — #22 fixes this
 - `[ENDGAME]` No deployment pipeline — #25 fixes this
 - `[ENDGAME]` Frontend disconnected from API — #24 fixes this
+
+Note: RBAC (#26) and Fine-Tuning Bridge (#22) are now COMPLETE and removed from scale flags.
 
 ---
 
