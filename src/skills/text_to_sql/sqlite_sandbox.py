@@ -8,7 +8,7 @@ import json
 from datetime import datetime, UTC
 
 from src.audit import log_sql as audit_log_sql
-from src.data.database import get_sqlite_connection, resolve_database_path
+from src.config.database import get_database_manager, DatabaseManager
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,10 @@ class SQLiteSandbox:
     """Read-only sandbox for SQLite execution."""
 
     def __init__(self, db_path: Optional[str] = None):
-        self.db_path = resolve_database_path(db_path)
+        if db_path:
+            self.db_manager = DatabaseManager(f"sqlite:///{db_path}")
+        else:
+            self.db_manager = get_database_manager()
         self.audit_log_path = Path(".protocol/audit_log.jsonl")
         self._ensure_audit_log()
 
@@ -54,12 +57,9 @@ class SQLiteSandbox:
         )
 
         try:
-            conn = get_sqlite_connection(str(self.db_path))
-            cursor = conn.execute(sql)
-            rows = cursor.fetchall()
-            columns = [desc[0] for desc in cursor.description] if cursor.description else []
+            rows = self.db_manager.fetch_all(sql)
+            columns = list(rows[0].keys()) if rows else []
             formatted_results = [dict(row) for row in rows]
-            conn.close()
 
             if user_tier > 1:
                 columns = [column for column in columns if column.lower() not in PII_COLUMNS]
@@ -112,22 +112,17 @@ class SQLiteSandbox:
     def test_connection(self) -> bool:
         """Test sandbox connectivity."""
         try:
-            conn = get_sqlite_connection(str(self.db_path))
-            conn.execute("SELECT 1")
-            conn.close()
-            return True
+            health = self.db_manager.health_check()
+            return health.get("status") == "healthy"
         except Exception:
             return False
 
     def get_tables(self) -> list:
         """List available tables."""
-        conn = get_sqlite_connection(str(self.db_path))
-        cursor = conn.execute(
+        rows = self.db_manager.fetch_all(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         )
-        tables = [row[0] for row in cursor.fetchall()]
-        conn.close()
-        return tables
+        return [row["name"] for row in rows]
 
     def close(self):
         pass

@@ -602,6 +602,14 @@ async def query_with_langgraph(
 
         result = None
         try:
+            from src.config.database import get_database_manager
+            db = get_database_manager()
+            if db.is_overloaded():
+                raise HTTPException(
+                    status_code=503,
+                    detail="Service temporarily unavailable due to database load. Please retry in a moment.",
+                )
+
             result = workflow.run(
                 request.query,
                 user_tier=user_tier,
@@ -1307,7 +1315,29 @@ async def api_metrics(request: Request):
         },
         "slo": slo_status,
         "training_data": training_data,
+        "database": _get_db_pool_stats(),
     }
+
+
+def _get_db_pool_stats() -> dict:
+    """Get PostgreSQL connection pool stats for /api/metrics."""
+    try:
+        from src.config.database import get_database_manager
+        db = get_database_manager()
+        stats = db.pool_stats()
+        return {
+            "driver": db.driver,
+            "status": "overloaded" if db.is_overloaded() else "healthy",
+            "pool": {
+                "active": stats.active,
+                "idle": stats.idle,
+                "waiting": stats.waiting,
+                "max_size": stats.max_size,
+                "min_size": stats.min_size,
+            },
+        }
+    except Exception:
+        return {"driver": "unknown", "status": "unavailable"}
 
 
 @app.get("/researchers")

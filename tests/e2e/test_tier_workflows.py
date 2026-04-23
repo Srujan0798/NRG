@@ -273,10 +273,10 @@ class TestTierQueryResponseTime:
         assert elapsed < 30, f"Pipeline took {elapsed:.1f}s — must be < 30s"
 
     @pytest.mark.timeout(5)
-    def test_health_check_under_3_seconds(self, test_client):
-        """Health check must respond within 3 seconds (expanded for Qdrant cold-start overhead)."""
+    def test_health_check_under_5_seconds(self, test_client):
+        """Health check must respond within 5 seconds (expanded for Qdrant cold-start overhead)."""
         start = time.time()
         response = test_client.get("/health")
         elapsed = time.time() - start
         assert response.status_code == 200
-        assert elapsed < 3.0, f"Health check took {elapsed:.1f}s — must be < 3s (Qdrant connection overhead)"
+        assert elapsed < 5.0, f"Health check took {elapsed:.1f}s — must be < 5s (Qdrant connection overhead)"

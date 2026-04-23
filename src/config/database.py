@@ -93,40 +93,25 @@ class DatabaseManager:
 
     def _init_postgres_pool(self) -> None:
         try:
-            import asyncpg
+            import psycopg2
+            import psycopg2.pool
         except ImportError:
-            logger.warning("asyncpg not installed — PostgreSQL pool unavailable")
+            logger.warning("psycopg2 not installed — PostgreSQL unavailable")
             self.driver = "sqlite"
             return
 
-        async def _create_pool():
-            try:
-                self._pool = await asyncpg.create_pool(
-                    self.database_url,
-                    min_size=DEFAULT_POOL_MIN,
-                    max_size=DEFAULT_POOL_MAX,
-                    command_timeout=60.0,
-                    timeout=DEFAULT_POOL_TIMEOUT,
-                )
-                logger.info(
-                    f"PostgreSQL pool initialized: min={DEFAULT_POOL_MIN}, max={DEFAULT_POOL_MAX}"
-                )
-            except Exception as e:
-                logger.error(f"Failed to create PostgreSQL pool: {e}")
-                self.driver = "sqlite"
-
         try:
-            import asyncio
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                import concurrent.futures
-                with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(asyncio.run, _create_pool())
-                    future.result(timeout=30)
-            else:
-                asyncio.run(_create_pool())
+            self._pool = psycopg2.pool.ThreadedConnectionPool(
+                minconn=DEFAULT_POOL_MIN,
+                maxconn=DEFAULT_POOL_MAX,
+                dsn=self.database_url,
+            )
+            logger.info(
+                f"PostgreSQL pool initialized: min={DEFAULT_POOL_MIN}, max={DEFAULT_POOL_MAX}"
+            )
         except Exception as e:
-            logger.warning(f"PostgreSQL pool creation deferred: {e}")
+            logger.error(f"Failed to create PostgreSQL pool: {e}")
+            self.driver = "sqlite"
 
     @contextmanager
     def _sqlite_connection(self) -> Generator[sqlite3.Connection, None, None]:
@@ -144,16 +129,11 @@ class DatabaseManager:
         if self._pool is None:
             raise ConnectionError("PostgreSQL pool not initialized")
         try:
-            async def _get():
-                return await self._pool.acquire(timeout=DEFAULT_POOL_TIMEOUT)
-            import asyncio
-            conn = asyncio.run(_get())
+            conn = self._pool.getconn()
             try:
                 yield conn
             finally:
-                async def _release():
-                    await self._pool.release(conn)
-                asyncio.run(_release())
+                self._pool.putconn(conn)
         except Exception as e:
             if "timeout" in str(e).lower() or "pool" in str(e).lower():
                 self._pool_exhausted_until = time.time() + 5.0
@@ -164,9 +144,11 @@ class DatabaseManager:
     def connection(self) -> Generator[Any, None, None]:
         """Context manager for a raw connection (use execute/fetch_all instead)."""
         if self.driver == "postgresql":
-            yield from self._pg_connection()
+            with self._pg_connection() as conn:
+                yield conn
         else:
-            yield from self._sqlite_connection()
+            with self._sqlite_connection() as conn:
+                yield conn
 
     def execute(self, sql: str, params: tuple = ()) -> int:
         """Execute SQL and return rows affected."""
@@ -174,7 +156,7 @@ class DatabaseManager:
             if self.driver == "postgresql":
                 cur = conn.cursor()
                 cur.execute(sql, params)
-                await cur.execute("COMMIT") if hasattr(conn, "execute") else None
+                conn.commit()
                 return cur.rowcount
             else:
                 cur = conn.execute(sql, params)
@@ -186,8 +168,8 @@ class DatabaseManager:
         with self.connection() as conn:
             if self.driver == "postgresql":
                 cur = conn.cursor()
-                await cur.execute(sql, params)
-                rows = await cur.fetchall()
+                cur.execute(sql, params)
+                rows = cur.fetchall()
                 return [dict(row) for row in rows]
             else:
                 cur = conn.execute(sql, params)
@@ -204,19 +186,11 @@ class DatabaseManager:
         """Context manager for a transaction."""
         with self.connection() as conn:
             if self.driver == "postgresql":
-                async def _begin():
-                    await conn.execute("BEGIN")
-                import asyncio
-                asyncio.run(_begin())
                 try:
                     yield conn
-                    async def _commit():
-                        await conn.execute("COMMIT")
-                    asyncio.run(_commit())
+                    conn.commit()
                 except Exception:
-                    async def _rollback():
-                        await conn.execute("ROLLBACK")
-                    asyncio.run(_rollback())
+                    conn.rollback()
                     raise
             else:
                 try:
@@ -231,10 +205,9 @@ class DatabaseManager:
         try:
             with self.connection() as conn:
                 if self.driver == "postgresql":
-                    async def _check():
-                        row = await conn.fetchrow("SELECT 1 as n")
-                        return row["n"]
-                    result = asyncio.run(_check())
+                    cur = conn.cursor()
+                    cur.execute("SELECT 1 as n")
+                    result = cur.fetchone()["n"]
                 else:
                     cur = conn.execute("SELECT 1 as n")
                     result = cur.fetchone()["n"]
@@ -255,6 +228,15 @@ class DatabaseManager:
         if self.driver != "postgresql" or self._pool is None:
             return PoolStats()
         try:
+            if hasattr(self._pool, "GetStats"):
+                stats = self._pool.GetStats()
+                return PoolStats(
+                    active=stats.get("active", 0),
+                    idle=stats.get("idle", 0),
+                    waiting=stats.get("waiters", 0),
+                    max_size=DEFAULT_POOL_MAX,
+                    min_size=DEFAULT_POOL_MIN,
+                )
             return PoolStats(
                 active=0,
                 idle=0,

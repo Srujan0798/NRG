@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 import { Citation } from '../../../services/queryService'
+import { toStringArray } from '../../../types/api'
 
 interface ExportButtonProps {
   onExport?: () => void
@@ -74,7 +75,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         <div class="citation-item">
           <div class="citation-title">[${i + 1}] ${c.title || 'Unknown Publication'}</div>
           <div class="citation-meta">
-            ${c.authors?.slice(0, 3).join(', ')}${c.authors && c.authors.length > 3 ? ' et al.' : ''}
+            ${toStringArray(c.authors)?.slice(0, 3).join(', ')}${(toStringArray(c.authors)?.length ?? 0) > 3 ? ' et al.' : ''}
             ${c.year ? ` (${c.year})` : ''}
           </div>
         </div>

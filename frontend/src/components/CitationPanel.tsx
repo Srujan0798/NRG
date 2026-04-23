@@ -1,6 +1,7 @@
 import React from 'react'
 import { FileTextIcon } from './Icons'
 import { Citation } from '../services/queryService'
+import { toStringArray } from '../types/api'
 
 interface CitationPanelProps {
   citations: Citation[]
@@ -27,7 +28,7 @@ const CitationPanel: React.FC<CitationPanelProps> = ({ citations, className = ''
             </div>
             
             <div className="text-gray-600 mt-1">
-              {citation.authors?.join(', ')}
+              {toStringArray(citation.authors)?.join(', ')}
               {citation.year && ` • ${citation.year}`}
             </div>
             

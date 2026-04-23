@@ -45,6 +45,7 @@ class VectorDriftDetector:
         self._lock = threading.Lock()
 
         self._baseline_established = False
+        self._baseline_window = baseline_window
         self._last_alert_time: float | None = None
         self._retraining_triggered = False
 
