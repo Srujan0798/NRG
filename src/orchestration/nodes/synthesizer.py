@@ -8,10 +8,11 @@ import re
 from typing import Any, TypedDict, Generator
 from pathlib import Path
 
-from src.config.llm_config import get_llm_client, get_llm_mesh
+from src.config.llm_config import get_llm_mesh
 from src.config.local_llm import get_local_llm_client, LlamaCppClient
 from src.audit import log_llm_call
 from src.observability.langfuse_tracer import trace_llm_call
+from src.auth.rbac import get_policy_engine
 
 logger = logging.getLogger(__name__)
 SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
@@ -631,9 +632,11 @@ def _build_system_prompt(
     chunks: list,
     context_summary: str,
     use_local_prompt: bool = False,
+    user_policy: Any = None,
 ) -> str:
     safe_sql_results = _minimise_sql_results(sql_results)
     safe_chunks = _minimise_chunks(chunks)
+
     if use_local_prompt and LOCAL_SYNTH_PROMPT_PATH.exists():
         base_prompt = LOCAL_SYNTH_PROMPT_PATH.read_text()
     else:
@@ -642,12 +645,42 @@ def _build_system_prompt(
             if SYNTH_PROMPT_PATH.exists()
             else "You are the National Research Graph AI."
         )
+
+    output_format = "full"
+    policy_note = f"Tier {user_tier}"
+    if user_policy is None:
+        engine = get_policy_engine()
+        try:
+            user_policy = engine.get_policy(tier=user_tier)
+        except KeyError:
+            user_policy = None
+
+    if user_policy is not None:
+        output_format = user_policy.output_format
+        policy_note = f"Persona: {user_policy.name} (tier {user_policy.tier})"
+
+    format_instruction = ""
+    if output_format == "aggregated":
+        format_instruction = (
+            "OUTPUT FORMAT: Aggregate results into counts, sums, averages. "
+            "Do NOT return individual-level records. Summarize findings statistically."
+        )
+    elif output_format == "anonymized":
+        format_instruction = (
+            "OUTPUT FORMAT: Anonymized summaries only. No individual names, emails, "
+            "or PII. Return only aggregated or anonymized insights."
+        )
+    else:
+        format_instruction = "OUTPUT FORMAT: Full detail with appropriate citations."
+
     return f"""{base_prompt}
 
-Synthesize a response for a Tier {user_tier} user.
+Synthesize a response for a {policy_note} user.
 Use only the provided data. If no data is provided, say so.
 Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
 drawn from the provided evidence list. Never fabricate citations.
+
+{format_instruction}
 
 IMPORTANT:
 - When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
@@ -831,6 +864,13 @@ def _is_publication_results(sql_results: list) -> bool:
 
 
 def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> list:
+    engine = get_policy_engine()
+    try:
+        policy = engine.get_policy(tier=user_tier)
+    except KeyError:
+        policy = None
+
+    output_format = policy.output_format if policy else "full"
     lines.append("  RESEARCHERS")
     lines.append("  " + "-" * 56)
 
@@ -849,13 +889,16 @@ def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> 
             lines.append(f"  #  {'Name':<30} {'Area':<15} {'Location'}")
             lines.append("  " + "-" * 56)
 
-        lines.append(f"  {i:2}. {name:<30} {area:<15} {state} {citation}")
+        if output_format == "anonymized":
+            lines.append(f"  {i:2}. [REDACTED] {area:<15} {state}")
+        else:
+            lines.append(f"  {i:2}. {name:<30} {area:<15} {state} {citation}")
 
-        if user_tier == 1 and institution != "N/A":
-            lines.append(f"      Institution: {institution}")
+            if output_format == "full" and institution != "N/A":
+                lines.append(f"      Institution: {institution}")
 
-        if "email" in row and user_tier == 1 and row.get("email"):
-            lines.append(f"      Email: {row['email']}")
+            if output_format == "full" and "email" in row and row.get("email"):
+                lines.append(f"      Email: {row['email']}")
 
         shown += 1
 
@@ -984,11 +1027,14 @@ def build_adaptive_system_prompt(
     context_summary: str,
     provider: str = "unknown",
     model: str = "unknown",
+    user_policy: Any = None,
 ) -> str:
     """Build an adaptive system prompt based on the target LLM's context window.
 
     Smaller context models (local LLMs) get condensed prompts with less evidence
     and more direct instructions. Larger context models get full prompts.
+
+    Uses RBAC policy output_format when available for persona-specific guidance.
     """
     context_size = _context_window_sizes.get(provider.lower(), 4096)
 
@@ -996,11 +1042,11 @@ def build_adaptive_system_prompt(
     safe_chunks = _minimise_chunks(chunks)
 
     if context_size <= 4096:
-        return _build_condensed_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+        return _build_condensed_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
     elif context_size <= 8192:
-        return _build_standard_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+        return _build_standard_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
     else:
-        return _build_full_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary)
+        return _build_full_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
 
 
 def _build_condensed_prompt(
@@ -1009,6 +1055,7 @@ def _build_condensed_prompt(
     sql_results: list,
     chunks: list,
     context_summary: str,
+    user_policy: Any = None,
 ) -> str:
     """Condensed prompt for small context local LLMs (4K tokens or less)."""
     safe_sql = sql_results[:5] if sql_results else []
@@ -1017,6 +1064,22 @@ def _build_condensed_prompt(
     sql_str = str(safe_sql)[:500] if safe_sql else "None"
     chunk_str = str(safe_chunks)[:500] if safe_chunks else "None"
 
+    if user_policy is None:
+        engine = get_policy_engine()
+        try:
+            user_policy = engine.get_policy(tier=user_tier)
+        except KeyError:
+            user_policy = None
+
+    policy_note = f"Tier {user_tier}"
+    format_note = ""
+    if user_policy is not None:
+        policy_note = f"Persona: {user_policy.name}"
+        if user_policy.output_format == "anonymized":
+            format_note = "- OUTPUT: Anonymized summaries only. No individual names or PII."
+        elif user_policy.output_format == "aggregated":
+            format_note = "- OUTPUT: Aggregate stats only. No individual records."
+
     return f"""You are NRG AI. Answer user queries using ONLY the provided data.
 If data is insufficient, say so. Cite sources as [cite:id:chunk].
 
@@ -1024,12 +1087,13 @@ Rules:
 - Keep response under 200 words
 - Use bullet points when possible
 - Cite EVERY factual claim: [cite:pub_id:chunk_id] or [cite:structured:0]
+{format_note}
 
 Data Sources: {sources}
 SQL Data: {sql_str}
 Document Data: {chunk_str}
 Context: {context_summary or 'none'}
-Tier: {user_tier}
+{policy_note}
 """
 
 
@@ -1039,10 +1103,27 @@ def _build_standard_prompt(
     sql_results: list,
     chunks: list,
     context_summary: str,
+    user_policy: Any = None,
 ) -> str:
     """Standard prompt for medium context models (8K tokens)."""
     safe_sql = sql_results[:8] if sql_results else []
     safe_chunks = chunks[:4] if chunks else []
+
+    if user_policy is None:
+        engine = get_policy_engine()
+        try:
+            user_policy = engine.get_policy(tier=user_tier)
+        except KeyError:
+            user_policy = None
+
+    policy_note = f"Tier {user_tier}"
+    format_note = ""
+    if user_policy is not None:
+        policy_note = f"Persona: {user_policy.name} (tier {user_policy.tier})"
+        if user_policy.output_format == "anonymized":
+            format_note = "\n- OUTPUT: Anonymized summaries only. No individual names, emails, or PII."
+        elif user_policy.output_format == "aggregated":
+            format_note = "\n- OUTPUT: Aggregate stats only. No individual-level records."
 
     return f"""You are the National Research Graph AI. Answer research queries using ONLY the provided evidence.
 
@@ -1051,13 +1132,14 @@ IMPORTANT RULES:
 - Never fabricate or extrapolate beyond the evidence
 - If evidence is insufficient, clearly state limitations
 - SQL aggregate results (count, sum) ARE direct answers - state them clearly
+{format_note}
 
 Response format:
 - Start with direct answer to the query
 - Follow with supporting evidence citations
 - Use tables for structured data comparisons
 
-User Tier {user_tier} access level applied.
+{policy_note} access level applied.
 
 Data Sources: {sources}
 Evidence (SQL): {safe_sql}
@@ -1072,8 +1154,33 @@ def _build_full_prompt(
     sql_results: list,
     chunks: list,
     context_summary: str,
+    user_policy: Any = None,
 ) -> str:
     """Full prompt for large context models (128K+ tokens)."""
+    if user_policy is None:
+        engine = get_policy_engine()
+        try:
+            user_policy = engine.get_policy(tier=user_tier)
+        except KeyError:
+            user_policy = None
+
+    policy_note = f"Tier {user_tier}"
+    format_instruction = ""
+    if user_policy is not None:
+        policy_note = f"Persona: {user_policy.name} (tier {user_policy.tier})"
+        if user_policy.output_format == "anonymized":
+            format_instruction = (
+                "\nOUTPUT FORMAT: Anonymized summaries only. "
+                "No individual names, emails, or PII. Return aggregated or anonymized insights only."
+            )
+        elif user_policy.output_format == "aggregated":
+            format_instruction = (
+                "\nOUTPUT FORMAT: Aggregate stats only. "
+                "Do NOT return individual-level records. Summarize findings statistically."
+            )
+        else:
+            format_instruction = "\nOUTPUT FORMAT: Full detail with appropriate citations."
+
     if LOCAL_SYNTH_PROMPT_PATH.exists():
         base_prompt = LOCAL_SYNTH_PROMPT_PATH.read_text()
     else:
@@ -1081,7 +1188,7 @@ def _build_full_prompt(
 
     return f"""{base_prompt}
 
-Synthesize a response for a Tier {user_tier} user.
+Synthesize a response for a {policy_note} user.
 Use only the provided data. If no data is provided, say so.
 Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
 drawn from the provided evidence list. Never fabricate citations.
@@ -1090,6 +1197,7 @@ IMPORTANT:
 - When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
 - For SQL-only results with no specific row ID, use citation [cite:structured:0].
 - For document excerpts, use the citation shown in the Document Evidence (e.g., [cite:DOC-00123:0]).
+{format_instruction}
 
 Prior Session Context: {context_summary or "none"}
 Data Sources: {sources}

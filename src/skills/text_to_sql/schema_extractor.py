@@ -1,4 +1,4 @@
-"""Text-to-SQL Schema Extractor - Extract schema metadata only, NO data, tier-filtered."""
+"""Text-to-SQL Schema Extractor - Extract schema metadata only, NO data, policy-filtered."""
 
 import os
 import re
@@ -6,47 +6,7 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 from sqlalchemy import create_engine, inspect
 
-TIER_COLUMN_VISIBILITY = {
-    1: {},
-    2: {
-        "researchers": ["researcher_id", "name", "institution_id", "department", "state",
-            "research_area", "secondary_research_areas", "years_experience",
-            "year_joined", "h_index", "orcid", "email", "phone"],
-        "institutions": ["institution_id", "name", "type", "state", "region",
-            "established_year", "website"],
-        "labs": ["lab_id", "name", "institution_id", "department", "lab_head",
-            "established_year", "funding_source"],
-        "publications": ["publication_id", "title", "year", "abstract", "journal",
-            "doi", "citation_count", "authors"],
-        "projects": ["project_id", "title", "pi_researcher_id", "funding_id",
-            "amount", "source", "start_date", "end_date", "status"],
-        "funding_records": ["funding_id", "source", "amount", "grant_type",
-            "duration_months", "research_area"],
-        "patents": ["patent_id", "title", "inventor_ids", "filing_date",
-            "status", "jurisdiction"],
-        "collaborations": ["collab_id", "name", "institution_ids", "type",
-            "start_date", "end_date"],
-        "keywords": ["keyword_id", "keyword", "category", "subcategory"],
-        "researcher_publications": ["researcher_id", "publication_id", "author_order"],
-        "researcher_labs": ["researcher_id", "lab_id", "role", "start_date"],
-        "research_documents": ["doc_id", "title", "category", "upload_date"],
-    },
-    3: {
-        "researchers": ["researcher_id", "name", "institution_id", "state",
-            "research_area", "years_experience", "h_index"],
-        "institutions": ["institution_id", "name", "type", "state"],
-        "labs": ["lab_id", "name", "institution_id", "department"],
-        "publications": ["publication_id", "title", "year", "citation_count"],
-        "projects": ["project_id", "title", "source", "amount", "status"],
-        "funding_records": ["funding_id", "source", "amount", "grant_type"],
-        "patents": ["patent_id", "title", "status"],
-        "collaborations": ["collab_id", "name", "type"],
-        "keywords": ["keyword", "category"],
-        "researcher_publications": ["researcher_id", "publication_id"],
-        "researcher_labs": ["researcher_id", "lab_id"],
-        "research_documents": ["doc_id", "title", "category"],
-    },
-}
+from src.auth.rbac import get_policy_engine
 
 SENSITIVE_COLUMNS = {
     "email", "phone", "aadhaar_number", "pan_number", "date_of_birth",
@@ -62,6 +22,20 @@ SCHEMA_PROBING_PATTERNS = [
     r"\b(explain|describe)\s+(table|database|schema)\b",
     r"\b\d+\s+columns?\b",
 ]
+
+TIER_COLUMN_VISIBILITY = {
+    1: {},
+    2: {
+        "researchers": ["id", "name", "department", "email"],
+        "publications": ["id", "title", "year", "venue"],
+        "projects": ["id", "name", "status", "funding"],
+    },
+    3: {
+        "researchers": ["id", "name", "department", "email", "phone", "aadhaar_number"],
+        "publications": ["id", "title", "year", "venue", "abstract"],
+        "projects": ["id", "name", "status", "funding", "budget"],
+    },
+}
 
 
 def is_schema_probing_query(query: str) -> bool:
@@ -291,37 +265,71 @@ class SchemaExtractor:
                 return True
         return False
 
-    def get_tier_filtered_columns(self, table_name: str, tier: int) -> List[str]:
-        """Get column names visible to a given tier for a specific table."""
-        if tier == 1:
+    def get_tier_filtered_columns(
+        self,
+        table_name: str,
+        tier: int | None = None,
+        persona: str | None = None,
+    ) -> List[str]:
+        """
+        Get column names visible for a table under a given tier or persona.
+
+        Uses RBACPolicyEngine for authoritative policy lookup.
+        Falls back to all columns if no policy found for the tier.
+        """
+        engine = get_policy_engine()
+        try:
+            if persona:
+                policy = engine.get_policy(persona=persona)
+            elif tier is not None:
+                policy = engine.get_policy(tier=tier)
+            else:
+                return []
+        except KeyError:
             return []
 
-        tier_tables = TIER_COLUMN_VISIBILITY.get(tier, {})
-        return tier_tables.get(table_name, [])
+        return engine.get_visible_columns(policy, table_name)
 
     def generate_llm_schema(
         self,
         table_names: Optional[List[str]] = None,
-        tier: int = 1,
+        tier: int | None = None,
+        persona: str | None = None,
     ) -> Dict[str, Any]:
         """Generate tier-filtered, abstracted schema for LLM exposure.
 
-        Columns are filtered by tier visibility per table, and sensitive column names
+        Columns are filtered by RBAC policy per table, and sensitive column names
         are replaced with abstract identifiers to prevent schema fingerprinting.
+
+        Args:
+            table_names: List of tables to include. Defaults to all tables.
+            tier: Integer tier level (1/2/3). Optional if persona is provided.
+            persona: Named persona string. Takes precedence over tier if provided.
         """
         schema = self.get_schema_metadata(table_names)
+
+        engine = get_policy_engine()
+        try:
+            if persona:
+                policy = engine.get_policy(persona=persona)
+            elif tier is not None:
+                policy = engine.get_policy(tier=tier)
+            else:
+                policy = engine.get_policy(tier=1)
+        except KeyError:
+            return schema
 
         abstract_mapping: Dict[str, str] = {}
         abstract_counter = 1
 
         for table_name, table_info in schema["tables"].items():
-            visible_columns = self.get_tier_filtered_columns(table_name, tier) if tier > 1 else None
+            visible_patterns = engine.get_visible_columns(policy, table_name)
 
             filtered_columns = []
             for col in table_info["columns"]:
                 col_name = col["name"]
 
-                if visible_columns is not None and col_name not in visible_columns:
+                if visible_patterns and "*" not in visible_patterns and col_name not in visible_patterns:
                     continue
 
                 if col_name in SENSITIVE_COLUMNS:

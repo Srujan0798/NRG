@@ -1018,6 +1018,46 @@ class IngestRequest(BaseModel):
     collection: Optional[str] = None
 
 
+# ─── Feedback / RLHF Signal ────────────────────────────────────────────────
+
+class FeedbackRequest(BaseModel):
+    query_id: str
+    score: int
+    feedback_text: Optional[str] = None
+
+
+@app.post("/api/feedback")
+async def submit_feedback(
+    request: Request,
+    feedback: FeedbackRequest,
+):
+    """
+    Submit user feedback on a query response (RLHF signal).
+
+    Updates the training pair with the researcher's rating (1-5).
+    This signal improves future model fine-tuning.
+    """
+    if feedback.score < 1 or feedback.score > 5:
+        raise HTTPException(status_code=400, detail="Score must be between 1 and 5")
+
+    try:
+        from src.training.data_collector import get_training_collector
+        collector = get_training_collector()
+        success = collector.update_feedback(
+            query_id=feedback.query_id,
+            score=feedback.score,
+            feedback_text=feedback.feedback_text,
+        )
+        if not success:
+            raise HTTPException(status_code=404, detail="Training pair not found")
+        return {"status": "ok", "query_id": feedback.query_id, "score": feedback.score}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Feedback update failed: {e}")
+        raise HTTPException(status_code=500, detail="Failed to record feedback")
+
+
 @app.post("/api/ingest")
 async def ingest_documents(
     request: Request,
@@ -1233,6 +1273,17 @@ async def api_metrics(request: Request):
     except Exception:
         pass
 
+    training_data = {"status": "unavailable"}
+    try:
+        from src.training.data_collector import get_training_collector
+        collector = get_training_collector()
+        training_data = collector.get_stats()
+        from src.training.export import ExportPipeline
+        exports = ExportPipeline().get_export_history()
+        training_data["export_history"] = exports[-10:] if exports else []
+    except Exception:
+        pass
+
     return {
         "queries": {
             "counts": query_counts,
@@ -1255,6 +1306,7 @@ async def api_metrics(request: Request):
             "valid_event_count": valid_count,
         },
         "slo": slo_status,
+        "training_data": training_data,
     }
 
 
@@ -1798,6 +1850,260 @@ async def get_slo_status(token_payload: dict = Depends(get_current_user)):
     slo_status["concurrency"]["target"] = tracker.SLO_CONCURRENCY_TARGET
 
     return slo_status
+
+
+# ─────────────────────────────────────────────────────────────────
+# RBAC Policy Admin Endpoints
+# ─────────────────────────────────────────────────────────────────
+
+@app.get("/api/admin/rbac", tags=["admin"])
+async def list_rbac_policies(
+    token_payload: dict = Depends(get_current_user),
+):
+    """List all RBAC personas and their policies (admin only)."""
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    from src.auth.rbac import get_policy_engine
+    engine = get_policy_engine()
+    personas = engine.list_personas(include_inactive=False)
+
+    return {
+        "policies": [
+            {
+                "name": p.name,
+                "tier": p.tier,
+                "description": p.description,
+                "output_format": p.output_format,
+                "data_scope": p.data_scope,
+                "max_results": p.max_results,
+                "is_active": p.is_active,
+                "export_allowed": p.export_allowed,
+                "read_only": p.read_only,
+                "debug_access": p.debug_access,
+            }
+            for p in personas
+        ],
+        "total": len(personas),
+    }
+
+
+@app.post("/api/admin/rbac", tags=["admin"], status_code=201)
+async def create_or_update_rbac_persona(
+    persona: str,
+    spec: dict,
+    token_payload: dict = Depends(get_current_user),
+):
+    """
+    Add a new persona or update an existing one (runtime, no YAML change).
+
+    Args:
+        persona: Unique persona name (e.g., "student", "peer_reviewer")
+        spec: Policy specification dict with fields like tier, column_visibility, etc.
+
+    Returns the created/updated policy.
+    """
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    if not persona or not isinstance(persona, str):
+        raise HTTPException(status_code=400, detail="persona must be a non-empty string")
+
+    if not spec or not isinstance(spec, dict):
+        raise HTTPException(status_code=400, detail="spec must be a non-empty dict")
+
+    required_fields = {"tier", "column_visibility", "pii_masking", "output_format"}
+    missing = required_fields - set(spec.keys())
+    if missing:
+        raise HTTPException(
+            status_code=400,
+            detail=f"spec missing required fields: {', '.join(missing)}",
+        )
+
+    from src.auth.rbac import get_policy_engine
+    engine = get_policy_engine()
+
+    if engine.persona_exists(persona) and not spec.get("is_active", True):
+        engine.deactivate_persona(persona)
+    else:
+        engine.add_or_update_policy(persona, spec)
+
+    policy = engine.get_policy(persona=persona)
+
+    try:
+        from src.audit import get_audit_log, AuditEvent
+        audit = get_audit_log()
+        audit.append(AuditEvent(
+            event_type="rbac_policy_change",
+            user_id=token_payload.get("user_id", "unknown"),
+            result={
+                "persona": persona,
+                "change_type": "create_or_update",
+                "old_spec": None,
+                "new_spec": spec,
+            },
+        ))
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "persona": persona,
+        "policy": {
+            "name": policy.name,
+            "tier": policy.tier,
+            "output_format": policy.output_format,
+            "is_active": policy.is_active,
+        },
+    }
+
+
+@app.put("/api/admin/rbac/{persona_name}", tags=["admin"])
+async def update_rbac_persona(
+    persona_name: str,
+    spec: dict,
+    token_payload: dict = Depends(get_current_user),
+):
+    """
+    Update an existing RBAC persona's policy specification.
+
+    Does NOT allow renaming a persona (use deactivate + create instead).
+    """
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    from src.auth.rbac import get_policy_engine
+    engine = get_policy_engine()
+
+    if not engine.persona_exists(persona_name):
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_name}' not found")
+
+    old_policy = engine.get_policy(persona=persona_name)
+    engine.add_or_update_policy(persona_name, spec)
+    new_policy = engine.get_policy(persona=persona_name)
+
+    try:
+        from src.audit import get_audit_log, AuditEvent
+        audit = get_audit_log()
+        audit.append(AuditEvent(
+            event_type="rbac_policy_change",
+            user_id=token_payload.get("user_id", "unknown"),
+            result={
+                "persona": persona_name,
+                "change_type": "update",
+                "old_policy": {
+                    "name": old_policy.name,
+                    "tier": old_policy.tier,
+                    "output_format": old_policy.output_format,
+                },
+                "new_policy": {
+                    "name": new_policy.name,
+                    "tier": new_policy.tier,
+                    "output_format": new_policy.output_format,
+                },
+            },
+        ))
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "persona": persona_name,
+        "updated": True,
+    }
+
+
+@app.delete("/api/admin/rbac/{persona_name}", tags=["admin"])
+async def delete_rbac_persona(
+    persona_name: str,
+    token_payload: dict = Depends(get_current_user),
+):
+    """
+    Soft-delete a persona (sets is_active=False, never hard deletes).
+
+    Soft-deleted personas cannot be resolved by policy engine but remain
+    in the audit trail.
+    """
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    from src.auth.rbac import get_policy_engine
+    engine = get_policy_engine()
+
+    if not engine.persona_exists(persona_name):
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_name}' not found")
+
+    old_policy = engine.get_policy(persona=persona_name)
+    if old_policy.tier in (1, 2, 3) and persona_name in ("researcher", "government", "industry"):
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot soft-delete built-in personas: researcher, government, industry",
+        )
+
+    success = engine.deactivate_persona(persona_name)
+
+    try:
+        from src.audit import get_audit_log, AuditEvent
+        audit = get_audit_log()
+        audit.append(AuditEvent(
+            event_type="rbac_policy_change",
+            user_id=token_payload.get("user_id", "unknown"),
+            result={
+                "persona": persona_name,
+                "change_type": "soft_delete",
+                "old_tier": old_policy.tier,
+            },
+        ))
+    except Exception:
+        pass
+
+    return {
+        "ok": success,
+        "persona": persona_name,
+        "deactivated": True,
+    }
+
+
+@app.get("/api/admin/rbac/{persona_name}", tags=["admin"])
+async def get_rbac_persona(
+    persona_name: str,
+    token_payload: dict = Depends(get_current_user),
+):
+    """Get full policy details for a specific persona."""
+    role = token_payload.get("role", "")
+    if role != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    from src.auth.rbac import get_policy_engine
+    engine = get_policy_engine()
+
+    try:
+        policy = engine.get_policy(persona=persona_name)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Persona '{persona_name}' not found")
+
+    return {
+        "name": policy.name,
+        "tier": policy.tier,
+        "description": policy.description,
+        "column_visibility": policy.column_visibility,
+        "pii_masking": policy.pii_masking,
+        "output_format": policy.output_format,
+        "data_scope": policy.data_scope,
+        "max_results": policy.max_results,
+        "debug_access": policy.debug_access,
+        "allowed_endpoints": policy.allowed_endpoints,
+        "allowed_tables": policy.allowed_tables,
+        "export_allowed": policy.export_allowed,
+        "read_only": policy.read_only,
+        "is_active": policy.is_active,
+        "requires_institution_scope": policy.requires_institution_scope,
+        "requires_open_access_filter": policy.requires_open_access_filter,
+    }
 
 
 if __name__ == "__main__":
