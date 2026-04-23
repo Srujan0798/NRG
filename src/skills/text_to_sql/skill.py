@@ -920,11 +920,11 @@ FOLLOW-UP QUERIES:
             return (
                 "WITH GrantData AS (SELECT institute, SUM(grant_received) as total_grant "
                 "FROM innovation_grant_from_govt GROUP BY institute), "
-                "PatentData AS (SELECT institute, COUNT(*) as patent_count "
-                "FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY institute) "
+                "PatentData AS (SELECT university_name, COUNT(*) as patent_count "
+                "FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY university_name) "
                 "SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
                 "ROUND(g.total_grant / NULLIF(p.patent_count, 0), 2) as cost_per_patent "
-                "FROM GrantData g LEFT JOIN PatentData p ON g.institute = p.institute "
+                "FROM GrantData g LEFT JOIN PatentData p ON g.institute = p.university_name "
                 "ORDER BY cost_per_patent ASC LIMIT 20;"
             )
 
@@ -997,13 +997,13 @@ FOLLOW-UP QUERIES:
         if "utilization audit" in query_lower or ("high grant" in query_lower and "low expend" in query_lower):
             return (
                 "SELECT g.institute, SUM(g.grant_received) as total_grant, "
-                "(SELECT COALESCE(SUM(salaries + maintenance + seminars + consumables + travel + other_ops), 0) "
+                "(SELECT COALESCE(SUM(salaries + maintenance + seminars), 0) "
                 "FROM financial_expenses_operational o WHERE o.institute = g.institute) as opex, "
-                "SUM(g.grant_received) - (SELECT COALESCE(SUM(salaries + maintenance + seminars + consumables + travel + other_ops), 0) "
+                "SUM(g.grant_received) - (SELECT COALESCE(SUM(salaries + maintenance + seminars), 0) "
                 "FROM financial_expenses_operational o WHERE o.institute = g.institute) as unused_budget "
                 "FROM innovation_grant_from_govt g "
                 "GROUP BY g.institute "
-                "HAVING SUM(g.grant_received) > (SELECT COALESCE(SUM(salaries + maintenance + seminars + consumables + travel + other_ops), 0) "
+                "HAVING SUM(g.grant_received) > (SELECT COALESCE(SUM(salaries + maintenance + seminars), 0) "
                 "FROM financial_expenses_operational o WHERE o.institute = g.institute) "
                 "ORDER BY unused_budget DESC LIMIT 20;"
             )
