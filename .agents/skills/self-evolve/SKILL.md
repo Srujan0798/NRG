@@ -63,6 +63,24 @@ The goal: every agent session makes the NEXT agent session smarter. Knowledge mu
 **HORIZON CHECK — Will this survive 10× scale?**
 NRG today: 5,615 researchers, 19,322 vectors, 3 personas, 1 LLM provider active. Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables (40 missing — `[SCHEMA]` blocker).
 Ask for each architectural decision made this sprint:
+
+**QUALITY BAR CHECK — Are we compliant with the 6 Hard Constraints?**
+Read `.claude/QUALITY_BAR.md`. Score each of the 6 constraints on a 1–10 scale:
+1. DPDP Indian PII detection
+2. Per-user audit binding (non-repudiation)
+3. Multi-hop intent decomposition
+4. P99 <500ms / ≥1000 concurrent SLOs
+5. Vector drift monitoring + auto-retrain trigger
+6. Schema allowlist before cloud LLM exposure
+
+For any constraint scoring below 7, add/verify a BACKLOG protocol that addresses it. Report compliance as `X/6 fully compliant` in the Evolution Report.
+
+**LETHAL ASSUMPTIONS REVIEW — What are we betting on that could break us?**
+List the Top 3 lethal assumptions currently live in the system. For each:
+- What is the assumption?
+- What would break if it's wrong?
+- What's the mitigation?
+Example: "Assumption: cloud LLM providers will always return within 15s. If wrong: #11 mitigates with local SLM fallback."
 - What happens at 50,000 researchers? Does SQLite hold? (No — PostgreSQL migration path must be ready)
 - What happens at 200,000 vectors? Does Qdrant HNSW scale? (Check segment config)
 - What happens with 10 personas instead of 3? Does RBAC tier filtering generalize?
@@ -120,6 +138,27 @@ Include: what worked, what didn't, what to do differently.
 - Core Idea (Data Source 1): [current / updated / needs refresh]
 - Dhairya SQL Audit (Data Source 2): [accuracy: X% / benchmark status]
 - PostgreSQL Schema (Data Source 3): [schema gap: X tables remaining / integration status]
+
+### Quality Bar Compliance (X/6)
+| Constraint | Score (1-10) | Protocol if <7 |
+|---|---|---|
+| 1. DPDP PII | X | — |
+| 2. Per-user audit | X | — |
+| 3. Multi-hop planner | X | — |
+| 4. P99 + concurrent SLOs | X | — |
+| 5. Vector drift + retrain | X | — |
+| 6. Schema allowlist | X | — |
+
+### Lethal Assumptions Review
+1. [Assumption] — [if wrong, X breaks] — [mitigation]
+2. [Assumption] — [if wrong, X breaks] — [mitigation]
+3. [Assumption] — [if wrong, X breaks] — [mitigation]
+
+### Sprint Classification (DELETE / REWRITE / MERGE / BUILD-NEW)
+- DELETE: [modules or code removed this sprint]
+- REWRITE: [modules significantly refactored]
+- MERGE: [modules consolidated]
+- BUILD-NEW: [new modules added]
 
 ### Metrics
 - Tests: X passed / Y failed (trend: improving/degrading)

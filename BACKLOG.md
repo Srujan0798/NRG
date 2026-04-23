@@ -83,6 +83,66 @@
 
 ---
 
+## PHASE 5 — QUALITY BAR HARDENING (sourced from Eternal Validator audit, 2026-04-24)
+
+These 6 protocols close the gaps exposed by an external validator. Each maps to one of the 6 Hard Constraints in `.claude/QUALITY_BAR.md`.
+
+### 35. THE NON-REPUDIATION LOCK — Per-User Audit Binding
+- **Agent**: backend / security
+- **Status**: PLANNED
+- **Priority**: P0-blocker (Quality Bar Constraint #2)
+- **Summary**: HMAC chain binds per-user signing key (derived from user_id + JWT kid + rotating salt). Every audit event co-signed by API + DB layer. Request fingerprint (IP, UA, TLS session) embedded. `verify_chain()` rejects events with broken per-user signatures.
+- **Files**: `src/audit/__init__.py`, `src/auth/jwt_handler.py`, new `src/audit/per_user_keys.py`
+- **Skills**: `/security-auditor`, `/python-backend`, `/code-review-and-quality`
+- **Depends on**: #19 (security tests green)
+
+### 36. THE TEMPORAL POLICY — Time-Window RBAC
+- **Agent**: backend / security
+- **Status**: PLANNED
+- **Priority**: P1-hardening (Quality Bar Constraint partial — temporal extension of §8)
+- **Summary**: Extend `rbac_policies.yaml` with `visibility_window` field (e.g., `{from: 2026-Q1, to: 2026-Q4}`). Policy engine filters result sets by row timestamp against active window. Audit logs include active time window.
+- **Files**: `src/auth/rbac.py`, `src/auth/rbac_policies.yaml`, new test `tests/security/test_temporal_rbac.py`
+- **Skills**: `/security-auditor`, `/python-backend`, `/database-schema-designer`
+- **Depends on**: #26 (RBAC engine complete)
+
+### 37. THE MULTI-HOP PLANNER — Reasoning DAG Decomposition
+- **Agent**: backend / ml
+- **Status**: PLANNED
+- **Priority**: P0-blocker (Quality Bar Constraint #3)
+- **Summary**: Replace flat sub-query list with a dependency DAG. Planner emits `{nodes: [...], edges: [(parent_id, child_id)]}`. Executor runs nodes in topological order, passes parent results as context. Supports queries like "Compare Gujarat and Karnataka's AI output over 5 years and show the funding gap" (4+ sub-queries with dependencies).
+- **Files**: `src/orchestration/nodes/planner.py`, `src/orchestration/state.py` (DAG type), `src/orchestration/nodes/executor.py` (topological execution), new `tests/orchestration/test_multi_hop_planner.py` (10 fixtures)
+- **Skills**: `/prompt-engineering-patterns`, `/python-backend`, `/testing-strategy`, `/code-review-and-quality`
+- **Depends on**: #27 (tests green first)
+
+### 38. THE COMPLEXITY ROUTER — LLM Pool Match by Query Complexity
+- **Agent**: backend
+- **Status**: PLANNED
+- **Priority**: P1-hardening
+- **Summary**: Classify each query by complexity (trivial / simple / moderate / complex / synthesis-heavy). Trivial → rule-based or smallest model. Complex → cloud LLM + parallel racing. Route to provider/model matching complexity to minimize cost and latency. Cache by query fingerprint for >30% cache hit rate target.
+- **Files**: `src/config/llm_config.py` (complexity router), new `src/orchestration/nodes/complexity_classifier.py`, `src/caching/redis_layer.py` (fingerprint cache)
+- **Skills**: `/python-backend`, `/performance`, `/prompt-engineering-patterns`
+- **Depends on**: #11 (Resilient Mesh verified)
+
+### 39. THE SCHEMA ALLOWLIST — Egress Firewall for Cloud LLM
+- **Agent**: backend / security
+- **Status**: PLANNED
+- **Priority**: P0-blocker (Quality Bar Constraint #6)
+- **Summary**: Egress guard inspects every outbound LLM payload against `src/security/egress_allowlist.yaml`. Only allowlisted schema fragments (specific table/column names marked safe) may appear. Raw schema, non-allowlisted columns, sensitive metadata — blocked with audit log.
+- **Files**: `src/security/egress_guard/` (extend), new `src/security/egress_allowlist.yaml`, new `tests/security/test_egress_allowlist.py` (20+ leak attempts)
+- **Skills**: `/security-auditor`, `/python-backend`, `/prompt-engineering-patterns`
+- **Depends on**: none (independent)
+
+### 40. THE STRATIFIED CURATOR — Balanced Fine-Tuning Export
+- **Agent**: backend / ml
+- **Status**: PLANNED
+- **Priority**: P1-hardening (enables Protocol #29)
+- **Summary**: When exporting training pairs from `src/training/export.py`, apply stratified sampling: balance across tiers (Tier 1/2/3), routes (sql/rag/hybrid), query types (lookup/aggregation/comparison/time-series/top-n/cross-domain), quality grades. Prevents model overfitting to majority query type. Output: balanced JSONL/ShareGPT ready for fine-tune.
+- **Files**: `src/training/export.py`, `src/training/quality_filter.py`, new `src/training/stratified_sampler.py`
+- **Skills**: `/statistical-analysis`, `/python-backend`, `/code-review-and-quality`
+- **Depends on**: #22 (Fine-Tuning Bridge, complete)
+
+---
+
 ## COMPLETED (16 protocols + misc)
 
 - [x] #1 THE INTERFACE FORTRESS — ErrorBoundary on all 3 dashboards
@@ -151,6 +211,15 @@ ENDGAME:
 - `[ENDGAME]` Frontend disconnected from API — #24 fixes this
 
 Note: RBAC (#26) and Fine-Tuning Bridge (#22) are now COMPLETE and removed from scale flags.
+
+## QUALITY BAR FLAGS [from Eternal Validator audit, 2026-04-24]
+See `.claude/QUALITY_BAR.md` for full spec. Current compliance: 2/6.
+- `[QB-1]` Indian PII regression corpus — ✓ compliant
+- `[QB-2]` Per-user audit binding — ✗ #35 fixes this
+- `[QB-3]` Multi-hop planner DAG — ✗ #37 fixes this
+- `[QB-4]` P99 <500ms / ≥1000 concurrent — ⚠ #11+#23 tighten this
+- `[QB-5]` Vector drift + auto-retrain — ⚠ #12 completes auto-trigger
+- `[QB-6]` Schema allowlist before cloud — ✗ #39 fixes this
 
 ---
 

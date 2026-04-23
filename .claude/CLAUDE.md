@@ -2,6 +2,7 @@
 
 > **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
 > **Constitution**: See @.claude/NRG_CONSTITUTION.md — Sovereign rules governing all NRG AI behavior.
+> **Quality Bar**: See @.claude/QUALITY_BAR.md — The 6 Hard Constraints. Every deliverable must satisfy these or it is NOT complete.
 > **Agent Warfare**: See @.claude/AGENT_WARFARE.md — Role hierarchy, evolution loop, full system.
 > **Every task must include skill assignments.** Agents must report which skills they used.
 

@@ -85,3 +85,26 @@ Every final answer **must** include:
 - Track query history within session for context continuity.
 - Redis-backed caching for repeated queries (graceful degradation if Redis unavailable).
 - Every session action is audit-logged with HMAC chain integrity.
+
+## 7. The 6 Hard Constraints (Quality Bar)
+Every NRG deliverable must satisfy these. A protocol is NOT complete if it violates any. Full detail in `.claude/QUALITY_BAR.md`.
+
+1. **DPDP-compliant Indian PII detection** — PAN, Aadhaar (with Verhoeff), Indian mobile, email, passport, GSTIN, bank account. Zero false negatives on the Indian PII corpus.
+2. **Per-user audit binding (non-repudiation)** — every audit event signed with per-user derived key; JWT jti + user_id + request fingerprint embedded.
+3. **Multi-hop intent decomposition** — Planner must output a DAG of sub-queries with dependencies, not a flat list.
+4. **Production SLOs** — P99 latency < 500ms for analytical queries, ≥1000 concurrent users.
+5. **Vector drift monitoring + auto-retrain trigger** — cosine shift > 0.05 emits re-index event within 1 minute.
+6. **Schema allowlist before cloud LLM exposure** — egress guard enforces `src/security/egress_allowlist.yaml`; raw schema never leaves.
+
+## 8. Temporal + Column-Level RBAC
+- **Column-level**: tier-specific column visibility via `rbac_policies.yaml` (already implemented).
+- **Temporal**: policies must support time-window visibility (e.g., "peer_reviewer can see submissions from 2026-Q1 only"). Not yet implemented — Protocol #36.
+- **Persona scope**: policies support institution_only, department_only, all (already implemented).
+- Every RBAC decision audit-logged with persona + policy version.
+
+## 9. Per-User Non-Repudiation
+The HMAC chain is tamper-proof at the chain level, but a stolen JWT currently lets an attacker impersonate a user. Non-repudiation requires:
+- **Per-user signing key** — derived from user_id + JWT kid + rotating salt.
+- **Multi-party attestation** — audit events co-signed by API + DB layer (detect tampering from either side).
+- **Request fingerprint** — IP, user agent, TLS session id bound into the event.
+- Implementation: Protocol #35.
