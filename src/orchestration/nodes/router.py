@@ -28,6 +28,12 @@ import time as time_module
 from datetime import datetime
 from enum import Enum
 
+from src.orchestration.nodes.complexity_classifier import (
+    classify_complexity,
+    ComplexityLevel,
+    get_complexity_for_routing,
+)
+
 logger = logging.getLogger(__name__)
 
 

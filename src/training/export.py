@@ -16,6 +16,7 @@ from typing import Literal
 from src.training.data_collector import get_training_collector
 from src.training.data_formatter import DataFormatter, pairs_to_jsonl
 from src.training.quality_filter import QualityFilter
+from src.training.stratified_sampler import StratifiedSampler, StratificationConfig
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +37,14 @@ class ExportPipeline:
         self,
         output_dir: Path | str | None = None,
         min_grade: str = "silver",
+        stratified: bool = False,
+        target_size: int = 5000,
     ):
         self.output_dir = Path(output_dir) if output_dir else DEFAULT_OUTPUT_DIR
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.min_grade = min_grade
+        self.stratified = stratified
+        self.target_size = target_size
         self.collector = get_training_collector()
         self.formatter = DataFormatter(include_metadata=True)
         self.filter = QualityFilter()
@@ -98,6 +103,10 @@ class ExportPipeline:
 
         kept_pairs, filter_stats = self.filter.filter_pairs(pairs)
 
+        if self.stratified and len(kept_pairs) > self.target_size:
+            sampler = StratifiedSampler(StratificationConfig(target_size=self.target_size, random_seed=42))
+            kept_pairs = sampler.sample(kept_pairs)
+
         formatted_pairs = self.formatter.format_batch(kept_pairs, fmt_internal)
         if route == "text_to_sql" and fmt_internal != "sql":
             formatted_pairs = [p for p in formatted_pairs if p.get("sql_query")]
@@ -114,6 +123,7 @@ class ExportPipeline:
             "pairs_filtered": filter_stats.get("dedup_removed", 0),
             "pairs_kept": len(kept_pairs),
             "pairs_exported": len(formatted_pairs),
+            "stratified_sampling": self.stratified,
             "by_original_grade": grade_stats,
             "by_filter_grade": {
                 "gold": len([p for p in kept_pairs if p.get("quality_grade") == "gold"]),

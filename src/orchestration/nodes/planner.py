@@ -50,6 +50,10 @@ class Plan(BaseModel):
     schema_tables: list[str] = Field(default_factory=list)
     desired_skills: list[str] = Field(default_factory=list)
     expected_output_shape: str = ""
+    # DAG format for multi-hop queries
+    dag_nodes: list[dict] = Field(default_factory=list)  # List[QueryDAGNode]
+    dag_root_id: str = Field(default="")
+    is_dag: bool = Field(default=False)  # True when dag_nodes is populated
 
 
 @trace_llm_call("planner")
@@ -132,11 +136,8 @@ def planner_node(state: Any) -> dict:
 
 
 def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
-    """Perform actual heuristic query decomposition when LLM is unavailable.
-
-    Extracts subqueries, relevant tables, desired skills, and expected output shape
-    using pattern matching and keyword analysis.
-    """
+    """Perform heuristic query decomposition producing a DAG when LLM unavailable."""
+    import uuid
     query_lower = user_query.lower()
 
     subqueries = _extract_subqueries(query_lower)
@@ -144,11 +145,82 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
     skills = _determine_skills(query_lower)
     output_shape = _determine_output_shape(query_lower)
 
+    if len(subqueries) <= 1:
+        root_id = f"node_{uuid.uuid4().hex[:6]}"
+        dag_nodes = [
+            {
+                "id": root_id,
+                "subquery": sq,
+                "skill": skills[0] if skills else "sql",
+                "depends_on": [],
+                "tables": tables,
+                "output_shape": output_shape,
+                "optional": False,
+            }
+            for sq in subqueries
+        ]
+        return {
+            "subqueries": subqueries,
+            "schema_tables": tables,
+            "desired_skills": skills,
+            "expected_output_shape": output_shape,
+            "dag_nodes": dag_nodes,
+            "dag_root_id": root_id if dag_nodes else "",
+            "is_dag": True,
+        }
+
+    multi_hop_indicators = ["compare", "versus", "vs", "both", "and", "gap", "difference", "between", "synthesis", "integrate"]
+    is_comparison = any(ind in query_lower for ind in multi_hop_indicators)
+
+    root_id = f"node_{uuid.uuid4().hex[:6]}"
+    dag_nodes = []
+
+    if is_comparison:
+        for i, sq in enumerate(subqueries):
+            node_id = f"node_{uuid.uuid4().hex[:6]}"
+            dag_nodes.append({
+                "id": node_id,
+                "subquery": sq,
+                "skill": skills[i % len(skills)] if skills else "sql",
+                "depends_on": [root_id],
+                "tables": tables,
+                "output_shape": output_shape,
+                "optional": False,
+            })
+
+        dag_nodes.insert(0, {
+            "id": root_id,
+            "subquery": user_query,
+            "skill": "sql",
+            "depends_on": [],
+            "tables": tables,
+            "output_shape": output_shape,
+            "optional": False,
+        })
+    else:
+        prev_id = None
+        for i, sq in enumerate(subqueries):
+            node_id = f"node_{uuid.uuid4().hex[:6]}"
+            dag_nodes.append({
+                "id": node_id,
+                "subquery": sq,
+                "skill": skills[i % len(skills)] if skills else "sql",
+                "depends_on": [prev_id] if prev_id else [],
+                "tables": tables,
+                "output_shape": output_shape,
+                "optional": False,
+            })
+            prev_id = node_id
+        root_id = dag_nodes[0]["id"] if dag_nodes else root_id
+
     return {
         "subqueries": subqueries,
         "schema_tables": tables,
         "desired_skills": skills,
         "expected_output_shape": output_shape,
+        "dag_nodes": dag_nodes,
+        "dag_root_id": root_id,
+        "is_dag": len(dag_nodes) > 1,
     }
 
 
@@ -374,3 +446,34 @@ def _state_get(state: Any, key: str, default: Any = None) -> Any:
     if isinstance(state, dict):
         return state.get(key, default)
     return getattr(state, key, default)
+
+
+def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
+    """Build adjacency list and topological order from DAG nodes.
+
+    Returns (node_map, execution_order) where execution_order is nodes
+    in topological sort (parents before children).
+    """
+    from collections import defaultdict
+
+    node_map: dict[str, dict] = {n["id"]: n for n in nodes}
+    in_degree: dict[str, int] = {n["id"]: 0 for n in nodes}
+    children: dict[str, list[str]] = defaultdict(list)
+
+    for n in nodes:
+        for parent_id in n.get("depends_on", []):
+            if parent_id in node_map:
+                children[parent_id].append(n["id"])
+                in_degree[n["id"]] += 1
+
+    queue = [nid for nid, deg in in_degree.items() if deg == 0]
+    order = []
+    while queue:
+        nid = queue.pop(0)
+        order.append(nid)
+        for child_id in children[nid]:
+            in_degree[child_id] -= 1
+            if in_degree[child_id] == 0:
+                queue.append(child_id)
+
+    return node_map, order
