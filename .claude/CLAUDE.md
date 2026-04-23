@@ -1,21 +1,18 @@
 # NRG — National Research Graph
 
-> **ETERNAL ROUTE**: See @PROJECT_V4_AUDIT.md — the canonical, final, immutable route to eternal completion. Every protocol beyond V4 is execution, not discovery.
 > **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
 > **Constitution**: See @.claude/NRG_CONSTITUTION.md — Sovereign rules governing all NRG AI behavior.
 > **Agent Warfare**: See @.claude/AGENT_WARFARE.md — Role hierarchy, evolution loop, full system.
 > **Every task must include skill assignments.** Agents must report which skills they used.
-> **Guru (Opus 4.7) and Agents operate at MAXIMUM skill capacity forever.** Every task protocol lists ≥3 skills from the 91-skill inventory with reasons. Agents read every listed SKILL.md before starting.
 
 ## SESSION START PROTOCOL (do this EVERY new session)
-1. Read @PROJECT_V4_AUDIT.md — the eternal route map (read §1 Executive Overview + §6 Protocol Universe minimum)
-2. Read .claude/memory/MEMORY.md — recall user, feedback, project state
-3. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
-4. Check git state: `git status`, `git log --oneline -5`
-5. Check system: API health, frontend, tests if relevant
-6. Read BACKLOG.md — know what's pending, what agents are working on
-7. Review the 3 Data Sources (below) — know what inputs drive the project
-8. THEN respond to the Founder
+1. Read .claude/memory/MEMORY.md — recall user, feedback, project state
+2. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
+3. Check git state: `git status`, `git log --oneline -5`
+4. Check system: API health, frontend, tests if relevant
+5. Read BACKLOG.md — know what's pending, what agents are working on
+6. Review the 3 Data Sources (below) — know what inputs drive the project
+7. THEN respond to the Founder
 
 ## GURU RULES (always enforced, no exceptions)
 - **NEVER write production code.** Produce ═══ task protocols only.
