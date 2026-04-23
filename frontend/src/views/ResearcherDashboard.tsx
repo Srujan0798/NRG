@@ -18,6 +18,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary'
 import { WidgetErrorBoundary } from '../components/WidgetErrorBoundary'
 import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
+import MetricsDashboard from './MetricsDashboard'
 import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
@@ -38,6 +39,7 @@ const TABS = [
   { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ', icon: '🕸️' },
   { key: 'dpdp', label: 'Data Rights', labelHi: 'डेटा अधिकार', icon: '🔒' },
   { key: 'audit', label: 'Audit Log', labelHi: 'ऑडिट लॉग', icon: '📋' },
+  { key: 'admin', label: 'Admin', labelHi: 'एडमिन', icon: '📈', tier: 1 },
 ] as const
 
 const SaffronSpinner = ({ style }: { style?: React.CSSProperties }) => (
@@ -167,24 +169,27 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 -mb-px overflow-x-auto">
-          {TABS.map((tab) => (
-            <motion.button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
-                activeTab === tab.key
-                  ? 'border-violet-500 text-violet-600 dark:text-violet-400'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              data-testid={`tab-${tab.key}`}
-            >
-              <span>{tab.icon}</span>
-              {tab.label}
-              <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
-            </motion.button>
-          ))}
+          {TABS.map((tab) => {
+            if ('tier' in tab && tab.tier !== undefined && (user?.tier ?? 0) < tab.tier) return null
+            return (
+              <motion.button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
+                  activeTab === tab.key
+                    ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
+                }`}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                data-testid={`tab-${tab.key}`}
+              >
+                <span>{tab.icon}</span>
+                {tab.label}
+                <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
+              </motion.button>
+            )
+          })}
         </div>
       </header>
 
@@ -452,6 +457,12 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             <WidgetErrorBoundary title="Audit log failed to load">
               <DPDPAuditLog />
             </WidgetErrorBoundary>
+          </motion.div>
+        )}
+
+        {activeTab === 'admin' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <MetricsDashboard />
           </motion.div>
         )}
       </main>

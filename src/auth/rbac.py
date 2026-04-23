@@ -60,6 +60,8 @@ class RBACPolicy:
     requires_institution_scope: bool = False
     requires_open_access_filter: bool = False
     is_active: bool = True  # For soft-delete in admin API
+    # Temporal visibility window (e.g., {from: "2026-Q1", to: "2026-Q4"})
+    visibility_window: Optional[dict] = None  # {"from": "YYYY-QN", "to": "YYYY-QN"} or {"from": "YYYY-MM-DD", "to": "YYYY-MM-DD"}
 
     def get_visible_columns(self, table: str) -> list[str]:
         """Return list of column patterns visible for a table, or [] if table hidden."""
@@ -79,6 +81,49 @@ class RBACPolicy:
             return False
         hide_fields = self.pii_masking.get("hide_fields", [])
         return field_name.lower() in [f.lower() for f in hide_fields]
+
+    def is_within_window(self, reference_date: Optional[str] = None) -> bool:
+        """Check if reference_date falls within the visibility_window.
+        
+        If no window is defined, always returns True (no temporal restriction).
+        Supports ISO date strings (YYYY-MM-DD) and quarter format (YYYY-QN).
+        """
+        if self.visibility_window is None:
+            return True
+
+        from datetime import datetime
+
+        def parse_date(s: str) -> datetime:
+            if "Q" in s.upper():
+                year, quarter = s.upper().split("-Q")
+                month = (int(quarter) - 1) * 3 + 1
+                return datetime(int(year), month, 1)
+            return datetime.strptime(s, "%Y-%m-%d")
+
+        ref = reference_date or datetime.now().isoformat()
+        try:
+            ref_dt = parse_date(ref)
+        except ValueError:
+            return True
+
+        from_str = self.visibility_window.get("from")
+        to_str = self.visibility_window.get("to")
+
+        if from_str:
+            try:
+                if ref_dt < parse_date(from_str):
+                    return False
+            except ValueError:
+                pass
+
+        if to_str:
+            try:
+                if ref_dt > parse_date(to_str):
+                    return False
+            except ValueError:
+                pass
+
+        return True
 
 
 class PolicyCache:
@@ -211,6 +256,7 @@ class RBACPolicyEngine:
             requires_institution_scope=spec.get("requires_institution_scope", False),
             requires_open_access_filter=spec.get("requires_open_access_filter", False),
             is_active=spec.get("is_active", True),
+            visibility_window=spec.get("visibility_window"),
         )
 
     # ─────────────────────────────────────────────────────────────

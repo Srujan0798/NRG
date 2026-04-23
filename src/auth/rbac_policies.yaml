@@ -10,6 +10,9 @@ personas:
   researcher:
     tier: 1
     description: "Full researcher access to own records and public aggregated data"
+    visibility_window:
+      from: "2020-Q1"
+      to: "2030-Q4"
     column_visibility:
       # Wildcard per table: table_name: ["*"] means all columns visible
       researchers: ["*"]
@@ -49,6 +52,9 @@ personas:
   government:
     tier: 2
     description: "Government analyst view — aggregated stats, no individual PII"
+    visibility_window:
+      from: "2024-Q1"
+      to: "2026-Q4"
     column_visibility:
       researchers:
         - "institution_id"
@@ -166,6 +172,9 @@ personas:
   industry:
     tier: 3
     description: "Industry partner view — licensed access, anonymized PII"
+    visibility_window:
+      from: "2025-Q1"
+      to: "2026-Q4"
     column_visibility:
       researchers:
         - "researcher_id"
@@ -250,6 +259,9 @@ personas:
   peer_reviewer:
     tier: 1
     description: "External peer reviewer — read-only access, no export"
+    visibility_window:
+      from: "2024-Q1"
+      to: "2027-Q4"
     column_visibility:
       researchers: ["*"]
       institutions: ["*"]
@@ -281,6 +293,9 @@ personas:
   department_head:
     tier: 2
     description: "Department head — aggregated view scoped to their institution"
+    visibility_window:
+      from: "2024-Q1"
+      to: "2026-Q4"
     column_visibility:
       researchers:
         - "institution_id"
@@ -321,6 +336,9 @@ personas:
   student:
     tier: 3
     description: "Student — open-access publications, no PII"
+    visibility_window:
+      from: "2020-Q1"
+      to: "2030-Q4"
     column_visibility:
       researchers:
         - "name"

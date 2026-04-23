@@ -48,6 +48,8 @@ class AuditEvent:
         _v: Optional[int] = None,
         user_key_hash: Optional[str] = None,
         per_user_binding: Optional[str] = None,
+        jwt_kid: Optional[str] = None,
+        request_fingerprint: Optional[str] = None,
     ):
         self.event_id = event_id or str(uuid.uuid4())[:8]
         self.event_type = event_type
@@ -63,6 +65,8 @@ class AuditEvent:
         self._key_rotation = _key_rotation
         self.user_key_hash = user_key_hash
         self.per_user_binding = per_user_binding
+        self.jwt_kid = jwt_kid
+        self.request_fingerprint = request_fingerprint
 
     def to_dict(self) -> dict:
         result = {}
@@ -133,6 +137,9 @@ class ImmutableAuditLog:
         self.event_count = self._count_events()
         self._persist_merkle_root()
 
+        from src.audit.per_user_keys import get_per_user_key_manager
+        self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
+
     def _derive_user_key(self, user_id: str) -> str:
         """
         Derive a per-user key from user credential + server salt for non-repudiation.
@@ -198,20 +205,30 @@ class ImmutableAuditLog:
         if event.user_id is None:
             event.user_id = "system"
 
-        # Compute per-user key hash for non-repudiation
         user_key = self._derive_user_key(event.user_id)
         event.user_key_hash = event.compute_user_key_hash(user_key)
 
-        # Compute chain hash (uses CHAIN_KEY for chain integrity)
         with self._lock:
             new_hash = self._compute_hash(self.last_hash, event)
 
-            # Compute per-user binding hash (uses user-specific key)
             per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
+
+            if event.jwt_kid is not None or event.request_fingerprint is not None:
+                try:
+                    pk_binding = self._per_user_key_manager.compute_binding(
+                        user_id=event.user_id,
+                        jwt_kid=event.jwt_kid,
+                        request_fingerprint=event.request_fingerprint,
+                        chain_hash=new_hash,
+                        event_serialized=event.serialize(),
+                    )
+                    per_user_hash = pk_binding
+                except Exception:
+                    pass
 
             event_data = event.to_dict()
             event_data["hash"] = new_hash
-            event_data["per_user_binding"] = per_user_hash[:16]  # Store truncated for space
+            event_data["per_user_binding"] = per_user_hash[:16]
 
             with open(self.chain_file, "a") as f:
                 f.write(json.dumps(event_data, default=str) + "\n")
@@ -263,8 +280,8 @@ class ImmutableAuditLog:
             logger.warning(f"Key rotation completed. New key hash: {new_key[:16]}...")
             return new_hash
 
-    def verify_chain(self, key: Optional[str] = None) -> tuple[bool, list[str], int]:
-        """Verify chain integrity, return (valid, errors, valid_event_count)."""
+    def verify_chain(self, key: Optional[str] = None, verify_per_user: bool = True) -> tuple[bool, list[str], int]:
+        """Verify chain integrity and optionally per-user bindings. Returns (valid, errors, valid_event_count)."""
         errors = []
         chain_key = key or self.CHAIN_KEY
         prev_hash = self._genesis_hash()
@@ -278,6 +295,7 @@ class ImmutableAuditLog:
                 try:
                     event_data = json.loads(line)
                     recorded_hash = event_data.get("hash")
+                    stored_binding = event_data.get("per_user_binding")
 
                     event_kwargs = {k: v for k, v in event_data.items() if k != "hash"}
                     if "_v" not in event_data:
@@ -290,8 +308,29 @@ class ImmutableAuditLog:
 
                     if computed_hash != recorded_hash:
                         errors.append(f"Line {line_num}: hash mismatch")
+                        valid_count = line_num - 1
+                        break
                     else:
                         valid_count = line_num
+
+                    if verify_per_user and stored_binding and event_data.get("user_id") != "system":
+                        jwt_kid = event_data.get("jwt_kid")
+                        fp = event_data.get("request_fingerprint")
+                        user_id = event_data.get("user_id", "system")
+                        ev_kwargs = {k: v for k, v in event_data.items()
+                                     if k not in ("hash", "per_user_binding")}
+                        ev = AuditEvent(**ev_kwargs)
+                        valid, err = self._per_user_key_manager.verify_binding(
+                            user_id=user_id,
+                            jwt_kid=jwt_kid,
+                            request_fingerprint=fp,
+                            chain_hash=recorded_hash,
+                            event_serialized=ev.serialize(),
+                            stored_binding=stored_binding,
+                        )
+                        if not valid:
+                            errors.append(f"Line {line_num}: per-user binding failure for {user_id}: {err}")
+                            self.log_tamper_alert(f"Per-user binding broken at line {line_num}: {err}")
 
                     prev_hash = recorded_hash
 
@@ -582,9 +621,9 @@ def log_anomaly(user_id: str, anomaly_type: str, details: dict, identifier: Opti
     return get_audit_log().log_anomaly(user_id, anomaly_type, details, identifier)
 
 
-def verify_chain() -> tuple[bool, list[str], int]:
-    """Verify chain integrity, return (valid, errors, valid_event_count)."""
-    return get_audit_log().verify_chain()
+def verify_chain(verify_per_user: bool = True) -> tuple[bool, list[str], int]:
+    """Verify chain integrity and optionally per-user bindings. Returns (valid, errors, valid_event_count)."""
+    return get_audit_log().verify_chain(verify_per_user=verify_per_user)
 
 
 _chain_health_cache: tuple[float, dict] | None = None
