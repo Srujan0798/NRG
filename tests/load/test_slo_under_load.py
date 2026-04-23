@@ -20,7 +20,23 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-SLO_ENV = os.environ.get("SLO_ENV", "prod")
+SLO_ENV = os.environ.get("SLO_ENV", "dev")
+
+
+def _check_qdrant():
+    """Check if Qdrant is available."""
+    try:
+        import socket
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)
+        sock.connect(("localhost", 6333))
+        sock.close()
+        return True
+    except Exception:
+        return False
+
+
+HAS_QDRANT = _check_qdrant()
 
 from fastapi.testclient import TestClient
 import src.api.main as api_main
@@ -63,12 +79,52 @@ def mock_llm(monkeypatch):
     fake_mesh = FakeLLMMesh(fake)
     import src.config.llm_config as llm_module
     import src.orchestration.nodes.synthesizer as synth_module
+    import src.orchestration.nodes.executor as executor_module
 
     monkeypatch.setattr(llm_module, "get_llm_client", lambda provider=None: fake)
     monkeypatch.setattr(llm_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", lambda provider=None: fake)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
+
+    fake_rag_result = {
+        "retrieved_chunks": [
+            {
+                "chunk_id": "ch_load_001",
+                "publication_id": "PUB-00000000",
+                "title": "Load Test Publication",
+                "content": "This is synthetic content from the load test environment.",
+            }
+        ],
+        "retrieval_metadata": [],
+        "errors": [],
+        "warnings": [],
+        "retrieval_sources": ["rag"],
+    }
+    monkeypatch.setattr(
+        executor_module,
+        "_execute_rag",
+        lambda user_query, user_tier: (fake_rag_result, 50.0),
+    )
+
+    fake_sql_result = {
+        "sql_results": [
+            {"id": "r1", "name": "Dr. Load Test", "institution": "IIT Bombay", "research_area": "AI", "h_index": 42},
+            {"id": "r2", "name": "Dr. Performance", "institution": "IIT Delhi", "research_area": "ML", "h_index": 38},
+        ],
+        "sql_query": "SELECT * FROM researchers LIMIT 10",
+        "errors": [],
+        "warnings": [],
+    }
+    monkeypatch.setattr(
+        executor_module,
+        "_execute_sql",
+        lambda user_query, user_tier: (fake_sql_result, 30.0),
+    )
+
+    import src.security.rate_limiter as rate_module
+    monkeypatch.setattr(rate_module, "check_tier_rate_limit", lambda *args, **kwargs: (True, 1000, 0, {}))
+    monkeypatch.setattr(rate_module, "check_endpoint_rate_limit", lambda *args, **kwargs: (True, 1000, 0, {}))
 
 
 @pytest.fixture
