@@ -26,9 +26,12 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from dotenv import find_dotenv, load_dotenv
+load_dotenv(find_dotenv())
+
 
 class RealLLMClient:
-    """Wrapper for real OpenAI/Anthropic API calls."""
+    """Wrapper for real OpenAI/Anthropic/MiniMax API calls."""
 
     def __init__(self, provider: str, api_key: str, model: str):
         self.provider = provider
@@ -45,12 +48,15 @@ class RealLLMClient:
         elif self.provider == "anthropic":
             import anthropic
             self._client = anthropic.Anthropic(api_key=self.api_key)
+        elif self.provider == "minimax":
+            import requests
+            self._client = requests
         return self._client
 
     def chat(self, messages: list) -> MagicMock:
-        client = self._get_client()
         try:
             if self.provider == "openai":
+                client = self._get_client()
                 response = client.chat.completions.create(
                     model=self.model,
                     messages=[{"role": m["role"], "content": m["content"]} for m in messages],
@@ -59,13 +65,37 @@ class RealLLMClient:
                 )
                 text = response.choices[0].message.content
             elif self.provider == "anthropic":
+                client = self._get_client()
                 response = client.messages.create(
                     model=self.model,
                     max_tokens=1024,
                     system=messages[0]["content"] if messages and messages[0]["role"] == "system" else "",
                     messages=[{"role": m["role"], "content": m["content"]} for m in messages if m["role"] != "system"],
+
                 )
                 text = "".join(block.text for block in response.content)
+            elif self.provider == "minimax":
+                import re
+                import requests
+                payload = {
+                    "model": self.model,
+                    "messages": [{"role": m["role"], "content": m["content"]} for m in messages],
+                    "temperature": 0.1,
+                    "max_tokens": 1024,
+                }
+                response = requests.post(
+                    "https://api.minimaxi.chat/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"},
+                    json=payload,
+                    timeout=60,
+                )
+                response.raise_for_status()
+                raw = response.json()["choices"][0]["message"]["content"]
+                text = re.sub(r'<think>.*?</think>', '', raw, flags=re.DOTALL).strip()
+                if not text or len(text) < 10:
+                    matches = re.findall(r'(SELECT\s+.+?;)\s*(?:\n|$)', raw, re.IGNORECASE | re.DOTALL)
+                    if matches:
+                        text = matches[-1].strip()
             else:
                 text = "SELECT 1"
 
@@ -80,9 +110,9 @@ class RealLLMClient:
 
 def main():
     parser = argparse.ArgumentParser(description="Dhairya 17-query benchmark")
-    parser.add_argument("--llm", choices=["openai", "anthropic"], default=None,
+    parser.add_argument("--llm", choices=["openai", "anthropic", "minimax"], default=None,
                         help="Use real LLM (requires API key env var)")
-    parser.add_argument("--model", default=None, help="Model name (default: gpt-4o or claude-3-5-sonnet-latest)")
+    parser.add_argument("--model", default=None, help="Model name (default: gpt-4o / claude-3-5-sonnet-latest / minimax-m2.7)")
     args = parser.parse_args()
 
     os.environ.setdefault("DATABASE_URL", "sqlite:///db/benchmark_nrg.db")
@@ -93,7 +123,12 @@ def main():
     if args.llm:
         key = os.environ.get(f"{args.llm.upper()}_API_KEY")
         if key:
-            model = args.model or ("gpt-4o" if args.llm == "openai" else "claude-3-5-sonnet-latest")
+            if args.llm == "openai":
+                model = args.model or "gpt-4o"
+            elif args.llm == "anthropic":
+                model = args.model or "claude-3-5-sonnet-latest"
+            elif args.llm == "minimax":
+                model = args.model or "minimax-m2.7"
             llm_provider = RealLLMClient(args.llm, key, model)
             llm_name = f"{args.llm}/{model}"
         else:

@@ -43,15 +43,30 @@ class FakeCloudLLMClient:
             yield response[i:i+10]
 
 
+class FakeLLMMesh:
+    """Mock LLM mesh for load testing."""
+
+    def __init__(self, client):
+        self._client = client
+
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None) -> str:
+        return self._client.generate(system_prompt, user_prompt, conversation_history or [])
+
+    def generate_streaming(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
+        return self._client.generate_streaming(system_prompt, user_prompt, conversation_history or [])
+
+
 @pytest.fixture(autouse=True)
 def mock_llm(monkeypatch):
     """Patch LLM so load tests don't make real API calls."""
     fake = FakeCloudLLMClient()
+    fake_mesh = FakeLLMMesh(fake)
     import src.config.llm_config as llm_module
     import src.orchestration.nodes.synthesizer as synth_module
 
     monkeypatch.setattr(llm_module, "get_llm_client", lambda provider=None: fake)
-    monkeypatch.setattr(synth_module, "get_llm_client", lambda provider=None: fake)
+    monkeypatch.setattr(llm_module, "get_llm_mesh", lambda: fake_mesh)
+    monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", lambda provider=None: fake)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
 
@@ -87,16 +102,67 @@ class TestSLOUnderLoad:
 
         all_results = []
         all_errors = []
-lock = threading.Lock()
+        lock = threading.Lock()
+
+        def user_session(user_idx: int):
+            session_results = []
+            session_errors = []
+            for q in range(5):
+                try:
+                    response = client.post(
+                        "/query",
+                        headers={"Authorization": f"Bearer {token}"},
+                        json={"query": f"load test user {user_idx} query {q}"},
+                    )
+                    session_results.append(response.status_code)
+                except Exception as e:
+                    session_errors.append(str(e))
+                    session_results.append(None)
+            with lock:
+                all_results.extend(session_results)
+                all_errors.extend(session_errors)
+
+        threads = []
+        for i in range(20):
+            t = threading.Thread(target=lambda idx=i: user_session(idx))
+            threads.append(t)
+
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert len(all_errors) == 0, f"Connection errors: {all_errors}"
+        statuses = [r for r in all_results if r is not None]
+        success_count = sum(1 for s in statuses if s == 200)
+        assert success_count == 100, f"Only {success_count}/100 queries succeeded"
+
+    @pytest.mark.timeout(120)
+    def test_20_concurrent_p95_under_8_seconds(self, client):
+        """P95 latency for 20 concurrent queries must be under 8s."""
+        token = _login(client)
+
+        results = []
+        lock = threading.Lock()
 
         def make_query_timed(user_idx: int, query_idx: int):
+            start = time.time()
+            try:
+                response = client.post(
+                    "/query",
+                    headers={"Authorization": f"Bearer {token}"},
+                    json={"query": f"latency test u{user_idx} q{query_idx}"},
+                )
+                latency = time.time() - start
+                return response.status_code, latency
+            except Exception as e:
+                return None, time.time() - start
 
         threads = []
         for i in range(20):
             for j in range(5):
-                t = threading.Thread(
-                    target=lambda u=i, q=j: results.append(make_query_timed(u, q))
-                )
+                idx = (i, j)
+                t = threading.Thread(target=lambda args=idx: results.append(make_query_timed(args[0], args[1])))
                 threads.append(t)
 
         for t in threads:
@@ -122,6 +188,7 @@ lock = threading.Lock()
         token = _login(client)
 
         results = []
+        lock = threading.Lock()
 
         def make_query(user_idx: int, query_idx: int):
             response = client.post(
@@ -134,7 +201,8 @@ lock = threading.Lock()
         threads = []
         for i in range(20):
             for j in range(5):
-                t = threading.Thread(target=lambda u=i, q=j: results.append(make_query(u, q)))
+                idx = (i, j)
+                t = threading.Thread(target=lambda args=idx: results.append(make_query(args[0], args[1])))
                 threads.append(t)
 
         for t in threads:
@@ -151,6 +219,7 @@ lock = threading.Lock()
         token = _login(client)
 
         results = []
+        lock = threading.Lock()
 
         def make_query_timed(user_idx: int, query_idx: int):
             start = time.time()
@@ -168,9 +237,8 @@ lock = threading.Lock()
         threads = []
         for i in range(20):
             for j in range(5):
-                t = threading.Thread(
-                    target=lambda u=i, q=j: results.append(make_query_timed(u, q))
-                )
+                idx = (i, j)
+                t = threading.Thread(target=lambda args=idx: results.append(make_query_timed(args[0], args[1])))
                 threads.append(t)
 
         for t in threads:
@@ -195,6 +263,7 @@ lock = threading.Lock()
 
         results = {"researcher": [], "government": [], "industry": []}
         errors = []
+        lock = threading.Lock()
 
         def make_query(role: str, token: str, i: int):
             try:
@@ -211,9 +280,10 @@ lock = threading.Lock()
         threads = []
         for role, token in tokens.items():
             for i in range(10):
-                t = threading.Thread(
-                    target=lambda r=role, tk=token, idx=i: results[r].append(make_query(r, tk, idx))
-                )
+                role_copy = role
+                token_copy = token
+                idx = i
+                t = threading.Thread(target=lambda rc=role_copy, tc=token_copy, ix=idx: results[rc].append(make_query(rc, tc, ix)))
                 threads.append(t)
 
         for t in threads:

@@ -26,6 +26,7 @@ class TestDataBoundary:
 
         skill.close()
 
+    @pytest.mark.requires_qdrant
     def test_vector_metadata_filtered(self):
         """Test vector results have metadata filtering."""
         skill = RAGSkill()

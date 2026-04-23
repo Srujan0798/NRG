@@ -49,9 +49,9 @@ def pytest_configure(config):
 def _is_service_available(env_var: str) -> bool:
     """Check if an external service is reachable via environment variable or connection."""
     val = os.environ.get(env_var, "").lower()
-    if val in ("0", "false", "no"):
-        return False
-    return True
+    if val in ("1", "true", "yes"):
+        return True
+    return False
 
 
 def pytest_collection_modifyitems(items):

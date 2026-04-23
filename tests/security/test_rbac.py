@@ -23,6 +23,7 @@ class TestRBAC:
 
         skill.close()
 
+    @pytest.mark.requires_db
     def test_tier2_government(self):
         """Test Tier 2 government access."""
         skill = TextToSQLSkill()
@@ -45,6 +46,7 @@ class TestRBAC:
 
         skill.close()
 
+    @pytest.mark.requires_qdrant
     def test_rag_tier_filtering(self):
         """Test RAG respects tier filtering."""
         skill = RAGSkill()

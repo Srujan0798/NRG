@@ -966,9 +966,9 @@ FOLLOW-UP QUERIES:
 
         if "gap analysis" in query_lower or ("high capital" in query_lower and ("low course" in query_lower or "low innovation" in query_lower)):
             fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
-            fy_val = f"{fy_match.group(2)}-{fy_match.group(3)}" if fy_match else None
-            capex_fy = f"financial_year = '{fy_val}'" if fy_val else "financial_year IS NOT NULL"
-            course_fy = f"financial_year = '{fy_val}'" if fy_val else "financial_year IS NOT NULL"
+            gap_fy_val: str | None = f"{fy_match.group(2)}-{fy_match.group(3)}" if fy_match else None
+            capex_fy = f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
+            course_fy = f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
             return (
                 f"WITH CapexData AS (SELECT institute, SUM(capital_assets) as total_capex "
                 f"FROM financial_expenses_capital WHERE {capex_fy} GROUP BY institute), "

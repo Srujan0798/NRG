@@ -13,6 +13,21 @@ class CloudClient:
         return "cloud answer"
 
 
+class CloudMesh:
+    """Fake mesh wrapping CloudClient."""
+
+    def __init__(self):
+        self._client = CloudClient()
+
+    def generate(self, system_prompt, user_prompt, conversation_history=None):
+        return self._client.generate(system_prompt, user_prompt, conversation_history)
+
+    def generate_streaming(self, system_prompt, user_prompt, conversation_history=None):
+        response = self.generate(system_prompt, user_prompt, conversation_history)
+        for chunk in response:
+            yield chunk
+
+
 def test_system_prompt_uses_minimised_evidence_packet():
     prompt = _build_system_prompt(
         user_tier=1,
@@ -79,7 +94,7 @@ def test_system_prompt_redacts_pii_secrets_and_raw_dump_fields():
 
 def test_cloud_synthesis_is_explicitly_gated(monkeypatch):
     monkeypatch.delenv("CLOUD_SYNTHESIS_ALLOWED", raising=False)
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: CloudClient())
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: CloudMesh())
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
 
@@ -102,7 +117,7 @@ def test_synthesizer_node_does_not_preverify_with_cloud_when_gate_is_closed(monk
     def fail_if_called():
         raise AssertionError("cloud client must not be created when cloud synthesis is disabled")
 
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", fail_if_called)
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", fail_if_called)
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
 
@@ -126,7 +141,7 @@ def test_synthesizer_node_does_not_preverify_with_cloud_when_gate_is_closed(monk
 
 def test_cloud_synthesis_reports_provenance_when_allowed(monkeypatch):
     monkeypatch.setenv("CLOUD_SYNTHESIS_ALLOWED", "true")
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: CloudClient())
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: CloudMesh())
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
 
     response, provenance = _synthesize(

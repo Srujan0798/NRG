@@ -115,8 +115,7 @@ class ImmutableAuditLog:
 
     def __init__(self, storage_path: str = ".audit"):
         new_path = Path(storage_path)
-        already_init = "_initialized" in self.__dict__ and self.__dict__.get("_initialized") is True
-        if already_init and self.__dict__.get("storage_path") == new_path:
+        if "_initialized" in self.__dict__ and self.__dict__.get("_initialized") is True and self.__dict__.get("storage_path") == new_path:
             return
         self.__dict__["_initialized"] = True
         self.storage_path = new_path
@@ -129,11 +128,9 @@ class ImmutableAuditLog:
         self.witness_file = self.storage_path / "witness_replicas.jsonl"
         self.revocation_file = self.storage_path / "revoked_tokens.jsonl"
         self._key_history: list[dict] = []
-        self._user_key_cache: dict[str, str] = {}  # user_id -> derived_key_hash
-
+        self._user_key_cache: dict[str, str] = {}
         self.last_hash = self._load_last_hash()
         self.event_count = self._count_events()
-
         self._persist_merkle_root()
 
     def _derive_user_key(self, user_id: str) -> str:

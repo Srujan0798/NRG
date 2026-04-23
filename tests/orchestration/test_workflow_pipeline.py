@@ -61,7 +61,7 @@ def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
     monkeypatch.setattr(executor_module, "TextToSQLSkill", StubTextToSQLSkill)
     monkeypatch.setattr(executor_module, "RAGSkill", StubRAGSkill)
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: None)
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
 
     workflow = NRGWorkflow()
@@ -107,7 +107,7 @@ def test_workflow_surfaces_rag_failures_as_warnings(monkeypatch):
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
     monkeypatch.setattr(executor_module, "TextToSQLSkill", StubTextToSQLSkill)
     monkeypatch.setattr(executor_module, "RAGSkill", FailingRAGSkill)
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: None)
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
 
     workflow = NRGWorkflow()

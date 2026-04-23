@@ -336,6 +336,34 @@ class SQLiteSchemaExtractor:
             "keywords": ["topic", "keyword", "specialization"],
             "researcher_publications": ["author", "wrote", "published"],
             "researcher_labs": ["member", "works in", "affiliated"],
+            "academic_courses_details": [
+                "course", "pg course", "ug course", "phd course", "master course",
+                "innovation curriculum", "credit", "academic", "level of course",
+                "total credit", "curriculum", "iit madras", "iit bombay", "iit hyderabad",
+            ],
+            "innovation_grant_from_govt": [
+                "grant", "funding agency", "government grant", "gov_organisation",
+                "year of receiving", "funding drop", "rising star", "funding trend",
+                "grant received", "yoy", "year-over-year",
+            ],
+            "innovations_at_various_stages_of_technology_readiness_level": [
+                "trl", "technology readiness", "stage of technology", "market ready",
+                "lab validation", "bottleneck", "level 9", "trl 9", "pipeline progression",
+                "level 4", "various stage", "technology readiness level",
+            ],
+            "combined_ipo_patent_data": ["patent", "ipo", "grant", "cost per patent"],
+            "financial_expenses_capital": [
+                "capital expense", "capex", "capital asset", "equipment", "library",
+                "workshop", "high capital", "gap analysis", "financial expense",
+            ],
+            "financial_expenses_operational": [
+                "operational expense", "opex", "salary", "maintenance", "consumable",
+                "seminar", "travel", "utilization audit", "expenditure", "low expenditure",
+            ],
+            "incubation_details": [
+                "incubated", "startup", "incubation", "cohort", "cohort year",
+                "incubated startup", "startup incubated",
+            ],
         }
 
         relevant = set()

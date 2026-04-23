@@ -222,16 +222,20 @@ class TestChaosScenarios:
         def failing_db():
             raise ConnectionError("Database connection lost")
 
+        original_get_db = api_main._get_db
         api_main._get_db = failing_db
-        token = self._login(client)
+        try:
+            token = self._login(client)
 
-        response = client.post(
-            "/query",
-            headers={"Authorization": f"Bearer {token}"},
-            json={"query": "test query"},
-        )
+            response = client.post(
+                "/query",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"query": "test query"},
+            )
 
-        assert response.status_code in [500, 503, 200], "Should handle DB failure"
+            assert response.status_code in [500, 503, 200], "Should handle DB failure"
+        finally:
+            api_main._get_db = original_get_db
 
     def test_vector_db_failure_still_returns_results(self):
         """Vector DB (Qdrant) failure should not block queries entirely."""
