@@ -1,0 +1,354 @@
+# RBAC Policy Configuration for NRG
+# Each persona defines: column visibility, PII masking, output format, data scope, and access limits
+#
+# Adding a new persona = add a YAML entry here. Zero code changes needed.
+
+personas:
+  # ─────────────────────────────────────────────────────────────────
+  # RESEARCHER (Tier 1) — Full access to own + public researcher data
+  # ─────────────────────────────────────────────────────────────────
+  researcher:
+    tier: 1
+    description: "Full researcher access to own records and public aggregated data"
+    column_visibility:
+      # Wildcard per table: table_name: ["*"] means all columns visible
+      researchers: ["*"]
+      institutions: ["*"]
+      labs: ["*"]
+      publications: ["*"]
+      projects: ["*"]
+      funding_records: ["*"]
+      patents: ["*"]
+      collaborations: ["*"]
+      keywords: ["*"]
+      researcher_publications: ["*"]
+      researcher_labs: ["*"]
+      research_documents: ["*"]
+      # Academic benchmark tables
+      academic_courses_details: ["*"]
+      innovation_grant_from_govt: ["*"]
+      innovations_at_various_stages_of_technology_readiness_level: ["*"]
+      combined_ipo_patent_data: ["*"]
+      financial_expenses_capital: ["*"]
+      financial_expenses_operational: ["*"]
+      incubation_details: ["*"]
+    pii_masking:
+      mode: none  # Researchers see full PII for their own data
+    output_format: full  # Raw records + details
+    data_scope: own_and_public
+    max_results: 1000
+    debug_access: true
+    allowed_endpoints: ["*"]
+    allowed_tables: ["*"]
+    export_allowed: true
+    read_only: false
+
+  # ─────────────────────────────────────────────────────────────────
+  # GOVERNMENT (Tier 2) — Aggregated/anonymized view of all data
+  # ─────────────────────────────────────────────────────────────────
+  government:
+    tier: 2
+    description: "Government analyst view — aggregated stats, no individual PII"
+    column_visibility:
+      researchers:
+        - "institution_id"
+        - "state"
+        - "research_area"
+        - "secondary_research_areas"
+        - "years_experience"
+        - "year_joined"
+        - "h_index"
+      institutions:
+        - "institution_id"
+        - "name"
+        - "type"
+        - "state"
+        - "region"
+        - "established_year"
+        - "website"
+      labs:
+        - "lab_id"
+        - "name"
+        - "institution_id"
+        - "department"
+        - "established_year"
+        - "funding_source"
+      publications:
+        - "publication_id"
+        - "title"
+        - "year"
+        - "abstract"
+        - "journal"
+        - "doi"
+        - "citation_count"
+        - "authors"
+      projects:
+        - "project_id"
+        - "title"
+        - "pi_researcher_id"
+        - "funding_id"
+        - "amount"
+        - "source"
+        - "start_date"
+        - "end_date"
+        - "status"
+      funding_records:
+        - "funding_id"
+        - "source"
+        - "amount"
+        - "grant_type"
+        - "duration_months"
+        - "research_area"
+      patents:
+        - "patent_id"
+        - "title"
+        - "inventor_ids"
+        - "filing_date"
+        - "status"
+        - "jurisdiction"
+      collaborations:
+        - "collab_id"
+        - "name"
+        - "institution_ids"
+        - "type"
+        - "start_date"
+        - "end_date"
+      keywords: ["*"]
+      researcher_publications: ["*"]
+      researcher_labs: ["*"]
+      research_documents: ["*"]
+      # Academic — show aggregates only
+      academic_courses_details:
+        - "institute"
+        - "level_of_course"
+        - "financial_year"
+        - "count_*"
+      innovation_grant_from_govt:
+        - "institute"
+        - "gov_organisation_name"
+        - "year_of_receiving"
+        - "sum_grant*"
+        - "avg_grant*"
+      innovations_at_various_stages_of_technology_readiness_level:
+        - "institute"
+        - "stage_of_technology"
+        - "financial_year"
+        - "count_*"
+      combined_ipo_patent_data: ["*"]
+      financial_expenses_capital:
+        - "institute"
+        - "financial_year"
+        - "sum_capital*"
+        - "avg_capital*"
+      financial_expenses_operational:
+        - "institute"
+        - "as_on_year"
+        - "sum_ops*"
+      incubation_details:
+        - "institute"
+        - "cohort_year"
+        - "count_startups"
+    pii_masking:
+      mode: aggregate  # No individual emails, phones, names visible
+      hide_fields: ["email", "phone", "aadhaar_number", "pan_number", "date_of_birth", "address"]
+    output_format: aggregated  # Counts, sums, averages — not raw rows
+    data_scope: all
+    max_results: 500
+    debug_access: false
+    allowed_endpoints: ["*"]
+    allowed_tables: ["*"]
+    export_allowed: true
+    read_only: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # INDUSTRY (Tier 3) — Licensed view, anonymized PII, limited scope
+  # ─────────────────────────────────────────────────────────────────
+  industry:
+    tier: 3
+    description: "Industry partner view — licensed access, anonymized PII"
+    column_visibility:
+      researchers:
+        - "researcher_id"
+        - "name"
+        - "institution_id"
+        - "state"
+        - "research_area"
+        - "years_experience"
+        - "h_index"
+      institutions:
+        - "institution_id"
+        - "name"
+        - "type"
+        - "state"
+      labs:
+        - "lab_id"
+        - "name"
+        - "institution_id"
+        - "department"
+      publications:
+        - "publication_id"
+        - "title"
+        - "year"
+        - "citation_count"
+      projects:
+        - "project_id"
+        - "title"
+        - "source"
+        - "amount"
+        - "status"
+      funding_records:
+        - "funding_id"
+        - "source"
+        - "amount"
+        - "grant_type"
+      patents:
+        - "patent_id"
+        - "title"
+        - "status"
+      collaborations:
+        - "collab_id"
+        - "name"
+        - "type"
+      keywords:
+        - "keyword"
+        - "category"
+      researcher_publications:
+        - "researcher_id"
+        - "publication_id"
+      researcher_labs:
+        - "researcher_id"
+        - "lab_id"
+      research_documents:
+        - "doc_id"
+        - "title"
+        - "category"
+      academic_courses_details: []
+      innovation_grant_from_govt: []
+      innovations_at_various_stages_of_technology_readiness_level: []
+      combined_ipo_patent_data:
+        - "patent_id"
+        - "title"
+        - "status"
+      financial_expenses_capital: []
+      financial_expenses_operational: []
+      incubation_details: []
+    pii_masking:
+      mode: full  # Mask all PII — no individual-level data
+      hide_fields: ["email", "phone", "aadhaar_number", "pan_number", "date_of_birth", "address", "orcid", "personal_phone", "alternate_email"]
+    output_format: anonymized  # Anonymized summaries
+    data_scope: anonymized
+    max_results: 100
+    debug_access: false
+    allowed_endpoints: ["*"]
+    allowed_tables: ["researchers", "institutions", "labs", "publications", "projects", "funding_records", "patents", "collaborations", "keywords", "combined_ipo_patent_data"]
+    export_allowed: false
+    read_only: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # NEW PERSONA: PEER_REVIEWER — Read-only researcher view
+  # ─────────────────────────────────────────────────────────────────
+  peer_reviewer:
+    tier: 1
+    description: "External peer reviewer — read-only access, no export"
+    column_visibility:
+      researchers: ["*"]
+      institutions: ["*"]
+      labs: ["*"]
+      publications: ["*"]
+      projects: ["*"]
+      funding_records: ["*"]
+      patents: ["*"]
+      collaborations: ["*"]
+      keywords: ["*"]
+      researcher_publications: ["*"]
+      researcher_labs: ["*"]
+      research_documents: ["*"]
+    pii_masking:
+      mode: aggregate
+      hide_fields: ["email", "phone", "aadhaar_number", "pan_number", "date_of_birth", "address"]
+    output_format: full
+    data_scope: all
+    max_results: 500
+    debug_access: false
+    allowed_endpoints: ["*"]
+    allowed_tables: ["*"]
+    export_allowed: false
+    read_only: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # NEW PERSONA: DEPARTMENT_HEAD — Government-like but scoped to institution
+  # ─────────────────────────────────────────────────────────────────
+  department_head:
+    tier: 2
+    description: "Department head — aggregated view scoped to their institution"
+    column_visibility:
+      researchers:
+        - "institution_id"
+        - "department"
+        - "state"
+        - "research_area"
+        - "secondary_research_areas"
+        - "years_experience"
+        - "year_joined"
+        - "h_index"
+      institutions: ["*"]
+      labs: ["*"]
+      publications: ["*"]
+      projects: ["*"]
+      funding_records: ["*"]
+      patents: ["*"]
+      collaborations: ["*"]
+      keywords: ["*"]
+      researcher_publications: ["*"]
+      researcher_labs: ["*"]
+      research_documents: ["*"]
+    pii_masking:
+      mode: aggregate
+      hide_fields: ["email", "phone", "aadhaar_number", "pan_number", "date_of_birth", "address"]
+    output_format: aggregated
+    data_scope: institution_only  # Scope limited to their institution
+    max_results: 500
+    debug_access: false
+    allowed_endpoints: ["*"]
+    allowed_tables: ["*"]
+    export_allowed: true
+    read_only: false
+    requires_institution_scope: true
+
+  # ─────────────────────────────────────────────────────────────────
+  # NEW PERSONA: STUDENT — Open-access publications only
+  # ─────────────────────────────────────────────────────────────────
+  student:
+    tier: 3
+    description: "Student — open-access publications, no PII"
+    column_visibility:
+      researchers:
+        - "name"
+        - "institution_id"
+        - "research_area"
+      institutions: ["name", "type", "state"]
+      labs: ["name", "institution_id", "research_area"]
+      publications: ["publication_id", "title", "year", "journal", "doi", "citation_count"]
+      projects: []
+      funding_records: []
+      patents:
+        - "patent_id"
+        - "title"
+        - "status"
+      collaborations: []
+      keywords: ["*"]
+      researcher_publications: []
+      researcher_labs: []
+      research_documents: []
+    pii_masking:
+      mode: full
+      hide_fields: ["email", "phone", "aadhaar_number", "pan_number", "date_of_birth", "address", "orcid", "personal_phone", "alternate_email", "secondary_research_areas"]
+    output_format: anonymized
+    data_scope: open_access  # Only open-access publications
+    max_results: 50
+    debug_access: false
+    allowed_endpoints: ["*"]
+    allowed_tables: ["researchers", "institutions", "labs", "publications", "patents", "keywords"]
+    export_allowed: false
+    read_only: true
+    requires_open_access_filter: true

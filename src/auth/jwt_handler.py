@@ -167,6 +167,7 @@ class JWTHandler:
             "user_id": user.get("user_id", f"{role}-{username.lower()}"),
             "username": username.lower(),
             "role": role,
+            "persona": role,  # Backward compat: persona name = role name for built-in tiers
             "tier": role_config["tier"],
             "researcher_id": user.get("researcher_id"),
             "groups": role_config["groups"],
@@ -254,6 +255,7 @@ class JWTHandler:
             "user_id": claims["sub"],
             "username": claims["username"],
             "role": claims["role"],
+            "persona": claims.get("persona", claims["role"]),
             "tier": claims["tier"],
             "researcher_id": claims.get("researcher_id"),
             "groups": claims.get("groups", []),
@@ -297,6 +299,7 @@ class JWTHandler:
             "token_type": token_type,
             "username": user["username"],
             "role": role,
+            "persona": user.get("persona", role),  # persona name for policy resolution
             "tier": user["tier"],
             "groups": user.get("groups", ROLE_CONFIG[role]["groups"]),
             "scope": user.get("scope", ROLE_CONFIG[role]["scope"]),
