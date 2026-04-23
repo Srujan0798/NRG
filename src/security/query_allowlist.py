@@ -46,7 +46,7 @@ BLOCKED_PATTERNS = [
 ]
 
 ALLOWED_PATTERN = re.compile(
-    r"^\s*SELECT\b",
+    r"^\s*(SELECT|WITH)\b",
     re.IGNORECASE | re.DOTALL,
 )
 

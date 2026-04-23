@@ -425,5 +425,6 @@ class TestAuditChainLogging:
         consent_service.export_user_data(user_id)
 
         assert audit_log.event_count > before_export
-        recent = audit_log.get_recent_events(1)[0]
-        assert recent["event_type"] == "data_export"
+        recent = audit_log.get_recent_events(10)
+        export_events = [e for e in recent if e.get("event_type") == "data_export" and e.get("user_id") == user_id]
+        assert len(export_events) > 0, f"Expected data_export event for {user_id}, got {[e.get('event_type') for e in recent]}"

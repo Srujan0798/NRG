@@ -153,29 +153,29 @@ class TestPromptSanitiserBenign:
         """Aadhaar numbers should be replaced in sanitised output."""
         query = "Researcher ID is 1234-5678-9012"
         sanitised, detected = self.SANITISER.sanitise_prompt(query)
-        assert "[AADHAAR]" in sanitised
-        assert "aadhaar" in detected
+        assert "[AADHAAR" in sanitised
+        assert any("aadhaar" in d for d in detected)
 
     def test_sanitise_pan_replaced(self):
         """PAN numbers should be replaced."""
         query = "PAN is ABCDE1234F"
         sanitised, detected = self.SANITISER.sanitise_prompt(query)
-        assert "[PAN]" in sanitised
-        assert "pan" in detected
+        assert "[PAN" in sanitised
+        assert any("pan" in d for d in detected)
 
     def test_sanitise_phone_replaced(self):
         """Phone numbers should be replaced."""
         query = "Call me at 9876543210"
         sanitised, detected = self.SANITISER.sanitise_prompt(query)
-        assert "[PHONE]" in sanitised
-        assert "phone" in detected
+        assert "[PHONE" in sanitised
+        assert any("phone" in d for d in detected)
 
     def test_sanitise_email_replaced(self):
         """Email addresses should be replaced."""
         query = "Email researcher@iitgn.ac.in"
         sanitised, detected = self.SANITISER.sanitise_prompt(query)
-        assert "[EMAIL]" in sanitised
-        assert "email" in detected
+        assert "[EMAIL" in sanitised
+        assert any("email" in d for d in detected)
 
 
 class TestPromptSanitiserAttacks:
@@ -320,25 +320,25 @@ class TestPromptSanitiserPII:
         result = self.SANITISER.validate_query({"query": "My Aadhaar is 1234-5678-9012"})
         assert result["valid"] is False
         assert result["reason"] == "DLP_VIOLATION"
-        assert result["pii_type"] == "aadhaar"
+        assert "aadhaar" in result.get("pii_type", "")
 
     def test_pan_blocked(self):
         """PAN numbers detected and blocked."""
         result = self.SANITISER.validate_query({"query": "PAN: ABCDE1234F"})
         assert result["valid"] is False
-        assert result["pii_type"] == "pan"
+        assert "pan" in result.get("pii_type", "")
 
     def test_phone_blocked(self):
         """Phone numbers detected and blocked."""
         result = self.SANITISER.validate_query({"query": "Call 9876543210"})
         assert result["valid"] is False
-        assert result["pii_type"] == "phone"
+        assert "phone" in result.get("pii_type", "")
 
     def test_email_blocked(self):
         """Email addresses detected and blocked."""
         result = self.SANITISER.validate_query({"query": "Email test@example.com"})
         assert result["valid"] is False
-        assert result["pii_type"] == "email"
+        assert "email" in result.get("pii_type", "")
 
 
 if __name__ == "__main__":

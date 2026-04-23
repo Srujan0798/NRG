@@ -33,10 +33,10 @@ class TestLegitimateQueries:
         sanitiser = PromptSanitiser()
         prompt = "Contact me at test@example.com or call 9876543210"
         sanitised, detected = sanitiser.sanitise_prompt(prompt)
-        assert "email" in detected
-        assert "phone" in detected
-        assert "[EMAIL]" in sanitised
-        assert "[PHONE]" in sanitised
+        assert any("email" in d for d in detected)
+        assert any("phone" in d for d in detected)
+        assert "[EMAIL" in sanitised
+        assert "[PHONE" in sanitised
 
     def test_sanitise_prompt_no_pii(self):
         sanitiser = PromptSanitiser()
@@ -68,10 +68,10 @@ class TestInjectionSeverity:
         assert result["valid"] is False
         assert result["reason"] == "PROMPT_INJECTION"
 
-    def test_warn_pattern_is_stripped_not_blocked(self):
+    def test_warn_pattern_is_blocked(self):
+        """Triple-backtick SQL probes are blocked as schema_probing."""
         query = "Find AI papers ```SELECT * FROM researchers``` in 2024"
         result = self.SANITISER.validate_query({"query": query})
-        assert result["valid"] is True
-        assert "injection_warnings" in result
-        assert "delimiter_fence" in result["injection_warnings"]
-        assert "```" not in result["sanitised_query"]
+        assert result["valid"] is False
+        assert result["reason"] == "PROMPT_INJECTION"
+        assert "schema_probing" in result.get("details", "")

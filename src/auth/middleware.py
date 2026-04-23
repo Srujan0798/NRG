@@ -11,6 +11,17 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.auth.jwt_handler import AuthError, JWTHandler
 
 
+TIER_COLUMN_VISIBILITY = {
+    2: ["researcher_id", "name", "institution_id", "department", "state",
+        "research_area", "secondary_research_areas", "years_experience",
+        "year_joined", "h_index", "orcid", "email", "phone"],
+    3: ["researcher_id", "name", "institution_id", "state",
+        "research_area", "years_experience", "h_index"],
+}
+
+SENSITIVE_COLUMNS = {"email", "phone", "aadhaar_number", "pan_number", "date_of_birth"}
+
+
 class AuthContextMiddleware(BaseHTTPMiddleware):
     """Attach decoded auth claims to request state when a bearer token is present."""
 
@@ -21,11 +32,12 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request.state.auth_claims = None
         authorization = request.headers.get("Authorization")
+        client_ip = request.client.host if request.client else None
 
         if authorization and authorization.startswith("Bearer "):
             token = authorization.replace("Bearer ", "", 1)
             try:
-                request.state.auth_claims = self.jwt_handler.verify_access_token(token)
+                request.state.auth_claims = self.jwt_handler.verify_access_token(token, client_ip=client_ip)
             except AuthError:
                 request.state.auth_claims = None
 
@@ -55,20 +67,40 @@ def require_roles(*roles: str) -> Callable[[dict], dict]:
     return dependency
 
 
+def get_user_tier(claims: dict) -> int:
+    """Extract tier from JWT claims, defaulting to most restrictive (tier 1)."""
+    tier = claims.get("tier")
+    if isinstance(tier, int) and tier in (1, 2, 3):
+        return tier
+    return 1
+
+
+def _filter_columns_by_tier(record: dict, allowed_columns: list[str]) -> dict:
+    """Filter record to only include allowed columns, redacting sensitive ones."""
+    filtered = {}
+    for col in allowed_columns:
+        if col in record:
+            filtered[col] = record[col]
+    for sensitive in SENSITIVE_COLUMNS:
+        if sensitive in record and sensitive not in allowed_columns:
+            filtered[sensitive] = None
+    return filtered
+
+
 def filter_researcher_records(records: list[dict], claims: dict) -> dict:
     role = claims["role"]
+    tier = get_user_tier(claims)
+    tier_columns = TIER_COLUMN_VISIBILITY.get(tier, [])
 
     if role == "researcher":
         own_researcher_id = claims.get("researcher_id")
-        return {
-            "role": role,
-            "results": [
-                _full_researcher_record(record)
-                if record.get("researcher_id") == own_researcher_id
-                else _public_researcher_record(record)
-                for record in records
-            ],
-        }
+        results = []
+        for record in records:
+            if record.get("researcher_id") == own_researcher_id:
+                results.append(_full_researcher_record(record, tier_columns))
+            else:
+                results.append(_public_researcher_record(record))
+        return {"role": role, "tier": tier, "results": results}
 
     if role == "government":
         state_counts = Counter(record.get("state", "unknown") for record in records)
@@ -77,24 +109,28 @@ def filter_researcher_records(records: list[dict], claims: dict) -> dict:
         )
         return {
             "role": role,
+            "tier": tier,
             "results": {
                 "total_researchers": len(records),
                 "state_distribution": dict(state_counts),
                 "research_area_distribution": dict(area_counts),
-                "sample_records": [_government_record(record) for record in records[:5]],
+                "sample_records": [_government_record(record, tier_columns) for record in records[:5]],
             },
         }
 
     if role == "industry":
         return {
             "role": role,
-            "results": [_licensed_researcher_record(record) for record in records],
+            "tier": tier,
+            "results": [_licensed_researcher_record(record, tier_columns) for record in records],
         }
 
     raise HTTPException(status_code=403, detail="Unsupported role")
 
 
-def _full_researcher_record(record: dict) -> dict:
+def _full_researcher_record(record: dict, tier_columns: list[str]) -> dict:
+    if tier_columns:
+        return _filter_columns_by_tier(record, tier_columns)
     return dict(record)
 
 
@@ -116,8 +152,8 @@ def _public_researcher_record(record: dict) -> dict:
     }
 
 
-def _government_record(record: dict) -> dict:
-    return {
+def _government_record(record: dict, tier_columns: list[str]) -> dict:
+    base = {
         "institution_id": record.get("institution_id"),
         "state": record.get("state"),
         "research_area": record.get("research_area"),
@@ -126,10 +162,13 @@ def _government_record(record: dict) -> dict:
         "year_joined": record.get("year_joined"),
         "h_index": record.get("h_index"),
     }
+    if tier_columns:
+        return _filter_columns_by_tier(base, tier_columns)
+    return base
 
 
-def _licensed_researcher_record(record: dict) -> dict:
-    return {
+def _licensed_researcher_record(record: dict, tier_columns: list[str]) -> dict:
+    base = {
         "researcher_id": record.get("researcher_id"),
         "name": record.get("name"),
         "institution_id": record.get("institution_id"),
@@ -141,3 +180,8 @@ def _licensed_researcher_record(record: dict) -> dict:
         "h_index": record.get("h_index"),
         "licensed": True,
     }
+    if tier_columns:
+        result = _filter_columns_by_tier(base, tier_columns)
+        result["licensed"] = True
+        return result
+    return base

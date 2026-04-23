@@ -7,6 +7,7 @@ from typing import Dict, Any
 
 from .embedder import Embedder, FALLBACK_MODEL
 from .retriever import Retriever
+from src.observability.langfuse_tracer import _init_langfuse
 
 
 logger = logging.getLogger(__name__)
@@ -43,13 +44,39 @@ class RAGSkill:
         Returns top-K chunks with source_ids and metadata.
         No external API calls at any point.
         """
-        query_vector = self.embedder.embed_single(query)
+        client = _init_langfuse()
+        trace = None
+        span = None
+        if client:
+            try:
+                trace = client.trace(name="nrg.rag")
+                span = trace.span(name="rag_retrieval")
+            except Exception:
+                client = None
 
-        results: Dict[str, Any] = self.retriever.retrieve(
-            query_vector=query_vector, user_tier=user_tier, top_k=top_k
-        )
+        try:
+            query_vector = self.embedder.embed_single(query)
 
-        return results
+            results: Dict[str, Any] = self.retriever.retrieve(
+                query_vector=query_vector, user_tier=user_tier, top_k=top_k
+            )
+
+            chunks = results.get("chunks", [])
+            if span:
+                span.update(metadata={"latency_ms": 0, "chunks_retrieved": len(chunks), "node": "rag"})
+            if trace:
+                trace.update(metadata={"node": "rag", "chunks_retrieved": len(chunks)})
+
+            return results
+        except Exception as e:
+            if span:
+                span.update(status="error", output=str(e))
+            if trace:
+                trace.update(status="error", metadata={"error": str(e)})
+            raise
+        finally:
+            if span:
+                span.end()
 
     def search(self, query: str, user_tier: int = 1, top_k: int = 5) -> list[dict[str, Any]]:
         """Return flattened search results for scripts and smoke checks."""

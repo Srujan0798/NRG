@@ -8,7 +8,7 @@ import re
 from typing import Any, TypedDict, Generator
 from pathlib import Path
 
-from src.config.llm_config import get_llm_client
+from src.config.llm_config import get_llm_client, get_llm_mesh
 from src.config.local_llm import get_local_llm_client, LlamaCppClient
 from src.audit import log_llm_call
 from src.observability.langfuse_tracer import trace_llm_call
@@ -363,11 +363,11 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
     )
 
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
-    client = get_llm_client() if cloud_allowed else None
+    mesh = get_llm_mesh() if cloud_allowed else None
 
     streaming_response = ""
 
-    if client:
+    if mesh:
         system_prompt = _build_system_prompt(
             user_tier=user_tier,
             sources=data_sources,
@@ -376,16 +376,16 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
             context_summary=context_summary,
         )
 
-        budget.provider = getattr(client, "provider", "unknown") if hasattr(client, "provider") else "cloud"
-        budget.model = getattr(client, "model", "unknown") if hasattr(client, "model") else "cloud"
+        budget.provider = "sovereign-mesh"
+        budget.model = "mesh"
 
         within_budget, budget_msg = budget.check_budget(system_prompt + user_query)
         if not within_budget:
             logger.warning("Budget exceeded: %s, falling back to local", budget_msg)
 
-        if hasattr(client, "generate_streaming"):
+        if hasattr(mesh, "generate_streaming"):
             try:
-                for token in client.generate_streaming(
+                for token in mesh.generate_streaming(
                     system_prompt,
                     user_query,
                     trimmed_history,
@@ -407,7 +407,7 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
                 logger.warning("Streaming failed: %s, trying non-streaming", e)
 
         try:
-            response = client.generate(
+            response = mesh.generate(
                 system_prompt,
                 user_query,
                 trimmed_history,
@@ -490,20 +490,20 @@ def _synthesize(
     """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback."""
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
 
-    # Try 1: Cloud LLM, only when explicitly allowed.
-    client = get_llm_client() if cloud_allowed else None
-    if client:
-        system_prompt = _build_system_prompt(
-            user_tier=user_tier,
-            sources=sources,
-            sql_results=sql_results,
-            chunks=chunks,
-            context_summary=context_summary,
-        )
-        user_prompt = f"User Query: {query}"
+    # Try 1: Cloud LLM via SovereignLLMMesh (15s budget, health-weighted, parallel race)
+    if cloud_allowed:
         try:
-            logger.info("Using cloud LLM for synthesis")
-            response = client.generate(
+            mesh = get_llm_mesh()
+            system_prompt = _build_system_prompt(
+                user_tier=user_tier,
+                sources=sources,
+                sql_results=sql_results,
+                chunks=chunks,
+                context_summary=context_summary,
+            )
+            user_prompt = f"User Query: {query}"
+            logger.info("Using SovereignLLMMesh for synthesis (15s budget, health-weighted)")
+            response = mesh.generate(
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
@@ -524,13 +524,13 @@ def _synthesize(
                         },
                         "redaction_counts": _redaction_counts(sql_results, chunks),
                     },
-                    getattr(client, "model", "cloud-llm"),
+                    "sovereign-mesh",
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for cloud LLM", exc_info=True)
             return response, {"synth": "cloud_llm", "cloud_synthesis_used": True}
         except Exception as e:
-            logger.warning(f"Cloud LLM failed: {e}, trying local LLM")
+            logger.warning(f"Cloud LLM mesh failed: {e}, trying local LLM")
 
 # Try 2: Local SLM
     local_client = get_local_llm_client()
@@ -551,6 +551,7 @@ def _synthesize(
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
             )
+            response = response.rstrip() + "\n\n[Note: Response generated using local model for faster service]"
             # Audit: log local LLM synthesis call
             try:
                 log_llm_call(
@@ -804,7 +805,7 @@ def _fallback_synthesis(
     lines.append("")
     lines.append("─" * 60)
     if sql_results or chunks:
-        lines.append("  [Fallback Mode: Intelligent formatting without cloud LLM]")
+        lines.append("  [Note: Structured summary — AI synthesis temporarily unavailable]")
     else:
         lines.append("  No data found for this query.")
     lines.append("─" * 60)
@@ -917,7 +918,10 @@ def _format_generic_table(lines: list, sql_results: list) -> list:
 
 def _format_chunks(lines: list, chunks: list) -> list:
     for i, chunk in enumerate(chunks[:3], 1):
-        content = chunk.get("content", chunk) if isinstance(chunk, dict) else chunk
+        if isinstance(chunk, dict):
+            content = chunk.get("content") or chunk.get("excerpt") or chunk.get("chunk_text") or ""
+        else:
+            content = str(chunk) if chunk else ""
         if len(content) > 200:
             content = content[:197] + "..."
         lines.append(f"  Excerpt {i}:")
@@ -930,7 +934,7 @@ def _format_chunks(lines: list, chunks: list) -> list:
 
 
 def _citation_for_row(row: dict) -> str:
-    for key in ("publication_id", "researcher_id", "funding_id", "lab_id", "institution_id"):
+    for key in ("publication_id", "funding_id"):
         if row.get(key):
             return f"[cite:{row[key]}:0]"
     return "[cite:structured:0]"

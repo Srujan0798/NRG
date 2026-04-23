@@ -91,7 +91,13 @@ class TestRouterEdgeCases:
 
 
 class TestRouterConfidenceThresholds:
-    """Phase 1 - Confidence threshold enforcement tests."""
+    """Phase 1 - Confidence threshold tests."""
+
+    def setup_method(self):
+        RoutingMetrics.reset()
+
+    def teardown_method(self):
+        RoutingMetrics.reset()
 
     def test_high_confidence_structured(self):
         """High confidence structured query routes correctly."""
@@ -102,16 +108,20 @@ class TestRouterConfidenceThresholds:
 
     def test_low_confidence_upgraded_to_hybrid(self):
         """Queries with confidence < 0.6 should be upgraded to hybrid."""
-        result = router_node({"user_query": "Who is doing the best research?"})
-        assert result["intent"] == "hybrid"
-        assert result["routing_confidence"] >= CONFIDENCE_THRESHOLD_LOW
-        assert result["routing_decision"] == "text_to_sql+rag"
+        with patch("src.orchestration.nodes.router._classify_intent_via_llm", return_value="hybrid"):
+            result = router_node({"user_query": "Who is doing the best research?"})
+            assert result["intent"] == "hybrid"
+            assert result["routing_confidence"] >= CONFIDENCE_THRESHOLD_LOW
+            assert result["routing_decision"] == "text_to_sql+rag"
 
     def test_confidence_threshold_configurable(self):
         """Confidence thresholds should be configurable via environment variables."""
-        with patch.dict(os.environ, {"ROUTER_CONFIDENCE_THRESHOLD_LOW": "0.7"}):
-            result = router_node({"user_query": "What is AI?"})
-            if result["routing_confidence"] < 0.7:
+        with patch.dict(os.environ, {"ROUTER_CONFIDENCE_THRESHOLD_LOW": "0.9"}):
+            mod = importlib.import_module("src.orchestration.nodes.router")
+            importlib.reload(mod)
+            RoutingMetrics.reset()
+            result = mod.router_node({"user_query": "What is AI?"})
+            if result["routing_confidence"] < 0.9:
                 assert result["intent"] == "hybrid"
 
 
@@ -437,9 +447,9 @@ class TestRouterEvaluationDataset:
         with open(dataset_path) as f:
             return json.load(f)
 
-    def test_dataset_has_50_queries(self, eval_dataset):
-        """Dataset should have exactly 50 queries."""
-        assert len(eval_dataset["test_cases"]) == 50
+    def test_dataset_has_60_queries(self, eval_dataset):
+        """Dataset should have exactly 60 queries (50 original + 10 edge cases)."""
+        assert len(eval_dataset["test_cases"]) == 60
 
     def test_dataset_covers_all_categories(self, eval_dataset):
         """Dataset should cover all expected categories."""
@@ -502,7 +512,7 @@ class TestRouterEvaluationDataset:
 
 
 class TestRouterAgainstEvaluationDataset:
-    """Full evaluation of router against the 50-query dataset."""
+    """Full evaluation of router against the 60-query dataset."""
 
     @pytest.fixture
     def eval_dataset(self):

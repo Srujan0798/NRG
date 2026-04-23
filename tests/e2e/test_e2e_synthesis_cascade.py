@@ -171,11 +171,13 @@ class TestLLMCascadeFallback:
         Verify synthesizer has rule_based synthesis as ultimate fallback.
         Even if ALL LLMs fail, rule-based must produce a response.
         """
-        from src.orchestration.nodes.synthesizer import SYNTHESIZER_FALLBACK_CHAINS
+        from src.orchestration.nodes.synthesizer import _fallback_synthesis
 
-        assert "rule_based" in SYNTHESIZER_FALLBACK_CHAINS or \
-               hasattr(SYNTHESIZER_FALLBACK_CHAINS, "__contains__"), \
-            "Synthesizer must have rule_based as final fallback"
+        assert callable(_fallback_synthesis), \
+            "Synthesizer must have _fallback_synthesis as final fallback"
+        result = _fallback_synthesis("test query", [], [], "", "", "", 1)
+        assert isinstance(result, str) and len(result) > 0, \
+            "_fallback_synthesis must return a non-empty string"
 
 
 class TestLocalLLMAsSecondary:

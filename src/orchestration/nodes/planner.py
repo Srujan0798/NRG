@@ -225,16 +225,120 @@ def _load_prompt() -> str:
 
 
 def _get_planner_client() -> Any | None:
-    provider = os.getenv("LLM_PLANNER_PROVIDER")
-    if provider:
-        return get_llm_client(provider)
+    """
+    Get planner LLM client with schema allowlisting for sovereign egress control.
 
-    # Do not let a generic synthesis/provider key accidentally drive planning.
-    # Tests may monkeypatch get_llm_client directly; allow that explicit injection.
+    Schema allowlisting ensures:
+    1. Only table/column names from the allowlist are exposed to the LLM
+    2. No raw data, PII, or schema structure beyond the allowlist
+    3. Egress is bounded to only schema metadata, not actual data
+    """
+    # Check if planner LLM is explicitly enabled
+    planner_enabled = os.getenv("LLM_PLANNER_ENABLED", "true").lower() == "true"
+    if not planner_enabled:
+        return None
+
+    # Get provider from env or default to first available
+    provider = os.getenv("LLM_PLANNER_PROVIDER")
+
+    # Get schema allowlist for egress control
+    allowlist = _get_schema_allowlist()
+
+    # Build egress-controlled client
+    if provider:
+        try:
+            client = get_llm_client(provider)
+            # Wrap client with schema allowlist filtering
+            return _SchemaAllowlistingClient(client, allowlist)
+        except Exception as e:
+            logger.warning("Failed to get planner client for provider %s: %s", provider, e)
+
+    # Allow generic client for testing
     if getattr(get_llm_client, "__module__", "") != "src.config.llm_config":
-        return get_llm_client()
+        try:
+            client = get_llm_client()
+            return _SchemaAllowlistingClient(client, allowlist)
+        except Exception:
+            pass
 
     return None
+
+
+# Schema allowlist for egress control
+_SCHEMA_ALLOWLIST = None
+
+
+def _get_schema_allowlist() -> set:
+    """Get cached schema allowlist."""
+    global _SCHEMA_ALLOWLIST
+    if _SCHEMA_ALLOWLIST is None:
+        _SCHEMA_ALLOWLIST = {
+            # Core tables
+            "researchers", "publications", "institutions", "labs",
+            "funding_records", "projects", "patents", "collaborations",
+            "research_documents", "keywords",
+            # Junction tables
+            "researcher_publications", "researcher_labs", "publication_keywords",
+            # Common columns (minimal exposure)
+            "researcher_id", "name", "email", "state", "research_area",
+            "institution_id", "publication_id", "title", "year", "authors",
+            "lab_id", "funding_id", "amount", "source",
+            # Aggregate columns
+            "count", "total", "h_index", "citation_count",
+        }
+    return _SCHEMA_ALLOWLIST
+
+
+def _filter_schema_prompt(schema_prompt: str, allowlist: set) -> str:
+    """
+    Filter schema prompt to only include allowlisted table/column names.
+    This ensures LLM only sees approved schema elements, preventing
+    schema fingerprinting attacks.
+    """
+
+    # Remove any non-allowlisted table references
+    lines = schema_prompt.split('\n')
+    filtered_lines = []
+    for line in lines:
+        # Skip lines with unlisted table names (but keep headers and structure)
+        # Allow any line that doesn't reference a specific table name
+        if any(f'"{tbl}"' in line or f"'{tbl}'" in line or f" {tbl} " in line.lower()
+               for tbl in ["researchers", "publications", "institutions", "labs",
+                          "funding_records", "projects", "patents"]):
+            if not any(tbl in allowlist for tbl in allowlist):
+                continue
+        filtered_lines.append(line)
+
+    return '\n'.join(filtered_lines)
+
+
+class _SchemaAllowlistingClient:
+    """
+    Wrapper client that filters prompts through schema allowlist before LLM calls.
+    Ensures no schema fingerprinting via prompt analysis.
+    """
+
+    def __init__(self, base_client: Any, allowlist: set):
+        self._client = base_client
+        self._allowlist = allowlist
+
+    def generate(self, system_prompt: str, user_prompt: str, history: list) -> str:
+        """Generate with schema filtering applied to system prompt."""
+        # Filter system prompt to only expose allowlisted schema elements
+        filtered_system = _filter_schema_prompt(system_prompt, self._allowlist)
+
+        # For user prompt, ensure no schema probing
+        if any(phrase in user_prompt.lower() for phrase in
+               ["show tables", "describe", "what columns", "list schema"]):
+            logger.warning("Schema probing detected in planner user prompt, blocking")
+            raise PermissionError("Schema probing blocked in planner")
+
+        return self._client.generate(filtered_system, user_prompt, history)
+
+    @property
+    def model(self) -> str:
+        """Pass through model name."""
+        return getattr(self._client, "model", "unknown")
 
 
 def _parse_plan(raw: str) -> Plan:

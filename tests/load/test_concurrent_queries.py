@@ -17,7 +17,10 @@ import src.api.main as api_main
 
 
 class StubWorkflow:
+    call_count = 0
+
     def run(self, query: str, user_tier: int = 1, session_id: str | None = None, user_id: str | None = None, **kwargs):
+        StubWorkflow.call_count += 1
         return {
             "query_id": "query-1",
             "session_id": session_id or "session-1",
@@ -41,6 +44,20 @@ def _login(client: TestClient, username: str, password: str) -> str:
     return response.json()["access_token"]
 
 
+def _make_query(client: TestClient, token: str, query: str, results: list, errors: list):
+    """Thread-safe query helper."""
+    try:
+        response = client.post(
+            "/query",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"query": query},
+        )
+        results.append(response.status_code)
+    except Exception as e:
+        errors.append(str(e))
+        results.append(None)
+
+
 class TestConcurrentQueries:
     """50 concurrent queries → no crashes, P95 < 15s"""
 
@@ -51,6 +68,7 @@ class TestConcurrentQueries:
 
         results = []
         errors = []
+        lock = threading.Lock()
 
         def make_query(i: int):
             try:
@@ -59,14 +77,16 @@ class TestConcurrentQueries:
                     headers={"Authorization": f"Bearer {token}"},
                     json={"query": f"researcher query {i}"},
                 )
-                return response.status_code
+                with lock:
+                    results.append(response.status_code)
             except Exception as e:
-                errors.append(str(e))
-                return None
+                with lock:
+                    errors.append(str(e))
+                    results.append(None)
 
         threads = []
         for i in range(50):
-            t = threading.Thread(target=lambda idx=i: results.append(make_query(idx)))
+            t = threading.Thread(target=make_query, args=(i,))
             threads.append(t)
 
         for t in threads:

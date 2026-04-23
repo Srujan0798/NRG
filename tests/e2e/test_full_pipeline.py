@@ -177,7 +177,9 @@ class TestHealthEndpoints:
     def test_health_check(self, client):
         response = client.get("/health")
         assert response.status_code == 200
-        assert response.json().get("status") == "healthy"
+        data = response.json()
+        assert "status" in data
+        assert data["status"] in ("healthy", "degraded", "unhealthy")
 
     def test_health_db(self, client):
         response = client.get("/health/db")

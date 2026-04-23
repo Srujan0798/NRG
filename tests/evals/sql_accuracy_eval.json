@@ -1,0 +1,143 @@
+{
+  "version": "1.0",
+  "description": "NRG Text-to-SQL Accuracy Evaluation Dataset — based on Dhairya's 17-query audit",
+  "generated_from": "docs/reports/sql_audit_dhairya.md",
+  "target_accuracy": 12,
+  "total_queries": 17,
+  "queries": [
+    {
+      "id": "q01",
+      "question": "Which curriculum is most innovation-intensive according to credits-based analysis?",
+      "category": "simple_aggregation",
+      "status": "correct",
+      "notes": "Simple SUM/GROUP BY with ORDER BY — Q1"
+    },
+    {
+      "id": "q02",
+      "question": "What is the PhD to undergraduate researcher ratio for IIT Bombay?",
+      "category": "ratio_percentage",
+      "status": "format_wrong",
+      "notes": "Computed ratio instead of showing per-level counts — Q2"
+    },
+    {
+      "id": "q03",
+      "question": "Which funding agencies showed a grant drop of more than 50% year-over-year?",
+      "category": "yoy_growth",
+      "status": "correct",
+      "notes": "CTE pattern used but aggregation level was wrong — partial success"
+    },
+    {
+      "id": "q04",
+      "question": "What are the top 5 funding agencies by total amount received?",
+      "category": "simple_aggregation",
+      "status": "no_query",
+      "notes": "ORDER BY without aggregation — Q4 failed completely"
+    },
+    {
+      "id": "q05",
+      "question": "What percentage of IIT Madras innovations are at Lab Validation stage?",
+      "category": "ratio_percentage",
+      "status": "wrong",
+      "notes": "Calculated correctly but question interpretation off — Q5"
+    },
+    {
+      "id": "q06",
+      "question": "How many TRL-9 Market Ready innovations does IIT Madras have?",
+      "category": "filter_by_institute",
+      "status": "no_query",
+      "notes": "String mismatch: TRL 9 vs Level 9 — Q6 failed completely"
+    },
+    {
+      "id": "q07",
+      "question": "What is the cost of innovation (grant per patent granted) by institute?",
+      "category": "cost_per_unit",
+      "status": "wrong",
+      "notes": "JOIN on applicants vs institute — Q7 wrong join column"
+    },
+    {
+      "id": "q08",
+      "question": "How many PG courses were added at IIT Madras in the last 3 years?",
+      "category": "filter_by_institute",
+      "status": "correct",
+      "notes": "Basic filter + IN clause — Q8 correct"
+    },
+    {
+      "id": "q09",
+      "question": "Which institution has the most PhD courses?",
+      "category": "institute_ranking",
+      "status": "correct",
+      "notes": "Simple COUNT/GROUP BY with LIMIT — Q9 correct"
+    },
+    {
+      "id": "q10",
+      "question": "How does IIT Madras PhD enrollment compare to their undergraduate numbers?",
+      "category": "followup_query",
+      "status": "wrong",
+      "notes": "Switched to student_strength table instead of courses — Q10 wrong domain"
+    },
+    {
+      "id": "q11",
+      "question": "What is the year-over-year growth rate for PG courses at IIT Madras?",
+      "category": "yoy_growth",
+      "status": "correct",
+      "notes": "Window function used but wrong metric — partial success"
+    },
+    {
+      "id": "q12",
+      "question": "Show the strategy shift where UG courses stopped but PhD courses spiked",
+      "category": "yoy_growth",
+      "status": "wrong",
+      "notes": "Queried phd_students instead of courses — Q12 wrong table"
+    },
+    {
+      "id": "q13",
+      "question": "What is the correlation between number of courses and startup count by institute?",
+      "category": "cross_table_correlation",
+      "status": "correct",
+      "notes": "Basic aggregation + JOIN (with over-join) — Q13 worked"
+    },
+    {
+      "id": "q14",
+      "question": "Which courses have high capital expenditure but low innovation output?",
+      "category": "gap_analysis",
+      "status": "format_wrong",
+      "notes": "HAVING narrowed to zero courses only — Q14 wrong HAVING"
+    },
+    {
+      "id": "q15",
+      "question": "Which institutes are rising stars (funding growth above average)?",
+      "category": "complex_compare_to_average",
+      "status": "no_query",
+      "notes": "Complete failure — multi-step reasoning needed — Q15 error"
+    },
+    {
+      "id": "q16",
+      "question": "Which institutes have high grants but low expenditure utilization?",
+      "category": "gap_analysis",
+      "status": "wrong",
+      "notes": "Query truncated, missing HAVING — Q16 incomplete"
+    },
+    {
+      "id": "q17",
+      "question": "Show the pipeline progression across TRL stages over time",
+      "category": "pipeline_trend",
+      "status": "correct",
+      "notes": "Simple GROUP BY but lost time dimension — Q17 worked"
+    }
+  ],
+  "failure_patterns": {
+    "aggregation_blindness": ["q03", "q04", "q07", "q11"],
+    "table_confusion": ["q10", "q12"],
+    "string_value_mismatch": ["q06"],
+    "complex_query_failure": ["q15"],
+    "context_loss": ["q10", "q12", "q16", "q17"],
+    "having_clause_incomplete": ["q14", "q16"],
+    "order_by_without_aggregation": ["q04"]
+  },
+  "priority_fixes": {
+    "schema_enrichment": ["q06", "q10", "q12"],
+    "few_shot_examples": ["q03", "q04", "q07", "q11", "q14"],
+    "mandatory_rules": ["q15", "q17"],
+    "followup_context": ["q10", "q12"]
+  }
+}

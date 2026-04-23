@@ -12,9 +12,13 @@ from .tokenizer import PIITokenizer
 
 _PII_REGEX = {
     "aadhaar": re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"),
+    "aadhaar_spaced": re.compile(r"\b\d{4}\s\d{4}\s\d{4}\b"),
     "pan": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b", re.IGNORECASE),
     "phone": re.compile(r"\b[6-9][0-9]{9}\b"),
+    "phone_91": re.compile(r"\+91[\s-]?[6-9][0-9]{9}\b"),
     "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
+    "email_academic_in": re.compile(r"\b[A-Za-z0-9._%+-]+@[*a-z0-9.-]+\.(ac|res|gov)\.in\b", re.IGNORECASE),
+    "dl_number": re.compile(r"\b[A-Z]{2}[0-9]{2}[\s-]?[0-9]{11}\b"),
 }
 
 

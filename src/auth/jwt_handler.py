@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import uuid
 from dataclasses import dataclass
@@ -127,26 +128,33 @@ class JWTHandler:
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
         self.refresh_store = RefreshStore()
+        self._signing_key_id = self._compute_key_id()
+        self._known_key_ids: set[str] = {self._signing_key_id}
+        self._jti_ip_registry: dict[str, tuple[str, str, float]] = {}
     
     def _load_rsa_keys(self, private_key_path: str, public_key_path: str) -> None:
         """Load RSA keypair from PEM files."""
         try:
-            # Try to load from relative path to project root
             base_path = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             full_private_path = os.path.join(base_path, private_key_path)
             full_public_path = os.path.join(base_path, public_key_path)
-            
+
             with open(full_private_path, "r") as f:
                 self.private_key = f.read()
-            
+
             with open(full_public_path, "r") as f:
                 self.public_key = f.read()
-                
+
         except FileNotFoundError as e:
             raise AuthError(
                 f"RSA key files not found: {e}. "
                 "Generate keys with: ssh-keygen -t rsa -b 4096 -m PEM -f infrastructure/kong/ssl/jwt_rsa.key"
             ) from e
+
+    def _compute_key_id(self) -> str:
+        """Compute a deterministic key ID (kid) from the active signing key."""
+        key_material = self.private_key if self.private_key else self.secret_key
+        return hashlib.sha256(key_material.encode()).hexdigest()[:16]
 
     def authenticate_user(self, username: str, password: str) -> dict[str, Any]:
         user = self.users.get(username.lower())
@@ -188,10 +196,47 @@ class JWTHandler:
             "refresh_expires_in": self.refresh_token_ttl_seconds,
         }
 
-    def verify_access_token(self, token: str) -> dict[str, Any]:
+    def verify_access_token(self, token: str, client_ip: Optional[str] = None) -> dict[str, Any]:
+        """Verify access token, optionally checking for token replay across IPs."""
         claims = self._decode_token(token)
         self._validate_token_type(claims, "access")
+
+        if client_ip:
+            jti = claims["jti"]
+            user_id = claims["sub"]
+            exp = claims["exp"]
+            self._check_token_replay(jti, user_id, client_ip, exp, token)
+
         return dict(claims)  # type: ignore[no-any-return]
+
+    def _check_token_replay(
+        self, jti: str, user_id: str, client_ip: str, exp: float, token: str
+    ) -> None:
+        """Detect token replay: same jti used from a different IP before expiry."""
+        now = datetime.now(UTC).timestamp()
+
+        if jti in self._jti_ip_registry:
+            existing_user, existing_ip, existing_exp = self._jti_ip_registry[jti]
+            if existing_exp > now and existing_ip != client_ip and existing_user == user_id:
+                self.revoked_jtis.add(jti)
+                self._jti_ip_registry.pop(jti, None)
+                try:
+                    from src.audit import log_anomaly
+                    log_anomaly(
+                        user_id=user_id,
+                        anomaly_type="TOKEN_REPLAY_DETECTED",
+                        details={
+                            "jti": jti,
+                            "original_ip": existing_ip,
+                            "replay_ip": client_ip,
+                        },
+                        identifier=client_ip,
+                    )
+                except Exception:
+                    pass
+                raise AuthError("Token replay detected: same token used from multiple IPs")
+        else:
+            self._jti_ip_registry[jti] = (user_id, client_ip, exp)
 
     def verify_refresh_token(self, token: str) -> dict[str, Any]:
         claims = self._decode_token(token)
@@ -224,6 +269,15 @@ class JWTHandler:
             self.refresh_store.revoke(token)
             self.active_refresh_tokens.pop(claims["sub"], None)
 
+    def rotate_signing_key(self, new_private_key: str, new_public_key: str) -> None:
+        """Rotate the signing key. New tokens will use the new key; old keys are kept for verification."""
+        old_key_id = self._signing_key_id
+        self.private_key = new_private_key
+        self.public_key = new_public_key
+        self._signing_key_id = self._compute_key_id()
+        self._known_key_ids.add(self._signing_key_id)
+        self._known_key_ids.add(old_key_id)
+
     def _create_token(
         self,
         user: dict[str, Any],
@@ -246,11 +300,11 @@ class JWTHandler:
             "tier": user["tier"],
             "groups": user.get("groups", ROLE_CONFIG[role]["groups"]),
             "scope": user.get("scope", ROLE_CONFIG[role]["scope"]),
+            "kid": self._signing_key_id,
         }
         if user.get("researcher_id"):
             payload["researcher_id"] = user["researcher_id"]
 
-        # Use private key for asymmetric, secret key for symmetric
         signing_key = self.private_key if self.private_key else self.secret_key
         if signing_key is None:
             raise AuthError("No signing key available")
