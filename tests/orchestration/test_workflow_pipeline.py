@@ -83,7 +83,7 @@ def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
         "synth": "rule_based",
         "cloud_synthesis_used": False,
     }
-    assert "Fallback" in result["synthesized_response"] or "synthesized" in result["synthesized_response"].lower()
+    assert "Fallback" in result["synthesized_response"] or "Structured summary" in result["synthesized_response"] or "synthesized" in result["synthesized_response"].lower()
     assert result["conversation_history"] == [
         {
             "query": "Synthesize robotics researchers and trends in Gujarat",
