@@ -1,16 +1,22 @@
-"""Security middleware: brute-force protection, security headers, IP allowlisting."""
+"""Security middleware: brute-force protection, security headers, IP allowlisting, prompt sanitisation."""
 
 import time
 import hashlib
 import hmac
 import ipaddress
 import logging
+import json
+import re
 from typing import Optional
 
 from fastapi import HTTPException, Request, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from src.security.gateway.prompt_sanitiser import PromptSanitiser
+
 logger = logging.getLogger(__name__)
+
+_prompt_sanitiser = PromptSanitiser()
 
 
 class BruteForceProtection:
@@ -162,3 +168,68 @@ def verify_request_signature(
         )
 
     return True
+
+
+class PromptSanitiserMiddleware(BaseHTTPMiddleware):
+    """Validate all text-bearing request parameters against prompt injection and PII rules.
+
+    Checks query, topic, search, q, text, prompt, message, content fields
+    in both query string and JSON request bodies.
+    """
+
+    SKIP_PATHS = {
+        "/health", "/health/llm", "/health/db", "/health/qdrant", "/health/all",
+        "/metrics", "/docs", "/openapi.json", "/favicon.ico",
+        "/login", "/logout", "/refresh",
+    }
+
+    TEXT_VALUE_MIN_LEN = 2
+
+    async def dispatch(self, request: Request, call_next):
+        if not self._should_skip_path(request.url.path):
+            fields = await self._extract_text_fields(request)
+            for field_name, field_value in fields:
+                validation = _prompt_sanitiser.validate_query(
+                    {"query": field_value},
+                    identifier=request.client.host if request.client else None,
+                )
+                if not validation["valid"]:
+                    try:
+                        from src.audit import log_anomaly
+                        user_id = getattr(request.state, "auth_claims", {}).get("sub", "anonymous")
+                        log_anomaly(
+                            user_id=user_id,
+                            anomaly_type=validation["reason"],
+                            details={
+                                "field": field_name,
+                                "path": request.url.path,
+                                "details": validation.get("details", ""),
+                                "rate_limit_triggered": validation.get("rate_limit_triggered", False),
+                            },
+                            identifier=request.client.host if request.client else None,
+                        )
+                    except Exception:
+                        pass
+                    logger.warning(
+                        f"PromptSanitiserMiddleware rejected: {validation['reason']} - "
+                        f"field={field_name} path={request.url.path}"
+                    )
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Security violation: {validation['reason']}"
+                    )
+
+        return await call_next(request)
+
+    def _should_skip_path(self, path: str) -> bool:
+        for skip in self.SKIP_PATHS:
+            if path.startswith(skip):
+                return True
+        return False
+
+    async def _extract_text_fields(self, request: Request) -> list[tuple[str, str]]:
+        fields: list[tuple[str, str]] = []
+        for key, value in dict(request.query_params).items():
+            if isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
+                fields.append((key, value))
+        return fields

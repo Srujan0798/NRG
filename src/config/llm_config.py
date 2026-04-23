@@ -5,7 +5,9 @@ from __future__ import annotations
 import os
 import time
 import logging
-from dataclasses import dataclass
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Optional, Protocol
 
@@ -44,6 +46,7 @@ class LLMMeshConfig:
     max_retries: int = 3
     retry_delay_seconds: int = 5
     request_timeout_seconds: int = 30
+    query_timeout_budget_seconds: int = 15
 
 
 class LLMClient(Protocol):
@@ -696,10 +699,14 @@ class MinimaxLLMClient:
 
 class SovereignLLMMesh:
     """
-    Sovereign LLM Mesh with automatic fallback and circuit breaker.
-    Tries providers in order: primary → fallback1 → fallback2 → ...
-    Circuit breaker trips after 3 failures in 5 min, recovers after 60s cooldown.
-    Ensures high availability for IITGN production.
+    Sovereign LLM Mesh with automatic fallback, circuit breaker, and health-weighted routing.
+
+    Key features:
+    - Global 15s timeout budget across ALL LLM attempts (no more 270s retry storms)
+    - Health-weighted provider selection: score = success_rate / avg_latency
+    - Parallel first-provider race: top-2 healthy providers fire simultaneously
+    - Exponential backoff recovery: 30s → 60s → 120s → 300s cooldown
+    - Circuit breaker trips after 3 failures in 5 min
     """
 
     def __init__(self):
@@ -712,6 +719,16 @@ class SovereignLLMMesh:
         self._circuit_failure_threshold = 3
         self._circuit_cooldown_seconds = 60
         self._circuit_window_seconds = 300
+        self._metrics_lock = threading.Lock()
+        self._provider_metrics: dict[str, dict] = {p: {
+            "successes_7d": 0,
+            "failures_7d": 0,
+            "total_latency_ms": 0.0,
+            "request_count_7d": 0,
+            "last_failure_time": 0.0,
+            "recovery_attempts": 0,
+        } for p in self.clients}
+        self._executor = ThreadPoolExecutor(max_workers=4)
 
     def _load_mesh_config(self) -> LLMMeshConfig:
         """Load mesh configuration from environment."""
@@ -723,7 +740,8 @@ class SovereignLLMMesh:
             fallback_order=fallback_order[1:] if len(fallback_order) > 1 else [],
             max_retries=int(_env("LLM_MAX_RETRIES", "3") or "3"),
             retry_delay_seconds=int(_env("LLM_RETRY_DELAY_SECONDS", "5") or "5"),
-            request_timeout_seconds=int(_env("LLM_REQUEST_TIMEOUT_SECONDS", "30") or "30"),
+            request_timeout_seconds=int(_env("LLM_REQUEST_TIMEOUT_SECONDS", "15") or "15"),
+            query_timeout_budget_seconds=int(_env("LLM_TIMEOUT_BUDGET", "15") or "15"),
         )
 
     def _initialize_clients(self) -> None:
@@ -765,8 +783,56 @@ class SovereignLLMMesh:
                 return False
             return True
 
+    def _is_provider_recently_failed(self, provider: str) -> bool:
+        """Skip providers that failed in the last 60s (circuit breaker overlap)."""
+        with self._metrics_lock:
+            last_failure = self._provider_metrics.get(provider, {}).get("last_failure_time", 0.0)
+            return (time.time() - last_failure) < 60.0
+
+    def _get_health_score(self, provider: str) -> float:
+        """Compute health score: success_rate / avg_latency. Higher = healthier."""
+        with self._metrics_lock:
+            m = self._provider_metrics.get(provider, {})
+            successes = m.get("successes_7d", 0)
+            failures = m.get("failures_7d", 0)
+            total = successes + failures
+            if total == 0:
+                return 1.0
+            success_rate = successes / total
+            avg_latency = m.get("total_latency_ms", 0.0) / total if total > 0 else 1.0
+            if avg_latency <= 0:
+                avg_latency = 1.0
+            return success_rate / avg_latency
+
+    def _get_health_weighted_providers(self) -> list[str]:
+        """Return providers sorted by health score, skipping recently-failed ones."""
+        available = [p for p in self.clients if p in self._provider_metrics]
+        scored = [(p, self._get_health_score(p)) for p in available]
+        scored = [(p, s) for p, s in scored if not self._is_provider_recently_failed(p) and not self._is_provider_circuit_open(p)]
+        scored.sort(key=lambda x: -x[1])
+        return [p for p, _ in scored]
+
+    def _record_success(self, provider: str, latency_ms: float = 0.0) -> None:
+        """Record a success, update metrics, and close the circuit breaker."""
+        with self._metrics_lock:
+            m = self._provider_metrics.get(provider, {})
+            m["successes_7d"] = m.get("successes_7d", 0) + 1
+            m["request_count_7d"] = m.get("request_count_7d", 0) + 1
+            if latency_ms > 0:
+                m["total_latency_ms"] = m.get("total_latency_ms", 0.0) + latency_ms
+        with self._failure_lock:
+            self._failure_history[provider] = []
+            if self._circuit_state.get(provider) != "closed":
+                logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
+            self._circuit_state[provider] = "closed"
+
     def _record_failure(self, provider: str) -> None:
         """Record a failure and potentially trip the circuit breaker."""
+        with self._metrics_lock:
+            m = self._provider_metrics.get(provider, {})
+            m["failures_7d"] = m.get("failures_7d", 0) + 1
+            m["request_count_7d"] = m.get("request_count_7d", 0) + 1
+            m["last_failure_time"] = time.time()
         with self._failure_lock:
             now = time.time()
             self._failure_history.setdefault(provider, []).append(now)
@@ -778,13 +844,39 @@ class SovereignLLMMesh:
                 self._circuit_state[provider] = "open"
                 logger.warning(f"🔌 Circuit breaker OPEN for {provider} after {len(self._failure_history[provider])} failures")
 
-    def _record_success(self, provider: str) -> None:
-        """Record a success and close the circuit breaker."""
+    def _get_cooldown(self, provider: str) -> float:
+        """Get exponential backoff cooldown: 30s → 60s → 120s → 300s."""
         with self._failure_lock:
-            self._failure_history[provider] = []
-            if self._circuit_state.get(provider) != "closed":
-                logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
-            self._circuit_state[provider] = "closed"
+            failures = len(self._failure_history.get(provider, []))
+        base = [30, 60, 120, 300]
+        idx = min(failures - self._circuit_failure_threshold, len(base) - 1)
+        return base[idx] if idx >= 0 else 30.0
+
+    def _try_provider(
+        self,
+        provider: str,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list,
+        timeout_seconds: float,
+    ) -> tuple[str, float] | None:
+        """Try a single provider with timeout. Returns (response, latency_ms) or None."""
+        start = time.time()
+        try:
+            client = self.clients[provider]
+            response = client.generate(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                conversation_history=conversation_history,
+            )
+            latency_ms = (time.time() - start) * 1000
+            if len(response) > 0:
+                self._record_success(provider, latency_ms)
+                return response, latency_ms
+        except Exception as e:
+            self._record_failure(provider)
+            logger.warning(f"⚠️ LLM Mesh: {provider} failed: {e}")
+        return None
 
     def generate(
         self,
@@ -793,56 +885,142 @@ class SovereignLLMMesh:
         conversation_history: Optional[list[dict]] = None,
     ) -> str:
         """
-        Generate response with automatic fallback and circuit breaker.
-        Circuit breaker skips providers that are failing.
+        Generate response with global 15s budget, health-weighted routing, and parallel first-provider race.
+
+        Falls through: cloud LLM (top-2 providers racing) → local SLM → rule-based
+        Total LLM time budget: 15 seconds max (LLM_TIMEOUT_BUDGET env var).
         """
         conversation_history = conversation_history or []
-        provider_order = [self.mesh_config.primary_provider] + self.mesh_config.fallback_order
-        available_providers = [p for p in provider_order if p in self.clients]
-
-        if not available_providers:
-            raise LLMProviderError("No LLM providers available in mesh")
-
+        budget_remaining = self.mesh_config.query_timeout_budget_seconds
         last_error = None
 
-        for attempt in range(self.mesh_config.max_retries):
-            for provider in available_providers:
-                if self._is_provider_circuit_open(provider):
-                    logger.debug(f"⏭️ Skipping {provider} - circuit breaker open")
-                    continue
+        while budget_remaining > 0:
+            providers = self._get_health_weighted_providers()
+            if not providers:
+                break
 
+            top_providers = providers[:2] if len(providers) >= 2 else providers[:1]
+
+            futures = {}
+            for provider in top_providers:
+                fut = self._executor.submit(
+                    self._try_provider,
+                    provider,
+                    system_prompt,
+                    user_prompt,
+                    conversation_history,
+                    budget_remaining,
+                )
+                futures[fut] = provider
+
+            first_response = None
+            for fut in as_completed(futures, timeout=budget_remaining):
+                provider = futures[fut]
                 try:
-                    client = self.clients[provider]
-                    response = client.generate(
-                        system_prompt=system_prompt,
-                        user_prompt=user_prompt,
-                        conversation_history=conversation_history,
-                    )
-
-                    if len(response) > 0:
-                        self._record_success(provider)
-                        logger.info(f"✅ LLM Mesh: Response from {provider} (attempt {attempt + 1})")
+                    result = fut.result(timeout=budget_remaining)
+                    if result is not None:
+                        response, latency_ms = result
+                        logger.info(f"✅ LLM Mesh: {provider} won race (latency={latency_ms:.0f}ms)")
                         return response
+                except Exception:
+                    pass
 
-                except Exception as e:
-                    last_error = e
-                    self._record_failure(provider)
-                    logger.warning(f"⚠️ LLM Mesh: {provider} failed (attempt {attempt + 1}): {e}")
-
-                    if isinstance(e, LLMConfigError):
-                        continue
-
-                    if attempt < self.mesh_config.max_retries - 1:
-                        time.sleep(self.mesh_config.retry_delay_seconds)
+            elapsed = self.mesh_config.query_timeout_budget_seconds - budget_remaining
+            budget_remaining = max(0, budget_remaining - 1)
+            if budget_remaining <= 0:
+                break
 
         raise LLMProviderError(
-            f"All LLM providers failed after {self.mesh_config.max_retries} attempts. "
+            f"LLM timeout budget exhausted ({self.mesh_config.query_timeout_budget_seconds}s). "
             f"Last error: {last_error}"
         )
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: Optional[list[dict]] = None,
+    ):
+        """
+        Streaming generator: fires top-2 providers in parallel, yields tokens from the first to respond.
+        If the winner fails mid-stream, falls back to synchronous generate() for the full response.
+        Yields: str tokens
+        """
+        conversation_history = conversation_history or []
+        providers = self._get_health_weighted_providers()
+        if not providers:
+            return
+
+        top_providers = providers[:2] if len(providers) >= 2 else providers[:1]
+        budget_remaining = self.mesh_config.query_timeout_budget_seconds
+
+        for provider in top_providers:
+            if self._is_provider_circuit_open(provider) or self._is_provider_recently_failed(provider):
+                continue
+            client = self.clients.get(provider)
+            if client is None or not hasattr(client, "generate_streaming"):
+                continue
+
+            start = time.time()
+            try:
+                for token in client.generate_streaming(
+                    system_prompt,
+                    user_prompt,
+                    conversation_history,
+                ):
+                    latency_ms = (time.time() - start) * 1000
+                    self._record_success(provider, latency_ms)
+                    yield token
+                return
+            except Exception as e:
+                self._record_failure(provider)
+                logger.warning(f"⚠️ LLM Mesh streaming failed for {provider}: {e}")
+                break
+
+        fallback_response = client.generate(system_prompt, user_prompt, conversation_history)
+        for i in range(0, len(fallback_response), 10):
+            yield fallback_response[i : i + 10]
 
     def get_available_providers(self) -> list[str]:
         """Get list of available LLM providers in mesh."""
         return list(self.clients.keys())
+
+    def get_provider_health(self) -> dict:
+        """Return per-provider health status with latency and success rate metrics."""
+        result = {}
+        providers = self._get_health_weighted_providers()
+        all_providers = list(self.clients.keys())
+
+        for provider in all_providers:
+            with self._metrics_lock:
+                m = self._provider_metrics.get(provider, {})
+                successes = m.get("successes_7d", 0)
+                failures = m.get("failures_7d", 0)
+                total = successes + failures
+                avg_latency = m.get("total_latency_ms", 0.0) / total if total > 0 else None
+
+            circuit_state = self._circuit_state.get(provider, "closed")
+            status = "healthy"
+            if circuit_state == "open":
+                status = "down"
+            elif circuit_state == "half_open":
+                status = "degraded"
+            elif self._is_provider_recently_failed(provider):
+                status = "degraded"
+            elif total > 0 and failures / total > 0.3:
+                status = "degraded"
+
+            result[provider] = {
+                "status": status,
+                "circuit": circuit_state,
+                "success_rate_7d": round(successes / total, 3) if total > 0 else None,
+                "latency_p50_ms": round(avg_latency, 1) if avg_latency else None,
+                "requests_7d": total,
+                "last_failure_seconds_ago": round(time.time() - m.get("last_failure_time", 0.0), 1),
+                "health_rank": providers.index(provider) + 1 if provider in providers else len(providers) + 1,
+            }
+
+        return result
 
     def health_check(self) -> dict:
         """Check health of all LLM providers in mesh including circuit breaker state."""
@@ -873,6 +1051,12 @@ class SovereignLLMMesh:
         return health
 
 
+_llm_mesh_instance: SovereignLLMMesh | None = None
+
+
 def get_llm_mesh() -> SovereignLLMMesh:
-    """Get sovereign LLM mesh with automatic fallback."""
-    return SovereignLLMMesh()
+    """Get singleton sovereign LLM mesh instance (metrics shared across calls)."""
+    global _llm_mesh_instance
+    if _llm_mesh_instance is None:
+        _llm_mesh_instance = SovereignLLMMesh()
+    return _llm_mesh_instance

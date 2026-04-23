@@ -202,7 +202,82 @@ def trace_routing_decision(func: Callable) -> Callable:
             raise
         finally:
             span.end()
-    
+
+    return wrapper
+
+
+def trace_sql_generation(func: Callable) -> Callable:
+    """Decorator to trace Text-to-SQL generation (SQL query construction)."""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        client = _init_langfuse()
+
+        if not client or not _should_sample():
+            return func(*args, **kwargs)
+
+        trace = client.trace(name="nrg.text_to_sql")
+        span = trace.span(name="sql_generation")
+        start = time.time()
+
+        try:
+            result = func(*args, **kwargs)
+            latency_ms = (time.time() - start) * 1000
+
+            metadata = {
+                "latency_ms": latency_ms,
+                "node": "text_to_sql",
+            }
+            if isinstance(result, dict):
+                metadata["query_preview"] = str(result.get("query", ""))[:200]
+
+            span.update(metadata=metadata)
+            trace.update(metadata=metadata)
+            return result
+        except Exception as exc:
+            span.update(status="error", output=str(exc))
+            trace.update(status="error", metadata={"error": str(exc)})
+            raise
+        finally:
+            span.end()
+
+    return wrapper
+
+
+def trace_rag_retrieval(func: Callable) -> Callable:
+    """Decorator to trace RAG retrieval (vector search + chunk retrieval)."""
+    @wraps(func)
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        client = _init_langfuse()
+
+        if not client or not _should_sample():
+            return func(*args, **kwargs)
+
+        trace = client.trace(name="nrg.rag")
+        span = trace.span(name="rag_retrieval")
+        start = time.time()
+
+        try:
+            result = func(*args, **kwargs)
+            latency_ms = (time.time() - start) * 1000
+
+            metadata = {
+                "latency_ms": latency_ms,
+                "node": "rag",
+            }
+            if isinstance(result, dict):
+                chunks = result.get("chunks", result.get("retrieved_chunks", []))
+                metadata["chunks_retrieved"] = len(chunks) if chunks else 0
+
+            span.update(metadata=metadata)
+            trace.update(metadata=metadata)
+            return result
+        except Exception as exc:
+            span.update(status="error", output=str(exc))
+            trace.update(status="error", metadata={"error": str(exc)})
+            raise
+        finally:
+            span.end()
+
     return wrapper
 
 

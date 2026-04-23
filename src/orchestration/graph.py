@@ -80,7 +80,36 @@ class NRGWorkflow:
         workflow.add_edge("router", "executor")
         workflow.add_edge("executor", "synthesizer")
         workflow.add_edge("synthesizer", "verifier")
-        workflow.add_edge("verifier", END)
+
+        # Verification loop: retry synthesis if faithfulness < 0.7
+        def _should_retry(state) -> str:
+            """Conditional edge: retry synthesis if verification indicates low faithfulness."""
+            if hasattr(state, "__dataclass_fields__"):
+                faithfulness = getattr(state, "faithfulness_score", 0.0)
+                verification_status = getattr(state, "verification_status", "ok")
+                verification_retries = getattr(state, "verification_retries", 0)
+            else:
+                faithfulness = state.get("faithfulness_score", 0.0)
+                verification_status = state.get("verification_status", "ok")
+                verification_retries = state.get("verification_retries", 0)
+
+            if verification_retries >= 1:
+                return "end_retry"
+
+            if verification_status == "retry" and faithfulness < 0.7:
+                return "retry_synthesis"
+
+            return "end_retry"
+
+        # Conditional routing after verifier
+        workflow.add_conditional_edges(
+            "verifier",
+            _should_retry,
+            {
+                "retry_synthesis": "synthesizer",  # Loop back to re-synthesize with more evidence
+                "end_retry": END,
+            }
+        )
 
         if self.checkpointer is None:
             return workflow.compile()

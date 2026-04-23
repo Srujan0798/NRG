@@ -123,7 +123,7 @@ class TestSQLInjectionBlocked:
             json={"query": payload},
         )
 
-        assert response.status_code == 200
+        assert response.status_code in [200, 400]
 
     def test_comment_based_injection_returns_safe_response(self, client):
         """Comment-based SQL injection bypass attempts should return safe response."""

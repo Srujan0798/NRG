@@ -36,7 +36,7 @@ class SQLiteSandbox:
         """Execute SELECT query in read-only sandbox."""
         sql_stripped = sql.strip().upper()
 
-        if not sql_stripped.startswith("SELECT"):
+        if not sql_stripped.startswith("SELECT") and not sql_stripped.startswith("WITH"):
             raise PermissionError(
                 f"Only SELECT queries allowed in sandbox. Got: {sql_stripped[:50]}..."
             )

@@ -37,12 +37,12 @@ class TestDPDPExportEndpoint:
     Users must be able to export ALL data associated with their account.
     """
 
-    def test_dpdp_export_returns_user_data(self, researcher_client):
+    def test_dpdp_export_returns_user_data(self, researcher_client_with_user_id):
         """
         /dpdp/export must return all data associated with the authenticated user.
         Response must include researcher profile, consent records, query history.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.get(
             "/dpdp/export",
@@ -52,15 +52,15 @@ class TestDPDPExportEndpoint:
             f"/dpdp/export failed: {response.json() if response.status_code != 200 else 'OK'}"
 
         data = response.json()
-        assert "user" in data or "profile" in data or "data" in data, \
+        assert "user_id" in data or "user" in data or "profile" in data or "data" in data, \
             f"/dpdp/export must return user data. Keys: {list(data.keys())}"
 
-    def test_dpdp_export_has_consent_records(self, researcher_client):
+    def test_dpdp_export_has_consent_records(self, researcher_client_with_user_id):
         """
         Export must include the user's consent ledger entries.
         Proves the audit trail is accessible to the user.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.get(
             "/dpdp/export",
@@ -83,12 +83,12 @@ class TestDPDPEraseEndpoint:
     Users must be able to request deletion of their personal data.
     """
 
-    def test_dpdp_erase_endpoint_exists(self, researcher_client):
+    def test_dpdp_erase_endpoint_exists(self, researcher_client_with_user_id):
         """
         /dpdp/erase must return a valid response (even if erasure
         is async and requires admin approval).
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.post(
             "/dpdp/erase",
@@ -125,12 +125,12 @@ class TestDPDPConsentEndpoint:
     Users must be able to VIEW their current consents.
     """
 
-    def test_dpdp_consents_lists_user_consents(self, researcher_client):
+    def test_dpdp_consents_lists_user_consents(self, researcher_client_with_user_id):
         """
         GET /dpdp/consents must return a list of the user's current consents
         with scope, granted_at, and revoked_at timestamps.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.get(
             "/dpdp/consents",
@@ -158,17 +158,16 @@ class TestDPDPDataRetention:
     The consent_service should record when data can be deleted.
     """
 
-    def test_consent_ledger_has_retention_timestamps(self, researcher_client):
+    def test_consent_ledger_has_retention_timestamps(self, researcher_client_with_user_id):
         """
         consent_ledger entries must have granted_at timestamp.
         revoked_at must be NULL for active consents.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
-        consent_service = researcher_client[0].app.state.__class__
         from src.services.consent import ConsentService
         service = ConsentService()
-        consents = service.get_user_consents(user_id)
+        consents = service.list_consents(user_id)
 
         for consent in consents:
             assert consent.get("granted_at"), "Active consent must have granted_at"
@@ -187,12 +186,12 @@ class TestDPDPAuditTrail:
     The audit chain must capture: who, what, when, why.
     """
 
-    def test_query_leaves_audit_trail(self, researcher_client):
+    def test_query_leaves_audit_trail(self, researcher_client_with_user_id):
         """
         After a /query, the audit log must have an entry for that user.
         This proves the sovereignty guard is logging access.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         before_audit = client.get(
             "/audit/events",
@@ -230,12 +229,12 @@ class TestDPDPNoPILEakage:
     Export endpoints must NOT return other users' personal data.
     """
 
-    def test_export_does_not_return_other_users_data(self, researcher_client):
+    def test_export_does_not_return_other_users_data(self, researcher_client_with_user_id):
         """
         Researcher A's export must NOT include Researcher B's private data.
         Only anonymized/aggregated or own data.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.get(
             "/dpdp/export",
@@ -254,11 +253,11 @@ class TestDPDPNoPILEakage:
             assert pattern not in data_str, \
                 f"Export must not contain other users' credentials: {pattern}"
 
-    def test_erasure_does_not_return_other_users_data(self, researcher_client):
+    def test_erasure_does_not_return_other_users_data(self, researcher_client_with_user_id):
         """
         Erasure confirmation must only reference the requesting user.
         """
-        client, token, user_id = researcher_client
+        client, token, user_id = researcher_client_with_user_id
 
         response = client.post(
             "/dpdp/erase",

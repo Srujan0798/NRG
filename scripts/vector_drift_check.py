@@ -1,0 +1,320 @@
+#!/usr/bin/env python3
+"""
+Vector Drift Detection — NRG Knowledge Quality Monitor
+
+Runs weekly (or on-demand) to detect vector search quality degradation.
+Compares current retrieval results against a known-good benchmark.
+
+SLO: Drift score > 0.85 (perfect match = 1.0, no overlap = 0.0)
+Breach: Drift score < 0.60 → WARNING, < 0.40 → CRITICAL
+
+Usage:
+    python scripts/vector_drift_check.py [--verbose] [--json-output]
+    python scripts/vector_drift_check.py --check-only  # Just report, no alerting
+"""
+
+import argparse
+import json
+import logging
+import os
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.skills.rag.retriever import Retriever
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("drift_check")
+
+
+BENCHMARK_QUERIES = [
+    {
+        "query": "machine learning researchers in Gujarat",
+        "expected_sources": ["IIT Gandhinagar", "Dhirubhai Ambani", "DA-IICT"],
+        "expected_topics": ["machine learning", "robotics", "artificial intelligence"],
+    },
+    {
+        "query": "robotics research labs in India",
+        "expected_sources": ["IIT Bombay", "IIT Madras", "IIT Delhi"],
+        "expected_topics": ["robotics", "control systems", "automation"],
+    },
+    {
+        "query": "artificial intelligence trends 2024",
+        "expected_sources": ["IIT", "IIIT", "NIT"],
+        "expected_topics": ["deep learning", "neural networks", "nlp"],
+    },
+    {
+        "query": "sustainable energy research funding",
+        "expected_sources": ["MNRE", "DST", "CSIR"],
+        "expected_topics": ["solar", "wind", "hydrogen", "renewable"],
+    },
+    {
+        "query": "biotechnology publications 2023",
+        "expected_sources": ["IIT", "AIIMS", "NIT"],
+        "expected_topics": ["genomics", "CRISPR", "bioinformatics"],
+    },
+    {
+        "query": "quantum computing research India",
+        "expected_sources": ["IIT", "IISc", "QIC"],
+        "expected_topics": ["quantum", "qubit", "cryptography"],
+    },
+    {
+        "query": "data science researchers Maharashtra",
+        "expected_sources": ["IIT Bombay", "COEP", "VJTI"],
+        "expected_topics": ["data science", "analytics", "machine learning"],
+    },
+    {
+        "query": "renewable energy collaboration international",
+        "expected_sources": ["USA", "Germany", "Japan", "Israel"],
+        "expected_topics": ["solar", "wind", "green hydrogen"],
+    },
+    {
+        "query": "computer vision research Karnataka",
+        "expected_sources": ["IISc", "IIIT Bangalore", "NIT Surathkal"],
+        "expected_topics": ["computer vision", "image processing", "CV"],
+    },
+    {
+        "query": "natural language processing researchers Tamil Nadu",
+        "expected_sources": ["IIT Madras", "SSN", "Anna University"],
+        "expected_topics": ["NLP", "text mining", "LLM"],
+    },
+]
+
+DRIFT_SCORE_SLO = 0.85
+DRIFT_SCORE_WARNING = 0.60
+DRIFT_SCORE_CRITICAL = 0.40
+
+BENCHMARK_CACHE_FILE = Path(__file__).parent.parent / ".cache" / "drift_benchmark.json"
+
+
+def _load_benchmark_cache() -> dict:
+    """Load cached benchmark results from last run."""
+    if not BENCHMARK_CACHE_FILE.exists():
+        return {}
+    try:
+        return json.loads(BENCHMARK_CACHE_FILE.read_text())
+    except Exception:
+        return {}
+
+
+def _save_benchmark_cache(data: dict):
+    """Save current benchmark results for next comparison."""
+    BENCHMARK_CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    BENCHMARK_CACHE_FILE.write_text(json.dumps(data, indent=2, default=str))
+
+
+def _jaccard_overlap(set_a: set, set_b: set) -> float:
+    """Compute Jaccard similarity between two sets."""
+    if not set_a and not set_b:
+        return 1.0
+    intersection = len(set_a & set_b)
+    union = len(set_a | set_b)
+    return intersection / union if union > 0 else 0.0
+
+
+def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
+    """Run drift detection against benchmark queries.
+
+    Returns dict with drift_score, per_query_scores, and alert level.
+    """
+    results = _load_benchmark_cache()
+    per_query_scores = []
+    topic_overlaps = []
+
+    for i, bench in enumerate(BENCHMARK_QUERIES):
+        query = bench["query"]
+        expected_sources = set(bench["expected_sources"])
+        expected_topics = set(bench["expected_topics"])
+
+        try:
+            from src.skills.rag.embedder import Embedder
+            embedder = Embedder()
+            try:
+                query_vector = embedder.embed_single(query)
+            finally:
+                embedder.close()
+
+            retrieval_result = retriever.retrieve(
+                query_vector=query_vector,
+                user_tier=1,
+                top_k=5,
+            )
+            metadata = retrieval_result.get("metadata", [])
+
+            retrieved_sources = set()
+            retrieved_topics = set()
+
+            for item in metadata:
+                source = item.get("institution", "") or item.get("source", "")
+                if source:
+                    retrieved_sources.add(source.lower())
+                topics = item.get("topics", []) or item.get("research_area_tags", [])
+                for t in topics:
+                    retrieved_topics.add(t.lower())
+
+            expected_sources_lower = {s.lower() for s in expected_sources}
+            source_overlap = _jaccard_overlap(retrieved_sources, expected_sources_lower)
+
+            expected_topics_lower = {t.lower() for t in expected_topics}
+            topic_overlap = _jaccard_overlap(retrieved_topics, expected_topics_lower)
+
+            query_score = (source_overlap * 0.4) + (topic_overlap * 0.6)
+
+            per_query_scores.append({
+                "query": query,
+                "source_overlap": round(source_overlap, 3),
+                "topic_overlap": round(topic_overlap, 3),
+                "score": round(query_score, 3),
+            })
+            topic_overlaps.append(query_score)
+
+            if verbose:
+                logger.info(
+                    "  [%d/%d] '%s' → source=%.2f topic=%.2f score=%.3f",
+                    i + 1, len(BENCHMARK_QUERIES), query[:50],
+                    source_overlap, topic_overlap, query_score
+                )
+
+            results[query] = {
+                "sources": list(retrieved_sources),
+                "topics": list(retrieved_topics),
+                "score": query_score,
+                "timestamp": time.time(),
+            }
+
+        except Exception as exc:
+            logger.warning("Query %d failed: %s", i + 1, exc)
+            per_query_scores.append({
+                "query": query,
+                "source_overlap": 0.0,
+                "topic_overlap": 0.0,
+                "score": 0.0,
+                "error": str(exc),
+            })
+            topic_overlaps.append(0.0)
+            results[query] = {"error": str(exc), "timestamp": time.time()}
+
+    avg_score = sum(topic_overlaps) / len(topic_overlaps) if topic_overlaps else 0.0
+
+    alert_level = "GREEN"
+    if avg_score < DRIFT_SCORE_CRITICAL:
+        alert_level = "CRITICAL"
+        logger.critical(
+            "DRIFT CRITICAL: Score %.3f < %.3f threshold. "
+            "Vector embeddings may be corrupted or the wrong model was used.",
+            avg_score, DRIFT_SCORE_CRITICAL
+        )
+    elif avg_score < DRIFT_SCORE_WARNING:
+        alert_level = "WARNING"
+        logger.warning(
+            "DRIFT WARNING: Score %.3f < %.3f threshold. "
+            "Retrieval quality has degraded — review recent data ingestion.",
+            avg_score, DRIFT_SCORE_WARNING
+        )
+    elif avg_score < DRIFT_SCORE_SLO:
+        alert_level = "AMBER"
+        logger.info(
+            "DRIFT AMBER: Score %.3f < %.3f SLO target. "
+            "Quality is acceptable but below target.",
+            avg_score, DRIFT_SCORE_SLO
+        )
+    else:
+        logger.info("DRIFT OK: Score %.3f >= %.3f SLO target", avg_score, DRIFT_SCORE_SLO)
+
+    _save_benchmark_cache(results)
+
+    return {
+        "drift_score": round(avg_score, 3),
+        "alert_level": alert_level,
+        "slo_target": DRIFT_SCORE_SLO,
+        "warning_threshold": DRIFT_SCORE_WARNING,
+        "critical_threshold": DRIFT_SCORE_CRITICAL,
+        "queries_checked": len(BENCHMARK_QUERIES),
+        "per_query": per_query_scores,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+
+def run_health_check(retriever: Retriever) -> dict:
+    """Get Qdrant health for the drift report."""
+    health = retriever.health_check()
+    indexed = health.get("vectors_indexed", 0)
+    total = health.get("vectors_total", 0)
+    coverage_pct = (indexed / total * 100) if total > 0 else 0.0
+    return {
+        "indexed_vectors": indexed,
+        "total_vectors": total,
+        "coverage_pct": round(coverage_pct, 2),
+        "status": health.get("status"),
+        "latency_ms": health.get("latency_ms"),
+    }
+
+
+def main():
+    parser = argparse.ArgumentParser(description="NRG Vector Drift Detection")
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+    parser.add_argument("--json", action="store_true", dest="json_output",
+                        help="Output results as JSON")
+    parser.add_argument("--check-only", action="store_true",
+                        help="Skip benchmark comparison, just show current health")
+    args = parser.parse_args()
+
+    logger.info("Starting NRG Vector Drift Detection")
+    logger.info("SLO target: drift_score >= %.2f", DRIFT_SCORE_SLO)
+    logger.info("WARNING threshold: %.2f | CRITICAL threshold: %.2f",
+                DRIFT_SCORE_WARNING, DRIFT_SCORE_CRITICAL)
+
+    retriever = Retriever(timeout=5.0)
+
+    qdrant_health = run_health_check(retriever)
+    logger.info(
+        "Qdrant health: %s | Indexed: %d/%d (%.1f%%) | Latency: %sms",
+        qdrant_health["status"],
+        qdrant_health["indexed_vectors"],
+        qdrant_health["total_vectors"],
+        qdrant_health["coverage_pct"],
+        qdrant_health["latency_ms"],
+    )
+
+    if args.check_only:
+        print(json.dumps({"qdrant": qdrant_health}, indent=2, default=str))
+        return
+
+    drift_result = run_drift_check(retriever, verbose=args.verbose)
+
+    print("\n" + "=" * 60)
+    print("VECTOR DRIFT REPORT")
+    print("=" * 60)
+    print(f"  Drift Score:    {drift_result['drift_score']:.3f}")
+    print(f"  Alert Level:   {drift_result['alert_level']}")
+    print(f"  Queries:        {drift_result['queries_checked']}")
+    print(f"  SLO Target:     >={drift_result['slo_target']:.2f}")
+    print(f"  WARNING:        <{drift_result['warning_threshold']:.2f}")
+    print(f"  CRITICAL:       <{drift_result['critical_threshold']:.2f}")
+    print("-" * 60)
+
+    if args.verbose or args.json_output:
+        print("\nPer-Query Scores:")
+        for q in drift_result["per_query"]:
+            print(f"  [{q['score']:.3f}] {q['query'][:60]}")
+    print("=" * 60)
+
+    if args.json_output:
+        output = {
+            "drift": drift_result,
+            "qdrant": qdrant_health,
+        }
+        print(json.dumps(output, indent=2, default=str))
+
+    is_healthy = drift_result["alert_level"] in ("GREEN", "AMBER")
+    sys.exit(0 if is_healthy else 1)
+
+
+if __name__ == "__main__":
+    main()

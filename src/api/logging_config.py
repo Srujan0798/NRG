@@ -62,7 +62,9 @@ class StructuredLogger:
         return new_logger
 
     def _log(self, level: int, msg: str, **kwargs: Any):
-        extra = {**self._context, **kwargs}
+        reserved = {"exc_info", "stack_info", "stack_depth", "extra"}
+        filtered = {k: v for k, v in kwargs.items() if k not in reserved}
+        extra = {**self._context, **filtered}
         self.logger.log(level, msg, extra=extra)
 
     def debug(self, msg: str, **kwargs: Any):

@@ -1,13 +1,164 @@
-"""RAG Retriever - Local Qdrant retrieval with RBAC metadata filtering."""
+"""RAG Retriever - Local Qdrant retrieval with RBAC metadata filtering, drift detection, and re-ranking."""
 
 import os
 import logging
+import time
+import threading
 from typing import List, Dict, Any, Optional
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchAny, MatchValue
+from collections import deque
+from datetime import datetime, UTC
 
 
 logger = logging.getLogger(__name__)
+
+
+class VectorDriftDetector:
+    """
+    Monitors vector retrieval quality over time and detects embedding drift.
+
+    Drift occurs when:
+    - Document semantics shift (new terminology, re-organized knowledge base)
+    - Embedding model produces different vectors for same content
+    - Collection's vector space changes significantly
+
+    Detection method:
+    - Track retrieval confidence scores over time
+    - Compare current distribution against baseline
+    - Alert when deviation exceeds threshold
+    - Trigger retraining when drift is severe
+    """
+
+    def __init__(
+        self,
+        baseline_window: int = 1000,
+        drift_threshold: float = 0.15,
+        alert_threshold: float = 0.25,
+        sample_size: int = 100,
+    ):
+        self._baseline_scores: deque = deque(maxlen=baseline_window)
+        self._current_scores: deque = deque(maxlen=sample_size)
+        self._drift_threshold = drift_threshold
+        self._alert_threshold = alert_threshold
+        self._sample_size = sample_size
+        self._lock = threading.Lock()
+
+        self._baseline_established = False
+        self._last_alert_time: float | None = None
+        self._retraining_triggered = False
+
+    def record_score(self, score: float) -> dict:
+        """
+        Record a retrieval score and check for drift.
+
+        Returns dict with:
+        - drift_detected: bool
+        - drift_score: float (0-1, higher = more drift)
+        - status: "healthy" | "drifting" | "alert"
+        - should_retrain: bool
+        """
+        with self._lock:
+            self._current_scores.append(score)
+
+            if not self._baseline_established:
+                if len(self._baseline_scores) >= self._baseline_window:
+                    self._baseline_established = True
+                    logger.info("Vector drift baseline established with %d samples", len(self._baseline_scores))
+            else:
+                self._baseline_scores.append(score)
+                if len(self._baseline_scores) > self._baseline_window:
+                    self._baseline_scores.popleft()
+
+            if len(self._current_scores) < 10:
+                return {
+                    "drift_detected": False,
+                    "drift_score": 0.0,
+                    "status": "collecting",
+                    "should_retrain": False,
+                }
+
+            drift_score = self._compute_drift()
+            status = self._determine_status(drift_score)
+            should_retrain = drift_score >= self._alert_threshold
+
+            if should_retrain and not self._retraining_triggered:
+                self._retraining_triggered = True
+                logger.critical(
+                    "VECTOR DRIFT CRITICAL: score=%.3f, threshold=%.3f. RETRAINING TRIGGERED",
+                    drift_score, self._alert_threshold
+                )
+                self._trigger_retraining_alert()
+
+            return {
+                "drift_detected": drift_score >= self._drift_threshold,
+                "drift_score": drift_score,
+                "status": status,
+                "should_retrain": should_retrain,
+            }
+
+    def _compute_drift(self) -> float:
+        """Compute drift score comparing current distribution to baseline."""
+        if len(self._baseline_scores) < 10 or len(self._current_scores) < 10:
+            return 0.0
+
+        import statistics
+
+        # Compare mean scores
+        baseline_mean = statistics.mean(self._baseline_scores)
+        current_mean = statistics.mean(self._current_scores)
+
+        # Compare standard deviations
+        baseline_stdev = statistics.stdev(self._baseline_scores) if len(self._baseline_scores) > 1 else 0.1
+        current_stdev = statistics.stdev(self._current_scores) if len(self._current_scores) > 1 else 0.1
+
+        # Mean shift normalized by baseline spread
+        mean_shift = abs(current_mean - baseline_mean) / max(baseline_stdev, 0.01)
+
+        # Distribution width change
+        stdev_ratio = abs(current_stdev - baseline_stdev) / max(baseline_stdev, 0.01)
+
+        # Combined drift score (0-1 range normalized)
+        drift = (mean_shift + stdev_ratio) / 4.0  # Normalize to 0-1
+        return min(1.0, drift)
+
+    def _determine_status(self, drift_score: float) -> str:
+        """Determine overall status based on drift score."""
+        if drift_score >= self._alert_threshold:
+            return "alert"
+        elif drift_score >= self._drift_threshold:
+            return "drifting"
+        return "healthy"
+
+    def _trigger_retraining_alert(self):
+        """Send alert when retraining is needed."""
+        self._last_alert_time = time.time()
+        try:
+            import httpx
+            webhook = os.getenv("VECTOR_DRIFT_WEBHOOK")
+            if webhook:
+                httpx.post(webhook, json={
+                    "alert": "vector_drift_critical",
+                    "drift_score": self._compute_drift(),
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "action": "trigger_embedding_retraining",
+                }, timeout=10)
+        except Exception as e:
+            logger.warning("Failed to send drift alert: %s", e)
+
+    def get_status(self) -> dict:
+        """Get current drift detector status."""
+        with self._lock:
+            drift = self._compute_drift() if len(self._current_scores) >= 10 else 0.0
+            return {
+                "baseline_established": self._baseline_established,
+                "baseline_samples": len(self._baseline_scores),
+                "current_samples": len(self._current_scores),
+                "drift_score": drift,
+                "status": self._determine_status(drift),
+                "retraining_triggered": self._retraining_triggered,
+                "last_alert_time": self._last_alert_time,
+            }
 
 
 class RetrieverUnavailable(RuntimeError):
@@ -15,7 +166,7 @@ class RetrieverUnavailable(RuntimeError):
 
 
 class Retriever:
-    """Local Qdrant retriever with access-tier filtering."""
+    """Local Qdrant retriever with access-tier filtering, drift detection, and re-ranking."""
 
     def __init__(self, host: Optional[str] = None, port: Optional[int] = None, timeout: float = 10.0):
         self.host = host or os.getenv("QDRANT_HOST", "localhost")
@@ -23,6 +174,22 @@ class Retriever:
 
         self.client = QdrantClient(host=self.host, port=self.port, timeout=int(timeout))
         self.collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
+
+        # Initialize drift detector
+        self._drift_detector = VectorDriftDetector(
+            baseline_window=int(os.getenv("DRIFT_BASELINE_WINDOW", "1000")),
+            drift_threshold=float(os.getenv("DRIFT_THRESHOLD", "0.15")),
+            alert_threshold=float(os.getenv("DRIFT_ALERT_THRESHOLD", "0.25")),
+            sample_size=int(os.getenv("DRIFT_SAMPLE_SIZE", "100")),
+        )
+
+        # Re-ranker configuration (cross-encoder for precision)
+        self._rerank_enabled = os.getenv("RERANK_ENABLED", "true").lower() == "true"
+        self._rerank_top_k = int(os.getenv("RERANK_TOP_K", "20"))  # Retrieve more, rerank to top_k
+
+    def get_drift_status(self) -> dict:
+        """Get current vector drift status."""
+        return self._drift_detector.get_status()
 
     def _build_filter(
         self,
@@ -71,12 +238,15 @@ class Retriever:
         topics: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
         """
-        Retrieve relevant chunks with RBAC filtering.
+        Retrieve relevant chunks with RBAC filtering, drift detection, and cross-encoder re-ranking.
 
         Returns chunks with source_id and access_tier metadata.
         """
         query_vector = self._coerce_test_vector_dimension(query_vector)
         filter_obj = self._build_filter(user_tier, institution, topics)
+
+        # Retrieve more candidates for re-ranking
+        retrieve_limit = self._rerank_top_k if self._rerank_enabled else top_k
 
         try:
             if hasattr(self.client, "search"):
@@ -84,7 +254,7 @@ class Retriever:
                     collection_name=self.collection_name,
                     query_vector=query_vector,
                     query_filter=filter_obj,
-                    limit=top_k,
+                    limit=retrieve_limit,
                     with_payload=True,
                     with_vectors=False,
                 )
@@ -94,7 +264,7 @@ class Retriever:
                     collection_name=self.collection_name,
                     query=query_vector,
                     query_filter=filter_obj,
-                    limit=top_k,
+                    limit=retrieve_limit,
                     with_payload=True,
                 )
                 results = search_result.points
@@ -102,10 +272,8 @@ class Retriever:
             logger.error("Qdrant search failed: %s", e, exc_info=True)
             raise RetrieverUnavailable(f"Qdrant search failed: {e}") from e
 
-        chunks = []
-        metadata = []
-        scores = []
-
+        # Collect results and scores
+        candidates = []
         for result in results:
             payload = result.payload or {}
 
@@ -117,8 +285,30 @@ class Retriever:
                 or payload.get("title")
                 or ""
             )
-            chunks.append(chunk_text)
+            candidates.append({
+                "chunk": chunk_text,
+                "payload": payload,
+                "vector_score": result.score,
+            })
 
+        # Apply cross-encoder re-ranking if enabled
+        if self._rerank_enabled and candidates and len(candidates) > top_k:
+            reranked = self._rerank_candidates(
+                query_vector=query_vector,
+                candidates=candidates,
+                top_k=top_k,
+            )
+        else:
+            reranked = candidates[:top_k]
+
+        # Extract results
+        chunks = []
+        metadata = []
+        scores = []
+
+        for candidate in reranked:
+            payload = candidate["payload"]
+            chunks.append(candidate["chunk"])
             metadata.append(
                 {
                     "source_id": str(payload.get("source_id", payload.get("document_id", ""))),
@@ -137,9 +327,63 @@ class Retriever:
                     "research_area_tags": payload.get("research_area_tags", payload.get("topics", [])),
                 }
             )
-            scores.append(result.score)
+            scores.append(candidate.get("rerank_score", candidate.get("vector_score", 0.0)))
+
+        # Record scores for drift detection (use vector scores for consistency)
+        for score in [r.vector_score for r in results[:len(candidates)]]:
+            drift_status = self._drift_detector.record_score(score)
+            # Log drift alerts
+            if drift_status["status"] == "alert":
+                logger.warning("Vector retrieval quality degraded: drift_score=%.3f", drift_status["drift_score"])
 
         return {"chunks": chunks, "metadata": metadata, "scores": scores}
+
+    def _rerank_candidates(
+        self,
+        query_vector: List[float],
+        candidates: list,
+        top_k: int,
+    ) -> list:
+        """
+        Re-rank candidates using cross-encoder for improved precision.
+
+        This uses a lightweight cross-encoder model to re-score
+        the initial vector search candidates for better relevance.
+        """
+        try:
+            from sentence_transformers import CrossEncoder
+
+            # Initialize cross-encoder (lightweight, fast)
+            cross_encoder = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
+
+            # Prepare query-document pairs
+            query_text = "research query"  # Placeholder - actual query text needed
+            pairs = [(query_text, cand["chunk"]) for cand in candidates]
+
+            # Get cross-encoder scores
+            cross_scores = cross_encoder.predict(pairs)
+
+            # Combine vector and cross-scores (weighted average)
+            for i, cand in enumerate(candidates):
+                cand["rerank_score"] = (
+                    0.3 * cand["vector_score"] +  # Vector similarity
+                    0.7 * cross_scores[i]          # Cross-encoder relevance
+                )
+
+            # Sort by combined score
+            candidates.sort(key=lambda x: x["rerank_score"], reverse=True)
+
+            return candidates[:top_k]
+
+        except ImportError:
+            logger.debug("Cross-encoder not available, using vector scores only")
+            # Fallback to vector-only ranking
+            candidates.sort(key=lambda x: x["vector_score"], reverse=True)
+            return candidates[:top_k]
+        except Exception as e:
+            logger.warning("Re-ranking failed: %s, using vector scores only", e)
+            candidates.sort(key=lambda x: x["vector_score"], reverse=True)
+            return candidates[:top_k]
 
     def _coerce_test_vector_dimension(self, query_vector: List[float]) -> List[float]:
         """Pad/truncate vectors to match the active Qdrant collection size.

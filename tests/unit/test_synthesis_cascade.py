@@ -3,6 +3,10 @@ Test the 3-tier synthesis cascade:
 1. Cloud works → use cloud response
 2. Cloud fails, local works → use local response
 3. Both fail → rule-based fallback
+
+NOTE: Tests patch get_llm_mesh (SovereignLLMMesh) and get_local_llm_client,
+matching the current implementation in synthesizer.py which uses the mesh
+for cloud synthesis and local_llm_client for fallback.
 """
 import os
 import pytest
@@ -11,27 +15,35 @@ from unittest.mock import patch
 from src.orchestration.nodes.synthesizer import _synthesize, _fallback_synthesis
 
 
-class _FakeCloudClient:
-    model = "cloud-test"
+class _FakeCloudMesh:
+    """Fake SovereignLLMMesh for testing."""
+    provider = "test-cloud"
+    model = "fake-mesh"
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list):
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
         return "Cloud LLM says: 42 researchers found."
 
 
-class _FailingCloudClient:
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list):
+class _FailingCloudMesh:
+    """Cloud mesh that always fails."""
+    provider = "test-cloud"
+    model = "failing-mesh"
+
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
         raise RuntimeError("cloud timeout")
 
 
 class _FakeLocalClient:
+    """Fake local LLM client."""
     model = "local-test"
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list):
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
         return "Local SLM says: 42 researchers found."
 
 
 class _FailingLocalClient:
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list):
+    """Local client that always fails."""
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
         raise RuntimeError("local timeout")
 
 
@@ -48,7 +60,7 @@ def sample_chunks():
 def test_cloud_tier_succeeds(sample_sql_results, sample_chunks):
     """When cloud LLM works, its response is used."""
     with patch.dict(os.environ, {"CLOUD_SYNTHESIS_ALLOWED": "true"}):
-        with patch("src.orchestration.nodes.synthesizer.get_llm_client", return_value=_FakeCloudClient()):
+        with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FakeCloudMesh()):
             response, provenance = _synthesize(
                 query="How many researchers?",
                 sources=["Structured data: 1 records"],
@@ -64,7 +76,7 @@ def test_cloud_tier_succeeds(sample_sql_results, sample_chunks):
 
 def test_cloud_falls_back_to_local(sample_sql_results, sample_chunks):
     """When cloud fails but local works, local response is used."""
-    with patch("src.orchestration.nodes.synthesizer.get_llm_client", return_value=_FailingCloudClient()):
+    with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
         with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FakeLocalClient()):
             response, provenance = _synthesize(
                 query="How many researchers?",
@@ -81,7 +93,7 @@ def test_cloud_falls_back_to_local(sample_sql_results, sample_chunks):
 
 def test_both_fail_uses_rule_based(sample_sql_results, sample_chunks):
     """When both cloud and local fail, rule-based fallback activates."""
-    with patch("src.orchestration.nodes.synthesizer.get_llm_client", return_value=_FailingCloudClient()):
+    with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
         with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FailingLocalClient()):
             response, provenance = _synthesize(
                 query="How many researchers?",
@@ -109,7 +121,7 @@ def test_rule_based_formats_data_without_llm():
     )
     assert "Dr. Rao" in response
     assert "Gujarat" in response
-    assert "[Fallback Mode" in response
+    assert ("[Fallback Mode" in response or "AI synthesis temporarily unavailable" in response)
 
 
 def test_rule_based_handles_aggregate_counts():

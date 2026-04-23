@@ -23,6 +23,8 @@ from typing import TypedDict, Optional, NamedTuple
 import re
 import logging
 import os
+import hashlib
+import time as time_module
 from datetime import datetime
 from enum import Enum
 
@@ -73,6 +75,11 @@ INTENT_PATTERNS = {
         r"(what are|explain|describe|summarize|tell me about)",
         r"(trends?|advances?|latest|current|recent|past\s+\d+\s+years?)",
         r"(overview|analysis|insights?|findings?)",
+        r"(papers?|publications?\s+about|research\s+on)",
+        r"(breakthroughs?|methodology|approaches?|novel)",
+        r"(synthesis|synthesize|findings|results?)",
+        r"(newest|latest|recent).*(?:research|area|field|topic)",
+        r"(vulnerabilities?|cybersecurity|security)",
     ],
     "hybrid": [
         r"synthesize",
@@ -80,6 +87,7 @@ INTENT_PATTERNS = {
         r"integrat",
         r"correlat",
         r"both.*and",
+        r"versus",
     ],
 }
 
@@ -96,9 +104,16 @@ MULTI_INTENT_SEPARATORS = [
     r"\band\b",
     r"\bplus\b",
     r"\bwith\b",
+    r"\bversus\b",
+    r"\bvs\b",
+    r"\bbut\b",
+    r"\bcompare\b",
     r";",
     r",\s*(but|and|also)\s+",
     r",\s+(?=[A-Z])",
+    r"\babout\b",
+    r"publishing\s+about",
+    r"\bresearch\s+(?:in|on|about)\s+\w+",
 ]
 
 SQL_INJECTION_PATTERNS = [
@@ -110,6 +125,35 @@ SQL_INJECTION_PATTERNS = [
     r"(UNION\s+SELECT|SLEEP\s*\()",
     r"['\"].*['\"].*(OR|AND).*['\"]",
 ]
+
+
+ROUTING_CACHE_TTL = 60.0
+_routing_cache: dict[str, tuple[str, float, float]] = {}
+_routing_cache_timestamps: dict[str, float] = {}
+
+
+def _get_cached_routing(query: str) -> Optional[tuple[str, float, float]]:
+    """Get cached routing decision if still valid. Returns (intent, confidence, stage)."""
+    cache_key = hashlib.md5(query.lower().encode()).hexdigest()
+    if cache_key in _routing_cache:
+        timestamp = _routing_cache_timestamps.get(cache_key, 0)
+        if time_module.time() - timestamp < ROUTING_CACHE_TTL:
+            intent, confidence, stage = _routing_cache[cache_key]
+            return intent, confidence, stage
+        else:
+            _routing_cache.pop(cache_key, None)
+            _routing_cache_timestamps.pop(cache_key, None)
+    return None
+
+
+def _cache_routing_decision(query: str, intent: str, confidence: float, stage: float):
+    """Cache a routing decision for 60 seconds."""
+    cache_key = hashlib.md5(query.lower().encode()).hexdigest()
+    _routing_cache[cache_key] = (intent, confidence, stage)
+    _routing_cache_timestamps[cache_key] = time_module.time()
+
+
+
 
 
 class RoutingMetrics:
@@ -254,12 +298,23 @@ def _detect_multi_intent(query: str) -> tuple[bool, list[str]]:
     subqueries = []
     query_lower = query.lower()
 
+    SHORT_ACCEPTABLE_PREFIXES = (
+        "recently",
+        "currently",
+        "today",
+        "now",
+        "latest",
+        "historically",
+        "recent",
+        "past",
+    )
+
     for separator in MULTI_INTENT_SEPARATORS:
         parts = re.split(separator, query_lower, maxsplit=2, flags=re.IGNORECASE)
         if len(parts) > 1:
             for part in parts:
                 part = part.strip()
-                if len(part) > 10:
+                if len(part) > 10 or part.startswith(SHORT_ACCEPTABLE_PREFIXES):
                     subqueries.append(part)
 
     if len(subqueries) < 2:
@@ -312,13 +367,18 @@ def _classify_intent_with_confidence(query: str) -> tuple[str, float, dict]:
 
     confidence = min(0.9, 0.4 + (max_score * 0.2) + (total_matches * 0.05))
 
-    for intent, score in scores.items():
-        if score == max_score:
-            return intent, confidence, {
-                "scores": scores,
-                "matched_patterns": matched_patterns[intent],
-                "reason": f"highest score ({score}) for {intent}",
-            }
+    tie_winner = None
+    for intent in ("unstructured", "structured", "hybrid"):
+        if scores[intent] == max_score:
+            tie_winner = intent
+            break
+
+    if tie_winner:
+        return tie_winner, confidence, {
+            "scores": scores,
+            "matched_patterns": matched_patterns[tie_winner],
+            "reason": f"highest score ({max_score}) for {tie_winner}",
+        }
 
     return "unstructured", 0.5, {
         "scores": scores,
@@ -337,16 +397,19 @@ def _route_to_skill(intent: str) -> str:
     return routing_map.get(intent, "rag")
 
 
-INTENT_CLASSIFICATION_PROMPT = """You are an intent classifier for a national research graph query system.
+INTENT_CLASSIFICATION_PROMPT = """You are an expert intent classifier for a national research graph query system.
 
-Classify this query as ONE of three intents:
-- structured: The query asks for specific data (counts, lists, facts about researchers, publications, labs, funding, institutions). Examples: "list researchers in Gujarat", "count publications in 2023", "show funding for AI projects"
-- unstructured: The query asks for understanding, explanations, trends, or analysis from documents. Examples: "what are trends in AI research", "explain hydrogen catalysis breakthroughs", "summarize research directions in quantum computing"
-- hybrid: The query clearly needs BOTH structured data AND document analysis. Examples: "find researchers in ML and explain their recent work", "list top funded projects and analyze their impact"
+Classify this query as EXACTLY ONE of three intents:
+- text_to_sql (structured): The query asks for specific database data — counts, lists, rankings, facts about researchers, publications, labs, funding, institutions. Examples: "list researchers in Gujarat", "count publications in 2023", "show funding for AI projects", "which labs have the most publications"
+- rag (unstructured): The query asks for understanding, explanations, descriptions, trends, or analysis from research documents. Examples: "what are trends in AI research", "explain hydrogen catalysis breakthroughs", "summarize research directions", "describe recent advances"
+- text_to_sql+rag (hybrid): The query clearly needs BOTH structured database data AND document analysis. Examples: "find researchers in ML and explain their recent work", "list top funded projects and analyze their impact", "what papers did top researchers publish and what are they about"
 
-Query: {query}
+Query: "{query}"
 
-Respond with ONLY one word: structured, unstructured, or hybrid"""
+Stage 1 analysis: intent={stage1_intent}, confidence={stage1_confidence:.2f}
+
+Respond with ONLY JSON: {{"route": "text_to_sql" | "rag" | "text_to_sql+rag", "confidence": 0.0-1.0, "reasoning": "brief explanation"}}
+"""
 
 
 MULTI_INTENT_DECOMPOSITION_PROMPT = """You are a query decomposer for a national research graph query system.
@@ -366,40 +429,95 @@ Return a JSON array of sub-queries:
 If the query is already simple, return it as a single-element array."""
 
 
-def _classify_intent_via_llm(query: str) -> Optional[str]:
-    """Classify intent using Minimax LLM (primary) or local LLM (fallback)."""
+def _classify_intent_via_llm(
+    query: str, stage1_intent: str, stage1_confidence: float
+) -> tuple[Optional[str], float]:
+    """Classify intent using Minimax LLM (primary) or local LLM (fallback).
+
+    Args:
+        query: The user query
+        stage1_intent: The intent from regex classification
+        stage1_confidence: The confidence from regex classification
+
+    Returns:
+        tuple: (resolved_intent, llm_confidence) or (None, 0.0) if LLM unavailable
+    """
+    cached = _get_cached_routing(query)
+    if cached:
+        logger.info("Routing cache hit for: %s", query[:50])
+        return cached[0], cached[2]
+
+    def _call_llm() -> tuple[Optional[str], float]:
+        try:
+            from src.config.llm_config import get_llm_client
+
+            client = get_llm_client("minimax")
+            if client is None:
+                try:
+                    from src.config.local_llm import get_local_llm_client
+
+                    client = get_local_llm_client()
+                except ImportError:
+                    return None, 0.0
+            if client is None:
+                return None, 0.0
+
+            prompt = INTENT_CLASSIFICATION_PROMPT.format(
+                query=query,
+                stage1_intent=stage1_intent,
+                stage1_confidence=stage1_confidence,
+            )
+            response = client.generate(
+                system_prompt="You are an expert research query classifier. Return ONLY valid JSON.",
+                user_prompt=prompt,
+                conversation_history=[],
+            )
+
+            import json
+
+            data = json.loads(response)
+            route = data.get("route", "")
+            confidence = float(data.get("confidence", 0.8))
+
+            route_map = {
+                "text_to_sql": "structured",
+                "rag": "unstructured",
+                "text_to_sql+rag": "hybrid",
+            }
+            intent = route_map.get(route, stage1_intent)
+            if intent not in ("structured", "unstructured", "hybrid"):
+                intent = stage1_intent
+
+            logger.info(
+                "LLM intent classification: %s -> %s (conf %.2f, stage1=%s)",
+                query[:50],
+                intent,
+                confidence,
+                stage1_intent,
+            )
+            return intent, confidence
+
+        except (json.JSONDecodeError, KeyError, ValueError, TypeError) as e:
+            logger.warning("LLM classification parse failed: %s", e)
+            return None, 0.0
+        except Exception as e:
+            logger.warning("LLM intent classification failed: %s", e)
+            return None, 0.0
+
     try:
-        from src.config.llm_config import get_llm_client
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
-        client = get_llm_client("minimax")
-        if client is None:
-            try:
-                from src.config.local_llm import get_local_llm_client
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(_call_llm)
+            intent, confidence = future.result(timeout=2.0)
+    except (FuturesTimeoutError, ImportError, OSError):
+        logger.warning("LLM classification timed out after 2s, using stage1 result")
+        return None, 0.0
 
-                client = get_local_llm_client()
-            except ImportError:
-                return None
-        if client is None:
-            return None
+    if intent:
+        _cache_routing_decision(query, intent, confidence, 2.0)
 
-        prompt = INTENT_CLASSIFICATION_PROMPT.format(query=query)
-        response = client.generate(
-            system_prompt="You are a query intent classifier. Return ONLY the intent word: structured, unstructured, or hybrid.",
-            user_prompt=prompt,
-            conversation_history=[],
-        )
-        response_lower = response.strip().lower()
-
-        for intent in ("structured", "unstructured", "hybrid"):
-            if intent in response_lower:
-                logger.info(
-                    "LLM intent classification (Minimax): %s -> %s", query[:50], intent
-                )
-                return intent
-        return None
-    except Exception as e:
-        logger.warning("LLM intent classification failed: %s", e)
-        return None
+    return intent, confidence
 
 
 def _decompose_intent_via_llm(query: str) -> list[str]:
@@ -502,10 +620,16 @@ def _stage2_llm_confirmation(
     llm_enhanced = False
 
     if is_ambiguous or confidence < CONFIDENCE_THRESHOLD_HIGH:
-        llm_intent = _classify_intent_via_llm(user_query)
+        llm_result = _classify_intent_via_llm(user_query, intent, confidence)
+        if isinstance(llm_result, tuple) and len(llm_result) == 2:
+            llm_intent, llm_confidence = llm_result
+        elif isinstance(llm_result, str):
+            llm_intent, llm_confidence = llm_result, 0.85
+        else:
+            llm_intent, llm_confidence = None, 0.0
         if llm_intent:
             resolved_intent = llm_intent
-            resolved_confidence = 0.85
+            resolved_confidence = max(llm_confidence, confidence + 0.05)
             llm_enhanced = True
             logger.info(
                 "LLM enhanced routing: %s (conf %.2f) -> %s (conf %.2f)",
@@ -523,10 +647,19 @@ def _stage2_llm_confirmation(
                 llm_enhanced,
             )
 
-    if is_ambiguous:
+    if is_ambiguous and confidence < CONFIDENCE_THRESHOLD_HIGH:
         clarifications = _apply_default_clarifications(user_query)
         if intent != "hybrid":
             return "hybrid", 0.75, True, ambiguity_issues, clarifications, llm_enhanced
+
+    if is_ambiguous and not clarifications:
+        clarifications = _apply_default_clarifications(user_query)
+
+    if is_ambiguous and intent != "hybrid":
+        intent = "hybrid"
+        confidence = max(confidence, 0.75)
+        if not clarifications:
+            clarifications = _apply_default_clarifications(user_query)
 
     return intent, confidence, is_ambiguous, ambiguity_issues, clarifications, llm_enhanced
 
@@ -704,9 +837,16 @@ def router_node(state) -> dict:
         llm_enhanced = False
         if is_ambiguous:
             clarifications = _apply_default_clarifications(user_query)
-            if intent != "hybrid" and confidence < CONFIDENCE_THRESHOLD_LOW:
+            if intent != "hybrid" and confidence < CONFIDENCE_THRESHOLD_HIGH:
                 intent = "hybrid"
-                confidence = CONFIDENCE_THRESHOLD_LOW
+                confidence = max(confidence, 0.75)
+
+    if is_multi_intent and intent != "hybrid":
+        logger.info("Multi-intent detected, upgrading to hybrid")
+        intent = "hybrid"
+        confidence = max(confidence, 0.75)
+        if not clarifications:
+            clarifications = ["Multi-intent query, using hybrid for comprehensive answer"]
 
     if confidence < CONFIDENCE_THRESHOLD_LOW:
         if intent != "hybrid":
@@ -721,6 +861,21 @@ def router_node(state) -> dict:
                 clarifications = ["Low confidence, using hybrid for safety"]
 
     routing_decision = _route_to_skill(intent)
+
+    reasoning_parts = []
+    if details.get("matched_patterns"):
+        reasoning_parts.append(f"Patterns: {', '.join(details['matched_patterns'][:3])}")
+    if is_ambiguous:
+        reasoning_parts.append(f"Ambiguity detected: {', '.join(ambiguity_issues[:2])}")
+    if llm_enhanced:
+        reasoning_parts.append("LLM confirmed classification")
+    if is_multi_intent:
+        reasoning_parts.append(f"Multi-intent: {len(subqueries)} sub-queries identified")
+    if confidence < CONFIDENCE_THRESHOLD_LOW:
+        reasoning_parts.append("Low confidence threshold triggered hybrid fallback")
+    reasoning_parts.append(f"Route: {intent} via {routing_decision}")
+
+    routing_reason = "; ".join(reasoning_parts) if reasoning_parts else f"{intent.title()} query routed to {routing_decision}"
 
     rationale = [
         f"Stage: {details.get('stage', 'unknown')}",
@@ -754,6 +909,7 @@ def router_node(state) -> dict:
         "routing_decision": routing_decision,
         "routing_confidence": confidence,
         "routing_rationale": rationale,
+        "routing_reason": routing_reason,
         "plan_skills_used": False,
         "multi_intent": is_multi_intent,
         "subqueries": subqueries if is_multi_intent else [],

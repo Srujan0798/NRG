@@ -110,6 +110,113 @@ class SQLValidator:
         return set()
 
 
+class QueryCompletenessValidator:
+    """
+    Validates that a generated SQL query is syntactically complete.
+
+    Catches common LLM truncation failures:
+    - HAVING without GROUP BY
+    - ORDER BY without aggregate on ranked results
+    - Trailing "-- [INCOMPLETE]" comments
+    - Unclosed parentheses
+    - Trailing operators (AND, OR, ON, WHERE without condition)
+    """
+
+    INCOMPLETE_PATTERNS = [
+        r"--\s*\[INCOMPLETE\]",
+        r"--\s*INCOMPLETE",
+        r"\bINCOMPLETE\b",
+        r"--\s*TODO",
+        r"--\s*FIXME",
+    ]
+
+    TRAILING_CLAUSE_PATTERNS = [
+        r"\b(WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|JOIN|AND|OR|ON|WITH)\s*$",
+        r"\b(WHERE|GROUP\s+BY|ORDER\s+BY|HAVING|JOIN|AND|OR|ON|WITH)\s*--",
+    ]
+
+    def __init__(self):
+        import re
+        self._incomplete_re = [re.compile(p, re.IGNORECASE) for p in self.INCOMPLETE_PATTERNS]
+        self._trailing_re = [re.compile(p, re.IGNORECASE) for p in self.TRAILING_CLAUSE_PATTERNS]
+
+    def validate(self, sql: str) -> tuple[bool, list[str]]:
+        """
+        Check if SQL query is complete.
+
+        Returns (is_valid, list_of_issues).
+        """
+        issues = []
+        sql_clean = sql.strip()
+
+        if not sql_clean:
+            return False, ["Empty query"]
+
+        for pattern in self._incomplete_re:
+            if pattern.search(sql_clean):
+                issues.append("Query contains '[INCOMPLETE]' marker — query was truncated")
+
+        paren_count = sql_clean.count("(") - sql_clean.count(")")
+        if paren_count != 0:
+            issues.append(f"Unbalanced parentheses: {paren_count} unclosed")
+
+        for pattern in self._trailing_re:
+            if pattern.search(sql_clean):
+                issues.append("Query ends with incomplete clause (trailing WHERE/AND/OR/ON etc.)")
+
+        trailing_whitespace = sql_clean.endswith(",") or sql_clean.endswith("+")
+        if trailing_whitespace:
+            issues.append("Query ends with trailing operator")
+
+        try:
+            import sqlglot
+            parsed = sqlglot.parse_one(sql_clean, read="postgres")
+            issues.extend(self._check_having_without_group(parsed))
+            issues.extend(self._check_order_by_without_aggregate(sql_clean, parsed))
+        except Exception:
+            pass
+
+        return len(issues) == 0, issues
+
+    def _check_having_without_group(self, parsed) -> list[str]:
+        """Detect HAVING used without GROUP BY."""
+        issues = []
+        having_nodes = list(parsed.find_all(exp.Having))
+        group_by_nodes = list(parsed.find_all(exp.Group))
+
+        if having_nodes and not group_by_nodes:
+            issues.append("HAVING clause used without GROUP BY — aggregation incomplete")
+        return issues
+
+    def _check_order_by_without_aggregate(self, sql: str, parsed) -> list[str]:
+        """Detect ORDER BY on raw column when aggregate ranking was likely intended."""
+        issues = []
+        sql_lower = sql.lower()
+
+        order_by_nodes = list(parsed.find_all(exp.Order))
+
+        for order in order_by_nodes:
+            for key in order.find_all(exp.Ordered):
+                expr = key.this
+                if isinstance(expr, exp.Column):
+                    col_name = expr.name.lower()
+                    has_distinct = "distinct" in sql_lower
+                    has_group = bool(list(parsed.find_all(exp.Group)))
+
+                    if (has_distinct or "top" in sql_lower) and not has_group:
+                        if col_name not in ("name", "institute", "title"):
+                            issues.append(
+                                f"ORDER BY on raw column '{col_name}' — did you mean to aggregate first?"
+                            )
+        return issues
+
+    def validate_or_raise(self, sql: str) -> None:
+        """Validate and raise SQLValidationError if incomplete."""
+        is_valid, issues = self.validate(sql)
+        if not is_valid:
+            raise SQLValidationError(f"Query incomplete: {'; '.join(issues)}")
+
+
 # Adversarial SQL test cases
 ADVERSarial_SQL_TESTS = [
     # Injection attempts

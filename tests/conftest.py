@@ -32,10 +32,30 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: slow-running tests that can be skipped locally"
     )
+    config.addinivalue_line(
+        "markers", "requires_qdrant: tests that require Qdrant vector DB (skipped if unavailable)"
+    )
+    config.addinivalue_line(
+        "markers", "requires_llm: tests that require LLM API access (skipped if unavailable)"
+    )
+    config.addinivalue_line(
+        "markers", "requires_redis: tests that require Redis (skipped if unavailable)"
+    )
+    config.addinivalue_line(
+        "markers", "requires_db: tests that require a live database (skipped if unavailable)"
+    )
+
+
+def _is_service_available(env_var: str) -> bool:
+    """Check if an external service is reachable via environment variable or connection."""
+    val = os.environ.get(env_var, "").lower()
+    if val in ("0", "false", "no"):
+        return False
+    return True
 
 
 def pytest_collection_modifyitems(items):
-    """Auto-mark tests based on their location."""
+    """Auto-mark tests based on their location; skip tests requiring unavailable services."""
     for item in items:
         if "test_security" in item.nodeid or "/security/" in item.nodeid:
             item.add_marker(pytest.mark.security)
@@ -49,6 +69,19 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.e2e)
         if "test_regression" in item.nodeid or "/regression/" in item.nodeid:
             item.add_marker(pytest.mark.regression)
+
+        if item.get_closest_marker("requires_qdrant"):
+            if not _is_service_available("QDRANT_AVAILABLE"):
+                item.add_marker(pytest.mark.skip(reason="Qdrant not available (set QDRANT_AVAILABLE=1 to enable)"))
+        if item.get_closest_marker("requires_llm"):
+            if not _is_service_available("LLM_AVAILABLE"):
+                item.add_marker(pytest.mark.skip(reason="LLM not available (set LLM_AVAILABLE=1 to enable)"))
+        if item.get_closest_marker("requires_redis"):
+            if not _is_service_available("REDIS_AVAILABLE"):
+                item.add_marker(pytest.mark.skip(reason="Redis not available (set REDIS_AVAILABLE=1 to enable)"))
+        if item.get_closest_marker("requires_db"):
+            if not _is_service_available("DB_AVAILABLE"):
+                item.add_marker(pytest.mark.skip(reason="Database not available (set DB_AVAILABLE=1 to enable)"))
 
 
 @pytest.fixture

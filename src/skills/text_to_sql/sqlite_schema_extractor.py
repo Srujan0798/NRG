@@ -1,10 +1,139 @@
 """SQLite Schema Extractor - Extract schema metadata only, NO data."""
 
 import sqlite3
+import threading
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 from src.data.database import get_sqlite_connection, resolve_database_path
+
+
+POSTGRESQL_ONLY_TABLES = {
+    "academic_courses_details",
+    "innovation_grant_from_govt",
+    "innovations_at_various_stages_of_technology_readiness_level",
+    "combined_ipo_patent_data",
+    "incubation_details",
+    "financial_expenses_capital",
+    "financial_expenses_operational",
+    "phd_students",
+    "sanctioned_intake",
+    "actual_student_strength",
+    "placements_and_higher_studies",
+    "package_data",
+    "role_data",
+    "faculty_details",
+    "faculty_strength",
+    "fdp_details",
+    "expertise",
+    "master_expertise",
+    "seed_funding",
+    "startup_receiving_vc_investment",
+    "startup_recognition",
+    "startups_turnover_50_lacs",
+    "fdi_investment",
+    "research_consultancy_details_consultancy",
+    "research_consultancy_details_sponsered",
+    "nirf_extracted_table",
+    "nirf_pdf_record",
+    "nirf_table_row",
+    "patents_details",
+    "ipo_patent_details_flat",
+    "ipo_patent_details_flat_old",
+    "combined_ipo_patent_data_old",
+    "founders_of_fortune_500_companies",
+    "scraped_data",
+    "scraped_data_save",
+    "scraped_raw_data",
+    "advance_search_data",
+    "advance_search_data_15_12",
+    "advance_search_data_old",
+    "tb_institute_mstr",
+    "tb_institute_scrap_data_url",
+    "tb_goi_ministries_mstr",
+    "tb_academic_year_mstr",
+    "tb_course_program_types",
+    "user_registration",
+}
+
+POSTGRESQL_ONLY_KEYWORDS = {
+    "academic_courses_details": {
+        "course", "curriculum", "credit", "credits", "ug ", "pg ", "phd",
+        "undergraduate", "postgraduate", "doctoral", "level_of_course",
+        "academic course", "innovation course", "elective", "core course",
+    },
+    "innovation_grant_from_govt": {
+        "grant", "funding", "govt grant", "government grant", "fund agency",
+        "sanctioned grant", "grant received", "fund agency", "dST", "SERB",
+        "innovation grant", "funding agency", "gov_organisation",
+    },
+    "innovations_at_various_stages_of_technology_readiness_level": {
+        "trl", "technology readiness", "lab validation", "market ready",
+        "pilot scale", "prototype", "technology readiness level",
+        "level 1", "level 2", "level 3", "level 4", "level 5",
+        "level 6", "level 7", "level 8", "level 9",
+        "pipeline progression", "innovation pipeline", "commercialize",
+        "trl stage",
+    },
+    "combined_ipo_patent_data": {
+        "ipo patent", "combined patent", "patent granted", "patent filed",
+        "patent status", "cost of innovation", "patent cost", "applicants",
+    },
+    "financial_expenses_capital": {
+        "capex", "capital expense", "capital asset", "library", "equipment",
+        "workshop", "capital spending", "high capex", "low capex",
+    },
+    "financial_expenses_operational": {
+        "operational expense", "salaries", "maintenance", "seminars",
+        "operating cost", "utilization audit", "low expenditure",
+    },
+    "incubation_details": {
+        "incubated", "incubation", "startup", "startup incubated",
+        "incubated startup", "cohort", "pre-incubation",
+    },
+    "phd_students": {
+        "phd student", "phd enrollment", "doctoral student",
+    },
+    "sanctioned_intake": {
+        "sanctioned intake", "student intake", "seats",
+    },
+    "actual_student_strength": {
+        "student strength", "student count", "male female",
+        "economically backward", "socially challenged",
+    },
+    "placements_and_higher_studies": {
+        "placement", "higher studies", "median package", "students placed",
+    },
+    "package_data": {
+        "package", "salary package", "lpa",
+    },
+    "faculty_details": {
+        "faculty count", "number of faculty",
+    },
+    "faculty_strength": {
+        "faculty strength", "faculty gender",
+    },
+    "expertise": {
+        "expertise", "research area faculty",
+    },
+    "seed_funding": {
+        "seed funding", "dpiit", "startup funding",
+    },
+    "startup_recognition": {
+        "recognized startup", "startup recognition", "dst-tbi",
+    },
+    "nirf": {
+        "nirf", "ranking", "nirf ranking",
+    },
+}
+
+SQLITE_ONLY_TABLES = {
+    "researchers", "institutions", "publications", "funding_records",
+    "projects", "patents", "collaborations", "labs", "keywords",
+    "research_documents", "researcher_publications", "researcher_labs",
+    "publication_keywords", "audit_events", "consent_ledger",
+    "refresh_tokens", "schema_migrations",
+}
 
 
 class SQLiteSchemaExtractor:
@@ -12,22 +141,41 @@ class SQLiteSchemaExtractor:
 
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = resolve_database_path(db_path)
-        self.conn: Optional[sqlite3.Connection] = None
+        self._thread_local = threading.local()
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Get database connection."""
-        if self.conn is None:
-            self.conn = get_sqlite_connection(str(self.db_path))
-        assert self.conn is not None
-        return self.conn
+        """Get thread-local database connection."""
+        if not hasattr(self._thread_local, 'conn') or self._thread_local.conn is None:
+            self._thread_local.conn = get_sqlite_connection(str(self.db_path))
+        return self._thread_local.conn
 
     def get_table_names(self) -> List[str]:
-        """Get all table names from database."""
+        """Get all table names from database (excludes PostgreSQL-only tables)."""
         conn = self._get_connection()
         cursor = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
         )
-        return [row[0] for row in cursor.fetchall()]
+        tables = [row[0] for row in cursor.fetchall()]
+        return tables
+
+    def get_all_table_names_including_postgres(self) -> List[str]:
+        """Get all PostgreSQL table names (for schema bridge awareness)."""
+        return list(POSTGRESQL_ONLY_TABLES)
+
+    def get_unavailable_tables_for_query(self, query: str) -> List[str]:
+        """
+        Detect which PostgreSQL-only tables a query references.
+        Returns list of tables that exist in PostgreSQL but NOT in SQLite dev.
+        """
+        query_lower = query.lower()
+        unavailable = []
+        for table, keywords in POSTGRESQL_ONLY_KEYWORDS.items():
+            for kw in keywords:
+                if kw in query_lower:
+                    if table not in self.get_table_names():
+                        unavailable.append(table)
+                    break
+        return unavailable
 
     def get_columns(self, table_name: str) -> List[Dict[str, Any]]:
         """Get column information for a table."""
@@ -153,6 +301,10 @@ class SQLiteSchemaExtractor:
         if hints:
             prompt_parts.extend(["", "SCHEMA HINTS:", hints])
 
+        synonyms = _load_value_synonyms()
+        if synonyms:
+            prompt_parts.extend(["", "DOMAIN VALUE SYNONYMS:", synonyms])
+
         return "\n".join(prompt_parts)
 
     def get_relevant_tables(self, query: str) -> List[str]:
@@ -160,11 +312,11 @@ class SQLiteSchemaExtractor:
         Prune schema to only relevant tables for query intent.
 
         Simple keyword matching - checks if query mentions entity keywords.
+        Includes PostgreSQL-only tables for awareness but marks unavailable ones.
         """
         query_lower = query.lower()
         all_tables = self.get_table_names()
 
-        # Map table names to query keywords that indicate relevance
         keywords = {
             "researchers": ["researcher", "faculty", "professor", "scientist", "people", "person"],
             "labs": ["lab", "laboratory", "center"],
@@ -189,15 +341,12 @@ class SQLiteSchemaExtractor:
         relevant = set()
         for table in all_tables:
             table_lower = table.lower()
-            # Check if query keywords match this table
             if table_lower in keywords:
                 for kw in keywords[table_lower]:
                     if kw in query_lower:
                         relevant.add(table)
                         break
 
-        # If no specific tables matched, try a broad match: return the
-        # most commonly useful tables rather than all of them
         if not relevant:
             default_tables = {
                 "researchers",
@@ -211,17 +360,40 @@ class SQLiteSchemaExtractor:
 
         return list(relevant) if relevant else all_tables
 
+    def get_postgresql_table_warning(self, query: str) -> Optional[str]:
+        """
+        Return a warning message if query references PostgreSQL-only tables.
+        Returns None if all referenced tables are available in SQLite.
+        """
+        unavailable = self.get_unavailable_tables_for_query(query)
+        if unavailable:
+            return (
+                f"NOTE: The following tables are not available in the development SQLite database "
+                f"(they exist in the production PostgreSQL): {', '.join(sorted(unavailable))}. "
+                f"This query may not return results in dev mode. "
+                f"These tables are: {', '.join(sorted(unavailable))}."
+            )
+        return None
+
     def close(self):
-        """Close database connection."""
-        if self.conn:
-            self.conn.close()
-            self.conn = None
+        """Close database connection for current thread."""
+        if hasattr(self._thread_local, 'conn') and self._thread_local.conn:
+            self._thread_local.conn.close()
+            self._thread_local.conn = None
 
 
 def _load_schema_hints() -> str:
     hints_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_hints.md"
     try:
         return hints_path.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        return ""
+
+
+def _load_value_synonyms() -> str:
+    synonyms_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_value_synonyms.md"
+    try:
+        return synonyms_path.read_text(encoding="utf-8").strip()
     except FileNotFoundError:
         return ""
 

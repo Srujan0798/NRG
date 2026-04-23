@@ -36,7 +36,7 @@ def test_fallback_synthesis_returns_citations(monkeypatch):
         }
     )
 
-    assert "[cite:researcher-1:0]" in result["synthesized_response"]
+    assert "[cite:structured:0]" in result["synthesized_response"]
     assert result["citations"] == [
-        {"id": "researcher-1:0", "pub_id": "researcher-1", "chunk_id": "0"}
+        {"id": "structured:0", "pub_id": "structured", "chunk_id": "0"}
     ]

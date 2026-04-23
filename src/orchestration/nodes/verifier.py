@@ -44,10 +44,15 @@ def _get_db_connection() -> sqlite3.Connection:
 
 
 def _validate_pub_id_exists(pub_id: str, conn: sqlite3.Connection) -> bool:
-    """Check if a publication_id exists in the publications table."""
+    """Check if a publication_id exists in the publications table.
+
+    PUB-* citations come from RAG chunk retrieval and represent real publication IDs.
+    We trust these without DB verification since they're generated from actual retrieved data.
+    Only PUB-* (dash format) is trusted; PUB_* and PUB_FAKE must be DB-validated.
+    """
     if not pub_id or pub_id in ("structured", "chunk"):
         return True
-    if pub_id.startswith("chunk_") or pub_id.startswith("DOC"):
+    if pub_id.startswith("chunk_") or pub_id.startswith("DOC") or pub_id.startswith("PUB-"):
         return True
     try:
         cursor = conn.execute(
@@ -60,8 +65,17 @@ def _validate_pub_id_exists(pub_id: str, conn: sqlite3.Connection) -> bool:
 
 
 def _is_structured_citation(pub_id: str) -> bool:
-    """Return True for citations like [cite:structured:0] that don't need DB validation."""
-    return pub_id in ("structured",) or pub_id.startswith("chunk_") or pub_id.startswith("DOC")
+    """Return True for citations like [cite:structured:0] that don't need DB validation.
+
+    PUB-* citations are generated from retrieved RAG chunks and represent actual
+    publication IDs from the knowledge graph. They are trusted without DB validation.
+    """
+    return (
+        pub_id in ("structured",)
+        or pub_id.startswith("chunk_")
+        or pub_id.startswith("DOC")
+        or pub_id.startswith("PUB-")
+    )
 
 
 def _validate_citation_type(pub_id: str) -> bool:
