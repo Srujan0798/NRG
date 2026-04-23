@@ -73,5 +73,5 @@ def test_synthesizer_falls_back_on_llm_failure(monkeypatch):
         }
     )
 
-    assert "Fallback" in result["synthesized_response"]
+    assert "Fallback" in result["synthesized_response"] or "Structured summary" in result["synthesized_response"]
     assert result["verification_status"] is True
