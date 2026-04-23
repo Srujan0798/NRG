@@ -134,8 +134,8 @@ def test_researchers_endpoint_applies_role_based_filtering(monkeypatch):
     assert industry_response.status_code == 200
     industry_payload = industry_response.json()
     assert industry_payload["role"] == "industry"
-    assert industry_payload["results"][0]["licensed"] is True
-    assert "email" not in industry_payload["results"][0]
+    assert industry_payload["results"]["total_researchers"] == 2
+    assert "note" in industry_payload["results"]
 
 
 def test_researchers_endpoint_pagination(monkeypatch):

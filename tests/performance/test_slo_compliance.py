@@ -45,6 +45,19 @@ class FakeCloudLLMClient:
             yield response[i:i+10]
 
 
+class FakeLLMMesh:
+    """Mock LLM mesh for SLO compliance testing."""
+
+    def __init__(self, client):
+        self._client = client
+
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None) -> str:
+        return self._client.generate(system_prompt, user_prompt, conversation_history or [])
+
+    def generate_streaming(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
+        return self._client.generate_streaming(system_prompt, user_prompt, conversation_history or [])
+
+
 @pytest.fixture(autouse=True)
 def mock_llm(monkeypatch):
     """Patch LLM so tests don't make real API calls.
@@ -53,6 +66,7 @@ def mock_llm(monkeypatch):
     API overhead + network-free synthesis time, not real LLM API calls.
     """
     fake = FakeCloudLLMClient()
+    fake_mesh = FakeLLMMesh(fake)
     import src.config.llm_config as llm_module
     import src.orchestration.nodes.synthesizer as synth_module
 
@@ -63,7 +77,8 @@ def mock_llm(monkeypatch):
         return fake
 
     monkeypatch.setattr(llm_module, "get_llm_client", mock_get_llm_client)
-    monkeypatch.setattr(synth_module, "get_llm_client", mock_get_llm_client)
+    monkeypatch.setattr(llm_module, "get_llm_mesh", lambda: fake_mesh)
+    monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", mock_get_local_llm_client)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
 

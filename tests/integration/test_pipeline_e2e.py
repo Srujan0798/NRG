@@ -51,7 +51,7 @@ def _assert_has_citation(response: str) -> None:
 
 @pytest.fixture(autouse=True)
 def _force_rule_based_synthesis(monkeypatch):
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: None)
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
     monkeypatch.setattr(verifier_module, "get_llm_client", lambda: None)
     _reset_executor_cache()

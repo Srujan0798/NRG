@@ -98,6 +98,7 @@ class TestDataBoundary:
 
         skill.close()
 
+    @pytest.mark.requires_qdrant
     def test_tier_filtering_rag(self):
         """Test tier filtering in RAG."""
         retriever = RAGSkill()

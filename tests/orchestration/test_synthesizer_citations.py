@@ -13,7 +13,7 @@ def test_extract_citations_from_response():
 
 
 def test_fallback_synthesis_returns_citations(monkeypatch):
-    monkeypatch.setattr(synthesizer_module, "get_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "get_llm_mesh", lambda: None)
     monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
     monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
 

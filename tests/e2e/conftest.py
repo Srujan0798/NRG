@@ -83,10 +83,26 @@ class FakeLocalLLMClient:
         return response
 
 
+class FakeLLMMesh:
+    """Mock LLM mesh with same interface as SovereignLLMMesh."""
+
+    def __init__(self, cloud_client, local_client):
+        self._cloud = cloud_client
+        self._local = local_client
+
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None) -> str:
+        conversation_history = conversation_history or []
+        return self._cloud.generate(system_prompt, user_prompt, conversation_history)
+
+    def generate_streaming(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
+        conversation_history = conversation_history or []
+        return self._cloud.generate_streaming(system_prompt, user_prompt, conversation_history)
+
+
 @pytest.fixture(autouse=True)
 def mock_llm_clients(monkeypatch):
     """
-    Auto-use fixture that patches get_llm_client and get_local_llm_client
+    Auto-use fixture that patches get_llm_client, get_llm_mesh, and get_local_llm_client
     so E2E tests never make real LLM API calls.
 
     Override by patching before a specific test if you want a different mock.
@@ -96,6 +112,7 @@ def mock_llm_clients(monkeypatch):
 
     fake_cloud = FakeCloudLLMClient()
     fake_local = FakeLocalLLMClient()
+    fake_mesh = FakeLLMMesh(fake_cloud, fake_local)
 
     def mock_get_llm_client(provider: str | None = None):
         return fake_cloud
@@ -103,8 +120,12 @@ def mock_llm_clients(monkeypatch):
     def mock_get_local_llm_client(provider: str | None = None):
         return fake_local
 
+    def mock_get_llm_mesh():
+        return fake_mesh
+
     monkeypatch.setattr(llm_module, "get_llm_client", mock_get_llm_client)
-    monkeypatch.setattr(synth_module, "get_llm_client", mock_get_llm_client)
+    monkeypatch.setattr(llm_module, "get_llm_mesh", mock_get_llm_mesh)
+    monkeypatch.setattr(synth_module, "get_llm_mesh", mock_get_llm_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", mock_get_local_llm_client)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
 
