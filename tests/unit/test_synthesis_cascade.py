@@ -20,7 +20,7 @@ class _FakeCloudMesh:
     provider = "test-cloud"
     model = "fake-mesh"
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None):
         return "Cloud LLM says: 42 researchers found."
 
 
