@@ -80,6 +80,7 @@ class NRGState:
     active_domain: str = ""  # locks table context across follow-up turns
     previous_domain: str = ""  # tracks domain switches for cross-domain detection
     domain_switch_detected: bool = False  # True if current query switches domain
+    complexity: str = "moderate"  # LLM cost complexity: trivial/simple/moderate/complex/synthesis_heavy
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
