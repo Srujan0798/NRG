@@ -136,7 +136,11 @@ class PromptSanitiser:
             ),
             _Rule("instruction_override", re.compile(r"\bdisregard\s+instruc\b")),
             _Rule("instruction_override", re.compile(r"\bdisregard\s+your\s+programming\b")),
+            _Rule("instruction_override", re.compile(r"\bforget\s+(your|the)\s+system\s+prompt\b")),
+            _Rule("instruction_override", re.compile(r"\[\s*system\s*\].*\boverride\b")),
+            _Rule("instruction_override", re.compile(r"\buser_tier\s*=\s*(researcher|tier\s*1|1)\b")),
             _Rule("persona_override", re.compile(r"\byou\s+are\s+now\b")),
+            _Rule("persona_override", re.compile(r"\bact\s+as\s+(a\s+)?(tier\s*1|researcher|professor|admin|root|developer)\b")),
             _Rule(
                 "instruction_override",
                 re.compile(r"\u092a\u093f\u091b\u0932\u0947\s+\u0928\u093f\u0930\u094d\u0926\u0947\u0936\s+\u0915\u0940\s+\u0905\u0928\u0926\u0947\u0916\u093e\s+\u0915\u0930\u0947\u0902", re.UNICODE),
@@ -177,6 +181,7 @@ class PromptSanitiser:
             _Rule("system_prompt_exfiltration", re.compile(r"\breveal\s+hidden\s+system\s+content\b")),
             _Rule("system_prompt_exfiltration", re.compile(r"\b(print|dump)\s+(the\s+)?hidden\b")),
             _Rule("system_prompt_exfiltration", re.compile(r"\bdump\s+(the\s+)?system\s+hidden\b")),
+            _Rule("system_prompt_exfiltration", re.compile(r"\bprint\s+(the\s+)?contents\s+of\s+db_struct\.sql\b")),
             _Rule("system_tag_injection", re.compile(r"<\s*/?\s*system\s*>")),
             _Rule("system_role_prefix", re.compile(r"\bsystem\s*:\s*")),
             _Rule(
@@ -187,6 +192,8 @@ class PromptSanitiser:
                 "policy_bypass",
                 re.compile(r"\bbypass\s+.*?(filter|content|restriction|rule|safety)\b"),
             ),
+            _Rule("policy_bypass", re.compile(r"\b(no|without)\s+rbac\b")),
+            _Rule("policy_bypass", re.compile(r"\bbypass\s+authentication\b")),
             _Rule(
                 "data_exfiltration",
                 re.compile(
@@ -195,6 +202,19 @@ class PromptSanitiser:
                     r"researcher\s+emails?|unredacted\s+full_text|full_text|raw\s+abstracts?)\b"
                 ),
             ),
+            _Rule("data_exfiltration", re.compile(r"\bdatabase\s+password\b")),
+            _Rule("data_exfiltration", re.compile(r"\bcontact\s+details?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bemail\s+addresses?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bpan\s+numbers?\b")),
+            _Rule(
+                "data_exfiltration",
+                re.compile(r"\bselect\s+.*\b(email|aadhaar|phone|pan|password)\b.*\bfrom\b"),
+            ),
+            _Rule("sql_injection", re.compile(r";\s*(drop|select|exec|delete|update|insert)\b")),
+            _Rule("sql_injection", re.compile(r"\bdrop\s+table\b")),
+            _Rule("sql_injection", re.compile(r"\bunion\s+select\b")),
+            _Rule("sql_injection", re.compile(r"\bxp_cmdshell\b")),
+            _Rule("sql_injection", re.compile(r"'\s*or\s*'?\d+'?\s*=\s*'?\d+'?")),
             _Rule(
                 "encoding_attack",
                 re.compile(
@@ -425,6 +445,18 @@ class PromptSanitiser:
             }
 
         query = str(query_data.get("query", ""))
+        if len(query) > 10000:
+            if identifier:
+                rate_limited = self._record_rejected_query(identifier)
+            else:
+                rate_limited = False
+            return {
+                "valid": False,
+                "reason": "QUERY_TOO_LARGE",
+                "details": "Query exceeds 10000 character limit",
+                "rate_limit_triggered": rate_limited,
+            }
+
         injection_verdict = self.classify_injection(query)
 
         if injection_verdict["blocked"]:
