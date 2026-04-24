@@ -538,3 +538,23 @@ Expected impact: 7.2s → ~4-5s. Still needs measurement on real data.
 *Generated: 2026-04-24*
 *Protocol: NRG Master Senior Engineer Verification v2.0*
 *Sources: Core_Idea_Clean.md · db_struct.sql · BACKLOG.md · SQL_AUDIT_REPORT_DHAIRYA.md*
+
+---
+
+## ADDENDUM — 2026-04-25
+
+**WE.5 CostGuard LLM Budget Governance — COMPLETED**
+
+Committed: `5aa46a54` ("fix: CostGuard bug fixes + 44 passing tests + trivial queries exempt at critical threshold")
+
+| Component | Status | Details |
+|-----------|--------|---------|
+| CostGuard class | ✅ Complete | get_provider_for_tier(), estimate_cost(), check_budget(), record_cost(), get_daily_cost_digest(), Redis persistence |
+| log_cost_decision() | ✅ Added | Audit chain event type "llm_cost" with provider, tokens, cost_inr, persona, complexity, route_decision |
+| llm_cost_log_001 migration | ✅ Created | src/migrations/versions/ — extends add_audit_cosign_trigger_001 |
+| cost_budget.yaml | ✅ Config | Persona allocations, thresholds, provider priority lists, alert channels |
+| synthesizer integration | ✅ Fixed | actual estimated_cost passed to check_budget (was 0), actual_provider tracked per path |
+| 08_llm_cost.json dashboard | ✅ Created | 11 panels: monthly spend gauge, per-provider cost timeseries, per-persona, query count by complexity, threshold alerts |
+| llm_cost_report.py | ✅ Created | Weekly markdown report with persona/provider/complexity breakdown |
+| test_cost_guard.py | ✅ 44/44 PASS | Budget status, check_budget enforcement, provider routing, cost estimation, daily digest, record_cost |
+| Known gap | ⚠️ | complexity_classifier not wired into orchestration graph — synthesizer defaults to complexity="moderate" |
