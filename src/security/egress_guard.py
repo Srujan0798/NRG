@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 
 logger = logging.getLogger(__name__)
 
-ALLOWLIST_PATH = Path(__file__).resolve().parents[1] / "egress_allowlist.yaml"
+ALLOWLIST_PATH = Path(__file__).resolve().parents[1] / "security" / "egress_allowlist.yaml"
 
 
 @dataclass
@@ -75,7 +75,9 @@ class EgressGuard:
 
     @property
     def blocked_patterns(self) -> list[str]:
-        return self._allowlist.get("patterns_block", [])
+        explicit = self._allowlist.get("patterns_block", [])
+        content_block = self._allowlist.get("blocked_content", [])
+        return explicit + content_block
 
     def check(self, text: str, field_name: str = "prompt") -> list[EgressViolation]:
         """Check text for any violations. Returns list of violations (empty = clean)."""
@@ -83,13 +85,17 @@ class EgressGuard:
 
         for pattern in self.blocked_patterns:
             if re.search(pattern, text, re.IGNORECASE):
-                violations.append(EgressViolation(
+                violation = EgressViolation(
                     timestamp=self._now(),
                     blocked_text=pattern[:100],
                     reason=f"blocked_pattern: {pattern[:50]}",
                     field=field_name,
                     severity="block",
-                ))
+                )
+                violations.append(violation)
+                self._violations.append(violation)
+
+        return violations
 
         return violations
 
@@ -140,11 +146,14 @@ class EgressGuard:
 
         if blocked:
             logger.warning("System prompt egress violation: %s", blocked[0].reason)
+            for v in blocked:
+                self._violations.append(v)
             if raise_on_violation:
                 raise EgressSecurityError(f"System prompt egress violation: {blocked[0].reason}")
 
         for v in violations:
-            self._violations.append(v)
+            if v not in self._violations:
+                self._violations.append(v)
 
         filtered = self._sanitize_text(system_prompt, violations)
         return filtered, violations
@@ -170,14 +179,12 @@ class EgressGuard:
             if table_match:
                 tbl = table_match.group(1).lower()
                 if tbl not in self.allowed_tables and tbl != "*":
-                    passed.append(f"# [EGRESS BLOCKED: table '{tbl}' not in allowlist] {line}")
                     continue
 
             col_match = re.search(r'(?:column|field):\s+[`"]?(\w+)[`"]?', stripped, re.IGNORECASE)
             if col_match:
                 col = col_match.group(1).lower()
                 if col not in self.allowed_columns and col not in ("*", "id", "created_at", "updated_at"):
-                    passed.append(f"# [EGRESS BLOCKED: column '{col}' not in allowlist] {line}")
                     continue
 
             passed.append(line)

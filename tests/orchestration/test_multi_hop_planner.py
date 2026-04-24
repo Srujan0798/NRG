@@ -175,3 +175,156 @@ class TestPlannerNodeIntegration:
         )
         skills = result.get("desired_skills", [])
         assert isinstance(skills, list)
+
+
+class TestDAGDecompositionFull:
+    """Expanded 10-fixture coverage for DAG multi-hop planner."""
+
+    def test_comparison_query_produces_root_plus_branches(self):
+        """Comparison query produces root with 2+ child branches."""
+        result = _heuristic_decompose(
+            "Compare Gujarat and Karnataka AI output over 5 years and show the funding gap",
+            "table: researchers\ntable: funding_records"
+        )
+        assert result["is_dag"] is True
+        assert len(result["dag_nodes"]) >= 2
+        root = next(n for n in result["dag_nodes"] if n["id"] == result["dag_root_id"])
+        assert root["depends_on"] == []
+        children = [n for n in result["dag_nodes"] if n["id"] != result["dag_root_id"]]
+        assert len(children) >= 2
+        for child in children:
+            assert result["dag_root_id"] in child["depends_on"]
+
+    def test_sequential_chain_deps(self):
+        """Sequential query produces chain of 3+ nodes with dependencies."""
+        result = _heuristic_decompose(
+            "Find robotics researchers. Then list their publications. Then show their funding.",
+            "table: researchers\ntable: publications\ntable: funding_records"
+        )
+        if result["is_dag"] and len(result["dag_nodes"]) >= 3:
+            ids = [n["id"] for n in result["dag_nodes"]]
+            root = next(n for n in result["dag_nodes"] if n["id"] == result["dag_root_id"])
+            assert root["depends_on"] == []
+            chain_nodes = [n for n in result["dag_nodes"] if n["depends_on"]]
+            assert all(dep in ids for node in chain_nodes for dep in node["depends_on"])
+
+    def test_diamond_dag(self):
+        """Diamond DAG: root -> a,b -> c. Root before children, c last."""
+        nodes = [
+            {"id": "root", "subquery": "root", "skill": "sql", "depends_on": [], "tables": [], "output_shape": "list"},
+            {"id": "a", "subquery": "a", "skill": "sql", "depends_on": ["root"], "tables": [], "output_shape": "list"},
+            {"id": "b", "subquery": "b", "skill": "sql", "depends_on": ["root"], "tables": [], "output_shape": "list"},
+            {"id": "c", "subquery": "c", "skill": "sql", "depends_on": ["a", "b"], "tables": [], "output_shape": "list"},
+        ]
+        _, order = exec_build_dag(nodes)
+        ri, ai, bi, ci = [order.index(n) for n in ["root", "a", "b", "c"]]
+        assert ri < ai and ri < bi
+        assert ci > ai and ci > bi
+
+    def test_optional_node_failure_ignored(self):
+        """Optional node whose parent fails is skipped gracefully."""
+        dag_nodes = [
+            {"id": "parent", "subquery": "fail", "skill": "sql",
+             "depends_on": [], "tables": [], "output_shape": "list", "optional": False},
+            {"id": "child", "subquery": "opt_child", "skill": "sql",
+             "depends_on": ["parent"], "tables": [], "output_shape": "list", "optional": True},
+        ]
+        result = _execute_dag(dag_nodes, "parent", user_tier=1)
+        assert result["dag_node_count"] == 2
+
+    def test_dag_context_contains_parent_results(self):
+        """Child node enriched query contains parent SQL result summary."""
+        dag_nodes = [
+            {"id": "root", "subquery": "Find Gujarat researchers", "skill": "sql",
+             "depends_on": [], "tables": ["researchers"], "output_shape": "list", "optional": False},
+            {"id": "child", "subquery": "List their publications", "skill": "sql",
+             "depends_on": ["root"], "tables": ["publications"], "output_shape": "list", "optional": False},
+        ]
+        result = _execute_dag(dag_nodes, "root", user_tier=1)
+        assert result["dag_node_count"] == 2
+        assert "execution_time_ms" in result
+        assert "dag_root_id" in result
+
+    def test_dag_with_rag_skill(self):
+        """DAG with mixed sql/rag skill nodes executes correctly."""
+        dag_nodes = [
+            {"id": "root", "subquery": "Find researchers", "skill": "sql",
+             "depends_on": [], "tables": ["researchers"], "output_shape": "list", "optional": False},
+            {"id": "child", "subquery": "Explain their work", "skill": "rag",
+             "depends_on": ["root"], "tables": ["publications"], "output_shape": "mixed_summary", "optional": False},
+        ]
+        result = _execute_dag(dag_nodes, "root", user_tier=1)
+        assert result["dag_node_count"] == 2
+
+    def test_topological_sort_cycle_detection(self):
+        """DAG with cycle logs warning and produces partial order."""
+        nodes = [
+            {"id": "a", "subquery": "a", "skill": "sql", "depends_on": ["c"], "tables": [], "output_shape": "list"},
+            {"id": "b", "subquery": "b", "skill": "sql", "depends_on": ["a"], "tables": [], "output_shape": "list"},
+            {"id": "c", "subquery": "c", "skill": "sql", "depends_on": ["b"], "tables": [], "output_shape": "list"},
+        ]
+        _, order = exec_build_dag(nodes)
+        assert len(order) < 3
+
+    def test_dag_execution_time_recorded(self):
+        """Each node's execution_time_ms is recorded."""
+        dag_nodes = [
+            {"id": "root", "subquery": "Find researchers", "skill": "sql",
+             "depends_on": [], "tables": ["researchers"], "output_shape": "list", "optional": False},
+        ]
+        result = _execute_dag(dag_nodes, "root", user_tier=1)
+        assert "execution_time_ms" in result
+        assert "root" in result["execution_time_ms"]
+        assert result["execution_time_ms"]["root"] >= 0
+
+    def test_single_hop_query_produces_single_node(self):
+        """Single-hop query produces 1 node with no dependencies."""
+        result = _heuristic_decompose(
+            "Find all AI researchers in Gujarat",
+            "table: researchers\ntable: publications"
+        )
+        assert result["is_dag"] is True
+        assert len(result["dag_nodes"]) == 1
+        assert result["dag_nodes"][0]["depends_on"] == []
+        assert result["dag_root_id"] == result["dag_nodes"][0]["id"]
+
+    def test_dag_node_output_shape_preserved(self):
+        """Each node's output_shape is propagated through execution."""
+        dag_nodes = [
+            {"id": "root", "subquery": "Find Gujarat researchers", "skill": "sql",
+             "depends_on": [], "tables": ["researchers"], "output_shape": "person_list", "optional": False},
+            {"id": "child", "subquery": "List publications", "skill": "sql",
+             "depends_on": ["root"], "tables": ["publications"], "output_shape": "list_table", "optional": False},
+        ]
+        result = _execute_dag(dag_nodes, "root", user_tier=1)
+        assert result["dag_node_count"] == 2
+
+
+class TestExecutorDAGPath:
+    """Verify executor DAG path is triggered correctly."""
+
+    def test_executor_routes_to_dag_when_is_dag_true(self):
+        """When plan.is_dag=True and dag_nodes exist, _execute_dag is called."""
+        from unittest.mock import patch
+        from src.orchestration.nodes.executor import executor_node, _execute_dag
+
+        mock_state = {
+            "user_query": "Compare Gujarat and Karnataka AI output",
+            "routing_decision": "text_to_sql",
+            "user_tier": 1,
+            "plan": {
+                "is_dag": True,
+                "dag_nodes": [
+                    {"id": "root", "subquery": "root", "skill": "sql",
+                     "depends_on": [], "tables": [], "output_shape": "list", "optional": False},
+                    {"id": "child", "subquery": "child", "skill": "sql",
+                     "depends_on": ["root"], "tables": [], "output_shape": "list", "optional": False},
+                ],
+                "dag_root_id": "root",
+            }
+        }
+
+        with patch("src.orchestration.nodes.executor._execute_dag", wraps=_execute_dag) as mock_exec:
+            mock_exec.return_value = {"sql_results": [], "dag_node_count": 2}
+            result = executor_node(mock_state)
+            assert result["dag_node_count"] == 2

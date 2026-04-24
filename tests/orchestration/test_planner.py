@@ -7,7 +7,55 @@ from src.orchestration.nodes.planner import (
     _parse_plan,
     _state_get,
     _client_model_name,
+    _SchemaAllowlistingClient,
 )
+
+
+class TestSchemaAllowlistingClient:
+    """Tests for _SchemaAllowlistingClient using YAML allowlist."""
+
+    def test_schema_allowlisting_client_blocks_schema_probing(self):
+        """Schema probing should be blocked."""
+        mock_client = MagicMock()
+        allowlist = {"researchers", "publications"}
+        wrapper = _SchemaAllowlistingClient(mock_client, allowlist)
+
+        with pytest.raises(PermissionError, match="Schema probing blocked"):
+            wrapper.generate(
+                "system prompt",
+                "show tables and describe columns",
+                []
+            )
+
+    def test_schema_allowlisting_client_allows_valid_query(self):
+        """Valid queries without schema probing should pass."""
+        mock_client = MagicMock()
+        mock_client.generate.return_value = '{"subqueries": ["q1"]}'
+        allowlist = {"researchers", "publications"}
+        wrapper = _SchemaAllowlistingClient(mock_client, allowlist)
+
+        result = wrapper.generate(
+            "system prompt",
+            "List researchers with high h-index",
+            []
+        )
+        mock_client.generate.assert_called_once()
+
+    def test_schema_allowlisting_client_passes_through_model(self):
+        """Model name should be passed through."""
+        mock_client = MagicMock()
+        mock_client.model = "gpt-4o"
+        allowlist = {"researchers"}
+        wrapper = _SchemaAllowlistingClient(mock_client, allowlist)
+        assert wrapper.model == "gpt-4o"
+
+    def test_schema_allowlisting_client_unknown_model(self):
+        """Unknown model should return 'unknown'."""
+        mock_client = MagicMock()
+        del mock_client.model
+        allowlist = {"researchers"}
+        wrapper = _SchemaAllowlistingClient(mock_client, allowlist)
+        assert wrapper.model == "unknown"
 
 
 class TestPlannerNode:

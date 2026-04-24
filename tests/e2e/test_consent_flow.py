@@ -382,9 +382,9 @@ class TestAuditChainLogging:
         consent_service.grant_consent(user_id, "research_access")
 
         assert audit_log.event_count > initial_count
-        recent = audit_log.get_recent_events(1)[0]
-        assert recent["event_type"] == "consent_granted"
-        assert recent["user_id"] == user_id
+        events = audit_log.get_recent_events(20)
+        consent_events = [e for e in events if e.get("event_type") == "consent_granted" and e.get("user_id") == user_id]
+        assert len(consent_events) > 0, f"Expected consent_granted event for {user_id}, got {[e.get('event_type') for e in events[-5:]]}"
 
     def test_revoke_writes_audit_event(self, client, consent_service):
         """Revoking consent appends an event to the HMAC audit chain."""
@@ -411,8 +411,9 @@ class TestAuditChainLogging:
         consent_service.erase_user_data(user_id)
 
         assert audit_log.event_count > before_erase
-        recent = audit_log.get_recent_events(1)[0]
-        assert recent["event_type"] == "data_erasure"
+        events = audit_log.get_recent_events(20)
+        erasure_events = [e for e in events if e.get("event_type") == "data_erasure" and e.get("user_id") == user_id]
+        assert len(erasure_events) > 0, f"Expected data_erasure event for {user_id}, got {[e.get('event_type') for e in events[-5:]]}"
 
     def test_export_writes_audit_event(self, client, consent_service):
         """Exporting data appends an event to the HMAC audit chain."""

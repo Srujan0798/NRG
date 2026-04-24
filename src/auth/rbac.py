@@ -84,25 +84,40 @@ class RBACPolicy:
 
     def is_within_window(self, reference_date: Optional[str] = None) -> bool:
         """Check if reference_date falls within the visibility_window.
-        
+
         If no window is defined, always returns True (no temporal restriction).
         Supports ISO date strings (YYYY-MM-DD) and quarter format (YYYY-QN).
+        Quarter end dates use the last day of the quarter month:
+        Q1→Mar 31, Q2→Jun 30, Q3→Sep 30, Q4→Dec 31.
         """
         if self.visibility_window is None:
             return True
 
         from datetime import datetime
 
+        def parse_quarter(s: str) -> datetime:
+            year, quarter = s.upper().split("-Q")
+            start_month = (int(quarter) - 1) * 3 + 1
+            start = datetime(int(year), start_month, 1)
+            end_month = start_month + 2
+            if end_month > 12:
+                end_month = 12
+            import calendar
+            last_day = calendar.monthrange(int(year), end_month)[1]
+            return start, datetime(int(year), end_month, last_day)
+
         def parse_date(s: str) -> datetime:
             if "Q" in s.upper():
-                year, quarter = s.upper().split("-Q")
-                month = (int(quarter) - 1) * 3 + 1
-                return datetime(int(year), month, 1)
+                _, end_dt = parse_quarter(s)
+                return end_dt
             return datetime.strptime(s, "%Y-%m-%d")
 
         ref = reference_date or datetime.now().isoformat()
         try:
-            ref_dt = parse_date(ref)
+            if "Q" in ref.upper():
+                _, ref_dt = parse_quarter(ref)
+            else:
+                ref_dt = datetime.strptime(ref[:10], "%Y-%m-%d")
         except ValueError:
             return True
 
@@ -111,14 +126,19 @@ class RBACPolicy:
 
         if from_str:
             try:
-                if ref_dt < parse_date(from_str):
+                if "Q" in from_str.upper():
+                    start_dt, _ = parse_quarter(from_str)
+                else:
+                    start_dt = datetime.strptime(from_str[:10], "%Y-%m-%d")
+                if ref_dt < start_dt:
                     return False
             except ValueError:
                 pass
 
         if to_str:
             try:
-                if ref_dt > parse_date(to_str):
+                end_dt = parse_date(to_str)
+                if ref_dt > end_dt:
                     return False
             except ValueError:
                 pass

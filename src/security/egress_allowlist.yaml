@@ -1,314 +1,340 @@
-# ==============================================================================
-# Egress Schema Allowlist — Protocol #39
-# Whitelists tables and columns that MAY appear in outbound LLM prompts.
-# Everything else is blocked or sanitized by egress_guard.py.
+# Egress Schema Allowlist — Protocol #39: Schema Allowlist
+#
+# Defines which table/column schema fragments MAY be sent to cloud LLM providers.
+# Any schema element NOT in this list is BLOCKED before egress.
 #
 # Format:
-#   tables:        list of allowed table names (lowercase)
-#   columns:      list of allowed column names (lowercase)
-#   patterns_block: regex patterns that trigger immediate rejection
-#   max_schema_depth: max join depth exposed to LLM (default: 3)
-# ==============================================================================
+#   tables:<table_name>:<columns | "*">
+#   Any table/column not explicitly listed is implicitly BLOCKED.
+#
+# Security model:
+#   - Default-deny: only explicitly allowlisted items may egress
+#   - Columns control what schema metadata the LLM sees
+#   - Full table/column enumeration is never sent (prevents schema fingerprinting)
 
 version: "1.0"
-updated: "2026-04-24"
+description: "Egress allowlist for cloud LLM schema exposure — sovereign data boundary"
 
-# ---------- TABLES ----------
+# ─── Core Research Tables ───────────────────────────────────────────────────
 tables:
-  # Core business entities
-  - researchers
-  - publications
-  - institutions
-  - labs
-  - funding_records
-  - projects
-  - patents
-  - collaborations
-  - research_documents
-  - keywords
-  - datasets
+  researchers:
+    description: "Researcher profiles — institutional affiliation and research area"
+    allowlisted_columns:
+      - researcher_id
+      - name
+      - institution_id
+      - state
+      - region
+      - research_area
+      - secondary_research_areas
+      - years_experience
+      - year_joined
+      - h_index
+      - citation_count
+      - orcid
+    blocked_columns:
+      - email
+      - phone
+      - aadhaar_number
+      - pan_number
+      - date_of_birth
+      - address
+      - alternate_email
+      - personal_phone
 
-  # Junction / relationship tables
-  - researcher_publications
-  - researcher_labs
-  - researcher_collaborations
-  - publication_keywords
-  - lab_institutions
-  - project_funding
-  - dataset_researchers
+  publications:
+    description: "Research publications — bibliographic metadata only"
+    allowlisted_columns:
+      - publication_id
+      - title
+      - year
+      - abstract
+      - journal
+      - doi
+      - citation_count
+      - authors
+      - keywords
+      - publication_type
+      - open_access
+    blocked_columns:
+      - full_text
+      - fulltext
+      - raw_content
 
-  # Metadata tables
-  - training_pairs
-  - audit_log
-  - user_registration
-  - consent_records
-  - session_history
+  institutions:
+    description: "Academic and research institutions"
+    allowlisted_columns:
+      - institution_id
+      - name
+      - type
+      - state
+      - region
+      - country
+      - established_year
+      - website
+      - rank
+    blocked_columns:
+      - contact_info
+      - address
+      - admin_email
 
-  # Aggregated / analytical tables
-  - aggregated_researcher_stats
-  - institutional_rankings
-  - funding_summary
-  - publication_trends
+  labs:
+    description: "Research laboratories and centers"
+    allowlisted_columns:
+      - lab_id
+      - name
+      - institution_id
+      - department
+      - established_year
+      - funding_source
+      - research_themes
+      - head_researcher_id
+    blocked_columns:
+      - contact_info
+      - address
 
-  # Master / reference tables
-  - tb_institute_mstr
-  - tb_academic_year_mstr
-  - tb_course_program_types
-  - tb_goi_ministries_mstr
+  funding_records:
+    description: "Research funding and grants"
+    allowlisted_columns:
+      - funding_id
+      - source
+      - amount
+      - grant_type
+      - duration_months
+      - research_area
+      - start_date
+      - end_date
+      - status
+    blocked_columns:
+      - recipient_details
+      - bank_info
 
-  # Financial tables
-  - financial_expenses_operational
-  - financial_expenses_capital
-  - seed_funding
-  - innovation_grant_from_govt
-  - fdi_investment
-  - startup_recognition
-  - startup_receiving_vc_investment
-  - startups_turnover_50_lacs
+  projects:
+    description: "Research projects"
+    allowlisted_columns:
+      - project_id
+      - title
+      - pi_researcher_id
+      - funding_id
+      - amount
+      - source
+      - start_date
+      - end_date
+      - status
+      - research_area
+    blocked_columns:
+      - budget_details
+      - internal_notes
 
-  # Academic tables
-  - academic_courses_details
-  - phd_students
-  - sanctioned_intake
-  - actual_student_strength
-  - placements_and_higher_studies
-  - faculty_details
-  - faculty_strength
-  - fdp_details
-  - expertise
-  - master_expertise
-  - nirf_extracted_table
-  - nirf_pdf_record
-  - nirf_table_row
+  patents:
+    description: "Patent filings and grants"
+    allowlisted_columns:
+      - patent_id
+      - title
+      - inventor_ids
+      - filing_date
+      - status
+      - jurisdiction
+      - patent_type
+    blocked_columns:
+      - inventor_details
+      - application_text
 
-  # Innovation tables
-  - innovations_at_various_stages_of_technology_readiness_level
-  - incubation_details
-  - combined_ipo_patent_data
-  - ipo_patent_details_flat
-  - patents_details
+  collaborations:
+    description: "Inter-institutional collaborations"
+    allowlisted_columns:
+      - collab_id
+      - name
+      - institution_ids
+      - type
+      - start_date
+      - end_date
+      - status
+    blocked_columns:
+      - contact_details
 
-  # Scraped / imported data
-  - scraped_data
-  - scraped_data_save
-  - scraped_raw_data
-  - advance_search_data
-  - advance_search_data_15_12
-  - advance_search_data_old
-  - tb_institute_scrap_data_url
+  keywords:
+    description: "Research topic keywords"
+    allowlisted_columns:
+      - keyword
+      - category
+      - subcategory
 
-# ---------- COLUMNS ----------
-columns:
-  # Researcher fields
-  - researcher_id
-  - name
-  - email
-  - phone
-  - designation
-  - department
-  - institution
-  - university_name
-  - state
-  - city
-  - country
-  - pincode
-  - website
-  - research_area
-  - specialization
-  - h_index
-  - citation_count
-  - orcid_id
-  - google_scholar_url
-  - linkedin_url
-  - scholar_url
-  - google_scholar_id
-  - scopus_author_id
-  - rg_ score
-  - publication_count
-  - collaborator_count
-  - active_since
-  - created_at
-  - updated_at
+# ─── Junction / Join Tables ─────────────────────────────────────────────────
+  researcher_publications:
+    description: "Researcher-publication associations"
+    allowlisted_columns:
+      - researcher_id
+      - publication_id
+      - is_corresponding
+      - author_order
 
-  # Publication fields
-  - publication_id
-  - title
-  - abstract
-  - year
-  - month
-  - venue
-  - journal
-  - conference
-  - doi
-  - isbn
-  - issn
-  - url
-  - citation_count
-  - authors
-  - author_names
-  - corresponding_author
-  - keywords
-  - research_area
-  - open_access
-  - page_start
-  - page_end
-  - volume
-  - issue
+  researcher_labs:
+    description: "Researcher-lab affiliations"
+    allowlisted_columns:
+      - researcher_id
+      - lab_id
+      - role
+      - start_date
 
-  # Institution fields
-  - institution_id
-  - institute
-  - short_name
-  - institute_type
-  - address
-  - approved_by
-  - ranking
-  - nirf_rank
-  - established_year
+  publication_keywords:
+    description: "Publication-keyword associations"
+    allowlisted_columns:
+      - publication_id
+      - keyword
 
-  # Lab fields
-  - lab_id
-  - lab_name
-  - focus_area
-  - lab_head
-  - equipment
-  - funding_source
+# ─── Dhairya Academic Tables ────────────────────────────────────────────────
+  innovation_grant_from_govt:
+    description: "Government innovation grants by institute"
+    allowlisted_columns:
+      - institute
+      - gov_organisation_name
+      - year_of_receiving
+      - sum_grant_received
+      - avg_grant_received
+      - count_grant_received
+      - financial_year
+    blocked_columns:
+      - contact_details
+      - bank_accounts
 
-  # Funding fields
-  - funding_id
-  - amount
-  - source
-  - funding_agency
-  - start_date
-  - end_date
-  - status
-  - grant_type
+  combined_ipo_patent_data:
+    description: "IPO and patent data combined"
+    allowlisted_columns:
+      - patent_id
+      - title
+      - status
+      - jurisdiction
+      - filing_date
+      - ipo_status
+      - company_name
+    blocked_columns:
+      - inventor_personal_info
+      - financial_details
 
-  # Patent fields
-  - patent_id
-  - application_number
-  - title_of_invention
-  - status
-  - filing_date
-  - grant_date
-  - inventors
-  - field_of_invention
+  innovations_at_various_stages_of_technology_readiness_level:
+    description: "Technology readiness levels by institute"
+    allowlisted_columns:
+      - institute
+      - stage_of_technology
+      - financial_year
+      - count_projects
+      - sum_funding
+    blocked_columns:
+      - contact_details
 
-  # Collaboration fields
-  - collaboration_id
-  - collaborator_name
-  - collaboration_type
-  - start_date
-  - end_date
+  academic_courses_details:
+    description: "Academic course offerings"
+    allowlisted_columns:
+      - institute
+      - level_of_course
+      - financial_year
+      - count_courses
+      - sum_students
+      - avg_tuition
+    blocked_columns:
+      - student_pii
 
-  # Aggregate / statistical columns
-  - total
-  - count
-  - average
-  - median
-  - max
-  - min
-  - sum
-  - percentile_25
-  - percentile_75
-  - percentile_90
-  - percentile_95
-  - percentile_99
-  - growth_rate
-  - trend_direction
+  financial_expenses_capital:
+    description: "Capital expenditure by institute"
+    allowlisted_columns:
+      - institute
+      - financial_year
+      - sum_capital_expenditure
+      - avg_capital_expenditure
+    blocked_columns:
+      - internal_codes
+      - budget_notes
 
-  # Financial columns
-  - salaries
-  - maintenance
-  - seminars
-  - other_operational
-  - total_operational
-  - capital
-  - equipment
-  - library
-  - workshops
-  - total_capital
-  - seed_funding_received
-  - investment_received
-  - dpiit_no
-  - company_turnover
+  financial_expenses_operational:
+    description: "Operational expenditure by institute"
+    allowlisted_columns:
+      - institute
+      - as_on_year
+      - sum_operational_expenditure
+      - avg_operational_expenditure
+    blocked_columns:
+      - internal_codes
+      - budget_notes
 
-  # Academic columns
-  - program
-  - intake
-  - students_placed
-  - median_package
-  - highest_package
-  - average_package
-  - no_of_higher_studies
-  - total_female_faculty
-  - total_male_faculty
-  - financial_year
-  - as_on_year
+  incubation_details:
+    description: "Startup incubation programs"
+    allowlisted_columns:
+      - institute
+      - cohort_year
+      - count_startups
+      - industry_partner
+      - program_type
+    blocked_columns:
+      - founder_pii
+      - contact_info
 
-# ---------- PATTERNS THAT TRIGGER IMMEDIATE BLOCK ----------
+# ─── LLM-Only Prompts (safe to send) ──────────────────────────────────────
+llm_prompts:
+  user_query: true
+  schema_prompt: true
+  plan_json: true
+  intent_label: true
+  citation_ids: true
+  session_id: true
+  user_tier: true
+  complexity_level: true
+  routing_decision: true
+
+# ─── Explicitly Blocked (never egress) ────────────────────────────────────
+blocked_content:
+  - full_text
+  - fulltext
+  - abstract  # unless in allowlisted_columns above
+  - raw_content
+  - raw_db_dump
+  - publication_text
+  - research_content
+  - raw_sql_results
+  - full_publication_record
+  - complete_researcher_record
+
+# ─── SQL/Injection Attack Patterns ───────────────────────────────────────
 patterns_block:
-  # Schema probing attempts
-  - '(?i)\b(show|list|describe|explain)\s+(all\s+)?tables\b'
-  - '(?i)\b(show|list|describe)\s+(all\s+)?columns\b'
-  - '(?i)\bselect\s+\*\s+from\b'
-  - '(?i)\binformation_schema\b'
-  - '(?i)\bpg_catalog\b'
-  - '(?i)\bsqlite_master\b'
-  - '(?i)\bexec\s*\('
-  - '(?i)\bexec\s+'
-  - '(?i)\bsp_executesql\b'
+  - "--"                      # SQL comment injection
+  - ";\\s*DROP"               # DROP TABLE injection
+  - ";\\s*DELETE"             # DELETE injection
+  - ";\\s*UPDATE"             # UPDATE injection
+  - ";\\s*INSERT"             # INSERT injection
+  - "UNION\\s+SELECT"         # UNION injection
+  - "1=1"                     # Boolean injection
+  - "OR\\s+1\\s*=\\s*1"       # OR injection
+  - "SHOW\\s+(ALL\\s+)?TABLES"   # Schema probing
+  - "SHOW\\s+COLUMNS"          # Column probing
+  - "INFORMATION_SCHEMA"      # Schema access
+  - "pg_"                     # PostgreSQL schema access
+  - "postgresql://[\\w]+:[\\w]+@"  # Credential URL pattern
+  - "[A-Z0-9]{20,}:[A-Za-z0-9+/]{20,}"  # AWS-style credential patterns
+  - "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+"  # Email addresses
 
-  # Credential / key extraction
-  - '(?i)\b(password|secret|token|api_key|apikey)\s*='
-  - '(?i)\bjwt\b'
-  - '(?i)\bbearer\s+'
-  - '(?i)\bauthorization\s*:\s*bearer'
-  - '(?i)\bPOSTGRES_PASSWORD\b'
-  - '(?i)\bDATABASE_URL\b'
+# ─── Allowed SQL Fragments ────────────────────────────────────────────────
+allowed_sql_keywords:
+  - SELECT
+  - FROM
+  - WHERE
+  - JOIN
+  - GROUP BY
+  - ORDER BY
+  - LIMIT
+  - COUNT
+  - SUM
+  - AVG
+  - DISTINCT
+  - AND
+  - OR
+  - IN
+  - BETWEEN
+  - LIKE
+  - IS NULL
+  - AS
 
-  # System metadata probing
-  - '(?i)\b(version|version\(\))\b'
-  - '(?i)\bsystem_information\b'
-  - '(?i)\bcurrent_user\b'
-  - '(?i)\bsession_user\b'
-  - '(?i)\bcurrent_schema\b'
-
-  # Table/column enumeration
-  - '(?i)\b(union|select).+(from|where).+\b--'
-  - '(?i)\bor\s+1\s*=\s*1\b'
-  - '(?i)\b\'\s*or\s+\'1\'\s*=\s*\'1\b'
-  - '(?i)\bdrop\s+(table|database|schema)\b'
-  - '(?i)\btruncate\s+table\b'
-  - '(?i)\binsert\s+into\b'
-  - '(?i)\bupdate\s+.+\s+set\b'
-  - '(?i)\bdelete\s+from\b'
-
-  # Internal system paths
-  - '(?i)/etc/passwd'
-  - '(?i)C:\\Windows'
-  - '(?i)\.ssh/'
-  - '(?i)\.env'
-
-  # PII patterns
-  - '(?i)\b\d{10,}\b'  # Long number strings (potential Aadhaar-like)
-  - '(?i)\b[A-Z0-9]{32,}\b'  # Long alphanumeric (potential API keys)
-  - '(?i)senior.*director.*of'
-  - '(?i)chief.*technology.*officer'
-
-# ---------- LLM SPECIFIC LIMITS ----------
-max_schema_depth: 3
-max_tables_per_prompt: 20
-max_columns_per_table: 15
-
-# ---------- PER-PROVIDER SETTINGS ----------
-provider_limits:
-  anthropic:
-    max_tokens: 4096
-    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."
-  openai:
-    max_tokens: 4096
-    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."
-  azure_openai:
-    max_tokens: 4096
-    system_mask: "Never reveal internal table names, column names, or database structure beyond the allowlist."
+# Column name patterns that are safe to expose (regex)
+safe_column_patterns:
+  - "^[a-z_][a-z0-9_]*$"  # standard lowercase identifier
+  - "^(sum_|avg_|count_|total_)"
+  - "^(institute|lab|researcher|patent|funding|project)"

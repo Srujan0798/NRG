@@ -16,6 +16,7 @@ from functools import wraps
 from datetime import datetime, UTC
 import httpx
 from src.audit import AuditEvent, get_audit_log
+from src.security.egress.schema_allowlist_loader import get_allowlist
 
 logger = logging.getLogger(__name__)
 
@@ -46,26 +47,6 @@ def _send_alert(violation: "SovereigntyViolation", url: str, payload: dict) -> N
         except Exception as e:
             logger.error(f"Failed to send egress alert: {e}")
 
-
-SOVEREIGN_ALLOWLIST = frozenset({
-    "user_query",
-    "schema_prompt",
-    "plan_json",
-    "intent_label",
-    "citation_ids",
-    "session_id",
-    "user_tier",
-})
-
-SENSITIVE_FIELDS = frozenset({
-    "full_text",
-    "fulltext",
-    "abstract",
-    "raw_content",
-    "raw_db_dump",
-    "publication_text",
-    "research_content",
-})
 
 BLOCKED_PATTERNS = [
     r"publications?\.(full_text|abstract|fulltext)",
@@ -117,12 +98,25 @@ class SovereignHTTPXClient:
         if not self._enabled:
             return
 
+        allowlist = get_allowlist()
+        blocked_content = allowlist.get_blocked_content()
+        blocked_column_names = set()
+        for tbl in allowlist.get_allowed_tables():
+            _, blocked = allowlist.get_table_columns(tbl)
+            blocked_column_names.update(blocked)
+
         def check_value(key: str, value: Any, path: str = "") -> None:
             key_lower = key.lower()
 
-            if key_lower in SENSITIVE_FIELDS:
+            if key_lower in blocked_content:
                 raise SovereigntyViolation(
                     f"Blocked sensitive field '{key}' in {path or 'payload'}",
+                    blocked_field=key
+                )
+
+            if key_lower in blocked_column_names:
+                raise SovereigntyViolation(
+                    f"Blocked column field '{key}' in {path or 'payload'}",
                     blocked_field=key
                 )
 
@@ -135,6 +129,9 @@ class SovereignHTTPXClient:
                             f"Blocked pattern in {path or key}",
                             blocked_field=key
                         )
+
+                if key_lower == "schema_prompt":
+                    self._check_schema_prompt(value, blocked_content)
 
                 if len(value) > 50000:
                     logger.warning("Large payload field %s may contain content", path or key)
@@ -161,6 +158,88 @@ class SovereignHTTPXClient:
                         check_value(key, value, f"[{i}].{key}")
                 else:
                     check_value(f"[{i}]", item)
+
+    def _check_schema_prompt(self, content: str, blocked_content: frozenset) -> None:
+        """Validate schema_prompt against table/column allowlist.
+
+        Raises SovereigntyViolation if schema_prompt references unlisted tables/columns.
+        """
+        allowlist = get_allowlist()
+
+        found_tables = []
+        alias_to_table = {}
+
+        from_pattern = r'from\s+([a-z_][a-z0-9_]*)(?:\s+(?:as\s+)?([a-z_][a-z0-9_]*))?'
+        for match in re.finditer(from_pattern, content, re.IGNORECASE):
+            table = match.group(1).lower()
+            alias = match.group(2).lower() if match.group(2) else table
+            if alias not in alias_to_table:
+                alias_to_table[alias] = table
+            if table not in found_tables:
+                found_tables.append(table)
+                if not allowlist.is_table_allowed(table):
+                    raise SovereigntyViolation(
+                        f"Unlisted table '{table}' in schema_prompt",
+                        blocked_field="schema_prompt"
+                    )
+
+        join_pattern = r'join\s+([a-z_][a-z0-9_]*)(?:\s+(?:as\s+)?([a-z_][a-z0-9_]*))?'
+        for match in re.finditer(join_pattern, content, re.IGNORECASE):
+            table = match.group(1).lower()
+            alias = match.group(2).lower() if match.group(2) else table
+            if alias not in alias_to_table:
+                alias_to_table[alias] = table
+            if table not in found_tables:
+                found_tables.append(table)
+                if not allowlist.is_table_allowed(table):
+                    raise SovereigntyViolation(
+                        f"Unlisted table '{table}' in schema_prompt",
+                        blocked_field="schema_prompt"
+                    )
+
+        column_pattern = r'([a-z_][a-z0-9_]*)\s*\.\s*([a-z_][a-z0-9_]*)'
+        for match in re.finditer(column_pattern, content, re.IGNORECASE):
+            alias_or_table = match.group(1).lower()
+            column = match.group(2).lower()
+
+            resolved_table = alias_or_table
+            if alias_or_table in alias_to_table:
+                resolved_table = alias_to_table[alias_or_table]
+            elif alias_or_table not in found_tables:
+                if not allowlist.is_table_allowed(alias_or_table):
+                    raise SovereigntyViolation(
+                        f"Unlisted table '{alias_or_table}' in schema_prompt",
+                        blocked_field="schema_prompt"
+                    )
+                found_tables.append(alias_or_table)
+
+            if not allowlist.is_column_allowed(resolved_table, column):
+                raise SovereigntyViolation(
+                    f"Blocked column '{resolved_table}.{column}' in schema_prompt",
+                    blocked_field="schema_prompt"
+                )
+
+        select_pattern = r'select\s+(.*?)\s+from\s+([a-z_][a-z0-9_]*)'
+        for match in re.finditer(select_pattern, content, re.IGNORECASE):
+            select_cols = match.group(1)
+            table = match.group(2).lower()
+            if table not in found_tables:
+                if not allowlist.is_table_allowed(table):
+                    raise SovereigntyViolation(
+                        f"Unlisted table '{table}' in schema_prompt",
+                        blocked_field="schema_prompt"
+                    )
+                found_tables.append(table)
+            if allowlist.is_table_allowed(table):
+                allowed_cols, blocked_cols = allowlist.get_table_columns(table)
+                for col in re.split(r'[,;\s]+', select_cols):
+                    col = col.strip()
+                    if col and col not in ('*', 'COUNT(*)', 'count(*)'):
+                        if col in blocked_cols:
+                            raise SovereigntyViolation(
+                                f"Blocked column '{col}' in schema_prompt",
+                                blocked_field="schema_prompt"
+                            )
 
     def inspect_payload(self, payload: dict | list | str) -> None:
         """Public payload inspection entrypoint for non-httpx clients."""

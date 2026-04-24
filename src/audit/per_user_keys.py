@@ -21,7 +21,7 @@ import hmac
 import logging
 import os
 import time
-from datetime import date, UTC
+from datetime import datetime, timedelta, UTC
 from threading import Lock
 from typing import Optional
 
@@ -43,7 +43,7 @@ class RotatingSaltStore:
         self._load_salts()
 
     def _today_str(self) -> str:
-        return date.today(UTC).isoformat()
+        return datetime.now(UTC).date().isoformat()
 
     def _load_salts(self) -> None:
         if not self._path.exists():
@@ -75,7 +75,8 @@ class RotatingSaltStore:
 
             if user_id not in self._salts:
                 salt = self._generate_salt(user_id)
-                expires = date.fromordinal(date.today(UTC).toordinal() + 1).isoformat()
+                from datetime import timedelta
+                expires = (datetime.now(UTC).date() + timedelta(days=1)).isoformat()
                 self._salts[user_id] = salt
                 self._persist_salt(user_id, salt, expires)
 
@@ -106,7 +107,9 @@ class PerUserKeyManager:
         request_fingerprint: Optional[str] = None,
     ) -> str:
         """Derive a per-user key bound to JWT identity and request fingerprint."""
-        cache_key = f"{user_id}:{jwt_kid or 'none'}:{request_fingerprint or 'none'}"
+        _jwt_kid = "none" if jwt_kid is None else jwt_kid
+        _fp = "none" if request_fingerprint is None else request_fingerprint
+        cache_key = f"{user_id}:{_jwt_kid}:{_fp}"
         with self._lock:
             if cache_key in self._key_cache:
                 return self._key_cache[cache_key]

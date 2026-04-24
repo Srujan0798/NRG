@@ -172,8 +172,10 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request.state.auth_claims = None
         request.state.rbac_policy = None
+        request.state.request_fingerprint = None
         authorization = request.headers.get("Authorization")
         client_ip = request.client.host if request.client else None
+        user_agent = request.headers.get("User-Agent")
 
         if authorization and authorization.startswith("Bearer "):
             token = authorization.replace("Bearer ", "", 1)
@@ -181,6 +183,9 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
                 claims = self.jwt_handler.verify_access_token(token, client_ip=client_ip)
                 request.state.auth_claims = claims
                 request.state.rbac_policy = self._engine.resolve_tier_or_persona(claims)
+                from src.audit.per_user_keys import build_request_fingerprint
+                fp = build_request_fingerprint(client_ip=client_ip, user_agent=user_agent)
+                request.state.request_fingerprint = fp
             except AuthError:
                 request.state.auth_claims = None
                 request.state.rbac_policy = None
