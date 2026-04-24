@@ -19,10 +19,10 @@ class CloudMesh:
     def __init__(self):
         self._client = CloudClient()
 
-    def generate(self, system_prompt, user_prompt, conversation_history=None):
+    def generate(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
         return self._client.generate(system_prompt, user_prompt, conversation_history)
 
-    def generate_streaming(self, system_prompt, user_prompt, conversation_history=None):
+    def generate_streaming(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
         response = self.generate(system_prompt, user_prompt, conversation_history)
         for chunk in response:
             yield chunk

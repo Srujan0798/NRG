@@ -487,9 +487,55 @@ def _synthesize(
     context_summary: str,
     intent: str = "",
     routing_decision: str = "",
+    complexity: str = "moderate",
 ) -> tuple[str, dict]:
-    """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback."""
+    """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback.
+
+    Phase 2 cost-aware routing:
+    - complexity=trivial → rule-based (no LLM cost)
+    - complexity=simple → local SLM (lowest cost)
+    - complexity=moderate → cloud LLM standard model
+    - complexity=complex/synthesis_heavy → cloud LLM best model, parallel racing top-3
+    """
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
+
+    if complexity == "trivial":
+        logger.info("Complexity=trivial — using rule-based synthesis")
+        response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
+        try:
+            log_llm_call("synthesizer", query, {"response": response[:500] if response else ""}, "rule-based-trivial")
+        except Exception:
+            pass
+        return response, {"synth": "rule_based_trivial", "cloud_synthesis_used": False}
+
+    if complexity == "simple":
+        local_client = get_local_llm_client()
+        if local_client:
+            system_prompt = _build_system_prompt(
+                user_tier=user_tier,
+                sources=sources,
+                sql_results=sql_results,
+                chunks=chunks,
+                context_summary=context_summary,
+                use_local_prompt=True,
+            )
+            user_prompt = f"User Query: {query}"
+            try:
+                logger.info("Complexity=simple — using local SLM for synthesis")
+                response = local_client.generate(
+                    system_prompt,
+                    user_prompt,
+                    conversation_history=_coerce_history(context_summary),
+                )
+                response = response.rstrip() + "\n\n[Response generated using local model for faster service]"
+                try:
+                    log_llm_call("synthesizer", system_prompt[:1000], {"response": response[:500] if response else ""}, getattr(local_client, "model", "local-slm"))
+                except Exception:
+                    pass
+                return response, {"synth": "local_llm_simple", "cloud_synthesis_used": False}
+            except Exception as e:
+                logger.warning(f"Local LLM for simple query failed: {e}")
+        cloud_allowed = True
 
     # Try 1: Cloud LLM via SovereignLLMMesh (15s budget, health-weighted, parallel race)
     if cloud_allowed:
@@ -503,14 +549,14 @@ def _synthesize(
                 context_summary=context_summary,
             )
             user_prompt = f"User Query: {query}"
-            logger.info("Using SovereignLLMMesh for synthesis (15s budget, health-weighted)")
+            logger.info(f"Using SovereignLLMMesh for synthesis (complexity={complexity}, 15s budget, health-weighted)")
             response = mesh.generate(
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
+                complexity=complexity,
             )
-            response = re.sub(r'<think>.*?</think>', '', response, flags=re.DOTALL).strip()
-            # Audit: log cloud LLM synthesis call
+            response = re.sub(r'<think>.*?', '', response, flags=re.DOTALL).strip()
             try:
                 log_llm_call(
                     "synthesizer",
@@ -519,6 +565,7 @@ def _synthesize(
                         "response": response[:500] if response else "",
                         "cloud_synthesis_used": True,
                         "mode": "cloud_synthesis",
+                        "complexity": complexity,
                         "evidence_counts": {
                             "sql_rows": len(sql_results),
                             "chunks": len(chunks),

@@ -7,7 +7,7 @@ class FakeMeshClient:
     def __init__(self):
         self._client = None
 
-    def generate(self, system_prompt, user_prompt, conversation_history=None):
+    def generate(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
         assert "Tier 1" in system_prompt
         assert "Structured data: 1 records" in system_prompt
         assert "Prior Session Context" in system_prompt
@@ -15,7 +15,7 @@ class FakeMeshClient:
         assert len(conversation_history) == 1
         return "Real LLM answer"
 
-    def generate_streaming(self, system_prompt, user_prompt, conversation_history=None):
+    def generate_streaming(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
         response = self.generate(system_prompt, user_prompt, conversation_history)
         for chunk in response:
             yield chunk
@@ -48,10 +48,10 @@ def test_synthesizer_uses_llm_client(monkeypatch):
 
 def test_synthesizer_falls_back_on_llm_failure(monkeypatch):
     class FailingMesh:
-        def generate(self, system_prompt, user_prompt, conversation_history=None):
+        def generate(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
             raise RuntimeError("provider unavailable")
 
-        def generate_streaming(self, system_prompt, user_prompt, conversation_history=None):
+        def generate_streaming(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
             raise RuntimeError("provider unavailable")
 
     monkeypatch.setattr(

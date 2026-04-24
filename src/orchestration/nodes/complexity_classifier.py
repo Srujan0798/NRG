@@ -170,3 +170,15 @@ def _detect_query_type(query_lower: str) -> str:
 def get_complexity_for_routing(query: str, user_tier: int = 1) -> ComplexityResult:
     """Main entry point for routing decisions."""
     return classify_complexity(query, user_tier)
+
+
+def compute_query_fingerprint(query: str, user_tier: int = 1) -> str:
+    """Compute a stable cache key fingerprint for a query.
+
+    Uses normalized query text (lowercase, stripped) and user_tier
+    to produce a SHA256 hash truncated to 32 characters.
+    """
+    import hashlib
+    normalized = query.strip().lower()
+    raw = f"{normalized}|tier={user_tier}"
+    return hashlib.sha256(raw.encode()).hexdigest()[:32]

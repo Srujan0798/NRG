@@ -104,11 +104,14 @@ def fresh_mesh():
     mesh._circuit_state = {}
     mesh._failure_history = {}
     mesh._failure_lock = threading.Lock()
-    mesh._circuit_failure_threshold = 3
-    mesh._circuit_cooldown_seconds = 60
+    mesh._circuit_failure_threshold = 5
+    mesh._circuit_cooldown_seconds = 30
     mesh._circuit_window_seconds = 300
     mesh._metrics_lock = threading.Lock()
     mesh._provider_metrics = {}
+    mesh._provider_latency_p95 = {}
+    mesh._latency_history = {}
+    mesh._latency_history_max = 100
     mesh._executor = ThreadPoolExecutor(max_workers=4)
     return mesh
 

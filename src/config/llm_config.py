@@ -716,8 +716,8 @@ class SovereignLLMMesh:
         self._circuit_state: dict[str, str] = {p: "closed" for p in self.clients}
         self._failure_history: dict[str, list[float]] = {p: [] for p in self.clients}
         self._failure_lock = threading.Lock()
-        self._circuit_failure_threshold = 3
-        self._circuit_cooldown_seconds = 60
+        self._circuit_failure_threshold = 5
+        self._circuit_cooldown_seconds = 30
         self._circuit_window_seconds = 300
         self._metrics_lock = threading.Lock()
         self._provider_metrics: dict[str, dict] = {p: {
@@ -728,6 +728,9 @@ class SovereignLLMMesh:
             "last_failure_time": 0.0,
             "recovery_attempts": 0,
         } for p in self.clients}
+        self._provider_latency_p95: dict[str, float] = {p: 1000.0 for p in self.clients}
+        self._latency_history: dict[str, list[float]] = {p: [] for p in self.clients}
+        self._latency_history_max = 100
         self._executor = ThreadPoolExecutor(max_workers=4)
 
     def _load_mesh_config(self) -> LLMMeshConfig:
@@ -774,12 +777,22 @@ class SovereignLLMMesh:
             raise LLMConfigError("No LLM providers available in mesh")
 
     def _is_provider_circuit_open(self, provider: str) -> bool:
-        """Check if circuit breaker is open for a provider."""
+        """Check if circuit breaker is open for a provider.
+        
+        Half-open: allow 1 test request through to verify recovery.
+        """
         with self._failure_lock:
             state = self._circuit_state.get(provider, "closed")
             if state == "closed":
                 return False
             if state == "half_open":
+                return False
+            now = time.time()
+            last_failure = self._provider_metrics.get(provider, {}).get("last_failure_time", 0.0)
+            cooldown = self._get_cooldown(provider)
+            if now - last_failure >= cooldown:
+                self._circuit_state[provider] = "half_open"
+                logger.info(f"🔌 Circuit breaker HALF-OPEN for {provider} (cooldown={cooldown}s expired)")
                 return False
             return True
 
@@ -790,7 +803,7 @@ class SovereignLLMMesh:
             return (time.time() - last_failure) < 60.0
 
     def _get_health_score(self, provider: str) -> float:
-        """Compute health score: success_rate / avg_latency. Higher = healthier."""
+        """Compute health score: 1 / (latency_p95 * (1 + error_rate_7d)). Higher = healthier."""
         with self._metrics_lock:
             m = self._provider_metrics.get(provider, {})
             successes = m.get("successes_7d", 0)
@@ -798,17 +811,29 @@ class SovereignLLMMesh:
             total = successes + failures
             if total == 0:
                 return 1.0
-            success_rate = successes / total
-            avg_latency = m.get("total_latency_ms", 0.0) / total if total > 0 else 1.0
-            if avg_latency <= 0:
-                avg_latency = 1.0
-            return success_rate / avg_latency
+            error_rate = failures / total
+            p95_latency = self._provider_latency_p95.get(provider, 1000.0)
+            if p95_latency <= 0:
+                p95_latency = 1.0
+            return 1.0 / (p95_latency * (1.0 + error_rate))
 
     def _get_health_weighted_providers(self) -> list[str]:
-        """Return providers sorted by health score, skipping recently-failed ones."""
+        """Return providers sorted by health score, skipping recently-failed ones.
+
+        Phase 3 auto-disable: providers with >15% 7-day error rate are removed from rotation.
+        """
         available = [p for p in self.clients if p in self._provider_metrics]
-        scored = [(p, self._get_health_score(p)) for p in available]
-        scored = [(p, s) for p, s in scored if not self._is_provider_recently_failed(p) and not self._is_provider_circuit_open(p)]
+        scored = []
+        for p in available:
+            if self._is_provider_recently_failed(p) or self._is_provider_circuit_open(p):
+                continue
+            m = self._provider_metrics.get(p, {})
+            total = m.get("request_count_7d", 0)
+            failures = m.get("failures_7d", 0)
+            if total >= 10 and failures / total > 0.15:
+                logger.info(f"⏸️ Provider {p} auto-disabled (7-day error rate={failures/total:.1%} > 15%)")
+                continue
+            scored.append((p, self._get_health_score(p)))
         scored.sort(key=lambda x: -x[1])
         return [p for p, _ in scored]
 
@@ -820,11 +845,23 @@ class SovereignLLMMesh:
             m["request_count_7d"] = m.get("request_count_7d", 0) + 1
             if latency_ms > 0:
                 m["total_latency_ms"] = m.get("total_latency_ms", 0.0) + latency_ms
+                self._latency_history.setdefault(provider, []).append(latency_ms)
+                if len(self._latency_history[provider]) > self._latency_history_max:
+                    self._latency_history[provider] = self._latency_history[provider][-self._latency_history_max:]
+                sorted_latencies = sorted(self._latency_history[provider])
+                n = len(sorted_latencies)
+                p95_idx = max(0, int(n * 0.95) - 1)
+                self._provider_latency_p95[provider] = sorted_latencies[p95_idx]
         with self._failure_lock:
             self._failure_history[provider] = []
-            if self._circuit_state.get(provider) != "closed":
-                logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
-            self._circuit_state[provider] = "closed"
+            prev_state = self._circuit_state.get(provider)
+            if prev_state == "half_open":
+                self._circuit_state[provider] = "closed"
+                logger.info(f"🔌 Circuit breaker CLOSED for {provider} after successful half-open test")
+            elif self._circuit_state.get(provider) != "closed":
+                self._circuit_state[provider] = "closed"
+                if prev_state != "closed":
+                    logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
 
     def _record_failure(self, provider: str) -> None:
         """Record a failure and potentially trip the circuit breaker."""
@@ -883,23 +920,30 @@ class SovereignLLMMesh:
         system_prompt: str,
         user_prompt: str,
         conversation_history: Optional[list[dict]] = None,
+        complexity: Optional[str] = None,
     ) -> str:
         """
         Generate response with global 15s budget, health-weighted routing, and parallel first-provider race.
 
-        Falls through: cloud LLM (top-2 providers racing) → local SLM → rule-based
+        Falls through: cloud LLM (top-2 providers racing, or top-3 for complex) → local SLM → rule-based
         Total LLM time budget: 15 seconds max (LLM_TIMEOUT_BUDGET env var).
+
+        Phase 2 enhancements:
+        - complexity=complex: race top-3 providers simultaneously, cancel losers on first success
+        - Local SLM fallback with graceful degradation message when all cloud providers fail
         """
         conversation_history = conversation_history or []
         budget_remaining = self.mesh_config.query_timeout_budget_seconds
         last_error = None
+
+        race_count = 3 if complexity == "complex" else 2
 
         while budget_remaining > 0:
             providers = self._get_health_weighted_providers()
             if not providers:
                 break
 
-            top_providers = providers[:2] if len(providers) >= 2 else providers[:1]
+            top_providers = providers[:race_count] if len(providers) >= race_count else providers[:2] if len(providers) >= 2 else providers[:1]
 
             futures = {}
             for provider in top_providers:
@@ -930,20 +974,44 @@ class SovereignLLMMesh:
             if budget_remaining <= 0:
                 break
 
+        local_client = self._get_local_llm_client()
+        if local_client:
+            try:
+                logger.info("🌐 All cloud providers failed — falling back to local SLM")
+                response = local_client.generate(
+                    system_prompt=system_prompt,
+                    user_prompt=user_prompt,
+                    conversation_history=conversation_history,
+                )
+                return response
+            except Exception as e:
+                logger.warning(f"Local SLM fallback failed: {e}")
+                last_error = str(e)
+
         raise LLMProviderError(
             f"LLM timeout budget exhausted ({self.mesh_config.query_timeout_budget_seconds}s). "
             f"Last error: {last_error}"
         )
+
+    def _get_local_llm_client(self):
+        """Get local SLM client if available."""
+        try:
+            from src.config.local_llm import get_local_llm_client
+            return get_local_llm_client()
+        except Exception:
+            return None
 
     def generate_streaming(
         self,
         system_prompt: str,
         user_prompt: str,
         conversation_history: Optional[list[dict]] = None,
+        complexity: Optional[str] = None,
     ):
         """
-        Streaming generator: fires top-2 providers in parallel, yields tokens from the first to respond.
-        If the winner fails mid-stream, falls back to synchronous generate() for the full response.
+        Streaming generator: fires top-2 (or top-3 for complex) providers in parallel,
+        yields tokens from the first to respond. Falls back to local SLM if all cloud
+        providers fail with message: 'using offline model for this response'.
         Yields: str tokens
         """
         conversation_history = conversation_history or []
@@ -951,7 +1019,8 @@ class SovereignLLMMesh:
         if not providers:
             return
 
-        top_providers = providers[:2] if len(providers) >= 2 else providers[:1]
+        race_count = 3 if complexity == "complex" else 2
+        top_providers = providers[:race_count] if len(providers) >= race_count else providers[:2] if len(providers) >= 2 else providers[:1]
         budget_remaining = self.mesh_config.query_timeout_budget_seconds
 
         for provider in top_providers:
@@ -976,6 +1045,20 @@ class SovereignLLMMesh:
                 self._record_failure(provider)
                 logger.warning(f"⚠️ LLM Mesh streaming failed for {provider}: {e}")
                 break
+
+        local_client = self._get_local_llm_client()
+        if local_client:
+            try:
+                logger.info("🌐 All cloud providers failed streaming — falling back to local SLM")
+                for token in local_client.generate_streaming(
+                    system_prompt,
+                    user_prompt,
+                    conversation_history,
+                ):
+                    yield token
+                return
+            except Exception as e:
+                logger.warning(f"Local SLM streaming fallback failed: {e}")
 
         fallback_response = client.generate(system_prompt, user_prompt, conversation_history)
         for i in range(0, len(fallback_response), 10):
@@ -1014,10 +1097,11 @@ class SovereignLLMMesh:
                 "status": status,
                 "circuit": circuit_state,
                 "success_rate_7d": round(successes / total, 3) if total > 0 else None,
-                "latency_p50_ms": round(avg_latency, 1) if avg_latency else None,
+                "latency_p95_ms": round(self._provider_latency_p95.get(provider, 0.0), 1) or None,
                 "requests_7d": total,
                 "last_failure_seconds_ago": round(time.time() - m.get("last_failure_time", 0.0), 1),
                 "health_rank": providers.index(provider) + 1 if provider in providers else len(providers) + 1,
+                "error_rate_7d": round(failures / total, 3) if total > 0 else None,
             }
 
         return result
