@@ -8,6 +8,8 @@ import { useTheme } from './design-system/ThemeProvider'
 const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
 const IndustryDashboard = lazy(() => import('./views/IndustryDashboard'))
+const DemoMode = lazy(() => import('./demo/DemoMode'))
+const FounderDashboard = lazy(() => import('./views/FounderDashboard'))
 
 const DashboardLoading = () => (
   <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
@@ -33,6 +35,14 @@ const DashboardLoading = () => (
 const AppShell: React.FC = () => {
   const { isLoading, login, loginError, user, backendAvailable } = useAuth()
   const { themeName, toggleTheme } = useTheme()
+
+  if (window.location.pathname === '/demo') {
+    return (
+      <Suspense fallback={<DashboardLoading />}>
+        <DemoMode />
+      </Suspense>
+    )
+  }
 
   if (isLoading) {
     return (
@@ -76,11 +86,21 @@ const AppShell: React.FC = () => {
   )
 }
 
-const App: React.FC = () => (
-  <AuthProvider>
-    <AppShell />
-  </AuthProvider>
-)
+const App: React.FC = () => {
+  if (window.location.pathname === '/founder') {
+    return (
+      <Suspense fallback={<DashboardLoading />}>
+        <FounderDashboard />
+      </Suspense>
+    )
+  }
+
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  )
+}
 
 export default App
 export { AppShell }
