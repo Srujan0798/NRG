@@ -245,3 +245,39 @@ class TestDriftCheckRuntime:
         assert result["queries_checked"] == len(BENCHMARK_QUERIES)
         assert FakeEmbedder.init_count == 1
         assert FakeEmbedder.close_count == 1
+
+    def test_run_drift_check_skips_cosine_when_benchmark_is_critical(self, monkeypatch):
+        """Critical benchmark drift should trigger reindex without a slow centroid pass."""
+        from src.skills.rag import embedder as embedder_module
+
+        class FakeEmbedder:
+            def embed_single(self, text):
+                return [0.1, 0.2, 0.3]
+
+            def close(self):
+                pass
+
+        class FakeRetriever:
+            def retrieve(self, query_vector, user_tier=1, top_k=5, **kwargs):
+                return {"metadata": [{"institution": "Unrelated", "topics": ["unrelated"]}]}
+
+        triggered = []
+
+        monkeypatch.setattr(embedder_module, "Embedder", FakeEmbedder)
+        monkeypatch.setattr(_vdc, "_save_benchmark_cache", lambda data: None)
+        monkeypatch.setattr(
+            _vdc,
+            "_check_cosine_shift",
+            lambda *args, **kwargs: pytest.fail("cosine shift should be skipped on critical drift"),
+        )
+        monkeypatch.setattr(
+            _vdc,
+            "_trigger_reindex",
+            lambda drift_result, reindex_info: triggered.append((drift_result, reindex_info)),
+        )
+
+        result = run_drift_check(FakeRetriever())
+
+        assert result["alert_level"] == "CRITICAL"
+        assert triggered
+        assert triggered[0][1]["status"] == "benchmark_drift_detected"

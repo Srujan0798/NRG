@@ -345,7 +345,15 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
         _save_benchmark_cache(results)
 
         try:
-            if embedder is not None:
+            if alert_level in {"WARNING", "CRITICAL"}:
+                _trigger_reindex(
+                    {"alert_level": alert_level, "drift_score": avg_score},
+                    {
+                        "status": "benchmark_drift_detected",
+                        "reindex_triggered": True,
+                    },
+                )
+            elif embedder is not None:
                 cosine_info = _check_cosine_shift({}, retriever, embedder)
                 if cosine_info.get("reindex_triggered"):
                     _trigger_reindex(

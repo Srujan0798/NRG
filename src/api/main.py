@@ -18,7 +18,7 @@ from typing import Any, Literal, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from qdrant_client import QdrantClient
@@ -284,6 +284,7 @@ class EraseRequest(BaseModel):
     reason: Optional[str] = None
 
 
+@app.post("/auth/login")
 @app.post("/login")
 async def login(request: LoginRequest, raw_request: Request = None):
     """Authenticate a user and return access/refresh tokens."""
@@ -397,6 +398,14 @@ async def logout(
 class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_question_alias(cls, data):
+        """Accept legacy clients that submit {'question': ...} instead of {'query': ...}."""
+        if isinstance(data, dict) and "query" not in data and "question" in data:
+            return {**data, "query": data["question"]}
+        return data
 
 
 @app.post("/api/query/stream")
