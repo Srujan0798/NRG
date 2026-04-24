@@ -1,15 +1,38 @@
 #!/usr/bin/env python3
 """
-Multi-Hop Workflow Implementation
-Complex query processing with self-recovery capabilities
+DEPRECATED — Multi-Hop Workflow Stub
+
+.. deprecated::
+    This module is a deprecated 94-line placeholder stub.
+    The real multi-hop DAG planner is implemented in:
+
+    - :mod:`src.orchestration.nodes.planner` (``_heuristic_decompose``, ``_build_dag``)
+    - :mod:`src.orchestration.nodes.executor` (``_execute_dag``)
+
+    All 28 multi-hop planner tests import from ``planner`` and ``executor``,
+    not from this module.
+
+    This stub is kept to prevent import errors in any code that references it,
+    but it returns dummy/placeholder results and must not be used in production.
+
+:Status: DEPRECATED — remove after Protocol #32 (Two-Brain Orchestrator) lands
+:Evidence: tests/benchmarks/test_dhairya_regression.py, tests/orchestration/test_multi_hop_planner.py
 """
 
+import warnings
 import logging
 import sys
 from typing import Dict, Any, List, Optional
-import time
 
-# Configure logging
+warnings.warn(
+    "src.orchestration.workflows.multi_hop is DEPRECATED. "
+    "Import from src.orchestration.nodes.planner or "
+    "src.orchestration.nodes.executor instead. "
+    "This stub will be removed after Protocol #32.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -19,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 class MultiHopWorkflow:
-    """Multi-hop workflow for complex query processing"""
+    """Deprecated placeholder — use planner.py and executor.py instead."""
 
     def __init__(self):
         self.workflow_steps = []
@@ -28,66 +51,25 @@ class MultiHopWorkflow:
     def execute_multi_hop_query(
         self, sql_query: str, vector_query: str, graph_query: Optional[str] = None
     ) -> Dict[str, Any]:
-        """
-        Execute multi-hop query workflow combining SQL, vector, and graph databases
-
-        Args:
-            sql_query: SQL query for structured data
-            vector_query: Vector search query
-            graph_query: Optional graph database query
-
-        Returns:
-            Combined multi-hop query results
-        """
-        logger.info("Executing multi-hop query workflow")
-
-        # In a real implementation, this would:
-        # 1. Execute SQL query to get structured data
-        # 2. Use SQL results to pre-filter vector search
-        # 3. Execute graph query if provided
-        # 4. Combine and correlate results from all sources
-
-        # For now, return placeholder results
+        """Deprecated placeholder — returns dummy results."""
+        logger.warning("MultiHopWorkflow.execute_multi_hop_query is a deprecated stub")
         return {
             "sql_query": sql_query,
             "vector_query": vector_query,
             "graph_query": graph_query,
-            "results": [
-                {
-                    "type": "multi_hop_result",
-                    "data": "Multi-hop query executed successfully",
-                }
-            ],
-            "execution_time": time.time(),
-            "confidence_score": 0.95,
+            "results": [{"type": "deprecated_stub", "data": "Use planner.py + executor.py"}],
+            "execution_time": 0.0,
+            "confidence_score": 0.0,
         }
 
     def validate_multi_hop_results(self, results: List[Dict[str, Any]]) -> bool:
-        """
-        Validate multi-hop query results for completeness
-
-        Args:
-            results: List of query results to validate
-
-        Returns:
-            True if results are valid, False otherwise
-        """
-        logger.info("Validating multi-hop results")
-
-        # In a real implementation, this would validate:
-        # 1. Data consistency across different data sources
-        # 2. Completeness of multi-hop query results
-        # 3. Cross-reference validation
-
+        """Deprecated placeholder — always returns True."""
+        logger.warning("MultiHopWorkflow.validate_multi_hop_results is a deprecated stub")
         return True
 
 
 def main():
-    """Main function for multi-hop workflow"""
-    logger.info("Multi-hop workflow initialized")
-
-    # In a real implementation, this would be integrated with the agentic workflow
-    # to handle complex multi-hop queries with self-recovery capabilities
+    logger.info("Deprecated multi_hop.py stub — import from planner.py or executor.py")
 
 
 if __name__ == "__main__":
