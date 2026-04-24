@@ -13,9 +13,9 @@ import sqlite3
 import threading
 import time
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generator, Literal, Optional
+from typing import Any, Generator, Literal
 
 import logging
 logger = logging.getLogger(__name__)
@@ -207,10 +207,8 @@ class DatabaseManager:
                 if self.driver == "postgresql":
                     cur = conn.cursor()
                     cur.execute("SELECT 1 as n")
-                    result = cur.fetchone()["n"]
                 else:
                     cur = conn.execute("SELECT 1 as n")
-                    result = cur.fetchone()["n"]
             return {
                 "status": "healthy",
                 "driver": self.driver,

@@ -161,7 +161,7 @@ def trace_query(
                 metadata={"tier": user_tier},
             )
             return str(trace.id)
-        return trace_id
+        return query_id
 
 
 def get_trace_context() -> Dict[str, Any]:

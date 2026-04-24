@@ -8,7 +8,7 @@ import os
 import re
 import sqlite3
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from src.config.llm_config import get_llm_client
 from src.observability.langfuse_tracer import trace_llm_call

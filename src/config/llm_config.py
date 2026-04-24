@@ -7,7 +7,7 @@ import time
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional, Protocol
 
@@ -957,7 +957,6 @@ class SovereignLLMMesh:
                 )
                 futures[fut] = provider
 
-            first_response = None
             for fut in as_completed(futures, timeout=budget_remaining):
                 provider = futures[fut]
                 try:
@@ -969,7 +968,6 @@ class SovereignLLMMesh:
                 except Exception:
                     pass
 
-            elapsed = self.mesh_config.query_timeout_budget_seconds - budget_remaining
             budget_remaining = max(0, budget_remaining - 1)
             if budget_remaining <= 0:
                 break
@@ -1021,7 +1019,6 @@ class SovereignLLMMesh:
 
         race_count = 3 if complexity == "complex" else 2
         top_providers = providers[:race_count] if len(providers) >= race_count else providers[:2] if len(providers) >= 2 else providers[:1]
-        budget_remaining = self.mesh_config.query_timeout_budget_seconds
 
         for provider in top_providers:
             if self._is_provider_circuit_open(provider) or self._is_provider_recently_failed(provider):
@@ -1080,7 +1077,6 @@ class SovereignLLMMesh:
                 successes = m.get("successes_7d", 0)
                 failures = m.get("failures_7d", 0)
                 total = successes + failures
-                avg_latency = m.get("total_latency_ms", 0.0) / total if total > 0 else None
 
             circuit_state = self._circuit_state.get(provider, "closed")
             status = "healthy"

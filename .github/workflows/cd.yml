@@ -27,9 +27,54 @@ env:
 
 jobs:
   # ===========================================================================
+  # Quality Bar Scorecard — blocks all deployments
+  # ===========================================================================
+  quality-bar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -q --upgrade pip
+          pip install -q -r requirements.txt 2>/dev/null || true
+          pip install -q pytest locust 2>/dev/null || true
+
+      - name: Run Quality Bar Scorecard
+        id: scorecard
+        run: |
+          pip install -q -e . 2>/dev/null || true
+          python scripts/quality_bar_scorecard.py --json-only
+          RESULT=$?
+          echo "scorecard_exit=$RESULT" >> $GITHUB_OUTPUT
+          echo "scorecard_json=scripts/quality_bar_scorecard.json" >> $GITHUB_OUTPUT
+          if [ $RESULT -ne 0 ]; then
+            echo "::error::Quality Bar scorecard FAILED — 6/6 required for release"
+            exit 1
+          fi
+
+      - name: Upload scorecard JSON
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quality-bar-scorecard
+          path: scripts/quality_bar_scorecard.json
+
+      - name: Fail if not 6/6
+        if: steps.scorecard.outputs.scorecard_exit != '0'
+        run: exit 1
+
+  # ===========================================================================
   # Build and Test
   # ===========================================================================
   build:
+    needs: quality-bar
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}

@@ -20,8 +20,7 @@ import hashlib
 import hmac
 import logging
 import os
-import time
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, UTC
 from threading import Lock
 from typing import Optional
 
