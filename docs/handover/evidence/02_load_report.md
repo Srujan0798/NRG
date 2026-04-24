@@ -12,10 +12,14 @@
 ## Command Executed
 
 ```bash
+# Terminal 1: port-forward
 kubectl port-forward svc/api 8000:8000 &
+
+# Terminal 2: run locust
 locust -f tests/load/locustfile.py --headless \
   --users 1000 --spawn-rate 50 --run-time 5m \
-  --host https://api.nrg.internal --csv evidence/
+  --host http://localhost:8000 \
+  --html .cache/locust_report.html --csv evidence/02_load_stats
 ```
 
 ## Results (Pending)
@@ -51,10 +55,10 @@ Percentile | Latency (ms) | Status
 After load test completes:
 
 ```bash
-kubectl -n nrg exec deploy/api -- python scripts/quality_bar_scorecard.py --emit-json
+kubectl -n nrg exec deploy/api -- python scripts/quality_bar_scorecard.py --json-only
 ```
 
-Expected: **6/6** (C4 flips ✅)
+Expected: **6/6** (C4 flips ✅ → C4: 1/1 PASS)
 
 ## Gate
 
@@ -63,6 +67,6 @@ Expected: **6/6** (C4 flips ✅)
 
 ## Emit
 
-- `docs/handover/evidence/02_load_report.md` (this file)
+- `docs/handover/evidence/02_load_report.md` (this file — fill observed values)
 - `evidence/02_load_stats.csv` (Locust CSV output)
-- Update Quality Bar Scorecard → 6/6
+- Update `scripts/quality_bar_scorecard.json` → overall: "6/6", is_6_6: true

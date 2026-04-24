@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
-"""Pre-commit hook to prevent .env from having CLOUD_SYNTHESIS_ALLOWED=false."""
+"""Pre-commit hook to validate the cloud synthesis opt-in flag."""
 
-import os
 import sys
-import re
 from pathlib import Path
 
 
+TRUE_VALUES = {"true", "1", "yes"}
+FALSE_VALUES = {"false", "0", "no"}
+BOOLEAN_VALUES = TRUE_VALUES | FALSE_VALUES
+
+
 def check_env_file(env_path: Path) -> bool:
-    """Check if CLOUD_SYNTHESIS_ALLOWED is set to false in .env file."""
+    """Check CLOUD_SYNTHESIS_ALLOWED is a valid explicit boolean when present."""
     if not env_path.exists():
         return True
 
@@ -18,19 +21,19 @@ def check_env_file(env_path: Path) -> bool:
         line = line.strip()
         if line.startswith("#") or not line:
             continue
-        if "CLOUD_SYNTHESIS_ALLOWED" in line and "=" in line:
+        if line.startswith("CLOUD_SYNTHESIS_ALLOWED") and "=" in line:
             value = line.split("=", 1)[1].strip()
-            if value.lower() not in ("true", "1", "yes"):
-                print(f"ERROR: CLOUD_SYNTHESIS_ALLOWED must be 'true' in committed .env")
+            if value.lower() not in BOOLEAN_VALUES:
+                print("ERROR: CLOUD_SYNTHESIS_ALLOWED must be a boolean")
                 print(f"  Line: {line}")
-                print(f"  Current value '{value}' is not allowed — LLM synthesis requires 'true'")
-                print(f"  If testing rate-limiting locally, set NRG_QUOTA_DISABLED=1 instead")
+                print(f"  Current value '{value}' is not valid")
+                print("  Use 'false' for the sovereign/local default or 'true' for explicit cloud opt-in")
                 return False
     return True
 
 
 def check_staged_files() -> bool:
-    """Check if any staged .env file has CLOUD_SYNTHESIS_ALLOWED=false."""
+    """Check if any staged .env file has a valid CLOUD_SYNTHESIS_ALLOWED value."""
     import subprocess
 
     try:
@@ -40,11 +43,11 @@ def check_staged_files() -> bool:
             text=True,
             check=False,
         )
-        staged_env_files = result.stdout.strip().split("\n")
+        staged_env_files = [name for name in result.stdout.splitlines() if name.strip()]
 
         for env_file in staged_env_files:
             env_path = Path(env_file)
-            if env_path.exists() and not check_env_file(env_path):
+            if env_path.is_file() and not check_env_file(env_path):
                 return False
     except Exception as e:
         print(f"Warning: Could not check staged files: {e}")
@@ -62,7 +65,7 @@ def main() -> int:
     if not check_staged_files():
         return 1
 
-    print("OK: CLOUD_SYNTHESIS_ALLOWED check passed")
+    print("OK: CLOUD_SYNTHESIS_ALLOWED boolean check passed")
     return 0
 
 
