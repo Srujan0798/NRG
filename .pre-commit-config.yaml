@@ -6,7 +6,7 @@ repos:
   - repo: local
     hooks:
       - id: check-cloud-synthesis-env
-        name: Ensure CLOUD_SYNTHESIS_ALLOWED=true in .env
+        name: Validate CLOUD_SYNTHESIS_ALLOWED boolean in .env
         entry: python scripts/check-env.py
         language: system
         pass_filenames: false

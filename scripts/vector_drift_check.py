@@ -389,9 +389,8 @@ def _qdrant_ready_for_benchmark(qdrant_health: dict) -> bool:
     """Return True when Qdrant has a reachable, non-empty vector collection."""
     status = qdrant_health.get("status")
     indexed = int(qdrant_health.get("indexed_vectors") or 0)
-    total = int(qdrant_health.get("total_vectors") or 0)
 
-    return status in {"ok", "degraded"} and (indexed > 0 or total > 0)
+    return status in {"ok", "degraded"} and indexed > 0
 
 
 def main():

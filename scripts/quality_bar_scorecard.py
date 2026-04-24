@@ -200,17 +200,27 @@ def _run_drift_check(verbose: bool = False) -> dict:
         k in output.lower()
         for k in ("drift", "DRIFT", "baseline", "stable", "reindex", "cosine")
     )
+    drift_skipped = (
+        result.returncode == 2
+        and (
+            "qdrant_unavailable" in output
+            or "VECTOR DRIFT CHECK SKIPPED" in output
+            or "Qdrant is unhealthy or empty" in output
+        )
+    )
     script_completed = result.returncode in (0, 1) and len(output) > 100
 
     passed = 1 if (has_reindex_trigger or has_baseline or has_stable or (script_completed and has_drift_check)) else 0
 
     return {
+        "status": "partial" if drift_skipped else ("pass" if passed else "fail"),
         "passed": passed,
         "failed": 0,
         "skipped": 0,
         "total": 1,
         "exit_code": result.returncode,
         "passed_rate": 1.0 if passed else 0.0,
+        "partial": drift_skipped,
         "has_reindex_trigger": has_reindex_trigger,
         "has_baseline_established": has_baseline,
         "has_stable": has_stable,
@@ -319,6 +329,9 @@ def run_scorecard(verbose: bool = False) -> dict:
             if res.get("skipped") == 1:
                 status = "SKIP"
                 scores[cid] = "SKIP"
+        elif res.get("partial"):
+            status = "PARTIAL"
+            scores[cid] = "PARTIAL"
 
         print(f"{status} ({res['passed']}/{res['total']} passed, {rate:.1%})")
 
@@ -359,7 +372,7 @@ def _emit_markdown(scorecard: dict) -> str:
         r = scorecard["results"][cid]
         res = r["result"]
         status = scorecard["scores"][cid]
-        status_icon = {"PASS": "✅", "FAIL": "❌", "SKIP": "⏭️"}.get(status, "❓")
+        status_icon = {"PASS": "✅", "FAIL": "❌", "SKIP": "⏭️", "PARTIAL": "⚠️"}.get(status, "❓")
         rate_pct = f"{res['passed_rate']:.0%}"
         test_info = f"{res['passed']}/{res['total']}"
         lines.append(f"| {cid} | {r['name']} | {test_info} | {rate_pct} | {status_icon} |")

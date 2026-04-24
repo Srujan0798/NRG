@@ -29,6 +29,8 @@ class StubWorkflow:
                 "synth": "rule_based",
                 "cloud_synthesis_used": False,
             },
+            "sql_query": "SELECT name FROM researchers LIMIT 5",
+            "sql_results": [{"name": "A. Researcher"}],
             "retrieval_sources": ["structured"],
             "conversation_history": [
                 {"query": query, "response": "orchestrated answer"}
@@ -48,7 +50,7 @@ def _auth_headers(client: TestClient) -> dict[str, str]:
 def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     stub_workflow = StubWorkflow()
     monkeypatch.setattr(api_main, "workflow", stub_workflow)
-    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-hash-123")
 
     from src.services.consent import ConsentService
     original_has_consent = ConsentService.has_consent
@@ -65,6 +67,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         assert response.status_code == 200
         payload = response.json()
         assert payload["query_id"] == "query-123"
+        assert payload["audit_event_id"] == "audit-hash-123"
         assert payload["session_id"] == "session-123"
         assert payload["intent"] == "structured"
         assert payload["routing_decision"] == "text_to_sql"
@@ -78,6 +81,8 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         ]
         assert payload["provenance"]["synth"] == "rule_based"
         assert payload["provenance"]["cloud_synthesis_used"] is False
+        assert payload["sql_query"] == "SELECT name FROM researchers LIMIT 5"
+        assert payload["sql_results"] == [{"name": "A. Researcher"}]
         assert payload["retrieval_sources"] == ["structured"]
         assert len(stub_workflow.calls) == 1
         call = stub_workflow.calls[0]

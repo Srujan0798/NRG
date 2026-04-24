@@ -602,8 +602,9 @@ async def query_with_langgraph(
         jwt_kid = token_payload.get("kid")
         request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
 
+        audit_event_id = None
         try:
-            audit_log_query(user_id, request.query, jwt_kid=jwt_kid, request_fingerprint=request_fp)
+            audit_event_id = audit_log_query(user_id, request.query, jwt_kid=jwt_kid, request_fingerprint=request_fp)
         except Exception:
             logger.warning("Audit log_query failed at API layer", exc_info=True)
 
@@ -640,6 +641,7 @@ async def query_with_langgraph(
 
         response_payload = {
             "query_id": result.get("query_id", str(uuid.uuid4())),
+            "audit_event_id": audit_event_id,
             "session_id": result.get("session_id"),
             "response": result.get("synthesized_response", ""),
             "status": "success",
@@ -652,6 +654,9 @@ async def query_with_langgraph(
             "planner_metadata": result.get("planner_metadata", {}),
             "citations": result.get("citations", []),
             "warnings": result.get("warnings", result.get("errors", [])),
+            "sql_query": result.get("sql_query"),
+            "sql_queries": result.get("sql_queries", []),
+            "sql_results": result.get("sql_results", []),
             "retrieval_sources": result.get("retrieval_sources", []),
             "provenance": result.get("provenance", {}),
             "synthesis_method": result.get("synthesis_method", "unknown"),

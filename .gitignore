@@ -69,3 +69,4 @@ DASHBOARD_URLS.md
 *.gguf
 .cache/
 coverage.xml
+.claude/scheduled_tasks.lock

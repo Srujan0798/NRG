@@ -261,6 +261,12 @@ def main():
             
             # Log rebuild event
             print("\nStep 6: Logging rebuild event...")
+            # Reset both class-level and module-level singletons so the next
+            # get_audit_log() re-reads the rebuilt .last_hash (otherwise a cached
+            # instance appends with stale prev_hash and breaks the chain).
+            ImmutableAuditLog._reset()
+            import src.audit as _audit_mod
+            _audit_mod._audit_log_instance = None
             audit_log = get_audit_log()
             rebuild_event = AuditEvent(
                 event_type="chain_rebuild",

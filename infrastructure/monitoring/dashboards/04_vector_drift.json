@@ -57,8 +57,7 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "mappings": [
-            {"options": {"drifting": {"color": "yellow", "text": "DRIFTING"}, "healthy": {"color": "green", "text": "HEALTHY"}, "alert": {"color": "red", "text": "ALERT"}}},
-            "type": "value"
+            {"options": {"drifting": {"color": "yellow", "text": "DRIFTING"}, "healthy": {"color": "green", "text": "HEALTHY"}, "alert": {"color": "red", "text": "ALERT"}}, "type": "value"}
           ],
           "thresholds": {
             "mode": "absolute",
