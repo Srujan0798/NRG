@@ -35,7 +35,7 @@ class FakeCloudLLMClient:
     """Mock LLM that returns structured responses with citations."""
     model = "mock-minimax"
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None) -> str:
         return (
             "Research Overview: 42 researchers across 8 states. "
             "Top institutions: IIT Gandhinagar, IISc Bangalore. "
@@ -55,7 +55,7 @@ class FakeLLMMesh:
     def __init__(self, client):
         self._client = client
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None) -> str:
         return self._client.generate(system_prompt, user_prompt, conversation_history or [])
 
     def generate_streaming(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
