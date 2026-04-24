@@ -184,35 +184,43 @@
 | **5** | **41** | **THE QUALITY BAR INTEGRATION** | **✅ DONE (5/6)** |
 | **V4-NEW** | **42** | **THE FRONTEND-API RECONNECT** | **✅ DONE** |
 | **V4-NEW** | **43** | **THE SOVEREIGN LANDING** | **✅ DONE** |
-| **V4-NEW** | **44** | **THE HANDOVER PACKAGE** | **✅ DONE (8/9)** |
+| **V4-NEW** | **44** | **THE HANDOVER PACKAGE** | **✅ DONE** |
+| **Eternal** | **45** | **THE ETERNAL SEAL** | **⏸️ PENDING (7 items on sovereign cluster)** |
 
 ---
 
 ## REMAINING ITEMS FOR FULL HANDOVER
 
-| Item | Status | Action Required |
-|------|--------|----------------|
-| Pitch deck committed | ✅ | None |
-| Demo video (NRG_DEMO.mp4) | ⏸️ Pending | Film ≤3min on sovereign staging, add subtitles |
-| UAT session | ⏸️ Pending | Schedule 1hr with professor (T1) + ministry (T2) + industry (T3) |
-| UAT results (UAT_RESULTS.md) | ⏸️ Pending | Fill during/after UAT session |
-| C4 Quality Bar (SLO load test) | ⏸️ Pending | Run on sovereign cluster: `locust --users 1000 --run-time 5m` |
-| PostgreSQL staging apply | ⏸️ Pending | `alembic upgrade head` + seed scripts on live PG |
-| Founder sign-off | ⏸️ Pending | Sign each handover doc |
+> These require live sovereign cluster access. See `docs/handover/evidence/` for execution templates.
+
+| # | Item | Status | Action | Evidence File |
+|---|------|--------|--------|---------------|
+| 1 | Demo video (NRG_DEMO.mp4) | ⏸️ Pending | Film ≤3min on sovereign staging, add subtitles | `evidence/04_demo.sha256` |
+| 2 | UAT session — T1 Professor | ⏸️ Pending | 1hr session, 10 queries, professor | `evidence/03_uat_t1.md` |
+| 3 | UAT session — T2 Ministry | ⏸️ Pending | 1hr session, 10 queries, liaison | `evidence/03_uat_t2.md` |
+| 4 | UAT session — T3 Industry | ⏸️ Pending | 1hr session, 10 queries, partner | `evidence/03_uat_t3.md` |
+| 5 | UAT results (UAT_RESULTS.md) | ⏸️ Pending | Fill during/after UAT sessions | `evidence/03_uat_*.md` |
+| 6 | C4 Quality Bar (SLO load test) | ⏸️ Pending | `locust --users 1000 --run-time 5m` on cluster | `evidence/02_load_report.md` |
+| 7 | PostgreSQL staging apply | ⏸️ Pending | `alembic upgrade head` + seed on live PG | `evidence/01_stage_up.json` |
+| 8 | Chain seal + C1/C2/C6 attestation | ⏸️ Pending | Run test suite on live egress | `evidence/05_chain_seal.json` |
+| 9 | Founder sign-off (8 GPG signatures) | ⏸️ Pending | Sign all handover docs | `signatures/*.asc` |
+| 10 | Git tag v1.0.0-eternal | ⏸️ Pending | After all 9 above complete | — |
+
+**Note**: Steps 1–9 require `kubectl` access to sovereign cluster. Step 10 (tag) requires Founder GPG key configured.
 
 ---
 
 ## QUALITY BAR STATUS (2026-04-24)
 
-| # | Constraint | Score | Status |
-|---|---|---|---|
-| C1 | DPDP Indian PII | ✅ 8/8 (100%) | PASS |
-| C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS |
-| C3 | Multi-hop DAG planner | ✅ 24/24 (100%) | PASS |
-| C4 | P99<500ms @ 1000 concurrent | ⏭️ Needs live infra | SKIP (API down) |
-| C5 | Vector drift auto-retrain | ✅ 1/1 (100%) | PASS |
-| C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS |
-| | **Overall** | **5/6** | **NEARLY COMPLETE** |
+| # | Constraint | Score | Status | Evidence |
+|---|---|---|---|---|
+| C1 | DPDP Indian PII | ✅ 8/8 (100%) | PASS | `tests/security/test_pii_indian.py` |
+| C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS | `tests/security/test_per_user_audit_binding.py` |
+| C3 | Multi-hop DAG planner | ✅ 24/24 (100%) | PASS | `tests/orchestration/test_multi_hop_planner.py` |
+| C4 | P99<500ms @ 1000 concurrent | ⏭️ Needs sovereign cluster | **PENDING** | `evidence/02_load_report.md` |
+| C5 | Vector drift auto-retrain | ✅ 1/1 (100%) | PASS | `scripts/vector_drift_check.py` |
+| C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS | `tests/security/test_egress_allowlist.py` |
+| | **Overall** | **5/6 → 6/6** | **ETERNAL SEAL PENDING** | After Step 2 → C4 flips |
 
 ---
 

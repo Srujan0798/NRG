@@ -1,0 +1,46 @@
+# Demo Video Evidence — NRG Eternal Seal Step 4
+
+**Status**: PENDING_RECORDING
+
+## Requirements
+
+- [ ] ≤3 minutes
+- [ ] Screencap on sovereign staging
+- [ ] Flow: login → 1 query per tier → audit chain verify → scorecard dashboard
+- [ ] Subtitles present (burned in or SRT)
+- [ ] SHA-256 computed after recording
+
+## Recording Command (on sovereign cluster)
+
+```bash
+# Terminal 1: port-forward
+kubectl port-forward svc/api 8000:8000 &
+
+# Terminal 2: record with ffmpeg
+ffmpeg -f x11grab -framerate 30 -video_size 1920x1080 \
+  -i :0.0 -c:v libx264 -preset ultrafast \
+  pitch/NRG_DEMO.mp4
+```
+
+## Post-Recording
+
+```bash
+# Compute SHA-256
+sha256sum pitch/NRG_DEMO.mp4 > docs/handover/evidence/04_demo.sha256
+
+# Verify
+cat docs/handover/evidence/04_demo.sha256
+# Expected format: <hash>  pitch/NRG_DEMO.mp4
+```
+
+## File
+
+`pitch/NRG_DEMO.mp4` — pending recording
+`docs/handover/evidence/04_demo.sha256` — pending hash
+
+---
+
+Example sha256 output (fill after recording):
+```
+abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890  pitch/NRG_DEMO.mp4
+```
