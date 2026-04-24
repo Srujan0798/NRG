@@ -67,7 +67,7 @@ class _FakeRetriever:
     def _collection_vector_size(self):
         return 768
 
-    def retrieve(self, query_vector, user_tier=1, top_k=5):
+    def retrieve(self, query_vector, user_tier=1, top_k=5, **kwargs):
         return {
             "chunks": ["Robotics research evidence chunk."],
             "metadata": [
