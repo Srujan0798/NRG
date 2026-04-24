@@ -337,10 +337,12 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
         from src.skills.rag.embedder import Embedder
         embedder = Embedder()
         try:
-            cosine_info = _check_cosine_shift(drift_result, retriever, embedder)
-            drift_result["cosine_shift"] = cosine_info
+            cosine_info = _check_cosine_shift({}, retriever, embedder)
             if cosine_info.get("reindex_triggered"):
-                _trigger_reindex(drift_result, cosine_info)
+                _trigger_reindex(
+                    {"alert_level": alert_level, "drift_score": avg_score},
+                    cosine_info
+                )
         finally:
             embedder.close()
     except Exception as e:

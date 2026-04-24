@@ -67,6 +67,27 @@ def setup(monkeypatch, tmp_path):
 
 
 @pytest.fixture
+def consent_service(tmp_path):
+    consent_db = tmp_path / "consent_test.db"
+    svc = ConsentService(str(consent_db))
+    svc._init_table()
+    return svc
+
+
+@pytest.fixture(autouse=True)
+def audit_reset(setup):
+    from src.audit import ImmutableAuditLog
+    import src.audit as audit_module
+    ImmutableAuditLog._instance = None
+    ImmutableAuditLog._initialized = False
+    audit_module._audit_log_instance = None
+    yield
+    ImmutableAuditLog._instance = None
+    ImmutableAuditLog._initialized = False
+    audit_module._audit_log_instance = None
+
+
+@pytest.fixture
 def client():
     from fastapi.testclient import TestClient
     return TestClient(api_main.app)
@@ -80,14 +101,6 @@ def researcher_token(client):
     )
     assert response.status_code == 200
     return response.json()["access_token"]
-
-
-@pytest.fixture
-def consent_service(tmp_path):
-    consent_db = tmp_path / "consent_test.db"
-    svc = ConsentService(str(consent_db))
-    svc._init_table()
-    return svc
 
 
 class TestConsentGate:
