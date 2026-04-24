@@ -649,3 +649,31 @@ def get_chain_health() -> dict:
     result = get_audit_log().get_chain_health()
     _chain_health_cache = (now, result)
     return result
+
+
+def log_cost_decision(
+    query_id: str,
+    provider: str,
+    tokens_in: int,
+    tokens_out: int,
+    cost_inr: float,
+    persona: str,
+    complexity: str,
+    route_decision: str,
+) -> str:
+    """Log a CostGuard cost decision to the audit chain."""
+    return get_audit_log().append(
+        AuditEvent(
+            event_type="llm_cost",
+            query=query_id,
+            llm_call={
+                "provider": provider,
+                "tokens_in": tokens_in,
+                "tokens_out": tokens_out,
+                "cost_inr": round(cost_inr, 4),
+                "persona": persona,
+                "complexity": complexity,
+                "route_decision": route_decision,
+            },
+        )
+    )

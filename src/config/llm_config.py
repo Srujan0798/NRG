@@ -1308,7 +1308,6 @@ class CostGuard:
         if redis is None:
             return
         try:
-            import datetime
             key = self._redis_key()
             ttl = 45 * 24 * 3600
             redis.setex(key, ttl, str(self._spent_this_month))
@@ -1421,7 +1420,6 @@ class CostGuard:
         if user_tier == 2:
             return True, "government_tier_sovereign_override"
 
-        tier_key = self.get_tier_key(user_tier)
         status = self.get_budget_status()
 
         if status["halt"] and estimated_cost > 0:
@@ -1432,7 +1430,9 @@ class CostGuard:
             return False, "Monthly halt threshold (95%) — cloud LLMs disabled"
 
         if status["critical"]:
-            if complexity in ("trivial", "simple"):
+            if complexity in ("trivial",):
+                return True, ""
+            if complexity in ("simple",):
                 if guru_approval:
                     return True, f"guru_override: {guru_approval}"
                 return False, "Budget critical (85%) — non-critical queries blocked"

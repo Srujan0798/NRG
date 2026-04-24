@@ -496,37 +496,66 @@ def _synthesize(
     - complexity=simple → local SLM (lowest cost)
     - complexity=moderate → cloud LLM standard model
     - complexity=complex/synthesis_heavy → cloud LLM best model, parallel racing top-3
-    """
-    from src.config.llm_config import CostGuard
-    cost_guard = CostGuard.get_instance()
 
-    allowed, reason = cost_guard.check_budget(user_tier, complexity, 0)
+    Returns (response, provenance_dict) where provenance_dict includes:
+    - 'synth': synthesis path used
+    - 'cloud_synthesis_used': bool
+    - 'provider': actual provider used (for CostGuard record_cost)
+    - 'block_reason': str if blocked
+    """
+    import uuid
+
+    from src.config.llm_config import CostGuard
+
+    cost_guard = CostGuard.get_instance()
+    persona_map = {1: "researcher", 2: "government", 3: "industry"}
+    persona = persona_map.get(user_tier, "researcher")
+
+    system_prompt = _build_system_prompt(
+        user_tier=user_tier,
+        sources=sources,
+        sql_results=sql_results,
+        chunks=chunks,
+        context_summary=context_summary,
+    )
+    tokens_in, tokens_out_est = cost_guard.estimate_tokens(query, len(chunks))
+    estimated_cost = cost_guard.estimate_cost(
+        complexity=complexity,
+        provider="minimax",
+        tokens_in=tokens_in,
+        tokens_out=tokens_out_est,
+    )
+
+    allowed, reason = cost_guard.check_budget(user_tier, complexity, estimated_cost)
     if not allowed:
-        logger.warning(f"CostGuard blocked {complexity} query: {reason}")
-        return f"[Cost governance: {reason}]", {"synth": "blocked", "cloud_synthesis_used": False, "block_reason": reason}
+        logger.warning("CostGuard blocked %s query (est=₹%.2f): %s", complexity, estimated_cost, reason)
+        return (
+            f"[Cost governance: {reason}]",
+            {
+                "synth": "blocked",
+                "cloud_synthesis_used": False,
+                "block_reason": reason,
+                "provider": None,
+                "estimated_cost": estimated_cost,
+            },
+        )
 
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
+    actual_provider = None
 
     if complexity == "trivial":
         logger.info("Complexity=trivial — using rule-based synthesis")
         response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
+        actual_provider = "rule_based"
         try:
             log_llm_call("synthesizer", query, {"response": response[:500] if response else ""}, "rule-based-trivial")
         except Exception:
             pass
-        return response, {"synth": "rule_based_trivial", "cloud_synthesis_used": False}
+        return response, {"synth": "rule_based_trivial", "cloud_synthesis_used": False, "provider": actual_provider}
 
     if complexity == "simple":
         local_client = get_local_llm_client()
         if local_client:
-            system_prompt = _build_system_prompt(
-                user_tier=user_tier,
-                sources=sources,
-                sql_results=sql_results,
-                chunks=chunks,
-                context_summary=context_summary,
-                use_local_prompt=True,
-            )
             user_prompt = f"User Query: {query}"
             try:
                 logger.info("Complexity=simple — using local SLM for synthesis")
@@ -536,26 +565,29 @@ def _synthesize(
                     conversation_history=_coerce_history(context_summary),
                 )
                 response = response.rstrip() + "\n\n[Response generated using local model for faster service]"
+                actual_provider = "local"
+                cost_guard.record_cost(
+                    query_id=str(uuid.uuid4())[:8],
+                    provider=actual_provider,
+                    tokens_in=tokens_in,
+                    tokens_out=tokens_out_est,
+                    cost_inr=0.0,
+                    persona=persona,
+                    complexity=complexity,
+                    route_decision="local_llm_simple",
+                )
                 try:
-                    log_llm_call("synthesizer", system_prompt[:1000], {"response": response[:500] if response else ""}, getattr(local_client, "model", "local-slm"))
+                    log_llm_call("synthesizer", system_prompt[:1000], {"response": response[:500] if response else ""}, "local-slm")
                 except Exception:
                     pass
-                return response, {"synth": "local_llm_simple", "cloud_synthesis_used": False}
+                return response, {"synth": "local_llm_simple", "cloud_synthesis_used": False, "provider": actual_provider}
             except Exception as e:
                 logger.warning(f"Local LLM for simple query failed: {e}")
         cloud_allowed = True
 
-    # Try 1: Cloud LLM via SovereignLLMMesh (15s budget, health-weighted, parallel race)
     if cloud_allowed:
         try:
             mesh = get_llm_mesh()
-            system_prompt = _build_system_prompt(
-                user_tier=user_tier,
-                sources=sources,
-                sql_results=sql_results,
-                chunks=chunks,
-                context_summary=context_summary,
-            )
             user_prompt = f"User Query: {query}"
             logger.info(f"Using SovereignLLMMesh for synthesis (complexity={complexity}, 15s budget, health-weighted)")
             response = mesh.generate(
@@ -565,6 +597,22 @@ def _synthesize(
                 complexity=complexity,
             )
             response = re.sub(r'<think>.*?', '', response, flags=re.DOTALL).strip()
+            actual_provider = "sovereign_mesh"
+
+            tokens_in_actual = len(system_prompt) // 4
+            tokens_out_actual = len(response) // 4
+            actual_cost = cost_guard.estimate_cost(complexity, "minimax", tokens_in_actual, tokens_out_actual)
+            cost_guard.record_cost(
+                query_id=str(uuid.uuid4())[:8],
+                provider="minimax",
+                tokens_in=tokens_in_actual,
+                tokens_out=tokens_out_actual,
+                cost_inr=actual_cost,
+                persona=persona,
+                complexity=complexity,
+                route_decision="cloud_llm",
+            )
+
             try:
                 log_llm_call(
                     "synthesizer",
@@ -574,49 +622,20 @@ def _synthesize(
                         "cloud_synthesis_used": True,
                         "mode": "cloud_synthesis",
                         "complexity": complexity,
-                        "evidence_counts": {
-                            "sql_rows": len(sql_results),
-                            "chunks": len(chunks),
-                        },
+                        "cost_inr": actual_cost,
+                        "evidence_counts": {"sql_rows": len(sql_results), "chunks": len(chunks)},
                         "redaction_counts": _redaction_counts(sql_results, chunks),
                     },
                     "sovereign-mesh",
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for cloud LLM", exc_info=True)
-            return response, {"synth": "cloud_llm", "cloud_synthesis_used": True}
+            return response, {"synth": "cloud_llm", "cloud_synthesis_used": True, "provider": actual_provider}
         except Exception as e:
             logger.warning(f"Cloud LLM mesh failed: {e}, trying local LLM")
-    else:
-        response = None
 
-    # Log cloud LLM cost if allowed and response was received
-    if cloud_allowed and response is not None:
-        tokens_in = len(system_prompt) // 4
-        tokens_out = len(response) // 4
-        cost = cost_guard.estimate_cost(complexity, "minimax", tokens_in, tokens_out)
-        cost_guard.log_cost(
-            query_id=hash(query) % 1000000,
-            provider="minimax",
-            tokens_in=tokens_in,
-            tokens_out=tokens_out,
-            cost_inr=cost,
-            persona={1: "researcher", 2: "government", 3: "industry"}.get(user_tier, "researcher"),
-            complexity=complexity,
-            route_decision="cloud_llm",
-        )
-
-# Try 2: Local SLM
     local_client = get_local_llm_client()
     if local_client:
-        system_prompt = _build_system_prompt(
-            user_tier=user_tier,
-            sources=sources,
-            sql_results=sql_results,
-            chunks=chunks,
-            context_summary=context_summary,
-            use_local_prompt=True,
-        )
         user_prompt = f"User Query: {query}"
         try:
             logger.info("Using local LLM for synthesis")
@@ -626,24 +645,33 @@ def _synthesize(
                 conversation_history=_coerce_history(context_summary),
             )
             response = response.rstrip() + "\n\n[Note: Response generated using local model for faster service]"
-            # Audit: log local LLM synthesis call
+            actual_provider = "local"
+            cost_guard.record_cost(
+                query_id=str(uuid.uuid4())[:8],
+                provider=actual_provider,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out_est,
+                cost_inr=0.0,
+                persona=persona,
+                complexity=complexity,
+                route_decision="local_llm",
+            )
             try:
                 log_llm_call(
                     "synthesizer",
                     system_prompt[:1000],
                     {"response": response[:500] if response else ""},
-                    getattr(local_client, "model", "local-slm"),
+                    "local-slm",
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for local LLM", exc_info=True)
-            return response, {"synth": "local_llm", "cloud_synthesis_used": False}
+            return response, {"synth": "local_llm", "cloud_synthesis_used": False, "provider": actual_provider}
         except Exception as e:
             logger.warning(f"Local LLM failed: {e}")
 
-    # Try 3: Rule-based synthesis (always works)
     logger.info("Using rule-based synthesis")
     response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
-    # Audit: log rule-based fallback as an LLM call
+    actual_provider = "rule_based"
     try:
         log_llm_call(
             "synthesizer",
@@ -653,7 +681,7 @@ def _synthesize(
         )
     except Exception:
         logger.warning("Audit log_llm_call failed for rule-based synthesis", exc_info=True)
-    return response, {"synth": "rule_based", "cloud_synthesis_used": False}
+    return response, {"synth": "rule_based", "cloud_synthesis_used": False, "provider": actual_provider}
 
 
 def _build_context_summary(conversation_history: list) -> str:
