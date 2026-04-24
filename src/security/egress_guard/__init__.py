@@ -22,7 +22,7 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
-ALLOWLIST_PATH = Path(__file__).resolve().parents[1] / "security" / "egress_allowlist.yaml"
+ALLOWLIST_PATH = Path(__file__).resolve().parents[1] / "egress_allowlist.yaml"
 
 
 @dataclass
@@ -94,6 +94,8 @@ class EgressGuard:
                 )
                 violations.append(violation)
                 self._violations.append(violation)
+
+        return violations
 
     def filter_prompt(
         self,
