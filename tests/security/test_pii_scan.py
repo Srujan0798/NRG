@@ -3,7 +3,7 @@ import src.security.pii as pii_module
 
 def test_scan_detects_aadhaar_with_regex_fallback(monkeypatch):
     monkeypatch.setattr(pii_module, "_load_spacy_model", lambda: None)
-    result = pii_module.scan("My Aadhaar is 1234 5678 9012")
+    result = pii_module.scan("My Aadhaar is 1234 5678 9010")
 
     assert result["detected_pii"] is True
     assert any(entity["type"] == "aadhaar" for entity in result["entities"])

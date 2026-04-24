@@ -69,9 +69,12 @@ class EgressGuard:
     def allowed_tables(self) -> set[str]:
         return set(self._allowlist.get("tables", {}))
 
-    @property
-    def allowed_columns(self) -> set[str]:
-        return set(self._allowlist.get("columns", {}))
+    def get_allowed_columns(self, table: str) -> set[str]:
+        """Get allowlisted columns for a specific table from YAML."""
+        table_data = self._allowlist.get("tables", {}).get(table.lower(), {})
+        allowed = table_data.get("allowlisted_columns", [])
+        blocked = table_data.get("blocked_columns", [])
+        return set(allowed) - set(blocked)
 
     @property
     def blocked_patterns(self) -> list[str]:
@@ -167,6 +170,7 @@ class EgressGuard:
 
         lines = schema_snippet.split("\n")
         passed = []
+        current_table: str | None = None
         for line in lines:
             stripped = line.strip()
             if not stripped or stripped.startswith("#") or stripped.startswith("//"):
@@ -176,13 +180,16 @@ class EgressGuard:
             table_match = re.search(r'(?:table|view|relation):\s+[`"]?(\w+)[`"]?', stripped, re.IGNORECASE)
             if table_match:
                 tbl = table_match.group(1).lower()
-                if tbl not in self.allowed_tables and tbl != "*":
+                current_table = tbl if tbl in self.allowed_tables else None
+                if current_table is None:
                     continue
 
             col_match = re.search(r'(?:column|field):\s+[`"]?(\w+)[`"]?', stripped, re.IGNORECASE)
-            if col_match:
+            if col_match and current_table is not None:
                 col = col_match.group(1).lower()
-                if col not in self.allowed_columns and col not in ("*", "id", "created_at", "updated_at"):
+                table_cols = self.get_allowed_columns(current_table)
+                safe_cols = table_cols | {"*", "id", "created_at", "updated_at"}
+                if col not in safe_cols:
                     continue
 
             passed.append(line)
