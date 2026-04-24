@@ -17,8 +17,6 @@ from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
 
-from src.audit.db_cosign import cosign_event as _db_cosign_event
-
 logger = logging.getLogger(__name__)
 
 CHAIN_KEY = os.environ.get("AUDIT_CHAIN_KEY")
@@ -239,11 +237,11 @@ class ImmutableAuditLog:
             self.last_hash_file.write_text(new_hash)
             self.event_count += 1
 
-            threading.Thread(
-                target=_db_cosign_event,
-                args=(event.event_id, new_hash, per_user_hash, event.user_id, event.event_type),
-                daemon=True,
-            ).start()
+            def _cosign_fire_and_forget():
+                from src.audit.db_cosign import cosign_event as _cosign
+                _cosign(event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
+
+            threading.Thread(target=_cosign_fire_and_forget, daemon=True).start()
 
             logger.info(f"Audit event {event.event_id} appended, chain: {new_hash[:16]}..., user_bind: {per_user_hash[:8]}...")
             return new_hash
