@@ -1,0 +1,200 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.5, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: cov-7.1.0, Faker-22.6.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 26 items
+
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_consistent_for_same_inputs [32mPASSED[0m[32m [  3%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_users [32mPASSED[0m[32m [  7%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_kids [32mPASSED[0m[32m [ 11%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_fingerprints [32mPASSED[0m[32m [ 15%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_handles_none_jwt_kid [32mPASSED[0m[32m [ 19%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_handles_none_fingerprint [32mPASSED[0m[32m [ 23%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_validates_correctly [32mPASSED[0m[32m [ 26%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_mismatch [32mPASSED[0m[32m [ 30%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_tampered_event [32mPASSED[0m[32m [ 34%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_wrong_user [32mPASSED[0m[32m [ 38%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_accepts_system_event [32mPASSED[0m[32m [ 42%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_empty_stored [32mPASSED[0m[32m [ 46%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_returns_same_salt_intraday [32mPASSED[0m[32m [ 50%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_differs_across_users [32mPASSED[0m[32m [ 53%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_is_persisted [32mPASSED[0m[32m [ 57%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_different_dates_produce_different_salts [32mPASSED[0m[32m [ 61%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_same_inputs_produce_same_fingerprint [32mPASSED[0m[32m [ 65%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_different_ip_produces_different_fingerprint [32mPASSED[0m[32m [ 69%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_format [32mPASSED[0m[32m [ 73%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_handle_none_values [32mPASSED[0m[32m [ 76%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_length_reasonable [32mPASSED[0m[32m [ 80%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_with_valid_per_user_binding_passes [32mPASSED[0m[32m [ 84%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_detects_tampered_binding [32mPASSED[0m[32m [ 88%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_without_per_user_check_passes [32mPASSED[0m[32m [ 92%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_system_event_skips_binding_check [32mPASSED[0m[32m [ 96%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_multiple_events_all_verified [32mPASSED[0m[32m [100%][0m/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/security/rbac/qdrant_rbac.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: line_bits (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/security/request_signer.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/security/security_harden.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/security/token_rotation.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/__init__.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/__init__.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/embedder.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/ingest.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/reranker.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/retriever.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/rag/skill.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/__init__.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/sandbox.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/schema_extractor.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/schema_sync_check.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/skill.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/sql_examples.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/sql_oracle.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/sqlite_sandbox.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/sqlite_schema_extractor.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/table_relationships.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/skills/text_to_sql/validator.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/__init__.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/data_collector.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/data_formatter.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/export.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/quality_filter.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/training/stratified_sampler.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/utils/__init__.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/utils/helpers.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/coverage/report_core.py:113: CoverageWarning: Couldn't parse '/Users/srujansai/Desktop/NRG/src/utils/logging_config.py': Couldn't use data file '/Users/srujansai/Desktop/NRG/.coverage': no such table: tracer (couldnt-parse); see https://coverage.readthedocs.io/en/7.13.5/messages.html#warning-couldnt-parse
+  coverage._warn(msg, slug="couldnt-parse")
+
+
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.11.5-final-0 _______________
+
+Name                                                Stmts   Miss  Cover   Missing
+---------------------------------------------------------------------------------
+src/__init__.py                                         0      0   100%
+src/api/__init__.py                                     0      0   100%
+src/api/logging_config.py                              57     57     0%   6-121
+src/api/main.py                                      1265   1265     0%   6-2489
+src/audit/__init__.py                                 341    121    65%   24, 123, 149, 206, 226-227, 251-287, 297, 316-318, 328, 346-347, 384-385, 395-401, 419-421, 424, 427, 437, 442, 454, 470, 487-528, 535, 549-556, 563-587, 591, 595-600, 608-610, 614, 618, 622, 626, 630, 635, 644-651, 665
+src/audit/db_cosign.py                                100     66    34%   51-52, 70-105, 118-160, 164-186, 212, 221
+src/audit/per_user_keys.py                            112      6    95%   57-58, 65-66, 171-172
+src/auth/__init__.py                                    2      2     0%   3-5
+src/auth/jwt_handler.py                               152    152     0%   3-345
+src/auth/middleware.py                                101    101     0%   3-253
+src/auth/rbac.py                                      294    294     0%   17-574
+src/auth/refresh_store.py                              65     65     0%   3-151
+src/caching/__init__.py                                 0      0   100%
+src/caching/redis_layer.py                             64     64     0%   1-108
+src/config/__init__.py                                  2      2     0%   3-14
+src/config/database.py                                189    189     0%   9-295
+src/config/llm_config.py                              854    854     0%   3-1575
+src/config/local_llm.py                               232    232     0%   7-421
+src/data/__init__.py                                    0      0   100%
+src/data/database.py                                   80     80     0%   3-171
+src/data/database_v2.py                               397    397     0%   7-873
+src/data/metadata/__init__.py                           0      0   100%
+src/data/metadata/access_control_labels.py             66     66     0%   6-219
+src/db/__init__.py                                      0      0   100%
+src/db/seed.py                                         24     24     0%   3-43
+src/orchestration/__init__.py                           0      0   100%
+src/orchestration/checkpoint.py                       102    102     0%   3-187
+src/orchestration/graph.py                            160    160     0%   3-256
+src/orchestration/nodes/__init__.py                     0      0   100%
+src/orchestration/nodes/complexity_classifier.py       71     71     0%   15-180
+src/orchestration/nodes/executor.py                   216    216     0%   3-375
+src/orchestration/nodes/planner.py                    282    282     0%   3-578
+src/orchestration/nodes/receiver.py                    40     40     0%   3-74
+src/orchestration/nodes/reflector.py                   27     27     0%   7-78
+src/orchestration/nodes/retry_handler.py               31     31     0%   7-80
+src/orchestration/nodes/router.py                     398    398     0%   20-921
+src/orchestration/nodes/synthesizer.py                655    655     0%   3-1297
+src/orchestration/nodes/verifier.py                   279    279     0%   3-570
+src/orchestration/state.py                             85     85     0%   3-125
+src/orchestration/workflows/__init__.py                 0      0   100%
+src/orchestration/workflows/multi_hop.py               21     21     0%   22-76
+src/security/__init__.py                                0      0   100%
+src/security/dpdp_compliance.py                        70     70     0%   8-181
+src/security/egress_guard/__init__.py                 139    139     0%   14-242
+src/security/gateway/__init__.py                        0      0   100%
+src/security/gateway/prompt_sanitiser.py              140    140     0%   1-478
+src/security/headers.py                                38     38     0%   11-85
+src/security/pii/__init__.py                           49     49     0%   3-110
+src/security/pii/fpe_engine.py                         60     60     0%   1-130
+src/security/pii/presidio_config.py                   103    103     0%   3-224
+src/security/pii/tokenizer.py                          72     72     0%   1-177
+src/security/pii/verhoeff.py                           16     16     0%   8-69
+src/security/pii_encryption.py                        102    102     0%   8-170
+src/security/query_allowlist.py                        59     59     0%   9-171
+src/security/rate_limiter.py                          124    124     0%   14-285
+src/security/rbac/__init__.py                           0      0   100%
+src/security/rbac/middleware.py                        30     30     0%   7-120
+src/security/rbac/postgresql_rbac.py                  102    102     0%   7-326
+src/security/rbac/qdrant_rbac.py                      102    102     0%   7-251
+src/security/request_signer.py                         57     57     0%   8-150
+src/security/security_harden.py                         8      8     0%   16-24
+src/security/token_rotation.py                         60     60     0%   9-191
+src/skills/__init__.py                                  0      0   100%
+src/skills/rag/__init__.py                              2      2     0%   3-5
+src/skills/rag/embedder.py                            191    191     0%   3-285
+src/skills/rag/ingest.py                               68     68     0%   3-121
+src/skills/rag/reranker.py                             38     38     0%   3-57
+src/skills/rag/retriever.py                           245    245     0%   3-547
+src/skills/rag/skill.py                                80     80     0%   3-151
+src/skills/text_to_sql/__init__.py                      0      0   100%
+src/skills/text_to_sql/sandbox.py                      74     74     0%   3-170
+src/skills/text_to_sql/schema_extractor.py            144    144     0%   7-411
+src/skills/text_to_sql/schema_sync_check.py           199    199     0%   7-390
+src/skills/text_to_sql/skill.py                       555    555     0%   3-1138
+src/skills/text_to_sql/sql_examples.py                 29     29     0%   13-340
+src/skills/text_to_sql/sql_oracle.py                  152    152     0%   17-322
+src/skills/text_to_sql/sqlite_sandbox.py               57     57     0%   3-128
+src/skills/text_to_sql/sqlite_schema_extractor.py     120    120     0%   3-418
+src/skills/text_to_sql/table_relationships.py          35     35     0%   7-633
+src/skills/text_to_sql/validator.py                   136    136     0%   3-329
+src/training/__init__.py                                5      5     0%   3-12
+src/training/data_collector.py                        164    164     0%   7-375
+src/training/data_formatter.py                        119    119     0%   9-248
+src/training/export.py                                 78     78     0%   6-171
+src/training/quality_filter.py                        103    103     0%   7-180
+src/training/stratified_sampler.py                    152    152     0%   14-254
+src/utils/__init__.py                                   0      0   100%
+src/utils/helpers.py                                   32     32     0%   6-63
+src/utils/logging_config.py                            40     40     0%   6-87
+---------------------------------------------------------------------------------
+TOTAL                                               10913  10553     3%
+Coverage XML written to file coverage.xml
+[32m============================== [32m[1m26 passed[0m[32m in 3.96s[0m[32m ==============================[0m

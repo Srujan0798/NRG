@@ -39,6 +39,30 @@ def test_db_health_endpoint_uses_canonical_database(monkeypatch):
     assert payload["researcher_count"] >= 0
 
 
+def test_root_health_uses_canonical_database(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", FakeQdrantClient)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 1, "valid_events": 1, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["database"]["status"] == "healthy"
+    assert payload["database"]["dialect"] == "sqlite"
+    assert payload["database"]["researchers"] == 42
+    assert payload["database"]["publications"] == 100
+
+
 def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
     monkeypatch.setattr(api_main, "QdrantClient", FakeQdrantClient)
     client = TestClient(api_main.app)

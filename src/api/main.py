@@ -690,7 +690,6 @@ async def query_with_langgraph(
 async def health_check():
     from src.skills.rag.retriever import Retriever
     from src.audit import get_chain_health
-    from src.data.database import NRGDatabase
     retriever_health = {"status": "not_checked"}
     db_health = {"status": "unknown"}
     audit_health = {"status": "unknown"}
@@ -708,9 +707,14 @@ async def health_check():
         retriever_health = {"status": "error", "message": str(exc)}
 
     try:
-        db = NRGDatabase()
+        db = _get_db()
         stats = db.get_stats()
-        db_health = {"status": "healthy", "researchers": stats.get("researchers", 0), "publications": stats.get("publications", 0)}
+        db_health = {
+            "status": "healthy",
+            "dialect": getattr(db, "dialect", "unknown"),
+            "researchers": stats.get("researchers", 0),
+            "publications": stats.get("publications", 0),
+        }
     except Exception as exc:
         db_health = {"status": "error", "message": str(exc)}
 
