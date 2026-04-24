@@ -67,3 +67,5 @@ TASKS_COMPLETED.md
 TASK_EXECUTION_STATUS.md
 DASHBOARD_URLS.md
 *.gguf
+.cache/
+coverage.xml
