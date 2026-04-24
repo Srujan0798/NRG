@@ -1,0 +1,146 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-postgres
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+    app.kubernetes.io/component: database
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/backup-mandatory: "true"
+    nrg.gov.in/data-persistence: "critical"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: nrg-postgres
+  strategy:
+    type: Recreate  # StatefulSet requires Recreate, not RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: nrg-postgres
+        version: "16-alpine"
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9187"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: postgres
+          image: "{{ .Values.postgresql.image.repository | default "postgres:16-alpine" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          ports:
+            - name: tcp-postgres
+              containerPort: 5432
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.postgresql.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.postgresql.resources.requests.memory | default "2Gi" }}
+            limits:
+              cpu: {{ .Values.postgresql.resources.limits.cpu | default "2000m" }}
+              memory: {{ .Values.postgresql.resources.limits.memory | default "4Gi" }}
+          env:
+            - name: POSTGRES_USER
+              value: "{{ .Values.postgresql.postgresqlUsername | default "nrg_app" }}"
+            - name: POSTGRES_DB
+              value: "{{ .Values.postgresql.postgresqlDatabase | default "nrg_research" }}"
+            {{- if .Values.vault.agent.enabled }}
+            - name: POSTGRES_PASSWORD_FILE
+              value: /vault/secrets/db_password
+            {{- else }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-postgres-secret
+                  key: password
+            {{- end }}
+          args:
+            - "postgres"
+            - "-c"
+            - "wal_level=logical"
+            - "-c"
+            - "max_connections=200"
+            - "-c"
+            - "shared_buffers=256MB"
+            - "-c"
+            - "max_wal_senders=10"
+            - "-c"
+            - "wal_keep_size=1GB"
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgresql.postgresqlUsername | default "nrg_app" }}"]
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgresql.postgresqlUsername | default "nrg_app" }}"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-run
+              mountPath: /var/run/postgresql
+            - name: tmp
+              mountPath: /tmp
+          {{- if .Values.vault.agent.enabled }}
+        - name: vault-agent
+          image: "{{ .Values.vault.agent.image | default "hashicorp/vault:1.16.0" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          env:
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.address | default "https://vault-internal:8200" }}
+            - name: VAULT_ROLE
+              value: {{ .Values.vault.role | default "nrg-app" }}
+          args:
+            - "agent"
+            - "-log-level=info"
+            - "-exit-on-efficacy"
+            - "-template=/vault/secrets/db_password:{{ secret "secret/data/nrg/database" "postgres_password" }}"
+          volumeMounts:
+            - name: vault-secrets
+              mountPath: /vault/secrets
+          {{- end }}
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: nrg-postgres-data
+        - name: postgres-run
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.vault.agent.enabled }}
+        - name: vault-secrets
+          emptyDir: {}
+        {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-postgres-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+  annotations:
+    nrg.gov.in/backup: mandatory
+    nrg.gov.in/retain: 90days
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.postgresData.size | default "100Gi" }}
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}

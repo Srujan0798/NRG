@@ -1,0 +1,138 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-api
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-api
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/deployment-strategy: blue-green
+    nrg.gov.in/backup-mandatory: "true"
+spec:
+  replicas: {{ .Values.api.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-api
+  {{- if .Values.api.strategy }}
+  strategy:
+    type: {{ .Values.api.strategy }}
+    rollingUpdate:
+      maxSurge: {{ .Values.api.maxSurge | default 1 }}
+      maxUnavailable: {{ .Values.api.maxUnavailable | default 0 }}
+  {{- end }}
+  template:
+    metadata:
+      labels:
+        app: nrg-api
+        version: {{ .Values.image.tag }}
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- if .Values.vault.agent.enabled }}
+        {{- include "nrg.vault.annotations" . | nindent 8 }}
+        {{- end }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 60
+      # Graceful shutdown for in-flight requests
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: api
+          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          imagePullPolicy: {{ .Values.api.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          resources:
+            requests:
+              cpu: {{ .Values.api.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.api.resources.requests.memory | default "1Gi" }}
+            limits:
+              cpu: {{ .Values.api.resources.limits.cpu | default "2000m" }}
+              memory: {{ .Values.api.resources.limits.memory | default "4Gi" }}
+          {{- if .Values.vault.agent.enabled }}
+          # Vault Agent sidecar: secrets mounted from agent, NOT env vars
+          envFrom:
+            - secretRef:
+                name: nrg-vault-secrets
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: {{ .Values.api.livenessProbe.initialDelaySeconds | default 30 }}
+            periodSeconds: {{ .Values.api.livenessProbe.periodSeconds | default 15 }}
+            timeoutSeconds: {{ .Values.api.livenessProbe.timeoutSeconds | default 5 }}
+            failureThreshold: {{ .Values.api.livenessProbe.failureThreshold | default 3 }}
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: {{ .Values.api.readinessProbe.initialDelaySeconds | default 10 }}
+            periodSeconds: {{ .Values.api.readinessProbe.periodSeconds | default 5 }}
+            timeoutSeconds: {{ .Values.api.readinessProbe.timeoutSeconds | default 3 }}
+            failureThreshold: {{ .Values.api.readinessProbe.failureThreshold | default 2 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: run
+              mountPath: /run
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10 && kill -SIGTERM 1"]
+          {{- if .Values.vault.agent.enabled }}
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10 && kill -SIGTERM 1"]
+        - name: vault-agent
+          image: "{{ .Values.vault.agent.image | default "hashicorp/vault:1.16.0" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          env:
+            - name: VAULT_ADDR
+              value: {{ .Values.vault.address | default "https://vault-internal:8200" }}
+            - name: VAULT_ROLE
+              value: {{ .Values.vault.role | default "nrg-app" }}
+            - name: VAULT_AUTH_METHOD
+              value: "kubernetes"
+          args:
+            - "agent"
+            - "-log-level=info"
+            - "-exit-on-efficacy"
+            - "-template=/vault/secrets/secrets.env"
+            - "-template=/vault/secrets/tls.crt"
+            - "-template=/vault/secrets/tls.key"
+          volumeMounts:
+            - name: vault-secrets
+              mountPath: /vault/secrets
+          {{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: run
+          emptyDir: {}
+        {{- if .Values.vault.agent.enabled }}
+        - name: vault-secrets
+          emptyDir: {}
+        {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

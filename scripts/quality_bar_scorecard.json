@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-04-24T01:56:08.194501+00:00",
+  "overall": "4/5",
+  "is_6_6": false,
+  "scores": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C3": "PASS",
+    "C4": "SKIP",
+    "C5": "FAIL",
+    "C6": "PASS"
+  },
+  "results": {
+    "C1": {
+      "name": "DPDP-Compliant Indian PII Detection",
+      "test_file": "tests/security/test_pii_compliance.py",
+      "min_pass_rate": 1.0,
+      "description": "8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 8,
+        "failed": 0,
+        "skipped": 0,
+        "total": 8,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "py                              2      2     0%   3-5\nsrc/skills/rag/embedder.py                            191    191     0%   3-285\nsrc/skills/rag/ingest.py                               68     68     0%   3-121\nsrc/skills/rag/reranker.py                             38     38     0%   3-57\nsrc/skills/rag/retriever.py                           245    245     0%   3-547\nsrc/skills/rag/skill.py                                80     80     0%   3-151\nsrc/skills/text_to_sql/__init__.py                      0      0   100%\nsrc/skills/text_to_sql/sandbox.py                      74     74     0%   3-170\nsrc/skills/text_to_sql/schema_extractor.py            144    144     0%   7-411\nsrc/skills/text_to_sql/schema_sync_check.py           199    199     0%   7-390\nsrc/skills/text_to_sql/skill.py                       555    555     0%   3-1138\nsrc/skills/text_to_sql/sql_examples.py                 29     29     0%   13-340\nsrc/skills/text_to_sql/sql_oracle.py                  155    155     0%   17-326\nsrc/skills/text_to_sql/sqlite_sandbox.py               57     57     0%   3-128\nsrc/skills/text_to_sql/sqlite_schema_extractor.py     120    120     0%   3-418\nsrc/skills/text_to_sql/table_relationships.py          35     35     0%   7-633\nsrc/skills/text_to_sql/validator.py                   136    136     0%   3-329\nsrc/training/__init__.py                                5      5     0%   3-12\nsrc/training/data_collector.py                        164    164     0%   7-375\nsrc/training/data_formatter.py                        121    121     0%   9-250\nsrc/training/export.py                                 80     80     0%   6-173\nsrc/training/quality_filter.py                        111    111     0%   7-190\nsrc/training/stratified_sampler.py                    153    153     0%   14-255\nsrc/utils/__init__.py                                   0      0   100%\nsrc/utils/helpers.py                                   32     32     0%   6-63\nsrc/utils/logging_config.py                            40     40     0%   6-87\n---------------------------------------------------------------------------------\nTOTAL                                               10491  10323     2%\nCoverage XML written to file coverage.xml\n\u001b[32m============================== \u001b[32m\u001b[1m8 passed\u001b[0m\u001b[32m in 10.92s\u001b[0m\u001b[32m ==============================\u001b[0m\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C2": {
+      "name": "Per-User Audit Binding (Non-Repudiation)",
+      "test_file": "tests/security/test_per_user_audit_binding.py",
+      "min_pass_rate": 1.0,
+      "description": "26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 26,
+        "failed": 0,
+        "skipped": 0,
+        "total": 26,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "py                              2      2     0%   3-5\nsrc/skills/rag/embedder.py                            191    191     0%   3-285\nsrc/skills/rag/ingest.py                               68     68     0%   3-121\nsrc/skills/rag/reranker.py                             38     38     0%   3-57\nsrc/skills/rag/retriever.py                           245    245     0%   3-547\nsrc/skills/rag/skill.py                                80     80     0%   3-151\nsrc/skills/text_to_sql/__init__.py                      0      0   100%\nsrc/skills/text_to_sql/sandbox.py                      74     74     0%   3-170\nsrc/skills/text_to_sql/schema_extractor.py            144    144     0%   7-411\nsrc/skills/text_to_sql/schema_sync_check.py           199    199     0%   7-390\nsrc/skills/text_to_sql/skill.py                       555    555     0%   3-1138\nsrc/skills/text_to_sql/sql_examples.py                 29     29     0%   13-340\nsrc/skills/text_to_sql/sql_oracle.py                  155    155     0%   17-326\nsrc/skills/text_to_sql/sqlite_sandbox.py               57     57     0%   3-128\nsrc/skills/text_to_sql/sqlite_schema_extractor.py     120    120     0%   3-418\nsrc/skills/text_to_sql/table_relationships.py          35     35     0%   7-633\nsrc/skills/text_to_sql/validator.py                   136    136     0%   3-329\nsrc/training/__init__.py                                5      5     0%   3-12\nsrc/training/data_collector.py                        164    164     0%   7-375\nsrc/training/data_formatter.py                        121    121     0%   9-250\nsrc/training/export.py                                 80     80     0%   6-173\nsrc/training/quality_filter.py                        111    111     0%   7-190\nsrc/training/stratified_sampler.py                    153    153     0%   14-255\nsrc/utils/__init__.py                                   0      0   100%\nsrc/utils/helpers.py                                   32     32     0%   6-63\nsrc/utils/logging_config.py                            40     40     0%   6-87\n---------------------------------------------------------------------------------\nTOTAL                                               10491  10169     3%\nCoverage XML written to file coverage.xml\n\u001b[32m============================== \u001b[32m\u001b[1m26 passed\u001b[0m\u001b[32m in 2.13s\u001b[0m\u001b[32m ==============================\u001b[0m\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C3": {
+      "name": "Multi-Hop Intent Decomposition (DAG Planner)",
+      "test_file": "tests/orchestration/test_multi_hop_planner.py",
+      "min_pass_rate": 1.0,
+      "description": "24 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 24,
+        "failed": 0,
+        "skipped": 0,
+        "total": 24,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "schema_extractor.py            144    144     0%   7-411\nsrc/skills/text_to_sql/schema_sync_check.py           199    199     0%   7-390\nsrc/skills/text_to_sql/skill.py                       555    305    45%   54-56, 59, 64, 78, 83, 88, 102, 118, 134, 140, 146, 150, 242, 268-275, 289-293, 300-388, 447-501, 520, 530, 532, 534, 536, 538, 540, 542, 544, 546, 548, 550, 552, 554, 556, 560, 564, 596-609, 612, 621-642, 645, 647, 650, 653-654, 656-657, 670, 676-808, 812-861, 868-913, 917-937, 941-951, 955-986, 990-1014, 1041, 1053-1063, 1066-1069, 1076-1087, 1090, 1099, 1107-1111, 1121-1134, 1138\nsrc/skills/text_to_sql/sql_examples.py                 29     24    17%   306-325, 330-340\nsrc/skills/text_to_sql/sql_oracle.py                  155    155     0%   17-326\nsrc/skills/text_to_sql/sqlite_sandbox.py               57     17    70%   25, 32, 43, 65-66, 91-92, 101-110, 114-118, 122-125\nsrc/skills/text_to_sql/sqlite_schema_extractor.py     120     28    77%   144, 155, 162-170, 191, 224, 276-278, 381-389, 400-401, 408-409, 414-418\nsrc/skills/text_to_sql/table_relationships.py          35     35     0%   7-633\nsrc/skills/text_to_sql/validator.py                   136     77    43%   22-23, 31-57, 61-62, 66-68, 72-74, 78-87, 91-98, 102-110, 153, 157, 161, 165, 169, 176-177, 188, 199-208, 215-217, 313-323, 327-329\nsrc/training/__init__.py                                5      5     0%   3-12\nsrc/training/data_collector.py                        164    164     0%   7-375\nsrc/training/data_formatter.py                        121    121     0%   9-250\nsrc/training/export.py                                 80     80     0%   6-173\nsrc/training/quality_filter.py                        111    111     0%   7-190\nsrc/training/stratified_sampler.py                    153    153     0%   14-255\nsrc/utils/__init__.py                                   0      0   100%\nsrc/utils/helpers.py                                   32     32     0%   6-63\nsrc/utils/logging_config.py                            40     40     0%   6-87\n---------------------------------------------------------------------------------\nTOTAL                                               10974   9449    14%\nCoverage XML written to file coverage.xml\n\u001b[32m============================== \u001b[32m\u001b[1m24 passed\u001b[0m\u001b[32m in 7.19s\u001b[0m\u001b[32m ==============================\u001b[0m\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C4": {
+      "name": "Production SLOs (P99 <500ms, \u22651000 concurrent)",
+      "test_file": "tests/performance/test_slo_compliance.py",
+      "min_pass_rate": 0.83,
+      "description": "P99<500ms, \u22651000 concurrent, citation rate >80%, SLO breach detection",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 0,
+        "failed": 0,
+        "skipped": 1,
+        "total": 1,
+        "exit_code": 0,
+        "passed_rate": 0.0,
+        "status": "api_not_running",
+        "note": "Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first."
+      }
+    },
+    "C5": {
+      "name": "Vector Drift Monitoring + Auto-Retrain Trigger",
+      "test_file": "scripts/vector_drift_check.py",
+      "min_pass_rate": 1.0,
+      "description": "Drift check script: cosine shift detection, reindex trigger within 60s",
+      "test_count_attr": "exit_code",
+      "result": {
+        "status": "timeout",
+        "error": "Timeout after 120s",
+        "passed": 0,
+        "total": 1,
+        "passed_rate": 0.0
+      }
+    },
+    "C6": {
+      "name": "Schema Allowlist Before Cloud LLM",
+      "test_file": "tests/security/test_egress_allowlist.py",
+      "min_pass_rate": 1.0,
+      "description": "35 tests: 20+ egress leak attempts blocked, all audit-logged",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "total": 35,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "py                              2      2     0%   3-5\nsrc/skills/rag/embedder.py                            191    191     0%   3-285\nsrc/skills/rag/ingest.py                               68     68     0%   3-121\nsrc/skills/rag/reranker.py                             38     38     0%   3-57\nsrc/skills/rag/retriever.py                           245    245     0%   3-547\nsrc/skills/rag/skill.py                                80     80     0%   3-151\nsrc/skills/text_to_sql/__init__.py                      0      0   100%\nsrc/skills/text_to_sql/sandbox.py                      74     74     0%   3-170\nsrc/skills/text_to_sql/schema_extractor.py            144    144     0%   7-411\nsrc/skills/text_to_sql/schema_sync_check.py           199    199     0%   7-390\nsrc/skills/text_to_sql/skill.py                       555    555     0%   3-1138\nsrc/skills/text_to_sql/sql_examples.py                 29     29     0%   13-340\nsrc/skills/text_to_sql/sql_oracle.py                  155    155     0%   17-326\nsrc/skills/text_to_sql/sqlite_sandbox.py               57     57     0%   3-128\nsrc/skills/text_to_sql/sqlite_schema_extractor.py     120    120     0%   3-418\nsrc/skills/text_to_sql/table_relationships.py          35     35     0%   7-633\nsrc/skills/text_to_sql/validator.py                   136    136     0%   3-329\nsrc/training/__init__.py                                5      5     0%   3-12\nsrc/training/data_collector.py                        164    164     0%   7-375\nsrc/training/data_formatter.py                        121    121     0%   9-250\nsrc/training/export.py                                 80     80     0%   6-173\nsrc/training/quality_filter.py                        111    111     0%   7-190\nsrc/training/stratified_sampler.py                    153    153     0%   14-255\nsrc/utils/__init__.py                                   0      0   100%\nsrc/utils/helpers.py                                   32     32     0%   6-63\nsrc/utils/logging_config.py                            40     40     0%   6-87\n---------------------------------------------------------------------------------\nTOTAL                                               10728  10332     4%\nCoverage XML written to file coverage.xml\n\u001b[32m============================= \u001b[32m\u001b[1m35 passed\u001b[0m\u001b[32m in 10.30s\u001b[0m\u001b[32m ==============================\u001b[0m\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    }
+  }
+}

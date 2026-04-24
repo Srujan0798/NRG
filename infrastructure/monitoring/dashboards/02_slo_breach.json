@@ -1,0 +1,220 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "grafana", "uid": "-- Grafana --"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "title": "SLO Breach Counter",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 6, "w": 8, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [{"expr": "increase(nrg_slo_breach_total{breach_type=\"p99_latency\"}[1h])", "legendFormat": "P99 Breaches (1h)", "refId": "A"}],
+      "title": "P99 Latency Breaches (last hour)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 5}
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 6, "w": 8, "x": 8, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [{"expr": "increase(nrg_slo_breach_total{breach_type=\"p95_latency\"}[1h])", "legendFormat": "P95 Breaches (1h)", "refId": "A"}],
+      "title": "P95 Latency Breaches (last hour)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 1},
+              {"color": "red", "value": 10}
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 6, "w": 8, "x": 16, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [{"expr": "increase(nrg_slo_breach_total[24h])", "legendFormat": "Total Breaches (24h)", "refId": "A"}],
+      "title": "Total SLO Breaches (24h)",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 7},
+      "id": 5,
+      "options": {
+        "legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "none"}
+      },
+      "targets": [
+        {"expr": "increase(nrg_slo_breach_total[5m])", "legendFormat": "{{breach_type}}", "refId": "A"}
+      ],
+      "title": "SLO Breach Rate (per 5min)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "max": 600,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 300},
+              {"color": "red", "value": 500}
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 6, "w": 12, "x": 0, "y": 15},
+      "id": 6,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(nrg_query_duration_seconds_bucket[5m]))",
+          "legendFormat": "Current P99",
+          "refId": "A"
+        }
+      ],
+      "title": "Current P99 vs SLO Target (500ms)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "max": 300,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": null},
+              {"color": "yellow", "value": 200},
+              {"color": "red", "value": 300}
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {"h": 6, "w": 12, "x": 12, "y": 15},
+      "id": 7,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(nrg_query_duration_seconds_bucket[5m]))",
+          "legendFormat": "Current P95",
+          "refId": "A"
+        }
+      ],
+      "title": "Current P95 vs SLO Target (300ms)",
+      "type": "gauge"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["nrg", "slo", "breach"],
+  "templating": {"list": [{"current": {}, "hide": 0, "includeAll": false, "label": "Prometheus", "name": "DS_PROMETHEUS", "options": [], "query": "prometheus", "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"}]},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "NRG — SLO Breach Counter",
+  "uid": "nrg-slo-breach",
+  "version": 1,
+  "weekStart": ""
+}

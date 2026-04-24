@@ -1,0 +1,188 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-postgres-backup
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+    app.kubernetes.io/component: backup
+    nrg.gov.in/backup: mandatory
+spec:
+  schedule: {{ .Values.backup.postgres.schedule | default "0 2 * * *" }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: nrg-postgres-backup
+        spec:
+          serviceAccountName: nrg-sa
+          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: "{{ .Values.postgresql.image.repository | default "postgres:16-alpine" }}"
+              imagePullPolicy: IfNotPresent
+              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  BACKUP_DIR="/backups/$(date +%Y%m%d_%H%M%S)"
+                  S3_ENDPOINT="{{ .Values.backup.s3.endpoint }}"
+                  S3_BUCKET="{{ .Values.backup.s3.bucket }}"
+                  ENCRYPTION_KEY="{{ .Values.vault.secretPath }}/postgres_backup_key"
+
+                  echo "[$(date)] Starting PostgreSQL backup to ${S3_BUCKET}"
+
+                  # Create backup directory
+                  mkdir -p ${BACKUP_DIR}
+
+                  # pg_basebackup — full database backup
+                  pg_basebackup \
+                    -h nrg-postgres \
+                    -U {{ .Values.postgresql.postgresqlUsername | default "nrg_app" }} \
+                    -D ${BACKUP_DIR}/base \
+                    -Ft \
+                    -z \
+                    -P \
+                    -X stream
+
+                  echo "[$(date)] Backup created, encrypting..."
+
+                  # Encrypt with GPG (key from Vault)
+                  tar czf - -C ${BACKUP_DIR} base | \
+                    gpg --batch --yes --encrypt \
+                    --recipient-file /vault/secrets/backup_public.gpg \
+                    --output ${BACKUP_DIR}/backup.tar.gz.gpg
+
+                  echo "[$(date)] Uploading to S3-compatible storage..."
+
+                  # Upload to S3-compatible sovereign storage
+                  curl -X PUT \
+                    -T ${BACKUP_DIR}/backup.tar.gz.gpg \
+                    "${S3_ENDPOINT}/${S3_BUCKET}/postgres/$(basename ${BACKUP_DIR}).tar.gz.gpg"
+
+                  echo "[$(date)] Backup complete"
+
+                  # Cleanup old backups (retention policy)
+                  echo "[$(date)] Applying retention policy..."
+
+                  # List and delete backups older than 90 days
+                  # (implementation depends on S3-compatible storage)
+              env:
+                - name: PGPASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: nrg-postgres-secret
+                      key: password
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+                - name: vault-secrets
+                  mountPath: /vault/secrets
+                  readOnly: true
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: nrg-backup-data
+            - name: vault-secrets
+              emptyDir: {}
+            - name: tmp
+              emptyDir: {}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-qdrant-backup
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-qdrant
+    app.kubernetes.io/component: backup
+    nrg.gov.in/backup: mandatory
+spec:
+  schedule: {{ .Values.backup.qdrant.schedule | default "0 3 * * 0" }}  # Weekly Sunday at 3 AM IST
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app: nrg-qdrant-backup
+        spec:
+          serviceAccountName: nrg-sa
+          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: "curlimages/curl:latest"
+              imagePullPolicy: IfNotPresent
+              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  QDRANT_URL="http://nrg-qdrant:6333"
+                  S3_ENDPOINT="{{ .Values.backup.s3.endpoint }}"
+                  S3_BUCKET="{{ .Values.backup.s3.bucket }}"
+                  SNAPSHOT_NAME="qdrant_snapshot_$(date +%Y%m%d_%H%M%S)"
+
+                  echo "[$(date)] Creating Qdrant snapshot..."
+
+                  # Create snapshot via Qdrant API
+                  RESPONSE=$(curl -s -X POST "${QDRANT_URL}/collections/nrg_research/snapshots")
+
+                  echo "[$(date)] Snapshot created: ${RESPONSE}"
+
+                  # Download and upload to S3
+                  SNAPSHOT_FILENAME=$(echo ${RESPONSE} | jq -r '.result.name')
+                  curl -s "${QDRANT_URL}/collections/nrg_research/snapshots/${SNAPSHOT_FILENAME}/download" \
+                    -o /backups/${SNAPSHOT_FILENAME}
+
+                  echo "[$(date)] Uploading to S3..."
+
+                  curl -X PUT \
+                    -T /backups/${SNAPSHOT_FILENAME} \
+                    "${S3_ENDPOINT}/${S3_BUCKET}/qdrant/${SNAPSHOT_FILENAME}"
+
+                  echo "[$(date)] Qdrant backup complete"
+              volumeMounts:
+                - name: backup-storage
+                  mountPath: /backups
+                - name: tmp
+                  mountPath: /tmp
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: nrg-backup-data
+            - name: tmp
+              emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-backup-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-backup
+    nrg.gov.in/backup-staging: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}

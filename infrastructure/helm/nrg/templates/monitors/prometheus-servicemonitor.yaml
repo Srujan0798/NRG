@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: nrg-api-monitor
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-api
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: nrg-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace | default "nrg-production" }}
+---
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: nrg-postgres-monitor
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: nrg-postgres
+  endpoints:
+    - port: tcp-postgres
+      path: /metrics
+      interval: 15s
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace | default "nrg-production" }}
+---
+apiVersion: v1
+kind: PodMonitor
+metadata:
+  name: nrg-api-pod-monitor
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-api
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: nrg-api
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.namespace | default "nrg-production" }}

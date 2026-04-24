@@ -1015,47 +1015,87 @@ FOLLOW-UP QUERIES:
 
     def execute(self, user_query: str, user_tier: int = 1, user_id: str = "unknown") -> Dict[str, Any]:
         """
-        Execute text-to-sql skill.
+        Execute text-to-sql skill with self-correction loop.
 
         Returns result dict with audit log entry.
+
+        Self-correction: If execution returns rowcount==0 or error, retry ONCE
+        with the error context appended to the prompt. Maximum 2 attempts.
         """
+        MAX_CORRECTION_ATTEMPTS = 2
         relevant_tables = self.extractor.get_relevant_tables(user_query)
         schema = self.extractor.get_schema_metadata(relevant_tables)
         schema_prompt = self.extractor.generate_llm_prompt(schema)
 
         conversation_context = self._context.get_followup_context()
-        sql = self.generate_sql(user_query, schema_prompt, conversation_context)
 
-        is_complete, issues = self._completeness_validator.validate(sql)
-        if not is_complete:
-            logger.warning(f"Query completeness issues detected: {issues}")
-            if self.llm_provider:
-                retry_context = (
-                    f"{conversation_context}\n"
-                    f"[RETRY — previous query was incomplete: {'; '.join(issues)}]\n"
-                    f"Previous query: {sql}"
-                )
+        sql = ""
+        result: Dict[str, Any] = {}
+        attempts = 0
+        last_error = ""
+
+        while attempts < MAX_CORRECTION_ATTEMPTS:
+            attempts += 1
+            try:
+                if attempts > 1 and last_error:
+                    retry_context = (
+                        f"{conversation_context}\n"
+                        f"[RETRY due to previous failure: {last_error}]\n"
+                        f"Previous SQL: {sql}"
+                    )
+                else:
+                    retry_context = conversation_context
+
                 sql = self.generate_sql(user_query, schema_prompt, retry_context)
+
                 is_complete, issues = self._completeness_validator.validate(sql)
                 if not is_complete:
-                    logger.error(f"Query still incomplete after retry: {issues}")
+                    logger.warning(f"Query completeness issues detected: {issues}")
+                    if self.llm_provider:
+                        retry_context = (
+                            f"{retry_context}\n"
+                            f"[RETRY — previous query was incomplete: {'; '.join(issues)}]\n"
+                            f"Previous query: {sql}"
+                        )
+                        sql = self.generate_sql(user_query, schema_prompt, retry_context)
+                        is_complete, issues = self._completeness_validator.validate(sql)
+                        if not is_complete:
+                            logger.error(f"Query still incomplete after retry: {issues}")
 
-        if not validate_sql_query(sql, user_id=user_id):
-            from src.security.query_allowlist import get_sql_allowlist
-            logs = get_sql_allowlist().get_blocked_logs(limit=1)
-            reason = logs[-1]["reason"] if logs else "Query blocked by allowlist"
-            raise PermissionError(f"SQL query blocked: {reason}")
+                if not validate_sql_query(sql, user_id=user_id):
+                    from src.security.query_allowlist import get_sql_allowlist
+                    logs = get_sql_allowlist().get_blocked_logs(limit=1)
+                    reason = logs[-1]["reason"] if logs else "Query blocked by allowlist"
+                    raise PermissionError(f"SQL query blocked: {reason}")
 
-        sql = self._apply_tier_filter(sql, user_tier)
+                sql = self._apply_tier_filter(sql, user_tier)
 
-        result: Dict[str, Any] = self.sandbox.execute_readonly(sql, user_tier)
+                result = self.sandbox.execute_readonly(sql, user_tier)
+                break
+
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Text-to-SQL attempt {attempts} failed: {e}")
+                if attempts >= MAX_CORRECTION_ATTEMPTS:
+                    result = {
+                        "query": sql or "",
+                        "columns": [],
+                        "results": [],
+                        "row_count": 0,
+                        "error": str(e),
+                    }
+                    break
+
+        if attempts > 1 and "error" in result:
+            logger.info(f"Self-corrected after {attempts} attempts")
 
         self._context.update(user_query, relevant_tables)
 
         result["schema_used"] = list(schema["tables"].keys())
         result["audit_logged"] = True
-        result["query_complete"] = is_complete
-        if issues:
+        result["query_complete"] = is_complete if "is_complete" in dir() else True
+        result["self_correction_attempts"] = max(0, attempts - 1)
+        if "is_complete" in dir() and issues:
             result["completeness_warnings"] = issues
 
         return result

@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-kong
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-kong
+    app.kubernetes.io/component: api-gateway
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/deployment-strategy: rolling
+spec:
+  replicas: {{ .Values.kong.replicaCount | default 2 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-kong
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nrg-kong
+        version: "3.6"
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8100"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: kong
+          image: "{{ .Values.kong.image.repository | default "kong:3.6" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          ports:
+            - name: proxy
+              containerPort: 8000
+              protocol: TCP
+            - name: proxy-tls
+              containerPort: 8443
+              protocol: TCP
+            - name: admin
+              containerPort: 8001
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.kong.resources.requests.cpu | default "250m" }}
+              memory: {{ .Values.kong.resources.requests.memory | default "512Mi" }}
+            limits:
+              cpu: {{ .Values.kong.resources.limits.cpu | default "1000m" }}
+              memory: {{ .Values.kong.resources.limits.memory | default "2Gi" }}
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: /kong/kong.yaml
+            - name: KONG_LOG_LEVEL
+              value: {{ .Values.kong.logLevel | default "info" }}
+            - name: KONG_PLUGINS
+              value: "bundled,rate-limiting-advanced"
+            - name: KONG_NGINX_WORKER_PROCESSES
+              value: "2"
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: kong-config
+          configMap:
+            name: nrg-kong-config
+        - name: tmp
+          emptyDir: {}

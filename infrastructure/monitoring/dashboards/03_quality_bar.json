@@ -1,0 +1,356 @@
+{
+  "annotations": {"list": [{"builtIn": 1, "datasource": {"type": "grafana", "uid": "-- Grafana --"}, "enable": true, "hide": true, "iconColor": "rgba(0, 211, 255, 1)", "name": "Annotations & Alerts", "type": "dashboard"}]},
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "id": 1,
+      "title": "Quality Bar Scorecard — 6/6 Hard Constraints",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 0, "y": 1},
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(nrg_query_duration_seconds_bucket[5m])) * 1000 < 500",
+          "legendFormat": "P99 < 500ms",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 1: P99 < 500ms",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 4, "y": 1},
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "rate(nrg_queries_total{status=\"success\"}[5m]) / rate(nrg_queries_total[5m]) > 0.95",
+          "legendFormat": "Success Rate > 95%",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 2: Success Rate > 95%",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 8, "y": 1},
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "nrg_audit_chain_ok == 1",
+          "legendFormat": "Audit Chain Valid",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 3: Audit Chain Valid",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 12, "y": 1},
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "rate(nrg_cache_hits_total[5m]) / (rate(nrg_cache_hits_total[5m]) + rate(nrg_cache_misses_total[5m])) > 0.7",
+          "legendFormat": "Cache Hit Rate > 70%",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 4: Cache Hit Rate > 70%",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 16, "y": 1},
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "nrg_api_up == 1",
+          "legendFormat": "API Up",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 5: API Up",
+      "type": "stat"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [
+            {"options": {"0": {"color": "red", "text": "FAIL"}}, "type": "value"},
+            {"options": {"1": {"color": "green", "text": "PASS"}}, "type": "value"}
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "green", "value": 1}
+            ]
+          }
+        }
+      },
+      "gridPos": {"h": 5, "w": 4, "x": 20, "y": 1},
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "increase(nrg_pii_block_total[24h]) < 10",
+          "legendFormat": "PII Blocks < 10/day",
+          "refId": "A"
+        }
+      ],
+      "title": "Constraint 6: PII Blocks < 10/day",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 6},
+      "id": 8,
+      "title": "Quality Score Over Time",
+      "type": "row"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "thresholds"},
+          "mappings": [],
+          "max": 6,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": null},
+              {"color": "yellow", "value": 4},
+              {"color": "green", "value": 6}
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 7},
+      "id": 9,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "targets": [
+        {
+          "expr": "(histogram_quantile(0.99, rate(nrg_query_duration_seconds_bucket[5m])) * 1000 < 500) + (rate(nrg_queries_total{status=\"success\"}[5m]) / rate(nrg_queries_total[5m]) > 0.95) + (nrg_audit_chain_ok == 1) + (rate(nrg_cache_hits_total[5m]) / (rate(nrg_cache_hits_total[5m]) + rate(nrg_cache_misses_total[5m])) > 0.7) + (nrg_api_up == 1) + (increase(nrg_pii_block_total[24h]) < 10)",
+          "legendFormat": "Quality Score",
+          "refId": "A"
+        }
+      ],
+      "title": "Quality Bar Score (X/6)",
+      "type": "gauge"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {"h": 6, "w": 9, "x": 6, "y": 7},
+      "id": 10,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "none"}
+      },
+      "targets": [
+        {
+          "expr": "rate(nrg_queries_total{status=\"success\"}[5m]) / rate(nrg_queries_total[5m])",
+          "legendFormat": "Success Rate",
+          "refId": "A"
+        }
+      ],
+      "title": "Success Rate Trend",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+      "fieldConfig": {
+        "defaults": {
+          "color": {"mode": "palette-classic"},
+          "custom": {"drawStyle": "line", "fillOpacity": 20, "lineWidth": 2, "pointSize": 5, "showPoints": "never", "spanNulls": true},
+          "mappings": [],
+          "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}]},
+          "unit": "ms"
+        }
+      },
+      "gridPos": {"h": 6, "w": 9, "x": 15, "y": 7},
+      "id": 11,
+      "options": {
+        "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+        "tooltip": {"mode": "multi", "sort": "none"}
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(nrg_query_duration_seconds_bucket[5m])) * 1000",
+          "legendFormat": "P99 Latency (ms)",
+          "refId": "A"
+        }
+      ],
+      "title": "P99 Latency Trend",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["nrg", "quality-bar", "slo"],
+  "templating": {"list": [{"current": {}, "hide": 0, "includeAll": false, "label": "Prometheus", "name": "DS_PROMETHEUS", "options": [], "query": "prometheus", "refresh": 1, "regex": "", "skipUrlSync": false, "type": "datasource"}]},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "NRG — Quality Bar Scorecard (6/6)",
+  "uid": "nrg-quality-bar",
+  "version": 1,
+  "weekStart": ""
+}

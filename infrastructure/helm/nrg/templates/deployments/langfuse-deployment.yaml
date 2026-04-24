@@ -1,0 +1,109 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-langfuse
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-langfuse
+    app.kubernetes.io/component: observability
+    {{ include "nrg.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.langfuse.replicaCount | default 1 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-langfuse
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nrg-langfuse
+        version: "latest"
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: langfuse
+          image: "{{ .Values.langfuse.image.repository | default "langfuse/langfuse:latest" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.langfuse.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.langfuse.resources.requests.memory | default "256Mi" }}
+            limits:
+              cpu: {{ .Values.langfuse.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.langfuse.resources.limits.memory | default "1Gi" }}
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-langfuse-secret
+                  key: database-url
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-langfuse-secret
+                  key: secret-key
+            - name: NEXTAUTH_URL
+              value: {{ .Values.langfuse.publicUrl | default "https://langfuse.nrg.india" }}
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-langfuse-secret
+                  key: nextauth-secret
+          livenessProbe:
+            httpGet:
+              path: /api/public/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/public/health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: langfuse-data
+              mountPath: /app/data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: langfuse-data
+          persistentVolumeClaim:
+            claimName: nrg-langfuse-data
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-langfuse-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-langfuse
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.langfuseData.size | default "20Gi" }}
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}

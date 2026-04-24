@@ -1,0 +1,100 @@
+{{/*
+Vault Agent Configuration for NRG
+
+Vault Agent as sidecar for secret injection.
+No secrets in env vars — all fetched via Vault Agent at startup.
+*/}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nrg-vault-secrets
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    nrg.gov.in/secrets-source: vault
+type: Opaque
+{{/*
+This is a placeholder. In production, Vault Agent creates this secret
+by rendering the template and writing to /vault/secrets/secrets.env.
+The Secret is never created by Helm with actual values — only the
+mount path is configured so Vault Agent can write there.
+*/}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nrg-vault-agent-config
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+data:
+  vault-agent-config.hcl: |
+    # Vault Agent Configuration for NRG
+
+    vault {
+      address = "{{ .Values.vault.address }}"
+      retry {
+        num_attempts = 3
+        backoff = "1s"
+      }
+    }
+
+    auto_auth {
+      method "kubernetes" {
+        config = {
+          role = "{{ .Values.vault.role }}"
+          mount_path = "{{ .Values.vault.authPath }}"
+        }
+      }
+    }
+
+    template {
+      destination = "/vault/secrets/secrets.env"
+      contents = <<-EOF
+      {{- with secret "secret/data/nrg/production" -}}
+      DATABASE_URL=postgresql://{{ .Data.data.db_user }}:{{ .Data.data.db_password }}@{{ .Values.postgresql.host }}:5432/{{ .Values.postgresql.database }}
+      REDIS_URL=redis://{{ .Values.redis.host }}:6379/0
+      QDRANT_HOST={{ .Values.qdrant.host }}
+      QDRANT_PORT={{ .Values.qdrant.port }}
+      JWT_SECRET={{ .Data.data.jwt_secret }}
+      API_ENCRYPTION_KEY={{ .Data.data.api_encryption_key }}
+      LANGFUSE_SECRET_KEY={{ .Data.data.langfuse_secret_key }}
+      LANGFUSE_PUBLIC_KEY={{ .Data.data.langfuse_public_key }}
+      {{- end }}
+      EOF
+    }
+
+    template {
+      destination = "/vault/secrets/tls.crt"
+      contents = <<-EOF
+      {{- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -}}
+      {{ .Data.certificate }}
+      {{ end }}
+      EOF
+    }
+
+    template {
+      destination = "/vault/secrets/tls.key"
+      contents = <<-EOF
+      {{- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -}}
+      {{ .Data.private_key }}
+      {{ end }}
+      EOF
+    }
+
+    template {
+      destination = "/vault/secrets/db_password"
+      contents = <<-EOF
+      {{- with secret "secret/data/nrg/database" -}}
+      {{ .Data.data.postgres_password }}
+      {{- end }}
+      EOF
+    }
+
+    exec {
+      command = ["/bin/sh", "-c", "sleep 5 && kill -SIGTERM 1"]
+      shutdown_timeout = "30s"
+    }
+
+    # Exit on efficacy — if secrets can't be fetched, pod shouldn't start
+    exit_on_error = true

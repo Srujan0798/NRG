@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-redis
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-redis
+    app.kubernetes.io/component: cache
+    {{ include "nrg.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: nrg-redis
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nrg-redis
+        version: "7-alpine"
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "6379"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository | default "redis:7-alpine" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          ports:
+            - name: tcp-redis
+              containerPort: 6379
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.redis.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.redis.resources.requests.memory | default "256Mi" }}
+            limits:
+              cpu: {{ .Values.redis.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.redis.resources.limits.memory | default "1Gi" }}
+          command:
+            - redis-server
+            - "--appendonly"
+            - "yes"
+            - "--maxmemory"
+            {{ .Values.redis.config.maxmemory | default "512mb" | quote }}
+            - "--maxmemory-policy"
+            - {{ .Values.redis.config.maxmemory-policy | default "allkeys-lru" | quote }}
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "--raw", "incr", "healthcheck"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "--raw", "incr", "healthcheck"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: nrg-redis-data
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-redis-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.redisData.size | default "10Gi" }}
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}

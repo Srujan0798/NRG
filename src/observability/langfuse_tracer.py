@@ -34,8 +34,8 @@ def _init_langfuse() -> Any:
         public_key = os.getenv("LANGFUSE_PUBLIC_KEY", "")
         secret_key = os.getenv("LANGFUSE_SECRET_KEY", "")
         host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
-        
-        if public_key and secret_key:
+
+        if public_key and secret_key and host:
             _client = Langfuse(public_key=public_key, secret_key=secret_key, host=host)
             logger.info("Langfuse initialized: %s (sampling_rate=%.2f)", host, _sampling_rate)
         else:

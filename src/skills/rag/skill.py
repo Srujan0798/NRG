@@ -58,7 +58,10 @@ class RAGSkill:
             query_vector = self.embedder.embed_single(query)
 
             results: Dict[str, Any] = self.retriever.retrieve(
-                query_vector=query_vector, user_tier=user_tier, top_k=top_k
+                query_vector=query_vector,
+                user_tier=user_tier,
+                top_k=top_k,
+                query_text=query,
             )
 
             chunks = results.get("chunks", [])

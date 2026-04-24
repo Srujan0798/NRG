@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-qdrant
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-qdrant
+    app.kubernetes.io/component: vector-database
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/backup-mandatory: "true"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: nrg-qdrant
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nrg-qdrant
+        version: "v1.12.0"
+        {{ include "nrg.labels" . | nindent 8 }}
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "6333"
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: qdrant
+          image: "{{ .Values.qdrant.image.repository | default "qdrant/qdrant:v1.12.0" }}"
+          imagePullPolicy: IfNotPresent
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          ports:
+            - name: http
+              containerPort: 6333
+              protocol: TCP
+            - name: grpc
+              containerPort: 6334
+              protocol: TCP
+          resources:
+            requests:
+              cpu: {{ .Values.qdrant.resources.requests.cpu | default "500m" }}
+              memory: {{ .Values.qdrant.resources.requests.memory | default "2Gi" }}
+            limits:
+              cpu: {{ .Values.qdrant.resources.limits.cpu | default "2000m" }}
+              memory: {{ .Values.qdrant.resources.limits.memory | default "4Gi" }}
+          livenessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: qdrant-storage
+              mountPath: /qdrant/storage
+            - name: tmp
+              mountPath: /tmp
+          args:
+            - "--persistence"
+            - "/qdrant/storage"
+            - "--log-level=INFO"
+      volumes:
+        - name: qdrant-storage
+          persistentVolumeClaim:
+            claimName: nrg-qdrant-data
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-qdrant-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-qdrant
+  annotations:
+    nrg.gov.in/backup: mandatory
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.persistence.qdrantStorage.size | default "50Gi" }}
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}

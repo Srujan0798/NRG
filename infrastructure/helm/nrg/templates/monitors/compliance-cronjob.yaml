@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-compliance-audit-log
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    app.kubernetes.io/component: compliance
+    nrg.gov.in/compliance: mandatory
+    nrg.gov.in/standard: SOC2
+spec:
+  schedule: "0 * * * *"  # Every hour
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 24
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: nrg-compliance-audit-log
+        spec:
+          serviceAccountName: nrg-sa
+          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          restartPolicy: OnFailure
+          containers:
+            - name: audit
+              image: "curlimages/curl:latest"
+              imagePullPolicy: IfNotPresent
+              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date)] Compliance audit log collection started"
+
+                  # Collect kubectl access logs
+                  echo "=== kubectl access in last hour ===" >> /compliance/compliance.log
+                  kubectl get events --namespace={{ .Values.namespace | default "nrg-production" }} \
+                    --field-selector involvedObject.kind=Pod,reason=Started \
+                    --sort-by='.lastTimestamp' >> /compliance/compliance.log 2>&1 || true
+
+                  # Collect secret access events
+                  echo "=== Secret access events ===" >> /compliance/compliance.log
+                  kubectl get events --namespace={{ .Values.namespace | default "nrg-production" }} \
+                    --field-selector reason=SecretsAccessed \
+                    --sort-by='.lastTimestamp' >> /compliance/compliance.log 2>&1 || true
+
+                  # Collect Vault unseal events (via Vault API)
+                  echo "=== Vault unseal events ===" >> /compliance/compliance.log
+                  # Note: In production, use proper Vault client with mTLS
+                  curl -sf -H "X-Vault-Token: ${VAULT_TOKEN}" \
+                    {{ .Values.vault.address }}/v1/sys/metrics 2>/dev/null >> /compliance/vault_metrics.log || true
+
+                  # Collect Pod creation/deletion events
+                  echo "=== Pod lifecycle events ===" >> /compliance/compliance.log
+                  kubectl get events --namespace={{ .Values.namespace | default "nrg-production" }} \
+                    --field-selector reason=Scheduled \
+                    --sort-by='.lastTimestamp' >> /compliance/compliance.log 2>&1 || true
+
+                  # Upload compliance log to S3
+                  curl -X PUT \
+                    -T /compliance/compliance.log \
+                    "{{ .Values.backup.s3.endpoint }}/{{ .Values.backup.s3.bucket }}/compliance/$(date +%Y%m%d-%H%M%S)-compliance.log"
+
+                  echo "[$(date)] Compliance log uploaded"
+
+              volumeMounts:
+                - name: compliance-data
+                  mountPath: /compliance
+          volumes:
+            - name: compliance-data
+              persistentVolumeClaim:
+                claimName: nrg-compliance-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-compliance-data
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-compliance
+    nrg.gov.in/compliance: mandatory
+    nrg.gov.in/retain: 365days
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}
