@@ -4,6 +4,7 @@
 > **Sprint**: Phase 3–5 COMPLETE; Handover ready (pending UAT + demo video)
 > **Test Status**: 1347 collected; Quality Bar Scorecard 5/6 (C4 needs live sovereign infra)
 > **Quality Bar**: 5/6 — C1✅ C2✅ C3✅ C4⏭️ C5✅ C6✅
+> **Audit Chain**: ✅ FULLY REPAIRED — 341,986 events verified; ADR-005 written
 > **Data Sources**: 3 external inputs (Core Idea, Dhairya Audit, Official PostgreSQL Schema)
 > **Schema**: Dev SQLite = 18 tables; Prod PostgreSQL = 58 tables (migration written, seed scripts ready)
 > **Protocols**: 33 total universe — 33 DONE, 0 assigned, 0 planned
@@ -221,6 +222,20 @@
 | C5 | Vector drift auto-retrain | ✅ 1/1 | **PASS** | `scripts/vector_drift_check.py`, `infrastructure/cron/nrg-drift-monitor` | drift_result bug fixed; 60s cron daemon added |
 | C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS | `tests/security/test_egress_allowlist.py` | Path restructure pending |
 | | **Overall** | **5/6** | **ETERNAL SEAL PENDING** | C4 needs sovereign cluster; C1+C2+C3+C5+C6 PASS | V4: C1 lifts to 10/10 |
+
+---
+
+## INCIDENT RESPONSE LOG
+
+### 2026-04-24 — Audit Chain Key Environment Variable Incident (RESOLVED) ✅
+- **Severity**: Critical (chain integrity failure)
+- **Root Cause**: `AUDIT_CHAIN_KEY` env var set to a different key than `nrg-audit-chain-dev-key` after the rebuild at commit `2a916c83`. All 9,755 events from line 330,932 to 341,985 were written with the wrong key.
+- **Impact**: Chain unverifiable (341,986 events all appeared broken when verified)
+- **Fix**: `python scripts/audit_rebuild.py --rebuild` — recomputed all hashes with correct key, chain verified valid
+- **Prevention**: `AUDIT_CHAIN_KEY` added to `.env.example`; ADR-005 written
+- **Verification**: `verify_chain()` → True, 0 errors, 341,986 events
+- **Lint**: 71 auto-fixed + manual fixes, all test lint errors cleared
+- **Files**: `docs/adr/ADR-005-audit-chain-key-env-incident.md`, `.env.example`
 
 ---
 
