@@ -92,3 +92,26 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         assert "user_id" in call
     finally:
         ConsentService.has_consent = original_has_consent
+
+
+def test_query_endpoint_accepts_question_alias(monkeypatch):
+    stub_workflow = StubWorkflow()
+    monkeypatch.setattr(api_main, "workflow", stub_workflow)
+    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-hash-123")
+
+    from src.services.consent import ConsentService
+    original_has_consent = ConsentService.has_consent
+    ConsentService.has_consent = lambda self, uid, scope: True
+
+    try:
+        client = TestClient(api_main.app)
+        response = client.post(
+            "/query",
+            json={"question": "Top 5 funding agencies by total grant amount"},
+            headers=_auth_headers(client),
+        )
+
+        assert response.status_code == 200
+        assert stub_workflow.calls[0]["query"] == "Top 5 funding agencies by total grant amount"
+    finally:
+        ConsentService.has_consent = original_has_consent
