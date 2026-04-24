@@ -1,5 +1,4 @@
 import React from 'react'
-import { motion } from 'framer-motion'
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -164,23 +163,21 @@ const barWidths = {
   security: '100%',
 }
 
-const StatusPill = ({ status }: { status: Status }) => {
+const StatusPill = React.memo(function StatusPill({ status }: { status: Status }) {
   const style = statusStyles[status]
   return (
     <span className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-bold tracking-wide ${style.bg} ${style.border} ${style.text}`}>
       {style.label}
     </span>
   )
-}
+})
 
-const MetricTile = ({ metric, index }: { metric: MetricCard; index: number }) => {
+const MetricTile = React.memo(function MetricTile({ metric, index }: { metric: MetricCard; index: number }) {
   const style = statusStyles[metric.status]
   return (
-    <motion.article
-      className={`relative min-h-[148px] rounded-lg border bg-white p-4 shadow-sm ${style.border}`}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.045, duration: 0.35 }}
+    <article
+      className={`relative min-h-[148px] rounded-lg border bg-white p-4 shadow-sm opacity-0 animate-fade-in-up ${style.border}`}
+      style={{ animationDelay: `${index * 45}ms` }}
       data-testid={`founder-metric-${metric.label.toLowerCase().replace(/\s+/g, '-')}`}
     >
       <div className={`absolute left-0 top-0 h-full w-1 rounded-l-lg ${style.bar}`} />
@@ -198,9 +195,9 @@ const MetricTile = ({ metric, index }: { metric: MetricCard; index: number }) =>
         </div>
         <p className="mt-2 text-sm text-stone-600">{metric.delta}</p>
       </div>
-    </motion.article>
+    </article>
   )
-}
+})
 
 const ProgressRow = ({ label, width, status }: { label: string; width: string; status: Status }) => (
   <div>
