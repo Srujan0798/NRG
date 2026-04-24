@@ -28,14 +28,13 @@ _lock = threading.Lock()
 
 _parallel_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread_name_prefix="executor")
 
+_executor_shutdown = False
+
 def _shutdown_executor():
     """Clean shutdown of executor thread pool."""
-    global _parallel_executor
+    global _parallel_executor, _executor_shutdown
     _parallel_executor.shutdown(wait=False)
-    try:
-        logger.info("Executor thread pool shut down")
-    except ValueError:
-        pass
+    _executor_shutdown = True
 
 atexit.register(_shutdown_executor)
 

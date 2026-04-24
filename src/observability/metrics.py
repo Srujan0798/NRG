@@ -363,6 +363,17 @@ class MetricsCollector:
 
 
 # ── SLO Metrics ────────────────────────────────────────────────────────────────
+nrg_slo_breach_total = Counter(
+    'nrg_slo_breach_total',
+    'Total SLO breach events',
+    ['breach_type']
+)
+
+
+def record_slo_breach(breach_type: str):
+    """Record an SLO breach event."""
+    nrg_slo_breach_total.labels(breach_type=breach_type).inc()
+
 
 class SLOTracker:
     """In-process SLO tracker with breach alerting.
@@ -402,6 +413,7 @@ class SLOTracker:
         self._active_concurrency = 0
         self._max_concurrency = 0
         self._p95_breach_start: float | None = None
+        self._consecutive_p99_breaches = 0
         self._citation_rate_breach_start: float | None = None
         self._drift_score: float | None = None
         self._uptime_seconds = 0.0
@@ -418,6 +430,7 @@ class SLOTracker:
             if len(self._latencies) > self._max_samples:
                 self._latencies.pop(0)
             self._check_p95_breach(latency_ms)
+            self._check_p99_breach(latency_ms)
 
     def record_citation(self, has_citation: bool, synthesis_method: str):
         """Record citation presence and synthesis method."""
@@ -459,7 +472,7 @@ class SLOTracker:
             self._drift_score = score
 
     def _check_p95_breach(self, latency_ms: float):
-        """Log CRITICAL if P95 > 8s for 5 consecutive minutes."""
+        """Log CRITICAL if P95 > 300ms for 5 consecutive minutes."""
         import logging as _logging
         logger = _logging.getLogger(__name__)
         if latency_ms > self.SLO_P95_MS:
@@ -471,9 +484,27 @@ class SLOTracker:
                     "Current latency: %.1fms. SLO target: P95 < %dms",
                     self.SLO_P95_MS, latency_ms, self.SLO_P95_MS
                 )
+                record_slo_breach("p95_latency")
                 self._p95_breach_start = None
         else:
             self._p95_breach_start = None
+
+    def _check_p99_breach(self, latency_ms: float):
+        """Log CRITICAL if P99 > 500ms for 5 consecutive requests."""
+        import logging as _logging
+        logger = _logging.getLogger(__name__)
+        if latency_ms > self.SLO_P99_MS:
+            self._consecutive_p99_breaches += 1
+            if self._consecutive_p99_breaches >= 5:
+                logger.critical(
+                    "SLO BREACH: P99 latency > %dms (5 consecutive breaches). "
+                    "Current latency: %.1fms. SLO target: P99 < %dms",
+                    self.SLO_P99_MS, latency_ms, self.SLO_P99_MS
+                )
+                record_slo_breach("p99_latency")
+                self._consecutive_p99_breaches = 0
+        else:
+            self._consecutive_p99_breaches = 0
 
     def _check_citation_breach(self):
         """Log WARNING if citation rate < 50% for 1 hour."""

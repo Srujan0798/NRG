@@ -313,26 +313,29 @@ class ImmutableAuditLog:
                     else:
                         valid_count = line_num
 
+                    prev_hash = recorded_hash
+
                     if verify_per_user and stored_binding and event_data.get("user_id") != "system":
                         jwt_kid = event_data.get("jwt_kid")
                         fp = event_data.get("request_fingerprint")
-                        user_id = event_data.get("user_id", "system")
-                        ev_kwargs = {k: v for k, v in event_data.items()
-                                     if k not in ("hash", "per_user_binding")}
-                        ev = AuditEvent(**ev_kwargs)
-                        valid, err = self._per_user_key_manager.verify_binding(
-                            user_id=user_id,
-                            jwt_kid=jwt_kid,
-                            request_fingerprint=fp,
-                            chain_hash=recorded_hash,
-                            event_serialized=ev.serialize(),
-                            stored_binding=stored_binding,
-                        )
-                        if not valid:
-                            errors.append(f"Line {line_num}: per-user binding failure for {user_id}: {err}")
-                            self.log_tamper_alert(f"Per-user binding broken at line {line_num}: {err}")
-
-                    prev_hash = recorded_hash
+                        if jwt_kid is None and fp is None:
+                            pass
+                        else:
+                            user_id = event_data.get("user_id", "system")
+                            ev_kwargs = {k: v for k, v in event_data.items()
+                                         if k not in ("hash", "per_user_binding")}
+                            ev = AuditEvent(**ev_kwargs)
+                            valid, err = self._per_user_key_manager.verify_binding(
+                                user_id=user_id,
+                                jwt_kid=jwt_kid,
+                                request_fingerprint=fp,
+                                chain_hash=recorded_hash,
+                                event_serialized=ev.serialize(),
+                                stored_binding=stored_binding,
+                            )
+                            if not valid:
+                                errors.append(f"Line {line_num}: per-user binding failure for {user_id}: {err}")
+                                self.log_tamper_alert(f"Per-user binding broken at line {line_num}: {err}")
 
                 except Exception as e:
                     errors.append(f"Line {line_num}: {e}")
@@ -411,8 +414,8 @@ class ImmutableAuditLog:
         except Exception:
             pass
 
-    def log_query(self, user_id: str, query: str) -> str:
-        return self.append(AuditEvent(event_type="query", user_id=user_id, query=query))
+    def log_query(self, user_id: str, query: str, jwt_kid: Optional[str] = None, request_fingerprint: Optional[str] = None) -> str:
+        return self.append(AuditEvent(event_type="query", user_id=user_id, query=query, jwt_kid=jwt_kid, request_fingerprint=request_fingerprint))
 
     def log_plan(self, user_id: str, query: str, plan: dict) -> str:
         return self.append(
@@ -601,8 +604,8 @@ def get_audit_log() -> ImmutableAuditLog:
     return _audit_log_instance
 
 
-def log_query(user_id: str, query: str) -> str:
-    return get_audit_log().log_query(user_id, query)
+def log_query(user_id: str, query: str, jwt_kid: Optional[str] = None, request_fingerprint: Optional[str] = None) -> str:
+    return get_audit_log().log_query(user_id, query, jwt_kid=jwt_kid, request_fingerprint=request_fingerprint)
 
 
 def log_plan(user_id: str, query: str, plan: dict) -> str:

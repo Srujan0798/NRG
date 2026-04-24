@@ -595,8 +595,11 @@ async def query_with_langgraph(
 
         query_start = time.time()
 
+        jwt_kid = token_payload.get("kid")
+        request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
+
         try:
-            audit_log_query(user_id, request.query)
+            audit_log_query(user_id, request.query, jwt_kid=jwt_kid, request_fingerprint=request_fp)
         except Exception:
             logger.warning("Audit log_query failed at API layer", exc_info=True)
 

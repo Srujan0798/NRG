@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, ValidationError
 from src.audit import log_llm_call, log_plan
 from src.config.llm_config import get_llm_client
 from src.observability.langfuse_tracer import trace_llm_call
+from src.security.egress.schema_allowlist_loader import get_allowlist
 from src.skills.text_to_sql.sqlite_schema_extractor import SQLiteSchemaExtractor
 
 logger = logging.getLogger(__name__)
@@ -145,7 +146,37 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
     skills = _determine_skills(query_lower)
     output_shape = _determine_output_shape(query_lower)
 
+    multi_hop_indicators = ["compare", "versus", "vs", "both", "and", "gap", "difference", "between", "synthesis", "integrate"]
+    true_comparison_indicators = ["compare", "versus", "vs", "difference", "between"]
     if len(subqueries) <= 1:
+        is_multi_hop = any(ind in query_lower for ind in multi_hop_indicators)
+        is_true_comparison = any(ind in query_lower for ind in true_comparison_indicators)
+        if is_multi_hop and len(subqueries) == 1:
+            root_id = f"node_{uuid.uuid4().hex[:6]}"
+            sq = subqueries[0]
+            dag_nodes = [{"id": root_id, "subquery": sq, "skill": skills[0] if skills else "sql", "depends_on": [], "tables": tables, "output_shape": output_shape, "optional": False}]
+            if is_true_comparison:
+                comparands = _extract_comparison_entities(query_lower)
+                for entity in comparands:
+                    entity_node_id = f"node_{uuid.uuid4().hex[:6]}"
+                    dag_nodes.append({
+                        "id": entity_node_id,
+                        "subquery": f"Query for {entity}: {sq}",
+                        "skill": skills[0] if skills else "sql",
+                        "depends_on": [root_id],
+                        "tables": tables,
+                        "output_shape": output_shape,
+                        "optional": False,
+                    })
+            return {
+                "subqueries": subqueries,
+                "schema_tables": tables,
+                "desired_skills": skills,
+                "expected_output_shape": output_shape,
+                "dag_nodes": dag_nodes,
+                "dag_root_id": root_id,
+                "is_dag": len(dag_nodes) > 1,
+            }
         root_id = f"node_{uuid.uuid4().hex[:6]}"
         dag_nodes = [
             {
@@ -170,12 +201,14 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
         }
 
     multi_hop_indicators = ["compare", "versus", "vs", "both", "and", "gap", "difference", "between", "synthesis", "integrate"]
-    is_comparison = any(ind in query_lower for ind in multi_hop_indicators)
+    true_comparison_indicators = ["compare", "versus", "vs", "difference", "between"]
+    is_multi_hop = any(ind in query_lower for ind in multi_hop_indicators)
+    is_true_comparison = any(ind in query_lower for ind in true_comparison_indicators)
 
     root_id = f"node_{uuid.uuid4().hex[:6]}"
     dag_nodes = []
 
-    if is_comparison:
+    if is_true_comparison:
         for i, sq in enumerate(subqueries):
             node_id = f"node_{uuid.uuid4().hex[:6]}"
             dag_nodes.append({
@@ -282,6 +315,28 @@ def _determine_output_shape(query_lower: str) -> str:
     return "mixed_summary"
 
 
+def _extract_comparison_entities(query_lower: str) -> list[str]:
+    """Extract named entities being compared (states, institutions, etc)."""
+    known_entities = [
+        "gujarat", "karnataka", "maharashtra", "tamil nadu", "kerala",
+        "delhi", "mumbai", "bangalore", "chennai", "hyderabad",
+        "iit bombay", "iit delhi", "iit madras", "iit kanpur",
+        "india", "usa", "china",
+    ]
+    found = []
+    for entity in known_entities:
+        if entity in query_lower:
+            found.append(entity)
+    if not found:
+        parts = re.split(r'\s+(?:and|vs|versus|compare|with)\s+', query_lower)
+        if len(parts) >= 2:
+            for part in parts[1:]:
+                cleaned = re.sub(r'\s+', ' ', part).strip()
+                if len(cleaned) > 2:
+                    found.append(cleaned[:30])
+    return found[:3]
+
+
 def _build_schema_prompt(user_query: str) -> str:
     extractor = SQLiteSchemaExtractor()
     try:
@@ -341,24 +396,9 @@ _SCHEMA_ALLOWLIST = None
 
 
 def _get_schema_allowlist() -> set:
-    """Get cached schema allowlist."""
-    global _SCHEMA_ALLOWLIST
-    if _SCHEMA_ALLOWLIST is None:
-        _SCHEMA_ALLOWLIST = {
-            # Core tables
-            "researchers", "publications", "institutions", "labs",
-            "funding_records", "projects", "patents", "collaborations",
-            "research_documents", "keywords",
-            # Junction tables
-            "researcher_publications", "researcher_labs", "publication_keywords",
-            # Common columns (minimal exposure)
-            "researcher_id", "name", "email", "state", "research_area",
-            "institution_id", "publication_id", "title", "year", "authors",
-            "lab_id", "funding_id", "amount", "source",
-            # Aggregate columns
-            "count", "total", "h_index", "citation_count",
-        }
-    return _SCHEMA_ALLOWLIST
+    """Get cached schema allowlist from YAML loader."""
+    allowlist = get_allowlist()
+    return allowlist.get_allowed_tables()
 
 
 def _filter_schema_prompt(schema_prompt: str, allowlist: set) -> str:

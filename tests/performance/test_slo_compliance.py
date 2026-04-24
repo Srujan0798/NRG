@@ -12,16 +12,20 @@ SKILLS USED: /performance (SLO definition, latency measurement, load testing)
 """
 
 import os
+import platform
 import pytest
 import time
 import statistics
 import threading
 import sys
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 SLO_ENV = os.environ.get("SLO_ENV", "prod")
+_is_macos = platform.system() == "Darwin"
+_concurrency = 100 if _is_macos else 1000
 
 from fastapi.testclient import TestClient
 import src.api.main as api_main
@@ -138,12 +142,13 @@ class TestQueryLatencySLO:
     """
     PHASE 1 FORTIFY: Verify query latency SLOs.
 
-    SLO: P50 < 3s, P95 < 8s, P99 < 15s
+    Quality Bar targets (from .claude/QUALITY_BAR.md):
+    P99 < 500ms, P95 < 300ms, P50 < 100ms for analytical queries
     """
 
     @pytest.mark.timeout(120)
-    def test_p50_latency_under_3_seconds(self, client):
-        """P50 latency must be under 3 seconds (target)."""
+    def test_p50_latency_under_100ms(self, client):
+        """P50 latency must be under 100ms (Quality Bar target)."""
         token = _login(client)
 
         warmup = client.post(
@@ -166,11 +171,11 @@ class TestQueryLatencySLO:
             latencies.append(elapsed * 1000)
 
         p50_ms = statistics.median(latencies)
-        assert p50_ms < 3000, f"P50 latency {p50_ms:.0f}ms exceeds 3000ms target"
+        assert p50_ms < 100, f"P50 latency {p50_ms:.0f}ms exceeds 100ms Quality Bar target"
 
     @pytest.mark.timeout(120)
-    def test_p95_latency_under_8_seconds(self, client):
-        """P95 latency must be under 8 seconds across 10 queries."""
+    def test_p95_latency_under_300ms(self, client):
+        """P95 latency must be under 300ms (Quality Bar target)."""
         token = _login(client)
 
         latencies = []
@@ -190,11 +195,11 @@ class TestQueryLatencySLO:
         else:
             p95_ms = sorted(latencies)[int(len(latencies) * 0.95)]
 
-        assert p95_ms < 8000, f"P95 latency {p95_ms:.0f}ms exceeds 8000ms SLO target"
+        assert p95_ms < 300, f"P95 latency {p95_ms:.0f}ms exceeds 300ms Quality Bar target"
 
     @pytest.mark.timeout(120)
-    def test_p99_latency_under_15_seconds(self, client):
-        """P99 latency must be under 15 seconds."""
+    def test_p99_latency_under_500ms(self, client):
+        """P99 latency must be under 500ms (Quality Bar target)."""
         token = _login(client)
 
         latencies = []
@@ -214,7 +219,7 @@ class TestQueryLatencySLO:
         else:
             p99_ms = sorted(latencies)[int(len(latencies) * 0.99)]
 
-        assert p99_ms < 15000, f"P99 latency {p99_ms:.0f}ms exceeds 15000ms SLO target"
+        assert p99_ms < 500, f"P99 latency {p99_ms:.0f}ms exceeds 500ms Quality Bar target"
 
 
 @pytest.mark.skipif(SLO_ENV == "dev", reason="SLO thresholds not enforceable in dev (set SLO_ENV=prod to run)")
@@ -222,12 +227,12 @@ class TestConcurrencySLO:
     """
     PHASE 1 FORTIFY: Verify concurrency SLO.
 
-    SLO: 20 simultaneous queries without failures
+    Quality Bar target: ≥1000 concurrent users without degradation
     """
 
-    @pytest.mark.timeout(60)
-    def test_20_concurrent_queries_no_failures(self, client):
-        """System must handle 20 concurrent queries without any failures."""
+    @pytest.mark.timeout(300)
+    def test_1000_concurrent_no_degradation(self, client):
+        """System must handle 1000 concurrent queries without failures."""
         token = _login(client)
 
         results = []
@@ -245,26 +250,19 @@ class TestConcurrencySLO:
                 errors.append(str(e))
                 return None
 
-        threads = []
-        for i in range(20):
-            t = threading.Thread(target=lambda idx=i: results.append(make_query(idx)))
-            threads.append(t)
-
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
+        with ThreadPoolExecutor(max_workers=_concurrency) as executor:
+            futures = [executor.submit(make_query, i) for i in range(1000)]
+            results = [f.result() for f in as_completed(futures)]
 
         assert len(errors) == 0, f"Thread errors: {errors}"
         success_count = sum(1 for r in results if r == 200)
-        assert success_count == 20, f"Only {success_count}/20 queries succeeded"
+        assert success_count == 1000, f"Only {success_count}/1000 queries succeeded"
 
-    @pytest.mark.timeout(60)
+    @pytest.mark.timeout(300)
+    @pytest.mark.skipif(_is_macos, reason="P99 latency test requires Linux-scale threading resources")
     def test_concurrent_latency_within_p99(self, client):
-        """20 concurrent queries must all complete within P99 threshold."""
+        """1000 concurrent queries must all complete within P99 threshold."""
         token = _login(client)
-
-        results = []
 
         def make_query_timed(i: int):
             start = time.time()
@@ -276,21 +274,15 @@ class TestConcurrencySLO:
             elapsed = time.time() - start
             return response.status_code, elapsed
 
-        threads = []
-        for i in range(20):
-            t = threading.Thread(target=lambda idx=i: results.append(make_query_timed(idx)))
-            threads.append(t)
-
-        for t in threads:
-            t.start()
-        for t in threads:
-            t.join()
+        with ThreadPoolExecutor(max_workers=_concurrency) as executor:
+            futures = [executor.submit(make_query_timed, i) for i in range(1000)]
+            results = [f.result() for f in as_completed(futures)]
 
         successful_latencies = [lat for status, lat in results if status == 200]
-        assert len(successful_latencies) == 20, f"Only {len(successful_latencies)}/20 succeeded"
+        assert len(successful_latencies) == 1000, f"Only {len(successful_latencies)}/1000 succeeded"
 
         max_latency = max(successful_latencies)
-        assert max_latency < 15.0, f"Max latency {max_latency:.2f}s exceeds P99 threshold of 15s"
+        assert max_latency < 0.5, f"Max latency {max_latency:.2f}s exceeds P99 threshold of 500ms"
 
     @pytest.mark.timeout(60)
     def test_all_tiers_concurrent(self, client):
@@ -450,3 +442,37 @@ class TestHealthCheckSLO:
         elapsed = time.time() - start
         assert response.status_code == 200
         assert elapsed < 10.0, f"Health check took {elapsed:.2f}s (target: < 10s)"
+
+
+class TestSLOBreachDetection:
+    """
+    Verify SLOTracker logs CRITICAL on 5 consecutive P99 breaches.
+    Acceptance criterion from Quality Bar Constraint #4.
+    """
+
+    def test_slo_breach_detection_logs_critical(self, caplog):
+        """SLOTracker must log CRITICAL when 5 consecutive P99 breaches occur."""
+        import logging
+        from src.observability.metrics import SLOTracker
+
+        caplog.set_level(logging.CRITICAL)
+
+        tracker = SLOTracker()
+        for _ in range(5):
+            tracker.record_latency(600.0)
+
+        p99_breach_logs = [r.message for r in caplog.records if "P99" in r.message]
+        assert len(p99_breach_logs) > 0, f"Expected P99 breach CRITICAL log, got records: {caplog.records}"
+
+    def test_slo_breach_counter_incremented(self, monkeypatch):
+        """SLOTracker must increment breach counter on 5 consecutive P99 breaches."""
+        from src.observability.metrics import SLOTracker, nrg_slo_breach_total
+
+        breach_count_before = nrg_slo_breach_total.labels(breach_type="p99_latency")._value.get()
+
+        tracker = SLOTracker()
+        for _ in range(5):
+            tracker.record_latency(600.0)
+
+        breach_count_after = nrg_slo_breach_total.labels(breach_type="p99_latency")._value.get()
+        assert breach_count_after > breach_count_before, "Breach counter should increment on P99 breach"
