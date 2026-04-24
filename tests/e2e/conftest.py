@@ -41,7 +41,7 @@ class FakeCloudLLMClient:
     def __init__(self):
         pass
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None) -> str:
         if "Tier 2" in system_prompt or "government" in system_prompt.lower():
             return (
                 "Government Tier Aggregate: 42 researchers across 8 states. "
@@ -73,7 +73,7 @@ class FakeLocalLLMClient:
 
     model = "mock-local"
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None) -> str:
         return "Local LLM response [cite:structured:0]."
 
     def generate_streaming(self, system_prompt: str, user_prompt: str, conversation_history: list):
@@ -90,7 +90,7 @@ class FakeLLMMesh:
         self._cloud = cloud_client
         self._local = local_client
 
-    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None, complexity: str = None) -> str:
         conversation_history = conversation_history or []
         return self._cloud.generate(system_prompt, user_prompt, conversation_history)
 
