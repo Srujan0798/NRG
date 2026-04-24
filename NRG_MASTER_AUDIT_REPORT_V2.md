@@ -557,4 +557,4 @@ Committed: `5aa46a54` ("fix: CostGuard bug fixes + 44 passing tests + trivial qu
 | 08_llm_cost.json dashboard | ✅ Created | 11 panels: monthly spend gauge, per-provider cost timeseries, per-persona, query count by complexity, threshold alerts |
 | llm_cost_report.py | ✅ Created | Weekly markdown report with persona/provider/complexity breakdown |
 | test_cost_guard.py | ✅ 44/44 PASS | Budget status, check_budget enforcement, provider routing, cost estimation, daily digest, record_cost |
-| Known gap | ⚠️ | complexity_classifier not wired into orchestration graph — synthesizer defaults to complexity="moderate" |
+| complexity_classifier wiring | ✅ Wired | commit `955be7e8` — router_node calls get_complexity_for_routing(), result stored in NRGState.complexity, synthesizer uses it for CostGuard routing. 4 new tests passing (TestRouterComplexityClassification). |
