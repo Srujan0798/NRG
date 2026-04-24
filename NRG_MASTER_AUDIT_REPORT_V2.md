@@ -252,11 +252,22 @@ $ pytest tests/benchmarks/test_dhairya_regression.py -v
 
 | Blocker | Why It Blocks | Action Required |
 |---------|--------------|----------------|
-| C4 load test | Cannot simulate 1000 concurrent locally | `locust --users 1000 --run-time 5m` on K8s |
+| C4 load test | Cannot simulate 1000 concurrent locally | **Ready to run on K8s:**
+```bash
+# Inside Kubernetes pod:
+locust -f tests/load/locustfile_c4.py \
+  --headless \
+  --users 1000 \
+  --spawn-rate 100 \
+  --run-time 5m \
+  --host http://localhost:8000 \
+  --html /tmp/c4_report.html
+```
+**SLO:** P99 < 500ms | **Locustfile:** `tests/load/locustfile_c4.py` |
 | `alembic upgrade head` | Migration verified on Docker PostgreSQL 2026-04-24 — 45 tables, all FKs correct | ✅ FIXED |
 | Chain seal + attestation | Requires live system + external auditor | UAT sessions |
 | Demo video | Requires live sovereign staging | Film ≤3min on cluster |
-| UAT sessions | Requires professor, ministry, industry partner | Schedule + conduct sessions |
+| UAT sessions | Requires professor, ministry, industry partner | Email templates at `docs/uat/UAT_SCHEDULING_TEMPLATES.md` |
 | `disaster_recovery.sh` timed dry-run | Cannot test backup/recovery without cluster | Run timed dry-run on staging |
 
 **No fake blockers.** Every item above genuinely requires live cluster or external participants.
