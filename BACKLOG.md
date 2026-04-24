@@ -1,15 +1,26 @@
 # NRG — Task Backlog
 
-> **Updated**: 2026-04-24
-> **Sprint**: Phase 3–5 COMPLETE; Handover ready (pending UAT + demo video)
-> **Test Status**: 1347 collected; Quality Bar Scorecard 5/6 (C4 needs live sovereign infra)
-> **Quality Bar**: 5/6 — C1✅ C2✅ C3✅ C4⏭️ C5✅ C6✅
-> **Audit Chain**: ✅ FULLY REPAIRED — 341,986 events verified; ADR-005 written
+> **Updated**: 2026-04-25
+> **Sprint**: Phase 3–5 verification in progress; not UAT-ready until blockers below close
+> **Test Status**: Targeted suites pass; full `pytest tests/` run was interrupted at 39% after >7 minutes during this verification
+> **Quality Bar**: Scorecard reports 5/5 scored with C4⏭️, but direct vector drift quality is CRITICAL (0.015 vs SLO 0.85)
+> **Audit Chain**: ❌ Local `/health` reports `chain_valid=false`; chain repair cannot be claimed complete
 > **Data Sources**: 3 external inputs (Core Idea, Dhairya Audit, Official PostgreSQL Schema)
-> **Schema**: Dev SQLite = 18 tables; Prod PostgreSQL = 58 tables (migration written, seed scripts ready)
-> **Protocols**: 33 total universe — 33 DONE, 0 assigned, 0 planned
+> **Schema**: `db_struct.sql` has 58 tables; `add_production_tables_001.py` creates 47 tables and omits 11 Django/support tables
+> **Protocols**: Verification reopened multiple DONE claims; see "2026-04-25 Verification Corrections"
 
 ---
+
+## 2026-04-25 Verification Corrections
+
+These entries supersede earlier DONE claims until the linked evidence is clean.
+
+- **API live proof FIXED-AND-VERIFIED**: `/auth/login` now aliases `/login`, and `/query` accepts legacy `question` payloads. Evidence: `tests/api/test_auth_api.py::test_auth_login_alias_returns_access_and_refresh_tokens`, `tests/api/test_langgraph_api.py::test_query_endpoint_accepts_question_alias` both pass.
+- **Query proof fields FIXED-AND-VERIFIED**: `/query` responses include `audit_event_id`, `sql_query`, and `sql_results`; live curl returned SQL for "Top 5 funding agencies by total grant amount" with five result rows.
+- **Vector drift runtime FIXED-AND-VERIFIED, quality still BLOCKED**: Fixed Qdrant `ScoredPoint.score` crash and skipped slow cosine pass on already-critical benchmark drift. Tests: `tests/skills/test_rag_embedder_retriever.py::TestRetriever::test_retriever_records_qdrant_scored_point_score` and `tests/observability/test_vector_drift.py` pass. Direct drift score remains `0.015`, so retrieval quality is not production-ready.
+- **Schema bridge PARTIAL**: Migration creates 47 tables, not 58. Missing from migration: `auth_group`, `auth_group_permissions`, `auth_permission`, `auth_user`, `auth_user_groups`, `auth_user_user_permissions`, `django_admin_log`, `django_content_type`, `django_migrations`, `django_session`, `user_registration_old`. `tests/data/test_schema_parity.py` result: 7 passed, 4 skipped.
+- **Audit chain BLOCKED**: Live `/health` reports `audit.chain_valid=false`. Do not claim C2 operational chain health until local and staging verification return true.
+- **System health BLOCKED**: Live `/health` reports `database.status=error` because `NRGDatabase` has no `get_stats` method.
 
 ## PHASE 3 CLOSE — ALL COMPLETE ✅
 
@@ -24,10 +35,10 @@
 
 ### 21. THE SCHEMA BRIDGE — 58-Table PostgreSQL Integration ✅
 - **Agent**: backend + database + devops
-- **Status**: DONE
+- **Status**: PARTIAL — verification reopened 2026-04-25
 - **Priority**: P0-blocker
-- **Summary**: Alembic migration `add_production_tables_001.py` written (40 missing tables), `scripts/seed_production_tables.py` (10 rows each), `scripts/schema_sync.py` CLI, schema-parity test suite (8 tests), DATA_INTAKE_PROTOCOL.md.
-- **Note**: Requires live PostgreSQL staging to run `alembic upgrade head`
+- **Summary**: Alembic migration exists, but verification counted 47 `op.create_table(...)` calls vs 58 tables in `db_struct.sql`; 11 Django/support tables are missing. Schema-parity local result: 7 passed, 4 skipped.
+- **Note**: Requires migration parity fix plus live PostgreSQL staging to run `alembic upgrade head`
 - **Depends on**: none
 - **Files**: alembic/versions/add_production_tables_001.py, scripts/seed_production_tables.py, scripts/schema_sync.py, tests/data/test_schema_parity.py, docs/DATA_INTAKE_PROTOCOL.md
 
@@ -50,9 +61,9 @@
 
 ### 12. THE LIVING PIPELINE — Observability + Data Ingestion ✅
 - **Agent**: backend + devops
-- **Status**: DONE
+- **Status**: FIXED-AND-VERIFIED for vector drift runtime; BLOCKED for retrieval quality
 - **Priority**: P1-hardening
-- **Summary**: PagerDuty integration (CRITICAL alerts on 5-consecutive P99 breach), Langfuse lazy-init (no crash when keys absent), 7 Grafana dashboards (latency, SLO, QB scorecard, vector drift, RBAC denial, audit chain, cache hit), /api/reindex endpoint for drift-triggered reindex, bge-reranker-v2-m3 integrated into RAG path.
+- **Summary**: PagerDuty integration (CRITICAL alerts on 5-consecutive P99 breach), Langfuse lazy-init (no crash when keys absent), 7 Grafana dashboards (latency, SLO, QB scorecard, vector drift, RBAC denial, audit chain, cache hit), /api/reindex endpoint for drift-triggered reindex, bge-reranker-v2-m3 integrated into RAG path. Runtime crash in vector drift check fixed, but direct drift quality remains CRITICAL (`0.015` vs SLO `0.85`).
 - **Dashboards**: infrastructure/monitoring/dashboards/01_latency_p99.json through 07_cache_hit_rate.json
 - **Depends on**: #19, #43 (sovereign deploy)
 - **Files**: src/observability/pagerduty.py, src/observability/tracing.py, src/api/main.py, scripts/vector_drift_check.py
@@ -83,14 +94,14 @@
 
 ### 35. THE NON-REPUDIATION LOCK — Per-User Audit Binding ✅
 - **Quality Bar**: C2 ✅ (26/26 tests passing)
-- **Summary**: HMAC chain + per-user derived keys + JWT kid + request fingerprint + API/DB co-sign
+- **Summary**: HMAC chain + per-user derived keys + JWT kid + request fingerprint + API/DB co-sign. Unit tests pass, but operational `/health` currently reports `chain_valid=false`; production readiness remains blocked until chain repair verifies true.
 
 ### 36. THE TEMPORAL POLICY — Time-Window RBAC ✅
 - **Quality Bar**: RBAC extension
 - **Summary**: visibility_window per policy, row-level temporal filtering
 
 ### 37. THE MULTI-HOP PLANNER — DAG Decomposition ✅
-- **Quality Bar**: C3 ✅ (24/24 tests passing)
+- **Quality Bar**: C3 ✅ (28/28 tests passing)
 - **Summary**: DAG planner + topological executor + parent→child context passing
 
 ### 38. THE COMPLEXITY ROUTER — LLM Pool Match ✅
@@ -104,9 +115,9 @@
 - **Summary**: StratifiedSampler by tier × route × query_type × grade
 
 ### 41. THE QUALITY BAR INTEGRATION VALIDATION — 2/6 → 5/6 ✅
-- **Status**: DONE (5/6)
-- **Quality Bar**: C1✅ C2✅ C3✅ C4⏭️ C5✅ C6✅
-- **Summary**: quality_bar_scorecard.py, CI CD gate, docs/ops/QUALITY_BAR_SCORECARD_2026-Q2.md
+- **Status**: PARTIAL (5/5 scored, 6/6 not compliant)
+- **Quality Bar**: C1✅ C2✅ C3✅ C4⏭️ C5✅ C6✅, with C5 mechanism passing but direct retrieval quality CRITICAL
+- **Summary**: quality_bar_scorecard.py, CI CD gate, docs/ops/QUALITY_BAR_SCORECARD_2026-Q2.md. Current scorecard result: `RESULT: 5/5 — NOT FULLY COMPLIANT`.
 - **C4 pending**: Requires live API on sovereign cluster (load test infrastructure)
 - **Files**: scripts/quality_bar_scorecard.py, scripts/quality_bar_scorecard.json, .github/workflows/cd.yml, docs/ops/QUALITY_BAR_SCORECARD_2026-Q2.md
 
@@ -187,6 +198,93 @@
 | **V4-NEW** | **43** | **THE SOVEREIGN LANDING** | **✅ DONE** |
 | **V4-NEW** | **44** | **THE HANDOVER PACKAGE** | **✅ DONE** |
 | **Eternal** | **45** | **THE ETERNAL SEAL** | **⏸️ PENDING (7 items on sovereign cluster)** |
+
+---
+
+## WORKFLOW EVOLUTION — PHASE 0 (Guru System Hardening) ✅
+
+> **Completed:** 2026-04-25
+> **Owner:** Guru (Kimi)
+> **Reason:** Founder identified that the agentic workflow itself needed evolution before project continuation. These are system-level foundations — too critical to delegate to agents.
+
+### WE.1 — P0 Battle Stations Protocol ✅
+- **File:** `.claude/rules/emergency.md`
+- **What:** Fast-track incident response for production-down, security breach, audit corruption, PII leak. Guru assigns one senior agent. 30-min checkpoints. Rollback protocol. Post-incident doc mandatory. Founder ALWAYS notified for P0.
+- **Status:** Spec complete. Implementation: rule file active.
+
+### WE.2 — Agent Failure Escalation Ladder ✅
+- **File:** `.claude/rules/escalation.md`
+- **What:** 4-level escalation: Level 1 (agent self-correct), Level 2 (mentor intervention), Level 3 (Guru root cause analysis), Level 4 (systemic failure → /self-evolve). All failures logged in `.claude/memory/agent_failures.md`. Classification: skill gap, knowledge gap, protocol flaw, system bug, env issue, scope creep.
+- **Status:** Spec complete. Implementation: rule file active.
+
+### WE.3 — Founder Absence Delegation Matrix ✅
+- **File:** `.claude/rules/delegation.md`
+- **What:** Pre-approved decision categories (skill creation, test fixes, dependency upgrades, docs, performance, internal refactors) vs Founder-sync-required (architecture, schema, security, RBAC, LLM mesh, cost >80%, deployment). Veto protocol: Founder can veto any delegated decision within 48h. Target veto rate <10%.
+- **Status:** Spec complete. Implementation: rule file active.
+
+### WE.4 — Auto Self-Evolve Triggers ✅
+- **File:** `.claude/GURU_PROTOCOL.md` Section 8
+- **What:** `/self-evolve` no longer sprint-end-only. Auto-triggers on: test failure spike >10%, repeated agent failure, Quality Bar regression, new external data source, new vulnerability class, P0 incident resolution, high veto rate, cost threshold breach.
+- **Status:** Integrated into GURU_PROTOCOL.md.
+
+### WE.5 — Cost-Aware LLM Routing & Budget Governance ✅
+- **File:** `.claude/rules/cost_governance.md` (spec) + `PROTOCOL_WE5_COSTGUARD.md` (agent protocol)
+- **What:** 6-provider mesh cost tiers (Local SLM free → Claude Sonnet ₹15K/1M tokens). Per-query cost caps (trivial ₹0 → critical ₹500). Monthly budget ₹5L with 70%/85%/95% thresholds. Auto-fallback to local SLM at >85%. Weekly cost report. Sovereign queries (gov tier) always route through Indian providers regardless of cost.
+- **Status:** **DONE — committed 2026-04-25** (`5aa46a54`)
+- **Agent:** backend
+- **Protocol:** `PROTOCOL_WE5_COSTGUARD.md`
+- **Key fixes (2026-04-25):**
+  - Fix critical threshold: trivial queries (rule-based, no LLM cost) now exempt from blocking at 85% budget
+  - Synthesizer: pass actual estimated_cost to check_budget (was always 0), track actual_provider per path
+  - log_cost_decision() added to audit/__init__.py
+  - llm_cost_log_001 migration created in src/migrations/versions/
+  - 44 passing tests in tests/config/test_cost_guard.py
+- **Known gap:** complexity_classifier not yet wired into orchestration graph — synthesizer defaults to complexity="moderate". Requires graph surgery to add complexity classifier node.
+- **Files:** src/config/llm_config.py (CostGuard class), src/orchestration/nodes/synthesizer.py (_synthesize), src/audit/__init__.py (log_cost_decision), src/migrations/versions/llm_cost_log_001.py, tests/config/test_cost_guard.py, .claude/rules/cost_budget.yaml, scripts/llm_cost_report.py, infrastructure/monitoring/dashboards/08_llm_cost.json
+
+### WE.6 — Data Quality Drift Monitoring 🔄 ASSIGNED
+- **File:** `.claude/rules/data_quality.md` (spec) + `PROTOCOL_WE6_DATAQUALITY.md` (agent protocol)
+- **What:** 7 pillars: schema coverage (58 vs 18 tables), referential integrity (>99%), null rate (<5%), freshness (<7 days), completeness (>1000 rows/core table), consistency (cross-table validation), PII sanitization (zero tolerance in non-PII tables). Weekly scorecard auto-generated. P0 on PII leak or integrity <90%.
+- **Status:** **ASSIGNED TO BACKEND + DATABASE AGENT** — Implementation in progress
+- **Agent:** backend + database
+- **Protocol:** `PROTOCOL_WE6_DATAQUALITY.md`
+
+### WE.7 — Contract Testing for 6-Node Pipeline 🔄 ASSIGNED
+- **File:** `.claude/rules/contract_testing.md` (spec) + `PROTOCOL_WE7_CONTRACTTEST.md` (agent protocol)
+- **What:** Every node publishes input/output contract (JSON Schema). Downstream nodes test against contract. 5 inter-node contracts. SemVer versioning. Major bumps trigger integration test re-run. Producer + consumer tests for each edge. `scripts/validate_contracts.py` blocks broken contracts in CI.
+- **Status:** **ASSIGNED TO BACKEND + TESTING AGENT** — Implementation in progress
+- **Agent:** backend + testing
+- **Protocol:** `PROTOCOL_WE7_CONTRACTTEST.md`
+
+---
+
+## HANDOVER PREPARATION — LOCAL ARTIFACTS COMPLETE ✅
+
+> Completed locally 2026-04-25. These artifacts prepare handover execution. They do not claim live UAT, C4 SLO, or final demo-video evidence until those are run on the sovereign staging environment.
+
+| # | Task | Status | Protocol | Evidence / Files |
+|---|---|---|---|---|
+| A | UAT Test Scripts (T1/T2/T3) | DONE — scripts + runner | `PROTOCOL_UAT_TEST_SCRIPTS.md` | `docs/uat/UAT_SCRIPT_T1_RESEARCHER.md`, `docs/uat/UAT_SCRIPT_T2_GOVERNMENT.md`, `docs/uat/UAT_SCRIPT_T3_INDUSTRY.md`, `docs/uat/UAT_ORCHESTRATION_GUIDE.md`, `scripts/uat_run_session.py`, `evidence/03_uat_t*.md` |
+| B | Demo Video Storyboard | DONE — storyboard + demo mode + capture helper | `PROTOCOL_DEMO_VIDEO_STORYBOARD.md` | `docs/demo/DEMO_STORYBOARD.md`, `docs/demo/DEMO_SCRIPT.md`, `frontend/src/demo/DemoMode.tsx`, `scripts/record_demo.py`, `evidence/04_demo.sha256` |
+| C | C4 Load Test Config | DONE — harness ready; live gate pending | `PROTOCOL_C4_LOAD_TEST.md` | `tests/load/locustfile.py`, `scripts/load_test_run.py`, `tests/load/test_slo_compliance.py`, `infrastructure/monitoring/dashboards/10_load_test.json`, `docs/ops/LOAD_TEST_REPORT_TEMPLATE.md`, `evidence/02_load_report.md` |
+| D | Full System Audit | DONE — audit automation ready | `PROTOCOL_SYSTEM_AUDIT.md` | `scripts/security_audit_full.py`, `scripts/test_suite_full.py`, `scripts/docs_sync_check.py`, `docs/ops/AUDIT_REPORT_2026-04-25.md`, `.claude/memory/audit_findings.md` |
+| E | Sprint Plan Endgame #29–34 | DONE — roadmap package | `PROTOCOL_SPRINT_PLAN_ENDGAME.md` | `docs/roadmap/ENDGAME_SPRINT_PLAN.md`, `docs/roadmap/PHASE_6_LIVE_COLLECTION.md`, `docs/roadmap/PHASE_7_BASE_MODEL.md`, `docs/roadmap/PHASE_8_RL_LOOP.md`, `docs/roadmap/PHASE_9_TWO_BRAIN.md`, `docs/roadmap/PHASE_10_SERVING.md`, `docs/roadmap/PHASE_11_RETRAINING.md` |
+
+---
+
+## CRITICAL BLOCKERS — MUST FIX BEFORE NEXT SESSION
+
+> Discovered during Guru verification 2026-04-25. These are P0/P1.
+
+| # | Issue | Severity | Owner | Action |
+|---|---|---|---|---|
+| B1 | Audit chain broken (350748–368091 events) | 🔴 P0 | DevOps Agent | `python scripts/audit_rebuild.py --rebuild` |
+| B2 | API not running (`/health` unavailable) | 🔴 P0 | Backend Agent | Start API, fix `NRGDatabase.get_stats` |
+| B3 | PII compliance test >60s timeout | 🟡 P1 | Backend Agent | Optimize regex or split to nightly |
+| B4 | Full test suite >60s timeout (1485 tests) | 🟡 P1 | Testing Agent | Add pytest-xdist, mark slow tests |
+| B5 | Quality bar scorecard timeout | 🟡 P1 | Backend Agent | Profile and optimize |
+| B6 | Schema migration: 47 tables vs 58 in db_struct.sql | 🟡 P1 | Database Agent | Update migration, add missing 11 tables |
+| B7 | Query latency >9s (SLO <3s) | 🟡 P1 | Backend Agent | Profile `/query` path, optimize synthesis |
 
 ---
 
