@@ -89,8 +89,112 @@ BENCHMARK_QUERIES = [
 DRIFT_SCORE_SLO = 0.85
 DRIFT_SCORE_WARNING = 0.60
 DRIFT_SCORE_CRITICAL = 0.40
-
+COSINE_SHIFT_THRESHOLD = 0.05
 BENCHMARK_CACHE_FILE = Path(__file__).parent.parent / ".cache" / "drift_benchmark.json"
+REFERENCE_CENTROIDS_FILE = Path(__file__).parent.parent / ".cache" / "reference_centroids.json"
+
+
+def _load_reference_centroids() -> dict[str, list[float]]:
+    """Load cached reference centroids from disk."""
+    if not REFERENCE_CENTROIDS_FILE.exists():
+        return {}
+    try:
+        return json.loads(REFERENCE_CENTROIDS_FILE.read_text())
+    except Exception:
+        return {}
+
+
+def _save_reference_centroids(data: dict[str, list[float]]):
+    """Persist reference centroids after computing from fresh indexing."""
+    REFERENCE_CENTROIDS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    REFERENCE_CENTROIDS_FILE.write_text(json.dumps(data, indent=2))
+
+
+def _compute_centroids(retriever: Retriever, embedder) -> dict[str, list[float]]:
+    """Compute current mean vectors for each benchmark topic cluster."""
+    centroids: dict[str, list[float]] = {}
+    for bench in BENCHMARK_QUERIES:
+        topic = bench["expected_topics"][0] if bench["expected_topics"] else bench["query"][:30]
+        try:
+            query_vector = embedder.embed_single(bench["query"])
+            result = retriever.retrieve(query_vector=query_vector, user_tier=1, top_k=5)
+            chunks = result.get("chunks", [])
+            if chunks:
+                chunk_vectors = [embedder.embed_single(c) for c in chunks]
+                n = len(chunk_vectors)
+                centroid = [sum(v[i] for v in chunk_vectors) / n for i in range(len(chunk_vectors[0]))]
+                import math
+                norm = math.sqrt(sum(v * v for v in centroid))
+                centroid = [v / norm for v in centroid]
+                centroids[topic] = centroid
+        except Exception:
+            pass
+    return centroids
+
+
+def _cosine_shift(current: list[float], reference: list[float]) -> float:
+    """Compute cosine distance between two vectors. 0=identical, 1=opposite."""
+    import math
+    dot = sum(a * b for a, b in zip(current, reference))
+    norm_a = math.sqrt(sum(a * a for a in current))
+    norm_b = math.sqrt(sum(b * b for b in reference))
+    if norm_a == 0 or norm_b == 0:
+        return 0.0
+    return 0.5 * (1.0 - dot / (norm_a * norm_b))
+
+
+def _check_cosine_shift(drift_result: dict, retriever: Retriever, embedder) -> dict:
+    """Check cosine shift against reference centroids and trigger reindex if needed."""
+    reference = _load_reference_centroids()
+    if not reference:
+        current = _compute_centroids(retriever, embedder)
+        _save_reference_centroids(current)
+        return {"status": "baseline_established", "reindex_triggered": False}
+
+    current = _compute_centroids(retriever, embedder)
+    max_shift = 0.0
+    shifting_topics = []
+    for topic, ref_vec in reference.items():
+        if topic in current:
+            shift = _cosine_shift(current[topic], ref_vec)
+            if shift > COSINE_SHIFT_THRESHOLD:
+                shifting_topics.append(topic)
+                max_shift = max(max_shift, shift)
+
+    if shifting_topics:
+        return {
+            "status": "cosine_shift_detected",
+            "max_shift": round(max_shift, 4),
+            "shifting_topics": shifting_topics,
+            "reindex_triggered": True,
+        }
+    return {"status": "stable", "max_shift": round(max_shift, 4), "reindex_triggered": False}
+
+
+def _trigger_reindex(drift_result: dict, reindex_info: dict):
+    """POST to /api/reindex when drift or cosine shift is critical."""
+    import httpx
+    reindex_url = os.getenv("NRG_API_URL", "http://localhost:8000") + "/api/reindex"
+    token = os.getenv("NRG_SERVICE_TOKEN", os.getenv("INTERNAL_SERVICE_TOKEN", ""))
+    if not token:
+        logger.warning("No service token for reindex trigger - skipping POST")
+        return
+
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    payload = {
+        "reason": f"vector_drift:{drift_result['alert_level']}",
+        "drift_score": drift_result["drift_score"],
+        "cosine_shift": reindex_info.get("max_shift", 0),
+        "shifting_topics": reindex_info.get("shifting_topics", []),
+    }
+    try:
+        resp = httpx.post(reindex_url, json=payload, headers=headers, timeout=15)
+        if resp.status_code in (200, 201, 202):
+            logger.info("Reindex triggered successfully: %s", resp.json())
+        else:
+            logger.warning("Reindex trigger failed: %d %s", resp.status_code, resp.text)
+    except Exception as e:
+        logger.warning("Failed to POST /api/reindex: %s", e)
 
 
 def _load_benchmark_cache() -> dict:
@@ -228,6 +332,19 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
         logger.info("DRIFT OK: Score %.3f >= %.3f SLO target", avg_score, DRIFT_SCORE_SLO)
 
     _save_benchmark_cache(results)
+
+    try:
+        from src.skills.rag.embedder import Embedder
+        embedder = Embedder()
+        try:
+            cosine_info = _check_cosine_shift(drift_result, retriever, embedder)
+            drift_result["cosine_shift"] = cosine_info
+            if cosine_info.get("reindex_triggered"):
+                _trigger_reindex(drift_result, cosine_info)
+        finally:
+            embedder.close()
+    except Exception as e:
+        logger.warning("Cosine shift check failed: %s", e)
 
     return {
         "drift_score": round(avg_score, 3),

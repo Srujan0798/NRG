@@ -1,0 +1,229 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nrg-api-netpol
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-api
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/policy-type: egress-control
+    nrg.gov.in/sovereign-network: "true"
+spec:
+  podSelector:
+    matchLabels:
+      app: nrg-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-kong
+      ports:
+        - protocol: TCP
+          port: 8000
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    # PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+    # Qdrant HTTP
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-qdrant
+      ports:
+        - protocol: TCP
+          port: 6333
+    # Qdrant gRPC
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-qdrant
+      ports:
+        - protocol: TCP
+          port: 6334
+    # Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    # Kong
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-kong
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8443
+    # Langfuse
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-langfuse
+      ports:
+        - protocol: TCP
+          port: 3000
+    # Allowlisted LLM hosts ONLY
+    {{- range .Values.egressAllowlist }}
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+      # Note: This is a simplified egress rule. In production,
+      # use CIDR notation or DNS-based policies for the allowlist
+    {{- end }}
+    # DNS (required for service discovery)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/name: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nrg-postgres-netpol
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+spec:
+  podSelector:
+    matchLabels:
+      app: nrg-postgres
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-api
+      ports:
+        - protocol: TCP
+          port: 5432
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-kong
+      ports:
+        - protocol: TCP
+          port: 5432
+  egress: []  # No internet egress — data sovereignty
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nrg-qdrant-netpol
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-qdrant
+spec:
+  podSelector:
+    matchLabels:
+      app: nrg-qdrant
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-api
+      ports:
+        - protocol: TCP
+          port: 6333
+        - protocol: TCP
+          port: 6334
+  egress: []  # No internet egress — data sovereignty
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nrg-redis-netpol
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-redis
+spec:
+  podSelector:
+    matchLabels:
+      app: nrg-redis
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-api
+      ports:
+        - protocol: TCP
+          port: 6379
+    - from:
+        - podSelector:
+            matchLabels:
+              app: nrg-kong
+      ports:
+        - protocol: TCP
+          port: 6379
+  egress: []  # No internet egress — data sovereignty
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: nrg-kong-netpol
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-kong
+spec:
+  podSelector:
+    matchLabels:
+      app: nrg-kong
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector: {}  # External ingress via ingress controller
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8443
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: nrg-api
+      ports:
+        - protocol: TCP
+          port: 8000
+    # Allowlisted LLM hosts for DLP scanning
+    {{- range .Values.egressAllowlist }}
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+    {{- end }}

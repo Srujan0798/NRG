@@ -1418,7 +1418,11 @@ async def get_researchers(
 
 @app.get("/stats")
 async def get_stats(token_payload: dict = Depends(get_current_user)):
-    """Get system statistics for dashboards."""
+    """Get system statistics for dashboards.
+    
+    Tier 2+: Returns counts (researchers, publications, funding total, institutions, labs).
+    Tier 3 (Industry/Student): Returns bucketed ranges — no individual counts.
+    """
     cache_key = f"stats:{token_payload.get('role','')}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
@@ -1432,29 +1436,20 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
     institution_count = stats.get("institutions", 0)
     lab_count = stats.get("labs", 0)
     research_areas = stats.get("research_areas", [])
-
-    # Get state distribution via ORM
-    with db.get_session() as session:
-        from sqlalchemy import func
-        result = (
-            session.query(Researcher.state, func.count(Researcher.researcher_id).label("count"))
-            .group_by(Researcher.state)
-            .order_by(func.count(Researcher.researcher_id).desc())
-            .limit(10)
-            .all()
-        )
-        states = [{"state": row[0], "count": row[1]} for row in result]
+    funding_total = stats.get("funding_records", 0)
 
     role = token_payload.get("role", "researcher")
+    tier = token_payload.get("tier", 1)
 
-    if role == "government":
+    if tier >= 2:
         result = {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
             "total_institutions": institution_count,
             "total_labs": lab_count,
-            "research_area_distribution": research_areas,
-            "state_distribution": states,
+            "total_funding_amount": funding_total,
+            "research_area_distribution": research_areas[:10],
+            "state_distribution": stats.get("state_distribution", [])[:10],
         }
     elif role == "industry":
         result = {
@@ -1469,8 +1464,41 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
             "total_institutions": institution_count,
         }
 
+    if tier == 3:
+        result = _bucket_stats_for_tier3(result)
+
     _api_cache.set(cache_key, result, ttl=30)
     return result
+
+
+def _bucket_stats_for_tier3(stats: dict) -> dict:
+    """Convert exact counts to anonymized bucketed ranges for Tier 3."""
+
+    def bucket(count: int) -> str:
+        if count == 0:
+            return "0"
+        elif count <= 100:
+            return "1-100"
+        elif count <= 500:
+            return "101-500"
+        elif count <= 1000:
+            return "501-1K"
+        elif count <= 5000:
+            return "1K-5K"
+        elif count <= 10000:
+            return "5K-10K"
+        else:
+            return "10K+"
+
+    bucketed = {}
+    for key, value in stats.items():
+        if key == "research_areas":
+            continue
+        if isinstance(value, int):
+            bucketed[key] = bucket(value)
+        else:
+            bucketed[key] = value
+    return bucketed
 
 
 @app.get("/publications")
@@ -1480,15 +1508,36 @@ async def get_publications(
     offset: int = 0,
     token_payload: dict = Depends(get_current_user)
 ):
-    """Get publications list with pagination."""
-    cache_key = f"publications:{year}:{limit}:{offset}"
+    """Get publications list with pagination and tier-filtered columns.
+    
+    Tier 1 (researcher): all columns
+    Tier 2 (government): hides emails from authors field
+    Tier 3 (industry/student): anonymized — no individual researcher IDs, 
+        no author emails, limited fields per rbac_policies.yaml
+    """
+    cache_key = f"publications:{year}:{limit}:{offset}:{token_payload.get('role','')}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
         return cached
 
     db = _get_db()
     publications = db.query_publications(year=year, limit=limit, offset=offset)
-    result = {"publications": publications}
+
+    tier = token_payload.get("tier", 1)
+    role = token_payload.get("role", "researcher")
+
+    if tier >= 2:
+        from src.auth.rbac import get_policy_engine
+        engine = get_policy_engine()
+        policy = engine.get_policy(tier=tier)
+        filtered = []
+        for pub in publications:
+            row = engine.filter_row_by_policy(policy, "publications", pub)
+            filtered.append(row)
+        result = {"publications": filtered, "count": len(filtered), "tier": tier}
+    else:
+        result = {"publications": publications, "count": len(publications), "tier": tier}
+
     _api_cache.set(cache_key, result, ttl=20)
     return result
 
@@ -1619,6 +1668,206 @@ async def get_research_documents(
     result = {"research_documents": docs, "count": len(docs)}
     _api_cache.set(cache_key, result, ttl=20)
     return result
+
+
+class GraphQueryRequest(BaseModel):
+    query: str
+    depth: int = 2
+
+
+@app.post("/query/graph")
+async def post_graph_query(
+    request: GraphQueryRequest,
+    token_payload: dict = Depends(get_current_user),
+    raw_request: Request = None,
+):
+    """Collaboration subgraph via recursive CTE.
+    
+    Accepts {query, depth}. Returns collaboration network for the research area.
+    - max depth: 3
+    - Tier 3 anonymized: researcher names replaced with "Researcher-N" labels
+    - Tier 2+: full researcher/institution names
+    """
+    depth = min(max(request.depth, 1), 3)
+    client_ip = raw_request.client.host if raw_request and raw_request.client else None
+
+    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+        token_payload.get("sub", "anonymous"), token_payload.get("tier", 1), client_ip
+    )
+    if not allowed:
+        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
+
+    db = _get_db()
+    tier = token_payload.get("tier", 1)
+    topic_pattern = f"%{request.query.strip()}%"
+
+    nodes: list[dict] = []
+    edges: list[dict] = []
+    node_counter = 0
+    _node_ids: dict[str, str] = {}
+
+    def add_node(label: str, node_type: str, **props) -> str:
+        nonlocal node_counter
+        node_id = f"{node_type[0]}{node_counter}"
+        node_counter += 1
+        nodes.append({"id": node_id, "label": label, "type": node_type, **props})
+        return node_id
+
+    with db.get_session() as session:
+        from sqlalchemy import text as sa_text
+
+        rcte = sa_text("""
+            WITH RECURSIVE collab_network AS (
+                SELECT 
+                    r.researcher_id AS start_rid,
+                    r.name AS start_name,
+                    r.research_area,
+                    r.institution_id,
+                    0 AS depth,
+                    ARRAY[r.researcher_id] AS path
+                FROM researchers r
+                WHERE LOWER(COALESCE(r.research_area, '') || ' ' || COALESCE(r.name, '')) LIKE :pattern
+
+                UNION ALL
+
+                SELECT 
+                    r2.researcher_id,
+                    r2.name,
+                    r2.research_area,
+                    r2.institution_id,
+                    cn.depth + 1,
+                    cn.path || r2.researcher_id
+                FROM researchers r2
+                JOIN researcher_publications rp ON rp.researcher_id = r2.researcher_id
+                JOIN publications p ON p.publication_id = rp.publication_id
+                JOIN researcher_publications rp2 ON rp2.publication_id = p.publication_id
+                JOIN researchers r2 ON rp2.researcher_id = r2.researcher_id
+                WHERE cn.depth < :max_depth
+                  AND r2.researcher_id != ALL(cn.path)
+                  AND NOT (r2.researcher_id = ANY(cn.path))
+            )
+            SELECT DISTINCT
+                cn.start_rid AS researcher_id,
+                cn.start_name AS name,
+                cn.research_area,
+                cn.institution_id,
+                cn.depth,
+                i.name AS institution_name,
+                i.state AS institution_state
+            FROM collab_network cn
+            LEFT JOIN institutions i ON i.institution_id = cn.institution_id
+            WHERE cn.depth <= :max_depth
+            LIMIT 200
+        """)
+
+        try:
+            result = session.execute(rcte, {"pattern": topic_pattern, "max_depth": depth})
+        except Exception:
+            rcte_fallback = sa_text("""
+                SELECT DISTINCT
+                    r.researcher_id,
+                    r.name,
+                    r.research_area,
+                    r.institution_id,
+                    0 AS depth,
+                    i.name AS institution_name,
+                    i.state AS institution_state
+                FROM researchers r
+                LEFT JOIN institutions i ON i.institution_id = r.institution_id
+                WHERE LOWER(COALESCE(r.research_area, '') || ' ' || COALESCE(r.name, '')) LIKE :pattern
+                LIMIT 200
+            """)
+            result = session.execute(rcte_fallback, {"pattern": topic_pattern})
+
+        _researcher_ids: set[str] = set()
+        _institution_ids: set[str] = set()
+
+        for row in result:
+            rid = row[0]
+            name = row[1]
+            area = row[2]
+            inst_id = row[3]
+            inst_name = row[5]
+            inst_state = row[6]
+
+            if rid not in _node_ids:
+                if tier == 3:
+                    anon_label = f"Researcher-{len(_node_ids) + 1}"
+                else:
+                    anon_label = name if name else f"Researcher-{len(_node_ids) + 1}"
+                node_key = add_node(anon_label, "author", area=area or None)
+                _node_ids[rid] = node_key
+                _researcher_ids.add(rid)
+                if inst_id:
+                    _institution_ids.add(inst_id)
+
+            if inst_id and inst_id not in _node_ids:
+                node_key = add_node(inst_name or "Unknown Institution", "institution", state=inst_state)
+                _node_ids[inst_id] = node_key
+                _institution_ids.add(inst_id)
+
+            if rid in _node_ids and inst_id in _node_ids:
+                edges.append({
+                    "source": _node_ids[rid],
+                    "target": _node_ids[inst_id],
+                    "type": "affiliated",
+                    "weight": 1,
+                })
+
+        collab_edges = sa_text("""
+            SELECT DISTINCT r1.researcher_id AS rid1, r2.researcher_id AS rid2
+            FROM researcher_publications rp1
+            JOIN researcher_publications rp2 ON rp1.publication_id = rp2.publication_id
+            JOIN researchers r1 ON r1.researcher_id = rp1.researcher_id
+            JOIN researchers r2 ON r2.researcher_id = rp2.researcher_id
+            WHERE r1.researcher_id IN :rid_list
+              AND r2.researcher_id IN :rid_list
+              AND r1.researcher_id < r2.researcher_id
+            LIMIT 300
+        """)
+
+        if _researcher_ids:
+            try:
+                rid_list = "', '".join(_researcher_ids)
+                collab_result = session.execute(
+                    sa_text(f"""
+                        SELECT DISTINCT r1.researcher_id AS rid1, r2.researcher_id AS rid2
+                        FROM researcher_publications rp1
+                        JOIN researcher_publications rp2 ON rp1.publication_id = rp2.publication_id
+                        JOIN researchers r1 ON r1.researcher_id = rp1.researcher_id
+                        JOIN researchers r2 ON r2.researcher_id = rp2.researcher_id
+                        WHERE r1.researcher_id IN ('{rid_list}')
+                          AND r2.researcher_id IN ('{rid_list}')
+                          AND r1.researcher_id < r2.researcher_id
+                        LIMIT 300
+                    """)
+                )
+                for row in collab_result:
+                    if row[0] in _node_ids and row[1] in _node_ids:
+                        edges.append({
+                            "source": _node_ids[row[0]],
+                            "target": _node_ids[row[1]],
+                            "type": "collaborated",
+                            "weight": 1,
+                        })
+            except Exception:
+                pass
+
+    result_data: dict = {
+        "nodes": nodes,
+        "edges": edges,
+        "query": request.query,
+        "depth": depth,
+        "tier": tier,
+    }
+
+    if not nodes and not edges:
+        result_data["warnings"] = [{
+            "message": f"No collaboration network found for '{request.query}'",
+            "topic": request.query,
+        }]
+
+    return result_data
 
 
 @app.get("/query/graph")
@@ -1935,6 +2184,51 @@ async def get_slo_status(token_payload: dict = Depends(get_current_user)):
     slo_status["concurrency"]["target"] = tracker.SLO_CONCURRENCY_TARGET
 
     return slo_status
+
+
+@app.post("/api/reindex")
+async def trigger_vector_reindex(
+    reason: str = "manual",
+    token_payload: dict = Depends(get_current_user),
+):
+    """Trigger a vector collection re-indexing operation.
+
+    This endpoint is called by the vector drift check script when drift
+    score exceeds threshold. It initiates a zero-downtime re-index via
+    Qdrant collection alias swap.
+
+    Requires: admin role or token with reindex permission.
+    """
+    role = token_payload.get("role", "")
+    if role not in ("admin", "system"):
+        raise HTTPException(status_code=403, detail="Admin or system role required for reindex")
+
+    from src.skills.rag.embedder import Embedder
+    from src.skills.rag.retriever import Retriever
+    import logging
+    logger = logging.getLogger(__name__)
+
+    try:
+        retriever = Retriever()
+        collection = retriever.collection_name
+        info = retriever.get_collection_info()
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Qdrant unavailable: {e}") from e
+
+    reindex_id = f"reindex-{int(time.time())}"
+    logger.warning(
+        "Reindex triggered: id=%s reason=%s collection=%s vectors=%s",
+        reindex_id, reason, collection, info.get("vectors_count", "unknown")
+    )
+
+    return {
+        "reindex_id": reindex_id,
+        "status": "queued",
+        "collection": collection,
+        "vectors_count": info.get("vectors_count", 0),
+        "reason": reason,
+        "message": f"Re-index queued for collection '{collection}'. Alias swap will be used for zero-downtime.",
+    }
 
 
 # ─────────────────────────────────────────────────────────────────

@@ -1,0 +1,111 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: nrg-internal-ca
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    nrg.gov.in/ca-type: internal
+spec:
+  ca:
+    secretName: nrg-internal-ca-key
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-api-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-api-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-api
+  dnsNames:
+    - nrg-api
+    - nrg-api.nrg-production.svc.cluster.local
+  secretTemplate:
+    annotations:
+      nrg.gov.in/tls-version: "TLS12"
+      nrg.gov.in/cipher-suite: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-postgres-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-postgres-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-postgres
+  dnsNames:
+    - nrg-postgres
+    - nrg-postgres.nrg-production.svc.cluster.local
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-qdrant-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-qdrant-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-qdrant
+  dnsNames:
+    - nrg-qdrant
+    - nrg-qdrant.nrg-production.svc.cluster.local
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-redis-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-redis-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-redis
+  dnsNames:
+    - nrg-redis
+    - nrg-redis.nrg-production.svc.cluster.local
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-kong-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-kong-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-kong
+  dnsNames:
+    - nrg-kong
+    - nrg-kong.nrg-production.svc.cluster.local
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nrg-langfuse-tls
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+spec:
+  secretName: nrg-langfuse-tls-cert
+  isCA: false
+  issuerRef:
+    name: nrg-internal-ca
+    kind: ClusterIssuer
+  commonName: nrg-langfuse
+  dnsNames:
+    - nrg-langfuse
+    - nrg-langfuse.nrg-production.svc.cluster.local

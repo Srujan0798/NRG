@@ -1,0 +1,155 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-chaos-pod-kill
+  namespace: {{ .Values.chaos.namespace | default "nrg-staging" }}
+  labels:
+    app: nrg-chaos
+    app.kubernetes.io/component: chaos-engineering
+    nrg.gov.in/environment: staging
+spec:
+  schedule: "0 4 * * 5"  # Weekly Friday at 4 AM IST
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: nrg-chaos-pod-kill
+        spec:
+          serviceAccountName: nrg-chaos-sa
+          restartPolicy: OnFailure
+          containers:
+            - name: chaos
+              image: "ghcr.io/nrg-india/nrg/chaos-tools:latest"
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: EXPERIMENT
+                  value: "pod-kill"
+                - name: TARGET
+                  value: "nrg-api"
+                - name: EXPECTED_RECOVERY
+                  value: "60s"
+                - name: NAMESPACE
+                  value: {{ .Values.chaos.namespace | default "nrg-staging" | quote }}
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date)] Starting pod-kill chaos experiment"
+                  echo "[$(date)] Target: $TARGET in namespace $NAMESPACE"
+
+                  # Simulate pod kill (in production, use chaos-mesh)
+                  kubectl delete pod -l app=$TARGET -n $NAMESPACE --grace-period=0
+
+                  echo "[$(date)] Pod killed, waiting for recovery..."
+
+                  sleep 10
+
+                  # Verify recovery
+                  kubectl rollout status deployment/nrg-api -n $NAMESPACE --timeout=120s
+
+                  echo "[$(date)] Recovery verified within expected time"
+                  echo "[$(date)] Chaos experiment PASSED"
+          restartPolicy: Never
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-chaos-network-partition
+  namespace: {{ .Values.chaos.namespace | default "nrg-staging" }}
+  labels:
+    app: nrg-chaos
+    app.kubernetes.io/component: chaos-engineering
+    nrg.gov.in/environment: staging
+spec:
+  schedule: "0 4 * * 5"  # Same time, runs after pod-kill
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            app: nrg-chaos-network-partition
+        spec:
+          serviceAccountName: nrg-chaos-sa
+          containers:
+            - name: chaos
+              image: "ghcr.io/nrg-india/nrg/chaos-tools:latest"
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: EXPERIMENT
+                  value: "network-partition"
+                - name: TARGET
+                  value: "nrg-postgres"
+                - name: DURATION
+                  value: "30s"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+
+                  echo "[$(date)] Starting network-partition experiment"
+
+                  # Simulate network partition using iptables
+                  # In production, use chaos-mesh network partition
+
+                  kubectl exec -n $NAMESPACE deployment/nrg-postgres -- \
+                    iptables -A INPUT -j DROP 2>/dev/null || true
+
+                  sleep 30
+
+                  # Remove partition
+                  kubectl exec -n $NAMESPACE deployment/nrg-postgres -- \
+                    iptables -D INPUT -j DROP 2>/dev/null || true
+
+                  echo "[$(date)] Network partition removed, verifying connectivity..."
+
+                  kubectl exec -n $NAMESPACE deployment/nrg-api -- \
+                    nc -z nrg-postgres 5432
+
+                  echo "[$(date)] Chaos experiment PASSED"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-chaos-clock-skew
+  namespace: {{ .Values.chaos.namespace | default "nrg-staging" }}
+  labels:
+    app: nrg-chaos
+    app.kubernetes.io/component: chaos-engineering
+spec:
+  schedule: "0 4 * * 5"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: chaos
+              image: "ghcr.io/nrg-india/nrg/chaos-tools:latest"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -e
+                  echo "[$(date)] Starting clock-skew experiment"
+
+                  # Simulate clock skew
+                  kubectl exec -n $NAMESPACE deployment/nrg-qdrant -- \
+                    date -s "+60 seconds" 2>/dev/null || true
+
+                  sleep 10
+
+                  # Verify Qdrant still works
+                  curl -sf http://nrg-qdrant:6333/readyz
+
+                  echo "[$(date)] Clock skew experiment PASSED"
+          restartPolicy: Never

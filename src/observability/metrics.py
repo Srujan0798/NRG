@@ -503,8 +503,26 @@ class SLOTracker:
                 )
                 record_slo_breach("p99_latency")
                 self._consecutive_p99_breaches = 0
+                self._send_pagerduty_alert(latency_ms)
         else:
             self._consecutive_p99_breaches = 0
+
+    def _send_pagerduty_alert(self, latency_ms: float):
+        """Send CRITICAL PagerDuty alert when 5 consecutive P99 breaches detected."""
+        try:
+            from src.observability.pagerduty import send_critical_alert
+            send_critical_alert(
+                summary=f"NRG SLO BREACH: P99 > {self.SLO_P99_MS}ms for 5 consecutive requests (current: {latency_ms:.1f}ms)",
+                source="nrg-slo-tracker",
+                custom_details={
+                    "slo_type": "p99_latency",
+                    "threshold_ms": self.SLO_P99_MS,
+                    "current_latency_ms": latency_ms,
+                    "consecutive_breaches": 5,
+                },
+            )
+        except Exception:
+            pass
 
     def _check_citation_breach(self):
         """Log WARNING if citation rate < 50% for 1 hour."""

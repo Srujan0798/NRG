@@ -64,12 +64,14 @@ export interface GraphNode {
   type: 'paper' | 'author' | 'institution' | 'topic';
   year?: number;
   citations?: number;
+  area?: string | null;
+  state?: string | null;
 }
 
 export interface GraphEdge {
   source: string;
   target: string;
-  type: 'cites' | 'authored' | 'affiliated' | 'related';
+  type: 'cites' | 'authored' | 'affiliated' | 'related' | 'collaborated';
   weight: number;
 }
 
@@ -77,6 +79,9 @@ export interface GraphData {
   nodes: GraphNode[];
   edges: GraphEdge[];
   warnings?: QueryWarning[];
+  query?: string;
+  depth?: number;
+  tier?: number;
 }
 
 const api = axios.create({
@@ -89,9 +94,31 @@ export interface StatsResponse {
   total_publications: number;
   total_institutions?: number;
   total_labs?: number;
+  total_funding_amount?: number;
   research_area_distribution?: Array<{ area: string; count: number }>;
   state_distribution?: Array<{ state: string; count: number }>;
   research_areas?: string[];
+}
+
+export interface PublicationRow {
+  publication_id: string;
+  title: string;
+  year?: number | null;
+  venue?: string | null;
+  authors?: string | null;
+  citations?: number | null;
+  research_area?: string | null;
+}
+
+export interface PublicationsResponse {
+  publications: PublicationRow[];
+  count: number;
+  tier: number;
+}
+
+export interface GraphQueryRequest {
+  query: string;
+  depth?: number;
 }
 
 export const queryService = {
@@ -116,6 +143,17 @@ export const queryService = {
     });
   },
 
+  async queryGraph(request: GraphQueryRequest): Promise<GraphData> {
+    return authService.withAuthenticatedRequest(async (accessToken) => {
+      const response = await api.post<GraphData>(
+        '/query/graph',
+        { query: request.query, depth: request.depth ?? 2 },
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      return response.data;
+    });
+  },
+
   async fetchStats(): Promise<StatsResponse> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<StatsResponse>('/stats', {
@@ -125,9 +163,9 @@ export const queryService = {
     });
   },
 
-  async fetchPublications(limit: number = 10): Promise<{ publications: Array<{ publication_id: string; title: string; year: number; venue?: string; citations?: number }> }> {
+  async fetchPublications(limit: number = 10): Promise<PublicationsResponse> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
-      const response = await api.get('/publications', {
+      const response = await api.get<PublicationsResponse>('/publications', {
         params: { limit },
         headers: { Authorization: `Bearer ${accessToken}` },
       });

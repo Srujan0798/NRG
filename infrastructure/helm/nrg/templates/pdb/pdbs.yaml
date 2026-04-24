@@ -1,0 +1,89 @@
+{{- range $name, $pdb := .Values.pdbs }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $pdb.name }}
+  namespace: {{ $pdb.namespace | default $.Values.namespace | default "nrg-production" }}
+  labels:
+    app: {{ $pdb.app }}
+    {{ include "nrg.labels" $ | nindent 4 }}
+  annotations:
+    nrg.gov.in/pdb-type: {{ $pdb.stateful | ternary "stateful" "stateless" }}
+spec:
+  {{- if $pdb.stateful }}
+  # Stateful: maxUnavailable=0 — never disrupt during rolling updates
+  maxUnavailable: 0
+  {{- else if $pdb.minAvailable }}
+  # Stateless: minAvailable=N-1 — ensures N-1 pods available during updates
+  minAvailable: {{ $pdb.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app: {{ $pdb.app }}
+{{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nrg-api-pdb
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-api
+spec:
+  minAvailable: "2"  # N-1 for 3 replicas: 2 must remain during updates
+  selector:
+    matchLabels:
+      app: nrg-api
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nrg-postgres-pdb
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-postgres
+spec:
+  maxUnavailable: 0  # Stateful: never disrupt during updates
+  selector:
+    matchLabels:
+      app: nrg-postgres
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nrg-qdrant-pdb
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-qdrant
+spec:
+  maxUnavailable: 0  # Stateful: never disrupt during updates
+  selector:
+    matchLabels:
+      app: nrg-qdrant
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nrg-redis-pdb
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-redis
+spec:
+  maxUnavailable: 0  # Stateful: never disrupt during updates
+  selector:
+    matchLabels:
+      app: nrg-redis
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: nrg-kong-pdb
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-kong
+spec:
+  minAvailable: "1"  # Stateless: at least 1 pod during updates
+  selector:
+    matchLabels:
+      app: nrg-kong

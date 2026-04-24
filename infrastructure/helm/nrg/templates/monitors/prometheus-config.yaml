@@ -1,0 +1,93 @@
+{{/*
+NRG Prometheus Scrape Configuration
+
+Scrape configs for all NRG services
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nrg-prometheus-config
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-prometheus
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: {{ .Values.prometheus.scrapeInterval | default "15s" }}
+      evaluation_interval: {{ .Values.prometheus.evaluationInterval | default "15s" }}
+      external_labels:
+        cluster: 'nrg-production'
+        env: 'production'
+
+    scrape_configs:
+      - job_name: 'nrg-api'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.namespace | default "nrg-production" }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-api
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+        metrics_path: /metrics
+
+      - job_name: 'nrg-postgres'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-postgres
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+        static_configs:
+          - targets:
+              - 9187
+            labels:
+              alias: nrg-postgres
+
+      - job_name: 'nrg-qdrant'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-qdrant
+        static_configs:
+          - targets:
+              - 6333
+            labels:
+              alias: nrg-qdrant
+
+      - job_name: 'nrg-redis'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-redis
+        static_configs:
+          - targets:
+              - 6379
+            labels:
+              alias: nrg-redis
+
+      - job_name: 'nrg-kong'
+        kubernetes_sd_configs:
+          - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-kong
+        static_configs:
+          - targets:
+              - 8100
+            labels:
+              alias: nrg-kong

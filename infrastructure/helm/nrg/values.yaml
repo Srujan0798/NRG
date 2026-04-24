@@ -1,107 +1,687 @@
-# Default values for NRG Helm chart
+# ==============================================================================
+# NRG Helm Chart - Production Values for NIC/MeitY Infrastructure
+# ==============================================================================
+# THIS FILE CONTAINS NO SECRETS. All secrets are fetched from Vault at runtime.
+# ==============================================================================
 
-replicaCount: 2
+replicaCount: 3
 
 image:
-  repository: nrg/api
+  repository: ghcr.io/nrg-india/nrg/api
   pullPolicy: IfNotPresent
-  tag: "latest"
+  tag: "v1.0.0"
 
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
+imagePullSecrets:
+  - name: nrg-registry-secret
+
+nameOverride: "nrg"
+fullnameOverride: "nrg-platform"
+
+namespace: nrg-production
 
 serviceAccount:
   create: true
-  annotations: {}
-  name: ""
+  annotations:
+    # Vault Agent annotation for IAM role assumption
+    vault.hashicorp.com/role: "nrg-app"
+    # NIC/MeitY compliance annotations
+    nrg.gov.in/compliance: "mandatory"
+    nrg.gov.in/data-classification: "confidential"
+  name: "nrg-sa"
 
-podAnnotations: {}
-
+# ==============================================================================
+# POD SECURITY STANDARD — RESTRICTED
+# ==============================================================================
 podSecurityContext:
-  fsGroup: 2000
+  fsGroup: 1000
+  fsGroupChangePolicy: "OnRootMismatch"
+  seccompProfile:
+    type: "RuntimeDefault"
+  supplementalGroups: [1000]
 
 securityContext:
   capabilities:
-    drop:
-    - ALL
+    drop: ["ALL"]
   readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
   runAsNonRoot: true
   runAsUser: 1000
+  runAsGroup: 1000
 
-service:
-  type: ClusterIP
-  port: 8000
+# ==============================================================================
+# ORCHESTRATION
+# ==============================================================================
+revisionHistoryLimit: 5
 
-ingress:
+# ==============================================================================
+# API SERVICE
+# ==============================================================================
+api:
+  replicaCount: 3
+
+  image:
+    repository: ghcr.io/nrg-india/nrg/api
+    pullPolicy: IfNotPresent
+    tag: "v1.0.0"
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  livenessProbe:
+    path: /health/live
+    port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+  readinessProbe:
+    path: /health/ready
+    port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    failureThreshold: 2
+
+  # Vault Agent sidecar — fetches secrets at pod start, no env vars in pod spec
+  vault:
+    enabled: true
+    role: "nrg-app"
+    address: "https://vault-internal.nrg-production.svc:8200"
+    # Secrets fetched at startup and mounted, never exposed as env
+    secretsPath: "secret/data/nrg/production"
+    agentInject: true
+    agentInjectDefault: false
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "2"  # N-1 for 3 replicas = 2 must be available during update
+    maxUnavailable: ""
+
+  # HPA — 60% CPU target, 3-20 replicas
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 80
+    hpaVersion: "v2"
+
+  # Blue-green deployment labels
+  strategy: "RollingUpdate"
+  maxSurge: 1
+  maxUnavailable: 0
+
+# ==============================================================================
+# POSTGRESQL — STATEFUL, CRITICAL
+# ==============================================================================
+postgresql:
   enabled: true
-  className: "kong"
-  annotations:
-    konghq.com/strip-path: "false"
-  hosts:
-    - host: nrg.india
-      paths:
-        - path: /
-          pathType: Prefix
 
-tls: []
+  image:
+    repository: postgres:16-alpine
 
-resources:
-  limits:
-    cpu: 2000m
-    memory: 4Gi
-  requests:
-    cpu: 1000m
-    memory: 2Gi
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: "nrg-standard-storage"
+    annotations:
+      nrg.gov.in/backup: "mandatory"
+      nrg.gov.in/retain: "90days"
 
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 70
-  targetMemoryUtilizationPercentage: 80
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
 
-nodeSelector: {}
+  # Pod Disruption Budget — stateful: maxUnavailable=0, never disrupt during update
+  pdb:
+    enabled: true
+    maxUnavailable: 0
+    minAvailable: ""
 
-tolerations: []
+  service:
+    type: ClusterIP
+    port: 5432
 
-affinity: {}
+  # PostgreSQL configuration for NRG
+  postgresqlUsername: "nrg_app"
+  postgresqlDatabase: "nrg_research"
+  postgresqlParameters:
+    max_connections: "200"
+    shared_buffers: "256MB"
+    wal_level: "logical"
+    max_wal_senders: "10"
+    wal_keep_size: "1GB"
 
-# Database configuration
-database:
-  type: "postgresql"
-  host: "nrg-postgresql"
-  port: 5432
-  name: "nrg"
-  user: "nrg"
-  password: "nrg_secret"
+  # Backup annotation
+  backup:
+    enabled: true
+    schedule: "0 2 * * *"  # Daily at 2 AM IST
+    retention: "90days"
 
-# Qdrant configuration
+# ==============================================================================
+# QDRANT VECTOR DATABASE — STATEFUL
+# ==============================================================================
 qdrant:
   enabled: true
-  host: "nrg-qdrant"
-  port: 6333
 
-# Redis configuration
+  image:
+    repository: qdrant/qdrant:v1.12.0
+
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "nrg-standard-storage"
+    annotations:
+      nrg.gov.in/backup: "mandatory"
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  # Pod Disruption Budget — stateful: maxUnavailable=0
+  pdb:
+    enabled: true
+    maxUnavailable: 0
+    minAvailable: ""
+
+  service:
+    type: ClusterIP
+    grpcPort: 6334
+    httpPort: 6333
+
+  # Weekly snapshot backup
+  backup:
+    enabled: true
+    schedule: "0 3 * * 0"  # Weekly Sunday at 3 AM IST
+    retention: "30days"
+
+# ==============================================================================
+# REDIS CACHE — STATEFUL
+# ==============================================================================
 redis:
   enabled: true
-  host: "nrg-redis-master"
-  port: 6379
 
-# LLM configuration
-llm:
-  planner_provider: "gemini"
-  synth_provider: "local_llama"
-  verifier_provider: "anthropic"
-  local_url: "http://nrg-llama:8080"
+  image:
+    repository: redis:7-alpine
 
-# Feature flags
-features:
-  knowledge_graph: false
-  consent_ui: true
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "nrg-standard-storage"
 
-# Vault configuration
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Pod Disruption Budget — stateful: maxUnavailable=0
+  pdb:
+    enabled: true
+    maxUnavailable: 0
+    minAvailable: ""
+
+  config:
+    maxmemory: "512mb"
+    maxmemory-policy: "allkeys-lru"
+    appendonly: "yes"
+
+# ==============================================================================
+# KONG API GATEWAY
+# ==============================================================================
+kong:
+  enabled: true
+
+  image:
+    repository: kong:3.6
+
+  service:
+    type: ClusterIP
+    proxy:
+      port: 8000
+      tlsPort: 8443
+
+  admin:
+    enabled: true
+    serviceType: ClusterIP
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "2"
+    maxUnavailable: ""
+
+  ingress:
+    enabled: true
+    className: "kong"
+    hostname: "nrg.india"
+    path: /
+
+# ==============================================================================
+# LANGFUSE — Self-hosted Observability
+# ==============================================================================
+langfuse:
+  enabled: true
+
+  image:
+    repository: langfuse/langfuse:latest
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: "nrg-standard-storage"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""
+
+  publicUrl: "https://langfuse.nrg.india"
+  signKey: ""  # Fetched from Vault at runtime
+
+# ==============================================================================
+# GRAFANA — Observability Dashboard
+# ==============================================================================
+grafana:
+  enabled: true
+
+  image:
+    repository: grafana/grafana:11.0.0
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: "nrg-standard-storage"
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 512Mi
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""
+
+  adminPassword: ""  # Fetched from Vault at runtime
+
+  datasources:
+    prometheus:
+      enabled: true
+      url: "http://prometheus:9090"
+
+  dashboards:
+    default:
+      - nrg-overview
+      - nrg-latency
+      - nrg-audit
+
+# ==============================================================================
+# PROMETHEUS — Metrics Collection
+# ==============================================================================
+prometheus:
+  enabled: true
+
+  image:
+    repository: prom/prometheus:v2.49.0
+
+  service:
+    type: ClusterIP
+    port: 9090
+
+  persistence:
+    enabled: true
+    size: 50Gi
+    storageClass: "nrg-standard-storage"
+    annotations:
+      nrg.gov.in/backup: "mandatory"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 2Gi
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""
+
+  scrapeInterval: "15s"
+  evaluationInterval: "15s"
+
+  # NRG-specific scrape targets
+  scrapeConfigs:
+    - job: nrg-api
+      staticConfigs:
+        - targets: ["nrg-api:8000"]
+          labels:
+            service: nrg-api
+    - job: nrg-postgres
+      staticConfigs:
+        - targets: ["nrg-postgres:5432"]
+          labels:
+            service: postgresql
+    - job: nrg-qdrant
+      staticConfigs:
+        - targets: ["nrg-qdrant:6333"]
+          labels:
+            service: qdrant
+    - job: nrg-redis
+      staticConfigs:
+        - targets: ["nrg-redis:6379"]
+          labels:
+            service: redis
+
+# ==============================================================================
+# CERT-MANAGER — Internal CA for mTLS
+# ==============================================================================
+certmanager:
+  enabled: true
+  version: v1.14.0
+
+  # Internal sovereign CA — NOT Let's Encrypt
+  issuer:
+    name: nrg-internal-ca
+    type: ClusterIssuer
+    algorithm: ECDSA
+    keySize: 256
+    ttl: 720h  # 30 days
+
+  # TLS on all intra-cluster traffic
+  tls:
+    internal:
+      enabled: true
+      minimumVersion: "TLS12"
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+
+# ==============================================================================
+# NETWORK POLICIES — SOVEREIGN EGRESS CONTROL
+# ==============================================================================
+networkPolicies:
+  enabled: true
+
+  # API pod egress restrictions
+  api:
+    egress:
+      # Allow only to internal services
+      - toServices:
+          - name: postgresql
+            port: 5432
+          - name: qdrant
+            port: 6333
+          - name: qdrant-grpc
+            port: 6334
+          - name: redis
+            port: 6379
+          - name: kong
+            port: 8000
+          - name: kong
+            port: 8443
+          - name: langfuse
+            port: 3000
+      # Allow to allowlisted LLM hosts ONLY
+      - toHosts: "{{ .Values.egressAllowlist | default [] }}"
+        ports:
+          - port: 443
+            protocol: TCP
+          - port: 4433
+            protocol: TCP
+      # Allow DNS
+      - to: { namespace: kube-system }
+        ports:
+          - port: 53
+            protocol: UDP
+
+  # Postgres — no egress to internet
+  postgresql:
+    egress: []  # No internet egress
+
+  # Qdrant — no egress to internet
+  qdrant:
+    egress: []  # No internet egress
+
+  # Redis — no egress to internet
+  redis:
+    egress: []  # No internet egress
+
+# ==============================================================================
+# LLM EGRESS ALLOWLIST — SOVEREIGN CLOUD PROVIDERS ONLY
+# ==============================================================================
+egressAllowlist:
+  # Google Cloud (Gemini)
+  - "generativelanguage.googleapis.com"
+  - "aiplatform.googleapis.com"
+  # Anthropic
+  - "api.anthropic.com"
+  # OpenAI
+  - "api.openai.com"
+  # Azure OpenAI
+  - "*.openai.azure.com"
+  - "cognitiveservices.azure.com"
+  # NVIDIA
+  - "api.nvcf.nvidia.com"
+  # Minimax
+  - "api.minimax.chat"
+  # Local LLMs (on-cluster)
+  - "nrg-llama.nrg-production.svc.cluster.local"
+
+# ==============================================================================
+# BACKUP CONFIGURATION
+# ==============================================================================
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM IST
+
+  # S3-compatible sovereign storage (no AWS/Azure/GCP)
+  s3:
+    endpoint: ""  # Configured per environment
+    bucket: "nrg-backups"
+    region: "ap-south-1"
+    kmsKeyId: ""  # From Vault
+    storageClass: "STANDARD"
+
+  # PostgreSQL pg_basebackup
+  postgres:
+    enabled: true
+    schedule: "0 2 * * *"
+    retention: "90days"
+    compression: "gzip"
+    encrypt: true
+
+  # Qdrant snapshot
+  qdrant:
+    enabled: true
+    schedule: "0 3 * * 0"  # Weekly
+    retention: "30days"
+
+# ==============================================================================
+# CHAOS ENGINEERING — Weekly in staging only
+# ==============================================================================
+chaos:
+  enabled: false  # Disabled in prod, enabled in staging via profile
+  namespace: nrg-staging
+
+  experiments:
+    - name: pod-kill
+      schedule: "0 4 * * 5"  # Weekly Friday 4 AM IST
+      target: "nrg-api"
+      action: "pod-kill"
+      expectedRecovery: "60s"
+
+    - name: network-partition
+      schedule: "0 4 * * 5"
+      target: "nrg-postgres"
+      action: "network-partition"
+      duration: "30s"
+
+    - name: clock-skew
+      schedule: "0 4 * * 5"
+      target: "nrg-qdrant"
+      action: "clock-skew"
+      offset: "60s"
+
+# ==============================================================================
+# VAULT CONFIGURATION — SOVEREIGN SECRET MANAGEMENT
+# ==============================================================================
 vault:
   enabled: true
-  address: "https://vault.internal:8200"
+  address: "https://vault-internal.nrg-production.svc:8200"
   role: "nrg-app"
+  authPath: "auth/kubernetes"
+  secretPath: "secret/data/nrg/production"
+
+  # Vault Agent as sidecar — no env vars with secrets
+  agent:
+    enabled: true
+    image: "hashicorp/vault:1.16.0"
+    policy: |
+      path "secret/data/nrg/production/*" {
+        capabilities = ["read"]
+      }
+      path "secret/data/nrg/database/*" {
+        capabilities = ["read"]
+      }
+      path "pki/issue/nrg-internal" {
+        capabilities = ["create", "read"]
+      }
+
+  # Kubernetes Auth Method
+  kubernetes:
+    enabled: true
+    mountPath: "auth/kubernetes"
+    role: "nrg-app"
+
+# ==============================================================================
+# OBSERVABILITY
+# ==============================================================================
+observability:
+  tracing:
+    enabled: true
+    provider: "langfuse"
+    endpoint: "http://langfuse:3000/api/public/ingestion"
+
+  metrics:
+    enabled: true
+    provider: "prometheus"
+    port: 9090
+
+  logging:
+    level: "INFO"
+    format: "json"
+    output: "stdout"
+
+# ==============================================================================
+# NODE SELECTORS & AFFINITY
+# ==============================================================================
+nodeSelector:
+  nrg-node: "true"
+
+tolerations:
+  - key: "nrg-node"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - nrg-api
+                  - nrg-kong
+          topologyKey: "kubernetes.io/hostname"
+
+# ==============================================================================
+# PERSISTENT VOLUME CLAIMS
+# ==============================================================================
+persistence:
+  defaultStorageClass: "nrg-standard-storage"
+  defaultRetention: "30days"
+
+  apiArtifacts:
+    size: 5Gi
+    mountPath: /app/artifacts
+
+  postgresData:
+    size: 100Gi
+    mountPath: /var/lib/postgresql/data
+
+  qdrantStorage:
+    size: 50Gi
+    mountPath: /qdrant/storage
+
+  redisData:
+    size: 10Gi
+    mountPath: /data
+
+  langfuseData:
+    size: 20Gi
+    mountPath: /langfuse/data
+
+  prometheusData:
+    size: 50Gi
+    mountPath: /prometheus
+
+  grafanaData:
+    size: 10Gi
+    mountPath: /var/lib/grafana

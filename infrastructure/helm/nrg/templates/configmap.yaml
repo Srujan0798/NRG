@@ -1,0 +1,42 @@
+{{/*
+NRG ConfigMap for API configuration
+No secrets here — only non-sensitive configuration
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nrg-config
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    {{ include "nrg.labels" . | nindent 4 }}
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  API_WORKERS: "4"
+  UVICORN_TIMEOUT_KEEP_ALIVE: "5"
+  UVICORN_GRACEFUL_TIMEOUT: "30"
+  # Feature flags
+  FEATURE_KNOWLEDGE_GRAPH: "{{ .Values.features.knowledgeGraph | default false }}"
+  FEATURE_CONSENT_UI: "{{ .Values.features.consentUi | default true }}"
+  FEATURE_MULTI_HOP_PLANNER: "true"
+  # LLM configuration (providers only, no keys)
+  LLM_PLANNER_PROVIDER: "{{ .Values.llm.plannerProvider | default "gemini" }}"
+  LLM_SYNTH_PROVIDER: "{{ .Values.llm.synthProvider | default "local_llama" }}"
+  LLM_VERIFIER_PROVIDER: "{{ .Values.llm.verifierProvider | default "anthropic" }}"
+  # Observability
+  OBSERVABILITY_PROVIDER: "{{ .Values.observability.tracing.provider | default "langfuse" }}"
+  OBSERVABILITY_ENDPOINT: "{{ .Values.observability.tracing.endpoint }}"
+  METRICS_PORT: "9090"
+  # Database (connection info without credentials)
+  DB_TYPE: "postgresql"
+  DB_HOST: "{{ .Values.postgresql.host }}"
+  DB_PORT: "5432"
+  DB_NAME: "{{ .Values.postgresql.database }}"
+  # Qdrant
+  QDRANT_HOST: "{{ .Values.qdrant.host }}"
+  QDRANT_PORT: "{{ .Values.qdrant.port }}"
+  # Redis
+  REDIS_HOST: "{{ .Values.redis.host }}"
+  REDIS_PORT: "6379"

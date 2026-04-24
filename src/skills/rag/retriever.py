@@ -237,9 +237,10 @@ class Retriever:
         top_k: int = 5,
         institution: Optional[str] = None,
         topics: Optional[List[str]] = None,
+        query_text: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
-        Retrieve relevant chunks with RBAC filtering, drift detection, and cross-encoder re-ranking.
+        Retrieve relevant chunks with RBAC filtering, drift detection and cross-encoder re-ranking.
 
         Returns chunks with source_id and access_tier metadata.
         """
@@ -295,7 +296,7 @@ class Retriever:
         # Apply cross-encoder re-ranking if enabled
         if self._rerank_enabled and candidates and len(candidates) > top_k:
             reranked = self._rerank_candidates(
-                query_vector=query_vector,
+                query_text=query_text,
                 candidates=candidates,
                 top_k=top_k,
             )
@@ -341,46 +342,25 @@ class Retriever:
 
     def _rerank_candidates(
         self,
-        query_vector: List[float],
+        query_text: Optional[str],
         candidates: list,
         top_k: int,
     ) -> list:
         """
-        Re-rank candidates using cross-encoder for improved precision.
+        Re-rank candidates using bge-reranker-v2-m3 for improved precision.
 
-        This uses a lightweight cross-encoder model to re-score
-        the initial vector search candidates for better relevance.
+        Uses the dedicated Reranker class with proper cross-encoder model.
+        Falls back to vector scores only if reranker unavailable.
         """
-        try:
-            from sentence_transformers import CrossEncoder
-
-            # Initialize cross-encoder (lightweight, fast)
-            cross_encoder = CrossEncoder('cross-encoder/ms-marco-MiniLM-L-6-v2')
-
-            # Prepare query-document pairs
-            query_text = "research query"  # Placeholder - actual query text needed
-            pairs = [(query_text, cand["chunk"]) for cand in candidates]
-
-            # Get cross-encoder scores
-            cross_scores = cross_encoder.predict(pairs)
-
-            # Combine vector and cross-scores (weighted average)
-            for i, cand in enumerate(candidates):
-                cand["rerank_score"] = (
-                    0.3 * cand["vector_score"] +  # Vector similarity
-                    0.7 * cross_scores[i]          # Cross-encoder relevance
-                )
-
-            # Sort by combined score
-            candidates.sort(key=lambda x: x["rerank_score"], reverse=True)
-
-            return candidates[:top_k]
-
-        except ImportError:
-            logger.debug("Cross-encoder not available, using vector scores only")
-            # Fallback to vector-only ranking
+        if not query_text:
             candidates.sort(key=lambda x: x["vector_score"], reverse=True)
             return candidates[:top_k]
+
+        try:
+            from src.skills.rag.reranker import Reranker
+            reranker = Reranker()
+            reranked = reranker.rerank(query=query_text, candidates=candidates, top_k=top_k)
+            return reranked
         except Exception as e:
             logger.warning("Re-ranking failed: %s, using vector scores only", e)
             candidates.sort(key=lambda x: x["vector_score"], reverse=True)
