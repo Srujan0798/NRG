@@ -2,8 +2,7 @@
 
 import tempfile
 import shutil
-import time
-from datetime import date, UTC
+from datetime import UTC
 from pathlib import Path
 
 import pytest
@@ -14,7 +13,7 @@ from src.audit.per_user_keys import (
     build_request_fingerprint,
     reset_per_user_key_manager,
 )
-from src.audit import ImmutableAuditLog, AuditEvent, verify_chain
+from src.audit import ImmutableAuditLog, AuditEvent
 
 
 class TestPerUserKeyManager:
@@ -197,7 +196,7 @@ class TestRotatingSaltStore:
     def test_different_dates_produce_different_salts(self, salt_store):
         """Simulating a date change produces a different salt."""
         store, _ = salt_store
-        from datetime import datetime, timedelta, UTC
+        from datetime import datetime, timedelta
         
         original_salt = store.get_salt("user-1")
         store._current_salt_date = (datetime.now(UTC).date() + timedelta(days=1)).isoformat()

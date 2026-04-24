@@ -5,8 +5,6 @@ and the EgressSchemaAllowlist loader.
 """
 
 import os
-import tempfile
-import time
 from pathlib import Path
 
 import pytest

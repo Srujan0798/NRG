@@ -38,8 +38,8 @@ def _check_qdrant():
 
 HAS_QDRANT = _check_qdrant()
 
-from fastapi.testclient import TestClient
-import src.api.main as api_main
+from fastapi.testclient import TestClient  # noqa: E402
+import src.api.main as api_main  # noqa: E402
 
 
 class FakeCloudLLMClient:
@@ -199,7 +199,6 @@ class TestSLOUnderLoad:
         token = _login(client)
 
         results = []
-        lock = threading.Lock()
 
         def make_query_timed(user_idx: int, query_idx: int):
             start = time.time()
@@ -211,7 +210,7 @@ class TestSLOUnderLoad:
                 )
                 latency = time.time() - start
                 return response.status_code, latency
-            except Exception as e:
+            except Exception:
                 return None, time.time() - start
 
         threads = []
@@ -244,7 +243,6 @@ class TestSLOUnderLoad:
         token = _login(client)
 
         results = []
-        lock = threading.Lock()
 
         def make_query(user_idx: int, query_idx: int):
             response = client.post(
@@ -275,7 +273,6 @@ class TestSLOUnderLoad:
         token = _login(client)
 
         results = []
-        lock = threading.Lock()
 
         def make_query_timed(user_idx: int, query_idx: int):
             start = time.time()
@@ -288,7 +285,7 @@ class TestSLOUnderLoad:
                 latency = time.time() - start
                 return response.status_code, latency
             except Exception:
-                return None, 999.0
+                return None, time.time() - start
 
         threads = []
         for i in range(20):
@@ -319,7 +316,6 @@ class TestSLOUnderLoad:
 
         results = {"researcher": [], "government": [], "industry": []}
         errors = []
-        lock = threading.Lock()
 
         def make_query(role: str, token: str, i: int):
             try:

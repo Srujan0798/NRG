@@ -7,8 +7,6 @@ import pytest
 import time
 import threading
 import statistics
-from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
 from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
@@ -231,7 +229,7 @@ class TestSustainedLoad:
 
         for i in range(500):
             start = time.time()
-            response = client.post(
+            client.post(
                 "/query",
                 headers={"Authorization": f"Bearer {token}"},
                 json={"query": f"consistency test {i}"},

@@ -7,12 +7,10 @@ Langfuse decorators, ingestion script, and anomaly alerting.
 SKILLS: /python-backend (FastAPI TestClient), /testing-strategy
 """
 
-import json
-import os
 import pytest
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -140,7 +138,6 @@ class TestSloTrackerAnomalyAlerting:
         from src.observability.metrics import SLOTracker
         import logging
         import io
-        from unittest.mock import patch
 
         tracker = SLOTracker(max_samples=100)
         log_capture = io.StringIO()
@@ -169,7 +166,6 @@ class TestSloTrackerAnomalyAlerting:
         from src.observability.metrics import SLOTracker
         import logging
         import io
-        from unittest.mock import patch
 
         tracker = SLOTracker(max_samples=100)
         log_capture = io.StringIO()
@@ -302,7 +298,6 @@ class TestAnomalyAlertingIntegration:
     def test_audit_write_blocked_after_chain_failure(self):
         """is_audit_write_blocked returns True after persistent chain failures."""
         from src.observability.metrics import SLOTracker
-        from unittest.mock import patch
 
         tracker = SLOTracker(max_samples=100)
         base_time = 3000.0
@@ -317,7 +312,6 @@ class TestAnomalyAlertingIntegration:
     def test_audit_unblocked_after_recovery(self):
         """Audit writes unblocked once chain is valid again."""
         from src.observability.metrics import SLOTracker
-        from unittest.mock import patch
 
         tracker = SLOTracker(max_samples=100)
         base_time = 4000.0

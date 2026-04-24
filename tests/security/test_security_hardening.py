@@ -5,7 +5,6 @@ Validates all 7 security controls are actually working.
 
 import pytest
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -267,7 +266,6 @@ class TestRateLimiting:
     def test_researcher_rate_limit_enforced(self, client):
         """Researcher tier (100/min) must get 429 after exceeding limit."""
         login = client.post("/login", json={"username": "researcher_user", "password": "researcher-pass"})
-        token = login.json()["access_token"]
 
         rate_limit = login.json().get("rate_limit", {}).get("limit", 100)
         assert rate_limit == 100, f"Researcher rate limit should be 100, got: {rate_limit}"

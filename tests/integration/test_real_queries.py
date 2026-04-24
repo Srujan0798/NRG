@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
 
 from src.skills.text_to_sql.skill import TextToSQLSkill
 from src.skills.text_to_sql.sqlite_schema_extractor import extract_schema

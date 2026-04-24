@@ -9,7 +9,6 @@ import hmac
 import hashlib
 import sys
 from pathlib import Path
-from datetime import datetime, UTC
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -70,7 +69,6 @@ class TestHMACValidation:
         token = _login(client)
 
         timestamp = str(int(time.time()))
-        payload = '{"query": "test"}'
         invalid_signature = "invalid_signature_here"
 
         response = client.post(

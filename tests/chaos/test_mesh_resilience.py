@@ -13,14 +13,13 @@ Verifies the SovereignLLLMesh handles cascading failures gracefully:
 SKILLS: /python-backend (mesh testing), /performance (latency measurement)
 """
 
-import os
 import pytest
 import time
 import threading
 import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -239,7 +238,7 @@ class TestMeshResilience:
         budget = 3
 
         try:
-            result = fresh_mesh.generate("system", "user query", [])
+            fresh_mesh.generate("system", "user query", [])
         except Exception:
             pass
 
@@ -282,7 +281,7 @@ class TestMeshResilience:
         }
 
         start = time.time()
-        result = fresh_mesh.generate("system", "user query", [])
+        fresh_mesh.generate("system", "user query", [])
         elapsed = time.time() - start
 
         assert elapsed < 1.5, f"Parallel race should complete in ~0.8s, took {elapsed:.1f}s"

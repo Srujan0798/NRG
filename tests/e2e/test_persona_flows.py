@@ -20,7 +20,7 @@ class StubWorkflow:
         return {
             "query_id": f"e2e-query-{StubWorkflow.call_count}",
             "session_id": session_id or "session-1",
-            "synthesized_response": f"Found 42 AI researchers in Gujarat",
+            "synthesized_response": "Found 42 AI researchers in Gujarat",
             "intent": "structured",
             "routing_decision": "text_to_sql",
             "verification_status": True,
@@ -108,7 +108,6 @@ class TestResearcherFlow:
             json={"username": "researcher_user", "password": "researcher-pass"},
         )
         token = login_response.json()["access_token"]
-        user_id = login_response.json()["user"]["id"]
 
         response = client.get(
             "/me/data",

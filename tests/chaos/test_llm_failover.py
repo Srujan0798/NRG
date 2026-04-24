@@ -6,7 +6,6 @@ These tests simulate LLM provider failures and verify graceful degradation.
 """
 
 import pytest
-from unittest.mock import patch, MagicMock
 from fastapi.testclient import TestClient
 import sys
 from pathlib import Path

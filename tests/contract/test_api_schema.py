@@ -130,7 +130,6 @@ class TestLoginContract:
     def test_login_user_role_values(self):
         """User role must be one of: researcher, government, industry."""
         client = TestClient(api_main.app)
-        valid_roles = ["researcher", "government", "industry"]
 
         for role, creds in [
             ("researcher", ("researcher_user", "researcher-pass")),

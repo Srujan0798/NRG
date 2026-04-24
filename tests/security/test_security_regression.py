@@ -22,16 +22,13 @@ from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
     filter_researcher_records,
     get_user_tier,
-    AuthContextMiddleware,
 )
-from src.audit import AuditEvent, ImmutableAuditLog, log_anomaly
+from src.audit import AuditEvent, ImmutableAuditLog
 from src.security.gateway.prompt_sanitiser import PromptSanitiser
 from src.skills.text_to_sql.schema_extractor import (
-    SchemaExtractor,
     TIER_COLUMN_VISIBILITY,
     SENSITIVE_COLUMNS,
     is_schema_probing_query,
-    SCHEMA_PROBING_PATTERNS,
 )
 
 
@@ -809,7 +806,7 @@ class TestSchemaExtractorTierFiltering:
     """Verify schema extractor applies tier filtering to all tables."""
 
     def test_tier_1_no_columns(self):
-        from src.skills.text_to_sql.schema_extractor import SchemaExtractor, TIER_COLUMN_VISIBILITY
+        from src.skills.text_to_sql.schema_extractor import TIER_COLUMN_VISIBILITY
         assert TIER_COLUMN_VISIBILITY[1] == {}
 
     def test_tier_2_has_table_keys(self):

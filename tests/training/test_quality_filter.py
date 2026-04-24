@@ -6,7 +6,6 @@ from src.training.quality_filter import (
     cosine_similarity,
     regrade_pair,
     _estimate_query_embedding,
-    GRADE_THRESHOLDS,
 )
 
 

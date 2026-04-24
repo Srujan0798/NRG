@@ -1,14 +1,11 @@
 """Tests for TrainingDataCollector."""
 
 import json
-import tempfile
-import os
 import pytest
 from pathlib import Path
 
 from src.training.data_collector import (
     TrainingDataCollector,
-    get_training_collector,
     _scrub_pii,
     _scrub_dict_pii,
 )
@@ -196,7 +193,6 @@ class TestTrainingDataCollector:
         assert all(p["quality_grade"] in ("gold",) for p in pairs)
 
     def test_capture_async_does_not_raise(self, collector):
-        import concurrent.futures
         state = {
             "query_id": "async-q1",
             "user_query": "Async test",
@@ -207,7 +203,8 @@ class TestTrainingDataCollector:
             "citations": [],
         }
         collector.capture_async(state)
-        import time; time.sleep(0.2)
+        import time
+        time.sleep(0.2)
         stats = collector.get_stats()
         assert stats["total_pairs"] == 1
 
@@ -327,7 +324,6 @@ class TestTrainingDataCollector:
         assert "reject" not in grades
 
     def test_export_produces_valid_jsonl(self, tmp_path):
-        import os
         from src.training.data_collector import TrainingDataCollector
 
         db_path = tmp_path / "export_test.db"
@@ -364,7 +360,6 @@ class TestTrainingDataCollector:
         output_file = Path(output_dir) / f"{stats['version']}_jsonl.jsonl"
         assert output_file.exists()
 
-        import json
         with output_file.open() as f:
             lines = f.readlines()
         assert len(lines) == 3

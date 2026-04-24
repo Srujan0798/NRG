@@ -8,10 +8,9 @@ Phase 3 - Immortalize: Self-calibration, metrics
 import importlib
 import json
 import os
-import sys
 import pytest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from src.orchestration.nodes.router import (
     router_node,
@@ -25,7 +24,6 @@ from src.orchestration.nodes.router import (
     RoutingMetrics,
     CONFIDENCE_THRESHOLD_LOW,
     CONFIDENCE_THRESHOLD_HIGH,
-    RoutingDecision,
 )
 
 

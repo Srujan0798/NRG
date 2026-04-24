@@ -2,11 +2,9 @@
 Tests for StratifiedSampler — Protocol #40: Stratified Curator for NRG
 """
 
-import pytest
 from src.training.stratified_sampler import (
     SamplingConfig,
     StratifiedSampler,
-    StratificationConfig,
     get_balanced_sample,
     QUERY_TYPE_KEYWORDS,
 )

@@ -7,10 +7,8 @@ This test module verifies that:
 4. The dual-driver extractor factory works correctly
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import Set
 
 import pytest
 
@@ -258,10 +256,9 @@ class TestTableCompleteness:
 
         missing = []
         for table in critical_tables:
-            section_pattern = f"### {table} ({len(critical_tables)})"
             if f"### {table} (" not in schema_hints_content:
                 missing.append(table)
-            elif f"| Column" not in schema_hints_content.split(f"### {table}")[1].split("###")[0]:
+            elif "| Column" not in schema_hints_content.split(f"### {table}")[1].split("###")[0]:
                 missing.append(f"{table} (missing column table)")
 
         assert not missing, f"Missing column docs for: {missing}"
