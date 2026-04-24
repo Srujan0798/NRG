@@ -732,6 +732,67 @@ class SovereignLLMMesh:
         self._latency_history: dict[str, list[float]] = {p: [] for p in self.clients}
         self._latency_history_max = 100
         self._executor = ThreadPoolExecutor(max_workers=4)
+        self._redis = None
+        self._redis_circuit_prefix = "circuit:state:"
+        self._redis_failures_prefix = "circuit:failures:"
+        self._load_circuit_from_redis()
+
+    def _get_redis(self):
+        """Lazily get Redis client, cached for the lifetime of the mesh."""
+        if self._redis is None:
+            try:
+                from src.caching.redis_layer import _get_redis as _r
+                self._redis = _r()
+            except Exception:
+                self._redis = False
+        return self._redis if self._redis else None
+
+    def _load_circuit_from_redis(self) -> None:
+        """Load circuit breaker state from Redis on startup. Graceful degradation if Redis unavailable."""
+        redis = self._get_redis()
+        if redis is None:
+            return
+        now = time.time()
+        for provider in list(self.clients):
+            try:
+                state_key = f"{self._redis_circuit_prefix}{provider}"
+                failures_key = f"{self._redis_failures_prefix}{provider}"
+
+                saved_state = redis.get(state_key)
+                if saved_state in ("open", "half_open", "closed"):
+                    self._circuit_state[provider] = saved_state
+
+                failure_times = redis.zrange(failures_key, 0, -1, withscores=True)
+                if failure_times:
+                    valid_times = [ts for ts, _ in failure_times if now - ts < self._circuit_window_seconds]
+                    self._failure_history[provider] = valid_times
+                    if valid_times and len(valid_times) >= self._circuit_failure_threshold:
+                        self._circuit_state[provider] = "open"
+            except Exception:
+                pass
+
+    def _persist_circuit_to_redis(self, provider: str) -> None:
+        """Persist circuit state and failure history to Redis. Fails silently if Redis unavailable."""
+        redis = self._get_redis()
+        if redis is None:
+            return
+        try:
+            state_key = f"{self._redis_circuit_prefix}{provider}"
+            failures_key = f"{self._redis_failures_prefix}{provider}"
+            state = self._circuit_state.get(provider, "closed")
+            ttl = int(self._circuit_window_seconds + 300)
+            redis.setex(state_key, ttl, state)
+            if state == "open":
+                redis.delete(failures_key)
+            else:
+                pipe = redis.pipeline()
+                pipe.delete(failures_key)
+                for ts in self._failure_history.get(provider, []):
+                    pipe.zadd(failures_key, {str(ts): ts})
+                pipe.expire(failures_key, ttl)
+                pipe.execute()
+        except Exception:
+            pass
 
     def _load_mesh_config(self) -> LLMMeshConfig:
         """Load mesh configuration from environment."""
@@ -793,6 +854,7 @@ class SovereignLLMMesh:
             if now - last_failure >= cooldown:
                 self._circuit_state[provider] = "half_open"
                 logger.info(f"🔌 Circuit breaker HALF-OPEN for {provider} (cooldown={cooldown}s expired)")
+                self._persist_circuit_to_redis(provider)
                 return False
             return True
 
@@ -862,6 +924,7 @@ class SovereignLLMMesh:
                 self._circuit_state[provider] = "closed"
                 if prev_state != "closed":
                     logger.info(f"🔌 Circuit breaker CLOSED for {provider}")
+        self._persist_circuit_to_redis(provider)
 
     def _record_failure(self, provider: str) -> None:
         """Record a failure and potentially trip the circuit breaker."""
@@ -880,6 +943,7 @@ class SovereignLLMMesh:
             if len(self._failure_history[provider]) >= self._circuit_failure_threshold:
                 self._circuit_state[provider] = "open"
                 logger.warning(f"🔌 Circuit breaker OPEN for {provider} after {len(self._failure_history[provider])} failures")
+        self._persist_circuit_to_redis(provider)
 
     def _get_cooldown(self, provider: str) -> float:
         """Get exponential backoff cooldown: 30s → 60s → 120s → 300s."""

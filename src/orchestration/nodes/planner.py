@@ -45,9 +45,50 @@ SKILL_KEYWORDS = {
     "rag": ["explain", "describe", "trend", "advance", "overview", "analysis", "summarize", "what are", "latest"],
 }
 
+TABLE_TO_DOMAIN = {
+    "researchers": "research",
+    "publications": "research",
+    "researcher_publications": "research",
+    "institutions": "research",
+    "labs": "research",
+    "researcher_labs": "research",
+    "innovation_grant_from_govt": "funding",
+    "financial_expenses_operational": "funding",
+    "financial_expenses_capital": "funding",
+    "combined_ipo_patent_data": "patents",
+    "patents_details": "patents",
+    "ipo_patent_details_flat": "patents",
+    "incubation_details": "startups",
+    "startup_recognition": "startups",
+    "founders_of_fortune_500": "startups",
+    "phd_students": "academic",
+    "academic_courses_details": "academic",
+    "faculty_details": "academic",
+    "faculty_strength": "academic",
+    "actual_student_strength": "academic",
+    "sanctioned_intake": "academic",
+    "placements_and_higher_studies": "academic",
+    "nirf_extracted_table": "rankings",
+    "nirf_table_row": "rankings",
+    "nirf_pdf_record": "rankings",
+}
+
+
+def _detect_domain_from_tables(tables: list[str]) -> str:
+    """Detect the primary domain from a list of table names."""
+    if not tables:
+        return "unspecified"
+    domain_counts: dict[str, int] = {}
+    for table in tables:
+        domain = TABLE_TO_DOMAIN.get(table.lower(), "other")
+        if domain != "other":
+            domain_counts[domain] = domain_counts.get(domain, 0) + 1
+    if not domain_counts:
+        return "other"
+    return max(domain_counts, key=domain_counts.get)
+
 
 class Plan(BaseModel):
-    subqueries: list[str] = Field(default_factory=list)
     schema_tables: list[str] = Field(default_factory=list)
     desired_skills: list[str] = Field(default_factory=list)
     expected_output_shape: str = ""
@@ -63,6 +104,7 @@ def planner_node(state: Any) -> dict:
     user_query = _state_get(state, "user_query", "")
     conversation_history = _state_get(state, "conversation_history", [])
     user_id = _state_get(state, "user_id", "planner")
+    previous_domain = _state_get(state, "active_domain", "")
 
     client = _get_planner_client()
     schema_prompt = _build_schema_prompt(user_query)
@@ -96,6 +138,7 @@ def planner_node(state: Any) -> dict:
                     "mode": "llm",
                     "model": _client_model_name(client),
                 },
+                **_domain_update(plan_dict, previous_domain),
             }
         except Exception as first_error:
             logger.warning("Planner failed first parse/call: %s", first_error)
@@ -117,6 +160,7 @@ def planner_node(state: Any) -> dict:
                         "mode": "llm_repaired",
                         "model": _client_model_name(client),
                     },
+                    **_domain_update(plan_dict, previous_domain),
                 }
             except Exception:
                 pass
@@ -133,6 +177,21 @@ def planner_node(state: Any) -> dict:
             "mode": "heuristic_fallback",
             "reason": "llm_unavailable_or_failed",
         },
+        **_domain_update(fallback_plan, previous_domain),
+    }
+
+
+def _domain_update(plan_dict: dict, previous_domain: str) -> dict:
+    """Compute domain state updates from a plan's schema_tables."""
+    tables = plan_dict.get("schema_tables", [])
+    current_domain = _detect_domain_from_tables(tables)
+    domain_switch = bool(previous_domain and previous_domain != "unspecified"
+                         and current_domain != "unspecified"
+                         and current_domain != previous_domain)
+    return {
+        "previous_domain": previous_domain,
+        "active_domain": current_domain,
+        "domain_switch_detected": domain_switch,
     }
 
 
