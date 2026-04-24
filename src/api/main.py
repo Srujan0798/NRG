@@ -1437,7 +1437,13 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
     role = token_payload.get("role", "researcher")
     tier = token_payload.get("tier", 1)
 
-    if tier >= 2:
+    if role == "industry":
+        result = {
+            "total_researchers": researcher_count,
+            "total_publications": publication_count,
+            "research_areas": [ra["area"] for ra in research_areas[:5]],
+        }
+    elif tier >= 2:
         result = {
             "total_researchers": researcher_count,
             "total_publications": publication_count,
@@ -1446,12 +1452,6 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
             "total_funding_amount": funding_total,
             "research_area_distribution": research_areas[:10],
             "state_distribution": stats.get("state_distribution", [])[:10],
-        }
-    elif role == "industry":
-        result = {
-            "total_researchers": researcher_count,
-            "total_publications": publication_count,
-            "research_areas": [ra["area"] for ra in research_areas[:5]],
         }
     else:
         result = {
