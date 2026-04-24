@@ -14,6 +14,14 @@ from src.audit.per_user_keys import (
     reset_per_user_key_manager,
 )
 from src.audit import ImmutableAuditLog, AuditEvent
+from src.audit.db_cosign import (
+    DB_COSIGN_COLUMN,
+    DB_COSIGN_TRIGGER_NAME,
+    DBCoSignStore,
+    compute_db_cosign_hmac,
+    generate_audit_cosign_trigger_sql,
+    verify_db_cosign,
+)
 
 
 class TestPerUserKeyManager:
@@ -346,3 +354,60 @@ class TestVerifyChainWithPerUserBinding:
         valid, errors, count = audit_log.verify_chain(verify_per_user=True)
         assert valid, f"Expected valid but got: {errors}"
         assert count == 3
+
+
+class TestDatabaseCoSign:
+    """DB-side co-sign proof for the C2 single-signer gap."""
+
+    def test_db_cosign_hmac_is_deterministic_and_tamper_sensitive(self):
+        """DB co-sign HMAC binds event_id, chain_hash, and per_user_binding."""
+        sig1 = compute_db_cosign_hmac(
+            event_id="evt-1",
+            chain_hash="a" * 64,
+            per_user_binding="b" * 16,
+            db_secret="db-secret",
+        )
+        sig2 = compute_db_cosign_hmac(
+            event_id="evt-1",
+            chain_hash="a" * 64,
+            per_user_binding="b" * 16,
+            db_secret="db-secret",
+        )
+        tampered = compute_db_cosign_hmac(
+            event_id="evt-1",
+            chain_hash="c" * 64,
+            per_user_binding="b" * 16,
+            db_secret="db-secret",
+        )
+
+        assert sig1 == sig2
+        assert sig1 != tampered
+        assert len(sig1) == 64
+
+    def test_db_cosign_trigger_sql_adds_column_and_insert_trigger(self):
+        """Postgres DDL must create audit_events.db_cosign_hmac and audit_cosign_trigger."""
+        ddl = generate_audit_cosign_trigger_sql()
+
+        assert f"ADD COLUMN IF NOT EXISTS {DB_COSIGN_COLUMN} TEXT" in ddl
+        assert f"CREATE TRIGGER {DB_COSIGN_TRIGGER_NAME}" in ddl
+        assert "BEFORE INSERT ON audit_events" in ddl
+        assert "current_setting('app.audit_db_cosign_key', true)" in ddl
+        assert "hmac(cosign_message::bytea, cosign_key::bytea, 'sha256')" in ddl
+
+    def test_recent_verify_reports_disabled_when_database_url_missing(self, monkeypatch, tmp_path):
+        """Recent verifier must return an explicit result object, not crash when DB is absent."""
+        monkeypatch.delenv("DATABASE_URL", raising=False)
+        DBCoSignStore._instance = None
+        chain = tmp_path / "chain.jsonl"
+        chain.write_text(
+            '{"event_id":"evt-1","hash":"'
+            + ("a" * 64)
+            + '","per_user_binding":"bbbbbbbbbbbbbbbb"}\n'
+        )
+
+        result = verify_db_cosign(last_n=1, chain_path=chain)
+
+        assert result.all_signed is False
+        assert result.count == 0
+        assert result.status == "disabled:no_postgres_database_url"
+        assert "PostgreSQL DATABASE_URL is not set" in result.errors
