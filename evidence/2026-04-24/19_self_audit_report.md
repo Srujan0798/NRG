@@ -135,5 +135,5 @@ Date: 2026-04-25 local execution for 2026-04-24 protocol folder
 Dhairya Score: 43/43 focused tests = 100%
 Quality Bar: scorecard 4/5 scored; 6/6 compliant: NO
 Red Team: 7/30 BLOCKED
-Git commit hash: pending until evidence commit
+Git commit hash: c8cb1fc9 (`[NRG-AUDIT-2026-04-24] audit - evidence for eternal verification protocol`)
 Evidence folder: `evidence/2026-04-24/`
