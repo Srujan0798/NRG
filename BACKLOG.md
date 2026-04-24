@@ -1,14 +1,14 @@
 # NRG — Task Backlog
 
 > **Updated**: 2026-04-25 (Eternal Protocol evidence refresh)
-> **Sprint**: Phase 3–5 verification in progress; not UAT-ready until local P0 blockers below are closed
+> **Sprint**: Phase 3–5 verification in progress; not UAT-ready until verification blockers below are closed
 > **Test Status**: Focused suites pass where noted; full `pytest tests/` failed/stalled and is not green
-> **Quality Bar**: Scorecard reports `RESULT: 4/5 — NOT FULLY COMPLIANT`; C4 skipped and C5 failed
-> **Audit Chain**: Rebuilt and verified clean after stopping concurrent writers; `verify_chain()` reports `valid True`, `count 375353`, `errors 0`
+> **Quality Bar**: Scorecard reports `RESULT: 5/5 — NOT FULLY COMPLIANT`; C4 skipped, so 6/6 is still not satisfied
+> **Audit Chain**: Current `verify_chain()` reports `Chain intact: False`, `Events verified: 378644`, `Error count: 1`; local audit-chain integrity is BLOCKED until repaired from a known-good backup or root-caused
 > **Data Sources**: 5 mandatory reads (Core Idea, db_struct.sql, BACKLOG.md, Dhairya Audit, NRG_SELF_AUDIT_REPORT)
 > **Schema**: `db_struct.sql` has 58 tables; `add_production_tables_001.py` creates 47 tables and omits 11 Django/support tables
 > **Protocols**: Prompt 5 v4.1 FINAL ETERNAL integrated into `master_audit_protocol.md`. Supersedes all previous versions (Claude v1.0–v4.0 + Grok v1.0–v4.1).
-> **Current Baseline**: 4/10 — not UAT-ready; focused Text-to-SQL is strong, but full-suite, red-team, C4 load, C5 drift, tier-differentiation, and live resilience proof are blocking
+> **Current Baseline**: 6/10 — not UAT-ready; focused Text-to-SQL and local GAP-A/B/C code are strong, but full-suite, audit-chain integrity, C4 load, tier-differentiation, and live resilience proof are blocking
 
 ---
 
@@ -16,14 +16,14 @@
 
 Evidence folder: `evidence/2026-04-24/`
 
-- **Text-to-SQL FIXED-AND-VERIFIED for focused Dhairya suite**: `pytest tests/benchmarks/test_dhairya_regression.py -v` produced `43 passed in 8.19s`; all original Q1-Q17 cases pass in the current regression file.
+- **Text-to-SQL FIXED-AND-VERIFIED for focused Dhairya suite**: `pytest tests/benchmarks/test_dhairya_regression.py -v` produced `43 passed in 3.64s`; all original Q1-Q17 cases pass in the current regression file.
 - **Full suite BLOCKED**: `pytest tests/ -v --tb=short` failed earlier e2e/provider-health checks and was terminated after stalling at `tests/orchestration/test_router.py::TestRouterAgainstEvaluationDataset::test_accuracy_on_dataset`. Evidence: `evidence/2026-04-24/01_pytest_full_suite.log`.
 - **Schema parity PARTIAL**: `tests/data/test_schema_parity.py` produced `7 passed, 4 skipped`; live PostgreSQL type/parity checks were not exercised locally. Evidence: `evidence/2026-04-24/03_schema_parity.log`.
-- **Quality bar BLOCKED**: scorecard output is `4/5 — NOT FULLY COMPLIANT`; C4 skipped because the live scorecard run had no API on port 8000, and C5 failed vector drift checks. Evidence: `evidence/2026-04-24/08_quality_bar_scorecard.log`.
-- **Red team BLOCKED**: direct gateway/security-layer run blocked 7/30, allowed 18/30, and left 14 security attacks allowed among RT-01..RT-25. Evidence: `evidence/2026-04-24/17_red_team_results.md`.
-- **C4 load proof BLOCKED**: local load test could not run because `locust` is not installed in `.venv`. Evidence: `evidence/2026-04-24/15_load_test_results.log`.
-- **Circuit breaker live proof BLOCKED**: requested `tests/resilience/test_circuit_breaker_live.py` does not exist; related code and chaos tests exist, but no live provider-kill evidence was produced. Evidence: `evidence/2026-04-24/18_circuit_breaker_test.log`.
-- **Audit chain FIXED-AND-VERIFIED after rebuild**: final verification reports `Chain intact: True`, `Events verified: 375353`, `Any gaps: []`. Evidence: `evidence/2026-04-24/14_audit_chain_verify.log`.
+- **Quality bar BLOCKED**: scorecard output is `5/5 — NOT FULLY COMPLIANT`; C4 is skipped, so the required 6/6 bar is not met. Evidence: `evidence/2026-04-24/08_quality_bar_scorecard.log`.
+- **Red team PARTIAL-PASS**: direct gateway/security-layer run blocked or downgraded all RT-01..RT-25 security attacks; RT-27..RT-30 remain execution/rate-limit concerns outside sanitizer-only validation. Evidence: `evidence/2026-04-24/17_red_team_results.md`.
+- **C4 load proof BLOCKED**: Locust is installed, but the current load task implementation raises request-context errors before issuing HTTP calls; aggregated request count is 0. Evidence: `evidence/2026-04-24/15_load_test_results.log`.
+- **Circuit breaker live proof PARTIAL**: requested `tests/resilience/test_circuit_breaker_live.py` does not exist; focused chaos test `test_circuit_breaker_trips_after_3_failures` passes. Evidence: `evidence/2026-04-24/18_circuit_breaker_test.log`.
+- **Audit chain BLOCKED**: current verification reports `Chain intact: False`, `Events verified: 378644`, `Error count: 1`, first error `Line 378645: hash mismatch`. Evidence: `evidence/2026-04-24/14_audit_chain_verify.log`.
 - **Tier query live proof PARTIAL**: T1/T2/T3 `/query` responses all returned the top-funding SQL and results, but response structures were not materially different by tier. Evidence: `09_tier1_query_response.json`, `10_tier2_query_response.json`, `11_tier3_query_response.json`.
 
 ---
@@ -297,9 +297,9 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 | Gap ID | Issue | Severity | Owner | Action | Evidence File |
 |---|---|---|---|---|---|
-| GAP-A | DB co-sign module missing — Postgres trigger not implemented | 🔴 P0 | DevOps Agent | `src/audit/db_cosign.py` + Postgres trigger | `evidence/YYYY-MM-DD/19_gap_fixes.md` |
-| GAP-B | Vector drift 60-second scheduler not deployed | 🔴 P0 | Backend Agent | Deploy cron or streaming watcher | `evidence/YYYY-MM-DD/19_gap_fixes.md` |
-| GAP-C | `HALL_OF_SHAME.md` missing from disk (referenced in BACKLOG) | 🔴 P0 | Backend Agent | `src/data/schema/failed_queries/HALL_OF_SHAME.md` | `evidence/YYYY-MM-DD/19_gap_fixes.md` |
+| GAP-A | DB co-sign module missing — Postgres trigger not implemented | 🟡 FIXED-AND-VERIFIED-2026-04-24 locally | DevOps Agent | `src/audit/db_cosign.py` + generated Postgres trigger committed at `b873b713`; live Postgres trigger application still needs staging DB | `evidence/2026-04-24/19_gap_fixes.md` |
+| GAP-B | Vector drift 60-second scheduler not deployed | 🟡 FIXED-AND-VERIFIED-2026-04-24 locally | Backend Agent | `scripts/vector_drift_scheduler.py` committed at `527af236`; unit test verifies 60s interval and `/api/reindex` trigger policy | `evidence/2026-04-24/19_gap_fixes.md`, `evidence/2026-04-24/20_vector_drift_scheduler.log` |
+| GAP-C | `HALL_OF_SHAME.md` missing from disk (referenced in BACKLOG) | ✅ FIXED-AND-VERIFIED-2026-04-24 | Backend Agent | `src/data/schema/failed_queries/HALL_OF_SHAME.md` committed at `4c743b84` with all 7 Dhairya failure patterns | `evidence/2026-04-24/19_gap_fixes.md` |
 
 ### Cluster-Dependent GAPS (After A/B/C Are DONE)
 
@@ -315,7 +315,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 | Old ID | Mapped To | Status |
 |---|---|---|
-| B1 (Audit chain broken) | GAP-A related | Partial — single hash mismatch at line 371683 remains |
+| B1 (Audit chain broken) | GAP-A related | BLOCKED — current `verify_chain()` reports one hash mismatch at line 378645 despite DB co-sign code being implemented |
 | B2 (API not running) | FIXED locally — `/health` uses `_get_db()` / `NRGDatabaseV2` |
 | B3 (PII test >60s) | Performance debt — optimize regex or mark `@pytest.mark.slow` |
 | B4 (Full suite timeout) | Performance debt — add `pytest-xdist`, parallelize |

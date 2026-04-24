@@ -1,1 +1,94 @@
-{"query_id":"40ddfc46-dca7-469d-9520-01e9839adbeb","audit_event_id":"4b6975fac8ae2edc0b66f3959ed12d3102c7347437425e770f04ec26d021ad03","session_id":"d9b634cb-5da2-4ea6-958a-eb865c233658","response":"════════════════════════════════════════════════════════════ NATIONAL RESEARCH GRAPH — Research Intelligence Report\n════════════════════════════════════════════════════════════ Query: Top 5 funding agencies by total grant amount ┌─ Query Classification\n│ Intent: structured\n│ Routed to: text_to_sql\n└──────────────────────────────────────── ┌─ Structured Data Results\n│ Found 5 research records\n└──────────────────────────────────────── 1. gov_organisation_name: DST-SERB | total_grant: 167500000 [cite:structured:0] 2. gov_organisation_name: DRDO | total_grant: 124000000 3. gov_organisation_name: DBT | total_grant: 22000000 4. gov_organisation_name: MeitY | total_grant: 15000000 5. gov_organisation_name: AICTE | total_grant: 3000000 ──────────────────────────────────────────────────────────── [Note: Structured summary — AI synthesis temporarily unavailable]\n────────────────────────────────────────────────────────────","status":"success","tier":2,"intent":"structured","routing_decision":"text_to_sql","verification_status":"retry","citation_validity":1.0,"plan":{"subqueries":["top 5 funding agencies by total grant amount"],"schema_tables":["patents","innovation_grant_from_govt","funding_records","combined_ipo_patent_data"],"desired_skills":["sql"],"expected_output_shape":"mixed_summary","dag_nodes":[{"id":"node_292324","subquery":"top 5 funding agencies by total grant amount","skill":"sql","depends_on":[],"tables":["patents","innovation_grant_from_govt","funding_records","combined_ipo_patent_data"],"output_shape":"mixed_summary","optional":false}],"dag_root_id":"node_292324","is_dag":true},"planner_metadata":{"mode":"heuristic_fallback","reason":"llm_unavailable_or_failed"},"citations":[{"pub_id":"structured","chunk_id":"0","enriched":false}],"warnings":[],"sql_query":"SELECT gov_organisation_name, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt GROUP BY gov_organisation_name ORDER BY total_grant DESC LIMIT 5","sql_queries":[],"sql_results":[{"gov_organisation_name":"DST-SERB","total_grant":167500000},{"gov_organisation_name":"DRDO","total_grant":124000000},{"gov_organisation_name":"DBT","total_grant":22000000},{"gov_organisation_name":"MeitY","total_grant":15000000},{"gov_organisation_name":"AICTE","total_grant":3000000}],"retrieval_sources":[],"provenance":{"synth":"rule_based","cloud_synthesis_used":false,"provider":"rule_based"},"synthesis_method":"rule_based","conversation_history":[{"query":"Top 5 funding agencies by total grant amount","response":"════════════════════════════════════════════════════════════ NATIONAL RESEARCH GRAPH — Research Intelligence Report\n════════════════════════════════════════════════════════════ Query: Top 5 funding agencies by total grant amount ┌─ Query Classification\n│ Intent: structured\n│ Routed to: text_to_sql\n└──────────────────────────────────────── ┌─ Structured Data Results\n│ Found 5 research records\n└──────────────────────────────────────── 1. gov_organisation_name: DST-SERB | total_grant: 167500000 [cite:structured:0] 2. gov_organisation_name: DRDO | total_grant: 124000000 3. gov_organisation_name: DBT | total_grant: 22000000 4. gov_organisation_name: MeitY | total_grant: 15000000 5. gov_organisation_name: AICTE | total_grant: 3000000 ──────────────────────────────────────────────────────────── [Note: Structured summary — AI synthesis temporarily unavailable]\n────────────────────────────────────────────────────────────"}]}
+{
+    "query_id": "f0539d24-c6a1-4bfa-88b1-eb1c6b675cd4",
+    "audit_event_id": "94d27b5fbd4f504eb380154da9bd268e663479e23db5bd1e9c5ad761174d3910",
+    "session_id": "e9ded8de-151f-43f0-875c-622e40442ab4",
+    "response": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: Top 5 funding agencies by total grant amount \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Structured Data Results\n\u2502 Found 5 research records\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 1. gov_organisation_name: DST-SERB | total_grant: 167500000 [cite:structured:0] 2. gov_organisation_name: DRDO | total_grant: 124000000 3. gov_organisation_name: DBT | total_grant: 22000000 4. gov_organisation_name: MeitY | total_grant: 15000000 5. gov_organisation_name: AICTE | total_grant: 3000000 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [Note: Structured summary \u2014 AI synthesis temporarily unavailable]\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+    "status": "success",
+    "tier": 2,
+    "intent": "structured",
+    "routing_decision": "text_to_sql",
+    "verification_status": "retry",
+    "citation_validity": 1.0,
+    "plan": {
+        "subqueries": [
+            "top 5 funding agencies by total grant amount"
+        ],
+        "schema_tables": [
+            "innovation_grant_from_govt",
+            "combined_ipo_patent_data",
+            "funding_records",
+            "patents"
+        ],
+        "desired_skills": [
+            "sql"
+        ],
+        "expected_output_shape": "mixed_summary",
+        "dag_nodes": [
+            {
+                "id": "node_0dccf3",
+                "subquery": "top 5 funding agencies by total grant amount",
+                "skill": "sql",
+                "depends_on": [],
+                "tables": [
+                    "innovation_grant_from_govt",
+                    "combined_ipo_patent_data",
+                    "funding_records",
+                    "patents"
+                ],
+                "output_shape": "mixed_summary",
+                "optional": false
+            }
+        ],
+        "dag_root_id": "node_0dccf3",
+        "is_dag": true
+    },
+    "planner_metadata": {
+        "mode": "heuristic_fallback",
+        "reason": "llm_unavailable_or_failed"
+    },
+    "citations": [
+        {
+            "pub_id": "structured",
+            "chunk_id": "0",
+            "enriched": false
+        }
+    ],
+    "warnings": [],
+    "sql_query": "SELECT gov_organisation_name, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt GROUP BY gov_organisation_name ORDER BY total_grant DESC LIMIT 5",
+    "sql_queries": [],
+    "sql_results": [
+        {
+            "gov_organisation_name": "DST-SERB",
+            "total_grant": 167500000
+        },
+        {
+            "gov_organisation_name": "DRDO",
+            "total_grant": 124000000
+        },
+        {
+            "gov_organisation_name": "DBT",
+            "total_grant": 22000000
+        },
+        {
+            "gov_organisation_name": "MeitY",
+            "total_grant": 15000000
+        },
+        {
+            "gov_organisation_name": "AICTE",
+            "total_grant": 3000000
+        }
+    ],
+    "retrieval_sources": [],
+    "provenance": {
+        "synth": "rule_based",
+        "cloud_synthesis_used": false,
+        "provider": "rule_based"
+    },
+    "synthesis_method": "rule_based",
+    "conversation_history": [
+        {
+            "query": "Top 5 funding agencies by total grant amount",
+            "response": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: Top 5 funding agencies by total grant amount \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Structured Data Results\n\u2502 Found 5 research records\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 1. gov_organisation_name: DST-SERB | total_grant: 167500000 [cite:structured:0] 2. gov_organisation_name: DRDO | total_grant: 124000000 3. gov_organisation_name: DBT | total_grant: 22000000 4. gov_organisation_name: MeitY | total_grant: 15000000 5. gov_organisation_name: AICTE | total_grant: 3000000 \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [Note: Structured summary \u2014 AI synthesis temporarily unavailable]\n\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+        }
+    ]
+}
