@@ -40,7 +40,7 @@ from alembic import op
 import sqlalchemy as sa
 
 revision = 'add_production_tables_001'
-down_revision = None
+down_revision = '6d878bf70def'
 branch_labels = None
 depends_on = None
 
@@ -500,7 +500,6 @@ def upgrade() -> None:
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('financial_year', sa.Text(), nullable=True),
         sa.Column('as_on_year', sa.Text(), nullable=True),
-        sa.Column('id', sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
 

@@ -504,7 +504,6 @@ def upgrade() -> None:
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('financial_year', sa.Text(), nullable=True),
         sa.Column('as_on_year', sa.Text(), nullable=True),
-        sa.Column('id', sa.Integer(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
 
