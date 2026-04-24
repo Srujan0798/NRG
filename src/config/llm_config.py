@@ -1202,5 +1202,378 @@ def get_llm_mesh() -> SovereignLLMMesh:
     """Get singleton sovereign LLM mesh instance (metrics shared across calls)."""
     global _llm_mesh_instance
     if _llm_mesh_instance is None:
-        _llm_mesh_instance = SovereignLLMMesh()
+        _llm_mesh_instance = SovereignLLLMesh()
     return _llm_mesh_instance
+
+
+class CostGuard:
+    """
+    LLM Budget Governance — prevents cloud LLM budget burnout.
+
+    Every query has a cost cap. Every provider has a budget.
+    Every month has a ceiling.
+
+    CAPS: per-query cost limits by complexity
+    THRESHOLDS: monthly budget triggers
+    AUTO-FALLBACK: >85% -> Local SLM for non-critical
+    HARD HALT: >95% -> cloud LLMs disabled except P0
+
+    PERSONA OVERRIDES (Phase 2):
+    - Government tier: always route through Minimax/NVIDIA (sovereign mandate)
+    - Industry tier: force cheapest viable path (local SLM -> Gemini Flash)
+    """
+
+    CAPS: dict[str, float] = {
+        "trivial": 0,
+        "simple": 5,
+        "standard": 50,
+        "complex": 200,
+        "critical": 500,
+    }
+
+    PROVIDER_COSTS_INPUT: dict[str, float] = {
+        "local": 0,
+        "rule_based": 0,
+        "gemini": 150,
+        "minimax": 300,
+        "azure": 450,
+        "openai": 2250,
+        "anthropic": 3000,
+        "nvidia": 2000,
+    }
+
+    PROVIDER_COSTS_OUTPUT: dict[str, float] = {
+        "local": 0,
+        "rule_based": 0,
+        "gemini": 600,
+        "minimax": 900,
+        "azure": 1350,
+        "openai": 6750,
+        "anthropic": 15000,
+        "nvidia": 6000,
+    }
+
+    ALLOCATION: dict[str, float] = {
+        "researcher_tier": 0.40,
+        "government_tier": 0.35,
+        "industry_tier": 0.15,
+        "system_operations": 0.08,
+        "incident_reserve": 0.02,
+    }
+
+    THRESHOLDS: dict[str, float] = {"warning": 0.70, "critical": 0.85, "halt": 0.95}
+
+    _instance: "CostGuard | None" = None
+    _lock = threading.Lock()
+
+    def __init__(self, monthly_budget_inr: float = 500000.0):
+        self.monthly_budget_inr = monthly_budget_inr
+        self._spent_this_month = 0.0
+        self._month_start = time.time()
+        self._query_count = 0
+        self._allocation_lock = threading.Lock()
+        self._redis: Optional[object] = None
+        self._redis_key_prefix = "costguard:monthly:"
+        self._allocate_budget()
+        self._load_from_storage()
+        self._load_spent_from_redis()
+
+    def _get_redis(self):
+        if self._redis is None:
+            try:
+                from src.caching.redis_layer import _get_redis as _r
+                self._redis = _r()
+            except Exception:
+                self._redis = False
+        return self._redis if self._redis else None
+
+    def _redis_key(self) -> str:
+        import datetime
+        return f"{self._redis_key_prefix}{datetime.date.today().strftime('%Y-%m')}"
+
+    def _load_spent_from_redis(self) -> None:
+        redis = self._get_redis()
+        if redis is None:
+            return
+        try:
+            key = self._redis_key()
+            val = redis.get(key)
+            if val is not None:
+                self._spent_this_month = float(val)
+        except Exception:
+            pass
+
+    def _persist_spent_to_redis(self) -> None:
+        redis = self._get_redis()
+        if redis is None:
+            return
+        try:
+            import datetime
+            key = self._redis_key()
+            ttl = 45 * 24 * 3600
+            redis.setex(key, ttl, str(self._spent_this_month))
+        except Exception:
+            pass
+
+    @classmethod
+    def get_instance(cls) -> "CostGuard":
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def reset_instance(cls) -> None:
+        with cls._lock:
+            cls._instance = None
+
+    def _allocate_budget(self) -> None:
+        self._budget_by_tier: dict[str, float] = {
+            tier: self.monthly_budget_inr * pct
+            for tier, pct in self.ALLOCATION.items()
+        }
+        self._spent_by_tier: dict[str, float] = {
+            "researcher_tier": 0.0,
+            "government_tier": 0.0,
+            "industry_tier": 0.0,
+            "system_operations": 0.0,
+            "incident_reserve": 0.0,
+        }
+
+    def _load_from_storage(self) -> None:
+        try:
+            import sqlite3
+            conn = sqlite3.connect("nrg_research.db")
+            row = conn.execute(
+                """
+                SELECT SUM(cost_inr) FROM llm_cost_log
+                WHERE timestamp >= date('now', 'start of month')
+                """
+            ).fetchone()
+            if row and row[0]:
+                self._spent_this_month = float(row[0])
+            conn.close()
+        except Exception:
+            pass
+
+    def get_tier_key(self, user_tier: int) -> str:
+        return {1: "researcher_tier", 2: "government_tier", 3: "industry_tier"}.get(
+            user_tier, "researcher_tier"
+        )
+
+    def get_budget_status(self) -> dict:
+        pct = self._spent_this_month / self.monthly_budget_inr
+        return {
+            "spent_inr": self._spent_this_month,
+            "budget_inr": self.monthly_budget_inr,
+            "percentage": pct,
+            "percentage_display": f"{pct * 100:.1f}%",
+            "warning": pct >= self.THRESHOLDS["warning"],
+            "critical": pct >= self.THRESHOLDS["critical"],
+            "halt": pct >= self.THRESHOLDS["halt"],
+        }
+
+    def estimate_tokens(self, query: str, context_chunks: int = 0) -> tuple[int, int]:
+        """Estimate tokens from query text and context chunks.
+
+        Uses simple word/char heuristics since provider tokenizers vary.
+        Returns (tokens_in, tokens_out_estimate).
+        """
+        words = len(query.split())
+        tokens_in = int(words * 1.3) + 50
+        tokens_out_estimate = 150 + (context_chunks * 40)
+        return tokens_in, tokens_out_estimate
+
+    def estimate_cost(
+        self,
+        complexity: str,
+        provider: str,
+        tokens_in: Optional[int] = None,
+        tokens_out: Optional[int] = None,
+        query: str = "",
+        context_chunks: int = 0,
+    ) -> float:
+        """Estimate cost for a query. Pass either token counts or query+context_chunks."""
+        if tokens_in is None or tokens_out is None:
+            tokens_in, tokens_out = self.estimate_tokens(query, context_chunks)
+        input_cost_per_1m = self.PROVIDER_COSTS_INPUT.get(provider, 0)
+        output_cost_per_1m = self.PROVIDER_COSTS_OUTPUT.get(provider, 0)
+        cost = (tokens_in / 1_000_000) * input_cost_per_1m + (tokens_out / 1_000_000) * output_cost_per_1m
+        cap = self.CAPS.get(complexity, 500)
+        return round(min(cost, cap), 4)
+
+    def check_budget(
+        self,
+        user_tier: int,
+        complexity: str,
+        estimated_cost: float,
+        guru_approval: Optional[str] = None,
+    ) -> tuple[bool, str]:
+        """
+        Returns (allowed, reason).
+        reason is empty if allowed, contains block reason if denied.
+
+        Phase 2 persona overrides:
+        - Government (tier 2): always allowed (sovereign mandate), routed to Minimax/NVIDIA
+        - Industry (tier 3): force cheapest path, non-trivial capped at ₹5
+        """
+        if user_tier == 2:
+            return True, "government_tier_sovereign_override"
+
+        tier_key = self.get_tier_key(user_tier)
+        status = self.get_budget_status()
+
+        if status["halt"] and estimated_cost > 0:
+            if guru_approval:
+                return True, f"guru_override: {guru_approval}"
+            if self._spent_by_tier.get("incident_reserve", 0) < self._budget_by_tier.get("incident_reserve", 0):
+                return True, "incident_reserve_override"
+            return False, "Monthly halt threshold (95%) — cloud LLMs disabled"
+
+        if status["critical"]:
+            if complexity in ("trivial", "simple"):
+                if guru_approval:
+                    return True, f"guru_override: {guru_approval}"
+                return False, "Budget critical (85%) — non-critical queries blocked"
+
+        if user_tier == 3 and complexity != "trivial":
+            cap = self.CAPS.get("simple", 5)
+            if estimated_cost > cap:
+                return False, f"Industry tier capped at ₹{cap} — query costs ₹{estimated_cost:.2f}"
+
+        cap = self.CAPS.get(complexity, 500)
+        if estimated_cost > cap:
+            if guru_approval:
+                return True, f"guru_approved: {guru_approval}"
+            return False, f"Estimated ₹{estimated_cost:.2f} exceeds {complexity} cap ₹{cap}"
+
+        return True, ""
+
+    def get_provider_for_tier(self, user_tier: int, complexity: str) -> list[str]:
+        """Return ordered provider list for persona. Phase 2 override."""
+        if user_tier == 2:
+            return ["minimax", "nvidia", "azure", "openai", "anthropic"]
+        if user_tier == 3:
+            return ["local", "gemini", "minimax"]
+        if complexity == "trivial":
+            return ["rule_based", "local"]
+        if complexity == "simple":
+            return ["local", "gemini", "minimax"]
+        if complexity in ("standard",):
+            return ["minimax", "gemini", "azure"]
+        if complexity == "complex":
+            return ["azure", "openai", "minimax"]
+        return ["openai", "anthropic", "nvidia"]
+
+    def record_cost(
+        self,
+        query_id: str,
+        provider: str,
+        tokens_in: int,
+        tokens_out: int,
+        cost_inr: float,
+        persona: str,
+        complexity: str,
+        route_decision: str,
+    ) -> None:
+        """Record actual cost after LLM call. Updates counters + Redis."""
+        from src.audit import log_cost_decision
+
+        log_cost_decision(
+            query_id=query_id,
+            provider=provider,
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            cost_inr=cost_inr,
+            persona=persona,
+            complexity=complexity,
+            route_decision=route_decision,
+        )
+        self._update_counters(cost_inr, persona)
+        self._persist_spent_to_redis()
+
+    def _update_counters(self, cost_inr: float, persona: str) -> None:
+        with self._allocation_lock:
+            self._spent_this_month += cost_inr
+            tier_key = self.get_tier_key({"researcher": 1, "government": 2, "industry": 3}.get(persona, 1))
+            if tier_key in self._spent_by_tier:
+                self._spent_by_tier[tier_key] += cost_inr
+            self._query_count += 1
+
+    def get_cost_breakdown(self) -> dict:
+        try:
+            import sqlite3
+            conn = sqlite3.connect("nrg_research.db")
+            persona_breakdown = {}
+            provider_breakdown = {}
+            complexity_breakdown = {}
+
+            for row in conn.execute(
+                """
+                SELECT persona, SUM(cost_inr), COUNT(*)
+                FROM llm_cost_log
+                WHERE timestamp >= date('now', 'start of month')
+                GROUP BY persona
+                """
+            ).fetchall():
+                persona_breakdown[row[0]] = {"cost": float(row[1]), "count": row[2]}
+
+            for row in conn.execute(
+                """
+                SELECT provider, SUM(cost_inr), COUNT(*)
+                FROM llm_cost_log
+                WHERE timestamp >= date('now', 'start of month')
+                GROUP BY provider
+                """
+            ).fetchall():
+                provider_breakdown[row[0]] = {"cost": float(row[1]), "count": row[2]}
+
+            for row in conn.execute(
+                """
+                SELECT complexity, SUM(cost_inr), COUNT(*)
+                FROM llm_cost_log
+                WHERE timestamp >= date('now', 'start of month')
+                GROUP BY complexity
+                """
+            ).fetchall():
+                complexity_breakdown[row[0]] = {"cost": float(row[1]), "count": row[2]}
+
+            conn.close()
+            return {
+                "persona": persona_breakdown,
+                "provider": provider_breakdown,
+                "complexity": complexity_breakdown,
+                "total_spent": round(self._spent_this_month, 2),
+                "query_count": self._query_count,
+                "budget_remaining": round(self.monthly_budget_inr - self._spent_this_month, 2),
+                "budget_status": self.get_budget_status(),
+                "allocation": {
+                    "total": self.monthly_budget_inr,
+                    "by_tier": {k: round(v, 2) for k, v in self._budget_by_tier.items()},
+                    "spent_by_tier": {k: round(v, 2) for k, v in self._spent_by_tier.items()},
+                },
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def get_daily_cost_digest(self) -> str:
+        """Appended to agent daily digest. Returns a formatted string."""
+        status = self.get_budget_status()
+        remaining = self.monthly_budget_inr - self._spent_this_month
+        pct = status["percentage_display"]
+
+        alerts = []
+        if status["halt"]:
+            alerts.append("HALT: Cloud LLMs disabled (95% budget)")
+        elif status["critical"]:
+            alerts.append("CRITICAL: Auto-fallback active (85% budget)")
+        elif status["warning"]:
+            alerts.append("WARNING: Approaching 70% budget")
+
+        alert_str = " | ".join(alerts) if alerts else "No alerts"
+        return (
+            f"COST: \u20b9{self._spent_this_month:,.0f} spent | "
+            f"\u20b9{remaining:,.0f} remaining ({pct}) | "
+            f"{alert_str}"
+        )

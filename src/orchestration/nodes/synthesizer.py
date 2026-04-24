@@ -497,6 +497,14 @@ def _synthesize(
     - complexity=moderate → cloud LLM standard model
     - complexity=complex/synthesis_heavy → cloud LLM best model, parallel racing top-3
     """
+    from src.config.llm_config import CostGuard
+    cost_guard = CostGuard.get_instance()
+
+    allowed, reason = cost_guard.check_budget(user_tier, complexity, 0)
+    if not allowed:
+        logger.warning(f"CostGuard blocked {complexity} query: {reason}")
+        return f"[Cost governance: {reason}]", {"synth": "blocked", "cloud_synthesis_used": False, "block_reason": reason}
+
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
 
     if complexity == "trivial":
@@ -579,6 +587,24 @@ def _synthesize(
             return response, {"synth": "cloud_llm", "cloud_synthesis_used": True}
         except Exception as e:
             logger.warning(f"Cloud LLM mesh failed: {e}, trying local LLM")
+    else:
+        response = None
+
+    # Log cloud LLM cost if allowed and response was received
+    if cloud_allowed and response is not None:
+        tokens_in = len(system_prompt) // 4
+        tokens_out = len(response) // 4
+        cost = cost_guard.estimate_cost(complexity, "minimax", tokens_in, tokens_out)
+        cost_guard.log_cost(
+            query_id=hash(query) % 1000000,
+            provider="minimax",
+            tokens_in=tokens_in,
+            tokens_out=tokens_out,
+            cost_inr=cost,
+            persona={1: "researcher", 2: "government", 3: "industry"}.get(user_tier, "researcher"),
+            complexity=complexity,
+            route_decision="cloud_llm",
+        )
 
 # Try 2: Local SLM
     local_client = get_local_llm_client()
