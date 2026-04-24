@@ -183,6 +183,15 @@ class TestDriftCheckRuntime:
 
         assert _qdrant_ready_for_benchmark(health) is False
 
+    def test_qdrant_unindexed_collection_is_not_benchmark_ready(self):
+        health = {
+            "status": "degraded",
+            "indexed_vectors": 0,
+            "total_vectors": 19322,
+        }
+
+        assert _qdrant_ready_for_benchmark(health) is False
+
     def test_qdrant_with_vectors_is_benchmark_ready(self):
         health = {
             "status": "degraded",

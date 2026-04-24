@@ -20,9 +20,7 @@
         "defaults": {
           "color": {"mode": "thresholds"},
           "mappings": [
-            {"options": {"0": {"color": "red", "text": "BROKEN"}}, "type": "value"},
-            {"options": {"1": {"color": "green", "text": "VALID"}}},
-            "type": "value"
+            {"options": {"0": {"color": "red", "text": "BROKEN"}, "1": {"color": "green", "text": "VALID"}}, "type": "value"}
           ],
           "thresholds": {
             "mode": "absolute",

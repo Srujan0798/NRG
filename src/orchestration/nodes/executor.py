@@ -318,6 +318,7 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
     all_errors: list[dict] = []
     all_warnings: list[dict] = []
     all_sql_results: list = []
+    all_sql_queries: list[str] = []
     all_chunks: list = []
     dag_execution_times: dict[str, float] = {}
 
@@ -360,6 +361,8 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         all_errors.extend(result.get("errors", []))
         all_warnings.extend(result.get("warnings", []))
         all_sql_results.extend(result.get("sql_results", []))
+        if result.get("sql_query"):
+            all_sql_queries.append(result["sql_query"])
         all_chunks.extend(result.get("retrieved_chunks", []))
 
     total_time = sum(dag_execution_times.values())
@@ -371,6 +374,8 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
 
     return {
         "sql_results": all_sql_results,
+        "sql_query": all_sql_queries[0] if len(all_sql_queries) == 1 else None,
+        "sql_queries": all_sql_queries,
         "retrieved_chunks": all_chunks,
         "retrieval_metadata": [],
         "errors": all_errors,
