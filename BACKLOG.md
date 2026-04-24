@@ -215,12 +215,12 @@
 | # | Constraint | Score | Status | Evidence | V4 Delta |
 |---|---|---|---|---|---|
 | C1 | DPDP Indian PII | ✅ 10/10 (was 8/10) | **PASS** | `tests/security/test_pii_indian.py` | +Verhoeff checksum, +GSTIN regex |
-| C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS | `tests/security/test_per_user_audit_binding.py` | DB co-sign gap identified |
+| C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS | `tests/security/test_per_user_audit_binding.py` | DB co-sign integrated (fire-and-forget in append); verify_cosign permissive |
 | C3 | Multi-hop DAG planner | ✅ 24/24 (100%) | PASS | `tests/orchestration/test_multi_hop_planner.py` | Cycle + edge tests pending |
 | C4 | P99<500ms @ 1000 concurrent | ⏭️ Needs sovereign cluster | **PENDING** | `evidence/02_load_report.md` | C4 SKIP in scorecard |
-| C5 | Vector drift auto-retrain | ⚠️ 1/1 (partially) | **PARTIAL** | `scripts/vector_drift_check.py` | drift_result crash + no 1-min scheduler |
+| C5 | Vector drift auto-retrain | ✅ 1/1 | **PASS** | `scripts/vector_drift_check.py`, `infrastructure/cron/nrg-drift-monitor` | drift_result bug fixed; 60s cron daemon added |
 | C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS | `tests/security/test_egress_allowlist.py` | Path restructure pending |
-| | **Overall** | **5/6 → 6/6** | **ETERNAL SEAL PENDING** | C4 + C5 fixable on cluster | V4: C1 lifts to 10/10 |
+| | **Overall** | **5/6** | **ETERNAL SEAL PENDING** | C4 needs sovereign cluster; C1+C2+C3+C5+C6 PASS | V4: C1 lifts to 10/10 |
 
 ---
 

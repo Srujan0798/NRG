@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""
+NRG Drift Monitor Daemon — 60-second Vector Quality SLO Enforcer.
+
+Runs drift detection every 60 seconds against the benchmark query set.
+SLO: drift_score >= 0.85 | WARNING < 0.60 | CRITICAL < 0.40
+
+Exit codes:
+    0 = healthy (GREEN or AMBER)
+    1 = WARNING
+    2 = CRITICAL
+    3 = error
+
+Usage:
+    python infrastructure/cron/nrg-drift-monitor          # daemon mode (default)
+    python infrastructure/cron/nrg-drift-monitor --once    # single run, exit
+    python infrastructure/cron/nrg-drift-monitor --check  # health check, exit 0
+
+Install as cron (every minute):
+    * * * * * cd /app && python infrastructure/cron/nrg-drift-monitor --once >> /var/log/nrg-drift.log 2>&1
+
+Or as a systemd service (see nrg-drift-monitor.service).
+"""
+
+from __future__ import annotations
+
+import argparse
+import logging
+import signal
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from scripts.vector_drift_check import run_drift_check, run_health_check, DRIFT_SCORE_SLO
+from src.skills.rag.retriever import Retriever
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)-8s %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("drift-monitor")
+
+INTERVAL_SECONDS = 60
+RETRIEVER_TIMEOUT = 5.0
+
+
+def _signal_handler(signum, frame):
+    logger.info("Received signal %d — shutting down drift monitor", signum)
+    sys.exit(0)
+
+
+def run_once() -> int:
+    """Run one drift check and return exit code."""
+    logger.info("Drift check starting")
+    try:
+        retriever = Retriever(timeout=RETRIEVER_TIMEOUT)
+    except Exception as exc:
+        logger.error("Failed to create Retriever: %s", exc)
+        return 3
+
+    try:
+        health = run_health_check(retriever)
+        logger.info(
+            "Qdrant: %s | Indexed: %d/%d (%.1f%%)",
+            health.get("status"),
+            health.get("indexed_vectors"),
+            health.get("total_vectors"),
+            health.get("coverage_pct"),
+        )
+
+        if health.get("indexed_vectors", 0) == 0:
+            logger.warning("Qdrant has 0 vectors indexed — skipping drift check")
+            return 3
+
+        result = run_drift_check(retriever, verbose=False)
+        drift_score = result.get("drift_score", 0.0)
+        alert_level = result.get("alert_level", "UNKNOWN")
+
+        logger.info(
+            "Drift check complete — score=%.3f level=%s SLO=%.2f",
+            drift_score,
+            alert_level,
+            DRIFT_SCORE_SLO,
+        )
+
+        if alert_level == "CRITICAL":
+            return 2
+        elif alert_level == "WARNING":
+            return 1
+        return 0
+
+    except Exception as exc:
+        logger.error("Drift check failed: %s", exc)
+        return 3
+    finally:
+        try:
+            retriever.close()
+        except Exception:
+            pass
+
+
+def run_daemon():
+    """Run drift check every 60 seconds until signalled."""
+    signal.signal(signal.SIGTERM, _signal_handler)
+    signal.signal(signal.SIGINT, _signal_handler)
+
+    logger.info("NRG Drift Monitor started — interval=%ds SLO=%.2f", INTERVAL_SECONDS, DRIFT_SCORE_SLO)
+
+    while True:
+        exit_code = run_once()
+        if exit_code == 3:
+            logger.warning("Drift check error — retrying in %ds", INTERVAL_SECONDS)
+        time.sleep(INTERVAL_SECONDS)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="NRG Drift Monitor Daemon")
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Run one drift check and exit (for cron)",
+    )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="Health check only — exit 0 if Qdrant is reachable",
+    )
+    args = parser.parse_args()
+
+    if args.check:
+        try:
+            retriever = Retriever(timeout=RETRIEVER_TIMEOUT)
+            health = run_health_check(retriever)
+            retriever.close()
+            print(f"Qdrant: {health.get('status')} | Indexed: {health.get('indexed_vectors')}/{health.get('total_vectors')}")
+            sys.exit(0)
+        except Exception as exc:
+            print(f"Health check failed: {exc}")
+            sys.exit(3)
+
+    if args.once:
+        sys.exit(run_once())
+
+    run_daemon()
+
+
+if __name__ == "__main__":
+    main()
