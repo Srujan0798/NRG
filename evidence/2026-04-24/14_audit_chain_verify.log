@@ -1,4 +1,4 @@
-Chain intact: True
-Events verified: 375353
-Errors: 0
-Any gaps: []
+Chain intact: False
+Events verified: 378644
+Error count: 1
+First errors: ['Line 378645: hash mismatch']

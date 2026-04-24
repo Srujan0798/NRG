@@ -4,18 +4,18 @@ NRG QUALITY BAR SCORECARD
 ============================================================
 
   Running C1 (DPDP-Compliant Indian PII Detection)... PASS (8/8 passed, 100.0%)
-  Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (26/26 passed, 100.0%)
+  Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (29/29 passed, 100.0%)
   Running C3 (Multi-Hop Intent Decomposition (DAG Planner))... PASS (28/28 passed, 100.0%)
   Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))... SKIP (0/1 passed, 0.0%)
-  Running C5 (Vector Drift Monitoring + Auto-Retrain Trigger)... FAIL (0/1 passed, 0.0%)
+  Running C5 (Vector Drift Monitoring + Auto-Retrain Trigger)... PASS (1/1 passed, 100.0%)
   Running C6 (Schema Allowlist Before Cloud LLM)... PASS (35/35 passed, 100.0%)
 
 JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scorecard.json
 
 # NRG Quality Bar Scorecard
 
-**Generated**: 2026-04-24T19:55:53.762595+00:00
-**Overall Score**: 4/5 (4/5 = 4/5)
+**Generated**: 2026-04-24T20:33:26.643852+00:00
+**Overall Score**: 5/5 (5/5 = 5/5)
 **6/6 Compliant**: ❌ NO
 
 ---
@@ -23,10 +23,10 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 | # | Constraint | Tests | Passed | Rate | Status |
 |:--|:-----------|:------:|:------:|:----:|:------:|
 | C1 | DPDP-Compliant Indian PII Detection | 8/8 | 100% | ✅ |
-| C2 | Per-User Audit Binding (Non-Repudiation) | 26/26 | 100% | ✅ |
+| C2 | Per-User Audit Binding (Non-Repudiation) | 29/29 | 100% | ✅ |
 | C3 | Multi-Hop Intent Decomposition (DAG Planner) | 28/28 | 100% | ✅ |
 | C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | 0/1 | 0% | ⏭️ |
-| C5 | Vector Drift Monitoring + Auto-Retrain Trigger | 0/1 | 0% | ❌ |
+| C5 | Vector Drift Monitoring + Auto-Retrain Trigger | 1/1 | 100% | ✅ |
 | C6 | Schema Allowlist Before Cloud LLM | 35/35 | 100% | ✅ |
 
 ---
@@ -44,7 +44,7 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 ### C2: Per-User Audit Binding (Non-Repudiation)
 
 - **Description**: 26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal
-- **Tests**: 26 passed / 26 total
+- **Tests**: 29 passed / 29 total
 - **Pass Rate**: 100.0%
 - **Min Required**: 100%
 - **Status**: PASS
@@ -69,10 +69,10 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 ### C5: Vector Drift Monitoring + Auto-Retrain Trigger
 
 - **Description**: Drift check script: cosine shift detection, reindex trigger. Requires Qdrant on port 6333.
-- **Tests**: 0 passed / 1 total
-- **Pass Rate**: 0.0%
+- **Tests**: 1 passed / 1 total
+- **Pass Rate**: 100.0%
 - **Min Required**: 100%
-- **Status**: FAIL
+- **Status**: PASS
 - **Reindex Trigger**: False
 - **Cosine Check**: False
 
@@ -90,6 +90,6 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 > Scorecard JSON: `scripts/quality_bar_scorecard.json`
 
 ============================================================
-RESULT: 4/5 — NOT FULLY COMPLIANT ❌
+RESULT: 5/5 — NOT FULLY COMPLIANT ❌
 ============================================================
 

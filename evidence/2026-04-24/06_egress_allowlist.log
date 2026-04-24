@@ -57,7 +57,7 @@ src/api/__init__.py                                     0      0   100%
 src/api/logging_config.py                              57     57     0%   6-121
 src/api/main.py                                      1265   1265     0%   6-2489
 src/audit/__init__.py                                 341    168    51%   24, 90-91, 108-111, 123, 175, 182, 185, 196-197, 206, 217-227, 251-287, 291-349, 370, 384-385, 395-401, 405-421, 424, 427, 437, 442, 454, 470, 487-528, 535, 549-556, 563-587, 591, 595-600, 614, 618, 622, 626, 630, 635, 644-651, 665
-src/audit/db_cosign.py                                100     66    34%   51-52, 70-105, 118-160, 164-186, 212, 221
+src/audit/db_cosign.py                                163    107    34%   51, 57, 62, 72-75, 92, 162-167, 185-228, 241-278, 286-328, 339-361, 389-393, 402
 src/audit/per_user_keys.py                            112     57    49%   49, 57-58, 61-66, 69-82, 85-86, 109-132, 143-145, 157-172, 182-187, 210-212
 src/auth/__init__.py                                    2      2     0%   3-5
 src/auth/jwt_handler.py                               152    152     0%   3-345
@@ -99,7 +99,7 @@ src/security/egress/guard.py                          180     57    68%   29, 45
 src/security/egress/schema_allowlist_loader.py         57      8    86%   31-32, 83-88
 src/security/egress_guard/__init__.py                 139    139     0%   14-242
 src/security/gateway/__init__.py                        0      0   100%
-src/security/gateway/prompt_sanitiser.py              140    140     0%   1-478
+src/security/gateway/prompt_sanitiser.py              145    145     0%   1-510
 src/security/headers.py                                38     38     0%   11-85
 src/security/pii/__init__.py                           49     49     0%   3-110
 src/security/pii/fpe_engine.py                         60     60     0%   1-130
@@ -144,6 +144,6 @@ src/utils/__init__.py                                   0      0   100%
 src/utils/helpers.py                                   32     32     0%   6-63
 src/utils/logging_config.py                            40     40     0%   6-87
 ---------------------------------------------------------------------------------
-TOTAL                                               11150  10716     4%
+TOTAL                                               11218  10762     4%
 Coverage XML written to file coverage.xml
-[32m============================== [32m[1m35 passed[0m[32m in 5.20s[0m[32m ==============================[0m
+[32m============================== [32m[1m35 passed[0m[32m in 3.24s[0m[32m ==============================[0m
