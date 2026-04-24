@@ -1,6 +1,12 @@
 """Presidio PII detection with lazy loading to avoid import failures."""
 
+import logging
+import threading
 from typing import List, Dict, Any
+
+logger = logging.getLogger(__name__)
+
+_NLP_INIT_TIMEOUT = 10
 
 
 class PresidioConfig:
@@ -13,27 +19,47 @@ class PresidioConfig:
         self.nlp_engine = None
         self.analyzer = None
         self._initialized = False
+        self._init_error: str | None = None
 
     def _ensure_initialized(self):
         if self._initialized:
             return
         try:
+            import presidio_analyzer  # noqa: F401 - must import before nlp_engine submodule
             from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
-            from presidio_analyzer.nlp_engine import NlpEngineProvider
             from presidio_analyzer.recognizer_registry import RecognizerRegistry
         except ImportError:
             self._initialized = True
             return
 
-        self.nlp_engine = self._setup_nlp_engine(NlpEngineProvider)
-        self.analyzer = self._setup_analyzer(
-            AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern
-        )
+        self.nlp_engine, self._init_error = self._setup_nlp_engine_with_timeout()
+        if self.nlp_engine is not None:
+            self.analyzer = self._setup_analyzer(
+                AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern
+            )
         self._initialized = True
 
-    def _setup_nlp_engine(self, NlpEngineProvider):
-        provider = NlpEngineProvider()
-        return provider.create_engine()
+    def _setup_nlp_engine_with_timeout(self):
+        result = {}
+        error = {}
+
+        def _init():
+            try:
+                from presidio_analyzer.nlp_engine import NlpEngineProvider
+                provider = NlpEngineProvider()
+                result["engine"] = provider.create_engine()
+            except Exception as e:
+                error["msg"] = str(e)
+
+        t = threading.Thread(target=_init, daemon=True)
+        t.start()
+        t.join(timeout=_NLP_INIT_TIMEOUT)
+        if t.is_alive():
+            return None, "NLP engine init timed out after 10s"
+        if error:
+            logger.warning("NLP engine init failed: %s", error["msg"])
+            return None, error["msg"]
+        return result.get("engine"), None
 
     def _setup_analyzer(self, AnalyzerEngine, RecognizerRegistry, PatternRecognizer, Pattern):
         registry = RecognizerRegistry()

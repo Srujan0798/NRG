@@ -20,6 +20,8 @@ DRIFT_SCORE_SLO = _vdc.DRIFT_SCORE_SLO
 DRIFT_SCORE_WARNING = _vdc.DRIFT_SCORE_WARNING
 DRIFT_SCORE_CRITICAL = _vdc.DRIFT_SCORE_CRITICAL
 COSINE_SHIFT_THRESHOLD = _vdc.COSINE_SHIFT_THRESHOLD
+run_drift_check = _vdc.run_drift_check
+_qdrant_ready_for_benchmark = _vdc._qdrant_ready_for_benchmark
 
 
 class TestCosineShift:
@@ -158,3 +160,79 @@ class TestSLOThresholds:
         for q in BENCHMARK_QUERIES:
             assert "query" in q
             assert "expected_topics" in q
+
+
+class TestDriftCheckRuntime:
+    """Runtime guardrails for the C5 drift check."""
+
+    def test_qdrant_unhealthy_is_not_benchmark_ready(self):
+        health = {
+            "status": "unhealthy",
+            "indexed_vectors": 0,
+            "total_vectors": 0,
+        }
+
+        assert _qdrant_ready_for_benchmark(health) is False
+
+    def test_qdrant_empty_collection_is_not_benchmark_ready(self):
+        health = {
+            "status": "degraded",
+            "indexed_vectors": 0,
+            "total_vectors": 0,
+        }
+
+        assert _qdrant_ready_for_benchmark(health) is False
+
+    def test_qdrant_with_vectors_is_benchmark_ready(self):
+        health = {
+            "status": "degraded",
+            "indexed_vectors": 50,
+            "total_vectors": 100,
+        }
+
+        assert _qdrant_ready_for_benchmark(health) is True
+
+    def test_run_drift_check_reuses_one_embedder_for_all_benchmarks(self, monkeypatch):
+        """A C5 scorecard run must not reload the embedding model per query."""
+        from src.skills.rag import embedder as embedder_module
+
+        class FakeEmbedder:
+            init_count = 0
+            close_count = 0
+
+            def __init__(self):
+                FakeEmbedder.init_count += 1
+
+            def embed_single(self, text):
+                return [0.1, 0.2, 0.3]
+
+            def close(self):
+                FakeEmbedder.close_count += 1
+
+        class FakeRetriever:
+            def retrieve(self, query_vector, user_tier=1, top_k=5, **kwargs):
+                return {
+                    "metadata": [
+                        {
+                            "institution": "IIT Gandhinagar",
+                            "topics": ["machine learning"],
+                        }
+                    ]
+                }
+
+        monkeypatch.setattr(embedder_module, "Embedder", FakeEmbedder)
+        monkeypatch.setattr(_vdc, "_save_benchmark_cache", lambda data: None)
+        monkeypatch.setattr(
+            _vdc,
+            "_check_cosine_shift",
+            lambda drift_result, retriever, embedder: {
+                "status": "stable",
+                "reindex_triggered": False,
+            },
+        )
+
+        result = run_drift_check(FakeRetriever())
+
+        assert result["queries_checked"] == len(BENCHMARK_QUERIES)
+        assert FakeEmbedder.init_count == 1
+        assert FakeEmbedder.close_count == 1

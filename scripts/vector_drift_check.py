@@ -230,134 +230,144 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
     results = _load_benchmark_cache()
     per_query_scores = []
     topic_overlaps = []
-
-    for i, bench in enumerate(BENCHMARK_QUERIES):
-        query = bench["query"]
-        expected_sources = set(bench["expected_sources"])
-        expected_topics = set(bench["expected_topics"])
-
-        try:
-            from src.skills.rag.embedder import Embedder
-            embedder = Embedder()
-            try:
-                query_vector = embedder.embed_single(query)
-            finally:
-                embedder.close()
-
-            retrieval_result = retriever.retrieve(
-                query_vector=query_vector,
-                user_tier=1,
-                top_k=5,
-            )
-            metadata = retrieval_result.get("metadata", [])
-
-            retrieved_sources = set()
-            retrieved_topics = set()
-
-            for item in metadata:
-                source = item.get("institution", "") or item.get("source", "")
-                if source:
-                    retrieved_sources.add(source.lower())
-                topics = item.get("topics", []) or item.get("research_area_tags", [])
-                for t in topics:
-                    retrieved_topics.add(t.lower())
-
-            expected_sources_lower = {s.lower() for s in expected_sources}
-            source_overlap = _jaccard_overlap(retrieved_sources, expected_sources_lower)
-
-            expected_topics_lower = {t.lower() for t in expected_topics}
-            topic_overlap = _jaccard_overlap(retrieved_topics, expected_topics_lower)
-
-            query_score = (source_overlap * 0.4) + (topic_overlap * 0.6)
-
-            per_query_scores.append({
-                "query": query,
-                "source_overlap": round(source_overlap, 3),
-                "topic_overlap": round(topic_overlap, 3),
-                "score": round(query_score, 3),
-            })
-            topic_overlaps.append(query_score)
-
-            if verbose:
-                logger.info(
-                    "  [%d/%d] '%s' → source=%.2f topic=%.2f score=%.3f",
-                    i + 1, len(BENCHMARK_QUERIES), query[:50],
-                    source_overlap, topic_overlap, query_score
-                )
-
-            results[query] = {
-                "sources": list(retrieved_sources),
-                "topics": list(retrieved_topics),
-                "score": query_score,
-                "timestamp": time.time(),
-            }
-
-        except Exception as exc:
-            logger.warning("Query %d failed: %s", i + 1, exc)
-            per_query_scores.append({
-                "query": query,
-                "source_overlap": 0.0,
-                "topic_overlap": 0.0,
-                "score": 0.0,
-                "error": str(exc),
-            })
-            topic_overlaps.append(0.0)
-            results[query] = {"error": str(exc), "timestamp": time.time()}
-
-    avg_score = sum(topic_overlaps) / len(topic_overlaps) if topic_overlaps else 0.0
-
-    alert_level = "GREEN"
-    if avg_score < DRIFT_SCORE_CRITICAL:
-        alert_level = "CRITICAL"
-        logger.critical(
-            "DRIFT CRITICAL: Score %.3f < %.3f threshold. "
-            "Vector embeddings may be corrupted or the wrong model was used.",
-            avg_score, DRIFT_SCORE_CRITICAL
-        )
-    elif avg_score < DRIFT_SCORE_WARNING:
-        alert_level = "WARNING"
-        logger.warning(
-            "DRIFT WARNING: Score %.3f < %.3f threshold. "
-            "Retrieval quality has degraded — review recent data ingestion.",
-            avg_score, DRIFT_SCORE_WARNING
-        )
-    elif avg_score < DRIFT_SCORE_SLO:
-        alert_level = "AMBER"
-        logger.info(
-            "DRIFT AMBER: Score %.3f < %.3f SLO target. "
-            "Quality is acceptable but below target.",
-            avg_score, DRIFT_SCORE_SLO
-        )
-    else:
-        logger.info("DRIFT OK: Score %.3f >= %.3f SLO target", avg_score, DRIFT_SCORE_SLO)
-
-    _save_benchmark_cache(results)
+    embedder = None
+    embedder_error: Exception | None = None
 
     try:
         from src.skills.rag.embedder import Embedder
-        embedder = Embedder()
-        try:
-            cosine_info = _check_cosine_shift({}, retriever, embedder)
-            if cosine_info.get("reindex_triggered"):
-                _trigger_reindex(
-                    {"alert_level": alert_level, "drift_score": avg_score},
-                    cosine_info
-                )
-        finally:
-            embedder.close()
-    except Exception as e:
-        logger.warning("Cosine shift check failed: %s", e)
 
-    return {
-        "drift_score": round(avg_score, 3),
-        "alert_level": alert_level,
-        "slo_target": DRIFT_SCORE_SLO,
-        "warning_threshold": DRIFT_SCORE_WARNING,
-        "critical_threshold": DRIFT_SCORE_CRITICAL,
-        "queries_checked": len(BENCHMARK_QUERIES),
-        "per_query": per_query_scores,
-        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-    }
+        embedder = Embedder()
+    except Exception as exc:
+        embedder_error = exc
+        logger.warning("Embedding model unavailable for drift check: %s", exc)
+
+    try:
+        for i, bench in enumerate(BENCHMARK_QUERIES):
+            query = bench["query"]
+            expected_sources = set(bench["expected_sources"])
+            expected_topics = set(bench["expected_topics"])
+
+            try:
+                if embedder_error is not None:
+                    raise embedder_error
+                if embedder is None:
+                    raise RuntimeError("Embedding model unavailable for drift check")
+
+                query_vector = embedder.embed_single(query)
+
+                retrieval_result = retriever.retrieve(
+                    query_vector=query_vector,
+                    user_tier=1,
+                    top_k=5,
+                )
+                metadata = retrieval_result.get("metadata", [])
+
+                retrieved_sources = set()
+                retrieved_topics = set()
+
+                for item in metadata:
+                    source = item.get("institution", "") or item.get("source", "")
+                    if source:
+                        retrieved_sources.add(source.lower())
+                    topics = item.get("topics", []) or item.get("research_area_tags", [])
+                    for t in topics:
+                        retrieved_topics.add(t.lower())
+
+                expected_sources_lower = {s.lower() for s in expected_sources}
+                source_overlap = _jaccard_overlap(retrieved_sources, expected_sources_lower)
+
+                expected_topics_lower = {t.lower() for t in expected_topics}
+                topic_overlap = _jaccard_overlap(retrieved_topics, expected_topics_lower)
+
+                query_score = (source_overlap * 0.4) + (topic_overlap * 0.6)
+
+                per_query_scores.append({
+                    "query": query,
+                    "source_overlap": round(source_overlap, 3),
+                    "topic_overlap": round(topic_overlap, 3),
+                    "score": round(query_score, 3),
+                })
+                topic_overlaps.append(query_score)
+
+                if verbose:
+                    logger.info(
+                        "  [%d/%d] '%s' → source=%.2f topic=%.2f score=%.3f",
+                        i + 1, len(BENCHMARK_QUERIES), query[:50],
+                        source_overlap, topic_overlap, query_score
+                    )
+
+                results[query] = {
+                    "sources": list(retrieved_sources),
+                    "topics": list(retrieved_topics),
+                    "score": query_score,
+                    "timestamp": time.time(),
+                }
+
+            except Exception as exc:
+                logger.warning("Query %d failed: %s", i + 1, exc)
+                per_query_scores.append({
+                    "query": query,
+                    "source_overlap": 0.0,
+                    "topic_overlap": 0.0,
+                    "score": 0.0,
+                    "error": str(exc),
+                })
+                topic_overlaps.append(0.0)
+                results[query] = {"error": str(exc), "timestamp": time.time()}
+
+        avg_score = sum(topic_overlaps) / len(topic_overlaps) if topic_overlaps else 0.0
+
+        alert_level = "GREEN"
+        if avg_score < DRIFT_SCORE_CRITICAL:
+            alert_level = "CRITICAL"
+            logger.critical(
+                "DRIFT CRITICAL: Score %.3f < %.3f threshold. "
+                "Vector embeddings may be corrupted or the wrong model was used.",
+                avg_score, DRIFT_SCORE_CRITICAL
+            )
+        elif avg_score < DRIFT_SCORE_WARNING:
+            alert_level = "WARNING"
+            logger.warning(
+                "DRIFT WARNING: Score %.3f < %.3f threshold. "
+                "Retrieval quality has degraded — review recent data ingestion.",
+                avg_score, DRIFT_SCORE_WARNING
+            )
+        elif avg_score < DRIFT_SCORE_SLO:
+            alert_level = "AMBER"
+            logger.info(
+                "DRIFT AMBER: Score %.3f < %.3f SLO target. "
+                "Quality is acceptable but below target.",
+                avg_score, DRIFT_SCORE_SLO
+            )
+        else:
+            logger.info("DRIFT OK: Score %.3f >= %.3f SLO target", avg_score, DRIFT_SCORE_SLO)
+
+        _save_benchmark_cache(results)
+
+        try:
+            if embedder is not None:
+                cosine_info = _check_cosine_shift({}, retriever, embedder)
+                if cosine_info.get("reindex_triggered"):
+                    _trigger_reindex(
+                        {"alert_level": alert_level, "drift_score": avg_score},
+                        cosine_info
+                    )
+        except Exception as e:
+            logger.warning("Cosine shift check failed: %s", e)
+
+        return {
+            "drift_score": round(avg_score, 3),
+            "alert_level": alert_level,
+            "slo_target": DRIFT_SCORE_SLO,
+            "warning_threshold": DRIFT_SCORE_WARNING,
+            "critical_threshold": DRIFT_SCORE_CRITICAL,
+            "queries_checked": len(BENCHMARK_QUERIES),
+            "per_query": per_query_scores,
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+    finally:
+        if embedder is not None:
+            embedder.close()
 
 
 def run_health_check(retriever: Retriever) -> dict:
@@ -373,6 +383,15 @@ def run_health_check(retriever: Retriever) -> dict:
         "status": health.get("status"),
         "latency_ms": health.get("latency_ms"),
     }
+
+
+def _qdrant_ready_for_benchmark(qdrant_health: dict) -> bool:
+    """Return True when Qdrant has a reachable, non-empty vector collection."""
+    status = qdrant_health.get("status")
+    indexed = int(qdrant_health.get("indexed_vectors") or 0)
+    total = int(qdrant_health.get("total_vectors") or 0)
+
+    return status in {"ok", "degraded"} and (indexed > 0 or total > 0)
 
 
 def main():
@@ -404,6 +423,28 @@ def main():
     if args.check_only:
         print(json.dumps({"qdrant": qdrant_health}, indent=2, default=str))
         return
+
+    if not _qdrant_ready_for_benchmark(qdrant_health):
+        result = {
+            "status": "qdrant_unavailable",
+            "message": "Vector drift benchmark skipped because Qdrant is unhealthy or empty.",
+            "qdrant": qdrant_health,
+        }
+        if args.json_output:
+            print(json.dumps(result, indent=2, default=str))
+        else:
+            print("\n" + "=" * 60)
+            print("VECTOR DRIFT CHECK SKIPPED")
+            print("=" * 60)
+            print(result["message"])
+            print(f"Qdrant status: {qdrant_health.get('status')}")
+            print(
+                "Vectors: "
+                f"{qdrant_health.get('indexed_vectors', 0)}/"
+                f"{qdrant_health.get('total_vectors', 0)}"
+            )
+            print("=" * 60)
+        sys.exit(2)
 
     drift_result = run_drift_check(retriever, verbose=args.verbose)
 

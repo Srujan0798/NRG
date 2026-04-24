@@ -90,8 +90,8 @@ def _count_sqlite_table(conn, table: str) -> int:
 
 def _fetchall_sqlite(conn, table: str, columns: list[str], batch_size: int = 1000):
     """Yield rows from a SQLite table in batches."""
-    placeholders = ", ".join(["?"] * len(columns))
-    query = f"SELECT {placeholders} FROM {table}"
+    column_list = ", ".join([f'"{col}"' for col in columns])
+    query = f"SELECT {column_list} FROM {table}"
     cursor = conn.execute(query)
     while True:
         rows = cursor.fetchmany(batch_size)
@@ -114,7 +114,7 @@ def migrate_table(
     sqlite_cur = sqlite_conn.execute(f"SELECT COUNT(*) FROM {table}")
     total = sqlite_cur.fetchone()[0]
 
-    cols = _table_columns(sqlite_conn, cursor := sqlite_conn.cursor(), table)
+    cols = _table_columns(sqlite_conn.cursor(), table)
     if not cols:
         return {"table": table, "status": "skipped", "reason": "no columns"}
 
@@ -220,6 +220,48 @@ def migrate_training_pairs(
         }
     finally:
         sqlite_conn.close()
+
+
+def migrate_sqlite_to_postgres(
+    sqlite_db: str | Path | None = None,
+    pg_url: str | None = None,
+    dry_run: bool = False,
+    skip_training_data: bool = False,
+) -> list[dict]:
+    """Programmatic migration entry point kept stable for tests and agents."""
+    pg_url = pg_url or os.getenv("DATABASE_URL")
+    if not pg_url:
+        raise ValueError("DATABASE_URL or pg_url is required")
+
+    sqlite_path = _resolve_path(str(sqlite_db or SQLITE_DB))
+    training_path = _resolve_path(TRAINING_DB)
+    if not sqlite_path.exists():
+        raise FileNotFoundError(f"SQLite DB not found: {sqlite_path}")
+
+    pg_conn = _get_pg_conn(pg_url)
+    results = []
+    try:
+        for table in TABLES_TO_MIGRATE:
+            sqlite_conn = _get_sqlite_conn(sqlite_path)
+            try:
+                results.append(
+                    migrate_table(
+                        sqlite_conn,
+                        pg_conn,
+                        table,
+                        COLUMN_TYPES.get(table, {}),
+                        dry_run=dry_run,
+                    )
+                )
+            finally:
+                sqlite_conn.close()
+
+        if not skip_training_data:
+            results.append(migrate_training_pairs(training_path, pg_conn, dry_run=dry_run))
+    finally:
+        pg_conn.close()
+
+    return results
 
 
 # Column type mappings from SQLite to PostgreSQL
