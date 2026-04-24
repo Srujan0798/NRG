@@ -98,7 +98,7 @@
 
 ### 39. THE SCHEMA ALLOWLIST — Egress Firewall ✅
 - **Quality Bar**: C6 ✅ (35/35 tests passing)
-- **Summary**: EgressGuard + egress_allowlist.yaml (80+ tables, 100+ columns)
+- **Summary**: EgressGuard + egress_allowlist.yaml (19 tables: 9 core + 3 junction + 7 Dhairya, ~110 columns)
 
 ### 40. THE STRATIFIED CURATOR — Balanced Fine-Tune Export ✅
 - **Summary**: StratifiedSampler by tier × route × query_type × grade
@@ -217,7 +217,7 @@
 |---|---|---|---|---|---|
 | C1 | DPDP Indian PII | ✅ 10/10 (was 8/10) | **PASS** | `tests/security/test_pii_indian.py` | +Verhoeff checksum, +GSTIN regex |
 | C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS | `tests/security/test_per_user_audit_binding.py` | DB co-sign integrated (fire-and-forget in append); verify_cosign permissive |
-| C3 | Multi-hop DAG planner | ✅ 24/24 (100%) | PASS | `tests/orchestration/test_multi_hop_planner.py` | Cycle + edge tests pending |
+| C3 | Multi-hop DAG planner | ✅ 28/28 (100%) | PASS | `tests/orchestration/test_multi_hop_planner.py` | Cycle + edge tests pending |
 | C4 | P99<500ms @ 1000 concurrent | ⏭️ Needs sovereign cluster | **PENDING** | `evidence/02_load_report.md` | C4 SKIP in scorecard |
 | C5 | Vector drift auto-retrain | ✅ 1/1 | **PASS** | `scripts/vector_drift_check.py`, `infrastructure/cron/nrg-drift-monitor` | drift_result bug fixed; 60s cron daemon added |
 | C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS | `tests/security/test_egress_allowlist.py` | Path restructure pending |

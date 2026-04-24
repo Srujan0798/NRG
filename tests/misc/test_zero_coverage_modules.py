@@ -75,16 +75,22 @@ class TestRetryHandler:
 
 class TestMultiHopWorkflow:
     def test_execute_multi_hop_query(self):
-        from src.orchestration.workflows.multi_hop import MultiHopWorkflow
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            from src.orchestration.workflows.multi_hop import MultiHopWorkflow
         wf = MultiHopWorkflow()
         result = wf.execute_multi_hop_query("SELECT 1", "vector query")
         assert result["sql_query"] == "SELECT 1"
         assert result["vector_query"] == "vector query"
         assert len(result["results"]) > 0
-        assert result["confidence_score"] == 0.95
+        assert result["confidence_score"] == 0.0  # deprecated stub returns 0.0
 
     def test_validate_multi_hop_results(self):
-        from src.orchestration.workflows.multi_hop import MultiHopWorkflow
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", DeprecationWarning)
+            from src.orchestration.workflows.multi_hop import MultiHopWorkflow
         wf = MultiHopWorkflow()
         assert wf.validate_multi_hop_results([{"type": "multi_hop_result"}]) is True
 

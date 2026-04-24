@@ -55,7 +55,7 @@ CONSTRAINTS = {
         "name": "Multi-Hop Intent Decomposition (DAG Planner)",
         "test_file": TESTS_C3,
         "min_pass_rate": 1.0,
-        "description": "24 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
+        "description": "28 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
         "test_count_attr": "total",
     },
     "C4": {

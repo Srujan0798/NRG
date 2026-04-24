@@ -83,6 +83,33 @@ class TestDhairyaQueries:
         is_complete, _ = validator.validate(sql)
         assert is_complete, f"Query incomplete: {sql}"
 
+    def test_q03_grant_drop_yoy_coincidence_case(self, skill, validator):
+        """YoY CTE must GROUP BY (institute, year) to handle multi-row same-year coincidence.
+
+        Edge case: If IIT Bombay has 2 rows in 2020-21 (grants of 100000 and 50000)
+        and 1 row in 2021-22 (grant of 60000), the CTE must SUM both 2020-21 rows
+        (total=150000) before comparing to 2021-22 (60000), not compare row-by-row.
+        Row-level comparison would wrongly flag row-2 (50000→60000 = increase)
+        while missing the real drop (combined 150000→60000 = >50% drop).
+        """
+        query = "Show institutes with year-over-year grant drops greater than 50% between 2020-21 and 2022-23."
+        result = skill.execute(query, user_tier=1)
+        sql = result.get("query", "")
+        assert sql, "SQL should be generated"
+
+        assert "WITH" in sql.upper() or sql.upper().count("SELECT") > 1, \
+            "YoY must use CTE for yearly aggregation"
+
+        import re
+        has_group_by_year = bool(re.search(r'GROUP BY.*year', sql, re.IGNORECASE))
+        has_group_by_institute = bool(re.search(r'GROUP BY.*institute', sql, re.IGNORECASE))
+        assert has_group_by_year and has_group_by_institute, \
+            "CTE must GROUP BY (institute, year) to correctly sum multi-row same-year data. " \
+            f"Found GROUP BY clauses: {re.findall(r'GROUP BY[^;]+', sql, re.IGNORECASE)}"
+
+        is_complete, _ = validator.validate(sql)
+        assert is_complete, f"Query incomplete: {sql}"
+
     # -------------------------------------------------------------------------
     # Q4: Top 5 funding agencies
     # Status: 000 (5.92s) — COMPLETE FAILURE, used DISTINCT ORDER BY instead of GROUP BY
