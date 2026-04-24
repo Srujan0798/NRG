@@ -1,36 +1,19 @@
-# Mandatory Source Files — Read Confirmation
+# Mandatory Source Reads
 
-I confirm I have read and understood all four mandatory source files before beginning this protocol:
+Protocol folder: `evidence/2026-04-24/`
+Local execution date: 2026-04-25 IST
 
-## 1. Core_Idea_Clean.md
-- 5-layer architecture (NRG Architecture)
-- 6-node LangGraph pipeline: receiver → planner → router → executor → synthesizer → verifier
-- 3 user tiers: Researcher (T1), Government (T2), Industry (T3)
-- Zero-data-leakage model between tiers
-- Two-brain fine-tuned SLM endgame
-- 24-month roadmap
-- Tech stack: FastAPI, LangGraph, spaCy, Qdrant, PostgreSQL, Redis
+| File | Exists | Lines | SHA256 |
+|---|---:|---:|---|
+| `Core_Idea_Clean.md` | yes | 493 | `a036f1364895a4b6a91d66782a63e5204fec1aa81ca659a30b84681eb6b05240` |
+| `db_struct.sql` | yes | 3682 | `9db9950ebb48fb366b67e85a3bbc9a920e6a7d766fe15bc1eb8a8b7f8d6671f0` |
+| `BACKLOG.md` | yes | 371 | `aa65f39dacb6448a15172368ee70287c4bc08e95087b802a42fd9521673a4642` |
+| `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` | yes | 711 | `670af207b58f781005bdb119536afd2b45e2cf07a0c609b1b6485703f5f89366` |
 
-## 2. db_struct.sql
-- 58 tables total (18 SQLite + 40 PostgreSQL migration pending)
-- Key column: `academic_courses_details.total_credit_score` is TEXT with format "X:Y"
-- `innovations_at_various_stages_of_technology_readiness_level` — 62 character table name
-- Composite PKs: researcher_publications (researcher_id, publication_id)
-- FK relationships preserved in migration
+Read confirmation: all existing source files above were opened from disk for this evidence run.
 
-## 3. BACKLOG.md
-- Phase 3-5 claimed DONE
-- Quality Bar 5/6 (actual: 4/6 this session)
-- 10 remaining handover items
-- C5 Vector Drift acknowledged as production-only issue
-
-## 4. SQL_AUDIT_REPORT_DHAIRYA.md
-- 41% baseline (7/17 queries correct)
-- All 7 failure patterns documented
-- 7.2s avg latency vs 3s SLO target
-- Current: 102% (43/42) — exceeded target
-
----
-**Read by:** Claude (MiniMax-M2.7)
-**Date:** 2026-04-24
-**Protocol:** NRG ETERNAL PRINCIPAL ENGINEER VERIFICATION PROTOCOL v3.0
+Key contracts extracted:
+- Core idea: sovereign 5-layer platform, tier-aware intelligence, zero raw-data egress, eventual two-brain local model plus retrieval.
+- db_struct.sql: official PostgreSQL schema is the ground truth and overrides synthetic schemas.
+- BACKLOG.md: local blockers were reopened and fixed locally; C4 and staging UAT remain environment gates.
+- Dhairya audit: Text-to-SQL baseline was 7/17 and regression evidence must be generated before claiming improvement.

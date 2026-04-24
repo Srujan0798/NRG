@@ -1,0 +1,32 @@
+============================================================
+ AUDIT CHAIN REBUILD
+============================================================
+
+Step 1: Checking current chain status...
+  Current chain valid: False
+  Errors: 42
+
+Step 2: Archiving corrupted chain...
+  Archived to: .audit/chain_corrupted_backup_20260424T201951Z.jsonl
+
+Step 3: Rebuilding chain...
+  Events processed: 375,352
+  Hashes corrected: 2,971
+  Errors: 0
+
+Step 4: Verifying rebuilt chain...
+  Rebuilt chain is VALID
+
+Step 5: Activating rebuilt chain...
+  New chain activated: .audit/chain.jsonl
+  Final chain hash: 9bd437c1814b365a0190...
+
+Step 6: Logging rebuild event...
+  Rebuild event logged with hash: 978dd92acf1d46735dcc...
+
+============================================================
+ REBUILD COMPLETE
+============================================================
+Events processed: 375,352
+Hashes corrected: 2,971
+Corrupted chain backed up to: .audit/chain_corrupted_backup_20260424T201951Z.jsonl

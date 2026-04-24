@@ -1,0 +1,16 @@
+2026-04-25 01:26:02 INFO     Starting NRG Vector Drift Detection
+2026-04-25 01:26:02 INFO     SLO target: drift_score >= 0.85
+2026-04-25 01:26:02 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40
+2026-04-25 01:26:02 INFO     HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 200 OK"
+2026-04-25 01:26:02 INFO     Qdrant health: ok | Indexed: 19323/19323 (100.0%) | Latency: 57.69ms
+{
+  "qdrant": {
+    "indexed_vectors": 19323,
+    "total_vectors": 19323,
+    "coverage_pct": 100.0,
+    "status": "ok",
+    "latency_ms": 57.69
+  }
+}
+
+exit:0

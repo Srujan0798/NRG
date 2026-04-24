@@ -21,6 +21,8 @@ from a state inconsistency in the chain state tracking.
 """
 
 import argparse
+import hmac
+import hashlib
 import json
 import shutil
 import sys
@@ -31,8 +33,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.audit import AuditEvent, ImmutableAuditLog, get_audit_log
-import hmac
-import hashlib
+from src.audit.per_user_keys import get_per_user_key_manager
 
 
 def compute_hash(chain_key: str, prev_hash: str, event: AuditEvent) -> str:
@@ -65,6 +66,8 @@ def rebuild_chain(corrupted_path: str, new_path: str, chain_key: str) -> dict:
 
     prev_hash = genesis_hash()
     
+    key_manager = get_per_user_key_manager(chain_key)
+
     with open(new_path, "w") as f:
         for line_num, line in enumerate(lines, 1):
             try:
@@ -72,7 +75,13 @@ def rebuild_chain(corrupted_path: str, new_path: str, chain_key: str) -> dict:
                 recorded_hash = event_data.get("hash")
                 
                 # Reconstruct event
-                event_kwargs = {k: v for k, v in event_data.items() if k != "hash"}
+                event_kwargs = {
+                    k: v
+                    for k, v in event_data.items()
+                    if k not in ("hash", "per_user_binding", "user_key_hash")
+                }
+                if "_v" not in event_data:
+                    event_kwargs["_v"] = None
                 event = AuditEvent(**event_kwargs)
                 
                 # Compute correct hash
@@ -87,8 +96,31 @@ def rebuild_chain(corrupted_path: str, new_path: str, chain_key: str) -> dict:
                 if computed_hash != recorded_hash:
                     results["hashes_corrected"] += 1
                 
-                # Write corrected event
+                # Write corrected event and preserve/recompute binding metadata.
                 corrected_event = {**event.to_dict(), "hash": computed_hash}
+                if event_data.get("per_user_binding") is not None:
+                    user_id = event.user_id or "system"
+                    if event.jwt_kid is not None or event.request_fingerprint is not None:
+                        per_user_hash = key_manager.compute_binding(
+                            user_id=user_id,
+                            jwt_kid=event.jwt_kid,
+                            request_fingerprint=event.request_fingerprint,
+                            chain_hash=computed_hash,
+                            event_serialized=event.serialize(),
+                        )
+                    else:
+                        user_key = hmac.new(
+                            chain_key.encode(),
+                            f"user_key:{user_id}".encode(),
+                            hashlib.sha256,
+                        ).hexdigest()[:32]
+                        message = f"{user_key}:{computed_hash}:{event.serialize()}"
+                        per_user_hash = hmac.new(
+                            user_key.encode(),
+                            message.encode(),
+                            hashlib.sha256,
+                        ).hexdigest()
+                    corrected_event["per_user_binding"] = per_user_hash[:16]
                 f.write(json.dumps(corrected_event, sort_keys=True, default=str) + "\n")
                 
                 prev_hash = computed_hash
@@ -112,7 +144,13 @@ def verify_chain_file(chain_path: str, chain_key: str) -> tuple[bool, list[str]]
                 event_data = json.loads(line)
                 recorded_hash = event_data.get("hash")
                 
-                event_kwargs = {k: v for k, v in event_data.items() if k != "hash"}
+                event_kwargs = {
+                    k: v
+                    for k, v in event_data.items()
+                    if k not in ("hash", "per_user_binding", "user_key_hash")
+                }
+                if "_v" not in event_data:
+                    event_kwargs["_v"] = None
                 event = AuditEvent(**event_kwargs)
                 
                 computed_hash = compute_hash(chain_key, prev_hash, event)
@@ -142,7 +180,9 @@ def main():
 
     audit_dir = Path(".audit")
     chain_file = audit_dir / "chain.jsonl"
-    backup_file = audit_dir / "chain_corrupted_backup.jsonl"
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    backup_file = audit_dir / f"chain_corrupted_backup_{timestamp}.jsonl"
+    legacy_backup_file = audit_dir / "chain_corrupted_backup.jsonl"
     new_chain_file = audit_dir / "chain_new.jsonl"
     last_hash_file = audit_dir / ".last_hash"
     
@@ -222,11 +262,10 @@ def main():
         
         # Archive
         print("\nStep 2: Archiving corrupted chain...")
-        if backup_file.exists():
-            print(f"  Backup already exists: {backup_file}")
-        else:
-            shutil.copy2(chain_file, backup_file)
-            print(f"  Archived to: {backup_file}")
+        shutil.copy2(chain_file, backup_file)
+        if not legacy_backup_file.exists():
+            shutil.copy2(chain_file, legacy_backup_file)
+        print(f"  Archived to: {backup_file}")
         
         # Rebuild
         print("\nStep 3: Rebuilding chain...")

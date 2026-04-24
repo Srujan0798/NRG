@@ -1,0 +1,100 @@
+--- requested live circuit breaker test ---
+MISSING: tests/resilience/test_circuit_breaker_live.py
+--- related tests discovered ---
+src/config/database.py:263:        """Return True if pool is exhausted (circuit breaker)."""
+src/config/llm_config.py:114:        api_key = _env("OPENAI_API_KEY")
+src/config/llm_config.py:116:            raise LLMConfigError("OPENAI_API_KEY is required for provider 'openai'")
+src/config/llm_config.py:120:            model=_env("OPENAI_MODEL", "gpt-4o") or "gpt-4o",
+src/config/llm_config.py:121:            base_url=_env("OPENAI_BASE_URL", "https://api.openai.com/v1/responses"),
+src/config/llm_config.py:138:        api_key = _env("AZURE_OPENAI_API_KEY")
+src/config/llm_config.py:139:        endpoint = _env("AZURE_OPENAI_ENDPOINT")
+src/config/llm_config.py:140:        deployment = _env("AZURE_OPENAI_DEPLOYMENT")
+src/config/llm_config.py:143:                "AZURE_OPENAI_API_KEY, AZURE_OPENAI_ENDPOINT, and AZURE_OPENAI_DEPLOYMENT are required for provider 'azure'"
+src/config/llm_config.py:148:            model=_env("AZURE_OPENAI_MODEL", deployment) or deployment,
+src/config/llm_config.py:151:            azure_api_version=_env("AZURE_OPENAI_API_VERSION", "2024-10-21") or "2024-10-21",
+src/config/llm_config.py:702:    Sovereign LLM Mesh with automatic fallback, circuit breaker, and health-weighted routing.
+src/config/llm_config.py:716:        self._circuit_state: dict[str, str] = {p: "closed" for p in self.clients}
+src/config/llm_config.py:719:        self._circuit_failure_threshold = 5
+src/config/llm_config.py:720:        self._circuit_cooldown_seconds = 30
+src/config/llm_config.py:721:        self._circuit_window_seconds = 300
+src/config/llm_config.py:736:        self._redis_circuit_prefix = "circuit:state:"
+src/config/llm_config.py:737:        self._redis_failures_prefix = "circuit:failures:"
+src/config/llm_config.py:738:        self._load_circuit_from_redis()
+src/config/llm_config.py:750:    def _load_circuit_from_redis(self) -> None:
+src/config/llm_config.py:751:        """Load circuit breaker state from Redis on startup. Graceful degradation if Redis unavailable."""
+src/config/llm_config.py:758:                state_key = f"{self._redis_circuit_prefix}{provider}"
+src/config/llm_config.py:763:                    self._circuit_state[provider] = saved_state
+src/config/llm_config.py:767:                    valid_times = [ts for ts, _ in failure_times if now - ts < self._circuit_window_seconds]
+src/config/llm_config.py:769:                    if valid_times and len(valid_times) >= self._circuit_failure_threshold:
+src/config/llm_config.py:770:                        self._circuit_state[provider] = "open"
+src/config/llm_config.py:774:    def _persist_circuit_to_redis(self, provider: str) -> None:
+src/config/llm_config.py:775:        """Persist circuit state and failure history to Redis. Fails silently if Redis unavailable."""
+src/config/llm_config.py:780:            state_key = f"{self._redis_circuit_prefix}{provider}"
+src/config/llm_config.py:782:            state = self._circuit_state.get(provider, "closed")
+src/config/llm_config.py:783:            ttl = int(self._circuit_window_seconds + 300)
+src/config/llm_config.py:840:    def _is_provider_circuit_open(self, provider: str) -> bool:
+src/config/llm_config.py:841:        """Check if circuit breaker is open for a provider.
+src/config/llm_config.py:846:            state = self._circuit_state.get(provider, "closed")
+src/config/llm_config.py:855:                self._circuit_state[provider] = "half_open"
+src/config/llm_config.py:856:                logger.info(f"🔌 Circuit breaker HALF-OPEN for {provider} (cooldown={cooldown}s expired)")
+src/config/llm_config.py:857:                self._persist_circuit_to_redis(provider)
+src/config/llm_config.py:862:        """Skip providers that failed in the last 60s (circuit breaker overlap)."""
+src/config/llm_config.py:890:            if self._is_provider_recently_failed(p) or self._is_provider_circuit_open(p):
+src/config/llm_config.py:903:        """Record a success, update metrics, and close the circuit breaker."""
+src/config/llm_config.py:919:            prev_state = self._circuit_state.get(provider)
+src/config/llm_config.py:921:                self._circuit_state[provider] = "closed"
+src/config/llm_config.py:923:            elif self._circuit_state.get(provider) != "closed":
+src/config/llm_config.py:924:                self._circuit_state[provider] = "closed"
+src/config/llm_config.py:927:        self._persist_circuit_to_redis(provider)
+src/config/llm_config.py:930:        """Record a failure and potentially trip the circuit breaker."""
+src/config/llm_config.py:941:                if now - t < self._circuit_window_seconds
+src/config/llm_config.py:943:            if len(self._failure_history[provider]) >= self._circuit_failure_threshold:
+src/config/llm_config.py:944:                self._circuit_state[provider] = "open"
+src/config/llm_config.py:945:                logger.warning(f"🔌 Circuit breaker OPEN for {provider} after {len(self._failure_history[provider])} failures")
+src/config/llm_config.py:946:        self._persist_circuit_to_redis(provider)
+src/config/llm_config.py:953:        idx = min(failures - self._circuit_failure_threshold, len(base) - 1)
+src/config/llm_config.py:1088:            if self._is_provider_circuit_open(provider) or self._is_provider_recently_failed(provider):
+src/config/llm_config.py:1145:            circuit_state = self._circuit_state.get(provider, "closed")
+src/config/llm_config.py:1147:            if circuit_state == "open":
+src/config/llm_config.py:1149:            elif circuit_state == "half_open":
+src/config/llm_config.py:1158:                "circuit": circuit_state,
+src/config/llm_config.py:1170:        """Check health of all LLM providers in mesh including circuit breaker state."""
+src/config/llm_config.py:1174:            circuit_state = self._circuit_state.get(provider, "closed")
+src/config/llm_config.py:1183:                    "circuit": circuit_state,
+src/config/llm_config.py:1190:                    "circuit": circuit_state,
+tests/config/test_llm_config.py:19:            with pytest.raises(LLMConfigError, match="OPENAI_API_KEY"):
+tests/config/test_llm_config.py:42:        env = {"OPENAI_API_KEY": "test-key", "OPENAI_MODEL": "gpt-4o"}
+tests/config/test_llm_config.py:67:            "AZURE_OPENAI_API_KEY": "az-key",
+tests/config/test_llm_config.py:68:            "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com",
+tests/config/test_llm_config.py:69:            "AZURE_OPENAI_DEPLOYMENT": "gpt-4",
+tests/chaos/test_mesh_resilience.py:103:    mesh._circuit_state = {}
+tests/chaos/test_mesh_resilience.py:107:    mesh._redis_circuit_prefix = "circuit:state:"
+tests/chaos/test_mesh_resilience.py:108:    mesh._redis_failures_prefix = "circuit:failures:"
+tests/chaos/test_mesh_resilience.py:109:    mesh._circuit_failure_threshold = 5
+tests/chaos/test_mesh_resilience.py:110:    mesh._circuit_cooldown_seconds = 30
+tests/chaos/test_mesh_resilience.py:111:    mesh._circuit_window_seconds = 300
+tests/chaos/test_mesh_resilience.py:131:        fresh_mesh._circuit_state = {"fast": "closed", "slow": "closed"}
+tests/chaos/test_mesh_resilience.py:152:        fresh_mesh._circuit_state = {"fail1": "closed", "fail2": "closed"}
+tests/chaos/test_mesh_resilience.py:176:        fresh_mesh._circuit_state = {"fast": "closed", "slow": "closed"}
+tests/chaos/test_mesh_resilience.py:198:        fresh_mesh._circuit_state = {"fail1": "closed", "healthy": "closed"}
+tests/chaos/test_mesh_resilience.py:211:    def test_circuit_breaker_trips_after_3_failures(self, fresh_mesh):
+tests/chaos/test_mesh_resilience.py:216:        fresh_mesh._circuit_state = {"failing": "closed"}
+tests/chaos/test_mesh_resilience.py:221:        fresh_mesh._circuit_failure_threshold = 3
+tests/chaos/test_mesh_resilience.py:222:        fresh_mesh._circuit_cooldown_seconds = 60
+tests/chaos/test_mesh_resilience.py:223:        fresh_mesh._circuit_window_seconds = 300
+tests/chaos/test_mesh_resilience.py:228:        assert fresh_mesh._circuit_state["failing"] == "open", \
+tests/chaos/test_mesh_resilience.py:237:        fresh_mesh._circuit_state = {"slow": "closed"}
+tests/chaos/test_mesh_resilience.py:261:        fresh_mesh._circuit_state = {"success": "closed", "fail": "closed"}
+tests/chaos/test_mesh_resilience.py:283:        fresh_mesh._circuit_state = {"a": "closed", "b": "closed"}
+tests/chaos/test_mesh_resilience.py:305:        fresh_mesh._circuit_state = {"fast": "closed"}
+tests/chaos/test_mesh_resilience.py:333:        fresh_mesh._circuit_state = {"failing": "closed"}
+tests/chaos/test_mesh_resilience.py:340:        monkeypatch.setattr(fresh_mesh, "_is_provider_circuit_open", lambda p: False)
+src/prompts/synth_system.md:74:circuits, reflecting strong institutional support from IIT's quantum lab.
+src/api/main.py:763:                "error": "No LLM configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env"
+src/api/main.py:789:    Includes: status, circuit state, success_rate_7d, latency_p50, health_rank.
+src/api/main.py:1223:    cache hit rate, circuit breaker state, and audit chain stats.
+src/api/main.py:1249:        circuit_trips = {}
+src/api/main.py:1250:        for p, state in mesh._circuit_state.items():
+src/api/main.py:1252:                circuit_trips[p] = state
+src/api/main.py:1255:        circuit_trips = {}
+src/api/main.py:1324:            "circuit_breaker_trips": circuit_trips,

@@ -1,0 +1,13 @@
+DATABASE_URL=unset
+--- psql attempt ---
+zsh:4: command not found: psql
+--- sqlite EXPLAIN QUERY PLAN fallback ---
+sqlite_db= nrg_research.db
+(9, 0, 0, 'SCAN innovation_grant_from_govt USING INDEX idx_grant_org')
+(48, 0, 0, 'USE TEMP B-TREE FOR ORDER BY')
+--- result ---
+('DST-SERB', 14, 167500000)
+('DRDO', 6, 124000000)
+('DBT', 2, 22000000)
+('MeitY', 1, 15000000)
+('AICTE', 1, 3000000)

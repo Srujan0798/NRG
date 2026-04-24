@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.audit import AuditEvent
+
 
 def investigate_chain(
     chain_path: str | Path = ".audit/chain.jsonl",
@@ -40,8 +42,14 @@ def investigate_chain(
                 pass
 
         recorded_hash = event.get("hash")
-        event_without_hash = {k: v for k, v in event.items() if k != "hash"}
-        serialized = json.dumps(event_without_hash, sort_keys=True, default=str)
+        event_kwargs = {
+            k: v
+            for k, v in event.items()
+            if k not in ("hash", "per_user_binding", "user_key_hash")
+        }
+        if "_v" not in event:
+            event_kwargs["_v"] = None
+        serialized = AuditEvent(**event_kwargs).serialize()
         computed = hmac.new(
             key.encode(),
             (prev_hash + serialized).encode(),
