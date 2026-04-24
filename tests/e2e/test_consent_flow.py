@@ -40,7 +40,7 @@ class StubWorkflow:
             "citations": [],
             "warnings": [],
             "retrieval_sources": ["sql"],
-            "provenance": {},
+            "provenance": {"synth": "rule_based"},
             "synthesis_method": "rule_based",
             "conversation_history": [],
         }
@@ -51,6 +51,12 @@ def setup(monkeypatch, tmp_path):
     StubWorkflow.call_count = 0
     monkeypatch.setattr(api_main, "workflow", StubWorkflow())
     api_main._api_cache.invalidate()
+
+    from src.audit import ImmutableAuditLog
+    import src.audit as audit_module
+    ImmutableAuditLog._instance = None
+    ImmutableAuditLog._initialized = False
+    audit_module._audit_log_instance = None
 
     consent_db = tmp_path / "consent_test.db"
     consent_service = ConsentService(str(consent_db))
@@ -77,8 +83,11 @@ def researcher_token(client):
 
 
 @pytest.fixture
-def consent_service():
-    return ConsentService()
+def consent_service(tmp_path):
+    consent_db = tmp_path / "consent_test.db"
+    svc = ConsentService(str(consent_db))
+    svc._init_table()
+    return svc
 
 
 class TestConsentGate:
@@ -397,8 +406,9 @@ class TestAuditChainLogging:
         consent_service.revoke_consent(user_id, "analytics")
 
         assert audit_log.event_count > before_revoke
-        recent = audit_log.get_recent_events(1)[0]
-        assert recent["event_type"] == "consent_revoked"
+        events = audit_log.get_recent_events(10)
+        revoke_events = [e for e in events if e.get("event_type") == "consent_revoked" and e.get("user_id") == user_id]
+        assert len(revoke_events) > 0, f"Expected consent_revoked event for {user_id}, got {[e.get('event_type') for e in events[-5:]]}"
 
     def test_erasure_writes_audit_event(self, client, consent_service):
         """Erasing data appends an event to the HMAC audit chain."""
