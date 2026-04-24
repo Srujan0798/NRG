@@ -607,3 +607,43 @@ class TestRouterAgainstEvaluationDataset:
         assert (
             detection_rate >= 0.7
         ), f"Multi-intent detection rate {detection_rate:.0%} too low ({detected}/{len(multi_intent_cases)})"
+
+
+class TestRouterComplexityClassification:
+    """Test that router_node includes complexity classification in its output."""
+
+    def test_trivial_query_returns_trivial_complexity(self):
+        result = router_node({"user_query": "list researchers in Gujarat"})
+        assert "complexity" in result
+        assert result["complexity"] in (
+            "trivial",
+            "simple",
+            "moderate",
+            "complex",
+            "synthesis_heavy",
+        )
+
+    def test_complex_query_returns_complex_or_synthesis_heavy(self):
+        result = router_node(
+            {"user_query": "synthesize research gaps and funding trends across ML and biotechnology"}
+        )
+        assert "complexity" in result
+        assert result["complexity"] in ("complex", "synthesis_heavy", "moderate")
+
+    def test_simple_query_returns_simple_or_trivial(self):
+        result = router_node({"user_query": "how many publications in 2023"})
+        assert "complexity" in result
+        assert result["complexity"] in ("trivial", "simple", "moderate")
+
+    def test_complexity_field_present_for_all_queries(self):
+        queries = [
+            "list researchers in Gujarat",
+            "count publications in 2023",
+            "what are trends in AI research",
+            "compare funding for ML vs biotechnology projects",
+            "synthesize the research landscape in quantum computing",
+        ]
+        for q in queries:
+            result = router_node({"user_query": q})
+            assert "complexity" in result, f"Missing complexity for query: {q}"
+            assert result["complexity"] is not None

@@ -905,6 +905,19 @@ def router_node(state) -> dict:
 
     metrics.record(intent, confidence, is_ambiguous, llm_enhanced)
 
+    user_tier = 1
+    if isinstance(state, dict):
+        user_tier = state.get("user_tier", 1)
+    elif hasattr(state, "user_tier"):
+        user_tier = state.user_tier
+
+    try:
+        from src.orchestration.nodes.complexity_classifier import get_complexity_for_routing
+        complexity_result = get_complexity_for_routing(user_query, user_tier)
+        complexity = complexity_result.level.value
+    except Exception:
+        complexity = "moderate"
+
     return {
         "intent": intent,
         "routing_decision": routing_decision,
@@ -919,4 +932,5 @@ def router_node(state) -> dict:
         "clarifications": clarifications,
         "llm_enhanced": llm_enhanced,
         "stage": details.get("stage", "regex"),
+        "complexity": complexity,
     }

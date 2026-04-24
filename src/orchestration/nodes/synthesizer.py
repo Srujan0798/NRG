@@ -248,6 +248,12 @@ def synthesizer_node(state):
 
     context_summary = _build_context_summary(conversation_history)
 
+    complexity = "moderate"
+    if hasattr(state, "complexity"):
+        complexity = getattr(state, "complexity", "moderate")
+    elif isinstance(state, dict):
+        complexity = state.get("complexity", "moderate")
+
     if not data_sources:
         synthesized = _fallback_response(user_query, context_summary)
         verification = False
@@ -262,6 +268,7 @@ def synthesizer_node(state):
             context_summary,
             intent,
             routing_decision,
+            complexity,
         )
         verification = True
 
