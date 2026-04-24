@@ -4,7 +4,7 @@
 > **Sprint**: Phase 3–5 verification in progress; not UAT-ready until blockers below close
 > **Test Status**: Targeted suites pass; full `pytest tests/` run was interrupted at 39% after >7 minutes during this verification
 > **Quality Bar**: Scorecard reports 5/5 scored with C4⏭️, but direct vector drift quality is CRITICAL (0.015 vs SLO 0.85)
-> **Audit Chain**: ❌ Local `/health` reports `chain_valid=false`; chain repair cannot be claimed complete
+> **Audit Chain**: ✅ Local `verify_chain()` reports valid after rebuild; 371,661 events verified, 0 errors
 > **Data Sources**: 3 external inputs (Core Idea, Dhairya Audit, Official PostgreSQL Schema)
 > **Schema**: `db_struct.sql` has 58 tables; `add_production_tables_001.py` creates 47 tables and omits 11 Django/support tables
 > **Protocols**: Verification reopened multiple DONE claims; see "2026-04-25 Verification Corrections"
@@ -19,8 +19,8 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 - **Query proof fields FIXED-AND-VERIFIED**: `/query` responses include `audit_event_id`, `sql_query`, and `sql_results`; live curl returned SQL for "Top 5 funding agencies by total grant amount" with five result rows.
 - **Vector drift runtime FIXED-AND-VERIFIED, quality still BLOCKED**: Fixed Qdrant `ScoredPoint.score` crash and skipped slow cosine pass on already-critical benchmark drift. Tests: `tests/skills/test_rag_embedder_retriever.py::TestRetriever::test_retriever_records_qdrant_scored_point_score` and `tests/observability/test_vector_drift.py` pass. Direct drift score remains `0.015`, so retrieval quality is not production-ready.
 - **Schema bridge PARTIAL**: Migration creates 47 tables, not 58. Missing from migration: `auth_group`, `auth_group_permissions`, `auth_permission`, `auth_user`, `auth_user_groups`, `auth_user_user_permissions`, `django_admin_log`, `django_content_type`, `django_migrations`, `django_session`, `user_registration_old`. `tests/data/test_schema_parity.py` result: 7 passed, 4 skipped.
-- **Audit chain BLOCKED**: Live `/health` reports `audit.chain_valid=false`. Do not claim C2 operational chain health until local and staging verification return true.
-- **System health BLOCKED**: Live `/health` reports `database.status=error` because `NRGDatabase` has no `get_stats` method.
+- **Audit chain FIXED-AND-VERIFIED locally**: Repaired `.audit/chain.jsonl` with timestamped backups at `.audit/chain_corrupted_backup_20260424T194708Z.jsonl` and `.audit/chain_corrupted_backup_20260424T194833Z.jsonl`. Evidence: `verify_chain()` → `valid True count 371661 errors 0`; `scripts/audit_investigate.py` → `ok: true`.
+- **System health FIXED-AND-VERIFIED locally**: `/health` now uses the canonical `_get_db()` / `NRGDatabaseV2` path instead of the old SQLite-only `NRGDatabase`. Evidence: TestClient `/health` returns `status: healthy`, `database.status: healthy`, `audit.chain_valid: true`.
 
 ## PHASE 3 CLOSE — ALL COMPLETE ✅
 
@@ -94,7 +94,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 ### 35. THE NON-REPUDIATION LOCK — Per-User Audit Binding ✅
 - **Quality Bar**: C2 ✅ (26/26 tests passing)
-- **Summary**: HMAC chain + per-user derived keys + JWT kid + request fingerprint + API/DB co-sign. Unit tests pass, but operational `/health` currently reports `chain_valid=false`; production readiness remains blocked until chain repair verifies true.
+- **Summary**: HMAC chain + per-user derived keys + JWT kid + request fingerprint + API/DB co-sign. Unit tests pass; local operational `/health` now reports `chain_valid=true`. Staging must still be verified before final handover.
 
 ### 36. THE TEMPORAL POLICY — Time-Window RBAC ✅
 - **Quality Bar**: RBAC extension
@@ -239,7 +239,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
   - log_cost_decision() added to audit/__init__.py
   - llm_cost_log_001 migration created in src/migrations/versions/
   - 44 passing tests in tests/config/test_cost_guard.py
-- **Known gap:** complexity_classifier not yet wired into orchestration graph — synthesizer defaults to complexity="moderate". Requires graph surgery to add complexity classifier node.
+- **Known gap:** NONE — complexity_classifier wired into orchestration graph via router_node (commit `955be7e8`). `get_complexity_for_routing()` is called per query and result is stored in `NRGState.complexity` field. Synthesizer extracts it from state and uses it for CostGuard check_budget and provider routing.
 - **Files:** src/config/llm_config.py (CostGuard class), src/orchestration/nodes/synthesizer.py (_synthesize), src/audit/__init__.py (log_cost_decision), src/migrations/versions/llm_cost_log_001.py, tests/config/test_cost_guard.py, .claude/rules/cost_budget.yaml, scripts/llm_cost_report.py, infrastructure/monitoring/dashboards/08_llm_cost.json
 
 ### WE.6 — Data Quality Drift Monitoring 🔄 ASSIGNED
