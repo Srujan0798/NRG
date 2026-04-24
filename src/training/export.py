@@ -7,8 +7,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
-import shutil
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal
@@ -134,7 +132,7 @@ class ExportPipeline:
 
         if not dry_run:
             output_file = self.output_dir / self._get_export_filename(version, fmt)
-            count = pairs_to_jsonl(formatted_pairs, output_file)
+            pairs_to_jsonl(formatted_pairs, output_file)
             export_stats["filename"] = str(output_file)
 
             exported_ids = [p.get("id") for p in kept_pairs if p.get("id")]

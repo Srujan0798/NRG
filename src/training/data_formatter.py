@@ -10,11 +10,9 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from src.training.quality_filter import GRADE_THRESHOLDS
 
 logger = logging.getLogger(__name__)
 

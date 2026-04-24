@@ -13,7 +13,7 @@ import os
 import threading
 import time
 import uuid
-from datetime import datetime, date, UTC
+from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
 

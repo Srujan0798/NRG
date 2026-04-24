@@ -6,7 +6,6 @@ import hmac
 import ipaddress
 import logging
 import json
-import re
 from typing import Optional
 
 from fastapi import HTTPException, Request, Header
@@ -134,7 +133,6 @@ class RequestSigner:
 
     def create_signed_payload(self, payload: dict) -> dict:
         """Create payload with signature."""
-        import json
         timestamp = int(time.time())
         payload_str = json.dumps(payload, sort_keys=True)
         signature = self.sign(payload_str, timestamp)

@@ -6,7 +6,6 @@ Removes REJECT pairs, deduplicates by cosine similarity.
 
 from __future__ import annotations
 
-import json
 import logging
 import math
 import re
@@ -83,16 +82,7 @@ class QualityFilter:
         latency_ms = int(pair.get("latency_ms", 0) or 0)
         response = str(pair.get("response") or "")
         sql_row_count = int(pair.get("sql_row_count", 0) or 0)
-        citations_raw = pair.get("citations", "[]")
         sql_error = pair.get("sql_result", "")
-
-        if isinstance(citations_raw, str):
-            try:
-                citations = json.loads(citations_raw)
-            except Exception:
-                citations = []
-        else:
-            citations = citations_raw or []
 
         if not response or len(response.strip()) < self.min_response_length:
             return "reject"

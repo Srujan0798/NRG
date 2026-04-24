@@ -1,0 +1,41 @@
+# NRG Helm Chart - Staging Override Values
+# Use this file for staging environment
+
+namespace: nrg-staging
+
+image:
+  tag: "v1.0.0-staging"
+
+api:
+  replicaCount: 2
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 10
+
+vault:
+  address: "https://vault-staging.nrg-staging.svc:8200"
+  role: "nrg-staging-app"
+
+backup:
+  enabled: true
+  s3:
+    bucket: "nrg-backups-staging"
+
+# Enable chaos engineering in staging
+chaos:
+  enabled: true
+  namespace: nrg-staging
+
+prometheus:
+  enabled: true
+  scrapeInterval: "30s"
+
+observability:
+  tracing:
+    enabled: true
+
+nodeSelector:
+  nrg-node: "staging"
+
+networkPolicies:
+  enabled: true

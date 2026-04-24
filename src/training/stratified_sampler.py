@@ -84,7 +84,6 @@ class StratifiedSampler:
                 type_scores[qtype] = score
         if not type_scores:
             return "lookup"
-        lookup_score = type_scores.get("lookup", 0)
         non_lookup_scores = {k: v for k, v in type_scores.items() if k != "lookup"}
         if non_lookup_scores:
             return max(non_lookup_scores, key=non_lookup_scores.get)

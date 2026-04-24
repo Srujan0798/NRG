@@ -23,7 +23,7 @@ import os
 import threading
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import yaml
 

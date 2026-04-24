@@ -3,12 +3,17 @@ FastAPI Server for National Research Graph API
 Integrated with LangGraph, PII Detection, and RBAC
 """
 
-import os
 import asyncio
+import os
+import tempfile
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import Any, Optional
+from pathlib import Path
+from typing import Any, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,7 +37,7 @@ from src.auth.middleware import (
     get_current_user,
 )
 from src.data.database import resolve_database_path
-from src.data.database_v2 import NRGDatabase as NRGDatabaseV2, Researcher
+from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
@@ -78,9 +83,9 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
         return result, found_types
 
     text_fields_to_check = ["response", "warnings"]
-    for field in text_fields_to_check:
-        if field in redacted_response and isinstance(redacted_response[field], str):
-            redacted_response[field], found = _redact_text(redacted_response[field])
+    for fname in text_fields_to_check:
+        if fname in redacted_response and isinstance(redacted_response[fname], str):
+            redacted_response[fname], found = _redact_text(redacted_response[fname])
             redacted_types.extend(found)
 
     if "citations" in redacted_response and isinstance(redacted_response["citations"], list):
@@ -423,7 +428,6 @@ async def query_stream(
         raise HTTPException(status_code=403, detail="Consent required for research_access")
 
     async def event_generator():
-        import asyncio
         import time
 
         try:
@@ -869,14 +873,6 @@ async def vectors_health():
 
 
 # ─── Ingestion Job Store ───────────────────────────────────────────────────
-
-import asyncio
-import tempfile
-import threading
-from pathlib import Path
-from typing import Literal
-from dataclasses import dataclass, field
-from concurrent.futures import ThreadPoolExecutor
 
 _ingestion_executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ingest_worker")
 
@@ -1524,8 +1520,6 @@ async def get_publications(
     publications = db.query_publications(year=year, limit=limit, offset=offset)
 
     tier = token_payload.get("tier", 1)
-    role = token_payload.get("role", "researcher")
-
     if tier >= 2:
         from src.auth.rbac import get_policy_engine
         engine = get_policy_engine()
@@ -1813,18 +1807,6 @@ async def post_graph_query(
                     "type": "affiliated",
                     "weight": 1,
                 })
-
-        collab_edges = sa_text("""
-            SELECT DISTINCT r1.researcher_id AS rid1, r2.researcher_id AS rid2
-            FROM researcher_publications rp1
-            JOIN researcher_publications rp2 ON rp1.publication_id = rp2.publication_id
-            JOIN researchers r1 ON r1.researcher_id = rp1.researcher_id
-            JOIN researchers r2 ON r2.researcher_id = rp2.researcher_id
-            WHERE r1.researcher_id IN :rid_list
-              AND r2.researcher_id IN :rid_list
-              AND r1.researcher_id < r2.researcher_id
-            LIMIT 300
-        """)
 
         if _researcher_ids:
             try:
@@ -2203,7 +2185,6 @@ async def trigger_vector_reindex(
     if role not in ("admin", "system"):
         raise HTTPException(status_code=403, detail="Admin or system role required for reindex")
 
-    from src.skills.rag.embedder import Embedder
     from src.skills.rag.retriever import Retriever
     import logging
     logger = logging.getLogger(__name__)

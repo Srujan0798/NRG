@@ -17,7 +17,6 @@ Usage:
 from __future__ import annotations
 
 import logging
-import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional
@@ -168,8 +167,6 @@ class SQLOracle:
 
         Returns OracleResponse with confidence, answer, SQL, explanation, and warnings.
         """
-        start_time = time.time()
-
         sql, result, attempts = self._generate_and_execute(
             question, user_tier, user_id
         )
@@ -200,7 +197,6 @@ class SQLOracle:
                 verification_passed, warnings = verification_passed_corr, warnings_corr
                 confidence = confidence_corr
 
-        elapsed_ms = int((time.time() - start_time) * 1000)
         explanation = self._generate_explanation(question, sql, result, confidence)
 
         return OracleResponse(

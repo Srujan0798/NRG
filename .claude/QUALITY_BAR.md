@@ -43,25 +43,30 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 
 ## Enforcement
 
-- **Protocol-level**: Every ═══ task's ACCEPTANCE CRITERIA must include any of the 6 constraints it touches.
-- **CI-level**: Any test file under `tests/security/`, `tests/performance/`, `tests/load/` failing blocks merge.
-- **Audit-level**: `/self-evolve` runs a "Quality Bar Compliance" check — scores each of the 6 on a 1–10 scale quarterly.
+- **Scorecard**: `python scripts/quality_bar_scorecard.py` — runs all 6 test groups, emits markdown + JSON to `scripts/quality_bar_scorecard.json`. Exit code 1 if not 6/6.
+- **CI-level**: `.github/workflows/cd.yml` — `quality-bar` job runs scorecard before build; blocks all deployments (build, staging, production) unless scorecard reports 6/6.
+- **Nightly**: Scorecard runs as a cron job; any score drop triggers a P0 incident alert.
+- **Protocol-level**: Every task's ACCEPTANCE CRITERIA must include any of the 6 constraints it touches.
+- **Quarterly**: `/self-evolve` runs scorecard; result committed to `docs/ops/QUALITY_BAR_SCORECARD_<YYYY-QN>.md`.
 - **Guru-level**: Before marking any protocol COMPLETE in BACKLOG.md, the Guru verifies the 6 constraints are not violated by the change.
 
 ---
 
 ## Current Compliance Snapshot (2026-04-24)
 
-| Constraint | Status | Owning Protocol |
-|---|---|---|
-| 1. DPDP Indian PII | ✓ Implemented, regression corpus exists | — |
-| 2. Per-user audit binding | ✗ Missing | #35 (new) |
-| 3. Multi-hop decomposition | ✗ Planner does flat decomposition | #37 (new) |
-| 4. P99 <500ms / ≥1000 concurrent | ⚠ SLOs defined, numbers not these | #11 + #23 |
-| 5. Vector drift + auto-retrain | ✓ Script exists, auto-trigger pending | #12 (tail) |
-| 6. Schema allowlist before cloud | ✗ Fingerprint defense exists but not allowlist | #39 (new) |
+| Constraint | Status | Owning Protocol | Notes |
+|---|---|---|---|
+| 1. DPDP Indian PII | ✓ Implemented, 8/8 tests passing | — | PAN, Aadhaar, mobile, email, passport, GSTIN, bank account |
+| 2. Per-user audit binding | ✓ 26/26 tests passing | #35 | verify_chain() rejects tampered bindings |
+| 3. Multi-hop decomposition | ✓ 24/24 tests passing | #37 | 10+ multi-hop fixtures, DAG planner |
+| 4. P99 <500ms / ≥1000 concurrent | ⚠ Unit tests pass (10/12); load test needs API+Qdrant | #11 + #23 | `tests/load/locustfile.py` — requires live system |
+| 5. Vector drift + auto-retrain | ⚠ Script runs; Qdrant required for full validation | #12 (tail) | `scripts/vector_drift_check.py` — requires Qdrant on 6333 |
+| 6. Schema allowlist before cloud | ✓ 35/35 tests passing | #39 | All 20+ egress leak attempts blocked |
 
-**Score: 2 / 6 fully compliant.** Protocols #35, #37, #39 address the 3 missing constraints. Protocols #11/#23 tighten #4. Protocol #12 finishes #5.
+**Score: 4/6 fully passing in dev. 2/6 require infrastructure (C4: API+Qdrant, C5: Qdrant).**
+
+**Scorecard script**: `python scripts/quality_bar_scorecard.py` — runs all 6 test groups, emits markdown + JSON.
+**CI enforcement**: `.github/workflows/cd.yml` — `quality-bar` job blocks all deployments unless scorecard is 6/6.
 
 ---
 

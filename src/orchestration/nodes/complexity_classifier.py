@@ -17,7 +17,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 
 class ComplexityLevel(Enum):
@@ -102,7 +101,6 @@ QUERY_TYPE_KEYWORDS = {
 def classify_complexity(query: str, user_tier: int = 1) -> ComplexityResult:
     """Classify query complexity using keyword + pattern analysis."""
     query_lower = query.lower()
-    tokens = set(re.findall(r'\w+', query_lower))
 
     scores: dict[ComplexityLevel, float] = {level: 0.0 for level in ComplexityLevel}
     signals: dict[ComplexityLevel, list[str]] = {level: [] for level in ComplexityLevel}
@@ -128,7 +126,7 @@ def classify_complexity(query: str, user_tier: int = 1) -> ComplexityResult:
         scores[ComplexityLevel.COMPLEX] += 0.3
         scores[ComplexityLevel.SYNTHESIS_HEAVY] += 0.2
 
-    best_level = max(scores, key=lambda l: scores[l])
+    best_level = max(scores, key=lambda level: scores[level])
     best_score = scores[best_level]
 
     if best_score < 0.5:
@@ -141,8 +139,6 @@ def classify_complexity(query: str, user_tier: int = 1) -> ComplexityResult:
 
     provider, model, latency = PROVIDER_RECOMMENDATIONS[best_level]
     confidence = min(best_score, 1.0)
-
-    query_type = _detect_query_type(query_lower)
 
     return ComplexityResult(
         level=best_level,
