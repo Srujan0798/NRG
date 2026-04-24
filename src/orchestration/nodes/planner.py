@@ -92,10 +92,10 @@ class Plan(BaseModel):
     schema_tables: list[str] = Field(default_factory=list)
     desired_skills: list[str] = Field(default_factory=list)
     expected_output_shape: str = ""
-    # DAG format for multi-hop queries
-    dag_nodes: list[dict] = Field(default_factory=list)  # List[QueryDAGNode]
+    dag_nodes: list[dict] = Field(default_factory=list)
     dag_root_id: str = Field(default="")
-    is_dag: bool = Field(default=False)  # True when dag_nodes is populated
+    is_dag: bool = Field(default=False)
+    subqueries: list[str] = Field(default_factory=list)
 
 
 @trace_llm_call("planner")
