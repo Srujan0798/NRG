@@ -194,6 +194,9 @@ class PromptSanitiser:
             ),
             _Rule("policy_bypass", re.compile(r"\b(no|without)\s+rbac\b")),
             _Rule("policy_bypass", re.compile(r"\bbypass\s+authentication\b")),
+            _Rule("policy_bypass", re.compile(r"\b(?:crafted|manual(?:ly)?\s+crafted)\s+jwt\b")),
+            _Rule("policy_bypass", re.compile(r"\bjwt\s+claiming\s+tier\b")),
+            _Rule("policy_bypass", re.compile(r"\bclaiming\s+tier\s*:\s*(researcher|tier\s*1|1)\b")),
             _Rule(
                 "data_exfiltration",
                 re.compile(
@@ -204,8 +207,10 @@ class PromptSanitiser:
             ),
             _Rule("data_exfiltration", re.compile(r"\bdatabase\s+password\b")),
             _Rule("data_exfiltration", re.compile(r"\bcontact\s+details?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bcontact\s+info\b")),
             _Rule("data_exfiltration", re.compile(r"\bemail\s+addresses?\b")),
             _Rule("data_exfiltration", re.compile(r"\bpan\s+numbers?\b")),
+            _Rule("data_exfiltration", re.compile(r"\b(?:aadhaar|aadhar)\s+numbers?\b")),
             _Rule(
                 "data_exfiltration",
                 re.compile(r"\bselect\s+.*\b(email|aadhaar|phone|pan|password)\b.*\bfrom\b"),
