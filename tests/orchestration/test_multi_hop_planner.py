@@ -10,12 +10,9 @@ Verifies:
 7. Fallback to flat subqueries when is_dag=False
 """
 
-import pytest
 from src.orchestration.nodes.planner import (
     _heuristic_decompose,
-    _build_dag,
-    _extract_subqueries,
-    _determine_skills,
+    _build_dag as planner_build_dag,
 )
 from src.orchestration.nodes.executor import _build_dag as exec_build_dag, _execute_dag
 
@@ -265,6 +262,50 @@ class TestDAGDecompositionFull:
         ]
         _, order = exec_build_dag(nodes)
         assert len(order) < 3
+
+    def test_explicit_dag_edges_are_id_lists_not_ordinal(self):
+        """depends_on is a list of node ID strings, not ordinal positions."""
+        result = _heuristic_decompose(
+            "Compare Gujarat and Karnataka robotics research",
+            "table: researchers\ntable: funding_records"
+        )
+        for node in result["dag_nodes"]:
+            assert isinstance(node["depends_on"], list)
+            for dep in node["depends_on"]:
+                assert isinstance(dep, str), f"depends_on must be list[str], got {type(dep)}"
+                assert dep.startswith("node_"), f"depends_on IDs must be node IDs, got {dep}"
+
+    def test_planner_rejects_truly_cyclic_plan(self):
+        """If a cyclic DAG is constructed, _build_dag returns empty order."""
+        cyclic_nodes = [
+            {"id": "x", "subquery": "x", "skill": "sql", "depends_on": ["z"], "tables": [], "output_shape": "list"},
+            {"id": "y", "subquery": "y", "skill": "sql", "depends_on": ["x"], "tables": [], "output_shape": "list"},
+            {"id": "z", "subquery": "z", "skill": "sql", "depends_on": ["y"], "tables": [], "output_shape": "list"},
+        ]
+        _, order = planner_build_dag(cyclic_nodes)
+        assert len(order) == 0, "Cyclic DAG must produce empty execution order"
+
+    def test_topological_sort_stable_on_chain(self):
+        """Linear chain a→b→c always produces correct parent-before-child order."""
+        nodes = [
+            {"id": "root", "subquery": "root", "skill": "sql", "depends_on": [], "tables": [], "output_shape": "list"},
+            {"id": "mid", "subquery": "mid", "skill": "sql", "depends_on": ["root"], "tables": [], "output_shape": "list"},
+            {"id": "leaf", "subquery": "leaf", "skill": "sql", "depends_on": ["mid"], "tables": [], "output_shape": "list"},
+        ]
+        _, order = exec_build_dag(nodes)
+        assert order == ["root", "mid", "leaf"]
+
+    def test_planner_emits_explicit_edges_with_node_ids(self):
+        """Planner DAG output: depends_on entries are IDs, not numeric indexes."""
+        result = _heuristic_decompose(
+            "Find robotics researchers. Then list their publications. Then show funding.",
+            "table: researchers\ntable: publications\ntable: funding_records"
+        )
+        if result["is_dag"] and len(result["dag_nodes"]) > 1:
+            for node in result["dag_nodes"]:
+                for dep in node["depends_on"]:
+                    ref_found = any(n["id"] == dep for n in result["dag_nodes"])
+                    assert ref_found, f"depends_on ID '{dep}' not found in any node id"
 
     def test_dag_execution_time_recorded(self):
         """Each node's execution_time_ms is recorded."""

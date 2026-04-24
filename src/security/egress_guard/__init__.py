@@ -7,8 +7,8 @@ may appear in prompts. Raw schema, non-allowlisted columns, sensitive metadata â
 BLOCKED with audit log.
 
 Files:
-  - src/security/egress_allowlist.yaml  (declarative allowlist)
-  - src/security/egress_guard.py        (enforcement engine)
+  - src/security/egress_allowlist.yaml    (declarative allowlist)
+  - src/security/egress_guard/            (enforcement package)
 """
 
 from __future__ import annotations
@@ -94,10 +94,6 @@ class EgressGuard:
                 )
                 violations.append(violation)
                 self._violations.append(violation)
-
-        return violations
-
-        return violations
 
     def filter_prompt(
         self,
