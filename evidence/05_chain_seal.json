@@ -1,0 +1,27 @@
+{
+  "timestamp": "2026-04-24T22:56:54.846946+00:00",
+  "status": "PASS",
+  "total_duration_sec": 17.5,
+  "constraints": {
+    "C1: PII Compliance": {
+      "passed": true,
+      "duration_sec": 6.2,
+      "errors": []
+    },
+    "C2: Per-User Audit Binding": {
+      "passed": true,
+      "duration_sec": 2.7,
+      "errors": []
+    },
+    "C6: Egress Allowlist": {
+      "passed": true,
+      "duration_sec": 4.8,
+      "errors": []
+    },
+    "Audit Chain Integrity": {
+      "passed": true,
+      "duration_sec": 3.8,
+      "errors": []
+    }
+  }
+}
