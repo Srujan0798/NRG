@@ -15,7 +15,8 @@ Usage:
 """
 
 from alembic import op
-import sqlalchemy as sa
+
+from src.audit.db_cosign import generate_audit_cosign_trigger_sql
 
 revision = "add_audit_cosign_trigger_001"
 down_revision = "add_production_tables_001"
@@ -24,6 +25,8 @@ depends_on = None
 
 
 def upgrade() -> None:
+    op.execute(generate_audit_cosign_trigger_sql())
+
     op.execute("""
         CREATE TABLE IF NOT EXISTS audit_db_cosign (
             event_id         TEXT    NOT NULL PRIMARY KEY,
@@ -49,4 +52,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    op.execute("DROP TRIGGER IF EXISTS audit_cosign_trigger ON audit_events")
+    op.execute("DROP FUNCTION IF EXISTS audit_cosign_event()")
     op.execute("DROP TABLE IF EXISTS audit_db_cosign")
