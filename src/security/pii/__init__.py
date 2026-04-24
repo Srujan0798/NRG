@@ -9,6 +9,7 @@ from typing import Any
 from .fpe_engine import FPEEngine
 from .presidio_config import PresidioConfig
 from .tokenizer import PIITokenizer
+from .verhoeff import validate_aadhaar
 
 _PII_REGEX = {
     "aadhaar": re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"),
@@ -19,6 +20,7 @@ _PII_REGEX = {
     "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
     "email_academic_in": re.compile(r"\b[A-Za-z0-9._%+-]+@[*a-z0-9.-]+\.(ac|res|gov)\.in\b", re.IGNORECASE),
     "dl_number": re.compile(r"\b[A-Z]{2}[0-9]{2}[\s-]?[0-9]{11}\b"),
+    "gstin": re.compile(r"\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]\b", re.IGNORECASE),
 }
 
 
@@ -36,6 +38,9 @@ def _scan_with_regex(text: str) -> list[dict[str, Any]]:
     detections: list[dict[str, Any]] = []
     for pii_type, pattern in _PII_REGEX.items():
         for match in pattern.finditer(text):
+            if pii_type == "aadhaar":
+                if not validate_aadhaar(match.group(0)):
+                    continue
             detections.append(
                 {
                     "type": pii_type,

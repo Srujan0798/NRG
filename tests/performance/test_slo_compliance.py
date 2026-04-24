@@ -231,6 +231,7 @@ class TestConcurrencySLO:
     """
 
     @pytest.mark.timeout(300)
+    @pytest.mark.skipif(_is_macos, reason="macOS thread limits cause incomplete runs")
     def test_1000_concurrent_no_degradation(self, client):
         """System must handle 1000 concurrent queries without failures."""
         token = _login(client)
