@@ -8,8 +8,7 @@ Verifies:
 5. Invalid date formats gracefully fall through
 """
 
-import pytest
-from src.auth.rbac import RBACPolicy, RBACPolicyEngine, RBACPolicy as Policy
+from src.auth.rbac import RBACPolicyEngine, RBACPolicy as Policy
 
 
 class TestVisibilityWindow:

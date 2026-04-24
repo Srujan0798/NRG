@@ -155,10 +155,9 @@ def test_sql_accuracy_on_dhairya_eval_set(mock_llm_client):
     skill.close()
 
     correct = sum(1 for r in results if r["status"] in ("correct", "format_wrong") and r["expected"] != "no_query")
-    total_with_expected_correct = sum(1 for r in results if r["expected"] != "no_query")
     accuracy = correct / len(queries) * 100 if queries else 0
 
-    print(f"\n=== SQL Accuracy Eval Results ===")
+    print("\n=== SQL Accuracy Eval Results ===")
     print(f"Total queries: {len(queries)}")
     print(f"Correct (valid SQL, ignoring no_query baseline): {correct}/{len(queries)}")
     print(f"Accuracy: {accuracy:.1f}%")

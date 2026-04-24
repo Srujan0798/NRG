@@ -7,7 +7,7 @@ import json
 import pytest
 import sys
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import src.orchestration.nodes.verifier as verifier_module

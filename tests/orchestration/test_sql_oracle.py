@@ -5,7 +5,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from src.skills.text_to_sql.sql_oracle import (
     Confidence,

@@ -24,9 +24,7 @@ SKILLS USED: /python-backend (FastAPI TestClient), /webapp-testing (E2E patterns
 import pytest
 import sys
 import os
-import time
 from pathlib import Path
-from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -334,10 +332,7 @@ def assert_citation_tokens_valid(response_text: str, citations: list):
     cite_pattern = re.compile(r"\[cite:([^\]:]+):([^\]]+)\]")
     tokens = cite_pattern.findall(response_text)
 
-    citation_ids = {c.get("id") or c.get("pub_id") for c in citations}
-
     for pub_id, chunk_id in tokens:
-        full_id = f"{pub_id}:{chunk_id}"
         found = any(
             (c.get("id") == pub_id or c.get("pub_id") == pub_id)
             for c in citations

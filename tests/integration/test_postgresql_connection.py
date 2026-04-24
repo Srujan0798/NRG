@@ -7,11 +7,9 @@ from __future__ import annotations
 import os
 import pytest
 import time
-from unittest.mock import patch, MagicMock
 
 from src.config.database import (
     DatabaseManager,
-    get_database_manager,
     PoolStats,
     DEFAULT_POOL_MIN,
     DEFAULT_POOL_MAX,

@@ -9,7 +9,6 @@ Dhairya's benchmark: 7/17 correct (41%) → target ≥85% (≥15/17)
 
 import pytest
 import sys
-import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -490,7 +489,7 @@ def test_dhairya_accuracy_target():
     # Target: 15/17 = 88%
     assert target_correct >= 15, "Target should be at least 15/17 (85%)"
     print(f"\nDhairya Benchmark Target: {target_correct}/{total_queries} ({target_percent:.0f}%)")
-    print(f"Baseline (Dhairya): 7/17 (41%)")
+    print("Baseline (Dhairya): 7/17 (41%)")
     print(f"Required improvement: +{target_correct - 7} queries")
 
 

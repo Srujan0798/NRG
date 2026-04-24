@@ -34,7 +34,7 @@ class TestSchemaAllowlistingClient:
         allowlist = {"researchers", "publications"}
         wrapper = _SchemaAllowlistingClient(mock_client, allowlist)
 
-        result = wrapper.generate(
+        wrapper.generate(
             "system prompt",
             "List researchers with high h-index",
             []

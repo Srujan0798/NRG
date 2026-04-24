@@ -1,7 +1,6 @@
 """Audit Chain Integrity Tests — DPDP-2023 Compliance Verification."""
 
 import json
-import os
 import shutil
 import tempfile
 import threading
@@ -9,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from src.audit import AuditEvent, ImmutableAuditLog, get_audit_log
+from src.audit import AuditEvent, ImmutableAuditLog
 
 
 class TestAuditChainIntegrity:
@@ -316,8 +315,6 @@ class TestAuditChainRebuildScript:
 
         assert len(lines) == 20
 
-        prev_hash = "0" * 64
         for line in lines:
             event = json.loads(line)
             assert event["hash"] != "0" * 64
-            prev_hash = event["hash"]

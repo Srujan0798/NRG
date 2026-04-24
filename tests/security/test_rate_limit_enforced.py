@@ -4,7 +4,6 @@ Security Tests: Rate Limit Enforced
 """
 
 import pytest
-import time
 import sys
 from pathlib import Path
 from fastapi.testclient import TestClient

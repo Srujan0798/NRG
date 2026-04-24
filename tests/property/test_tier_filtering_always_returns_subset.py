@@ -5,7 +5,6 @@ Generate 100 random queries, verify results obey tier hierarchy
 """
 
 import pytest
-import random
 from fastapi.testclient import TestClient
 import sys
 from pathlib import Path

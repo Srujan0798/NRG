@@ -7,7 +7,6 @@ import pytest
 import time
 import threading
 import statistics
-from collections import Counter
 from fastapi.testclient import TestClient
 import sys
 from pathlib import Path
@@ -103,7 +102,6 @@ class TestConcurrentQueries:
         client = TestClient(api_main.app)
         token = _login(client, "researcher_user", "researcher-pass")
 
-        latencies = []
         errors = []
 
         def make_query_timed(i: int):
@@ -241,8 +239,6 @@ class TestMemoryLeakDetection:
         """Repeated queries should not cause memory to grow unbounded."""
         client = TestClient(api_main.app)
         token = _login(client, "researcher_user", "researcher-pass")
-
-        initial_call_count = StubWorkflow.call_count
 
         for i in range(100):
             response = client.post(

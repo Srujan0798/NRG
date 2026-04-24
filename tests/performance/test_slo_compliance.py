@@ -27,8 +27,8 @@ SLO_ENV = os.environ.get("SLO_ENV", "prod")
 _is_macos = platform.system() == "Darwin"
 _concurrency = 100 if _is_macos else 1000
 
-from fastapi.testclient import TestClient
-import src.api.main as api_main
+from fastapi.testclient import TestClient  # noqa: E402
+import src.api.main as api_main  # noqa: E402
 
 
 class FakeCloudLLMClient:

@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import src.api.main as api_main
 from src.services.consent import ConsentService
-from src.data.database import get_sqlite_connection, resolve_database_path
+from src.data.database import get_sqlite_connection
 
 
 class StubWorkflow:
@@ -205,7 +205,7 @@ class TestConsentBackendEndpoints:
         assert consent_service.has_consent(user_id, "analytics") is True
 
         response = client.delete(
-            f"/consent/analytics",
+            "/consent/analytics",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 200

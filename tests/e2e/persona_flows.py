@@ -6,7 +6,7 @@ Tests the entire user journey for each role.
 """
 
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 import sys
 from pathlib import Path
 
