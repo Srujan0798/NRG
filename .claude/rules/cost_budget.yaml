@@ -1,0 +1,64 @@
+# CostGuard Budget Configuration
+# NRG Monthly LLM Budget Allocation
+# Owner: Founder (monthly review)
+# Operator: Guru (daily monitoring)
+
+monthly_total_inr: 500000  # ₹5L = ~$6,000 USD
+
+fiscal_year: "2026-2027"
+
+allocation:
+  researcher_tier:
+    percentage: 0.40
+    budget_inr: 200000
+    description: "Full access, complex queries expected"
+  government_tier:
+    percentage: 0.35
+    budget_inr: 175000
+    description: "Aggregated data, mostly standard complexity"
+  industry_tier:
+    percentage: 0.15
+    budget_inr: 75000
+    description: "Limited access, forced cheapest path"
+  system_operations:
+    percentage: 0.08
+    budget_inr: 40000
+    description: "Drift checks, reindex, background jobs"
+  incident_reserve:
+    percentage: 0.02
+    budget_inr: 10000
+    description: "P0 response, unplanned critical queries"
+
+thresholds:
+  warning: 0.70    # Guru notified — optimize routing
+  critical: 0.85    # Auto-fallback to local SLM for non-critical
+  halt: 0.95       # Cloud LLMs disabled except P0 + Founder override
+
+persona_overrides:
+  government_tier:
+    force_providers: ["minimax", "nvidia"]
+    description: "Sovereign mandate — Indian providers only"
+  industry_tier:
+    max_cost_per_query: 5
+    force_providers: ["local", "gemini", "minimax"]
+    description: "Industry capped at ₹5/query, cheapest path"
+
+per_query_caps:
+  trivial: 0
+  simple: 5
+  standard: 50
+  complex: 200
+  critical: 500
+
+provider_priority:
+  # Ordered by cost (cheapest first)
+  trivial: ["rule_based", "local"]
+  simple: ["local", "gemini", "minimax"]
+  standard: ["minimax", "gemini", "azure"]
+  complex: ["azure", "openai", "minimax"]
+  critical: ["openai", "anthropic", "nvidia"]
+
+alert_channels:
+  warning: ["guru_digest"]
+  critical: ["guru_digest", "slack_cost_channel"]
+  halt: ["guru_digest", "slack_cost_channel", "founder_email"]
