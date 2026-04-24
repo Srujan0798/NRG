@@ -10,6 +10,10 @@ Verifies:
 7. Fallback to flat subqueries when is_dag=False
 """
 
+import pytest
+
+pytestmark = pytest.mark.slow
+
 from src.orchestration.nodes.planner import (
     _heuristic_decompose,
     _build_dag as planner_build_dag,
