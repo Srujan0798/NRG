@@ -74,8 +74,8 @@ def consent_service(tmp_path):
     return svc
 
 
-@pytest.fixture(autouse=True)
-def audit_reset(setup):
+@pytest.fixture
+def audit_reset():
     from src.audit import ImmutableAuditLog
     import src.audit as audit_module
     ImmutableAuditLog._instance = None
