@@ -1,0 +1,46 @@
+{
+  "protocol": "#45 Eternal Seal Step 5",
+  "step": "05_chain_seal",
+  "status": "PENDING_EXECUTION",
+  "timestamp": "2026-04-24T00:00:00Z",
+  "purpose": "Attest C1/C2/C6 on live sovereign cluster egress boundary",
+
+  "gate_commands": [
+    "kubectl -n nrg exec deploy/api -- python -c \"from src.audit import verify_chain; v, e, n = verify_chain(); print(f'Valid: {v}, Events: {n}, Errors: {e}')\"",
+    "kubectl -n nrg exec deploy/api -- python -m pytest tests/security/test_pii_indian.py -v",
+    "kubectl -n nrg exec deploy/api -- python -m pytest tests/security/test_egress_allowlist.py -v",
+    "kubectl -n nrg exec deploy/api -- python -m pytest tests/security/test_per_user_audit_binding.py -v"
+  ],
+
+  "pending_results": {
+    "verify_chain": null,
+    "chain_head_hash": null,
+    "event_count": null,
+    "pii_tests": null,
+    "egress_tests": null,
+    "binding_tests": null
+  },
+
+  "c1_attestation": {
+    "constraint": "Indian PII regression against staging egress",
+    "test": "tests/security/test_pii_indian.py",
+    "required": "All green",
+    "pending": true
+  },
+
+  "c2_attestation": {
+    "constraint": "Per-user audit binding verified on chain from Steps 1-4",
+    "test": "verify_chain() over jwt_kid + request_fingerprint",
+    "required": "True, [], N where N >= events from Steps 1-4",
+    "pending": true
+  },
+
+  "c6_attestation": {
+    "constraint": "Egress guard blocks non-allowlisted schema on live cloud LLM path",
+    "test": "tests/security/test_egress_allowlist.py (20 adversarial payloads)",
+    "required": "All blocked, 0 false positives",
+    "pending": true
+  },
+
+  "emit": "docs/handover/evidence/05_chain_seal.json"
+}
