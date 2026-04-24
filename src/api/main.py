@@ -2091,7 +2091,7 @@ async def verify_audit_chain(token_payload: dict = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     from src.audit import verify_chain
-    valid, errors = verify_chain()
+    valid, errors, count = verify_chain()
     
     # Get last sealed event
     from src.audit import get_audit_log
