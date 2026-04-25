@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { SearchIcon, LoaderIcon } from './Icons'
 import { heroCopy } from '../i18n/en-IN'
 import { SuggestionChips } from './SuggestionChips/SuggestionChips'
+import { t } from '../i18n'
 
 interface SearchBarProps {
   autoFocus?: boolean
@@ -107,8 +108,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }`}
       >
         <label htmlFor="hero-search-input" className="sr-only">
-          Ask anything about Indian research
-        </label>
+          {t("auto.components.SearchBar.1")}</label>
         <div className="flex items-start gap-3 px-4 py-4">
           <SearchIcon className="mt-1 h-5 w-5 shrink-0 text-nrg-muted" />
           <textarea

@@ -4,6 +4,7 @@ import { Citation } from '../../services/queryService'
 import { queryService } from '../../services/queryService'
 import { toStringArray } from '../../types/api'
 import { X, Copy, FileText, Database, GitMerge, Shield } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface CitationDrawerProps {
   citation: Citation | null
@@ -34,8 +35,8 @@ const RelevanceBadge: React.FC<{ score?: number }> = ({ score }) => {
         {Math.round(score * 100)}
       </motion.div>
       <div>
-        <p className="text-xs font-medium text-nrg-text">Relevance Score</p>
-        <p className="text-xs text-nrg-muted">{label} match</p>
+        <p className="text-xs font-medium text-nrg-text">{t("auto.components.CitationDrawer.CitationDrawer.1")}</p>
+        <p className="text-xs text-nrg-muted">{label} {t("auto.components.CitationDrawer.CitationDrawer.2")}</p>
       </div>
     </div>
   )
@@ -170,8 +171,8 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-nrg-border bg-[var(--glass-bg)] shrink-0">
             <div>
-              <h3 className="text-base font-semibold text-nrg-text">Citation Details</h3>
-              <p className="text-xs text-nrg-muted mt-0.5">Source verification and context</p>
+              <h3 className="text-base font-semibold text-nrg-text">{t("auto.components.CitationDrawer.CitationDrawer.3")}</h3>
+              <p className="text-xs text-nrg-muted mt-0.5">{t("auto.components.CitationDrawer.CitationDrawer.4")}</p>
             </div>
             <motion.button
               onClick={onClose}
@@ -188,7 +189,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
               <div className="flex items-center justify-center h-48">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-10 h-10 rounded-full border-3 border-saffron-200 border-t-saffron-500 animate-spin" />
-                  <p className="text-sm text-nrg-muted">Loading citation...</p>
+                  <p className="text-sm text-nrg-muted">{t("auto.components.CitationDrawer.CitationDrawer.5")}</p>
                 </div>
               </div>
             ) : details ? (
@@ -240,8 +241,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                   >
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-wider text-nrg-muted mb-2">
-                        Source Excerpt
-                      </p>
+                        {t("auto.components.CitationDrawer.CitationDrawer.6")}</p>
                       <div className="p-4 rounded-xl bg-[var(--glass-bg)] border border-nrg-border">
                         <p className="text-sm text-nrg-text leading-relaxed italic">
                           "{details.chunk_text}"
@@ -252,8 +252,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                     {details.abstract && (
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-nrg-muted mb-2">
-                          Abstract
-                        </p>
+                          {t("auto.components.CitationDrawer.CitationDrawer.7")}</p>
                         <p className="text-sm text-nrg-muted leading-relaxed">
                           {details.abstract}
                         </p>
@@ -294,15 +293,14 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                   >
                     <div className="p-4 rounded-xl border border-nrg-border">
                       <p className="text-xs font-semibold text-nrg-muted mb-2">
-                        Citation ID Format
-                      </p>
+                        {t("auto.components.CitationDrawer.CitationDrawer.8")}</p>
                       <code className="text-xs text-nrg-text font-mono block">
-                        cite:{details.pub_id}:{details.chunk_id}
+                        {t("auto.components.CitationDrawer.CitationDrawer.9")}{details.pub_id}:{details.chunk_id}
                       </code>
                     </div>
 
                     <div className="p-4 rounded-xl border border-nrg-border">
-                      <p className="text-xs font-semibold text-nrg-muted mb-2">Source</p>
+                      <p className="text-xs font-semibold text-nrg-muted mb-2">{t("auto.components.CitationDrawer.CitationDrawer.10")}</p>
                       <p className="text-xs text-nrg-text flex items-center gap-1">
                         <SourceIcon source={citation?.source} />
                         {citation?.source || 'Source unavailable'}
@@ -312,11 +310,9 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                     <div className="p-4 rounded-xl bg-saffron-50 dark:bg-saffron-900/20 border border-saffron-200 dark:border-saffron-700">
                       <p className="text-xs font-semibold text-saffron-700 dark:text-saffron-300 mb-1 flex items-center gap-1">
                         <Shield size={12} />
-                        DPDP Notice
-                      </p>
+                        {t("auto.components.CitationDrawer.CitationDrawer.11")}</p>
                       <p className="text-xs text-saffron-600 dark:text-saffron-400 leading-relaxed">
-                        This citation is logged per DPDP Act 2023 consent framework. Source data is retained in sovereign Indian infrastructure.
-                      </p>
+                        {t("auto.components.CitationDrawer.CitationDrawer.12")}</p>
                     </div>
                   </motion.div>
                 )}
@@ -324,7 +320,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-nrg-muted">
                 <FileText size={40} className="mb-3 opacity-50" />
-                <p className="text-sm">Citation details are not available for this source.</p>
+                <p className="text-sm">{t("auto.components.CitationDrawer.CitationDrawer.13")}</p>
               </div>
             )}
           </div>
@@ -346,8 +342,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
-                Close
-              </motion.button>
+                {t("auto.components.CitationDrawer.CitationDrawer.14")}</motion.button>
             </div>
           </div>
         </motion.div>

@@ -1,4 +1,13 @@
-# NRG — AGENT TASK PACK (FINAL ENGINEERING SPRINT)
+# [SUPERSEDED — FRAMING REPLACED]
+
+> **The engineering tasks (T01–T19) below are still valid as work items**, but the "demo" framing is voided.
+> **Use instead:** `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` §3 milestones M5a.1–M5a.15 (frontend production hardening).
+> **Reason:** NRG is production software for IIT Gandhinagar + Gov of India ministries. See `.claude/rules/production_only.md`.
+> The same engineering effort is now framed as production hardening for real users, not a demo on a founder's laptop.
+
+---
+
+# NRG — AGENT TASK PACK (HISTORICAL — engineering items only)
 **Date:** 2026-04-25
 **Scope:** Make the web app extraordinary on the founder's laptop. Period.
 **Demo target:** Professor's assistant opens the laptop browser, sees a working sovereign-grade product, signs off.

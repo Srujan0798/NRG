@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import { Citation } from '../../../services/queryService'
 import { toStringArray } from '../../../types/api'
 import { printDesignTokenCss } from '../../../design-system/theme'
+import { t } from '../../../i18n'
 
 interface ExportButtonProps {
   onExport?: () => void
@@ -108,8 +109,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
         bg-gradient-to-r from-saffron-500 to-saffron-600 text-white border border-saffron-400
         hover:from-saffron-600 hover:to-saffron-700 shadow-sm transition-all duration-200"
     >
-      <span>📥</span> Export PDF
-    </button>
+      <span>📥</span> {t("auto.components.IntelligenceBrief.components.ExportButton.1")}</button>
   )
 }
 

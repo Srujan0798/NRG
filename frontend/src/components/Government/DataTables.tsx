@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronDown, Download, Users } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface DataTableProps {
   title: string
@@ -58,7 +59,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-nrg-muted">
-            Showing {paginatedData.length} of {data.length}
+            {t("auto.components.Government.DataTables.1")}{paginatedData.length} of {data.length}
           </span>
           <button className="p-1.5 rounded-lg hover:bg-saffron-500/10 text-nrg-muted">
             <Download size={14} />
@@ -129,18 +130,16 @@ export const DataTable: React.FC<DataTableProps> = ({
             disabled={page === 0}
             className="px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
-          </button>
+            {t("auto.components.Government.DataTables.2")}</button>
           <span className="text-xs text-nrg-muted">
-            Page {page + 1} of {totalPages}
+            {t("auto.components.Government.DataTables.3")}{page + 1} of {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
             className="px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Next
-          </button>
+            {t("auto.components.Government.DataTables.4")}</button>
         </div>
       )}
     </motion.div>
@@ -181,8 +180,7 @@ export const AnonymizedResearcherTable: React.FC<ResearcherTableProps> = ({
           </div>
         </div>
         <span className="text-xs text-nrg-muted">
-          {researchers.length} researchers · anonymized
-        </span>
+          {researchers.length} {t("auto.components.Government.DataTables.5")}</span>
       </div>
     </div>
 
@@ -200,7 +198,7 @@ export const AnonymizedResearcherTable: React.FC<ResearcherTableProps> = ({
           </div>
           <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-nrg-text truncate">
-                Researcher {r.name}
+                {t("auto.components.Government.DataTables.6")}{r.name}
               </p>
               <p className="text-xs text-nrg-muted truncate">
                 {r.institution} · {r.area}
@@ -209,15 +207,15 @@ export const AnonymizedResearcherTable: React.FC<ResearcherTableProps> = ({
             <div className="flex items-center gap-6 text-xs">
               <div className="text-right">
                 <p className="font-semibold text-nrg-text">{r.publications}</p>
-                <p className="text-nrg-muted">papers</p>
+                <p className="text-nrg-muted">{t("auto.components.Government.DataTables.7")}</p>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-nrg-text">{r.citations}</p>
-                <p className="text-nrg-muted">citations</p>
+                <p className="text-nrg-muted">{t("auto.components.Government.DataTables.8")}</p>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-saffron-600 dark:text-saffron-400">h{r.hIndex}</p>
-                <p className="text-nrg-muted">h-index</p>
+                <p className="text-nrg-muted">{t("auto.components.Government.DataTables.9")}</p>
               </div>
             </div>
         </motion.div>

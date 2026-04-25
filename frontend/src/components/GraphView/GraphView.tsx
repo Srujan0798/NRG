@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ForceGraph, ForceGraphHandle } from '../ForceGraph'
 import { GraphNode, GraphData } from '../../services/queryService'
 import { ZoomIn, ZoomOut, RotateCcw, Filter } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface GraphViewProps {
   data: GraphData
@@ -93,8 +94,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
       <div className="pl-16 pr-4 py-2 bg-[var(--glass-bg)] border-b border-nrg-border flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4 text-xs text-nrg-muted">
-          <span>{data.nodes.length} nodes</span>
-          <span>{data.edges.length} connections</span>
+          <span>{data.nodes.length} {t("auto.components.GraphView.GraphView.1")}</span>
+          <span>{data.edges.length} {t("auto.components.GraphView.GraphView.2")}</span>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {Object.entries(nodeColors).filter(([k]) => k !== 'default').map(([type, color]) => (

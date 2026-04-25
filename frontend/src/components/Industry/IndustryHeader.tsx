@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { HeartHandshake, LogOut, Moon, Sun } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { PersonaToggle } from '../PersonaToggle'
+import { t } from '../../i18n'
 
 interface IndustryHeaderProps {
   onThemeToggle: () => void
@@ -30,7 +31,7 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
             </motion.div>
             <div>
               <h1 className="text-lg font-bold text-nrg-text font-devanagari">राष्ट्रीय गवेषण मंच</h1>
-              <p className="text-xs uppercase tracking-[0.18em] text-nrg-muted">Industry Collaboration Rail</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-nrg-muted">{t("auto.components.Industry.IndustryHeader.1")}</p>
             </div>
           </div>
 
@@ -39,14 +40,13 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10">
               <HeartHandshake size={14} className="text-emerald-700 dark:text-emerald-300" />
               <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
-                Partnership Rail
-              </span>
+                {t("auto.components.Industry.IndustryHeader.2")}</span>
             </div>
 
             <motion.button
               onClick={onThemeToggle}
               className="w-10 h-10 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-emerald-500 hover:border-emerald-300 transition-all duration-200"
-              aria-label="Toggle theme"
+              aria-label={t("auto.components.Industry.IndustryHeader.3")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -55,12 +55,12 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
             <motion.button
               onClick={logout}
               className="h-10 px-3 rounded-xl border border-nrg-border flex items-center gap-2 text-sm font-semibold text-nrg-muted hover:text-rose-600 hover:border-rose-300 transition-all duration-200"
-              aria-label="Log out"
+              aria-label={t("auto.components.Industry.IndustryHeader.4")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <LogOut size={16} />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="hidden sm:inline">{t("auto.components.Industry.IndustryHeader.5")}</span>
             </motion.button>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '../i18n'
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -220,13 +221,13 @@ export default function FounderDashboard() {
               NRG
             </div>
             <div>
-              <h1 className="font-display text-xl font-bold leading-tight text-stone-950">Founder Operating Board</h1>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">Evidence-backed UAT readiness</p>
+              <h1 className="font-display text-xl font-bold leading-tight text-stone-950">{t("auto.views.FounderDashboard.1")}</h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">{t("auto.views.FounderDashboard.2")}</p>
             </div>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
-            <span className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700">NOT UAT READY</span>
-            <span className="rounded-full border border-stone-300 bg-white px-3 py-1 font-mono text-xs text-stone-600">commit 4d2b2d6a</span>
+            <span className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700">{t("auto.views.FounderDashboard.3")}</span>
+            <span className="rounded-full border border-stone-300 bg-white px-3 py-1 font-mono text-xs text-stone-600">{t("auto.views.FounderDashboard.4")}</span>
           </div>
         </div>
       </div>
@@ -236,45 +237,44 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-500">Board decision</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-500">{t("auto.views.FounderDashboard.5")}</p>
                 <h2 className="mt-2 max-w-3xl font-display text-4xl font-bold leading-tight text-stone-950 md:text-5xl">
-                  Hold external UAT until the proof layer is clean.
-                </h2>
+                  {t("auto.views.FounderDashboard.6")}</h2>
               </div>
               <div className="rounded-md border border-amber-300 bg-amber-50 p-4 md:w-64">
                 <div className="flex items-center gap-2 text-amber-800">
                   <AlertTriangle size={18} />
-                  <span className="text-sm font-bold">Primary risk</span>
+                  <span className="text-sm font-bold">{t("auto.views.FounderDashboard.7")}</span>
                 </div>
-                <p className="mt-2 text-sm leading-5 text-amber-900">Audit chain integrity is false in the latest local verification run.</p>
+                <p className="mt-2 text-sm leading-5 text-amber-900">{t("auto.views.FounderDashboard.8")}</p>
               </div>
             </div>
 
             <div className="mt-6 grid gap-4 md:grid-cols-4">
-              <ProgressRow label="Readiness" width={barWidths.readiness} status="partial" />
-              <ProgressRow label="SQL Accuracy" width={barWidths.sql} status="pass" />
-              <ProgressRow label="Quality Bar" width={barWidths.quality} status="partial" />
-              <ProgressRow label="Security Set" width={barWidths.security} status="pass" />
+              <ProgressRow label={t("auto.views.FounderDashboard.9")} width={barWidths.readiness} status="partial" />
+              <ProgressRow label={t("auto.views.FounderDashboard.10")} width={barWidths.sql} status="pass" />
+              <ProgressRow label={t("auto.views.FounderDashboard.11")} width={barWidths.quality} status="partial" />
+              <ProgressRow label={t("auto.views.FounderDashboard.12")} width={barWidths.security} status="pass" />
             </div>
           </div>
 
           <div className="rounded-lg border border-stone-900 bg-stone-950 p-5 text-[var(--nrg-founder-paper)] shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-400">Cost posture</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-400">{t("auto.views.FounderDashboard.13")}</p>
                 <p className="mt-2 font-mono text-4xl font-bold">₹48</p>
-                <p className="text-sm text-stone-300">estimated variable cost per 1,000 queries</p>
+                <p className="text-sm text-stone-300">{t("auto.views.FounderDashboard.14")}</p>
               </div>
               <IndianRupee className="text-emerald-300" size={34} />
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
               <div className="rounded-md border border-stone-700 p-3">
-                <p className="font-mono text-lg font-bold">₹72k</p>
-                <p className="text-stone-400">monthly at 50k/day</p>
+                <p className="font-mono text-lg font-bold">{t("auto.views.FounderDashboard.15")}</p>
+                <p className="text-stone-400">{t("auto.views.FounderDashboard.16")}</p>
               </div>
               <div className="rounded-md border border-stone-700 p-3">
                 <p className="font-mono text-lg font-bold">30%</p>
-                <p className="text-stone-400">cloud LLM query mix</p>
+                <p className="text-stone-400">{t("auto.views.FounderDashboard.17")}</p>
               </div>
             </div>
           </div>
@@ -290,8 +290,8 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-stone-950">Evidence Gates</h2>
-                <p className="text-sm text-stone-500">Latest protocol run, saved under evidence/2026-04-24</p>
+                <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.18")}</h2>
+                <p className="text-sm text-stone-500">{t("auto.views.FounderDashboard.19")}</p>
               </div>
               <FileCheck2 className="text-stone-500" size={22} />
             </div>
@@ -312,8 +312,8 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-stone-950">Go / No-Go Matrix</h2>
-                <p className="text-sm text-stone-500">External-facing readiness decisions</p>
+                <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.20")}</h2>
+                <p className="text-sm text-stone-500">{t("auto.views.FounderDashboard.21")}</p>
               </div>
               <CircleDot className="text-stone-500" size={22} />
             </div>
@@ -338,8 +338,8 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm lg:col-span-2">
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-stone-950">Training Data Mix</h2>
-                <p className="text-sm text-stone-500">3919 training pairs in local store</p>
+                <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.22")}</h2>
+                <p className="text-sm text-stone-500">{t("auto.views.FounderDashboard.23")}</p>
               </div>
               <TrendingUp className="text-stone-500" size={22} />
             </div>
@@ -364,8 +364,8 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-bold text-stone-950">Evidence Commits</h2>
-                <p className="text-sm text-stone-500">Local verification lineage</p>
+                <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.24")}</h2>
+                <p className="text-sm text-stone-500">{t("auto.views.FounderDashboard.25")}</p>
               </div>
               <GitCommit className="text-stone-500" size={22} />
             </div>
@@ -386,7 +386,7 @@ export default function FounderDashboard() {
         <section className="mt-4 rounded-lg border border-rose-300 bg-rose-50 p-5 shadow-sm">
           <div className="mb-4 flex items-center gap-2 text-rose-800">
             <TimerReset size={20} />
-            <h2 className="text-lg font-bold">Next Sprint Critical Path</h2>
+            <h2 className="text-lg font-bold">{t("auto.views.FounderDashboard.26")}</h2>
           </div>
           <div className="grid gap-3 md:grid-cols-5">
             {blockers.map((blocker, index) => (
@@ -399,9 +399,9 @@ export default function FounderDashboard() {
         </section>
 
         <footer className="flex flex-col gap-3 py-6 text-xs text-stone-500 sm:flex-row sm:items-center sm:justify-between">
-          <span>Data source: NRG self-audit v2, evidence/2026-04-24, local SQLite training store.</span>
+          <span>{t("auto.views.FounderDashboard.27")}</span>
           <span className="inline-flex items-center gap-1 font-semibold text-stone-700">
-            Open evidence report <ArrowUpRight size={13} />
+            {t("auto.views.FounderDashboard.28")}<ArrowUpRight size={13} />
           </span>
         </footer>
       </main>

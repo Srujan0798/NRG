@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Citation } from '../../../services/queryService'
 import { toStringArray } from '../../../types/api'
+import { t } from '../../../i18n'
 
 interface CitationChipProps {
   citation: Citation
@@ -35,7 +36,7 @@ export const CitationChip: React.FC<CitationChipProps> = ({ citation, index, onC
             {extraCount > 0 && ` +${extraCount}`}
           </p>
           {citation.year && <p className="text-xs text-nrg-muted mt-0.5">{citation.year}</p>}
-          <p className="text-xs text-saffron-600 mt-1.5 pt-1.5 border-t border-nrg-border">Click to view full details</p>
+          <p className="text-xs text-saffron-600 mt-1.5 pt-1.5 border-t border-nrg-border">{t("auto.components.IntelligenceBrief.components.CitationRenderer.1")}</p>
         </div>
       )}
     </div>

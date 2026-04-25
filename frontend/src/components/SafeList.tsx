@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react'
 import { toStringArray } from '../types/api'
+import { t } from '../i18n'
 
 interface SafeListProps<T> {
   value: T extends string ? string : T extends string[] ? string[] : T extends (string | string[]) ? string | string[] | null | undefined : T
@@ -74,7 +75,7 @@ export function SafeAuthors({
         </span>
       ))}
       {remaining > 0 && (
-        <span className="text-slate-400 dark:text-slate-500"> +{remaining} more</span>
+        <span className="text-slate-400 dark:text-slate-500"> +{remaining} {t("auto.components.SafeList.1")}</span>
       )}
     </>
   )

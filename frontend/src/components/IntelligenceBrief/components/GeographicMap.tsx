@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '../../../i18n'
 
 interface GeographicMapProps {
   data: Array<{ state: string; value: number }>
@@ -82,14 +83,14 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
       </svg>
       
       <div className="absolute bottom-4 right-4 bg-white/90 rounded-lg p-3 shadow-sm">
-        <p className="text-xs font-medium text-nrg-muted mb-2">Intensity Scale</p>
+        <p className="text-xs font-medium text-nrg-muted mb-2">{t("auto.components.IntelligenceBrief.components.GeographicMap.1")}</p>
         <div className="flex items-center gap-1">
           <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.3)' }} />
           <span className="text-xs text-nrg-muted">Low</span>
           <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.6)' }} />
           <span className="text-xs text-nrg-muted">Med</span>
           <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.8)' }} />
-          <span className="text-xs text-nrg-muted">High</span>
+          <span className="text-xs text-nrg-muted">{t("auto.components.IntelligenceBrief.components.GeographicMap.2")}</span>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import { parseCitations } from '../../utils/parseCitations'
 import { toStringArray } from '../../types/api'
 import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download } from 'lucide-react'
 import { printDesignTokenCss } from '../../design-system/theme'
+import { t } from '../../i18n'
 
 interface AnswerPanelProps {
   response: string
@@ -64,8 +65,7 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
           animate={{ opacity: 1, scale: 1 }}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-navy-50 dark:bg-navy-700/50 text-navy-700 dark:text-navy-300 border border-navy-100 dark:border-navy-600"
         >
-          {provenance.planner} planner
-        </motion.span>
+          {provenance.planner} {t("auto.components.AnswerPanel.AnswerPanel.1")}</motion.span>
       )}
       <motion.span
         initial={{ opacity: 0, scale: 0.9 }}
@@ -259,8 +259,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             whileTap={{ scale: 0.98 }}
           >
             <Download size={14} />
-            Export
-          </motion.button>
+            {t("auto.components.AnswerPanel.AnswerPanel.2")}</motion.button>
         </div>
       </div>
 
@@ -279,8 +278,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
               <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
                 📋
               </span>
-              Summary
-            </span>
+              {t("auto.components.AnswerPanel.AnswerPanel.3")}</span>
             <motion.span
               animate={{ rotate: showSummary ? 180 : 0 }}
               transition={{ duration: 0.2 }}
@@ -314,8 +312,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
               📊
             </span>
-            Detailed Analysis
-          </h3>
+            {t("auto.components.AnswerPanel.AnswerPanel.4")}</h3>
 
           {responseType === 'tabular' && tabularData?.headers.length ? (
             <TabularView headers={tabularData.headers} rows={tabularData.rows} />
@@ -351,7 +348,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
               <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs">
                 📚
               </span>
-              References ({orderedCitations.length})
+              {t("auto.components.AnswerPanel.AnswerPanel.5")}{orderedCitations.length})
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {orderedCitations.slice(0, 8).map((citation, index) => (
@@ -394,8 +391,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         >
           <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-200 mb-2 flex items-center gap-2">
             <AlertCircle size={16} />
-            Notes
-          </h4>
+            {t("auto.components.AnswerPanel.AnswerPanel.6")}</h4>
           <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
             {warnings.map((warning, index) => (
               <li key={index} className="flex items-start gap-2">

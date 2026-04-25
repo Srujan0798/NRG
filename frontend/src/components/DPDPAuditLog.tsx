@@ -1,5 +1,6 @@
 import { useDPDPStore } from '../stores/dpdpStore';
 import { useState } from 'react';
+import { t } from '../i18n'
 
 export function DPDPAuditLog() {
   const { auditLog, clearAuditLog } = useDPDPStore();
@@ -47,8 +48,8 @@ export function DPDPAuditLog() {
     <div className="nrg-panel overflow-hidden">
       <div className="px-4 py-3 bg-[var(--glass-bg)] border-b border-nrg-border flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-nrg-text"><span aria-hidden="true">📋</span> DPDP Audit Log</h3>
-          <p className="text-xs text-nrg-muted">Sovereign compliance trail (last {auditLog.length} entries)</p>
+          <h3 className="font-semibold text-nrg-text"><span aria-hidden="true">📋</span> {t("auto.components.DPDPAuditLog.1")}</h3>
+          <p className="text-xs text-nrg-muted">{t("auto.components.DPDPAuditLog.2")}{auditLog.length} {t("auto.components.DPDPAuditLog.3")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -62,10 +63,9 @@ export function DPDPAuditLog() {
             <button
               onClick={clearAuditLog}
               className="text-xs text-nrg-muted hover:text-red-600 transition"
-              aria-label="Clear audit log"
+              aria-label={t("auto.components.DPDPAuditLog.4")}
             >
-              Clear Log
-            </button>
+              {t("auto.components.DPDPAuditLog.5")}</button>
           )}
         </div>
       </div>
@@ -78,8 +78,7 @@ export function DPDPAuditLog() {
 
       {auditLog.length === 0 ? (
         <div className="p-8 text-center text-nrg-muted text-sm">
-          No audit entries yet. Actions will be logged here.
-        </div>
+          {t("auto.components.DPDPAuditLog.6")}</div>
       ) : (
         <div className="max-h-80 overflow-y-auto scrollbar-thin">
           {auditLog.map((entry) => (

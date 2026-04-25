@@ -2,7 +2,13 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  roots: ['<rootDir>/src', '<rootDir>/tests/components', '<rootDir>/tests/design-system'],
+  roots: [
+    '<rootDir>/src',
+    '<rootDir>/tests/components',
+    '<rootDir>/tests/design-system',
+    '<rootDir>/tests/hooks',
+    '<rootDir>/tests/i18n',
+  ],
   testPathIgnorePatterns: [
     '/node_modules/',
     '/e2e/',

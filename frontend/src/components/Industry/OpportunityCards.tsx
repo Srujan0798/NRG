@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { HeartHandshake, Star, ArrowRight } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface OpportunityCardProps {
   id: string
@@ -54,12 +55,11 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className={`px-2 py-0.5 rounded text-xs font-medium ${potentialColors[potential]}`}>
-            {potential} potential
-          </span>
+            {potential} {t("auto.components.Industry.OpportunityCards.1")}</span>
           <div className="flex items-center gap-1">
             <Star size={12} className="text-amber-500 fill-amber-500" />
             <span className="text-xs font-bold text-nrg-text">{matchScore}%</span>
-            <span className="text-xs text-nrg-muted">match</span>
+            <span className="text-xs text-nrg-muted">{t("auto.components.Industry.OpportunityCards.2")}</span>
           </div>
         </div>
       </div>
@@ -81,8 +81,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        View Details
-        <ArrowRight size={14} />
+        {t("auto.components.Industry.OpportunityCards.3")}<ArrowRight size={14} />
       </motion.button>
     </motion.div>
   )
@@ -123,7 +122,7 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
           </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{matchScore}%</p>
-          <p className="text-xs text-slate-500">match score</p>
+          <p className="text-xs text-slate-500">{t("auto.components.Industry.OpportunityCards.4")}</p>
         </div>
       </div>
     </div>
@@ -131,18 +130,18 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
     <div className="p-5 space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-xs text-nrg-muted">Researchers</p>
+          <p className="text-xs text-nrg-muted">{t("auto.components.Industry.OpportunityCards.5")}</p>
           <p className="text-lg font-bold text-nrg-text">{researcherCount.toLocaleString('en-IN')}</p>
         </div>
         <div className="h-10 w-px bg-slate-200 dark:bg-navy-600" />
         <div className="flex-1">
-          <p className="text-xs text-nrg-muted">Collab. Types</p>
+          <p className="text-xs text-nrg-muted">{t("auto.components.Industry.OpportunityCards.6")}</p>
           <p className="text-sm font-medium text-nrg-text">{collaborationTypes.length}</p>
         </div>
       </div>
 
       <div>
-        <p className="text-xs text-nrg-muted mb-1.5">Collaboration Types</p>
+        <p className="text-xs text-nrg-muted mb-1.5">{t("auto.components.Industry.OpportunityCards.7")}</p>
         <div className="flex flex-wrap gap-1.5">
           {collaborationTypes.map((type) => (
             <span key={type} className="px-2 py-0.5 rounded text-xs bg-[var(--glass-bg)] border border-nrg-border text-nrg-muted">
@@ -153,7 +152,7 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
       </div>
 
       <div>
-        <p className="text-xs text-nrg-muted mb-1.5">Top Research Areas</p>
+        <p className="text-xs text-nrg-muted mb-1.5">{t("auto.components.Industry.OpportunityCards.8")}</p>
         <div className="flex flex-wrap gap-1.5">
           {topAreas.map((area) => (
             <span key={area} className="px-2 py-0.5 rounded text-xs bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">

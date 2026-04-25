@@ -1,4 +1,13 @@
-# NRG — CLOSURE ROADMAP
+# [SUPERSEDED — DO NOT EXECUTE]
+
+> **This document was framed for a presentation rehearsal, not for production launch.**
+> **Replaced by:** `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` and `docs/task_protocols/PRODUCTION_READINESS_MASTER.md`.
+> **Reason:** NRG is a production web app for IIT Gandhinagar + Gov of India ministries. See `.claude/rules/production_only.md`.
+> **Action:** Read the master execution plan instead. Do not use any "demo day" / "pitch" framing from this file.
+
+---
+
+# NRG — CLOSURE ROADMAP (HISTORICAL — DO NOT USE)
 **Version:** 1.0 — THE FINAL PATH
 **Date:** 2026-04-25
 **Owner:** Founder (Srujan)

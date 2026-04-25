@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from 'react'
 import { RefreshCw } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -53,8 +54,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
           className="inline-flex items-center gap-1.5 rounded-lg border border-nrg-border bg-[var(--glass-bg)] px-3 py-1.5 text-xs font-medium text-nrg-text hover:bg-saffron-500/10 transition"
         >
           <RefreshCw size={12} />
-          Retry
-        </button>
+          {t("auto.components.ErrorBoundary.ErrorBoundary.1")}</button>
       </div>
     )
   }
@@ -76,8 +76,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
             onClick={this.handleRetry}
             className="nrg-btn-primary inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-medium"
           >
-            Retry
-          </button>
+            {t("auto.components.ErrorBoundary.ErrorBoundary.2")}</button>
         </div>
       </div>
     )

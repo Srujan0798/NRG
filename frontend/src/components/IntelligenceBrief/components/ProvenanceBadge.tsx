@@ -1,5 +1,6 @@
 import React from 'react'
 import { QueryProvenance } from '../../../services/queryService'
+import { t } from '../../../i18n'
 
 interface ProvenanceBadgeProps {
   provenance?: QueryProvenance
@@ -27,8 +28,7 @@ export const ProvenanceBadge: React.FC<ProvenanceBadgeProps> = ({ provenance, re
     <div className="flex flex-wrap gap-2">
       {provenance?.planner && (
         <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-nrg-navy-50 text-nrg-navy-700 border border-nrg-navy-100">
-          {provenance.planner} planner
-        </span>
+          {provenance.planner} {t("auto.components.IntelligenceBrief.components.ProvenanceBadge.1")}</span>
       )}
       <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${source.bg} ${source.color}`}>
         {source.label}

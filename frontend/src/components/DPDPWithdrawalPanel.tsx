@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useDPDPStore } from '../stores/dpdpStore';
+import { t } from '../i18n'
 
 export function DPDPWithdrawalPanel() {
   const { consents, withdrawConsent, isWithdrawalMode, setWithdrawalMode } = useDPDPStore();
@@ -15,8 +16,8 @@ export function DPDPWithdrawalPanel() {
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-800">🔒 DPDP Consent Management</h3>
-          <p className="text-xs text-gray-500">Withdraw consent, manage data rights</p>
+          <h3 className="font-semibold text-gray-800">{t("auto.components.DPDPWithdrawalPanel.1")}</h3>
+          <p className="text-xs text-gray-500">{t("auto.components.DPDPWithdrawalPanel.2")}</p>
         </div>
         <button
           onClick={() => setWithdrawalMode(!isWithdrawalMode)}
@@ -34,10 +35,10 @@ export function DPDPWithdrawalPanel() {
         {/* Active Consents */}
         <div>
           <h4 className="text-sm font-medium text-gray-700 mb-2">
-            Active Consents ({activeConsents.length})
+            {t("auto.components.DPDPWithdrawalPanel.3")}{activeConsents.length})
           </h4>
           {activeConsents.length === 0 ? (
-            <p className="text-xs text-gray-400">No active consents.</p>
+            <p className="text-xs text-gray-400">{t("auto.components.DPDPWithdrawalPanel.4")}</p>
           ) : (
             <div className="space-y-2">
               {activeConsents.map((c) => (
@@ -45,7 +46,7 @@ export function DPDPWithdrawalPanel() {
                   <div className="flex-1">
                     <div className="text-sm text-gray-800">{c.purpose}</div>
                     <div className="text-xs text-gray-500">
-                      Expires: {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-IN') : 'Unavailable'}
+                      {t("auto.components.DPDPWithdrawalPanel.5")}{c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-IN') : 'Unavailable'}
                       {expiringSoon.includes(c) && ' ⚠️'}
                     </div>
                   </div>
@@ -54,8 +55,7 @@ export function DPDPWithdrawalPanel() {
                       onClick={() => setConfirmWithdraw(c.purpose)}
                       className="ml-2 px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700 transition"
                     >
-                      Withdraw
-                    </button>
+                      {t("auto.components.DPDPWithdrawalPanel.6")}</button>
                   )}
                 </div>
               ))}
@@ -65,11 +65,11 @@ export function DPDPWithdrawalPanel() {
 
         {/* Data Rights Summary */}
         <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-700 space-y-1 border border-blue-100">
-          <div className="font-semibold">Your DPDP Rights:</div>
-          <div>✅ Right to access & port data</div>
-          <div>✅ Right to correction & erasure</div>
-          <div>✅ Right to withdraw consent anytime</div>
-          <div>✅ Right to grievance redressal</div>
+          <div className="font-semibold">{t("auto.components.DPDPWithdrawalPanel.7")}</div>
+          <div>{t("auto.components.DPDPWithdrawalPanel.8")}</div>
+          <div>{t("auto.components.DPDPWithdrawalPanel.9")}</div>
+          <div>{t("auto.components.DPDPWithdrawalPanel.10")}</div>
+          <div>{t("auto.components.DPDPWithdrawalPanel.11")}</div>
         </div>
       </div>
 
@@ -78,22 +78,20 @@ export function DPDPWithdrawalPanel() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border border-red-200">
             <div className="px-6 py-4 bg-red-50 border-b border-red-200">
-              <h3 className="text-lg font-bold text-red-800">⚠️ Withdraw Consent</h3>
+              <h3 className="text-lg font-bold text-red-800">{t("auto.components.DPDPWithdrawalPanel.12")}</h3>
             </div>
             <div className="px-6 py-4 text-sm text-gray-700">
-              <p>Are you sure you want to withdraw consent for:</p>
+              <p>{t("auto.components.DPDPWithdrawalPanel.13")}</p>
               <p className="font-medium mt-1 text-red-700">{confirmWithdraw}</p>
               <p className="text-xs text-gray-500 mt-2">
-                This action is logged and cannot be undone. Data access will be revoked immediately.
-              </p>
+                {t("auto.components.DPDPWithdrawalPanel.14")}</p>
             </div>
             <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex gap-3">
               <button
                 onClick={() => setConfirmWithdraw(null)}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition text-sm"
               >
-                Cancel
-              </button>
+                {t("auto.components.DPDPWithdrawalPanel.15")}</button>
               <button
                 onClick={() => {
                   withdrawConsent(confirmWithdraw);
@@ -101,8 +99,7 @@ export function DPDPWithdrawalPanel() {
                 }}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
               >
-                Confirm Withdrawal
-              </button>
+                {t("auto.components.DPDPWithdrawalPanel.16")}</button>
             </div>
           </div>
         </div>

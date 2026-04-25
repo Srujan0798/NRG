@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, Database, FileSearch, ShieldCheck, Sparkles } from 'lucide-react'
+import { t } from '../i18n'
 
 type QueryDomain = 'research' | 'policy' | 'industry'
 
@@ -50,7 +51,7 @@ export function QueryPhaseProgress({ domain, isSlowQuery = false }: QueryPhasePr
     <div className="rounded-xl border border-nrg-border bg-white/85 p-4 shadow-sm dark:bg-navy-800/80" aria-live="polite">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-semibold text-nrg-text">NRG evidence pipeline</p>
+          <p className="text-sm font-semibold text-nrg-text">{t("auto.components.QueryPhaseProgress.1")}</p>
           <p className="text-xs text-nrg-muted">
             {isSlowQuery ? 'Still working. Validation continues before anything is shown.' : 'Visible progress starts immediately while the answer is prepared.'}
           </p>

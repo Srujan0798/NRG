@@ -15,11 +15,12 @@ import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, QueryResponse } from '../services/queryService'
-import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/dashboardCopy'
 import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import { Building2, Users, FileText, HeartHandshake, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
+import { t } from '../i18n'
 
 interface IndustryDashboardProps {
   onThemeToggle: () => void
@@ -193,7 +194,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
   }, [statsData?.research_areas])
 
   return (
-    <ErrorBoundary title="Industry Dashboard failed to load">
+    <ErrorBoundary title={t("auto.views.IndustryDashboard.1")}>
       <div className="nrg-app-canvas min-h-screen">
         <IndustryHeader onThemeToggle={onThemeToggle} theme={theme} />
 
@@ -232,7 +233,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
             >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatsCard
-                  label="Partnership Opportunities"
+                  label={t("auto.views.IndustryDashboard.2")}
                   labelHi="साझेदारी के अवसर"
                   value={statsData?.total_researchers ?? 847}
                   sublabel="Active opportunities"
@@ -242,7 +243,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   data-testid="stat-opportunities"
                 />
                 <StatsCard
-                  label="Partner Institutions"
+                  label={t("auto.views.IndustryDashboard.3")}
                   labelHi="साझेदार संस्थान"
                   value={statsData?.total_institutions ?? 156}
                   sublabel="IITs, IISc, NITs, AIIMS"
@@ -252,7 +253,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   data-testid="stat-institutions"
                 />
                 <StatsCard
-                  label="Active Researchers"
+                  label={t("auto.views.IndustryDashboard.4")}
                   labelHi="सक्रिय शोधकर्ता"
                   value={statsData?.total_researchers ?? 3421}
                   sublabel="Available for collab"
@@ -262,7 +263,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   data-testid="stat-researchers"
                 />
                 <StatsCard
-                  label="Research Publications"
+                  label={t("auto.views.IndustryDashboard.5")}
                   labelHi="शोध प्रकाशन"
                   value={statsData?.total_publications ?? 12847}
                   sublabel="In partnering institutions"
@@ -273,16 +274,14 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 />
               </div>
 
-              <WidgetErrorBoundary title="Opportunities list failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.6")}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-nrg-text">
-                      Partnership Opportunities
-                      <span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">साझेदारी के अवसर</span>
+                      {t("auto.views.IndustryDashboard.7")}<span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">साझेदारी के अवसर</span>
                     </h2>
                     <p className="text-sm text-nrg-muted">
-                      {filteredOpportunities.length} opportunities found · Anonymized researcher data
-                    </p>
+                      {filteredOpportunities.length} {t("auto.views.IndustryDashboard.8")}</p>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -292,11 +291,11 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                       className="px-3 py-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] text-sm text-nrg-text"
                       data-testid="filter-collaboration-type"
                     >
-                      <option value="all">All Types</option>
-                      <option value="joint_research">Joint Research</option>
-                      <option value="funding">Research Funding</option>
-                      <option value="licensing">IP Licensing</option>
-                      <option value="consulting">Consulting</option>
+                      <option value="all">{t("auto.views.IndustryDashboard.9")}</option>
+                      <option value="joint_research">{t("auto.views.IndustryDashboard.10")}</option>
+                      <option value="funding">{t("auto.views.IndustryDashboard.11")}</option>
+                      <option value="licensing">{t("auto.views.IndustryDashboard.12")}</option>
+                      <option value="consulting">{t("auto.views.IndustryDashboard.13")}</option>
                     </select>
                   </div>
                 </div>
@@ -315,12 +314,12 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 </div>
               </WidgetErrorBoundary>
 
-              <WidgetErrorBoundary title="Search panel failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.14")}>
                 <div className="nrg-panel p-5">
                   <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-nrg-text">Search Research Network</h3>
-                      <p className="text-xs text-nrg-muted">Aggregate-only partnership answers with tier-safe evidence</p>
+                      <h3 className="text-sm font-semibold text-nrg-text">{t("auto.views.IndustryDashboard.15")}</h3>
+                      <p className="text-xs text-nrg-muted">{t("auto.views.IndustryDashboard.16")}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {INDUSTRY_DEMO_QUERIES.map((suggestion) => (
@@ -341,7 +340,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <div className="relative flex-1">
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-nrg-muted" aria-hidden="true" />
-                      <label htmlFor="industry-search-input" className="sr-only">Search research network</label>
+                      <label htmlFor="industry-search-input" className="sr-only">{t("auto.views.IndustryDashboard.17")}</label>
                       <input
                         id="industry-search-input"
                         type="text"
@@ -351,7 +350,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                           if (queryValidation) setQueryValidation(null)
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder="Ask about industry partnerships, institution capacity, or research funding..."
+                        placeholder={t("auto.views.IndustryDashboard.18")}
                         className="min-h-12 w-full rounded-xl border border-nrg-border bg-[var(--nrg-surface)] py-2.5 pl-10 pr-4 text-sm text-nrg-text placeholder:text-nrg-muted focus:border-emerald-500 focus:outline-none"
                         data-testid="industry-search-input"
                       />
@@ -380,7 +379,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                     <div className="mt-4">
                       {isEmptyResultResponse(queryResult.response) ? (
                         <EmptyState
-                          title="No partnership matches in this slice."
+                          title={t("auto.views.IndustryDashboard.19")}
                           body="Try widening sector, maturity, or state filters. Industry mode only shows anonymized aggregate opportunities."
                           onPrimary={() => setCurrentQuery(buildRelaxedQuery(currentQuery))}
                           onSecondary={() => setCurrentQuery(currentQuery)}
@@ -399,7 +398,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   {queryError && (
                     <div className="mt-4">
                       <ErrorState
-                        title="Search Failed"
+                        title={t("auto.views.IndustryDashboard.20")}
                         message={queryError}
                         severity="error"
                         onRetry={handleSearch}
@@ -417,16 +416,16 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Research areas chart failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.21")}>
                 <ResearchAreasBarChart
                   data={researchAreaData}
-                  title="Researcher Expertise Areas"
+                  title={t("auto.views.IndustryDashboard.22")}
                   titleHi="शोधकर्ता विशेषज्ञता क्षेत्र"
-                  subtitle="Distribution of anonymized researchers by expertise"
+                  subtitle={t("auto.views.IndustryDashboard.23")}
                 />
               </WidgetErrorBoundary>
 
-              <WidgetErrorBoundary title="Collaboration cards failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.24")}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {[
                     { institution: 'IIT Delhi', institutionHi: 'आईआईटी दिल्ली', researcherCount: 1245, collaborationTypes: ['Joint Research', 'Consulting'], topAreas: ['AI', 'Robotics'], matchScore: 88 },
@@ -456,19 +455,19 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Industry analytics failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.25")}>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <div className="lg:col-span-2">
                     <ResearchAreasBarChart
                       data={researchAreaData}
-                      title="Commercial Research Demand"
+                      title={t("auto.views.IndustryDashboard.26")}
                       titleHi="वाणिज्यिक शोध मांग"
-                      subtitle="Anonymized capability depth by sector"
+                      subtitle={t("auto.views.IndustryDashboard.27")}
                     />
                   </div>
                   <div className="nrg-panel p-5">
-                    <h2 className="text-base font-semibold text-nrg-text">Partnership Readiness</h2>
-                    <p className="mt-1 text-sm text-nrg-muted">A quick boardroom view of where collaboration can move fastest.</p>
+                    <h2 className="text-base font-semibold text-nrg-text">{t("auto.views.IndustryDashboard.28")}</h2>
+                    <p className="mt-1 text-sm text-nrg-muted">{t("auto.views.IndustryDashboard.29")}</p>
                     <div className="mt-5 space-y-4">
                       {[
                         ['High-potential matches', '4 of 6', 'text-emerald-600'],
@@ -493,7 +492,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Data rights panel failed to load">
+              <WidgetErrorBoundary title={t("auto.views.IndustryDashboard.30")}>
                 <DPDPPanel role="industry" />
               </WidgetErrorBoundary>
             </motion.div>

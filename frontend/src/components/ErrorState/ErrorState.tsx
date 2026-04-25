@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, RefreshCw, Home, ShieldAlert } from 'lucide-react'
+import { t } from '../../i18n'
 
 type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical'
 
@@ -134,7 +135,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 
         {errorCode && (
           <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${config.bgColor} border ${config.borderColor} mb-4`}>
-            <code className={`text-xs font-mono ${config.textColor}`}>ERR_{errorCode}</code>
+            <code className={`text-xs font-mono ${config.textColor}`}>{t("auto.components.ErrorState.ErrorState.1")}{errorCode}</code>
           </div>
         )}
 
@@ -147,8 +148,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
               whileTap={{ scale: 0.98 }}
             >
               <RefreshCw size={16} />
-              Try Again
-            </motion.button>
+              {t("auto.components.ErrorState.ErrorState.2")}</motion.button>
           )}
 
           {onGoHome && (
@@ -159,15 +159,13 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
               whileTap={{ scale: 0.98 }}
             >
               <Home size={16} />
-              Go Home
-            </motion.button>
+              {t("auto.components.ErrorState.ErrorState.3")}</motion.button>
           )}
         </div>
 
         {showSupportHint && severity !== 'info' && (
           <p className={`text-xs ${config.subtitleColor} mt-4 opacity-75`}>
-            If this problem persists, please contact support with the error code.
-          </p>
+            {t("auto.components.ErrorState.ErrorState.4")}</p>
         )}
       </div>
     </motion.div>

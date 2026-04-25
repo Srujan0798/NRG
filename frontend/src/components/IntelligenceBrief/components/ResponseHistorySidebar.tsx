@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { t } from '../../../i18n'
 
 interface HistoryItem {
   id: string
@@ -66,14 +67,13 @@ export const ResponseHistorySidebar: React.FC<ResponseHistorySidebarProps> = ({
     <div className="w-80 shrink-0 bg-nrg-surface border-l border-nrg-border overflow-y-auto">
       <div className="p-4 border-b border-nrg-border bg-nrg-navy-50/50 sticky top-0 z-10">
         <h3 className="text-sm font-semibold text-nrg-text flex items-center gap-2">
-          <span>📜</span> Query History
-        </h3>
+          <span>📜</span> {t("auto.components.IntelligenceBrief.components.ResponseHistorySidebar.1")}</h3>
       </div>
 
       <div className="p-3 space-y-3">
         {pinnedItems.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-medium text-nrg-muted uppercase tracking-wider">Pinned</p>
+            <p className="text-xs font-medium text-nrg-muted uppercase tracking-wider">{t("auto.components.IntelligenceBrief.components.ResponseHistorySidebar.2")}</p>
             {pinnedItems.map(item => (
               <HistoryItemCard
                 key={item.id}
@@ -92,9 +92,9 @@ export const ResponseHistorySidebar: React.FC<ResponseHistorySidebarProps> = ({
         )}
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-nrg-muted uppercase tracking-wider">Recent</p>
+          <p className="text-xs font-medium text-nrg-muted uppercase tracking-wider">{t("auto.components.IntelligenceBrief.components.ResponseHistorySidebar.3")}</p>
           {recentItems.length === 0 ? (
-            <p className="text-xs text-nrg-muted text-center py-4">No queries yet</p>
+            <p className="text-xs text-nrg-muted text-center py-4">{t("auto.components.IntelligenceBrief.components.ResponseHistorySidebar.4")}</p>
           ) : (
             recentItems.map(item => (
               <HistoryItemCard
@@ -181,8 +181,7 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
               onClick={onRerun}
               className="flex-1 text-xs py-1.5 rounded-lg bg-saffron-50 text-saffron-700 hover:bg-saffron-100 transition-colors"
             >
-              Re-run
-            </button>
+              {t("auto.components.IntelligenceBrief.components.ResponseHistorySidebar.5")}</button>
           </div>
         </div>
       )}

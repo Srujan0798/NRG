@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { LogInIcon, UserIcon } from './Icons'
+import { t } from '../i18n'
 
 type PersonaKey = 'researcher' | 'government' | 'industry'
 
@@ -120,8 +121,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
-          Backend server unreachable — check your connection or API server status
-        </div>
+          {t("auto.components.Login.1")}</div>
       )}
       {error && (
         <div className="w-full bg-red-600/10 border-b border-red-600/30 text-red-400 text-center py-2 px-4 text-sm">
@@ -156,18 +156,17 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 <h1 className="text-2xl font-bold text-white font-devanagari tracking-wide">
                   राष्ट्रीय गवेषण मंच
                 </h1>
-              <p className="text-slate-300 text-sm tracking-widest uppercase">National Research Graph</p>
+              <p className="text-slate-300 text-sm tracking-widest uppercase">{t("auto.components.Login.2")}</p>
             </div>
           </div>
 
           <div className="mb-8 lg:mb-10">
               <h2 className="text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-4">
-                Sovereign Intelligence<br />
-                <span className="text-nrg-saffron-400">for India's Research</span>
+                {t("auto.components.Login.3")}<br />
+                <span className="text-nrg-saffron-400">{t("auto.components.Login.4")}</span>
               </h2>
             <p className="text-slate-300 text-lg max-w-lg leading-relaxed">
-              A secure, AI-powered platform connecting 5,615 researchers, 12,000 publications, and 181 institutions — engineered for government, academia, and industry.
-            </p>
+              {t("auto.components.Login.5")}</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
@@ -220,10 +219,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           <div className="relative z-10 mt-8 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-slate-300 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-nrg-ashoka-500 animate-pulse" />
-              <span>Encrypted · Sovereign · DPDP-Compliant</span>
+              <span>{t("auto.components.Login.6")}</span>
             </div>
           <span className="hidden sm:inline text-white/20">|</span>
-          <span>Gov of India · DST · IIT Gandhinagar</span>
+          <span>{t("auto.components.Login.7")}</span>
         </div>
       </div>
 
@@ -242,8 +241,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               <LogInIcon className="w-5 h-5" style={{ color: accentColor }} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-nrg-text">Sign in</h2>
-              <p className="text-nrg-muted text-sm">Authenticate to access the platform</p>
+              <h2 className="text-2xl font-bold text-nrg-text">{t("auto.components.Login.8")}</h2>
+              <p className="text-nrg-muted text-sm">{t("auto.components.Login.9")}</p>
             </div>
           </div>
 
@@ -256,13 +255,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               <span className="text-sm text-nrg-muted">{PERSONA_LABELS[selectedPersona].en}</span>
             </div>
             <p className="text-xs text-nrg-muted">
-              Authenticate with your seeded credentials for this workspace.
-            </p>
+              {t("auto.components.Login.10")}</p>
           </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="block text-sm font-medium text-nrg-text mb-2">Username</span>
+              <span className="block text-sm font-medium text-nrg-text mb-2">{t("auto.components.Login.11")}</span>
               <div className="relative">
                 <div
                   className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
@@ -281,7 +279,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="username"
-                  placeholder="Enter username"
+                  placeholder={t("auto.components.Login.12")}
                   aria-invalid={Boolean(fieldErrors.username)}
                   aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                   style={{ borderColor: focusedField === 'username' ? accentColor : undefined }}
@@ -293,7 +291,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
             </label>
 
             <label className="block">
-              <span className="block text-sm font-medium text-nrg-text mb-2">Password</span>
+              <span className="block text-sm font-medium text-nrg-text mb-2">{t("auto.components.Login.13")}</span>
               <div className="relative">
                 <div
                   className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
@@ -315,7 +313,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="current-password"
-                  placeholder="Enter password"
+                  placeholder={t("auto.components.Login.14")}
                   aria-invalid={Boolean(fieldErrors.password)}
                   aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   style={{ borderColor: focusedField === 'password' ? accentColor : undefined }}
@@ -345,8 +343,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               {isLoading ? (
                 <span className="flex items-center gap-2">
                   <span className="nrg-ashoka-spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
-                  Authenticating...
-                </span>
+                  {t("auto.components.Login.15")}</span>
               ) : (
                 `Continue as ${PERSONA_LABELS[selectedPersona].en}`
               )}
@@ -359,11 +356,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               onClick={() => setLocalMessage('Please contact the NRG administrator to reset your password.')}
               className="mb-3 text-sm font-medium text-nrg-navy-500 hover:text-nrg-saffron-500 transition-colors"
             >
-              Forgot password?
-            </button>
+              {t("auto.components.Login.16")}</button>
             <p className="text-xs text-nrg-muted">
-              Secured by Kong API Gateway · JWT Bearer Tokens · RS256
-            </p>
+              {t("auto.components.Login.17")}</p>
         </div>
       </div>
         </div>
