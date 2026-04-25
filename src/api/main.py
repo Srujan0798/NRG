@@ -1509,13 +1509,20 @@ async def get_researchers(
     token_payload: dict = Depends(get_current_user)
 ):
     """Protected endpoint with role-specific data shaping and pagination."""
-    cache_key = f"researchers:{state}:{research_area}:{limit}:{offset}:{token_payload.get('role','')}"
+    safe_limit = max(1, min(limit, 500))
+    safe_offset = max(0, offset)
+    cache_key = f"researchers:{state}:{research_area}:{safe_limit}:{safe_offset}:{token_payload.get('role','')}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
         return cached
 
     db = _get_db()
-    researchers = db.query_researchers(state=state, research_area=research_area, limit=limit, offset=offset)
+    researchers = db.query_researchers(
+        state=state,
+        research_area=research_area,
+        limit=safe_limit,
+        offset=safe_offset,
+    )
     result = filter_researcher_records(researchers, token_payload)
     _api_cache.set(cache_key, result, ttl=15)
     return result
