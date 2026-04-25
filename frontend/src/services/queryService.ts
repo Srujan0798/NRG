@@ -176,4 +176,10 @@ export const queryService = {
   emptyGraphData(): GraphData {
     return { nodes: [], edges: [], warnings: [] };
   },
+
+  streamQuery(request: QueryRequest): EventSource {
+    const params = new URLSearchParams({ query: request.query });
+    if (request.sessionId) params.set('session_id', request.sessionId);
+    return new EventSource(`/api/query/stream?${params.toString()}`);
+  },
 };

@@ -1,11 +1,9 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { PermissionBoundary } from '../components/PermissionBoundary'
 import { TierBadge } from '../components/TierBadge'
 import { SkeletonLoader } from '../components/Skeleton'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { DPDPAuditLog } from '../components/DPDPAuditLog'
-import { DPDPWithdrawalPanel } from '../components/DPDPWithdrawalPanel'
 import { SecurityMonitor } from '../components/SecurityMonitor'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
@@ -24,8 +22,8 @@ import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Search, Users, FileText, Building, TrendingUp, Shield,
-  Sun as SunIcon, Moon as MoonIcon, BookOpen, History, RefreshCw
+  Search, Users, FileText, Building,
+  Sun as SunIcon, Moon as MoonIcon, BookOpen, History
 } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 
@@ -50,7 +48,7 @@ const SaffronSpinner = ({ style }: { style?: React.CSSProperties }) => (
 )
 
 export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboardProps) {
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const {
     history, currentQuery, isSearching,
     setCurrentQuery, addToHistory, setIsSearching, setLastResult,
@@ -64,7 +62,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
   const [queryError, setQueryError] = useState<string | null>(null)
-  const [graphTopic, setGraphTopic] = useState('machine learning')
+  const [graphTopic] = useState('machine learning')
 
   const { data: publicationsData, isLoading: pubsLoading } = useQuery({
     queryKey: ['publications', user?.id],
@@ -73,14 +71,14 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     enabled: !!user,
   })
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData } = useQuery({
     queryKey: ['stats', user?.id],
     queryFn: () => queryService.fetchStats(),
     staleTime: 30 * 1000,
     enabled: !!user,
   })
 
-  const { data: graphApiData, isLoading: graphLoading } = useQuery({
+  const { data: graphApiData } = useQuery({
     queryKey: ['graph', graphTopic, user?.id],
     queryFn: () => queryService.fetchGraphData(graphTopic),
     staleTime: 30 * 1000,
@@ -155,6 +153,32 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <div className="relative">
+              <select
+                value={user?.tier ?? 1}
+                onChange={(e) => {
+                  const tier = parseInt(e.target.value)
+                  const personas = [
+                    { tier: 1, username: 'researcher_user', password: 'researcher-pass', label: 'Researcher (T1)' },
+                    { tier: 2, username: 'gov_user', password: 'government-pass', label: 'Government (T2)' },
+                    { tier: 3, username: 'industry_user', password: 'industry-pass', label: 'Industry (T3)' },
+                  ]
+                  const p = personas.find(p => p.tier === tier)
+                  if (p && confirm(`Switch to ${p.label}? This will log you out.`)) {
+                    logout()
+                  }
+                }}
+                className="appearance-none pl-3 pr-8 py-1.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-200 cursor-pointer hover:border-violet-400 transition-all"
+                aria-label="Switch persona tier"
+              >
+                <option value={1}>🔬 Researcher T1</option>
+                <option value={2}>🏛️ Government T2</option>
+                <option value={3}>🏢 Industry T3</option>
+              </select>
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+            </div>
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
