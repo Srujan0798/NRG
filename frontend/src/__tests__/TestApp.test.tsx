@@ -150,3 +150,7 @@ function TestApp() {
 }
 
 export default TestApp;
+
+test('exports the legacy test app harness', () => {
+  expect(TestApp).toBeDefined();
+});

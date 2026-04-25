@@ -146,7 +146,6 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
         provenance={{ synth: currentPhase?.phase || 'stream' }}
         warnings={[]}
         verification_status={false}
-        isStreaming={false}
       />
     )
   }

@@ -46,7 +46,7 @@ class LLMMeshConfig:
     max_retries: int = 3
     retry_delay_seconds: int = 5
     request_timeout_seconds: int = 30
-    query_timeout_budget_seconds: int = 15
+    query_timeout_budget_seconds: int = 45
 
 
 class LLMClient(Protocol):

@@ -3,11 +3,72 @@
  * Snapshot tests for key components to catch UI regressions.
  */
 
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import { describe, it, expect } from '@jest/globals';
+import React, { act } from 'react';
+import { createRoot, Root } from 'react-dom/client';
+import { afterEach, describe, it, expect, jest } from '@jest/globals';
 
-jest.mock('../services/authService', () => ({
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+const mountedRoots: Array<{ root: Root; container: HTMLDivElement }> = [];
+
+const matches = (value: string, matcher: string | RegExp) =>
+  typeof matcher === 'string' ? value.includes(matcher) : matcher.test(value);
+
+const getAllByTestId = (base: ParentNode, matcher: string | RegExp) => {
+  const elements = Array.from(base.querySelectorAll<HTMLElement>('[data-testid]'))
+    .filter((element) => matches(element.dataset.testid || '', matcher));
+  if (elements.length === 0) throw new Error(`Unable to find data-testid ${String(matcher)}`);
+  return elements;
+};
+
+const getByTestId = (base: ParentNode, matcher: string | RegExp) => getAllByTestId(base, matcher)[0];
+
+const getByText = (base: ParentNode, matcher: string | RegExp) => {
+  const element = Array.from(base.querySelectorAll<HTMLElement>('*'))
+    .find((candidate) => matches(candidate.textContent || '', matcher));
+  if (!element) throw new Error(`Unable to find text ${String(matcher)}`);
+  return element;
+};
+
+const getAllByRole = (base: ParentNode, role: string) => {
+  const selector = role === 'button' ? 'button, [role="button"]' : `[role="${role}"]`;
+  const elements = Array.from(base.querySelectorAll<HTMLElement>(selector));
+  if (elements.length === 0) throw new Error(`Unable to find role ${role}`);
+  return elements;
+};
+
+const screen = {
+  getByTestId: (matcher: string | RegExp) => getByTestId(document.body, matcher),
+  getAllByTestId: (matcher: string | RegExp) => getAllByTestId(document.body, matcher),
+};
+
+const render = (ui: React.ReactElement) => {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  act(() => {
+    root.render(ui);
+  });
+  mountedRoots.push({ root, container });
+  return {
+    container,
+    getByText: (matcher: string | RegExp) => getByText(container, matcher),
+    getByTestId: (matcher: string | RegExp) => getByTestId(container, matcher),
+    getAllByRole: (role: string) => getAllByRole(container, role),
+    getAllByTestId: (matcher: string | RegExp) => getAllByTestId(container, matcher),
+  };
+};
+
+afterEach(() => {
+  for (const { root, container } of mountedRoots.splice(0)) {
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  }
+});
+
+jest.mock('../../services/authService', () => ({
   login: jest.fn().mockResolvedValue({
     access_token: 'test-token',
     refresh_token: 'test-refresh',
@@ -22,7 +83,7 @@ jest.mock('../services/authService', () => ({
   })
 }));
 
-jest.mock('../stores/queryStore', () => ({
+jest.mock('../../stores/queryStore', () => ({
   useQueryStore: () => ({
     queries: [],
     addQuery: jest.fn(),
@@ -30,7 +91,7 @@ jest.mock('../stores/queryStore', () => ({
   })
 }));
 
-jest.mock('../stores/dpdpStore', () => ({
+jest.mock('../../stores/dpdpStore', () => ({
   useDPDPStore: () => ({
     consents: [],
     showConsentBanner: false
@@ -39,7 +100,7 @@ jest.mock('../stores/dpdpStore', () => ({
 
 describe('Login Component', () => {
   it('renders login form elements', () => {
-    const { container } = render(<div data-testid="login-form">
+    const { container, getByText } = render(<div data-testid="login-form">
       <button>Researcher</button>
       <button>Government</button>
       <button>Industry</button>
@@ -48,12 +109,12 @@ describe('Login Component', () => {
       <button>Login</button>
     </div>);
 
-    expect(container.querySelector('button:has-text("Researcher")')).toBeTruthy();
-    expect(container.querySelector('button:has-text("Government")')).toBeTruthy();
-    expect(container.querySelector('button:has-text("Industry")')).toBeTruthy();
+    expect(getByText('Researcher')).toBeTruthy();
+    expect(getByText('Government')).toBeTruthy();
+    expect(getByText('Industry')).toBeTruthy();
     expect(container.querySelector('input[type="text"]')).toBeTruthy();
     expect(container.querySelector('input[type="password"]')).toBeTruthy();
-    expect(container.querySelector('button:has-text("Login")')).toBeTruthy();
+    expect(getByText('Login')).toBeTruthy();
   });
 
   it('renders role selection buttons', () => {
@@ -116,7 +177,7 @@ describe('AnswerPanel Component', () => {
       ]
     };
 
-    const { getByText, getAllByTestId } = render(
+    const { getByText } = render(
       <div data-testid="answer-panel">
         <div data-testid="response-text">{response.text}</div>
         <div data-testid="citations">
@@ -138,7 +199,7 @@ describe('AnswerPanel Component', () => {
       { type: 'consent', message: 'User consent not verified' }
     ];
 
-    const { getAllByTestId } = render(
+    render(
       <div data-testid="answer-panel">
         <div data-testid="warnings">
           {warnings.map((w, i) => (
@@ -155,7 +216,7 @@ describe('AnswerPanel Component', () => {
 
 describe('ResearcherDashboard Component', () => {
   it('renders researcher-specific elements', () => {
-    const { getByTestId, getByText } = render(
+    const { getByTestId } = render(
       <div data-testid="researcher-dashboard">
         <div data-testid="search-input">
           <input placeholder="Search researchers..." />
@@ -226,7 +287,7 @@ describe('ForceGraph Component', () => {
       { id: '3', name: 'Lab 1', group: 'lab' }
     ];
 
-    const { getAllByTestId } = render(
+    render(
       <div data-testid="force-graph">
         <div data-testid="nodes">
           {nodes.map(n => (
