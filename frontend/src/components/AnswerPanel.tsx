@@ -124,6 +124,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         responseId={responseId}
         queryText={queryText}
         sessionId={sessionId}
+        onCitationClick={handleCitationClick}
       />
 
       <CitationDrawer
