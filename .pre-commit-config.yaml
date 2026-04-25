@@ -11,3 +11,10 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: forbidden-vocab-check
+        name: Production-only vocabulary gate
+        entry: bash scripts/forbidden_vocab_check.sh
+        language: system
+        pass_filenames: false
+        always_run: true
+        # See .claude/rules/production_only.md — NRG is production software.
