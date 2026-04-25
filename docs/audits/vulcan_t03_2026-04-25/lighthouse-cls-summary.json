@@ -1,0 +1,32 @@
+{
+  "source": "Playwright PerformanceObserver CLS audit; Lighthouse CLI failed to connect to Chrome in this sandbox",
+  "url": "http://127.0.0.1:4173/",
+  "results": [
+    {
+      "profile": "desktop",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "cls": 0,
+      "externalFontRequests": [],
+      "fontRequests": [
+        "http://127.0.0.1:4173/fonts/SohneDisplay.woff2",
+        "http://127.0.0.1:4173/fonts/JetBrainsMono-Regular.woff2"
+      ]
+    },
+    {
+      "profile": "mobile",
+      "viewport": {
+        "width": 393,
+        "height": 852
+      },
+      "cls": 0,
+      "externalFontRequests": [],
+      "fontRequests": [
+        "http://127.0.0.1:4173/fonts/SohneDisplay.woff2",
+        "http://127.0.0.1:4173/fonts/JetBrainsMono-Regular.woff2"
+      ]
+    }
+  ]
+}

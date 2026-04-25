@@ -24,12 +24,12 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   const changeColor = {
     positive: 'text-green-600 dark:text-green-400',
     negative: 'text-red-600 dark:text-red-400',
-    neutral: 'text-slate-500 dark:text-slate-400',
+    neutral: 'text-nrg-muted',
   }[changeType]
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-2xl p-5 bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md"
+      className="nrg-panel relative overflow-hidden p-5"
       style={{ borderLeft: `var(--nrg-accent-border-width) solid ${accentColor}` }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -40,9 +40,9 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
 
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{title}</p>
-          <p className="text-xs font-devanagari text-slate-400">{titleHi}</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1 font-mono">{value}</p>
+          <p className="text-xs font-medium text-nrg-muted uppercase tracking-[0.12em]">{title}</p>
+          <p className="text-xs font-devanagari text-nrg-muted">{titleHi}</p>
+          <p className="text-2xl font-bold text-nrg-text mt-1 font-display">{value}</p>
           {change && (
             <p className={`text-xs font-medium mt-1 flex items-center gap-1 ${changeColor}`}>
               <TrendingUp size={12} />
@@ -80,34 +80,34 @@ export const MinistrySummaryCard: React.FC<MinistrySummaryCardProps> = ({
   topArea,
 }) => (
   <motion.div
-    className="rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md overflow-hidden"
+    className="nrg-panel overflow-hidden"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ y: -2, boxShadow: 'var(--nrg-elevation-2)' }}
   >
-    <div className="px-5 py-4 bg-gradient-to-r from-saffron-50 to-white dark:from-navy-700/50 dark:to-navy-800 border-b border-slate-100 dark:border-navy-700">
+    <div className="px-5 py-4 bg-[var(--glass-bg)] border-b border-nrg-border">
       <div className="flex items-center gap-2">
         <Building2 size={16} className="text-saffron-600 dark:text-saffron-400" />
-        <span className="text-sm font-semibold text-slate-900 dark:text-white">{ministry}</span>
-        <span className="text-xs font-devanagari text-slate-500">({ministryHi})</span>
+        <span className="text-sm font-semibold text-nrg-text">{ministry}</span>
+        <span className="text-xs font-devanagari text-nrg-muted">({ministryHi})</span>
       </div>
     </div>
     <div className="p-5 grid grid-cols-2 gap-4">
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Institutions</p>
-        <p className="text-lg font-bold text-slate-900 dark:text-white">{institutionCount.toLocaleString('en-IN')}</p>
+        <p className="text-xs text-nrg-muted">Institutions</p>
+        <p className="text-lg font-bold text-nrg-text">{institutionCount.toLocaleString('en-IN')}</p>
       </div>
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Researchers</p>
-        <p className="text-lg font-bold text-slate-900 dark:text-white">{researcherCount.toLocaleString('en-IN')}</p>
+        <p className="text-xs text-nrg-muted">Researchers</p>
+        <p className="text-lg font-bold text-nrg-text">{researcherCount.toLocaleString('en-IN')}</p>
       </div>
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Funding</p>
-        <p className="text-lg font-bold text-slate-900 dark:text-white">₹{fundingCr}Cr</p>
+        <p className="text-xs text-nrg-muted">Funding</p>
+        <p className="text-lg font-bold text-nrg-text">₹{fundingCr}Cr</p>
       </div>
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400">Top Area</p>
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{topArea}</p>
+        <p className="text-xs text-nrg-muted">Top Area</p>
+        <p className="text-sm font-medium text-nrg-text truncate">{topArea}</p>
       </div>
     </div>
   </motion.div>
@@ -147,8 +147,8 @@ export const AlertCard: React.FC<AlertCardProps> = ({ type, title, message, acti
     >
       <div className="shrink-0 mt-0.5">{config.icon}</div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-900 dark:text-white">{title}</p>
-        <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">{message}</p>
+        <p className="text-sm font-semibold text-nrg-text">{title}</p>
+        <p className="text-xs text-nrg-muted mt-0.5">{message}</p>
       </div>
       {action && (
         <button className="text-xs font-medium text-saffron-600 hover:text-saffron-700 shrink-0">

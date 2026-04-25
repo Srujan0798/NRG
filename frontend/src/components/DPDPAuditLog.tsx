@@ -15,13 +15,13 @@ export function DPDPAuditLog() {
 
   const getActionBadge = (action: string) => {
     const map: Record<string, string> = {
-      consent_granted: 'bg-green-100 text-green-700 border-green-200',
-      consent_withdrawn: 'bg-red-100 text-red-700 border-red-200',
-      data_accessed: 'bg-blue-100 text-blue-700 border-blue-200',
-      purpose_limitation: 'bg-amber-100 text-amber-700 border-amber-200',
-      data_export: 'bg-purple-100 text-purple-700 border-purple-200',
+      consent_granted: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
+      consent_withdrawn: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
+      data_accessed: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800',
+      purpose_limitation: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800',
+      data_export: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800',
     };
-    return map[action] || 'bg-gray-100 text-gray-700 border-gray-200';
+    return map[action] || 'bg-[var(--glass-bg)] text-nrg-muted border-nrg-border';
   };
 
   const verifyIntegrity = async () => {
@@ -44,24 +44,24 @@ export function DPDPAuditLog() {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
-      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+    <div className="nrg-panel overflow-hidden">
+      <div className="px-4 py-3 bg-[var(--glass-bg)] border-b border-nrg-border flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-800"><span aria-hidden="true">📋</span> DPDP Audit Log</h3>
-          <p className="text-xs text-gray-500">Sovereign compliance trail (last {auditLog.length} entries)</p>
+          <h3 className="font-semibold text-nrg-text"><span aria-hidden="true">📋</span> DPDP Audit Log</h3>
+          <p className="text-xs text-nrg-muted">Sovereign compliance trail (last {auditLog.length} entries)</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={verifyIntegrity}
             disabled={verifying}
-            className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition"
+            className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 transition"
           >
             {verifying ? 'Verifying...' : 'Verify integrity'}
           </button>
           {auditLog.length > 0 && (
             <button
               onClick={clearAuditLog}
-              className="text-xs text-gray-500 hover:text-red-600 transition"
+              className="text-xs text-nrg-muted hover:text-red-600 transition"
               aria-label="Clear audit log"
             >
               Clear Log
@@ -71,27 +71,27 @@ export function DPDPAuditLog() {
       </div>
 
       {verifyStatus && (
-        <div className="mx-4 mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="mx-4 mt-4 rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 px-3 py-2 text-sm text-green-700 dark:text-green-300">
           {verifyStatus}
         </div>
       )}
 
       {auditLog.length === 0 ? (
-        <div className="p-8 text-center text-gray-400 text-sm">
+        <div className="p-8 text-center text-nrg-muted text-sm">
           No audit entries yet. Actions will be logged here.
         </div>
       ) : (
         <div className="max-h-80 overflow-y-auto scrollbar-thin">
           {auditLog.map((entry) => (
-            <div key={entry.id} className="px-4 py-3 border-b border-gray-100 hover:bg-gray-50 transition text-sm">
+            <div key={entry.id} className="px-4 py-3 border-b border-nrg-border/40 hover:bg-[var(--glass-bg)] transition text-sm">
               <div className="flex items-center gap-2 mb-1">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${getActionBadge(entry.action)}`}>
                   {entry.action.replace(/_/g, ' ')}
                 </span>
-                <span className="text-gray-400 text-xs">{formatTimestamp(entry.timestamp)}</span>
+                <span className="text-nrg-muted text-xs">{formatTimestamp(entry.timestamp)}</span>
               </div>
-              <div className="text-gray-700">{entry.details}</div>
-              {entry.ip && <div className="text-gray-400 text-xs mt-0.5">IP: {entry.ip}</div>}
+              <div className="text-nrg-text">{entry.details}</div>
+              {entry.ip && <div className="text-nrg-muted text-xs mt-0.5">IP: {entry.ip}</div>}
             </div>
           ))}
         </div>

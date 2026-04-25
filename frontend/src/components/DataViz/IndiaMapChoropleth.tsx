@@ -92,15 +92,15 @@ export const IndiaMapChoropleth: React.FC<IndiaMapChoroplethProps> = ({
 
   return (
     <motion.div
-      className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200/80 dark:border-navy-700 p-5 shadow-md"
+      className="nrg-panel p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-        <p className="text-xs font-devanagari text-slate-500 dark:text-slate-400">{titleHi}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+        <h3 className="text-sm font-semibold text-nrg-text">{title}</h3>
+        <p className="text-xs font-devanagari text-nrg-muted">{titleHi}</p>
+        <p className="text-xs text-nrg-muted mt-0.5">{subtitle}</p>
       </div>
 
       <div className="relative" style={{ height }}>
@@ -111,15 +111,15 @@ export const IndiaMapChoropleth: React.FC<IndiaMapChoroplethProps> = ({
         {topStates.map((state) => (
           <div key={state.state} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-saffron-400" />
-            <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{state.state}</span>
-            <span className="text-xs font-semibold text-slate-900 dark:text-white ml-auto">
+            <span className="text-xs text-nrg-muted truncate">{state.state}</span>
+            <span className="text-xs font-semibold text-nrg-text ml-auto">
               {state.count.toLocaleString('en-IN')}
             </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-center gap-3 text-xs text-slate-500">
+      <div className="mt-4 flex items-center justify-center gap-3 text-xs text-nrg-muted">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-saffron-500" />
           <span>High</span>

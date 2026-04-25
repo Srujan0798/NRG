@@ -39,7 +39,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md p-5"
+      className="nrg-panel relative overflow-hidden p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4, boxShadow: 'var(--nrg-elevation-3)' }}
@@ -49,8 +49,8 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
 
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">{institution}</p>
-          <p className="text-sm font-devanagari text-slate-400">{titleHi}</p>
+          <p className="text-xs font-medium text-nrg-muted uppercase tracking-[0.12em]">{institution}</p>
+          <p className="text-sm font-devanagari text-nrg-muted">{titleHi}</p>
         </div>
         <div className="flex flex-col items-end gap-1">
           <span className={`px-2 py-0.5 rounded text-xs font-medium ${potentialColors[potential]}`}>
@@ -58,17 +58,17 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
           </span>
           <div className="flex items-center gap-1">
             <Star size={12} className="text-amber-500 fill-amber-500" />
-            <span className="text-xs font-bold text-slate-900 dark:text-white">{matchScore}%</span>
-            <span className="text-xs text-slate-500">match</span>
+            <span className="text-xs font-bold text-nrg-text">{matchScore}%</span>
+            <span className="text-xs text-nrg-muted">match</span>
           </div>
         </div>
       </div>
 
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-1">{title}</h3>
-      <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">{description}</p>
+      <h3 className="text-base font-semibold text-nrg-text mb-1">{title}</h3>
+      <p className="text-sm text-nrg-muted leading-relaxed mb-4">{description}</p>
 
       <div className="flex items-center gap-2 mb-4">
-        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-navy-700 text-slate-600 dark:text-slate-300">
+        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--glass-bg)] text-nrg-muted border border-nrg-border">
           {researchArea}
         </span>
         <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
@@ -106,21 +106,21 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
   matchScore,
 }) => (
   <motion.div
-    className="rounded-2xl bg-white dark:bg-navy-800 border border-emerald-200 dark:border-emerald-700 shadow-md overflow-hidden"
+    className="nrg-panel overflow-hidden"
     initial={{ opacity: 0, scale: 0.95 }}
     animate={{ opacity: 1, scale: 1 }}
   >
-    <div className="px-5 py-4 bg-gradient-to-r from-emerald-50 to-white dark:from-emerald-900/20 dark:to-navy-800 border-b border-emerald-100 dark:border-emerald-700/50">
+    <div className="px-5 py-4 bg-[var(--glass-bg)] border-b border-nrg-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
             <HeartHandshake size={16} className="text-emerald-600" />
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">{institution}</p>
-            <p className="text-xs font-devanagari text-slate-500">{institutionHi}</p>
+              <p className="text-sm font-semibold text-nrg-text">{institution}</p>
+              <p className="text-xs font-devanagari text-nrg-muted">{institutionHi}</p>
+            </div>
           </div>
-        </div>
         <div className="text-right">
           <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{matchScore}%</p>
           <p className="text-xs text-slate-500">match score</p>
@@ -131,21 +131,21 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
     <div className="p-5 space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Researchers</p>
-          <p className="text-lg font-bold text-slate-900 dark:text-white">{researcherCount.toLocaleString('en-IN')}</p>
+          <p className="text-xs text-nrg-muted">Researchers</p>
+          <p className="text-lg font-bold text-nrg-text">{researcherCount.toLocaleString('en-IN')}</p>
         </div>
         <div className="h-10 w-px bg-slate-200 dark:bg-navy-600" />
         <div className="flex-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400">Collab. Types</p>
-          <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{collaborationTypes.length}</p>
+          <p className="text-xs text-nrg-muted">Collab. Types</p>
+          <p className="text-sm font-medium text-nrg-text">{collaborationTypes.length}</p>
         </div>
       </div>
 
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">Collaboration Types</p>
+        <p className="text-xs text-nrg-muted mb-1.5">Collaboration Types</p>
         <div className="flex flex-wrap gap-1.5">
-          {collaborationTypes.map(type => (
-            <span key={type} className="px-2 py-0.5 rounded text-xs bg-slate-100 dark:bg-navy-700 text-slate-600 dark:text-slate-300">
+          {collaborationTypes.map((type) => (
+            <span key={type} className="px-2 py-0.5 rounded text-xs bg-[var(--glass-bg)] border border-nrg-border text-nrg-muted">
               {type}
             </span>
           ))}
@@ -153,9 +153,9 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
       </div>
 
       <div>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1.5">Top Research Areas</p>
+        <p className="text-xs text-nrg-muted mb-1.5">Top Research Areas</p>
         <div className="flex flex-wrap gap-1.5">
-          {topAreas.map(area => (
+          {topAreas.map((area) => (
             <span key={area} className="px-2 py-0.5 rounded text-xs bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
               {area}
             </span>

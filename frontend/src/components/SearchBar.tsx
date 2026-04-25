@@ -1,69 +1,157 @@
-import React, { useState } from 'react'
-import { LoaderIcon, SearchIcon } from './Icons'
-import { useAuth } from '../hooks/useAuth'
+import React, { useEffect, useRef, useState } from 'react'
+import { SearchIcon, LoaderIcon } from './Icons'
+import { heroCopy } from '../i18n/en-IN'
+import { SuggestionChips } from './SuggestionChips/SuggestionChips'
 
 interface SearchBarProps {
-  onSearch: (query: string) => void
-  isLoading?: boolean
-  placeholder?: string
+  autoFocus?: boolean
+  placeholderRotation?: string[]
+  onSubmit: (query: string) => void
+  disabled?: boolean
+  multiline?: boolean
+  showSuggestions?: boolean
+  value?: string
+  onValueChange?: (query: string) => void
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ 
-  onSearch, 
-  isLoading = false, 
-  placeholder = "Ask anything about research in India..." 
-}) => {
-  const [query, setQuery] = useState('')
-  const { user } = useAuth()
+const MAX_QUERY_LENGTH = 50000
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (query.trim() && !isLoading) {
-      onSearch(query.trim())
+const SearchBar: React.FC<SearchBarProps> = ({
+  autoFocus = true,
+  placeholderRotation = heroCopy.placeholders,
+  onSubmit,
+  disabled = false,
+  multiline = true,
+  showSuggestions = true,
+  value,
+  onValueChange,
+}) => {
+  const [internalValue, setInternalValue] = useState('')
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [isFocused, setIsFocused] = useState(false)
+  const [hint, setHint] = useState('')
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const query = value ?? internalValue
+
+  const setQuery = (nextValue: string) => {
+    const truncated = nextValue.slice(0, MAX_QUERY_LENGTH)
+    if (nextValue.length > MAX_QUERY_LENGTH) {
+      setHint('Query trimmed to the maximum supported length')
+    } else if (hint) {
+      setHint('')
     }
+    onValueChange?.(truncated)
+    if (value === undefined) setInternalValue(truncated)
   }
 
-  const getPersonaPlaceholder = () => {
-    if (!user) return placeholder
-    
-    switch (user.tier) {
-      case 1:
-        return "Find researchers, publications, or collaborations..."
-      case 2:
-        return "Analyze funding trends, institutional performance..."
-      case 3:
-        return "Discover technical capabilities, partnership opportunities..."
-      default:
-        return placeholder
+  const submit = (rawQuery: string = query) => {
+    const trimmed = rawQuery.trim()
+    if (!trimmed) {
+      setHint(heroCopy.emptyHint)
+      return
     }
+    if (!disabled) onSubmit(trimmed)
+  }
+
+  useEffect(() => {
+    if (autoFocus) inputRef.current?.focus()
+  }, [autoFocus])
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        inputRef.current?.focus()
+      }
+    }
+    document.addEventListener('keydown', handleShortcut)
+    return () => document.removeEventListener('keydown', handleShortcut)
+  }, [])
+
+  useEffect(() => {
+    if (isFocused || placeholderRotation.length <= 1) return undefined
+    const interval = setInterval(() => {
+      setPlaceholderIndex((current) => (current + 1) % placeholderRotation.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [isFocused, placeholderRotation.length])
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter') return
+    if (multiline && event.shiftKey) {
+      event.preventDefault()
+      const target = event.currentTarget
+      const start = target.selectionStart
+      const end = target.selectionEnd
+      const nextValue = `${query.slice(0, start)}\n${query.slice(end)}`
+      setQuery(nextValue)
+      requestAnimationFrame(() => {
+        target.selectionStart = start + 1
+        target.selectionEnd = start + 1
+      })
+      return
+    }
+    event.preventDefault()
+    submit()
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative w-full max-w-2xl">
-      <div className="relative">
-        <label htmlFor="search-bar-input" className="sr-only">{getPersonaPlaceholder()}</label>
-        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
-        <input
-          id="search-bar-input"
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={getPersonaPlaceholder()}
-          className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={isLoading}
-        />
-        {isLoading && (
-          <LoaderIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-spin text-blue-500 w-5 h-5" aria-hidden="true" />
-        )}
-      </div>
-      <button
-        type="submit"
-        className="sr-only"
-        disabled={isLoading || !query.trim()}
+    <div className="w-full space-y-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault()
+          submit()
+        }}
+        className={`rounded-2xl border bg-[var(--nrg-surface-1)] shadow-lg transition ${
+          hint.includes('maximum') ? 'border-amber-500' : 'border-nrg-border focus-within:border-[var(--nrg-focus)]'
+        }`}
       >
-        Search
-      </button>
-    </form>
+        <label htmlFor="hero-search-input" className="sr-only">
+          Ask anything about Indian research
+        </label>
+        <div className="flex items-start gap-3 px-4 py-4">
+          <SearchIcon className="mt-1 h-5 w-5 shrink-0 text-nrg-muted" />
+          <textarea
+            ref={inputRef}
+            id="hero-search-input"
+            data-testid="hero-search-input"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholderRotation[placeholderIndex] || heroCopy.placeholders[0]}
+            rows={multiline ? 2 : 1}
+            disabled={disabled}
+            className="min-h-12 flex-1 resize-none bg-transparent text-base font-medium leading-6 text-nrg-text outline-none placeholder:text-nrg-muted disabled:cursor-not-allowed"
+          />
+          <button
+            type="submit"
+            disabled={disabled}
+            className="min-h-11 rounded-xl bg-[var(--nrg-navy)] px-4 py-2 text-sm font-semibold text-white transition hover:translate-y-[-0.0625rem] disabled:cursor-not-allowed disabled:opacity-60"
+            aria-label={disabled ? 'Stop query' : 'Submit query'}
+          >
+            {disabled ? <LoaderIcon className="h-5 w-5 animate-spin" /> : 'Enter'}
+          </button>
+        </div>
+      </form>
+
+      {hint && (
+        <p className="text-sm font-medium text-amber-700" role="status">
+          {hint}
+        </p>
+      )}
+
+      {showSuggestions && (
+        <SuggestionChips
+          onSelect={(nextQuery) => {
+            setQuery(nextQuery)
+            inputRef.current?.focus()
+          }}
+          onSubmit={submit}
+        />
+      )}
+    </div>
   )
 }
 

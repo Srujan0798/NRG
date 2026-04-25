@@ -47,7 +47,7 @@ export function SecurityMonitor() {
 
   return (
     <div className="nrg-panel overflow-hidden">
-      <div className="px-4 py-3 border-b border-nrg-border bg-slate-50/70 dark:bg-navy-800/70">
+      <div className="px-4 py-3 border-b border-nrg-border bg-[var(--glass-bg)]">
         <h3 className="font-semibold text-nrg-text">Security Guardrails</h3>
         <p className="text-xs text-nrg-muted">Rate limiting, masked IP audit, and abuse protection</p>
       </div>
@@ -58,12 +58,14 @@ export function SecurityMonitor() {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-nrg-text">Rate Limit</span>
             <span className={`text-xs font-mono px-2 py-0.5 rounded ${
-              rateLimit.blocked ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-600'
+              rateLimit.blocked
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                : 'bg-[var(--glass-bg)] text-nrg-muted'
             }`}>
               {rateLimit.remaining}/{rateLimit.limit} req/min
             </span>
           </div>
-          <div className="w-full bg-slate-200 rounded-full h-2">
+          <div className="w-full bg-[var(--nrg-border)] rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${barColor}`}
               style={{ width: `${percentage}%` }}
@@ -76,7 +78,7 @@ export function SecurityMonitor() {
         </div>
 
         {/* Simulated IP */}
-        <div className="rounded-lg border border-nrg-border bg-slate-50 p-3 text-xs dark:bg-navy-800/60">
+        <div className="rounded-lg border border-nrg-border bg-[var(--glass-bg)] p-3 text-xs">
           <div className="text-nrg-muted mb-1">Tracked Session IP</div>
           <div className="font-mono text-nrg-text">192.168.1.xxx (masked)</div>
           <div className="text-nrg-muted mt-1">All requests are retained in the sovereign audit trail.</div>
@@ -84,7 +86,7 @@ export function SecurityMonitor() {
 
         <button
           onClick={trackRequest}
-          className="min-h-11 w-full rounded-lg border border-nrg-border bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-200"
+          className="min-h-11 w-full rounded-lg border border-nrg-border bg-[var(--glass-bg)] px-3 py-2 text-sm font-medium text-nrg-text transition hover:bg-saffron-500/10"
         >
           Run Local Safety Check
         </button>

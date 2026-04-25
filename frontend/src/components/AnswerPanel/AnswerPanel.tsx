@@ -29,7 +29,7 @@ const ConfidenceMeter: React.FC<{ status: boolean | undefined }> = ({ status }) 
   const bars = isVerified ? 3 : 2
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-navy-700/50">
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-nrg-border">
       <div className="flex gap-0.5">
         {[1, 2, 3].map((level) => (
           <motion.div
@@ -94,12 +94,12 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
 }
 
 const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ headers, rows }) => (
-  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-navy-700">
+  <div className="overflow-x-auto rounded-xl border border-nrg-border">
     <table className="min-w-full text-sm">
-      <thead className="bg-gradient-to-r from-saffron-50 to-white dark:from-navy-700/50 dark:to-navy-800">
+      <thead className="bg-[var(--glass-bg)]">
         <tr>
           {headers.map((h, i) => (
-            <th key={i} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-navy-700">
+            <th key={i} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-nrg-muted border-b border-nrg-border">
               {h}
             </th>
           ))}
@@ -112,10 +112,10 @@ const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ header
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: ri * 0.03 }}
-            className="hover:bg-saffron-50/50 dark:hover:bg-navy-700/30 transition-colors"
+            className="hover:bg-saffron-500/5 transition-colors"
           >
             {row.map((cell, ci) => (
-              <td key={ci} className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300 border-b border-slate-100 dark:border-navy-700/50">
+              <td key={ci} className="px-4 py-3 text-sm text-nrg-text border-b border-nrg-border/40">
                 {cell}
               </td>
             ))}
@@ -141,10 +141,10 @@ const StatisticalChart: React.FC<{ response: string }> = ({ response }) => {
     <div className="space-y-3">
       {data.map((d, i) => (
         <div key={i} className="flex items-center gap-3">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-400 w-12 text-right">
+          <span className="text-xs font-medium text-nrg-muted w-12 text-right">
             {d.value}%
           </span>
-          <div className="flex-1 bg-slate-100 dark:bg-navy-700 rounded-full h-6 overflow-hidden">
+          <div className="flex-1 bg-[var(--glass-bg)] border border-nrg-border rounded-full h-6 overflow-hidden">
             <motion.div
               className="h-full rounded-full"
               style={{
@@ -254,7 +254,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
           <ConfidenceMeter status={verification_status} />
           <motion.button
             onClick={() => generatePDF(response, citations)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-navy-700/50 border border-slate-200 dark:border-navy-600 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-navy-600 transition-all duration-200"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--glass-bg)] border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 transition-all duration-200"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -265,17 +265,17 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
       </div>
 
       <motion.div
-        className="overflow-hidden rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md"
+        className="nrg-panel overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="border-b border-slate-200 dark:border-navy-700">
+        <div className="border-b border-nrg-border">
           <button
             onClick={() => setShowSummary(!showSummary)}
-            className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-navy-700/30 transition-colors"
+            className="w-full px-6 py-4 flex items-center justify-between hover:bg-saffron-500/5 transition-colors"
           >
-            <span className="font-semibold text-slate-900 dark:text-white text-sm flex items-center gap-2">
+            <span className="font-semibold text-nrg-text text-sm flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
                 📋
               </span>
@@ -284,7 +284,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             <motion.span
               animate={{ rotate: showSummary ? 180 : 0 }}
               transition={{ duration: 0.2 }}
-              className="text-slate-400"
+              className="text-nrg-muted"
             >
               <ChevronDown size={16} />
             </motion.span>
@@ -300,7 +300,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
                 className="overflow-hidden"
               >
                 <div className="px-6 pb-5">
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-hindi">
+                   <p className="text-sm text-nrg-muted leading-relaxed font-hindi">
                     {summary}
                   </p>
                 </div>
@@ -310,7 +310,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         </div>
 
         <div className="p-6">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-nrg-text mb-4 flex items-center gap-2">
             <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
               📊
             </span>
@@ -322,7 +322,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
           ) : responseType === 'statistical' ? (
             <StatisticalChart response={response} />
           ) : (
-            <div className="prose prose-sm max-w-none text-slate-700 dark:text-slate-300 leading-relaxed">
+            <div className="prose prose-sm max-w-none text-nrg-text leading-relaxed">
               {segments.map((part, index) => {
                 if (part.type === 'text') {
                   return <span key={index}>{part.content}</span>
@@ -346,8 +346,8 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         </div>
 
         {orderedCitations.length > 0 && (
-          <div className="border-t border-slate-200 dark:border-navy-700 px-6 py-4 bg-slate-50 dark:bg-navy-700/30">
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+          <div className="border-t border-nrg-border px-6 py-4 bg-[var(--glass-bg)]">
+            <h4 className="text-sm font-semibold text-nrg-text mb-3 flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs">
                 📚
               </span>
@@ -357,7 +357,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
               {orderedCitations.slice(0, 8).map((citation, index) => (
                 <motion.button
                   key={citation.id}
-                  className="text-left p-3 rounded-xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-600 hover:border-saffron-300 dark:hover:border-saffron-600 hover:shadow-md transition-all duration-200"
+                  className="text-left p-3 rounded-xl bg-[var(--nrg-surface)] border border-nrg-border hover:border-saffron-300 dark:hover:border-saffron-600 hover:shadow-md transition-all duration-200"
                   onClick={() => handleCitationClick(citation)}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -369,10 +369,10 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
                       {index + 1}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug">
+                      <p className="text-xs font-medium text-nrg-text line-clamp-2 leading-snug">
                         {citation.title || 'Publication title unavailable'}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
+                      <p className="text-xs text-nrg-muted mt-0.5 flex items-center gap-1">
                         <SourceIcon source={citation.source} />
                         {citation.year && <span className="mr-2">{citation.year}</span>}
                         {toStringArray(citation.authors)?.slice(0, 2).join(', ')}

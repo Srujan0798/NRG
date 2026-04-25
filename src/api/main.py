@@ -45,6 +45,7 @@ from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
 from src.observability.metrics import instrument_app, get_metrics_content_type
+from qdrant_client import QdrantClient
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
@@ -207,12 +208,15 @@ def _format_inr_crores(value: float | int | None) -> str:
 
 def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tuple[str, list[str]] | None:
     query_lower = query.lower()
-    if any(term in query_lower for term in ["computer science", "computer", "cs", "software", "ai", "machine learning"]):
+    import re
+    cs_terms = re.compile(r'\b(computer science|computer|cs\b|software|ai\b|machine learning)\b')
+    if cs_terms.search(query_lower):
         return (
             "Computer Science",
             ["%computer%", "%AI/ML%", "%machine learning%", "%cybersecurity%", "%software%", "%NLP%", "%computer vision%"],
         )
-    if any(term in query_lower for term in ["renewable", "sustainable energy", "solar", "wind", "hydrogen", "battery"]):
+    energy_terms = re.compile(r'\b(renewable|sustainable energy|solar|wind|hydrogen|battery)\b')
+    if energy_terms.search(query_lower):
         return (
             "Renewable Energy",
             ["%renewable%", "%sustainable energy%", "%hydrogen%", "%wind%", "%solar%", "%battery%", "%energy%"],

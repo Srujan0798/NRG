@@ -62,7 +62,7 @@ function ConfirmationDialog({
         aria-modal="true"
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-desc"
-        className="bg-white dark:bg-navy-800 rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border border-slate-200 dark:border-navy-700"
+        className="nrg-panel max-w-sm w-full mx-4 overflow-hidden"
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -76,14 +76,14 @@ function ConfirmationDialog({
               </div>
             )}
             <div>
-              <h3 id="confirm-dialog-title" className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+              <h3 id="confirm-dialog-title" className="text-base font-semibold text-nrg-text">{title}</h3>
             </div>
           </div>
-          <p id="confirm-dialog-desc" className="text-sm text-slate-600 dark:text-slate-400 mb-6">{message}</p>
+          <p id="confirm-dialog-desc" className="text-sm text-nrg-muted mb-6">{message}</p>
           <div className="flex gap-3">
             <button
               onClick={onCancel}
-              className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-50 dark:hover:bg-navy-700 transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-nrg-border text-nrg-muted text-sm font-medium hover:bg-saffron-500/10 transition-colors"
             >
               Cancel
             </button>
@@ -204,16 +204,16 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
         </motion.div>
       )}
 
-      <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 dark:border-navy-700 flex items-center justify-between">
+      <div className="nrg-panel overflow-hidden">
+        <div className="px-5 py-4 border-b border-nrg-border bg-[var(--glass-bg)] flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white">Data Processing Consents</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Per DPDP Act 2023 · आपके अधिकार</p>
+            <h3 className="text-base font-semibold text-nrg-text">Data Processing Consents</h3>
+            <p className="text-xs text-nrg-muted">Per DPDP Act 2023 · आपके अधिकार</p>
           </div>
           <button
             onClick={() => { setSyncing(true); syncWithBackend().finally(() => setSyncing(false)); }}
             disabled={syncing}
-            className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-nrg-muted hover:text-nrg-text transition-colors"
             data-testid="sync-consent-btn"
           >
             <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
@@ -221,7 +221,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
           </button>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-navy-700">
+        <div className="divide-y divide-nrg-border/40">
           {(Object.keys(CONSENT_SCOPES) as ConsentScope[]).map((scope) => {
             const record = consents[scope];
             const isGranted = record?.granted ?? false;
@@ -230,20 +230,20 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
             return (
               <div key={scope} className="px-5 py-4 flex items-center gap-4">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                  isGranted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-slate-100 dark:bg-navy-700'
+                  isGranted ? 'bg-green-100 dark:bg-green-900/30' : 'bg-[var(--glass-bg)]'
                 }`}>
                   {isGranted ? (
                     <CheckCircle2 size={16} className="text-green-600 dark:text-green-400" />
                   ) : (
-                    <XCircle size={16} className="text-slate-400 dark:text-slate-500" />
+                    <XCircle size={16} className="text-nrg-muted" />
                   )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 dark:text-white">
+                  <p className="text-sm font-medium text-nrg-text">
                     {CONSENT_SCOPES[scope]}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <p className="text-xs text-nrg-muted">
                     Scope: <code className="text-xs">{scope}</code>
                     {expiresAt && isGranted && (
                       <span className="ml-2 text-green-600 dark:text-green-400">Expires: {expiresAt}</span>
@@ -277,17 +277,17 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+        <div className="nrg-panel p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
               <Download size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">Export My Data</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">DPDP Right to Access</p>
+              <p className="text-sm font-semibold text-nrg-text">Export My Data</p>
+              <p className="text-xs text-nrg-muted">DPDP Right to Access</p>
             </div>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-xs text-nrg-muted mb-4">
             Download all your query history, consent records, and audit trail as a JSON file.
           </p>
           <button
@@ -306,17 +306,17 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
           </button>
         </div>
 
-        <div className="bg-white dark:bg-navy-800 rounded-2xl border border-red-200 dark:border-red-900/50 shadow-md p-5">
+        <div className="nrg-panel border-red-200 dark:border-red-900/50 p-5">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
               <Trash2 size={16} className="text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">Erase My Data</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">DPDP Right to Erasure</p>
+              <p className="text-sm font-semibold text-nrg-text">Erase My Data</p>
+              <p className="text-xs text-nrg-muted">DPDP Right to Erasure</p>
             </div>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400 mb-4">
+          <p className="text-xs text-nrg-muted mb-4">
             Permanently delete your PII. Query history will be anonymized and consent records removed. 30-day grace period applies.
           </p>
           <button

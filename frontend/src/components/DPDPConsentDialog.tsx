@@ -59,7 +59,7 @@ export function DPDPConsentDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-sm"
       role="presentation"
     >
       <div
@@ -68,30 +68,30 @@ export function DPDPConsentDialog({
         aria-modal="true"
         aria-labelledby="dpdp-dialog-title"
         aria-describedby="dpdp-dialog-desc"
-        className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-yellow-200"
+        className="nrg-panel max-w-md w-full mx-4 overflow-hidden border-saffron-200/80"
       >
-        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-4 border-b border-yellow-200">
+        <div className="bg-gradient-to-r from-saffron-50/90 to-amber-50/80 dark:from-saffron-900/30 dark:to-amber-900/20 px-6 py-4 border-b border-nrg-border">
           <div className="flex items-center gap-3">
             <span role="img" aria-label="Shield protection" className="text-2xl">🛡️</span>
             <div>
-              <h2 id="dpdp-dialog-title" className="text-lg font-bold text-gray-900">DPDP Consent Required</h2>
-              <p id="dpdp-dialog-desc" className="text-xs text-gray-600">डेटा संरक्षण अनुमति · Data Protection Authorization</p>
+              <h2 id="dpdp-dialog-title" className="text-lg font-bold text-nrg-text">DPDP Consent Required</h2>
+              <p id="dpdp-dialog-desc" className="text-xs text-nrg-muted">डेटा संरक्षण अनुमति · Data Protection Authorization</p>
             </div>
           </div>
         </div>
 
         <div className="px-6 py-4 space-y-4">
-          <div className="bg-blue-50 rounded-lg p-3 text-sm">
-            <div className="font-semibold text-blue-800 mb-1">Purpose of Data Use</div>
-            <div className="text-blue-700">{dataPurpose}</div>
+          <div className="rounded-lg p-3 text-sm border border-blue-200/70 bg-blue-50/75 dark:bg-blue-900/20 dark:border-blue-800/50">
+            <div className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Purpose of Data Use</div>
+            <div className="text-blue-700 dark:text-blue-200/90">{dataPurpose}</div>
           </div>
 
-          <div className="bg-green-50 rounded-lg p-3 text-sm">
-            <div className="font-semibold text-green-800 mb-1">Data Retention Period</div>
-            <div className="text-green-700">{retentionDays} days from access date</div>
+          <div className="rounded-lg p-3 text-sm border border-green-200/70 bg-green-50/75 dark:bg-green-900/20 dark:border-green-800/50">
+            <div className="font-semibold text-green-800 dark:text-green-300 mb-1">Data Retention Period</div>
+            <div className="text-green-700 dark:text-green-200/90">{retentionDays} days from access date</div>
           </div>
 
-          <div className="bg-gray-50 rounded-lg p-3 text-xs space-y-1 text-gray-700">
+          <div className="bg-[var(--glass-bg)] border border-nrg-border rounded-lg p-3 text-xs space-y-1 text-nrg-muted">
             <div className="font-semibold">Your Rights (DPDP Act 2023):</div>
             <ul className="list-disc list-inside space-y-0.5 ml-1">
               <li>Right to withdraw consent at any time</li>
@@ -107,19 +107,19 @@ export function DPDPConsentDialog({
               type="checkbox"
               checked={acknowledged}
               onChange={(e) => setAcknowledged(e.target.checked)}
-              className="mt-0.5 w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              className="mt-0.5 w-4 h-4 text-saffron-600 border-nrg-border rounded focus:ring-saffron-500"
             />
-            <span className="text-gray-700">
+            <span className="text-nrg-text">
               I understand and consent to the data usage as described above, per India's DPDP Act 2023.
             </span>
           </label>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3">
+        <div className="px-6 py-4 bg-[var(--glass-bg)] border-t border-nrg-border flex gap-3">
           <button
             ref={denyButtonRef}
             onClick={onDeny}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition font-medium"
+            className="flex-1 px-4 py-2 border border-nrg-border rounded-lg text-nrg-text hover:bg-saffron-500/10 transition font-medium"
           >
             Deny Access
           </button>
@@ -129,8 +129,8 @@ export function DPDPConsentDialog({
             aria-disabled={!acknowledged}
             className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
               acknowledged
-                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'nrg-btn-primary'
+                : 'bg-[var(--nrg-border)] text-nrg-muted cursor-not-allowed'
             }`}
           >
             Approve & Continue

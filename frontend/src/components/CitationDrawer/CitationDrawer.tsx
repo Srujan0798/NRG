@@ -23,7 +23,7 @@ const RelevanceBadge: React.FC<{ score?: number }> = ({ score }) => {
   const label = score > 0.7 ? 'High' : score > 0.4 ? 'Medium' : 'Low'
 
   return (
-    <div className="flex items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-navy-700/50 border border-slate-200 dark:border-navy-600">
+    <div className="flex items-center gap-2 p-3 rounded-xl bg-[var(--glass-bg)] border border-nrg-border">
       <motion.div
         className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold"
         style={{ background: color }}
@@ -34,8 +34,8 @@ const RelevanceBadge: React.FC<{ score?: number }> = ({ score }) => {
         {Math.round(score * 100)}
       </motion.div>
       <div>
-        <p className="text-xs font-medium text-slate-900 dark:text-white">Relevance Score</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400">{label} match</p>
+        <p className="text-xs font-medium text-nrg-text">Relevance Score</p>
+        <p className="text-xs text-nrg-muted">{label} match</p>
       </div>
     </div>
   )
@@ -166,16 +166,16 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed inset-y-0 right-0 z-50 w-full sm:w-[27.5rem] bg-white dark:bg-navy-800 shadow-2xl border-l border-slate-200 dark:border-navy-700 flex flex-col"
+          className="fixed inset-y-0 right-0 z-50 w-full sm:w-[27.5rem] bg-[var(--nrg-surface)] shadow-2xl border-l border-nrg-border flex flex-col"
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-800 shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-nrg-border bg-[var(--glass-bg)] shrink-0">
             <div>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white">Citation Details</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Source verification and context</p>
+              <h3 className="text-base font-semibold text-nrg-text">Citation Details</h3>
+              <p className="text-xs text-nrg-muted mt-0.5">Source verification and context</p>
             </div>
             <motion.button
               onClick={onClose}
-              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-navy-600 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-navy-700 transition-all duration-200"
+              className="w-9 h-9 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-nrg-text hover:bg-saffron-500/10 transition-all duration-200"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -188,7 +188,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
               <div className="flex items-center justify-center h-48">
                 <div className="flex flex-col items-center gap-3">
                   <div className="w-10 h-10 rounded-full border-3 border-saffron-200 border-t-saffron-500 animate-spin" />
-                  <p className="text-sm text-slate-500">Loading citation...</p>
+                  <p className="text-sm text-nrg-muted">Loading citation...</p>
                 </div>
               </div>
             ) : details ? (
@@ -201,12 +201,12 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                         {details.journal}
                       </span>
                     </span>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{details.year}</span>
+                    <span className="text-xs text-nrg-muted">{details.year}</span>
                   </div>
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white leading-snug mb-2">
+                  <h2 className="text-lg font-semibold text-nrg-text leading-snug mb-2">
                     {details.title}
                   </h2>
-                  <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm text-nrg-muted leading-relaxed">
                     {details.authors.slice(0, 5).join(', ')}
                     {details.authors.length > 5 && ` +${details.authors.length - 5} more`}
                   </p>
@@ -214,7 +214,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
 
                 <RelevanceBadge score={citation?.relevance_score} />
 
-                <div className="flex gap-1 border-b border-slate-200 dark:border-navy-700">
+                <div className="flex gap-1 border-b border-nrg-border">
                   {(['source', 'metadata', 'context'] as const).map((tab) => (
                     <motion.button
                       key={tab}
@@ -222,7 +222,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                       className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 ${
                         activeSection === tab
                           ? 'border-saffron-500 text-saffron-600 dark:text-saffron-400'
-                          : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                          : 'border-transparent text-nrg-muted hover:text-nrg-text'
                       }`}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -239,11 +239,11 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                     className="space-y-4"
                   >
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-nrg-muted mb-2">
                         Source Excerpt
                       </p>
-                      <div className="p-4 rounded-xl bg-slate-50 dark:bg-navy-700/50 border border-slate-200 dark:border-navy-600">
-                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                      <div className="p-4 rounded-xl bg-[var(--glass-bg)] border border-nrg-border">
+                        <p className="text-sm text-nrg-text leading-relaxed italic">
                           "{details.chunk_text}"
                         </p>
                       </div>
@@ -251,10 +251,10 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
 
                     {details.abstract && (
                       <div>
-                        <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-nrg-muted mb-2">
                           Abstract
                         </p>
-                        <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        <p className="text-sm text-nrg-muted leading-relaxed">
                           {details.abstract}
                         </p>
                       </div>
@@ -276,9 +276,9 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                       { label: 'Citations', value: details.citations?.toString() || '0' },
                       { label: 'Institution', value: details.institution },
                     ].map(({ label, value }) => (
-                      <div key={label} className="flex items-start justify-between py-2 border-b border-slate-100 dark:border-navy-700/50 last:border-0">
-                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span>
-                        <span className="text-xs text-slate-900 dark:text-slate-100 text-right max-w-[60%] font-mono">
+                      <div key={label} className="flex items-start justify-between py-2 border-b border-nrg-border/40 last:border-0">
+                        <span className="text-xs font-medium text-nrg-muted">{label}</span>
+                        <span className="text-xs text-nrg-text text-right max-w-[60%] font-mono">
                           {value || 'Unavailable'}
                         </span>
                       </div>
@@ -292,18 +292,18 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-3"
                   >
-                    <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">
+                    <div className="p-4 rounded-xl border border-nrg-border">
+                      <p className="text-xs font-semibold text-nrg-muted mb-2">
                         Citation ID Format
                       </p>
-                      <code className="text-xs text-slate-900 dark:text-slate-100 font-mono block">
+                      <code className="text-xs text-nrg-text font-mono block">
                         cite:{details.pub_id}:{details.chunk_id}
                       </code>
                     </div>
 
-                    <div className="p-4 rounded-xl border border-slate-200 dark:border-navy-600">
-                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Source</p>
-                      <p className="text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                    <div className="p-4 rounded-xl border border-nrg-border">
+                      <p className="text-xs font-semibold text-nrg-muted mb-2">Source</p>
+                      <p className="text-xs text-nrg-text flex items-center gap-1">
                         <SourceIcon source={citation?.source} />
                         {citation?.source || 'Source unavailable'}
                       </p>
@@ -322,14 +322,14 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                 )}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-48 text-slate-400">
+              <div className="flex flex-col items-center justify-center h-48 text-nrg-muted">
                 <FileText size={40} className="mb-3 opacity-50" />
                 <p className="text-sm">Citation details are not available for this source.</p>
               </div>
             )}
           </div>
 
-          <div className="px-6 py-4 border-t border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-800 shrink-0">
+          <div className="px-6 py-4 border-t border-nrg-border bg-[var(--glass-bg)] shrink-0">
             <div className="flex gap-3">
               <motion.button
                 onClick={handleCopy}

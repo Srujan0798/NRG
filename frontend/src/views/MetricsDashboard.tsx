@@ -26,12 +26,12 @@ const formatMs = (v: number | undefined) => v !== undefined ? `${v.toFixed(1)}ms
 
 const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; subtitle?: string }> = ({ icon, title, subtitle }) => (
   <div className="flex items-center gap-3 mb-4">
-    <div className="w-9 h-9 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400">
+    <div className="w-9 h-9 rounded-xl bg-violet-100/80 dark:bg-violet-900/30 border border-violet-200/70 dark:border-violet-700/50 flex items-center justify-center text-violet-600 dark:text-violet-300">
       {icon}
     </div>
     <div>
-      <h2 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h2>
-      {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>}
+      <h2 className="text-base font-semibold text-nrg-text">{title}</h2>
+      {subtitle && <p className="text-xs text-nrg-muted">{subtitle}</p>}
     </div>
   </div>
 )
@@ -46,12 +46,12 @@ function MetricsSkeleton() {
     <div className="space-y-6 p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-28 rounded-2xl bg-slate-200 dark:bg-navy-700 animate-pulse" />
+          <div key={i} className="h-28 rounded-2xl bg-[var(--nrg-border)] animate-pulse" />
         ))}
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className="h-48 rounded-2xl bg-slate-200 dark:bg-navy-700 animate-pulse" />
+          <div key={i} className="h-48 rounded-2xl bg-[var(--nrg-border)] animate-pulse" />
         ))}
       </div>
     </div>
@@ -98,11 +98,11 @@ export default function MetricsDashboard() {
 
   if (!user || (user as any).tier !== 1) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900 flex items-center justify-center">
+      <div className="min-h-screen nrg-app-canvas flex items-center justify-center">
         <div className="text-center">
-          <Shield size={48} className="mx-auto mb-4 text-slate-400" />
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Admin Access Required</h2>
-          <p className="text-sm text-slate-500">Only Tier 1 (Researcher) administrators can view system metrics.</p>
+          <Shield size={48} className="mx-auto mb-4 text-nrg-muted" />
+          <h2 className="text-xl font-bold text-nrg-text mb-2">Admin Access Required</h2>
+          <p className="text-sm text-nrg-muted">Only Tier 1 (Researcher) administrators can view system metrics.</p>
         </div>
       </div>
     )
@@ -112,21 +112,21 @@ export default function MetricsDashboard() {
 
   return (
     <ErrorBoundary title="Metrics Dashboard failed to load">
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
-        <header className="sticky top-0 z-40 bg-white/95 dark:bg-navy-800/95 backdrop-blur-md border-b border-slate-200 dark:border-navy-700">
+      <div className="min-h-screen nrg-app-canvas">
+        <header className="sticky top-0 z-40 bg-[var(--glass-bg)] backdrop-blur-md border-b border-nrg-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg">
                 <Activity size={20} className="text-white" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900 dark:text-white font-devanagari">System Metrics</h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Admin Dashboard · System Observability</p>
+                <h1 className="text-lg font-bold text-nrg-text font-devanagari">System Metrics</h1>
+                <p className="text-xs text-nrg-muted">Admin Dashboard · System Observability</p>
               </div>
             </div>
             <button
               onClick={() => refetch()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 hover:bg-violet-200 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-violet-200/80 dark:border-violet-700/60 bg-violet-100/70 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 hover:bg-violet-100 transition-colors"
             >
               <Clock size={16} />
               Refresh
@@ -192,7 +192,7 @@ export default function MetricsDashboard() {
           </div>
 
           {/* Query latency */}
-          <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+          <div className="nrg-panel p-5">
             <SectionHeader
               icon={<Activity size={18} />}
               title="Query Latency"
@@ -200,31 +200,31 @@ export default function MetricsDashboard() {
             />
             <div className="grid grid-cols-3 gap-6">
               <div className="text-center">
-                <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono">
+                  <p className="text-3xl font-bold text-nrg-text font-mono">
                   {formatMs(data?.queries?.latency_p50_ms)}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">P50</p>
+                <p className="text-xs text-nrg-muted mt-1">P50</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono">
+                  <p className="text-3xl font-bold text-nrg-text font-mono">
                   {formatMs(data?.queries?.latency_p95_ms)}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">P95</p>
+                <p className="text-xs text-nrg-muted mt-1">P95</p>
               </div>
               <div className="text-center">
-                <p className="text-3xl font-bold text-slate-900 dark:text-white font-mono">
+                  <p className="text-3xl font-bold text-nrg-text font-mono">
                   {formatMs(data?.queries?.latency_p99_ms)}
                 </p>
-                <p className="text-xs text-slate-500 mt-1">P99</p>
+                <p className="text-xs text-nrg-muted mt-1">P99</p>
               </div>
             </div>
             {data?.queries?.counts?.by_tier && (
-              <div className="mt-4 pt-4 border-t border-slate-100 dark:border-navy-700">
+              <div className="mt-4 pt-4 border-t border-nrg-border/40">
                 <div className="flex gap-4 justify-center">
                   {Object.entries(data.queries.counts.by_tier).sort().map(([tier, count]) => (
                     <div key={tier} className="flex items-center gap-2">
                       <TierBadge tier={parseInt(tier)} />
-                      <span className="text-sm font-mono text-slate-700 dark:text-slate-300">{Number(count).toLocaleString()}</span>
+                       <span className="text-sm font-mono text-nrg-text">{Number(count).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -233,7 +233,7 @@ export default function MetricsDashboard() {
           </div>
 
           {/* Provider health */}
-          <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+          <div className="nrg-panel p-5">
             <SectionHeader
               icon={<Server size={18} />}
               title="Provider Health"
@@ -242,19 +242,19 @@ export default function MetricsDashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-navy-700">
-                    <th className="text-left py-2 text-xs font-medium text-slate-500 uppercase">Provider</th>
-                    <th className="text-center py-2 text-xs font-medium text-slate-500 uppercase">Health</th>
-                    <th className="text-right py-2 text-xs font-medium text-slate-500 uppercase">Calls</th>
-                    <th className="text-right py-2 text-xs font-medium text-slate-500 uppercase">Failures</th>
-                    <th className="text-right py-2 text-xs font-medium text-slate-500 uppercase">Avg Latency</th>
-                    <th className="text-right py-2 text-xs font-medium text-slate-500 uppercase">Failure Rate</th>
+                  <tr className="border-b border-nrg-border/40">
+                    <th className="text-left py-2 text-xs font-medium text-nrg-muted uppercase">Provider</th>
+                    <th className="text-center py-2 text-xs font-medium text-nrg-muted uppercase">Health</th>
+                    <th className="text-right py-2 text-xs font-medium text-nrg-muted uppercase">Calls</th>
+                    <th className="text-right py-2 text-xs font-medium text-nrg-muted uppercase">Failures</th>
+                    <th className="text-right py-2 text-xs font-medium text-nrg-muted uppercase">Avg Latency</th>
+                    <th className="text-right py-2 text-xs font-medium text-nrg-muted uppercase">Failure Rate</th>
                   </tr>
                 </thead>
                 <tbody>
                   {providerHealth.map(({ name, health, calls, failures, avgLatency, failureRate }) => (
-                    <tr key={name} className="border-b border-slate-50 dark:border-navy-700/50 last:border-0">
-                      <td className="py-2.5 font-medium text-slate-900 dark:text-white">{name}</td>
+                    <tr key={name} className="border-b border-nrg-border/30 last:border-0">
+                      <td className="py-2.5 font-medium text-nrg-text">{name}</td>
                       <td className="py-2.5 text-center">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                           health === 'healthy' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
@@ -265,9 +265,9 @@ export default function MetricsDashboard() {
                           {health}
                         </span>
                       </td>
-                      <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-400">{calls.toLocaleString()}</td>
-                      <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-400">{failures.toLocaleString()}</td>
-                      <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-400">{formatMs(avgLatency)}</td>
+                      <td className="py-2.5 text-right font-mono text-nrg-muted">{calls.toLocaleString()}</td>
+                      <td className="py-2.5 text-right font-mono text-nrg-muted">{failures.toLocaleString()}</td>
+                      <td className="py-2.5 text-right font-mono text-nrg-muted">{formatMs(avgLatency)}</td>
                       <td className="py-2.5 text-right">
                         <span className={`font-mono ${failureRate > 10 ? 'text-red-600 dark:text-red-400' : failureRate > 5 ? 'text-amber-600 dark:text-amber-400' : 'text-green-600 dark:text-green-400'}`}>
                           {failureRate.toFixed(1)}%
@@ -277,7 +277,7 @@ export default function MetricsDashboard() {
                   ))}
                   {providerHealth.length === 0 && (
                     <tr>
-                      <td colSpan={6} className="py-4 text-center text-slate-400 text-sm">No provider data available</td>
+                      <td colSpan={6} className="py-4 text-center text-nrg-muted text-sm">No provider data available</td>
                     </tr>
                   )}
                 </tbody>
@@ -286,7 +286,7 @@ export default function MetricsDashboard() {
           </div>
 
           {/* Training data */}
-          <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+          <div className="nrg-panel p-5">
             <SectionHeader
               icon={<Cpu size={18} />}
               title="Training Pipeline"
@@ -299,19 +299,19 @@ export default function MetricsDashboard() {
                 return (
                   <div key={grade} className="rounded-xl p-4 text-center" style={{ background: `${color}15` }}>
                     <p className="text-2xl font-bold" style={{ color }}>{Number(count).toLocaleString()}</p>
-                    <p className="text-xs font-medium capitalize mt-1 text-slate-600 dark:text-slate-400">{grade}</p>
+                    <p className="text-xs font-medium capitalize mt-1 text-nrg-muted">{grade}</p>
                   </div>
                 )
               })}
             </div>
             {data?.training?.avg_feedback != null && (
-              <p className="mt-4 text-xs text-slate-500 text-center">Average feedback score: <span className="font-mono text-slate-700 dark:text-slate-300">{data.training.avg_feedback.toFixed(2)}</span></p>
+              <p className="mt-4 text-xs text-nrg-muted text-center">Average feedback score: <span className="font-mono text-nrg-text">{data.training.avg_feedback.toFixed(2)}</span></p>
             )}
           </div>
 
           {/* Node latency */}
           {data?.node_latency && Object.keys(data.node_latency).length > 0 && (
-            <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+            <div className="nrg-panel p-5">
               <SectionHeader
                 icon={<Clock size={18} />}
                 title="Node Latency"
@@ -321,10 +321,10 @@ export default function MetricsDashboard() {
                 {Object.entries(data.node_latency)
                   .sort((a, b) => (b[1].avg_ms ?? 0) - (a[1].avg_ms ?? 0))
                   .map(([node, stats]) => (
-                    <div key={node} className="rounded-xl p-4 border border-slate-100 dark:border-navy-700">
-                      <p className="text-sm font-medium text-slate-900 dark:text-white mb-2 truncate">{node}</p>
-                      <p className="text-xl font-bold font-mono text-slate-900 dark:text-white">{formatMs(stats.avg_ms)}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">avg · {stats.calls.toLocaleString()} calls</p>
+                    <div key={node} className="rounded-xl p-4 border border-nrg-border/60 bg-[var(--glass-bg)]">
+                      <p className="text-sm font-medium text-nrg-text mb-2 truncate">{node}</p>
+                      <p className="text-xl font-bold font-mono text-nrg-text">{formatMs(stats.avg_ms)}</p>
+                      <p className="text-xs text-nrg-muted mt-0.5">avg · {stats.calls.toLocaleString()} calls</p>
                     </div>
                   ))}
               </div>
@@ -332,7 +332,7 @@ export default function MetricsDashboard() {
           )}
 
           {/* Audit chain */}
-          <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+          <div className="nrg-panel p-5">
             <SectionHeader
               icon={<Shield size={18} />}
               title="Audit Chain"
@@ -348,7 +348,7 @@ export default function MetricsDashboard() {
                 <p className={`text-sm font-semibold ${data?.audit?.chain_valid ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                   {data?.audit?.chain_valid ? 'Chain integrity verified' : 'Chain integrity compromised'}
                 </p>
-                <p className="text-xs text-slate-500 mt-0.5">{data?.audit?.chain_length ?? 0} entries · Valid: {data?.audit?.chain_valid ? 'Yes' : 'No'}</p>
+                <p className="text-xs text-nrg-muted mt-0.5">{data?.audit?.chain_length ?? 0} entries · Valid: {data?.audit?.chain_valid ? 'Yes' : 'No'}</p>
               </div>
             </div>
           </div>
