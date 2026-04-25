@@ -747,23 +747,27 @@ async def query_with_langgraph(
 
 @app.get("/health")
 async def health_check():
-    from src.skills.rag.retriever import Retriever
     from src.audit import get_chain_health
-    retriever_health = {"status": "not_checked"}
+    retriever_health = {"status": "skipped", "message": "Deep retriever health disabled for fast readiness checks"}
     db_health = {"status": "unknown"}
     audit_health = {"status": "unknown"}
 
-    try:
-        import asyncio
-        retriever = Retriever(timeout=1.0)
-        retriever_health = await asyncio.wait_for(
-            asyncio.to_thread(retriever.health_check),
-            timeout=0.5,
-        )
-    except asyncio.TimeoutError:
-        retriever_health = {"status": "timeout", "message": "Health check timed out after 0.5s"}
-    except Exception as exc:
-        retriever_health = {"status": "error", "message": str(exc)}
+    if os.getenv("NRG_DEEP_HEALTH_CHECKS", "").lower() in {"1", "true", "yes"}:
+        try:
+            import asyncio
+
+            def _check_retriever_health():
+                from src.skills.rag.retriever import Retriever
+                return Retriever(timeout=1.0).health_check()
+
+            retriever_health = await asyncio.wait_for(
+                asyncio.to_thread(_check_retriever_health),
+                timeout=0.75,
+            )
+        except asyncio.TimeoutError:
+            retriever_health = {"status": "timeout", "message": "Health check timed out after 0.75s"}
+        except Exception as exc:
+            retriever_health = {"status": "error", "message": str(exc)}
 
     try:
         db = _get_db()

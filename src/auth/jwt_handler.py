@@ -101,6 +101,8 @@ class JWTHandler:
         # Load RSA keys if using asymmetric algorithm
         self.private_key: Optional[str] = None
         self.public_key: Optional[str] = None
+        self._private_key_obj: Any | None = None
+        self._public_key_obj: Any | None = None
         
         if self.algorithm in ("RS256", "RS384", "RS512", "ES256", "ES384", "ES512"):
             private_key_path = private_key_path or os.getenv(
@@ -145,11 +147,23 @@ class JWTHandler:
             with open(full_public_path, "r") as f:
                 self.public_key = f.read()
 
+            from cryptography.hazmat.primitives import serialization
+
+            self._private_key_obj = serialization.load_pem_private_key(
+                self.private_key.encode(),
+                password=None,
+            )
+            self._public_key_obj = serialization.load_pem_public_key(
+                self.public_key.encode(),
+            )
+
         except FileNotFoundError as e:
             raise AuthError(
                 f"RSA key files not found: {e}. "
                 "Generate keys with: ssh-keygen -t rsa -b 4096 -m PEM -f infrastructure/kong/ssl/jwt_rsa.key"
             ) from e
+        except Exception as e:
+            raise AuthError(f"RSA key files could not be parsed: {e}") from e
 
     def _compute_key_id(self) -> str:
         """Compute a deterministic key ID (kid) from the active signing key."""
@@ -278,6 +292,15 @@ class JWTHandler:
         old_key_id = self._signing_key_id
         self.private_key = new_private_key
         self.public_key = new_public_key
+        from cryptography.hazmat.primitives import serialization
+
+        self._private_key_obj = serialization.load_pem_private_key(
+            new_private_key.encode(),
+            password=None,
+        )
+        self._public_key_obj = serialization.load_pem_public_key(
+            new_public_key.encode(),
+        )
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids.add(self._signing_key_id)
         self._known_key_ids.add(old_key_id)
@@ -310,7 +333,7 @@ class JWTHandler:
         if user.get("researcher_id"):
             payload["researcher_id"] = user["researcher_id"]
 
-        signing_key = self.private_key if self.private_key else self.secret_key
+        signing_key = self._private_key_obj or self.private_key or self.secret_key
         if signing_key is None:
             raise AuthError("No signing key available")
         return jwt.encode(payload, signing_key, algorithm=self.algorithm)
@@ -323,7 +346,7 @@ class JWTHandler:
     ) -> dict[str, Any]:
         try:
             # Use public key for asymmetric, secret key for symmetric
-            verification_key = self.public_key if self.public_key else self.secret_key
+            verification_key = self._public_key_obj or self.public_key or self.secret_key
             if verification_key is None:
                 raise AuthError("No verification key available")
             
