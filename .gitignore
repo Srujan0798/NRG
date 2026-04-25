@@ -21,6 +21,7 @@ venv/
 ENV/
 
 .pytest_cache/
+.hypothesis/
 .coverage
 htmlcov/
 *.cover
@@ -50,6 +51,7 @@ Research_Documents/
 
 node_modules/
 .npm
+frontend/.npm-cache/
 frontend/dist/
 frontend/build/
 frontend/test-results/
