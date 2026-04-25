@@ -17,6 +17,8 @@ from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
 
+from src.audit.lock import AuditChainLock, AuditLockTimeout
+
 logger = logging.getLogger(__name__)
 
 CHAIN_KEY = os.environ.get("AUDIT_CHAIN_KEY")
@@ -25,6 +27,7 @@ if not CHAIN_KEY and os.environ.get("NRG_ENV", "dev") != "dev":
 
 AUDIT_CHAIN_VERSION = 1
 AUDIT_ALERT_WEBHOOK = os.environ.get("AUDIT_ALERT_WEBHOOK")
+AUDIT_LOCK_TIMEOUT = float(os.environ.get("AUDIT_LOCK_TIMEOUT", "5.0"))
 
 
 class AuditEvent:
@@ -139,6 +142,10 @@ class ImmutableAuditLog:
 
         from src.audit.per_user_keys import get_per_user_key_manager
         self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
+        self._file_lock = AuditChainLock(
+            self.storage_path / ".chain.lock",
+            timeout=AUDIT_LOCK_TIMEOUT,
+        )
 
     def _derive_user_key(self, user_id: str) -> str:
         """
@@ -201,43 +208,49 @@ class ImmutableAuditLog:
         ).hexdigest()
 
     def append(self, event: AuditEvent) -> str:
-        """Append event to log with per-user non-repudiation binding. Thread-safe."""
+        """Append event to log with per-user non-repudiation binding. Thread-safe, process-safe."""
         if event.user_id is None:
             event.user_id = "system"
 
         user_key = self._derive_user_key(event.user_id)
         event.user_key_hash = event.compute_user_key_hash(user_key)
 
-        with self._lock:
-            new_hash = self._compute_hash(self.last_hash, event)
+        try:
+            with self._file_lock.hold():
+                with self._lock:
+                    new_hash = self._compute_hash(self.last_hash, event)
 
-            per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
+                    per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
 
-            if event.jwt_kid is not None or event.request_fingerprint is not None:
-                try:
-                    pk_binding = self._per_user_key_manager.compute_binding(
-                        user_id=event.user_id,
-                        jwt_kid=event.jwt_kid,
-                        request_fingerprint=event.request_fingerprint,
-                        chain_hash=new_hash,
-                        event_serialized=event.serialize(),
-                    )
-                    per_user_hash = pk_binding
-                except Exception:
-                    pass
+                    if event.jwt_kid is not None or event.request_fingerprint is not None:
+                        try:
+                            pk_binding = self._per_user_key_manager.compute_binding(
+                                user_id=event.user_id,
+                                jwt_kid=event.jwt_kid,
+                                request_fingerprint=event.request_fingerprint,
+                                chain_hash=new_hash,
+                                event_serialized=event.serialize(),
+                            )
+                            per_user_hash = pk_binding
+                        except Exception:
+                            pass
 
-            event_data = event.to_dict()
-            event_data["hash"] = new_hash
-            event_data["per_user_binding"] = per_user_hash[:16]
+                    event_data = event.to_dict()
+                    event_data["hash"] = new_hash
+                    event_data["per_user_binding"] = per_user_hash[:16]
 
-            with open(self.chain_file, "a") as f:
-                f.write(json.dumps(event_data, default=str) + "\n")
+                    with open(self.chain_file, "a") as f:
+                        f.write(json.dumps(event_data, default=str) + "\n")
 
-            self.last_hash = new_hash
-            self.last_hash_file.write_text(new_hash)
-            self.event_count += 1
+                    self.last_hash = new_hash
+                    self.last_hash_file.write_text(new_hash)
+                    self.event_count += 1
 
-            cosign_args = (event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
+                    cosign_args = (event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
+
+        except AuditLockTimeout:
+            logger.error("Audit lock timeout exceeded — could not append event %s", event.event_id)
+            raise
 
         def _cosign_fire_and_forget():
             from src.audit.db_cosign import cosign_event as _cosign
