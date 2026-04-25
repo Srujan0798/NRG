@@ -1202,7 +1202,7 @@ def get_llm_mesh() -> SovereignLLMMesh:
     """Get singleton sovereign LLM mesh instance (metrics shared across calls)."""
     global _llm_mesh_instance
     if _llm_mesh_instance is None:
-        _llm_mesh_instance = SovereignLLLMesh()
+        _llm_mesh_instance = SovereignLLMMesh()
     return _llm_mesh_instance
 
 
