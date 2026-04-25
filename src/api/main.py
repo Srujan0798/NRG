@@ -948,7 +948,7 @@ async def query_stream(
     if not allowed:
         raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
 
-    validation = prompt_sanitiser.validate_query({"query": request.query})
+    validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
     if not validation["valid"]:
         raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
@@ -1168,7 +1168,7 @@ async def query_with_langgraph(
             )
 
     try:
-        validation = prompt_sanitiser.validate_query({"query": request.query})
+        validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
             try:
@@ -2489,12 +2489,17 @@ async def post_graph_query(
     """
     depth = min(max(request.depth, 1), 3)
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
+    user_id = token_payload.get("sub", "anonymous")
 
     allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
-        token_payload.get("sub", "anonymous"), token_payload.get("tier", 1), client_ip
+        user_id, token_payload.get("tier", 1), client_ip
     )
     if not allowed:
         raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
+
+    validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
+    if not validation["valid"]:
+        raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
     db = _get_db()
     tier = token_payload.get("tier", 1)
@@ -2673,6 +2678,12 @@ async def get_graph_data(
 ):
     """Get graph data for research network visualization."""
     tier = token_payload.get("tier", 1)
+    user_id = token_payload.get("sub", "anonymous")
+    if topic:
+        validation = prompt_sanitiser.validate_query({"query": topic}, identifier=user_id)
+        if not validation["valid"]:
+            raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
+
     cache_key = f"graph:{topic or 'all'}:tier:{tier}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
