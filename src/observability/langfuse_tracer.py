@@ -29,18 +29,19 @@ def _init_langfuse() -> Any:
     if _client is not None:
         return _client if _client is not False else None
     
+    public_key = os.getenv("LANGFUSE_PUBLIC_KEY", "")
+    secret_key = os.getenv("LANGFUSE_SECRET_KEY", "")
+    host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+    
+    if not (public_key and secret_key):
+        _client = False
+        logger.info("Langfuse not configured - tracing disabled (no credentials)")
+        return None
+    
     try:
         from langfuse import Langfuse
-        public_key = os.getenv("LANGFUSE_PUBLIC_KEY", "")
-        secret_key = os.getenv("LANGFUSE_SECRET_KEY", "")
-        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
-
-        if public_key and secret_key and host:
-            _client = Langfuse(public_key=public_key, secret_key=secret_key, host=host)
-            logger.info("Langfuse initialized: %s (sampling_rate=%.2f)", host, _sampling_rate)
-        else:
-            _client = False
-            logger.info("Langfuse not configured - tracing disabled")
+        _client = Langfuse(public_key=public_key, secret_key=secret_key, host=host)
+        logger.info("Langfuse initialized: %s (sampling_rate=%.2f)", host, _sampling_rate)
     except Exception as exc:
         logger.warning("Langfuse import failed - LLM tracing disabled: %s", exc)
         _client = False

@@ -219,6 +219,7 @@ class PromptSanitiser:
             _Rule("sql_injection", re.compile(r"\bdrop\s+table\b")),
             _Rule("sql_injection", re.compile(r"\bunion\s+select\b")),
             _Rule("sql_injection", re.compile(r"\bxp_cmdshell\b")),
+            _Rule("sql_injection", re.compile(r"\b(?:or|and)\s+['\"]?[\w.]+['\"]?\s*=\s*['\"]?[\w.]+['\"]?")),
             _Rule("sql_injection", re.compile(r"'\s*or\s*'?\d+'?\s*=\s*'?\d+'?")),
             _Rule("command_injection", re.compile(r"\;\s*(ls|cat|rm|mkdir|chmod|wget|curl|whoami|id|uname|ps|grep|find|cp|mv|pwd|echo|cd|chdir|touch)\b", re.IGNORECASE)),
             _Rule("command_injection", re.compile(r"\|\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl|nc|bash|sh)\b", re.IGNORECASE)),
@@ -236,6 +237,8 @@ class PromptSanitiser:
             _Rule("xxe", re.compile(r"<!DOCTYPE\s+\w+", re.IGNORECASE)),
             _Rule("xxe", re.compile(r"<\?xml[^>]*\?>", re.IGNORECASE)),
             _Rule("xxe", re.compile(r"&\w+;(?!amp;|lt;|gt;|quot;|apos;)", re.IGNORECASE)),
+            _Rule("ldap_injection", re.compile(r"\*\)\s*\([^)]*=\*\)")),
+            _Rule("ldap_injection", re.compile(r"\b(?:uid|cn|dn|objectclass)\s*=\s*\*", re.IGNORECASE)),
             _Rule("path_traversal", re.compile(r"(\.\./|\.\.%2f|%2e%2e/|etc/passwd|boot\.ini|win\.ini)", re.IGNORECASE)),
             _Rule("encoding_attack",
                 re.compile(

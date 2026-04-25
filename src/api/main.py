@@ -1339,11 +1339,18 @@ async def api_metrics(request: Request):
         circuit_trips = {}
 
     try:
-        from src.audit import get_audit_log
-        audit_log = get_audit_log()
-        audit_chain_length = len(audit_log) if hasattr(audit_log, "__len__") else 0
-        from src.audit import verify_chain
-        chain_valid, chain_errors, valid_count = verify_chain(audit_log) if audit_log else (True, [], 0)
+        from src.audit import get_chain_health
+        audit_health = get_chain_health()
+        audit_chain_length = int(audit_health.get("chain_length", 0) or 0)
+        chain_valid = bool(audit_health.get("chain_valid", True))
+        chain_errors = audit_health.get("errors", []) or []
+        valid_count = int(
+            audit_health.get(
+                "valid_events",
+                audit_health.get("valid_event_count", audit_chain_length if chain_valid else 0),
+            )
+            or 0
+        )
     except Exception:
         audit_chain_length = 0
         chain_valid = True
