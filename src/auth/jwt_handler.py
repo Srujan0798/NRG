@@ -45,6 +45,13 @@ def _first_env(names: tuple[str, ...], default: str) -> str:
     return default
 
 
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Production requires {name} to be set in environment")
+    return value
+
+
 def build_default_users() -> dict[str, dict[str, Any]]:
     return {
         "researcher_user": {
@@ -72,7 +79,13 @@ def build_default_users() -> dict[str, dict[str, Any]]:
     }
 
 
-DEFAULT_USERS = build_default_users()
+_default_users_cache: dict[str, dict[str, Any]] | None = None
+
+def get_default_users() -> dict[str, dict[str, Any]]:
+    global _default_users_cache
+    if _default_users_cache is None:
+        _default_users_cache = build_default_users()
+    return _default_users_cache
 
 
 @dataclass
@@ -126,7 +139,7 @@ class JWTHandler:
         
         self.access_token_ttl_seconds = access_token_ttl_seconds
         self.refresh_token_ttl_seconds = refresh_token_ttl_seconds
-        self.users = users or build_default_users()
+        self.users = users or get_default_users()
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
         self.refresh_store = RefreshStore()
