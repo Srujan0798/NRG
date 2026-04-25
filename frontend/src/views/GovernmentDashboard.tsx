@@ -165,6 +165,8 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
             <motion.button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
+              aria-label={`${tab.label}, ${tab.labelHi} tab`}
+              aria-current={activeTab === tab.key ? 'page' : undefined}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
                 activeTab === tab.key
                   ? 'border-saffron-500 text-saffron-600 dark:text-saffron-400'
@@ -289,7 +291,9 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">त्वरित प्रश्न</p>
                     </div>
                     <div className="flex gap-3">
+                      <label htmlFor="policy-query-input" className="sr-only">Policy query</label>
                       <input
+                        id="policy-query-input"
                         type="text"
                         value={currentQuery}
                         onChange={(e) => setCurrentQuery(e.target.value)}

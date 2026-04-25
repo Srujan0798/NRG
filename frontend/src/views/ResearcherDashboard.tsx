@@ -175,6 +175,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               <motion.button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
+                aria-label={`${tab.label}, ${tab.labelHi} tab`}
+                aria-current={activeTab === tab.key ? 'page' : undefined}
                 className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
                   activeTab === tab.key
                     ? 'border-violet-500 text-violet-600 dark:text-violet-400'
@@ -184,7 +186,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 whileTap={{ scale: 0.98 }}
                 data-testid={`tab-${tab.key}`}
               >
-                <span>{tab.icon}</span>
+                <span aria-hidden="true">{tab.icon}</span>
                 {tab.label}
                 <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
               </motion.button>
@@ -215,7 +217,9 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 </div>
               </div>
               <div className="flex gap-3">
+                <label htmlFor="researcher-search-input" className="sr-only">Research query</label>
                 <input
+                  id="researcher-search-input"
                   type="text"
                   value={currentQuery}
                   onChange={(e) => setCurrentQuery(e.target.value)}
@@ -244,8 +248,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               </div>
 
               {isSearching && (
-                <div className="mt-4 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
-                  <SaffronSpinner />
+                <div className="mt-4 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400" aria-live="polite" aria-label="Query in progress">
+                  <SaffronSpinner aria-hidden="true" />
                   <span>Processing query through NRG LangGraph orchestration…</span>
                 </div>
               )}

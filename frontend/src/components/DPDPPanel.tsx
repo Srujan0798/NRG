@@ -25,29 +25,61 @@ function ConfirmationDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const dialogRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onCancel();
+      }
+      if (e.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onCancel]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="presentation">
       <motion.div
+        ref={dialogRef}
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-dialog-title"
+        aria-describedby="confirm-dialog-desc"
         className="bg-white dark:bg-navy-800 rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden border border-slate-200 dark:border-navy-700"
       >
         <div className="p-6">
           <div className="flex items-center gap-3 mb-4">
             {confirmDanger ? (
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <AlertTriangle size={18} className="text-red-600 dark:text-red-400" />
+                <AlertTriangle size={18} className="text-red-600 dark:text-red-400" aria-hidden="true" />
               </div>
             ) : (
               <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <Shield size={18} className="text-amber-600 dark:text-amber-400" />
+                <Shield size={18} className="text-amber-600 dark:text-amber-400" aria-hidden="true" />
               </div>
             )}
             <div>
-              <h3 className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
+              <h3 id="confirm-dialog-title" className="text-base font-semibold text-slate-900 dark:text-white">{title}</h3>
             </div>
           </div>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6">{message}</p>
+          <p id="confirm-dialog-desc" className="text-sm text-slate-600 dark:text-slate-400 mb-6">{message}</p>
           <div className="flex gap-3">
             <button
               onClick={onCancel}

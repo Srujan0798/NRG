@@ -1,7 +1,7 @@
-"""
-Frontend Component Snapshot Tests
-Snapshot tests for key components to catch UI regressions.
-"""
+/**
+ * Frontend Component Snapshot Tests
+ * Snapshot tests for key components to catch UI regressions.
+ */
 
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';

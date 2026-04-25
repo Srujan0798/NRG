@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export interface DPDPConsentDialogProps {
   isOpen: boolean;
@@ -16,24 +16,70 @@ export function DPDPConsentDialog({
   retentionDays = 365
 }: DPDPConsentDialogProps) {
   const [acknowledged, setAcknowledged] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const denyButtonRef = useRef<HTMLButtonElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      previousActiveElement.current = document.activeElement as HTMLElement;
+      denyButtonRef.current?.focus();
+    } else if (previousActiveElement.current) {
+      previousActiveElement.current.focus();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onDeny();
+      }
+      if (e.key === 'Tab') {
+        const focusable = dialogRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusable || focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onDeny]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-yellow-200">
-        {/* Header */}
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      role="presentation"
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dpdp-dialog-title"
+        aria-describedby="dpdp-dialog-desc"
+        className="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-yellow-200"
+      >
         <div className="bg-gradient-to-r from-yellow-50 to-amber-50 px-6 py-4 border-b border-yellow-200">
           <div className="flex items-center gap-3">
-            <span className="text-2xl">🛡️</span>
+            <span role="img" aria-label="Shield protection" className="text-2xl">🛡️</span>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">DPDP Consent Required</h2>
-              <p className="text-xs text-gray-600">डेटा संरक्षण अनुमति · Data Protection Authorization</p>
+              <h2 id="dpdp-dialog-title" className="text-lg font-bold text-gray-900">DPDP Consent Required</h2>
+              <p id="dpdp-dialog-desc" className="text-xs text-gray-600">डेटा संरक्षण अनुमति · Data Protection Authorization</p>
             </div>
           </div>
         </div>
 
-        {/* Body */}
         <div className="px-6 py-4 space-y-4">
           <div className="bg-blue-50 rounded-lg p-3 text-sm">
             <div className="font-semibold text-blue-800 mb-1">Purpose of Data Use</div>
@@ -55,8 +101,9 @@ export function DPDPConsentDialog({
             </ul>
           </div>
 
-          <label className="flex items-start gap-2 text-sm cursor-pointer">
+          <label htmlFor="dpdp-ack-checkbox" className="flex items-start gap-2 text-sm cursor-pointer">
             <input
+              id="dpdp-ack-checkbox"
               type="checkbox"
               checked={acknowledged}
               onChange={(e) => setAcknowledged(e.target.checked)}
@@ -68,9 +115,9 @@ export function DPDPConsentDialog({
           </label>
         </div>
 
-        {/* Actions */}
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3">
           <button
+            ref={denyButtonRef}
             onClick={onDeny}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition font-medium"
           >
@@ -79,6 +126,7 @@ export function DPDPConsentDialog({
           <button
             onClick={onApprove}
             disabled={!acknowledged}
+            aria-disabled={!acknowledged}
             className={`flex-1 px-4 py-2 rounded-lg font-medium transition ${
               acknowledged
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'

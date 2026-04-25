@@ -332,7 +332,7 @@ class Retriever:
             scores.append(candidate.get("rerank_score", candidate.get("vector_score", 0.0)))
 
         # Record scores for drift detection (use vector scores for consistency)
-        for score in [r.vector_score for r in results[:len(candidates)]]:
+        for score in [r.score for r in results[:len(candidates)]]:
             drift_status = self._drift_detector.record_score(score)
             # Log drift alerts
             if drift_status["status"] == "alert":

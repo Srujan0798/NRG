@@ -167,6 +167,8 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
             <motion.button
               key={tab}
               onClick={() => setActiveTab(tab)}
+              aria-label={`${tab} tab`}
+              aria-current={activeTab === tab ? 'page' : undefined}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap capitalize ${
                 activeTab === tab
                   ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
@@ -286,8 +288,10 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   </div>
                   <div className="flex gap-3">
                     <div className="flex-1 relative">
-                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                      <label htmlFor="industry-search-input" className="sr-only">Search research network</label>
                       <input
+                        id="industry-search-input"
                         type="text"
                         value={currentQuery}
                         onChange={(e) => setCurrentQuery(e.target.value)}

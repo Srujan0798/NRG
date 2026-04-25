@@ -13,7 +13,7 @@ function readStoredTheme(): Theme | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored === 'dark' || stored === 'light') return stored;
-  } catch {}
+  } catch { /* localStorage unavailable */ }
   return null;
 }
 
@@ -35,7 +35,7 @@ export function useTheme() {
     applyTheme(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
-    } catch {}
+    } catch { /* localStorage unavailable */ }
   }, [theme]);
 
   useEffect(() => {
