@@ -213,6 +213,14 @@ class PromptSanitiser:
             _Rule("data_exfiltration", re.compile(r"\b(?:aadhaar|aadhar)\s+numbers?\b")),
             _Rule(
                 "data_exfiltration",
+                re.compile(r"\b(show|list|return|dump|print)\s+(me\s+)?all\s+researchers?\b"),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(r"\ball\s+researchers?\s+(and\s+)?(emails?|phones?|contact|details?)\b"),
+            ),
+            _Rule(
+                "data_exfiltration",
                 re.compile(r"\bselect\s+.*\b(email|aadhaar|phone|pan|password)\b.*\bfrom\b"),
             ),
             _Rule("sql_injection", re.compile(r";\s*(drop|select|exec|delete|update|insert)\b")),
@@ -469,7 +477,7 @@ class PromptSanitiser:
             }
 
         query = str(query_data.get("query", ""))
-        if len(query) > 10000:
+        if len(query) >= 10000:
             if identifier:
                 rate_limited = self._record_rejected_query(identifier)
             else:
