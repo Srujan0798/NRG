@@ -7,6 +7,7 @@
 - [Installed Skills](reference_installed_skills.md) — Full inventory of all skills for agents
 - [Guru-Shishya Framework](reference_guru_shishya.md) — Universal prompts governing all NRG work
 - [Frontend Crash Patterns](bugs_frontend_crashes.md) — ThemeProvider, hooks-in-effects, string-vs-array API fields
+- [Audit Singleton Cache Bug](bugs_audit_singleton.md) — rebuild scripts must reset BOTH AuditLog singletons or chain self-breaks at the rebuild event itself
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
