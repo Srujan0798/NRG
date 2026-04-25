@@ -17,9 +17,11 @@ interface Researcher {
 function TestApp() {
   const [researchers, setResearchers] = useState<Researcher[]>([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fetchResearchers = async () => {
     setLoading(true);
+    setErrorMessage(null);
     try {
       const response = await fetch('/researchers', {
         headers: {
@@ -35,7 +37,7 @@ function TestApp() {
       setResearchers(data);
     } catch (error) {
       console.error('Error fetching researchers:', error);
-      alert('Failed to fetch researchers. Check console for details.');
+      setErrorMessage('Failed to fetch researchers. Please try again.');
     }
     setLoading(false);
   };
@@ -63,6 +65,12 @@ function TestApp() {
       >
         {loading ? 'Loading…' : 'Fetch Researchers'}
       </button>
+
+      {errorMessage && (
+        <p role="alert" style={{ color: '#b91c1c', marginBottom: '16px' }}>
+          {errorMessage}
+        </p>
+      )}
 
       <h2>Researchers ({researchers.length})</h2>
       

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 interface StatsCardProps {
   label: string
   labelHi?: string
-  value: number
+  value: number | string | null | undefined
   sublabel: string
   icon?: React.ReactNode
   accentColor?: string
@@ -85,12 +85,14 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   format = 'number',
   'data-testid': testId,
 }) => {
-  const animatedValue = useAnimatedCounter(value, 1600, delay)
+  const hasNumericValue = typeof value === 'number' && Number.isFinite(value)
+  const animatedValue = useAnimatedCounter(hasNumericValue ? value : 0, 1600, delay)
+  const displayValue = hasNumericValue ? formatNumber(animatedValue, format) : String(value ?? 0)
   const isHindi = !!labelHi
 
   return (
     <motion.div
-      className="relative overflow-hidden rounded-2xl p-5 bg-white border border-slate-200/80 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+      className="nrg-panel relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-0.5"
       style={{
         borderLeft: `4px solid ${accentColor}`,
       }}
@@ -99,19 +101,20 @@ export const StatsCard: React.FC<StatsCardProps> = ({
       transition={{ delay: delay / 1000, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       data-testid={testId}
     >
-      <div className="absolute top-0 right-0 w-32 h-32 opacity-5 rounded-bl-full" style={{ background: accentColor }} />
+      <div className="absolute inset-x-0 top-0 h-px opacity-80" style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }} />
+      <div className="absolute -top-10 -right-8 w-28 h-28 opacity-15 rounded-full blur-2xl" style={{ background: accentColor }} />
 
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
+          <p className="text-[11px] font-semibold text-nrg-muted uppercase tracking-[0.12em]">{label}</p>
           {isHindi && (
-            <p className="text-xs font-medium text-slate-400 font-hindi mt-0.5">{labelHi}</p>
+            <p className="text-xs font-medium text-nrg-muted font-devanagari mt-0.5">{labelHi}</p>
           )}
         </div>
         {icon && (
           <motion.div
-            className="w-10 h-10 rounded-xl flex items-center justify-center"
-            style={{ background: `${accentColor}15`, color: accentColor }}
+            className="w-11 h-11 rounded-2xl flex items-center justify-center border"
+            style={{ background: `${accentColor}18`, color: accentColor, borderColor: `${accentColor}55` }}
             whileHover={{ scale: 1.1 }}
             transition={{ type: 'spring', stiffness: 400, damping: 25 }}
           >
@@ -127,10 +130,10 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         }}
       />
 
-      <p className="text-3xl font-bold text-slate-900 font-mono tracking-tight">
-        {formatNumber(animatedValue, format)}
+      <p className="text-3xl font-bold text-nrg-text font-display tracking-tight">
+        {displayValue}
       </p>
-      <p className="text-xs text-slate-500 mt-1">{sublabel}</p>
+      <p className="text-xs text-nrg-muted mt-1">{sublabel}</p>
     </motion.div>
   )
 }

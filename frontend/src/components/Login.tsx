@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { LogInIcon, UserIcon } from './Icons'
 
 type PersonaKey = 'researcher' | 'government' | 'industry'
@@ -78,15 +78,30 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const [password, setPassword] = useState('researcher-pass')
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({})
+  const [localMessage, setLocalMessage] = useState<string | null>(null)
+
+  useEffect(() => {
+    document.title = 'Sign In | National Research Graph'
+  }, [])
 
   const applyPersona = (persona: PersonaKey) => {
     setSelectedPersona(persona)
     setUsername(PERSONA_CREDENTIALS[persona].username)
     setPassword(PERSONA_CREDENTIALS[persona].password)
+    setFieldErrors({})
+    setLocalMessage(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const nextErrors: { username?: string; password?: string } = {}
+    if (!username.trim()) nextErrors.username = 'Enter your username'
+    if (!password.trim()) nextErrors.password = 'Enter your password'
+    setFieldErrors(nextErrors)
+    setLocalMessage(null)
+    if (Object.keys(nextErrors).length > 0) return
+
     setIsLoading(true)
     try {
       await onLogin(username, password)
@@ -98,7 +113,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const accentColor = PERSONA_CREDENTIALS[selectedPersona].accent
 
   return (
-    <div className="min-h-screen bg-nrg-navy-900 flex flex-col lg:flex-row">
+    <div className="nrg-app-canvas min-h-screen">
       {/* Backend unavailable banner */}
       {!backendAvailable && (
         <div className="w-full bg-red-600 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
@@ -113,11 +128,10 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           {error}
         </div>
       )}
-      {/* Left Panel — Branding */}
-      <div className="relative flex-1 flex flex-col justify-between p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[450px]">
+      <div className="flex min-h-screen flex-col lg:flex-row">
+        {/* Left Panel — Branding */}
+        <div className="relative flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[450px] bg-[#08111f] text-white lg:rounded-r-[2rem] shadow-2xl">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-nrg-saffron-500/5 blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-nrg-navy-400/10 blur-3xl" />
           <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -129,7 +143,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
         </div>
 
         <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-12">
+          <div className="flex items-center gap-4 mb-10 lg:mb-12">
             <div className="relative">
               <AshokaLogo className="w-14 h-14 animate-spin-slow" />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -139,24 +153,24 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               </div>
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white font-devanagari tracking-wide">
-                राष्ट्रीय गवेषण मंच
-              </h1>
-              <p className="text-nrg-navy-200 text-sm tracking-widest uppercase">National Research Graph</p>
+                <h1 className="text-2xl font-bold text-white font-devanagari tracking-wide">
+                  राष्ट्रीय गवेषण मंच
+                </h1>
+              <p className="text-slate-300 text-sm tracking-widest uppercase">National Research Graph</p>
             </div>
           </div>
 
-          <div className="mb-10">
-            <h2 className="text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-4">
-              Sovereign Intelligence<br />
-              <span className="text-nrg-saffron-400">for India's Research</span>
-            </h2>
-            <p className="text-nrg-navy-200 text-lg max-w-lg leading-relaxed">
+          <div className="mb-8 lg:mb-10">
+              <h2 className="text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-4">
+                Sovereign Intelligence<br />
+                <span className="text-nrg-saffron-400">for India's Research</span>
+              </h2>
+            <p className="text-slate-300 text-lg max-w-lg leading-relaxed">
               A secure, AI-powered platform connecting 5,615 researchers, 12,000 publications, and 181 institutions — engineered for government, academia, and industry.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4">
             {(['researcher', 'government', 'industry'] as PersonaKey[]).map((key) => {
               const isActive = selectedPersona === key
               const info = PERSONA_LABELS[key]
@@ -167,19 +181,16 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   type="button"
                   onClick={() => applyPersona(key)}
                   className={`
-                    relative rounded-2xl p-4 text-left transition-all duration-300 border overflow-hidden
+                    relative min-h-[8.25rem] rounded-xl p-4 text-left transition-all duration-300 border overflow-hidden
                     ${isActive
-                      ? 'border-2 shadow-xl'
-                      : 'border-white/5 bg-white/5 hover:border-white/10 hover:bg-white/8'
+                      ? 'border-2 shadow-xl bg-white/10'
+                      : 'border-white/10 bg-white/[0.06] hover:border-white/25 hover:bg-white/[0.1]'
                     }
                   `}
                   style={isActive ? { borderColor: creds.accent } : {}}
                 >
                   {isActive && (
-                    <div
-                      className="absolute inset-0 opacity-5 rounded-2xl"
-                      style={{ background: creds.accent }}
-                    />
+                    <div className="absolute inset-0 rounded-xl" style={{ background: `${creds.accent}24` }} />
                   )}
                   <div className="flex items-center gap-2 mb-2">
                     <div
@@ -193,7 +204,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                     <span className="text-white font-semibold text-sm">{info.en}</span>
                     <span className="text-white/40 text-xs ml-auto font-mono">{info.tier}</span>
                   </div>
-                  <p className="text-white/50 text-xs leading-relaxed line-clamp-2">{info.desc}</p>
+                  <p className="text-white/70 text-xs leading-relaxed line-clamp-3">{info.desc}</p>
                   {isActive && (
                     <div
                       className="absolute bottom-0 left-0 right-0 h-0.5 rounded-b-2xl"
@@ -206,20 +217,20 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           </div>
         </div>
 
-        <div className="relative z-10 flex items-center gap-4 text-nrg-navy-300 text-xs">
+          <div className="relative z-10 mt-8 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-slate-300 text-xs">
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-nrg-ashoka-500 animate-pulse" />
-            <span>Encrypted · Sovereign · DPDP-Compliant</span>
-          </div>
-          <span className="text-white/10">|</span>
+              <span>Encrypted · Sovereign · DPDP-Compliant</span>
+            </div>
+          <span className="hidden sm:inline text-white/20">|</span>
           <span>Gov of India · DST · IIT Gandhinagar</span>
         </div>
       </div>
 
       {/* Right Panel — Login Form */}
-      <div className="w-full lg:w-[480px] bg-nrg-surface flex flex-col justify-center p-10 lg:p-16 relative overflow-hidden">
+        <div className="w-full lg:w-[500px] bg-[var(--nrg-surface)]/95 backdrop-blur-xl border-l border-nrg-border flex flex-col justify-center p-6 sm:p-10 lg:p-16 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-nrg-saffron-500/3 blur-3xl" />
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-nrg-saffron-500 via-nrg-gold-500 to-nrg-navy-400 opacity-70" />
         </div>
 
         <div className="relative z-10">
@@ -236,9 +247,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
             </div>
           </div>
 
-          <div className="mb-8 p-4 rounded-xl bg-nrg-navy-50 border border-nrg-navy-100">
+          <div className="mb-8 p-4 rounded-xl bg-nrg-navy-50 border border-nrg-navy-100 dark:bg-navy-800 dark:border-navy-700">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-semibold text-nrg-navy-700">
+              <span className="text-sm font-semibold text-nrg-navy-700 dark:text-slate-100">
                 {PERSONA_LABELS[selectedPersona].hi}
               </span>
               <span className="text-nrg-muted text-sm">·</span>
@@ -262,14 +273,23 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    setFieldErrors((prev) => ({ ...prev, username: undefined }))
+                  }}
                   onFocus={() => setFocusedField('username')}
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="username"
+                  placeholder="Enter username"
+                  aria-invalid={Boolean(fieldErrors.username)}
+                  aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                   style={{ borderColor: focusedField === 'username' ? accentColor : undefined }}
                 />
               </div>
+              {fieldErrors.username && (
+                <p id="username-error" className="mt-1 text-xs text-rose-600">{fieldErrors.username}</p>
+              )}
             </label>
 
             <label className="block">
@@ -287,24 +307,33 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    setFieldErrors((prev) => ({ ...prev, password: undefined }))
+                  }}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="current-password"
+                  placeholder="Enter password"
+                  aria-invalid={Boolean(fieldErrors.password)}
+                  aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   style={{ borderColor: focusedField === 'password' ? accentColor : undefined }}
                 />
               </div>
+              {fieldErrors.password && (
+                <p id="password-error" className="mt-1 text-xs text-rose-600">{fieldErrors.password}</p>
+              )}
             </label>
 
-            {error ? (
+            {(localMessage || error) ? (
               <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 flex items-center gap-2">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="8" x2="12" y2="12"/>
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                {error}
+                {localMessage || error}
               </div>
             ) : null}
 
@@ -325,10 +354,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           </form>
 
           <div className="mt-8 pt-6 border-t border-nrg-border text-center">
+            <button
+              type="button"
+              onClick={() => setLocalMessage('Please contact the NRG administrator to reset your password.')}
+              className="mb-3 text-sm font-medium text-nrg-navy-500 hover:text-nrg-saffron-500 transition-colors"
+            >
+              Forgot password?
+            </button>
             <p className="text-xs text-nrg-muted">
               Secured by Kong API Gateway · JWT Bearer Tokens · RS256
             </p>
-          </div>
+        </div>
+      </div>
         </div>
       </div>
     </div>

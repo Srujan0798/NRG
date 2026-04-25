@@ -1,0 +1,74 @@
+{
+  "console_errors": [],
+  "expected_console_errors": [
+    {
+      "phase": "wrong_credentials",
+      "message": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "phase": "pii_block",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+    }
+  ],
+  "console_warnings": [],
+  "failed_requests": [],
+  "expected_error_requests": [
+    {
+      "phase": "wrong_credentials",
+      "url": "http://127.0.0.1:3000/login",
+      "status": 401
+    },
+    {
+      "phase": "pii_block",
+      "url": "http://127.0.0.1:3000/query",
+      "status": 400
+    }
+  ],
+  "screenshots": {
+    "login": "docs/audits/ui_ux_2026-04-24/screenshots/01_login.png",
+    "blank_validation": "docs/audits/ui_ux_2026-04-24/screenshots/02_blank_login_validation.png",
+    "wrong_credentials": "docs/audits/ui_ux_2026-04-24/screenshots/03_wrong_credentials.png",
+    "tier1_dashboard": "docs/audits/ui_ux_2026-04-24/screenshots/04_tier1_dashboard.png",
+    "query_result_with_citations": "docs/audits/ui_ux_2026-04-24/screenshots/05_query_result_with_citations.png",
+    "followup_result": "docs/audits/ui_ux_2026-04-24/screenshots/06_followup_result.png",
+    "pii_block": "docs/audits/ui_ux_2026-04-24/screenshots/07_pii_block.png",
+    "audit_trail": "docs/audits/ui_ux_2026-04-24/screenshots/08_audit_trail.png",
+    "knowledge_graph": "docs/audits/ui_ux_2026-04-24/screenshots/09_knowledge_graph.png",
+    "logout_to_login": "docs/audits/ui_ux_2026-04-24/screenshots/10_logout.png",
+    "tier3_dashboard": "docs/audits/ui_ux_2026-04-24/screenshots/11_tier3_dashboard.png",
+    "tier3_restricted_result": "docs/audits/ui_ux_2026-04-24/screenshots/12_tier3_restricted_result.png",
+    "mobile_login": "docs/audits/ui_ux_2026-04-24/screenshots/13_mobile_login.png",
+    "mobile_dashboard": "docs/audits/ui_ux_2026-04-24/screenshots/14_mobile_dashboard.png",
+    "mobile_query_result": "docs/audits/ui_ux_2026-04-24/screenshots/15_mobile_query_result.png"
+  },
+  "timings": {
+    "login_page_load_seconds": 1.95,
+    "researcher_login_seconds": 9.75,
+    "key_query_seconds": 4.15,
+    "followup_query_seconds": 1.09,
+    "industry_login_seconds": 3.72,
+    "tier3_query_seconds": 2.37
+  },
+  "checks": {
+    "login_placeholders": {
+      "username": "Enter username",
+      "password": "Enter password"
+    },
+    "bad_text_matches": [
+      {
+        "term": "NaN",
+        "text": "NaN"
+      },
+      {
+        "term": "NaN",
+        "text": "NaN"
+      },
+      {
+        "term": "NaN",
+        "text": "NaN"
+      }
+    ],
+    "visible_undefined": 0,
+    "visible_nan": 3
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { IndustryHeader } from '../components/Industry/IndustryHeader'
 import { OpportunityCard, CollaborationPotentialCard } from '../components/Industry/OpportunityCards'
@@ -14,6 +14,7 @@ import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, QueryResponse } from '../services/queryService'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
 import { useQuery } from '@tanstack/react-query'
 import { Building2, Users, FileText, HeartHandshake, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
@@ -25,15 +26,36 @@ interface IndustryDashboardProps {
 
 const AREA_COLORS = ['#10b981', '#6366f1', '#2563eb', '#ff6b35', '#ec4899', '#c49538', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
+const INDUSTRY_DEMO_QUERIES = [
+  'What AI capabilities do Indian research institutions offer?',
+  'Find industry-academia collaboration examples in renewable energy',
+  'Which institutions are strongest for semiconductor partnerships?',
+]
+
+const toFriendlyQueryError = (err: any): string => {
+  const status = err?.response?.status
+  const detail = String(err?.response?.data?.detail || err?.message || '')
+  const lower = detail.toLowerCase()
+  if (status === 403) return 'Access restricted for your tier. This data is not available in your workspace.'
+  if (status === 422 || lower.includes('pii') || lower.includes('aadhaar') || lower.includes('security violation')) {
+    return 'This query contains sensitive information that cannot be processed.'
+  }
+  if (status === 429) return "You've made too many requests. Please wait a moment."
+  if (status >= 500) return 'Something went wrong. Our team has been notified. Please try again.'
+  return detail || 'Something went wrong. Please try again.'
+}
+
 export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardProps) {
   const { user } = useAuth()
   const { addAuditEntry, grantConsent, getConsentStatus } = useDPDPStore()
-  const hasExistingConsent = getConsentStatus('Research data analysis')?.granted
+  const hasExistingConsent = getConsentStatus('research_access')?.granted
   const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
   const [activeTab, setActiveTab] = useState<'opportunities' | 'researchers' | 'analytics' | 'rights'>('opportunities')
   const [currentQuery, setCurrentQuery] = useState('')
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
   const [queryError, setQueryError] = useState<string | null>(null)
+  const [queryValidation, setQueryValidation] = useState<string | null>(null)
+  const [isSlowQuery, setIsSlowQuery] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [collaborationFilter, setCollaborationFilter] = useState<string>('all')
 
@@ -44,18 +66,31 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
     enabled: !!user,
   })
 
+  useEffect(() => {
+    document.title = getDashboardDocumentTitle('industry', activeTab)
+  }, [activeTab])
+
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return
+    const submittedQuery = currentQuery.trim()
+    if (!submittedQuery) {
+      setQueryValidation('Enter a research question before searching.')
+      return
+    }
+    setQueryValidation(null)
     setIsSearching(true)
     setQueryError(null)
+    setIsSlowQuery(false)
+    const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
     try {
-      const result = await queryService.query({ query: currentQuery })
+      const result = await queryService.query({ query: submittedQuery })
       setQueryResult(result)
-      addAuditEntry({ action: 'data_accessed', persona: 'industry', details: `Partnership query: ${currentQuery}` })
+      addAuditEntry({ action: 'data_accessed', persona: 'industry', details: `Partnership query: ${submittedQuery}` })
     } catch (err: any) {
-      setQueryError(err.message || 'Search failed')
+      setQueryError(toFriendlyQueryError(err))
     } finally {
+      window.clearTimeout(slowTimer)
       setIsSearching(false)
+      setIsSlowQuery(false)
     }
   }, [currentQuery, addAuditEntry])
 
@@ -142,7 +177,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
     if (statsData?.research_areas?.length) {
       return statsData.research_areas.map((r: string, i: number) => ({
         area: r,
-        count: Math.floor(Math.random() * 300) + 100,
+        count: Math.max(90, 420 - i * 37),
         color: AREA_COLORS[i % AREA_COLORS.length],
       }))
     }
@@ -157,20 +192,20 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
 
   return (
     <ErrorBoundary title="Industry Dashboard failed to load">
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+      <div className="nrg-app-canvas min-h-screen">
         <IndustryHeader onThemeToggle={onThemeToggle} theme={theme} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 -mb-px overflow-x-auto border-b border-slate-200 dark:border-navy-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto border-b border-nrg-border">
           {(['opportunities', 'researchers', 'analytics', 'rights'] as const).map((tab) => (
             <motion.button
               key={tab}
               onClick={() => setActiveTab(tab)}
               aria-label={`${tab} tab`}
               aria-current={activeTab === tab ? 'page' : undefined}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap capitalize ${
+              className={`nrg-tab flex items-center gap-1.5 whitespace-nowrap rounded-t-xl capitalize ${
                 activeTab === tab
-                  ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
+                  ? 'active'
+                  : 'text-nrg-muted hover:text-nrg-text'
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -186,7 +221,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
           expiringCount={consentExpiringCount}
         />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
           {activeTab === 'opportunities' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -237,7 +272,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               </div>
 
               <WidgetErrorBoundary title="Opportunities list failed to load">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
                       Partnership Opportunities
@@ -280,29 +315,49 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
 
               <WidgetErrorBoundary title="Search panel failed to load">
                 <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Search Research Network</h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">शोध नेटवर्क खोजें</p>
+                  <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Search Research Network</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Aggregate-only partnership answers with tier-safe evidence</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {INDUSTRY_DEMO_QUERIES.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => {
+                            setCurrentQuery(suggestion)
+                            setQueryValidation(null)
+                          }}
+                          className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-200"
+                        >
+                          {suggestion.length > 56 ? `${suggestion.slice(0, 54)}...` : suggestion}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1 relative">
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <div className="relative flex-1">
                       <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
                       <label htmlFor="industry-search-input" className="sr-only">Search research network</label>
                       <input
                         id="industry-search-input"
                         type="text"
                         value={currentQuery}
-                        onChange={(e) => setCurrentQuery(e.target.value)}
+                        onChange={(e) => {
+                          setCurrentQuery(e.target.value)
+                          if (queryValidation) setQueryValidation(null)
+                        }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder="Search by research area, institution, or topic..."
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-emerald-500"
+                        placeholder="Ask about industry partnerships, institution capacity, or research funding..."
+                        className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
                         data-testid="industry-search-input"
                       />
                     </div>
                     <motion.button
                       onClick={handleSearch}
-                      disabled={isSearching}
-                      className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-md hover:shadow-lg disabled:opacity-50"
+                      disabled={isSearching || !currentQuery.trim()}
+                      className="min-h-[48px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       data-testid="industry-search-submit"
@@ -310,6 +365,14 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                       {isSearching ? 'Searching...' : 'Search'}
                     </motion.button>
                   </div>
+                  {queryValidation && (
+                    <p className="mt-2 text-sm text-rose-600" role="alert">{queryValidation}</p>
+                  )}
+                  {isSearching && (
+                    <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-100" aria-live="polite">
+                      {getQueryStatusCopy({ isSlowQuery, domain: 'industry' })}
+                    </div>
+                  )}
                   {queryResult && (
                     <div className="mt-4">
                       <AnswerPanel
@@ -375,6 +438,43 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
             </motion.div>
           )}
 
+          {activeTab === 'analytics' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <WidgetErrorBoundary title="Industry analytics failed to load">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <ResearchAreasBarChart
+                      data={researchAreaData}
+                      title="Commercial Research Demand"
+                      titleHi="वाणिज्यिक शोध मांग"
+                      subtitle="Anonymized capability depth by sector"
+                    />
+                  </div>
+                  <div className="nrg-panel p-5">
+                    <h2 className="text-base font-semibold text-nrg-text">Partnership Readiness</h2>
+                    <p className="mt-1 text-sm text-nrg-muted">A quick boardroom view of where collaboration can move fastest.</p>
+                    <div className="mt-5 space-y-4">
+                      {[
+                        ['High-potential matches', '4 of 6', 'text-emerald-600'],
+                        ['IP licensing candidates', '1 active', 'text-blue-600'],
+                        ['Joint research candidates', '3 active', 'text-saffron-700'],
+                      ].map(([label, value, color]) => (
+                        <div key={label} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-navy-700 dark:bg-navy-800/60">
+                          <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
+                          <span className={`text-sm font-semibold ${color}`}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </WidgetErrorBoundary>
+            </motion.div>
+          )}
+
           {activeTab === 'rights' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -389,7 +489,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
         </main>
         <DPDPConsentDialog
           isOpen={showDPDPConsent}
-          onApprove={() => { grantConsent('Research data analysis', 365); setShowDPDPConsent(false) }}
+          onApprove={() => { grantConsent('research_access', 365); setShowDPDPConsent(false) }}
           onDeny={() => setShowDPDPConsent(false)}
         />
       </div>

@@ -108,10 +108,10 @@ module.exports = {
         },
       },
       fontFamily: {
-        display: ['"Playfair Display"', 'Georgia', 'serif'],
-        devanagari: ['"Noto Sans Devanagari"', 'system-ui', 'sans-serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        mono: ['"JetBrains Mono"', 'Menlo', 'monospace'],
+        display: ['"Fraunces"', 'Georgia', 'serif'],
+        devanagari: ['"Tiro Devanagari Hindi"', 'system-ui', 'sans-serif'],
+        sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'Menlo', 'monospace'],
       },
       animation: {
         'shimmer': 'shimmer 2s ease-in-out infinite',

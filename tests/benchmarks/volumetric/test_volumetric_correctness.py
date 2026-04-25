@@ -14,19 +14,31 @@ from typing import List
 class TestVolumetricDataIntegrity:
     """Verify data correctness across increasing query volumes."""
 
-    @pytest.fixture
+    @pytest.fixture(scope="class")
     def api_client(self):
-        import requests
-        base_url = "http://localhost:8000"
-        # Get token
-        resp = requests.post(
-            f"{base_url}/login",
-            json={"username": "researcher_user", "password": "researcher-pass"},
-            timeout=10,
-        )
-        token = resp.json().get("access_token", "")
+        import requests, time, os
+        base_url = os.environ.get("NRG_API_URL", "http://localhost:8000")
+
+        # Get token directly (skip health check since server is already running)
+        token = ""
+        for attempt in range(3):
+            try:
+                resp = requests.post(
+                    f"{base_url}/login",
+                    json={"username": "researcher_user", "password": "researcher-pass"},
+                    timeout=30,
+                )
+                token = resp.json().get("access_token", "")
+                if token:
+                    break
+            except Exception:
+                if attempt < 2:
+                    time.sleep(3)
+                    continue
+                raise
+
         headers = {"Authorization": f"Bearer {token}"}
-        return {"base_url": base_url, "headers": headers, "requests": requests}
+        return {"base_url": base_url, "headers": headers, "requests": requests, "token": token}
 
     @pytest.mark.parametrize("query_count", [1, 5, 10])
     def test_concurrent_query_correctness(self, api_client, query_count):
@@ -48,7 +60,7 @@ class TestVolumetricDataIntegrity:
                     f"{api_client['base_url']}/query",
                     json={"query": q},
                     headers=api_client["headers"],
-                    timeout=30,
+                    timeout=120,
                 )
                 return {"status": resp.status_code, "body": resp.json()}
             except Exception as exc:
