@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useDPDPStore } from '../stores/dpdpStore';
 
 export function DPDPWithdrawalPanel() {
-  const { consents, withdrawConsent, isWithdrawalMode, setWithdrawalMode, auditLog } = useDPDPStore();
+  const { consents, withdrawConsent, isWithdrawalMode, setWithdrawalMode } = useDPDPStore();
   const [confirmWithdraw, setConfirmWithdraw] = useState<string | null>(null);
 
   const activeConsents = Object.values(consents).filter((c) => c.granted);

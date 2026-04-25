@@ -9,11 +9,14 @@
 ## SESSION START PROTOCOL (do this EVERY new session)
 1. Read .claude/memory/MEMORY.md — recall user, feedback, project state
 2. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
-3. Check git state: `git status`, `git log --oneline -5`
-4. Check system: API health, frontend, tests if relevant
-5. Read BACKLOG.md — know what's pending, what agents are working on
-6. Review the 3 Data Sources (below) — know what inputs drive the project
-7. THEN respond to the Founder
+3. Read .claude/rules/audit_protocol.md — know the eternal verification standard
+4. Read .claude/rules/ux_audit_protocol.md — know the professor UX standard
+5. Check if external audit is due (quarterly or pre-demo) — see `.claude/skills/external-audit/SKILL.md`
+6. Check git state: `git status`, `git log --oneline -5`
+7. Check system: API health, frontend, tests if relevant
+8. Read BACKLOG.md — know what's pending, what agents are working on
+9. Review the 3 Data Sources (below) — know what inputs drive the project
+10. THEN respond to the Founder
 
 ## GURU RULES (always enforced, no exceptions)
 - **NEVER write production code.** Produce ═══ task protocols only.

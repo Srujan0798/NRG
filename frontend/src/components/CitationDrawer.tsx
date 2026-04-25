@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { Citation } from '../services/queryService'
 import { queryService } from '../services/queryService'
 import { toStringArray } from '../types/api'
@@ -24,17 +24,10 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
   citation,
   isOpen,
   onClose,
-  responseText,
 }) => {
   const [loading, setLoading] = useState(false)
   const [details, setDetails] = useState<any>(null)
   const [activeSection, setActiveSection] = useState<'source' | 'metadata' | 'context'>('source')
-
-  useEffect(() => {
-    if (citation && isOpen) {
-      fetchCitationDetails(citation)
-    }
-  }, [citation, isOpen])
 
   const parseCiteToken = (id: string): { pubId: string; chunkId: string } | null => {
     const match = id?.match(/^cite:(.+?):(.+)$/)
@@ -44,7 +37,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
     return null
   }
 
-  const fetchCitationDetails = async (cite: Citation) => {
+  const fetchCitationDetails = useCallback(async (cite: Citation) => {
     setLoading(true)
     try {
       const parsed = parseCiteToken(cite.id) || {
@@ -91,7 +84,13 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (citation && isOpen) {
+      fetchCitationDetails(citation)
+    }
+  }, [citation, isOpen, fetchCitationDetails])
 
   if (!isOpen || !citation) return null
 

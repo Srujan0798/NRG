@@ -37,6 +37,14 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const [error, setError] = useState<string | null>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
 
+  const abortStream = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close()
+      eventSourceRef.current = null
+    }
+    setIsStreaming(false)
+  }, [])
+
   const startStream = useCallback((query: string) => {
     const session = authService.getStoredSession()
     if (!session) {
@@ -113,15 +121,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     eventSource.onerror = () => {
       abortStream()
     }
-  }, [options, fullText, citations, currentPhase])
-
-  const abortStream = useCallback(() => {
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-      eventSourceRef.current = null
-    }
-    setIsStreaming(false)
-  }, [])
+  }, [options, abortStream, fullText, citations, currentPhase])
 
   return {
     isStreaming,

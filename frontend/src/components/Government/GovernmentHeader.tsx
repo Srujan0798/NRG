@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Building, Users, GraduationCap, TrendingUp, Shield, Globe } from 'lucide-react'
+import { Building, TrendingUp, Shield, Globe } from 'lucide-react'
 
 interface GovernmentHeaderProps {
   onThemeToggle: () => void

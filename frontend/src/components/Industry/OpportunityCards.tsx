@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { HeartHandshake, Target, TrendingUp, Users, Star, ArrowRight } from 'lucide-react'
+import { HeartHandshake, Star, ArrowRight } from 'lucide-react'
 
 interface OpportunityCardProps {
   id: string

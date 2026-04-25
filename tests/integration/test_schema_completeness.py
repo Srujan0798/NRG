@@ -15,6 +15,8 @@ import pytest
 SRC_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_HINTS_PATH = SRC_ROOT / "src" / "data" / "schema" / "schema_hints.md"
 DB_STRUCT_SQL_PATH = SRC_ROOT / "db_struct.sql"
+ALEMBIC_MIGRATION_PATH = SRC_ROOT / "alembic" / "versions" / "add_production_tables_001.py"
+SRC_MIGRATION_PATH = SRC_ROOT / "src" / "migrations" / "versions" / "add_production_tables_001.py"
 
 sys.path.insert(0, str(SRC_ROOT / "src"))
 
@@ -401,6 +403,29 @@ class TestSchemaSyncCheck:
         assert normalize("TEXT") == "TEXT"
         assert normalize("timestamp with time zone") == "TIMESTAMP"
         assert normalize("integer") == "INTEGER"
+
+
+class TestProductionMigrationParity:
+    """Verify production migrations reproduce db_struct.sql table coverage."""
+
+    @staticmethod
+    def _created_tables(path: Path) -> set[str]:
+        import re
+
+        source = path.read_text(encoding="utf-8")
+        return set(re.findall(r"op\.create_table\(\s*['\"]([^'\"]+)['\"]", source))
+
+    @pytest.mark.parametrize("migration_path", [ALEMBIC_MIGRATION_PATH, SRC_MIGRATION_PATH])
+    def test_migration_creates_all_58_db_struct_tables(self, migration_path, schema_sync_check_module):
+        expected_tables = set(schema_sync_check_module.parse_db_struct_sql())
+        created_tables = self._created_tables(migration_path)
+
+        assert len(expected_tables) == 58
+        assert created_tables == expected_tables, (
+            f"{migration_path} table mismatch. "
+            f"Missing: {sorted(expected_tables - created_tables)}; "
+            f"Unexpected: {sorted(created_tables - expected_tables)}"
+        )
 
 
 class TestDualDriverSupport:

@@ -38,6 +38,7 @@ from src.auth.middleware import (
     filter_researcher_records,
     get_current_user,
 )
+from src.api.response_filter import filter_query_response_for_tier
 from src.data.database import resolve_database_path
 from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
@@ -723,10 +724,16 @@ async def query_with_langgraph(
         }
 
         response_payload, redacted_pii = _redact_pii_from_response(response_payload)
+        response_payload, tier_filter_warnings = filter_query_response_for_tier(
+            response_payload,
+            user_tier,
+        )
         if redacted_pii:
             response_payload["warnings"] = response_payload.get("warnings", []) + [
                 f"PII redaction applied to response: {', '.join(redacted_pii)}"
             ]
+        if tier_filter_warnings:
+            response_payload["warnings"] = response_payload.get("warnings", []) + tier_filter_warnings
 
         _api_cache.set(cache_key, response_payload, ttl=30)
         return response_payload

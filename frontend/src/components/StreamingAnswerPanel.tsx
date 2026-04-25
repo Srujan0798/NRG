@@ -1,8 +1,7 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { Citation, QueryProvenance, QueryWarning } from '../services/queryService'
+import React, { useState, useEffect } from 'react'
+import { Citation } from '../services/queryService'
 import { useStreamingQuery, StreamPhase, StreamCitation } from '../hooks/useStreamingQuery'
 import { AnswerPanel } from './AnswerPanel'
-import { IntelligenceBrief } from './IntelligenceBrief'
 
 interface StreamingAnswerPanelProps {
   query: string
@@ -93,7 +92,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   query,
   onCitationClick,
 }) => {
-  const [pendingCitation, setPendingCitation] = useState<Citation | null>(null)
+  const [_pendingCitation, setPendingCitation] = useState<Citation | null>(null)
   const [finalText, setFinalText] = useState('')
   const [finalCitations, setFinalCitations] = useState<Citation[]>([])
   const [isDone, setIsDone] = useState(false)
@@ -129,7 +128,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
     if (query.trim()) {
       startStream(query)
     }
-  }, [query])
+  }, [query, startStream])
 
   if (error) {
     return (

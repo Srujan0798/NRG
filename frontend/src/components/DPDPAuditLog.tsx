@@ -1,5 +1,4 @@
 import { useDPDPStore } from '../stores/dpdpStore';
-import { format } from 'date-fns';
 
 export function DPDPAuditLog() {
   const { auditLog, clearAuditLog } = useDPDPStore();

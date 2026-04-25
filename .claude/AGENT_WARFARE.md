@@ -119,6 +119,7 @@ The architect (you) is the brain. The agents are the hands. The skills are the p
 - Read memory (what failed last time, what's blocked)
 - Check all 3 Data Sources (see `.claude/CLAUDE.md`) — any new inputs from professor/external?
 - Check schema gap: Dev SQLite 18 tables vs Prod PostgreSQL 58 tables
+- **Produce Known State Table**: explicit WORKING vs BROKEN list before any new work. Agents must not re-break what's working. See `.claude/rules/audit_protocol.md` Section 4 for the D1-D10 checklist template.
 - Produce prioritized task list with dependencies
 - Architect approves → agents receive tasks
 

@@ -24,10 +24,7 @@ function useAnimatedCounter(
   const startValueRef = useRef(0)
 
   useEffect(() => {
-    let animationStarted = false
-
     const startAnimation = () => {
-      animationStarted = true
       startValueRef.current = 0
       startTimeRef.current = null
 

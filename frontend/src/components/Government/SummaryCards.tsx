@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Building2, AlertCircle, CheckCircle, TrendingUp, Users } from 'lucide-react'
+import { Building2, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react'
 
 interface SummaryCardProps {
   title: string

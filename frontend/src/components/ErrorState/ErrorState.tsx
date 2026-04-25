@@ -112,7 +112,6 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   const config = severityConfig[severity]
   const defaults = errorMessages[severity]
-  const Icon = config.icon
 
   return (
     <motion.div

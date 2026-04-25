@@ -27,7 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
   const [loginError, setLoginError] = useState<string | null>(null)
   const [backendAvailable, setBackendAvailable] = useState(true)
-  const [consecutiveFailures, setConsecutiveFailures] = useState(0)
+  const [_consecutiveFailures, setConsecutiveFailures] = useState(0)
 
   useEffect(() => {
     const storedSession = authService.getStoredSession()

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo, useImperativeHandle, forwardRef } from 'react'
 import { forceSimulation, forceLink, forceManyBody, forceCenter, forceCollide, SimulationNodeDatum } from 'd3-force'
 import { zoom, zoomIdentity, ZoomBehavior } from 'd3-zoom'
-import { drag, DragBehavior } from 'd3-drag'
+import { drag } from 'd3-drag'
 import { select } from 'd3-selection'
 import { GraphData, GraphNode, GraphEdge } from '../services/queryService'
 

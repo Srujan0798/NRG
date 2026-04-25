@@ -112,14 +112,29 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Install uv
         run: pip install uv
       - name: Install dependencies
         run: uv pip install -e ".[dev]"
-      - name: Run E2E persona tests (researcher, government, industry flows)
+      - name: Install Playwright and browser
         run: |
-          uv pip install pytest
-          pytest tests/e2e/ -v --tb=short -m e2e
+          uv pip install playwright
+          playwright install chromium --with-deps
+      - name: Build frontend
+        run: |
+          cd frontend && npm ci && npm run build && cd ..
+      - name: Start API server
+        run: |
+         uv pip install -e .
+          nohup python -m src.api.main &
+          for i in {1..30}; do curl -sf http://localhost:8000/health && echo "API ready" && break; sleep 2; done
+      - name: Run E2E browser persona tests
+        run: |
+          pytest tests/e2e/test_personas.py -v --tb=short -m e2e --no-cov
         continue-on-error: false
 
   regression-tests:

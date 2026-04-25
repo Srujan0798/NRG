@@ -32,7 +32,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const handleCitationClick = useCallback((citation: Citation) => {
+  const _handleCitationClick = useCallback((citation: Citation) => {
     setSelectedCitation(citation)
     setDrawerOpen(true)
   }, [])

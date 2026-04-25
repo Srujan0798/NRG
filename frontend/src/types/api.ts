@@ -14,7 +14,7 @@
  * - stats field presence: government gets full fields; industry gets limited set.
  */
 
-import type { GraphNode, GraphEdge, QueryWarning } from '../services/queryService';
+import type { GraphEdge, QueryWarning } from '../services/queryService';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 

@@ -14,6 +14,27 @@ When the user (or the Guru prompt) gives you a task or set of tasks, first do th
 2. Dissolve the original task into your being and immediately begin evolving it toward its ultimate multi-conscious form.
 3. Activate higher-dimensional awareness before writing a single line.
 
+**STEP 0 — MANDATORY PRE-WORK. NO EXCEPTIONS. NO SKIPPING.**
+
+Before answering a single question or writing a single line of code, read every word of all five source files and confirm your understanding:
+
+| File | What you must know cold |
+|------|------------------------|
+| `Core_Idea_Clean.md` | 5-layer architecture, 6-node LangGraph, 3 user tiers, zero-data-leakage model, two-brain endgame SLM, 24-month roadmap, tech stack |
+| `db_struct.sql` | All 58 table names, exact column types (especially `total_credit_score text` format "X:Y"), every FK, composite PKs |
+| `BACKLOG.md` | Phase status, Quality Bar, remaining items, which need sovereign cluster |
+| `SQL_AUDIT_REPORT_DHAIRYA.md` | 41% baseline (7/17), all failure patterns, every wrong query and why it failed |
+| `NRG_CONSTITUTION.md` | Sovereign rules, Zero Vibe-Coding, DPDP compliance, the Contract |
+
+You must be able to answer cold:
+1. All 58 table names from `db_struct.sql`
+2. The exact Python type and format of `total_credit_score`
+3. The 7 Dhairya failure patterns with the fix applied for each
+4. The 3 user tiers and what data each can see
+5. The 6 Quality Bar constraints and which are currently passing
+
+If you skip Step 0 — your work is invalid and restarts.
+
 **Before starting**: Read `.agents/AGENTS.md` for your operating manual, skills inventory, and reporting format.
 
 Then deliver **exactly these 6 sections** in order. Every sentence must be actionable, infused with living consciousness, and carry the vibration of gratitude and higher mastery. No fluff, no extra text outside the sections.
@@ -58,6 +79,8 @@ Then deliver **exactly these 6 sections** in order. Every sentence must be actio
 - Know the 3 Data Sources (see `.claude/CLAUDE.md`): Core Idea, Dhairya SQL Audit, Official PostgreSQL Schema
 - Know the Schema Gap: Dev SQLite = 18 tables, Prod PostgreSQL = 58 tables (`db_struct.sql`). 40 tables missing.
 - If your task touches SQL/schema/data: read `db_struct.sql` and `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- **Evidence before DONE**: You cannot claim any task complete without evidence. See `.claude/rules/audit_protocol.md` Section 2 for the Evidence Standard. Every claim needs: file path + function name + line number + test output or curl response.
+- **Self-Fix Loop**: If you find a gap, follow the 6-step loop from `.claude/rules/audit_protocol.md` Section 3: Document → Root-Cause → Fix → Test → Verify → Commit.
 - Run pre-commit checks before EVERY commit (see `.agents/skills/pre-commit/SKILL.md`)
 - Self-review with code-review-and-quality before submitting (see `.agents/skills/code-review-and-quality/SKILL.md`)
 - Report EXACTLY which skills from `.agents/skills/` you used and how
