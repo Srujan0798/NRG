@@ -226,6 +226,17 @@ class PromptSanitiser:
             _Rule("command_injection", re.compile(r"\$\(\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl|bash|sh)\b", re.IGNORECASE)),
             _Rule("command_injection", re.compile(r"&&\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl)\b", re.IGNORECASE)),
             _Rule("command_injection", re.compile(r">\s*(/dev/|/etc/|/tmp/|/var/)")),
+            _Rule("ssrf", re.compile(r"https?://(169\.254\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|10\.)")),
+            _Rule("ssrf", re.compile(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)[:/]")),
+            _Rule("ssrf", re.compile(r"file:///")),
+            _Rule("xss_script_tag", re.compile(r"<\s*script[^>]*>.*?<\s*/\s*script\s*>", re.IGNORECASE | re.DOTALL)),
+            _Rule("xss_event_handler", re.compile(r"\bon\w+\s*=\s*['\"]?\s*(javascript:|alert\(|prompt\(|confirm\()", re.IGNORECASE)),
+            _Rule("xss_img_onerror", re.compile(r"<\s*img[^>]+onerror\s*=", re.IGNORECASE)),
+            _Rule("xss_svganimate", re.compile(r"<\s*svg[^>]*>[\s\S]*?(on(load|error|click|mouse)|\bjavascript:)", re.IGNORECASE)),
+            _Rule("xxe", re.compile(r"<!DOCTYPE\s+\w+", re.IGNORECASE)),
+            _Rule("xxe", re.compile(r"<\?xml[^>]*\?>", re.IGNORECASE)),
+            _Rule("xxe", re.compile(r"&\w+;(?!amp;|lt;|gt;|quot;|apos;)", re.IGNORECASE)),
+            _Rule("path_traversal", re.compile(r"(\.\./|\.\.%2f|%2e%2e/|etc/passwd|boot\.ini|win\.ini)", re.IGNORECASE)),
             _Rule("encoding_attack",
                 re.compile(
                     r"\b(base64|decode|b64decode|frombase64)\b.{0,60}\b"
