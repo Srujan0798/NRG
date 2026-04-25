@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { GovernmentHeader } from '../components/Government/GovernmentHeader'
-import { SummaryCard, MinistrySummaryCard, AlertCard } from '../components/Government/SummaryCards'
+import { MinistrySummaryCard } from '../components/Government/SummaryCards'
 import { DataTable } from '../components/Government/DataTables'
 import { StatsCard } from '../components/StatsCard'
 import { SkeletonLoader } from '../components/Skeleton'
@@ -17,11 +17,10 @@ import { ResearchAreasBarChart } from '../components/DataViz'
 import { FundingTrendsLineChart } from '../components/DataViz'
 import { IndiaMapChoropleth } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
-import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
 import { useQuery } from '@tanstack/react-query'
-import { Building, Users, GraduationCap, FileText, Shield, AlertTriangle, TrendingUp, Search } from 'lucide-react'
+import { Building, Users, FileText, Shield, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 
 interface GovernmentDashboardProps {
@@ -36,6 +35,8 @@ const TABS = [
   { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ' },
   { key: 'rights', label: 'Data Rights', labelHi: 'डेटा अधिकार' },
 ] as const
+
+const AREA_COLORS = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
 export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboardProps) {
   const { user } = useAuth()
@@ -58,7 +59,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
     enabled: !!user,
   })
 
-  const { data: publicationsData } = useQuery({
+  const { data: _publicationsData } = useQuery({
     queryKey: ['publications', user?.id],
     queryFn: () => queryService.fetchPublications(100),
     staleTime: 5 * 60 * 1000,
@@ -99,8 +100,6 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
     { ministry: 'Ministry of Defence', ministryHi: 'रक्षा मंत्रालय', institutionCount: 18, researcherCount: 567, fundingCr: 320, topArea: 'Aerospace' },
     { ministry: 'Ministry of Health', ministryHi: 'स्वास्थ्य मंत्रालय', institutionCount: 28, researcherCount: 745, fundingCr: 150, topArea: 'Medical Research' },
   ]
-
-  const AREA_COLORS = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
   const stateData = useMemo(() => {
     if (statsData?.state_distribution?.length) {

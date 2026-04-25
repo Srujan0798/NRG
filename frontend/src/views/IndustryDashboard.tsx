@@ -3,27 +3,27 @@ import { motion } from 'framer-motion'
 import { IndustryHeader } from '../components/Industry/IndustryHeader'
 import { OpportunityCard, CollaborationPotentialCard } from '../components/Industry/OpportunityCards'
 import { StatsCard } from '../components/StatsCard'
-import { SkeletonLoader } from '../components/Skeleton'
 import { ErrorState } from '../components/ErrorState'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { WidgetErrorBoundary } from '../components/WidgetErrorBoundary'
 import { AnswerPanel } from '../components/AnswerPanel'
-import { GraphView } from '../components/GraphView'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
 import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
-import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { queryService, QueryResponse } from '../services/queryService'
 import { useQuery } from '@tanstack/react-query'
-import { Building2, Users, FileText, HeartHandshake, Search, Filter } from 'lucide-react'
+import { Building2, Users, FileText, HeartHandshake, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 
 interface IndustryDashboardProps {
   onThemeToggle: () => void
   theme: Theme
 }
+
+const AREA_COLORS = ['#10b981', '#6366f1', '#2563eb', '#ff6b35', '#ec4899', '#c49538', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
 export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardProps) {
   const { user } = useAuth()
@@ -37,7 +37,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
   const [isSearching, setIsSearching] = useState(false)
   const [collaborationFilter, setCollaborationFilter] = useState<string>('all')
 
-  const { data: statsData, isLoading: statsLoading } = useQuery({
+  const { data: statsData } = useQuery({
     queryKey: ['stats', user?.id],
     queryFn: () => queryService.fetchStats(),
     staleTime: 30 * 1000,
@@ -137,8 +137,6 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
     const threshold = Date.now() + 30 * 24 * 60 * 60 * 1000;
     return Object.values(s.consents).filter((c) => c.expiresAt && c.expiresAt < threshold && c.granted).length;
   })
-
-  const AREA_COLORS = ['#10b981', '#6366f1', '#2563eb', '#ff6b35', '#ec4899', '#c49538', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
   const researchAreaData = useMemo(() => {
     if (statsData?.research_areas?.length) {

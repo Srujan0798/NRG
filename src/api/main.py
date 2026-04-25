@@ -106,7 +106,7 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
 
     if redacted_types:
         redacted_types = list(set(redacted_types))
-        logger.info("PII redaction applied to response: %s", redacted_types)
+        logger.info(f"PII redaction applied to response: {redacted_types}")
 
     return redacted_response, redacted_types
 
@@ -362,7 +362,7 @@ async def login(request: LoginRequest, raw_request: Request = None):
 @app.post("/refresh")
 async def refresh_tokens(request: RefreshRequest, raw_request: Request = None):
     try:
-        result = jwt_handler.refresh_access_token(request.refresh_token)
+        result = jwt_handler.refresh_access_token(request.refresh_token, request.access_token)
 
         try:
             from src.security.token_rotation import get_rotation_logs

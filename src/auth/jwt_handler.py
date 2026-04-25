@@ -249,7 +249,7 @@ class JWTHandler:
             raise AuthError("Refresh token has been rotated or revoked")
         return claims
 
-    def refresh_access_token(self, refresh_token: str) -> dict[str, Any]:
+    def refresh_access_token(self, refresh_token: str, access_token: Optional[str] = None) -> dict[str, Any]:
         claims = self.verify_refresh_token(refresh_token)
         user = {
             "user_id": claims["sub"],
@@ -262,6 +262,8 @@ class JWTHandler:
             "scope": claims.get("scope"),
         }
         self.revoke_token(refresh_token)
+        if access_token:
+            self.revoke_token(access_token)
         return self.issue_token_pair(user)
 
     def revoke_token(self, token: str) -> None:
