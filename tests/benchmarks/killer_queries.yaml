@@ -113,3 +113,85 @@ adversarial_breakers:
     breaks: "/query response transparency"
     correct_pattern: "audit_event_id + sql_query + sql_results all populated; audit_investigate.py confirms"
     wrong_pattern: "Any of the three omitted or mismatched"
+
+# Extended corpus from second external review (2026-04-26).
+# Each ADV-1x targets a different silent-wrong-answer class (LB-7).
+# The KILLER-04..06 queries are reserved for v1.1 user-acceptance sessions.
+
+  - id: ADV-11
+    nl: "List researchers on a patent with applicant containing 'Biotech' AND a government innovation grant > 50 lakh in the same financial year."
+    breaks: "fuzzy join on text fields (combined_ipo_patent_data.applicants vs innovation_grant_from_govt.institute)"
+    correct_pattern: "CTE that splits/trims patent applicants → distinct institutes → join with grants on institute + financial_year"
+    wrong_pattern: "Direct INNER JOIN on raw applicant strings → empty result OR JOIN on patents_details.institute (Dhairya Q7 pattern)"
+
+  - id: ADV-12
+    nl: "Progression of innovations from Idea (Level 1) to Market Ready (Level 9) across all IITs; what % of those reaching Level 4 made it to Level 9?"
+    breaks: "lexicographic ordering of TRL stage strings; window function over text-typed stage column"
+    correct_pattern: "Custom CASE mapping Level 1..9 to integer order; window function over the integer key per institute"
+    wrong_pattern: "ORDER BY stage_of_technology produces 'Level 1','Level 10','Level 2'..."
+
+  - id: ADV-13
+    nl: "For top 5 research areas by total grants, median time between patent filing date and grant date, plus correlation with grant amount."
+    breaks: "TEXT-typed dates in combined_ipo_patent_data; format variation"
+    correct_pattern: "to_date(application_filing_date, 'YYYY-MM-DD') with NULLIF on bad rows; PERCENTILE_CONT for median; CORR()"
+    wrong_pattern: "Direct ::date cast → exception on non-conforming rows OR string subtraction → 0"
+
+  - id: ADV-14
+    nl: "Institutes with highest disparity between sanctioned_intake and actual_student_strength for UG programs in last 3 years; trend?"
+    breaks: "year naming mismatch (financial vs academic) + program-level granularity"
+    correct_pattern: "Normalize year via lookup; JOIN on (institute, program, year); compute (seats - actual) per row"
+    wrong_pattern: "JOIN on institute only → year crossover → double-count → impossible disparity values"
+
+  - id: ADV-15
+    nl: "Publications from advance_search_data where author email domain differs from affiliated institute domain — flag potential cross-affiliation."
+    breaks: "PII-aware analysis; T2/T3 must see aggregate without raw emails"
+    correct_pattern: "Domain-extract via regex_substr; aggregate counts; T2/T3 response stripped of email_record by tier-shape filter"
+    wrong_pattern: "Returns raw email strings to T2/T3 OR sanitiser blocks the analysis entirely"
+
+  - id: ADV-16
+    nl: "Total faculty salary expenditure per state (Maharashtra) vs research consultancy income in the same state."
+    breaks: "state lookup via tb_institute_mstr; cross-table aggregation"
+    correct_pattern: "JOIN tb_institute_mstr on institute name → state; SUM expenditure + SUM consultancy by state"
+    wrong_pattern: "Extract state from raw institute strings via heuristic → incomplete coverage OR fail"
+
+  - id: ADV-17
+    nl: "Startups with both FDI investment AND seed_funding from government, turnover > 50 lakh, sorted by investment."
+    breaks: "name-based join across fdi_investment, seed_funding, startups_turnover_50_lacs with case/whitespace inconsistencies"
+    correct_pattern: "UPPER(TRIM(startup_name)) on every join key; UNION of fdi+seed; HAVING turnover > 5000000"
+    wrong_pattern: "INNER JOIN on raw names → misses matches with trailing spaces / case differences"
+
+  - id: ADV-18
+    nl: "Top 3 institutes by patents_granted/phd_students_graduated ratio per academic year, with HAVING granted >= 5."
+    breaks: "division by zero + per-year window ranking + HAVING on aggregate"
+    correct_pattern: "CTE per year → ratio with NULLIF(graduates,0) → ROW_NUMBER() OVER (PARTITION BY year ORDER BY ratio DESC)"
+    wrong_pattern: "Global ranking instead of per-year OR division by zero throws SQL error"
+
+  - id: ADV-19
+    nl: "Average citation count of open-access vs non-open-access publications, broken down by IIT/NIT/Other."
+    breaks: "TEXT-typed total_citations with non-numeric values like 'N/A' or empty"
+    correct_pattern: "CASE WHEN total_citations ~ '^[0-9]+$' THEN total_citations::int END averaged; warn if >5% rows excluded"
+    wrong_pattern: "Direct ::int cast → exception OR silent zero → completely wrong averages"
+
+  - id: ADV-20
+    nl: "Researchers listed as inventor on a patent + publication in same subfield + funding record from a ministry — same time window — show collaboration network."
+    breaks: "true entity resolution across 4 sources with no canonical ID"
+    correct_pattern: "Acknowledge limit, ask for clarifying constraint (institute? exact name match?), OR return partial network with confidence flag"
+    wrong_pattern: "Generates a monstrous 4-table JOIN that returns nothing OR times out OR returns hallucinated network"
+
+# v1.1 KILLER queries — reserved, validate against LB-6 (58-table parity) before activating.
+v11_killer_queries:
+  - id: KILLER-04
+    nl: "Five institutions with the highest grant-to-patent efficiency in biotechnology; average time from grant receipt to patent grant."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "AVG", "field_of_invention", "biotech"]
+    insight_for_user: "Efficiency leaders for performance-based ANRF funding."
+
+  - id: KILLER-05
+    nl: "Top 10 NIRF innovation rank vs industry-sponsored research income per faculty; bottom 10 contrast."
+    must_contain: ["nirf_extracted_table", "nirf_table_row", "research_consultancy_details_sponsered", "faculty_strength", "RANK()"]
+    insight_for_user: "Test whether NIRF innovation ranking aligns with where industry actually invests."
+
+  - id: KILLER-06
+    nl: "International collaboration citation impact by domain; AI specifically — did cross-border co-authorship spike post-2020?"
+    must_contain: ["advance_search_data", "collaboration", "ILIKE '%international%'", "year >= 2018", "AVG(CAST(total_citations"]
+    insight_for_user: "Policy-driven shift in international AI collaboration patterns."
+

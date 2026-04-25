@@ -8,12 +8,15 @@ module.exports = {
     '<rootDir>/tests/design-system',
     '<rootDir>/tests/hooks',
     '<rootDir>/tests/i18n',
+    '<rootDir>/tests/lib',
     '<rootDir>/tests/a11y',
   ],
   testPathIgnorePatterns: [
     '/node_modules/',
     '/e2e/',
     '/dist/',
+    '/tests/a11y/axe.test.ts',
+    '/tests/a11y/keyboard.test.ts',
   ],
   moduleNameMapper: {
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',

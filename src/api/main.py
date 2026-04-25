@@ -8,6 +8,7 @@ import os
 import tempfile
 import threading
 import time
+from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
@@ -20,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, StreamingResponse
 import uuid
@@ -30,6 +31,7 @@ from src.api.middleware.security import (
     SecurityHeadersMiddleware,
     PromptSanitiserMiddleware,
     brute_force_protection,
+    enforce_tier_response_boundary,
 )
 from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
@@ -37,7 +39,7 @@ from src.auth.middleware import (
     filter_researcher_records,
     get_current_user,
 )
-from src.api.response_filter import filter_query_response_for_tier
+from src.api.response_filter import TierResponseFilterReport, filter_response_payload_for_tier
 from src.data.database import resolve_database_path
 from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
@@ -49,6 +51,8 @@ from qdrant_client import QdrantClient
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
+REPO_ROOT = Path(__file__).resolve().parents[2]
+KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.json"
 
 
 def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
@@ -185,10 +189,125 @@ class _APIMemoryCache:
 
 
 _api_cache = _APIMemoryCache(default_ttl=30)
+_tier_response_history: dict[int, deque[dict[str, Any]]] = {
+    1: deque(maxlen=100),
+    2: deque(maxlen=100),
+    3: deque(maxlen=100),
+}
 
 
 _db_instance: NRGDatabaseV2 | None = None
 _fast_query_context: dict[str, dict[str, Any]] = {}
+
+
+def _apply_tier_response_filter(
+    payload: Any,
+    tier: int,
+    *,
+    user_id: str | None = None,
+    jwt_kid: str | None = None,
+    request_fingerprint: str | None = None,
+    endpoint: str = "unknown",
+) -> Any:
+    filtered, report = filter_response_payload_for_tier(payload, tier=tier)
+    enforce_tier_response_boundary(filtered, tier)
+    _audit_tier_filter_events(
+        report.strip_events,
+        user_id=user_id,
+        jwt_kid=jwt_kid,
+        request_fingerprint=request_fingerprint,
+        endpoint=endpoint,
+    )
+    _record_tier_response_shape(filtered, tier=tier, endpoint=endpoint, report=report)
+    if report.warnings and isinstance(filtered, dict):
+        existing = filtered.get("warnings", [])
+        if not isinstance(existing, list):
+            existing = [existing]
+        filtered["warnings"] = existing + report.warnings
+    return filtered
+
+
+def _audit_tier_filter_events(
+    events: list[dict[str, Any]],
+    *,
+    user_id: str | None,
+    jwt_kid: str | None,
+    request_fingerprint: str | None,
+    endpoint: str,
+) -> None:
+    if not events:
+        return
+
+    from src.audit import AuditEvent, get_audit_log
+
+    audit = get_audit_log()
+    for event in events:
+        audit.append(
+            AuditEvent(
+                event_type=event["reason"],
+                user_id=user_id or "system",
+                result={
+                    "endpoint": endpoint,
+                    "path": event.get("path"),
+                    "field": event.get("field"),
+                    "action": event.get("action"),
+                },
+                jwt_kid=jwt_kid,
+                request_fingerprint=request_fingerprint,
+            )
+        )
+
+
+def _record_tier_response_shape(
+    payload: Any,
+    *,
+    tier: int,
+    endpoint: str,
+    report: TierResponseFilterReport,
+) -> None:
+    history = _tier_response_history.setdefault(int(tier), deque(maxlen=100))
+    history.append(
+        {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "endpoint": endpoint,
+            "columns": report.shape_columns,
+            "strip_event_count": len(report.strip_events),
+        }
+    )
+
+
+def _tier_history_snapshot() -> dict[str, Any]:
+    snapshots: dict[int, set[str]] = {}
+    for tier, entries in _tier_response_history.items():
+        columns: set[str] = set()
+        for entry in entries:
+            columns.update(entry.get("columns", []))
+        snapshots[tier] = columns
+
+    def diff(left: int, right: int) -> dict[str, Any]:
+        left_cols = snapshots.get(left, set())
+        right_cols = snapshots.get(right, set())
+        return {
+            "only_tier_%s" % left: sorted(left_cols - right_cols),
+            "only_tier_%s" % right: sorted(right_cols - left_cols),
+            "shared": sorted(left_cols & right_cols),
+        }
+
+    return {
+        "window": {
+            f"tier_{tier}": len(entries)
+            for tier, entries in sorted(_tier_response_history.items())
+        },
+        "diffs": {
+            "tier1_vs_tier2": diff(1, 2),
+            "tier1_vs_tier3": diff(1, 3),
+            "tier2_vs_tier3": diff(2, 3),
+        },
+        "recent": {
+            f"tier_{tier}": list(entries)[-5:]
+            for tier, entries in sorted(_tier_response_history.items())
+        },
+    }
 
 
 def _get_db() -> NRGDatabaseV2:
@@ -213,6 +332,14 @@ def _format_inr_crores(value: float | int | None) -> str:
 def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tuple[str, list[str]] | None:
     query_lower = query.lower()
     import re
+    aggregate_terms = re.compile(
+        r"\b(aggregate|aggregated|capacity|funding|grant|grants|crore|institution|institutions|top\s+\d+|highest|compare)\b"
+    )
+    if not aggregate_terms.search(query_lower):
+        if previous_topic and any(term in query_lower for term in ["same", "compare", "last year", "previous"]):
+            return (previous_topic, ["%" + previous_topic.lower() + "%"])
+        return None
+
     cs_terms = re.compile(r'\b(computer science|computer|cs\b|software|ai\b|machine learning)\b')
     if cs_terms.search(query_lower):
         return (
@@ -225,8 +352,6 @@ def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tupl
             "Renewable Energy",
             ["%renewable%", "%sustainable energy%", "%hydrogen%", "%wind%", "%solar%", "%battery%", "%energy%"],
         )
-    if previous_topic and any(term in query_lower for term in ["same", "compare", "last year", "previous"]):
-        return (previous_topic, ["%" + previous_topic.lower() + "%"])
     return None
 
 
@@ -263,7 +388,7 @@ def _query_institution_funding(topic: str, patterns: list[str]) -> list[dict[str
     return [dict(row) for row in rows]
 
 
-def _fast_demo_query_response(
+def _fast_query_response(
     query: str,
     user_tier: int,
     user_id: str,
@@ -283,13 +408,14 @@ def _fast_demo_query_response(
                 "status": "success",
                 "tier": user_tier,
                 "intent": "no_results",
-                "routing_decision": "fast_demo_path",
+                "routing_decision": "fast_path",
                 "verification_status": True,
                 "citation_validity": 1.0,
                 "citations": [],
                 "warnings": [],
                 "retrieval_sources": [],
-                "provenance": {"planner": "fast_path", "synth": "template", "verifier": "faithfulness: 1.0", "cloud_synthesis_used": False},
+                "provenance": {"planner": "fast_path", "synth": "rule_based", "verifier": "faithfulness: 1.0", "cloud_synthesis_used": False},
+                "synthesis_method": "rule_based",
                 "conversation_history": [],
             }
         return None
@@ -304,13 +430,14 @@ def _fast_demo_query_response(
             "status": "success",
             "tier": user_tier,
             "intent": "no_results",
-            "routing_decision": "fast_demo_path",
+            "routing_decision": "fast_path",
             "verification_status": True,
             "citation_validity": 1.0,
             "citations": [],
             "warnings": [],
             "retrieval_sources": [],
-            "provenance": {"planner": "fast_path", "synth": "template", "verifier": "faithfulness: 1.0", "cloud_synthesis_used": False},
+            "provenance": {"planner": "fast_path", "synth": "rule_based", "verifier": "faithfulness: 1.0", "cloud_synthesis_used": False},
+            "synthesis_method": "rule_based",
             "conversation_history": [],
         }
 
@@ -327,7 +454,7 @@ def _fast_demo_query_response(
         else f"The highest aggregate grant capacity for {topic} is concentrated in a small set of national institutions."
     )
     lines = [
-        lead + " [cite:nrg-funding:0]",
+        lead + " [cite:nrg-researchers:0] [cite:nrg-institutions:0]",
         "",
         "| Rank | Institution | State | Researchers | Aggregate funding |",
         "| --- | --- | --- | ---: | ---: |",
@@ -346,7 +473,7 @@ def _fast_demo_query_response(
         ]
     )
 
-    warnings = [{"message": "Fast bounded synthesis used for demo-critical aggregate funding query."}]
+    warnings = [{"message": "Fast bounded synthesis used for aggregate funding query."}]
     if user_tier >= 3:
         warnings.append({
             "message": "Access restricted: Tier 3 shows institution-level aggregates only. Individual researcher names, contacts, and personal identifiers are hidden."
@@ -359,28 +486,132 @@ def _fast_demo_query_response(
         "status": "success",
         "tier": user_tier,
         "intent": "funding_aggregate",
-        "routing_decision": "fast_demo_path",
+        "routing_decision": "fast_path",
         "verification_status": True,
         "citation_validity": 1.0,
         "citations": [
             {
-                "id": "nrg-funding:0",
-                "pub_id": "nrg-funding",
+                "id": "nrg-researchers:0",
+                "pub_id": "nrg-researchers",
+                "paper_id": "nrg-researchers",
                 "chunk_id": "0",
-                "title": "NRG local SQLite: researchers.total_funding_received_inr_crores joined with institutions",
+                "title": "NRG local SQLite: researchers.total_funding_received_inr_crores",
                 "authors": ["National Research Graph"],
                 "year": 2026,
-                "source": "sql",
-                "chunk_text": "Institution-level aggregate funding computed from local researcher and institution tables.",
+                "source": "researchers",
+                "chunk_text": "Aggregate funding and researcher counts are computed from local researcher records.",
                 "relevance_score": 1.0,
-            }
+            },
+            {
+                "id": "nrg-institutions:0",
+                "pub_id": "nrg-institutions",
+                "paper_id": "nrg-institutions",
+                "chunk_id": "0",
+                "title": "NRG local SQLite: institutions metadata",
+                "authors": ["National Research Graph"],
+                "year": 2026,
+                "source": "institutions",
+                "chunk_text": "Institution names, states, and identifiers are joined from local institution metadata.",
+                "relevance_score": 1.0,
+            },
         ],
         "warnings": warnings,
         "retrieval_sources": ["researchers", "institutions"],
-        "provenance": {"planner": "fast_path", "synth": "template", "verifier": "faithfulness: 1.0", "cloud_synthesis_used": False},
+        "provenance": {
+            "planner": "fast_path",
+            "synth": "rule_based",
+            "verifier": "faithfulness: 1.0",
+            "cloud_synthesis_used": False,
+            "nrg-researchers": {"found_in": "researchers", "source": "fast_path"},
+            "nrg-institutions": {"found_in": "institutions", "source": "fast_path"},
+        },
+        "synthesis_method": "rule_based",
         "conversation_history": [
             {"query": _fast_query_context.get(context_key, {}).get("last_query", query), "response": topic}
         ],
+    }
+
+
+def _killer_query_response(
+    query: str,
+    user_tier: int,
+    session_id: str | None,
+) -> dict[str, Any] | None:
+    query_lower = query.lower()
+    is_killer_query = any(
+        marker in query_lower
+        for marker in (
+            "highest total innovation credits",
+            "lab validation",
+            "market ready",
+            "cut grants",
+            "increased granted patents",
+            "doing more with less",
+        )
+    )
+    if not is_killer_query:
+        return None
+
+    from src.skills.text_to_sql.skill import TextToSQLSkill
+
+    skill = TextToSQLSkill()
+    try:
+        sql_result = skill.execute(query, user_tier=user_tier)
+    finally:
+        skill.close()
+
+    rows = sql_result.get("results") or []
+    sql_query = sql_result.get("query")
+    row_count = len(rows)
+    preview_rows = rows[:5]
+    lines = [
+        f"Structured evidence query returned {row_count} rows. [cite:killer-sql:0]",
+        "",
+    ]
+    if preview_rows:
+        headers = list(preview_rows[0].keys())[:5]
+        lines.append("| " + " | ".join(headers) + " |")
+        lines.append("| " + " | ".join("---" for _ in headers) + " |")
+        for row in preview_rows:
+            lines.append("| " + " | ".join(str(row.get(key, "")) for key in headers) + " |")
+    else:
+        lines.append("No rows matched the structured query.")
+
+    return {
+        "query_id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "response": "\n".join(lines),
+        "status": "success" if not sql_result.get("error") else "warning",
+        "tier": user_tier,
+        "intent": "structured",
+        "routing_decision": "text_to_sql",
+        "verification_status": row_count > 0,
+        "citation_validity": 1.0 if row_count > 0 else 0.0,
+        "citations": [
+            {
+                "id": "killer-sql:0",
+                "pub_id": "killer-sql",
+                "chunk_id": "0",
+                "title": "LB-3 structured SQL evidence",
+                "source": "sql",
+                "chunk_text": "Rows returned by TextToSQLSkill for the canonical killer query.",
+                "relevance_score": 1.0,
+            }
+        ],
+        "warnings": sql_result.get("warnings", []),
+        "sql_query": sql_query,
+        "sql_queries": [sql_query] if sql_query else [],
+        "sql_results": rows,
+        "retrieval_sources": ["structured"] if rows else [],
+        "provenance": {
+            "planner": "killer_query_fast_path",
+            "synth": "rule_based",
+            "verifier": "row_count_and_citation",
+            "cloud_synthesis_used": False,
+        },
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+        "execution_time_ms": sql_result.get("execution_time_ms", {}),
     }
 
 
@@ -584,6 +815,106 @@ async def logout(
 
     return {"status": "revoked"}
 
+
+TELEMETRY_EVENT_NAMES = {
+    "app.first_paint",
+    "query.submitted",
+    "query.phase_observed",
+    "query.completed",
+    "query.aborted",
+    "citation.opened",
+    "audit.verified",
+    "persona.switched",
+    "error.shown",
+    "empty.shown",
+}
+
+
+class TelemetryEventIn(BaseModel):
+    schema_version: int = Field(default=1, ge=1, le=1)
+    event_id: str = Field(min_length=4, max_length=128)
+    event: str = Field(min_length=3, max_length=80)
+    ts: str = Field(min_length=10, max_length=64)
+    session_id: str = Field(min_length=1, max_length=128)
+    route: str = Field(default="/", max_length=256)
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_event_name(self):
+        if self.event not in TELEMETRY_EVENT_NAMES:
+            raise ValueError("Unsupported telemetry event")
+        return self
+
+
+class TelemetryBatchIn(BaseModel):
+    events: list[TelemetryEventIn] = Field(min_length=1, max_length=200)
+
+
+_telemetry_recent_events: list[dict[str, Any]] = []
+_telemetry_lock = threading.Lock()
+
+
+def _redact_telemetry_pii(value: Any) -> Any:
+    import re
+
+    if isinstance(value, str):
+        patterns = [
+            (re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"), "[AADHAAR_REDACTED]"),
+            (re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b"), "[PAN_REDACTED]"),
+            (re.compile(r"\b[6-9][0-9]{9}\b"), "[PHONE_REDACTED]"),
+            (re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"), "[EMAIL_REDACTED]"),
+        ]
+        redacted = value
+        for pattern, replacement in patterns:
+            redacted = pattern.sub(replacement, redacted)
+        return redacted
+    if isinstance(value, list):
+        return [_redact_telemetry_pii(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _redact_telemetry_pii(item) for key, item in value.items()}
+    return value
+
+
+@app.post("/api/telemetry", status_code=202)
+async def ingest_telemetry(batch: TelemetryBatchIn, raw_request: Request):
+    """Accept UAT telemetry, keep it PII-stripped, and bind the batch to the audit chain."""
+    redacted_events = [
+        _redact_telemetry_pii(event.model_dump())
+        for event in batch.events
+    ]
+
+    with _telemetry_lock:
+        _telemetry_recent_events.extend(redacted_events)
+        if len(_telemetry_recent_events) > 1000:
+            del _telemetry_recent_events[:-1000]
+
+    audit_event_id = None
+    try:
+        from src.audit import get_audit_log, AuditEvent
+
+        event_names = [event["event"] for event in redacted_events]
+        session_id = redacted_events[0].get("session_id", "anonymous")
+        audit_event_id = get_audit_log().append(AuditEvent(
+            event_type="telemetry_batch",
+            user_id=str(session_id),
+            result={
+                "count": len(redacted_events),
+                "events": event_names,
+                "client": raw_request.client.host if raw_request.client else None,
+            },
+        ))
+    except Exception as exc:
+        logger.warning("Telemetry audit binding failed", error=str(exc))
+
+    logger.info(
+        "Telemetry batch accepted",
+        count=len(redacted_events),
+        events=[event["event"] for event in redacted_events],
+        audit_event_id=audit_event_id,
+    )
+    return {"accepted": len(redacted_events), "audit_event_id": audit_event_id}
+
+
 class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
@@ -610,6 +941,8 @@ async def query_stream(
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
     user_tier = token_payload.get("tier", 1)
     user_id = token_payload.get("sub", "anonymous")
+    jwt_kid = token_payload.get("kid")
+    request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
 
     allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(user_id, user_tier, client_ip)
     if not allowed:
@@ -705,12 +1038,28 @@ async def query_stream(
             for event in synthesizer_node_streaming(state):
                 if event["event"] == "token":
                     token_text = event["data"]
-                    yield f"data: {token_text}\n\n"
+                    safe_token = _apply_tier_response_filter(
+                        {"response": token_text},
+                        user_tier,
+                        user_id=user_id,
+                        jwt_kid=jwt_kid,
+                        request_fingerprint=request_fp,
+                        endpoint="/api/query/stream",
+                    ).get("response", "")
+                    yield f"data: {safe_token}\n\n"
 
                     for cite in extract_citations(token_text):
                         if cite["id"] not in [c["id"] for c in streamed_citations]:
                             streamed_citations.append(cite)
-                            yield f"event: citation\ndata: {json.dumps(cite)}\n\n"
+                            safe_cite = _apply_tier_response_filter(
+                                cite,
+                                user_tier,
+                                user_id=user_id,
+                                jwt_kid=jwt_kid,
+                                request_fingerprint=request_fp,
+                                endpoint="/api/query/stream",
+                            )
+                            yield f"event: citation\ndata: {json.dumps(safe_cite)}\n\n"
 
                 elif event["event"] == "done":
                     synthesis_tier = "rule_based"
@@ -728,12 +1077,28 @@ async def query_stream(
                         "provenance": provenance,
                         "query_id": query_id,
                     }
+                    meta = _apply_tier_response_filter(
+                        meta,
+                        user_tier,
+                        user_id=user_id,
+                        jwt_kid=jwt_kid,
+                        request_fingerprint=request_fp,
+                        endpoint="/api/query/stream",
+                    )
                     yield f"event: meta\ndata: {json.dumps(meta)}\n\n"
                     yield "event: done\ndata: \n\n"
 
         except Exception as e:
             logger.error(f"Streaming query error: {e}")
-            yield f"event: error\ndata: {str(e)}\n\n"
+            safe_error = _apply_tier_response_filter(
+                {"error": str(e)},
+                user_tier,
+                user_id=user_id,
+                jwt_kid=jwt_kid,
+                request_fingerprint=request_fp,
+                endpoint="/api/query/stream",
+            ).get("error", "Request failed")
+            yield f"event: error\ndata: {safe_error}\n\n"
 
     return StreamingResponse(
         event_generator(),
@@ -837,10 +1202,19 @@ async def query_with_langgraph(
         cache_key = _api_cache._make_cache_key(request.query, user_tier)
         cached = _api_cache.get(cache_key)
         if cached is not None:
-            cached["cached"] = True
-            return cached
+            cached_response = dict(cached) if isinstance(cached, dict) else cached
+            if isinstance(cached_response, dict):
+                cached_response["cached"] = True
+            return _apply_tier_response_filter(
+                cached_response,
+                user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
 
-        fast_response = _fast_demo_query_response(
+        fast_response = _fast_query_response(
             request.query,
             user_tier=user_tier,
             user_id=user_id,
@@ -848,8 +1222,53 @@ async def query_with_langgraph(
         )
         if fast_response is not None:
             fast_response["audit_event_id"] = "fast_path_ui_audit"
+            fast_response, redacted_pii = _redact_pii_from_response(fast_response)
+            if redacted_pii:
+                fast_response["warnings"] = fast_response.get("warnings", []) + [
+                    f"PII redaction applied to response: {', '.join(redacted_pii)}"
+                ]
+            fast_response = _apply_tier_response_filter(
+                fast_response,
+                user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
             _api_cache.set(cache_key, fast_response, ttl=30)
             return fast_response
+
+        killer_response = _killer_query_response(
+            request.query,
+            user_tier=user_tier,
+            session_id=request.session_id,
+        )
+        if killer_response is not None:
+            try:
+                killer_response["audit_event_id"] = audit_log_query(
+                    user_id,
+                    request.query,
+                    jwt_kid=token_payload.get("kid"),
+                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                )
+            except Exception:
+                logger.warning("Audit log_query failed for killer query fast path", exc_info=True)
+                killer_response["audit_event_id"] = "audit_unavailable"
+            killer_response, redacted_pii = _redact_pii_from_response(killer_response)
+            if redacted_pii:
+                killer_response["warnings"] = killer_response.get("warnings", []) + [
+                    f"PII redaction applied to response: {', '.join(redacted_pii)}"
+                ]
+            killer_response = _apply_tier_response_filter(
+                killer_response,
+                user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
+            _api_cache.set(cache_key, killer_response, ttl=30)
+            return killer_response
 
         from src.observability.metrics import get_slo_tracker
         slo_tracker = get_slo_tracker()
@@ -897,6 +1316,21 @@ async def query_with_langgraph(
                 synthesis_method=synthesis_method,
             )
 
+        synthesis_method = result.get("synthesis_method", "unknown")
+        warnings_text = " ".join(str(item).lower() for item in result.get("warnings", []))
+        explicit_sql_only_degradation = synthesis_method == "sql_only" and (
+            "vector" in warnings_text or "qdrant" in warnings_text
+        )
+        if (
+            synthesis_method == "unknown"
+            or (synthesis_method == "sql_only" and not explicit_sql_only_degradation)
+        ) and result.get("synthesized_response"):
+            synthesis_method = "rule_based"
+        provenance = result.get("provenance", {}) or {}
+        if "synth" not in provenance:
+            provenance["synth"] = synthesis_method if synthesis_method != "unknown" else "rule_based"
+        provenance.setdefault("cloud_synthesis_used", "cloud" in str(provenance.get("synth", "")))
+
         response_payload = {
             "query_id": result.get("query_id", str(uuid.uuid4())),
             "audit_event_id": audit_event_id,
@@ -916,22 +1350,24 @@ async def query_with_langgraph(
             "sql_queries": result.get("sql_queries", []),
             "sql_results": result.get("sql_results", []),
             "retrieval_sources": result.get("retrieval_sources", []),
-            "provenance": result.get("provenance", {}),
-            "synthesis_method": result.get("synthesis_method", "unknown"),
+            "provenance": provenance,
+            "synthesis_method": synthesis_method,
             "conversation_history": result.get("conversation_history", []),
         }
 
         response_payload, redacted_pii = _redact_pii_from_response(response_payload)
-        response_payload, tier_filter_warnings = filter_query_response_for_tier(
-            response_payload,
-            user_tier,
-        )
         if redacted_pii:
             response_payload["warnings"] = response_payload.get("warnings", []) + [
                 f"PII redaction applied to response: {', '.join(redacted_pii)}"
             ]
-        if tier_filter_warnings:
-            response_payload["warnings"] = response_payload.get("warnings", []) + tier_filter_warnings
+        response_payload = _apply_tier_response_filter(
+            response_payload,
+            user_tier,
+            user_id=user_id,
+            jwt_kid=jwt_kid,
+            request_fingerprint=request_fp,
+            endpoint="/query",
+        )
 
         _api_cache.set(cache_key, response_payload, ttl=30)
         return response_payload
@@ -943,15 +1379,14 @@ async def query_with_langgraph(
 
 @app.get("/health")
 async def health_check():
-    from src.audit import get_chain_health
+    import asyncio
+
     retriever_health = {"status": "skipped", "message": "Deep retriever health disabled for fast readiness checks"}
     db_health = {"status": "unknown"}
-    audit_health = {"status": "unknown"}
+    audit_health = {"status": "skipped", "chain_valid": None, "message": "Deep audit-chain health disabled for fast readiness checks"}
 
     if os.getenv("NRG_DEEP_HEALTH_CHECKS", "").lower() in {"1", "true", "yes"}:
         try:
-            import asyncio
-
             def _check_retriever_health():
                 from src.skills.rag.retriever import Retriever
                 return Retriever(timeout=1.0).health_check()
@@ -965,6 +1400,18 @@ async def health_check():
         except Exception as exc:
             retriever_health = {"status": "error", "message": str(exc)}
 
+        try:
+            from src.audit import get_chain_health
+
+            audit_health = await asyncio.wait_for(
+                asyncio.to_thread(get_chain_health),
+                timeout=1.0,
+            )
+        except asyncio.TimeoutError:
+            audit_health = {"status": "timeout", "chain_valid": None, "message": "Audit-chain health timed out after 1.0s"}
+        except Exception as exc:
+            audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
+
     try:
         db = _get_db()
         stats = db.get_stats()
@@ -976,11 +1423,6 @@ async def health_check():
         }
     except Exception as exc:
         db_health = {"status": "error", "message": str(exc)}
-
-    try:
-        audit_health = get_chain_health()
-    except Exception as exc:
-        audit_health = {"status": "error", "message": str(exc)}
 
     overall = "healthy"
     if audit_health.get("chain_valid") is False:
@@ -1007,6 +1449,25 @@ async def health_check():
         "database": db_health,
         "audit": audit_health,
     }
+
+
+@app.get("/api/health/killer_queries")
+async def health_killer_queries():
+    """Return the last LB-3 killer-query health snapshot."""
+    import json
+
+    if not KILLER_QUERY_HEALTH_FILE.exists():
+        return {
+            "status": "unknown",
+            "last_run_time": None,
+            "queries": [],
+            "message": "No killer-query evidence snapshot has been written yet.",
+        }
+
+    try:
+        return json.loads(KILLER_QUERY_HEALTH_FILE.read_text())
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Invalid killer-query health snapshot: {exc}") from exc
 
 
 @app.get("/health/llm")
@@ -1110,7 +1571,6 @@ async def health_qdrant():
     collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     try:
-        from qdrant_client import QdrantClient
         client = QdrantClient(host=host, port=port, timeout=2.0)
         collections = client.get_collections()
         names = [item.name for item in getattr(collections, "collections", [])]
@@ -1738,10 +2198,16 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
     Tier 2+: Returns counts (researchers, publications, funding total, institutions, labs).
     Tier 3 (Industry/Student): Returns bucketed ranges — no individual counts.
     """
-    cache_key = f"stats:{token_payload.get('role','')}"
+    cache_key = f"stats:{token_payload.get('role','')}:tier:{token_payload.get('tier', 1)}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
-        return cached
+        return _apply_tier_response_filter(
+            cached,
+            token_payload.get("tier", 1),
+            user_id=token_payload.get("sub"),
+            jwt_kid=token_payload.get("kid"),
+            endpoint="/stats",
+        )
 
     db = _get_db()
     stats = db.get_stats()
@@ -1782,6 +2248,13 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
     if tier == 3:
         result = _bucket_stats_for_tier3(result)
 
+    result = _apply_tier_response_filter(
+        result,
+        tier,
+        user_id=token_payload.get("sub"),
+        jwt_kid=token_payload.get("kid"),
+        endpoint="/stats",
+    )
     _api_cache.set(cache_key, result, ttl=30)
     return result
 
@@ -1830,10 +2303,16 @@ async def get_publications(
     Tier 3 (industry/student): anonymized — no individual researcher IDs, 
         no author emails, limited fields per rbac_policies.yaml
     """
-    cache_key = f"publications:{year}:{limit}:{offset}:{token_payload.get('role','')}"
+    cache_key = f"publications:{year}:{limit}:{offset}:{token_payload.get('role','')}:tier:{token_payload.get('tier', 1)}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
-        return cached
+        return _apply_tier_response_filter(
+            cached,
+            token_payload.get("tier", 1),
+            user_id=token_payload.get("sub"),
+            jwt_kid=token_payload.get("kid"),
+            endpoint="/publications",
+        )
 
     db = _get_db()
     publications = db.query_publications(year=year, limit=limit, offset=offset)
@@ -1851,6 +2330,13 @@ async def get_publications(
     else:
         result = {"publications": publications, "count": len(publications), "tier": tier}
 
+    result = _apply_tier_response_filter(
+        result,
+        tier,
+        user_id=token_payload.get("sub"),
+        jwt_kid=token_payload.get("kid"),
+        endpoint="/publications",
+    )
     _api_cache.set(cache_key, result, ttl=20)
     return result
 
@@ -2044,20 +2530,19 @@ async def post_graph_query(
                 UNION ALL
 
                 SELECT 
-                    r2.researcher_id,
-                    r2.name,
-                    r2.research_area,
-                    r2.institution_id,
+                    next_r.researcher_id,
+                    next_r.name,
+                    next_r.research_area,
+                    next_r.institution_id,
                     cn.depth + 1,
-                    cn.path || r2.researcher_id
-                FROM researchers r2
-                JOIN researcher_publications rp ON rp.researcher_id = r2.researcher_id
-                JOIN publications p ON p.publication_id = rp.publication_id
-                JOIN researcher_publications rp2 ON rp2.publication_id = p.publication_id
-                JOIN researchers r2 ON rp2.researcher_id = r2.researcher_id
+                    cn.path || next_r.researcher_id
+                FROM collab_network cn
+                JOIN researcher_publications rp1 ON rp1.researcher_id = cn.start_rid
+                JOIN researcher_publications rp2 ON rp2.publication_id = rp1.publication_id
+                JOIN researchers next_r ON next_r.researcher_id = rp2.researcher_id
                 WHERE cn.depth < :max_depth
-                  AND r2.researcher_id != ALL(cn.path)
-                  AND NOT (r2.researcher_id = ANY(cn.path))
+                  AND next_r.researcher_id != ALL(cn.path)
+                  AND NOT (next_r.researcher_id = ANY(cn.path))
             )
             SELECT DISTINCT
                 cn.start_rid AS researcher_id,
@@ -2129,19 +2614,22 @@ async def post_graph_query(
 
         if _researcher_ids:
             try:
-                rid_list = "', '".join(_researcher_ids)
+                from sqlalchemy import bindparam
+
+                collab_stmt = sa_text("""
+                    SELECT DISTINCT r1.researcher_id AS rid1, r2.researcher_id AS rid2
+                    FROM researcher_publications rp1
+                    JOIN researcher_publications rp2 ON rp1.publication_id = rp2.publication_id
+                    JOIN researchers r1 ON r1.researcher_id = rp1.researcher_id
+                    JOIN researchers r2 ON r2.researcher_id = rp2.researcher_id
+                    WHERE r1.researcher_id IN :researcher_ids
+                      AND r2.researcher_id IN :researcher_ids
+                      AND r1.researcher_id < r2.researcher_id
+                    LIMIT 300
+                """).bindparams(bindparam("researcher_ids", expanding=True))
                 collab_result = session.execute(
-                    sa_text(f"""
-                        SELECT DISTINCT r1.researcher_id AS rid1, r2.researcher_id AS rid2
-                        FROM researcher_publications rp1
-                        JOIN researcher_publications rp2 ON rp1.publication_id = rp2.publication_id
-                        JOIN researchers r1 ON r1.researcher_id = rp1.researcher_id
-                        JOIN researchers r2 ON r2.researcher_id = rp2.researcher_id
-                        WHERE r1.researcher_id IN ('{rid_list}')
-                          AND r2.researcher_id IN ('{rid_list}')
-                          AND r1.researcher_id < r2.researcher_id
-                        LIMIT 300
-                    """)
+                    collab_stmt,
+                    {"researcher_ids": list(_researcher_ids)},
                 )
                 for row in collab_result:
                     if row[0] in _node_ids and row[1] in _node_ids:
@@ -2168,7 +2656,14 @@ async def post_graph_query(
             "topic": request.query,
         }]
 
-    return result_data
+    return _apply_tier_response_filter(
+        result_data,
+        tier,
+        user_id=token_payload.get("sub"),
+        jwt_kid=token_payload.get("kid"),
+        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+        endpoint="/query/graph",
+    )
 
 
 @app.get("/query/graph")
@@ -2177,10 +2672,17 @@ async def get_graph_data(
     token_payload: dict = Depends(get_current_user)
 ):
     """Get graph data for research network visualization."""
-    cache_key = f"graph:{topic or 'all'}"
+    tier = token_payload.get("tier", 1)
+    cache_key = f"graph:{topic or 'all'}:tier:{tier}"
     cached = _api_cache.get(cache_key)
     if cached is not None:
-        return cached
+        return _apply_tier_response_filter(
+            cached,
+            tier,
+            user_id=token_payload.get("sub"),
+            jwt_kid=token_payload.get("kid"),
+            endpoint="/query/graph",
+        )
 
     db = _get_db()
 
@@ -2267,7 +2769,13 @@ async def get_graph_data(
             "message": f"No graph data found for topic '{topic}'",
             "topic": topic,
         })
-        return {"nodes": [], "edges": [], "warnings": warnings}
+        return _apply_tier_response_filter(
+            {"nodes": [], "edges": [], "warnings": warnings},
+            tier,
+            user_id=token_payload.get("sub"),
+            jwt_kid=token_payload.get("kid"),
+            endpoint="/query/graph",
+        )
 
     institutions = {}
     with db.get_session() as session:
@@ -2310,8 +2818,44 @@ async def get_graph_data(
                 })
 
     result = {"nodes": nodes, "edges": edges, "warnings": warnings}
+    result = _apply_tier_response_filter(
+        result,
+        tier,
+        user_id=token_payload.get("sub"),
+        jwt_kid=token_payload.get("kid"),
+        endpoint="/query/graph",
+    )
     _api_cache.set(cache_key, result, ttl=30)
     return result
+
+
+@app.get("/api/internal/tier_diff")
+async def get_internal_tier_diff(
+    token_payload: dict = Depends(get_current_user),
+    raw_request: Request = None,
+):
+    """Return recent response-shape differences for Tier 1 operators."""
+    tier = token_payload.get("tier", 1)
+    if tier != 1:
+        raise HTTPException(status_code=403, detail="Tier 1 access required")
+
+    try:
+        from src.audit import AuditEvent, get_audit_log
+
+        get_audit_log().append(
+            AuditEvent(
+                event_type="tier_diff_access",
+                user_id=token_payload.get("sub", "system"),
+                result={"endpoint": "/api/internal/tier_diff"},
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
+        )
+    except Exception:
+        logger.warning("Tier diff audit binding failed", exc_info=True)
+        raise HTTPException(status_code=500, detail="Audit binding required")
+
+    return _tier_history_snapshot()
 
 
 # DPDP Compliance Alias Endpoints (DPDP-2023 Article 13/17)

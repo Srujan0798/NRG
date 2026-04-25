@@ -28,20 +28,25 @@ within your execution, you pursue PERFECTION. Every task has 3 levels:
 8. **Read the task protocol** — then EXPAND it. Don't do the minimum. Elevate it.
 
 ## Your Skills
-You have **52 skills** in `.agents/skills/`. Each skill has a `SKILL.md` with instructions.
+You have **25 unique skills** in `.agents/skills/`. Each skill has a `SKILL.md` with instructions.
 
 **Key skills you MUST use:**
 | Skill | When | Path |
 |-------|------|------|
-| `pre-commit` | Before EVERY commit | `.agents/skills/pre-commit/SKILL.md` |
-| `code-review-and-quality` | Self-review before submitting | `.agents/skills/code-review-and-quality/SKILL.md` |
-| `python-backend` | Any Python code | `.agents/skills/python-backend/SKILL.md` |
-| `security-auditor` | Any auth/security code | `.agents/skills/security-auditor/SKILL.md` |
-| `frontend-react-best-practices` | Any React/TS code | `.agents/skills/frontend-react-best-practices/SKILL.md` |
-| `webapp-testing` | Writing tests | `.agents/skills/webapp-testing/SKILL.md` |
-| `test-suite` | Running all tests | `.agents/skills/test-suite/SKILL.md` |
+| `pre-commit` | Before EVERY commit | `.claude/skills/pre-commit/SKILL.md` (canonical) |
+| `code-review-and-quality` | Self-review before submitting | `.claude/skills/code-review-and-quality/SKILL.md` (canonical) |
+| `python-backend` | Any Python code | `.claude/skills/python-backend/SKILL.md` (canonical) |
+| `security-auditor` | Any auth/security code | `.claude/skills/security-auditor/SKILL.md` (canonical) |
+| `frontend-react-best-practices` | Any React/TS code | `.claude/skills/frontend-react-best-practices/SKILL.md` (canonical) |
+| `webapp-testing` | Writing tests | `.claude/skills/webapp-testing/SKILL.md` (canonical) |
+| `test-suite` | Running all tests | `.claude/skills/test-suite/SKILL.md` (canonical) |
+| `debug` | Systematic debugging | `.agents/skills/debug/SKILL.md` |
+| `test-driven-development` | Implementing any feature | `.agents/skills/test-driven-development/SKILL.md` |
+| `sql-queries` | Writing SQL | `.agents/skills/sql-queries/SKILL.md` |
+| `validate-data` | QA before sharing | `.agents/skills/validate-data/SKILL.md` |
+| `documentation` | Writing docs | `.agents/skills/documentation/SKILL.md` |
 
-Browse all 52: `ls .agents/skills/`
+Browse all 25: `ls .agents/skills/`
 
 ## Task Protocol Format
 Every task you receive will have:

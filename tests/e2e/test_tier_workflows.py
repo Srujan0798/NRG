@@ -20,12 +20,22 @@ SKILLS USED:
 
 import pytest
 import time
+import src.api.main as api_main
 
 
 pytestmark = [
     pytest.mark.e2e,
     pytest.mark.smoke,
 ]
+
+
+@pytest.fixture(autouse=True)
+def clear_api_cache():
+    api_main.workflow = api_main.NRGWorkflow()
+    api_main._api_cache.invalidate()
+    yield
+    api_main.workflow = api_main.NRGWorkflow()
+    api_main._api_cache.invalidate()
 
 
 class TestTierLoginReturnsCorrectClaims:

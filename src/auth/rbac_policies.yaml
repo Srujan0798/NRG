@@ -1,7 +1,107 @@
 # RBAC Policy Configuration for NRG
-# Each persona defines: column visibility, PII masking, output format, data scope, and access limits
-#
-# Adding a new persona = add a YAML entry here. Zero code changes needed.
+# Each persona defines: column visibility, PII masking, output format, data scope, and access limits.
+# Response boundary classes below are the single source for API payload shaping.
+
+tier_response_columns:
+  version: 1
+  audit_reason_prefix: "pii_strip"
+  tier3_name_template: "Researcher_{id}"
+  graph_person_node_types:
+    - "author"
+    - "researcher"
+    - "person"
+  field_classes:
+    email:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "email"
+        - "alternate_email"
+        - "author_email"
+        - "contact_email"
+        - "corresponding_author_email"
+    phone:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "phone"
+        - "mobile"
+        - "personal_phone"
+        - "contact_number"
+        - "telephone"
+    aadhaar:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "aadhaar"
+        - "aadhaar_number"
+        - "aadhar"
+        - "aadhar_number"
+    pan:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "pan"
+        - "pan_number"
+    dob:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "dob"
+        - "date_of_birth"
+        - "birth_date"
+    full_address:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "full_address"
+        - "address"
+        - "home_address"
+        - "residential_address"
+    bank_account:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "bank_account"
+        - "account_number"
+        - "ifsc"
+        - "iban"
+    gstin:
+      allowed_tiers: [1]
+      match: "contains"
+      aliases:
+        - "gstin"
+        - "gst_number"
+    personal_name:
+      allowed_tiers: [1, 2]
+      match: "exact"
+      tier3_transform: "researcher_id"
+      aliases:
+        - "personal_name"
+        - "researcher_name"
+        - "author_name"
+        - "inventor_name"
+        - "principal_investigator_name"
+        - "pi_name"
+    debug_trace:
+      allowed_tiers: [1, 2]
+      match: "exact"
+      empty_on_strip: true
+      aliases:
+        - "sql_query"
+        - "sql_queries"
+        - "sql"
+        - "conversation_history"
+        - "retrieval_sources"
+        - "raw_rows"
+        - "trace"
+  value_patterns:
+    email: "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\\b"
+    phone: "\\b(?:\\+91[- ]?)?[6-9][0-9]{9}\\b"
+    aadhaar: "\\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\\b"
+    pan: "\\b[A-Z]{5}[0-9]{4}[A-Z]\\b"
+    gstin: "\\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]\\b"
+    bank_account: "\\b[0-9]{11,18}\\b"
 
 personas:
   # ─────────────────────────────────────────────────────────────────

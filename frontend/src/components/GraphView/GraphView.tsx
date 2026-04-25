@@ -4,6 +4,7 @@ import { ForceGraph, ForceGraphHandle } from '../ForceGraph'
 import { GraphNode, GraphData } from '../../services/queryService'
 import { ZoomIn, ZoomOut, RotateCcw, Filter } from 'lucide-react'
 import { t } from '../../i18n'
+import MobileGraphModal from '../MobileGraphModal/MobileGraphModal'
 
 interface GraphViewProps {
   data: GraphData
@@ -34,6 +35,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
 }) => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [isMobileGraphOpen, setIsMobileGraphOpen] = useState(false)
   const [containerWidth, setContainerWidth] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const graphRef = useRef<ForceGraphHandle>(null)
@@ -57,7 +59,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
 
   return (
     <div ref={containerRef} className="nrg-panel relative overflow-hidden">
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+      <div className="hidden absolute top-4 left-4 z-10 flex-col gap-2 sm:flex">
         <motion.button
           onClick={() => setShowFilters(!showFilters)}
           className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
@@ -107,7 +109,18 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </div>
       </div>
 
-      <div style={{ width: '100%', height }}>
+      <div className="p-4 sm:hidden">
+        <button
+          type="button"
+          data-testid="mobile-view-network"
+          onClick={() => setIsMobileGraphOpen(true)}
+          className="flex min-h-11 w-full items-center justify-center rounded-xl border border-nrg-border bg-[var(--nrg-surface-1)] px-4 py-3 text-sm font-semibold text-nrg-text shadow-sm transition hover:border-[var(--nrg-focus)]"
+        >
+          {t('auto.components.MobileGraphModal.2')}
+        </button>
+      </div>
+
+      <div className="hidden sm:block" style={{ width: '100%', height }}>
         <ForceGraph
           ref={graphRef}
           data={data}
@@ -132,6 +145,13 @@ export const GraphView: React.FC<GraphViewProps> = ({
           </p>
         </motion.div>
       )}
+
+      <MobileGraphModal
+        data={data}
+        isOpen={isMobileGraphOpen}
+        onClose={() => setIsMobileGraphOpen(false)}
+        onNodeClick={handleNodeClick}
+      />
     </div>
   )
 }

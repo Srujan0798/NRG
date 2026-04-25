@@ -78,7 +78,7 @@ After generating the PRD:
 
 - Ask the user if any sections need adjustment
 - Offer to expand on specific sections
-- Offer to create follow-up artifacts (design brief, engineering ticket breakdown, stakeholder pitch)
+- Offer to create follow-up artifacts (design brief, engineering ticket breakdown, stakeholder presentation)
 
 ## PRD Structure
 

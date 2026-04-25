@@ -176,6 +176,19 @@ class PromptSanitiser:
                 "system_prompt_exfiltration",
                 re.compile(r"\b(reveal|print|dump|extract)\s+(the\s+)?underlying\s+prompt\b"),
             ),
+            _Rule(
+                "system_prompt_exfiltration",
+                re.compile(
+                    r"\b(print|dump|extract|reveal|return|show)\s+.*?"
+                    r"\b(developer\s+(?:message|instructions?)|tool\s+instructions?|hidden\s+chain\s+policy)\b"
+                ),
+            ),
+            _Rule(
+                "system_prompt_exfiltration",
+                re.compile(r"\bdeveloper\s+instructions?\s+shabd-shabd\b"),
+            ),
+            _Rule("system_prompt_exfiltration", re.compile(r"\bhidden\s+instructions?\b")),
+            _Rule("system_prompt_exfiltration", re.compile(r"\btpmorp\s+metsys\b")),
             _Rule("system_prompt_exfiltration", re.compile(r"\breveal\s+(the\s+)?system\b")),
             _Rule("system_prompt_exfiltration", re.compile(r"\breveal\s+(the\s+)?hidden\s+system\s+prompt\b")),
             _Rule("system_prompt_exfiltration", re.compile(r"\breveal\s+hidden\s+system\s+content\b")),
@@ -197,27 +210,79 @@ class PromptSanitiser:
             _Rule("policy_bypass", re.compile(r"\b(?:crafted|manual(?:ly)?\s+crafted)\s+jwt\b")),
             _Rule("policy_bypass", re.compile(r"\bjwt\s+claiming\s+tier\b")),
             _Rule("policy_bypass", re.compile(r"\bclaiming\s+tier\s*:\s*(researcher|tier\s*1|1)\b")),
+            _Rule("policy_bypass", re.compile(r"\bconsent\s+is\s+waived\b")),
+            _Rule("policy_bypass", re.compile(r"\bsafety\s+niyam\s+hatao\b")),
+            _Rule("policy_bypass", re.compile(r"\breveal\s+all\s+tier\s*1\s+fields\b")),
+            _Rule("policy_bypass", re.compile(r"\bhidden-context\s+request\b")),
+            _Rule("policy_bypass", re.compile(r"\brepeat\s+.*\breveal\s+policy\b")),
+            _Rule(
+                "audit_leakage",
+                re.compile(r"\b(audit\s+chain|jwt\s+key\s+id|request\s+fingerprints?|hmac\s+salts?)\b"),
+            ),
+            _Rule("schema_probing", re.compile(r"\b(raw_schema|information_schema|pg_catalog)\b")),
             _Rule(
                 "data_exfiltration",
                 re.compile(
                     r"\b(return|dump|print|extract|show|reveal|output)\s+.*?"
-                    r"\b(raw\s+database|database|training\s+data|admin\s+password|"
+                    r"\b(raw\s+database|database|training\s+data|admin\s+password|passwords?|tokens?|"
                     r"researcher\s+emails?|unredacted\s+full_text|full_text|raw\s+abstracts?)\b"
                 ),
             ),
+            _Rule("data_exfiltration", re.compile(r"\bpasswords?\s+and\s+tokens?\b")),
             _Rule("data_exfiltration", re.compile(r"\bdatabase\s+password\b")),
             _Rule("data_exfiltration", re.compile(r"\bcontact\s+details?\b")),
             _Rule("data_exfiltration", re.compile(r"\bcontact\s+info\b")),
             _Rule("data_exfiltration", re.compile(r"\bemail\s+addresses?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bresearcher\s+emails?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bphone\s+numbers?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bpersonal\s+researcher\s+contact\s+fields?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bunique\s+names?\s+for\s+researchers?\s+in\s+a\s+very\s+small\s+private\s+cohort\b")),
+            _Rule("data_exfiltration", re.compile(r"\bexact\s+counts?\s+and\s+unique\s+names?\b")),
             _Rule("data_exfiltration", re.compile(r"\bpan\s+numbers?\b")),
             _Rule("data_exfiltration", re.compile(r"\b(?:aadhaar|aadhar)\s+numbers?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bgstin\b")),
+            _Rule("data_exfiltration", re.compile(r"\bbank\s+account\b")),
             _Rule(
                 "data_exfiltration",
-                re.compile(r"\b(show|list|return|dump|print)\s+(me\s+)?all\s+researchers?\b"),
+                re.compile(r"\b(show|list|return|dump|print)\s+me\s+all\s+researchers?\b(?!\s+(in|from|at|working|based|who|with))"),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(
+                    r"\b(export|dump|extract|return|show|print)\s+"
+                    r"(?:every|all)\s+researcher\s+(?:record|records|profile|profiles|row|rows|data)\b"
+                ),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(
+                    r"\b(?:every|all)\s+researcher\s+(?:record|records|profile|profiles|row|rows|data)\b"
+                    r".*\b(email|emails|phone|phones|contact|contacts|personal)\b"
+                ),
             ),
             _Rule(
                 "data_exfiltration",
                 re.compile(r"\ball\s+researchers?\s+(and\s+)?(emails?|phones?|contact|details?)\b"),
+            ),
+            _Rule(
+                "tier_impersonation",
+                re.compile(
+                    r"\bi\s+am\s+(?:a\s+)?(?:ministry\s+)?"
+                    r"(?:admin|government\s+reviewer|tier\s*1|researcher)\b"
+                    r".*\b(?:give|return|show|export)\b.*\b(?:email|emails|phone|phones|contact|personal|tier\s*1)\b"
+                ),
+            ),
+            _Rule(
+                "tier_impersonation",
+                re.compile(r"\bgive\s+(?:tier\s*1\s+)?individual\s+researcher\s+emails?\b"),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(r"\b(dump|print|extract)\s+all\s+researcher\s+data\b"),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(r"\ball\s+researcher\s+passwords?\b"),
             ),
             _Rule(
                 "data_exfiltration",
@@ -398,6 +463,12 @@ class PromptSanitiser:
                 "ᴜ": "u",
                 "ᴛ": "t",
                 "ᴄ": "c",
+                "е": "e",
+                "о": "o",
+                "а": "a",
+                "р": "p",
+                "с": "c",
+                "х": "x",
             }
         )
         normalized = normalized.translate(homoglyphs)

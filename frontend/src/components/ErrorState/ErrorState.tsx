@@ -1,7 +1,9 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, RefreshCw, Home, ShieldAlert } from 'lucide-react'
 import { t } from '../../i18n'
+import { authService } from '../../services/authService'
+import { emitTelemetry } from '../../lib/telemetry'
 
 type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical'
 
@@ -113,6 +115,14 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
 }) => {
   const config = severityConfig[severity]
   const defaults = errorMessages[severity]
+
+  useEffect(() => {
+    emitTelemetry('error.shown', {
+      tier: authService.getStoredSession()?.user?.tier || 'anonymous',
+      code: errorCode || severity,
+      route: window.location.pathname,
+    })
+  }, [errorCode, severity])
 
   return (
     <motion.div

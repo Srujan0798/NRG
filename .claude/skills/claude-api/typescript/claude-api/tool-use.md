@@ -479,7 +479,7 @@ const response = await client.messages.parse({
     {
       role: "user",
       content:
-        "Extract: Jane Doe (jane@co.com) wants Enterprise, interested in API and SDKs, wants a demo.",
+        "Extract: Jane Doe (jane@co.com) wants Enterprise, interested in API and SDKs, wants a walkthrough.",
     },
   ],
   output_config: {

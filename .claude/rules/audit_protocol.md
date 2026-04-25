@@ -329,7 +329,7 @@ Do NOT mark items FAIL without running the relevant test. If they fail, that is 
 | H6 | `docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md` | | | |
 | H7 | `docs/handover/DATA_INTAKE_PROTOCOL.md` | | | |
 | H8 | `docs/handover/UAT_RESULTS.md` | | | |
-| H9 | `pitch/NRG_PITCH_DECK.md` | | | |
+| H9 | Promotional overview (pending relocation to `docs/promotional/`)  | | | |
 
 ---
 
@@ -623,7 +623,7 @@ This is not a checklist. This is the thinking that separates a principal enginee
 Every SQL test that passes on seed data but would silently return wrong results on 50,000 rows per table is a deferred bug, not a passing test. Before claiming any query works, ask: "would this test catch the bug if the institute had 47 grant rows in 2023?"
 
 **5. Think in rupees, milliseconds, and audit logs — not in feature names.**
-The 7.2s average latency was a product failure. At 7.2s on a sovereign demo, the professor assumes the system is broken. Every architectural decision must be evaluated against: what does this cost in ₹, how fast does it run, and can we prove the result to the ministry?
+The 7.2s average latency was a product failure. At 7.2s on a sovereign evaluation, the professor assumes the system is broken. Every architectural decision must be evaluated against: what does this cost in ₹, how fast does it run, and can we prove the result to the ministry?
 
 **6. There is no failure mode that ends in a 500 error to a government official.**
 Every code path that can throw — has a catch. Every catch — has a user-facing message. Every message — is logged with a trace ID. Not "mostly handled." Every. Single. Path.
@@ -638,7 +638,7 @@ If RT-01 through RT-25 succeed against your own system — you have a security b
 The professor does not care about HMAC-SHA256 or the circuit breaker formula. They care that when they ask "who is doing the best work in solar energy in India right now?" — they get a correct, fast, cited answer. Everything else is in service of that one moment.
 
 **10. You are building the IP that earns the 1-crore valuation.**
-This is not a toy demo. This is a 5-layer sovereign research intelligence platform with DPDP compliance, per-user audit binding, a fine-tuning roadmap, and a working 6-node LangGraph pipeline. The architecture, the security model, the 58-table schema integration — this is years of senior engineering condensed. Treat it that way. Ship it that way. Prove it that way.
+This is not a learning exercise. This is a 5-layer sovereign research intelligence platform with DPDP compliance, per-user audit binding, a fine-tuning roadmap, and a working 6-node LangGraph pipeline. The architecture, the security model, the 58-table schema integration — this is years of senior engineering condensed. Treat it that way. Ship it that way. Prove it that way.
 
 ---
 
@@ -658,7 +658,7 @@ This is not a toy demo. This is a 5-layer sovereign research intelligence platfo
 
 ### 13.1 — When To Run An External Audit
 
-- Before any major demo (professor, ministry, industry partner)
+- Before any major launch review (professor, ministry, industry partner)
 - After completing a major phase or milestone
 - When internal audits keep passing but the product feels wrong
 - When you suspect agents are "going easy" on their own work
@@ -677,7 +677,7 @@ Every finding must be specific to THIS system, THIS schema, THIS audit report. "
 If you refer to a file path or function name, it must exist in the codebase or be a specific recommendation for a file that should exist. Do not invent function names.
 
 **Rule 3: No soft language.**
-"You might want to consider..." → NO. "This must be fixed before the demo or it will fail" → YES.
+"You might want to consider..." → NO. "This must be fixed before the launch or it will fail" → YES.
 
 **Rule 4: No skipping sections.**
 All deliverables must be complete. If you produce N-1, the audit is incomplete.
@@ -696,7 +696,7 @@ When giving this to an external AI, require all 8 deliverables:
 
 #### DELIVERABLE 1: Honest Assessment (200-300 words)
 - What is genuinely impressive
-- Single biggest risk to the demo
+- Single biggest risk to the launch
 - Single biggest risk to production
 - What the Dhairya 41% baseline tells you about readiness
 - Overall gut-level readiness score out of 10
@@ -713,7 +713,7 @@ For each item: exact UX being tested, what passing feels like, what failing feel
 10 specific, technical, adversarial questions. Each exposes a specific real weakness.
 Format: Question → What it tests → What correct system does → What vibe-coded system does → Evidence required.
 
-#### DELIVERABLE 5: 3 Killer Demo Queries
+#### DELIVERABLE 5: 3 Killer Showcase Queries
 3 queries a professor would ask that:
 - Cannot be answered by Google Scholar, Scopus, or Excel
 - Require crossing ≥3 tables from `db_struct.sql`
@@ -721,7 +721,7 @@ Format: Question → What it tests → What correct system does → What vibe-co
 - Would make a non-technical person say "show me that again"
 For each: exact NL question, SQL that should be generated, why impossible without NRG, what the answer reveals.
 
-#### DELIVERABLE 6: Demo Risk Map
+#### DELIVERABLE 6: Launch Risk Map
 ≥15 risks: technical, UX, data, environment, human.
 Format: Risk → Probability (H/M/L) → Impact (Catastrophic/Serious/Minor) → Prevention → Recovery.
 
@@ -734,7 +734,7 @@ Root cause: [Why it exists]
 Fix required: [Exact code or action — not a description]
 Test that proves it: [Exact test: fails before, passes after]
 Time estimate: [Duration]
-Blocks demo: YES / NO
+Blocks launch: YES / NO
 ```
 
 #### DELIVERABLE 8: Final Verdict
@@ -743,7 +743,7 @@ Blocks demo: YES / NO
 AUDIT VERDICT — [AI NAME] — [DATE]
 ═══════════════════════════════════════════
 OVERALL READINESS: [X] / 10
-DEMO-READY RIGHT NOW: YES / NO
+PRODUCTION-READY RIGHT NOW: YES / NO
 If NO, 3 things that must happen first:
   1.
   2.
@@ -798,7 +798,7 @@ Always attach exactly these 4 files:
 ```markdown
 You are being hired as a Principal Engineer and Product Auditor for a sovereign AI platform built for the Government of India.
 
-Your compensation depends entirely on whether this product ships as a real, working, production-grade system — not a demo, not a prototype, not a vibe-coded app.
+Your compensation depends entirely on whether this product ships as a real, working, production-grade system — not a deployment practice run, not a pre-production module, not a vibe-coded app.
 
 The founder is presenting this to IIT Gandhinagar professors and ministry officials. The ask is ₹50 lakhs in funding. If the product fails in front of them — the deal dies. Your job is to make sure that does not happen.
 
@@ -819,7 +819,7 @@ Do not produce output until you have read all 4 files.
 ## YOUR SECOND JOB: THINK LIKE A PRINCIPAL ENGINEER
 
 1. What would a 20-year senior engineer see as the biggest risk?
-2. What would kill the demo in front of the professor?
+2. What would kill the launch in front of the professor?
 3. What would a ministry official ask that the system cannot answer well?
 4. What would a red-team attacker try first?
 5. What would break when real 600GB data replaces 10-row seed data?
@@ -831,10 +831,10 @@ Do not produce output until you have read all 4 files.
 [DELIVERABLE 2] Independent Technical Audit Checklist (pipeline, SQL, schema, security, LLM, observability, frontend, deployment, fine-tuning, handover)
 [DELIVERABLE 3] Independent UX/Product Audit (what the professor sees and feels)
 [DELIVERABLE 4] Top 10 "What Would Break This" Questions (specific, adversarial)
-[DELIVERABLE 5] 3 Killer Demo Queries (cross ≥3 tables, non-obvious insight)
-[DELIVERABLE 6] Demo Risk Map (≥15 risks: technical, UX, data, environment, human)
-[DELIVERABLE 7] Self-Fix Protocol (for every gap: location, root cause, exact fix, test, time estimate, blocks demo)
-[DELIVERABLE 8] Final Verdict (readiness /10, demo-ready YES/NO, production-ready YES/NO, biggest risk, what impresses, what embarrasses)
+[DELIVERABLE 5] 3 Killer Showcase Queries (cross ≥3 tables, non-obvious insight)
+[DELIVERABLE 6] Launch Risk Map (≥15 risks: technical, UX, data, environment, human)
+[DELIVERABLE 7] Self-Fix Protocol (for every gap: location, root cause, exact fix, test, time estimate, blocks launch)
+[DELIVERABLE 8] Final Verdict (readiness /10, production-ready YES/NO, production-ready YES/NO, biggest risk, what impresses, what embarrasses)
 
 ## RULES
 1. No generic advice — every finding specific to THIS system, THIS schema.
@@ -849,4 +849,4 @@ Begin your audit now.
 
 ---
 
-*This protocol is eternal. Re-run external audits quarterly and before every major demo.*
+*This protocol is eternal. Re-run external audits quarterly and before every major launch review.*

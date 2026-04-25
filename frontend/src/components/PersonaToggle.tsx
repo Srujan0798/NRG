@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { authService, PersonaRole } from '../services/authService'
 import { useAuth } from '../hooks/useAuth'
 import { t } from '../i18n'
+import PersonaSheet from './PersonaSheet/PersonaSheet'
+import { emitTelemetry } from '../lib/telemetry'
+import { useQueryStore } from '../stores/queryStore'
 
 const PERSONAS: Array<{ role: PersonaRole; label: string; shortLabel: string; username: string; password: string; color: string }> = [
   { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher_user', password: 'researcher-pass', color: 'var(--nrg-tier-1)' },
@@ -19,6 +22,11 @@ export function PersonaToggle() {
     const persona = PERSONAS.find((item) => item.role === role)
     if (!persona) return
 
+    emitTelemetry('persona.switched', {
+      from: user?.role || 'anonymous',
+      to: role,
+      last_query_id: useQueryStore.getState().history[0]?.id || null,
+    })
     setSwitchingRole(role)
     setSwitchError(null)
     try {
@@ -49,10 +57,19 @@ export function PersonaToggle() {
 
   return (
     <div className="flex flex-col items-end gap-1">
+      <div className="w-full sm:hidden">
+        <PersonaSheet
+          personas={PERSONAS}
+          activeRole={user?.role}
+          switchingRole={switchingRole}
+          switchError={switchError}
+          onSwitch={switchPersona}
+        />
+      </div>
       <div
         role="tablist"
         aria-label={t("auto.components.PersonaToggle.1")}
-        className="grid min-h-10 grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm"
+        className="hidden min-h-10 grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm sm:grid"
       >
         {PERSONAS.map((persona) => {
           const active = user?.role === persona.role

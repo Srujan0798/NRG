@@ -1,6 +1,6 @@
 # NRG — National Research Graph
 
-> **PRODUCTION-ONLY RULE**: See @.claude/rules/production_only.md — NRG is a production web app for IIT Gandhinagar + the Government of India. NEVER use words like "demo", "pitch", "prototype", "MVP", "rehearsal", "demo-ready". Every spec is written for production deployment under DPDP Act 2023.
+> **PRODUCTION-ONLY RULE**: See @.claude/rules/production_only.md — NRG is a production web app for IIT Gandhinagar + the Government of India. NEVER use forbidden vocabulary (see `production_only.md` for the canonical list). Every spec is written for production deployment under DPDP Act 2023.
 > **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
 > **Constitution**: See @.claude/NRG_CONSTITUTION.md — Sovereign rules governing all NRG AI behavior.
 > **Quality Bar**: See @.claude/QUALITY_BAR.md — The 6 Hard Constraints. Every deliverable must satisfy these or it is NOT complete.
@@ -157,25 +157,27 @@ Before ending any session:
 5. Verify all 3 Data Sources are current — any new inputs from professor or external?
 6. Report session summary to Founder
 
-## Skills — 39 Claude + 52 Agent (91 total)
+## Skills — 41 Claude + 25 Agent (66 unique, zero duplicates)
 
-### NRG Core (13)
+### NRG Core (14)
 | `/test-suite` | `/audit-check` | `/deploy-local` | `/code-review` | `/security-audit` |
 | `/pre-commit` | `/post-deploy` | `/self-evolve` | `/architect` | `/sprint-plan` |
-| `/bug-hunt` | `/performance` | `/docs-sync` |
+| `/bug-hunt` | `/performance` | `/docs-sync` | `/release-readiness` |
 
-### Claude Cowork (12 Claude-only)
+### Claude Strategy + Review (13)
 | `/architecture-adr` | `/testing-strategy` | `/tech-debt` | `/system-design` |
 | `/standup` | `/write-spec` | `/stakeholder-update` | `/metrics-review` |
 | `/roadmap-update` | `/compliance-check` | `/incident-response` | `/doc-coauthoring` |
+| `/external-audit` |
 
-### Community + Ultra-Dex (14 shared)
+### Engineering + DevEx (14)
 | `/python-backend` | `/code-review-and-quality` | `/security-auditor` | `/frontend-react-best-practices` |
 | `/webapp-testing` | `/prompt-engineering-patterns` | `/dockerfile-validator` | `/database-migrations-sql-migrations` |
-| `/typescript-advanced-types` | `/nodejs-backend-patterns` | `/changelog-generator` | `/claude-api` | `/mcp-builder` |
+| `/typescript-advanced-types` | `/nodejs-backend-patterns` | `/changelog-generator` | `/claude-api` |
+| `/external-prompt-merge` | `/find-skills` |
 
-### Agent-Only (see `.agents/skills/` — 52 total)
-Agents have additional skills: `debug`, `deploy-checklist`, `explore-data`, `sql-queries`, `statistical-analysis`, `validate-data`, `build-dashboard`, `create-viz`, `data-visualization`, `accessibility-review`, `ux-copy`, `design-critique`, `frontend-design`, `react-composition-patterns`, `web-design-guidelines`, `documentation`, `database-schema-designer`, `test-driven-development`, and more.
+### Agent-Only Execution (25 in `.agents/skills/`)
+`debug`, `deploy-checklist`, `explore-data`, `sql-queries`, `statistical-analysis`, `validate-data`, `build-dashboard`, `create-viz`, `data-visualization`, `accessibility-review`, `ux-copy`, `design-critique`, `frontend-design`, `react-composition-patterns`, `documentation`, `database-schema-designer`, `test-driven-development`, `database-migration`, `neon-postgres`, `secure-linux-web-hosting`, `deployment-pipeline-design`, `startup-financial-modeling`, `startup-metrics-framework`, `vercel-react-best-practices`, `better-auth-security-best-practices`
 
 ## DO NOT
 - Commit .env files or secrets

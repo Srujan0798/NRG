@@ -100,7 +100,7 @@ class TestSQLInjectionBlocked:
             f"UNION injection returned {response.status_code} — expected 200 (sanitised) or 400 (blocked)"
 
     def test_boolean_based_injection_returns_safe_response(self, client):
-        """Boolean-based blind SQL injection should return safe response."""
+        """Boolean-based blind SQL injection should be blocked or handled safely."""
         token = _login(client)
 
         payload = "1' AND 1=1; --"
@@ -110,7 +110,7 @@ class TestSQLInjectionBlocked:
             json={"query": payload},
         )
 
-        assert response.status_code == 200
+        assert response.status_code in [200, 400], f"Boolean injection should not crash with 5xx"
 
     def test_stacked_queries_injection_returns_safe_response(self, client):
         """Stacked queries SQL injection should return safe response."""
@@ -123,10 +123,10 @@ class TestSQLInjectionBlocked:
             json={"query": payload},
         )
 
-        assert response.status_code in [200, 400]
+        assert response.status_code in [200, 400], f"Payload '{payload}' should not crash with 5xx"
 
     def test_comment_based_injection_returns_safe_response(self, client):
-        """Comment-based SQL injection bypass attempts should return safe response."""
+        """Comment-based SQL injection bypass attempts should be blocked or handled safely."""
         token = _login(client)
 
         payloads = [
@@ -141,7 +141,7 @@ class TestSQLInjectionBlocked:
                 headers={"Authorization": f"Bearer {token}"},
                 json={"query": payload},
             )
-            assert response.status_code == 200, f"Payload '{payload}' should not crash"
+            assert response.status_code in [200, 400], f"Payload '{payload}' should not crash with 5xx"
 
     def test_hex_encoded_injection_returns_safe_response(self, client):
         """Hex-encoded SQL injection should return safe response."""

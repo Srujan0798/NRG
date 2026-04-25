@@ -2,7 +2,6 @@
 
 import pytest
 import sqlite3
-import os
 
 from src.data.database import NRGDatabase
 
@@ -11,20 +10,13 @@ class TestNRGDatabase:
     """Test suite for NRGDatabase class."""
 
     @pytest.fixture
-    def test_db(self):
+    def test_db(self, tmp_path):
         """Create a test database instance."""
-        db_path = "test_nrg.db"
-        # Clean up any existing test database
-        if os.path.exists(db_path):
-            os.remove(db_path)
+        db_path = tmp_path / "test_nrg.db"
 
-        db = NRGDatabase(db_path)
+        db = NRGDatabase(str(db_path))
         db.initialize_schema()
         yield db
-
-        # Cleanup
-        if os.path.exists(db_path):
-            os.remove(db_path)
 
     def test_database_connection(self, test_db):
         """Test database connection is established."""

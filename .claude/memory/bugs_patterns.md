@@ -107,7 +107,7 @@
 **Impact:** Demo or UAT evidence pages look broken when backend is intentionally offline.
 **Root cause:** Route was rendered inside global auth provider, which starts backend availability checks.
 **Prevention:**
-- Static evidence/demo routes (`/founder`, `/demo`) must mount outside `AuthProvider` unless they need a live user session.
+- Static evidence routes (`/founder`, `/example`) must mount outside `AuthProvider` unless they need a live user session.
 - Webapp verification must assert zero HTTP failures and zero console errors, not just that text is visible.
 - Frontend routes intended for offline stakeholder review must declare their backend dependency explicitly.
 

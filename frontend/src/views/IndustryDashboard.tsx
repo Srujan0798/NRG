@@ -288,6 +288,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                     <select
                       value={collaborationFilter}
                       onChange={(e) => setCollaborationFilter(e.target.value)}
+                      aria-label={t("auto.views.IndustryDashboard.9")}
                       className="px-3 py-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] text-sm text-nrg-text"
                       data-testid="filter-collaboration-type"
                     >

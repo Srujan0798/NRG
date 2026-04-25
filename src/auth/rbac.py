@@ -21,6 +21,7 @@ import hashlib
 import logging
 import os
 import threading
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Optional
@@ -213,6 +214,7 @@ class RBACPolicyEngine:
         self._policies_override = policies  # For testing/runtime injection
         self._cache = PolicyCache()
         self._known_key_ids: set[str] = set()  # For JWT kid tracking
+        self._tier_response_columns: dict[str, Any] = {}
 
         if self._policies_override:
             self._load_from_dict(self._policies_override)
@@ -234,6 +236,7 @@ class RBACPolicyEngine:
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in {self._policy_path}: {e}") from e
 
+        self._tier_response_columns = raw.get("tier_response_columns", {})
         personas = raw.get("personas", {})
         if not personas:
             raise ValueError(f"No 'personas' section found in {self._policy_path}")
@@ -243,6 +246,10 @@ class RBACPolicyEngine:
 
     def _load_from_dict(self, personas: dict[str, Any]) -> None:
         """Parse and cache policies from a dict of persona definitions."""
+        if "personas" in personas:
+            self._tier_response_columns = personas.get("tier_response_columns", {})
+            personas = personas["personas"]
+
         for name, spec in personas.items():
             policy = self._parse_policy(name, spec)
             self._cache.set(name, policy)
@@ -365,6 +372,10 @@ class RBACPolicyEngine:
         Returns [] if the table is fully hidden for this policy.
         """
         return policy.get_visible_columns(table)
+
+    def get_tier_response_columns(self) -> dict[str, Any]:
+        """Return policy-backed API response field classifications."""
+        return copy.deepcopy(self._tier_response_columns)
 
     def filter_row_by_policy(
         self, policy: RBACPolicy, table: str, row: dict[str, Any]

@@ -30,6 +30,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 os.environ["PYTEST_CURRENT_TEST"] = "1"
 
+THIS_DIR = Path(__file__).parent.resolve()
+
+
+def pytest_collection_modifyitems(items):
+    for item in items:
+        item_path = Path(str(item.fspath)).resolve()
+        if THIS_DIR in item_path.parents or item_path.parent == THIS_DIR:
+            item.add_marker(pytest.mark.e2e)
+            item.add_marker(pytest.mark.slow)
+
 
 class FakeCloudLLMClient:
     """Mock LLM client that returns tier-appropriate structured responses."""

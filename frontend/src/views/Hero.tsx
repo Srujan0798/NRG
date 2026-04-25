@@ -2,13 +2,22 @@ import React, { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import { ScaleStrip } from '../components/ScaleStrip/ScaleStrip'
 import StreamingAnswerPanel from '../components/StreamingAnswerPanel'
+import { CitationDrawer } from '../components/CitationDrawer'
+import { Citation } from '../services/queryService'
 import { t } from '../i18n'
 
 export const Hero: React.FC = () => {
   const [lastQuery, setLastQuery] = useState('')
+  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
+  const [isCitationOpen, setIsCitationOpen] = useState(false)
 
   const handleSubmit = (query: string) => {
     setLastQuery(query)
+  }
+
+  const handleCitationClick = (citation: Citation) => {
+    setSelectedCitation(citation)
+    setIsCitationOpen(true)
   }
 
   return (
@@ -23,12 +32,20 @@ export const Hero: React.FC = () => {
             {t("auto.views.Hero.3")}</p>
         </div>
 
-        <SearchBar onSubmit={handleSubmit} />
+        <div className="sticky top-0 z-30 rounded-lg bg-[var(--nrg-app-bg)] py-2 sm:static sm:bg-transparent sm:py-0">
+          <SearchBar onSubmit={handleSubmit} />
+        </div>
 
         <ScaleStrip />
 
-        <StreamingAnswerPanel query={lastQuery} />
+        <StreamingAnswerPanel query={lastQuery} onCitationClick={handleCitationClick} />
       </section>
+
+      <CitationDrawer
+        citation={selectedCitation}
+        isOpen={isCitationOpen}
+        onClose={() => setIsCitationOpen(false)}
+      />
     </main>
   )
 }

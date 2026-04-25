@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search } from 'lucide-react'
+import { emitTelemetry } from '../../lib/telemetry'
 
 interface EmptyStateProps {
   title?: string
@@ -19,6 +20,13 @@ export function EmptyState({
   onPrimary,
   onSecondary,
 }: EmptyStateProps) {
+  useEffect(() => {
+    emitTelemetry('empty.shown', {
+      cause: title,
+      route: window.location.pathname,
+    })
+  }, [title])
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}

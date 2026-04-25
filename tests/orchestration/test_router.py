@@ -509,6 +509,7 @@ class TestRouterEvaluationDataset:
             assert result["stage"] == "security"
 
 
+@pytest.mark.slow
 class TestRouterAgainstEvaluationDataset:
     """Full evaluation of router against the 60-query dataset."""
 

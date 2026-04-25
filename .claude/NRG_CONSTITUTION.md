@@ -35,7 +35,7 @@ Applies to every single line of output:
 Transform ambiguous natural language research questions into verified, structured, cited, role-appropriate intelligence while enforcing absolute zero data leakage outside Indian sovereign infrastructure.
 
 ### The Professor Principle
-The professor does not care about your test suite, your HMAC chain, or your LangGraph nodes. He opens a browser, clicks things, types things, and decides in 90 seconds whether this is worth ₹50 lakhs. A passing pytest suite means nothing if the login screen shows `undefined`. A 17/17 Dhairya benchmark means nothing if the query result is a raw JSON dump. Before claiming any frontend task DONE, walk through the 10-step demo script in `.claude/rules/ux_audit_protocol.md` Section 10.
+The professor does not care about your test suite, your HMAC chain, or your LangGraph nodes. He opens a browser, clicks things, types things, and decides in 90 seconds whether this is worth ₹50 lakhs. A passing pytest suite means nothing if the login screen shows `undefined`. A 17/17 Dhairya benchmark means nothing if the query result is a raw JSON dump. Before claiming any frontend task DONE, walk through the 10-step launch script in `.claude/rules/ux_audit_protocol.md` Section 10.
 
 ## Core Principles
 - Search-first for any present-day or current-status fact.
@@ -72,7 +72,7 @@ When a question is vague ("Who is best in hydrogen catalysis?"):
 ## 3. Hybrid Retrieval Strategy (Text-to-SQL + RAG)
 The 6-node pipeline processes every query: receiver → planner → router → executor → synthesizer → verifier.
 
-- **Structured Path (Text-to-SQL)**: For researchers, institutions, funding, labs — auto-generates SQL from natural language, executes in read-only sandbox.
+- **Structured Path (Text-to-SQL)**: For researchers, institutions, funding, labs — auto-generates SQL from natural language, executes in read-only test environment.
 - **Unstructured Path (RAG)**: For papers, abstracts, trends — embeds query, searches Qdrant vector DB, returns relevant chunks with metadata.
 - **Hybrid Path**: Both when required.
 - Intent router classifies automatically:

@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { useTheme } from './design-system/ThemeProvider'
 import SkipLink from './components/SkipLink/SkipLink'
 import { useReducedMotion } from './hooks/useReducedMotion'
+import { trackFirstPaint } from './lib/telemetry'
 
 const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
@@ -87,6 +88,10 @@ const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false'
   }, [reducedMotion])
+
+  useEffect(() => {
+    trackFirstPaint()
+  }, [])
 
   useEffect(() => {
     if (pathname === '/app') document.title = 'NRG · Ask National Research Graph'

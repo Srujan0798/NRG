@@ -1,8 +1,19 @@
 """SQL Validator - AST-level validation for text-to-sql skill."""
 
+import os
+import re
+from datetime import UTC, datetime
+from pathlib import Path
+
 import sqlglot
 from sqlglot import exp
 from typing import Set, Optional
+
+
+HALL_OF_SHAME_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "src/data/schema/failed_queries/HALL_OF_SHAME.md"
+)
 
 
 class SQLValidationError(Exception):
@@ -168,15 +179,22 @@ class QueryCompletenessValidator:
         if trailing_whitespace:
             issues.append("Query ends with trailing operator")
 
+        issues.extend(self._check_credit_score_cast(sql_clean))
+        issues.extend(self._check_stage_synonym_sql(sql_clean))
+        issues.extend(self._check_known_join_keys(sql_clean))
+
         try:
             import sqlglot
             parsed = sqlglot.parse_one(sql_clean, read="postgres")
             issues.extend(self._check_having_without_group(parsed))
+            issues.extend(self._check_having_without_aggregate(parsed))
             issues.extend(self._check_order_by_without_aggregate(sql_clean, parsed))
+            issues.extend(self._check_patent_join_keys(sql_clean))
         except Exception:
             pass
 
-        return len(issues) == 0, issues
+        deduped = list(dict.fromkeys(issues))
+        return len(deduped) == 0, deduped
 
     def _check_having_without_group(self, parsed) -> list[str]:
         """Detect HAVING used without GROUP BY."""
@@ -186,6 +204,27 @@ class QueryCompletenessValidator:
 
         if having_nodes and not group_by_nodes:
             issues.append("HAVING clause used without GROUP BY — aggregation incomplete")
+        return issues
+
+    def _check_having_without_aggregate(self, parsed) -> list[str]:
+        """Detect HAVING clauses that do not constrain an aggregate or grouped metric."""
+        issues = []
+        for having in parsed.find_all(exp.Having):
+            has_aggregate = any(having.find_all(exp.Sum, exp.Count, exp.Avg, exp.Min, exp.Max))
+            if not has_aggregate:
+                having_sql = having.sql(dialect="postgres").lower()
+                grouped_metric = any(
+                    token in having_sql
+                    for token in (
+                        "grant_drop_pct",
+                        "patent_growth_pct",
+                        "total_grant",
+                        "total_credits",
+                        "course_count",
+                    )
+                )
+                if not grouped_metric:
+                    issues.append("HAVING clause does not constrain an aggregate metric")
         return issues
 
     def _check_order_by_without_aggregate(self, sql: str, parsed) -> list[str]:
@@ -210,10 +249,126 @@ class QueryCompletenessValidator:
                             )
         return issues
 
-    def validate_or_raise(self, sql: str) -> None:
+    def _check_credit_score_cast(self, sql: str) -> list[str]:
+        """Reject direct casts of TEXT credit scores."""
+        credit_identifier = (
+            r"(?:(?:\"[A-Za-z_][\w]*\"|`[A-Za-z_][\w]*`|[A-Za-z_][\w]*)\s*\.\s*)?"
+            r"(?:\"total_credit_score\"|`total_credit_score`|total_credit_score)"
+        )
+        numeric_types = r"(INT|INTEGER|BIGINT|NUMERIC|NUMBER|DECIMAL|DOUBLE|REAL|FLOAT)"
+        if re.search(rf"CAST\s*\(\s*{credit_identifier}\s+AS\s+{numeric_types}", sql, re.IGNORECASE):
+            return ["total_credit_score is TEXT in X:Y format; parse components before casting"]
+        if re.search(rf"{credit_identifier}\s*::\s*{numeric_types}", sql, re.IGNORECASE):
+            return ["total_credit_score is TEXT in X:Y format; parse components before casting"]
+        return []
+
+    def _check_stage_synonym_sql(self, sql: str) -> list[str]:
+        """Reject unresolved TRL/user-facing stage strings in SQL."""
+        sql_upper = sql.upper()
+        if "INNOVATIONS_AT_VARIOUS_STAGES_OF_TECHNOLOGY_READINESS_LEVEL" not in sql_upper:
+            return []
+        unresolved_literals = (
+            "'TRL 9'",
+            '"TRL 9"',
+            "'TRL9'",
+            '"TRL9"',
+            "'MARKET READY'",
+            '"MARKET READY"',
+            "'FULLY MARKET READY'",
+            '"FULLY MARKET READY"',
+            "'LAB VALIDATION'",
+            '"LAB VALIDATION"',
+        )
+        raw_like = re.search(
+            r"\b(?:LIKE|ILIKE)\s+['\"]%?(?:TRL\s*9|TRL9|MARKET\s+READY|FULLY\s+MARKET\s+READY|LAB\s+VALIDATION)%?['\"]",
+            sql,
+            re.IGNORECASE,
+        )
+        if raw_like or any(token in sql_upper for token in unresolved_literals):
+            return ["Stage synonyms must be expanded to stored values such as 'Level 4' or 'Level 9'"]
+        return []
+
+    def _check_known_join_keys(self, sql: str) -> list[str]:
+        """Reject known wrong joins from the external SQL audit corpus."""
+        sql_lower = " ".join(sql.lower().split())
+        issues = []
+        if "innovation_grant_from_govt" in sql_lower and "patents_details" in sql_lower:
+            issues.append(
+                "Grant/patent joins must use combined_ipo_patent_data.applicants, not patents_details"
+            )
+        if (
+            "academic_courses_details" in sql_lower
+            and " join " in f" {sql_lower} "
+            and any(
+                table in sql_lower
+                for table in ("actual_student_strength", "phd_students", "sanctioned_intake")
+            )
+        ):
+            issues.append(
+                "Course follow-up joins must stay in academic_courses_details unless the question explicitly asks for student counts"
+            )
+        return issues
+
+    def _check_patent_join_keys(self, sql: str) -> list[str]:
+        """Require normalized applicants matching for grant/patent joins."""
+        sql_lower = " ".join(sql.lower().split())
+        if not (
+            "innovation_grant_from_govt" in sql_lower
+            and "combined_ipo_patent_data" in sql_lower
+            and " join " in f" {sql_lower} "
+        ):
+            return []
+        if "applicants" not in sql_lower:
+            return ["Grant/patent joins must use combined_ipo_patent_data.applicants"]
+        if "lower(" not in sql_lower or "trim(" not in sql_lower:
+            return ["Grant/patent joins must normalize applicants and institute text"]
+        return []
+
+    def record_rejection(
+        self,
+        sql: str,
+        issues: list[str],
+        *,
+        accepted_sql: str | None = None,
+        user_query: str | None = None,
+        hall_path: Path = HALL_OF_SHAME_PATH,
+    ) -> None:
+        """Append a rejected production SQL shape to the failure ledger."""
+        if os.getenv("PYTEST_CURRENT_TEST") and os.getenv("NRG_RECORD_SQL_REJECTIONS") != "1":
+            return
+        hall_path.parent.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now(UTC).isoformat()
+        query_line = f"\nUser query: {user_query[:240]}\n" if user_query else ""
+        accepted = accepted_sql or "Pending accepted replacement from correction pass."
+        entry = (
+            f"\n\n## Rejection {timestamp}\n"
+            f"{query_line}"
+            f"Issues: {'; '.join(issues)}\n\n"
+            "Rejected SQL:\n"
+            "```sql\n"
+            f"{sql.strip()[:2000]}\n"
+            "```\n\n"
+            "Accepted shape:\n"
+            "```sql\n"
+            f"{accepted.strip()[:2000]}\n"
+            "```\n"
+        )
+        with hall_path.open("a", encoding="utf-8") as handle:
+            handle.write(entry)
+
+    def validate_or_raise(
+        self,
+        sql: str,
+        *,
+        accepted_sql: str | None = None,
+        user_query: str | None = None,
+        record_rejection: bool = False,
+    ) -> None:
         """Validate and raise SQLValidationError if incomplete."""
         is_valid, issues = self.validate(sql)
         if not is_valid:
+            if record_rejection:
+                self.record_rejection(sql, issues, accepted_sql=accepted_sql, user_query=user_query)
             raise SQLValidationError(f"Query incomplete: {'; '.join(issues)}")
 
 

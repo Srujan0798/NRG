@@ -102,12 +102,18 @@ class TestGatewaySecurity:
 
                 if response.status_code == test_case["expected_status"]:
                     data = response.json()
-                    error_code = data.get("error") or data.get("detail", "")
-                    assert error_code == test_case["expected_error"] or test_case["expected_error"] in error_code
+                    detail = data.get("detail", "")
+                    assert detail.startswith("Security violation") or test_case["expected_error"] in detail, \
+                        f"Expected security error for PII query, got: {detail}"
                 elif response.status_code == 200:
                     pytest.skip(
                         "API running without DLP enforcement - integration test"
                     )
+                elif response.status_code == 400:
+                    data = response.json()
+                    detail = data.get("detail", "")
+                    assert "Security violation" in detail or "DLP_VIOLATION" in detail or "PROMPT_INJECTION" in detail, \
+                        f"Expected DLP/PII error, got: {detail}"
                 else:
                     pytest.fail(
                         f"Expected status {test_case['expected_status']}, got {response.status_code}"

@@ -55,6 +55,10 @@ class TestLLMFailover:
 
     @pytest.fixture(autouse=True)
     def setup(self, monkeypatch):
+        original_workflow = api_main.workflow
+        api_main._api_cache.invalidate()
+        yield
+        api_main.workflow = original_workflow
         api_main._api_cache.invalidate()
 
     def _login(self, client: TestClient, role: str = "researcher") -> str:
@@ -149,6 +153,10 @@ class TestCascadeToLocal:
 
     @pytest.fixture(autouse=True)
     def setup(self, monkeypatch):
+        original_workflow = api_main.workflow
+        api_main._api_cache.invalidate()
+        yield
+        api_main.workflow = original_workflow
         api_main._api_cache.invalidate()
 
     def _login(self, client: TestClient) -> str:

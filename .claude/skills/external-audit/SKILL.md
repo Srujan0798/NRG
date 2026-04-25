@@ -8,7 +8,7 @@
 
 ## When to Use
 
-- Before any demo where ₹50L+ is on the line
+- Before any launch where ₹50L+ is on the line
 - After completing a major milestone (e.g., Text-to-SQL 17/17, RBAC fully wired)
 - Quarterly sanity checks
 - When you suspect agents are going easy on their own work
@@ -100,10 +100,10 @@ Compare against your own D1-D10 checklist in `.claude/rules/audit_protocol.md`. 
 Compare against your own UI/UX audit in `.claude/rules/ux_audit_protocol.md`. Items the AI found that you missed = gaps in your frontend testing.
 
 ### Deliverable 4 (Top 10 Questions)
-Run these against your system. If any expose a real weakness — fix before demo.
+Run these against your system. If any expose a real weakness — fix before launch.
 
 ### Deliverable 5 (Killer Demo Queries)
-Add these to your demo script in `.claude/rules/ux_audit_protocol.md` Section 14. Pre-run them before every demo.
+Add these to your launch script in `.claude/rules/ux_audit_protocol.md` Section 14. Pre-run them before every launch review.
 
 ### Deliverable 6 (Risk Map)
 Merge with your own risk map in `.claude/rules/ux_audit_protocol.md` Section 13.
@@ -112,7 +112,7 @@ Merge with your own risk map in `.claude/rules/ux_audit_protocol.md` Section 13.
 This IS your sprint backlog. Sort by "Blocks Demo: YES" first. Assign to agents.
 
 ### Deliverable 8 (Final Verdict)
-If overall readiness is < 7/10 — do not demo. Fix first. If ≥ 7/10 but demo-ready is NO — fix the 3 blockers and re-audit.
+If overall readiness is < 7/10 — do not launch. Fix first. If ≥ 7/10 but production-ready is NO — fix the 3 blockers and re-audit.
 
 ---
 

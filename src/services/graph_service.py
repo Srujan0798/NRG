@@ -15,7 +15,7 @@ def get_db_connection():
     """Get database connection with row factory."""
     db_path = os.getenv("DATABASE_URL", "sqlite:///nrg_research.db")
     if db_path.startswith("postgresql://"):
-        logger.warning("Graph service using SQLite for demo; Postgres path not implemented")
+        logger.warning("Graph service using SQLite fallback; PostgreSQL primary")
         db_path = "nrg_research.db"
 
     conn = sqlite3.connect(db_path)

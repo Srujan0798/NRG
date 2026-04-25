@@ -838,7 +838,7 @@ def router_node(state) -> dict:
         llm_enhanced = False
         if is_ambiguous:
             clarifications = _apply_default_clarifications(user_query)
-            if intent != "hybrid" and confidence < CONFIDENCE_THRESHOLD_HIGH:
+            if intent != "hybrid":
                 intent = "hybrid"
                 confidence = max(confidence, 0.75)
 
