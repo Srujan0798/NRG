@@ -293,7 +293,7 @@ This transforms NRG from a "retrieve and synthesize" system into a true research
 
 **The goal:** A professor opens a browser, logs in, types a research question in plain English, and gets back a verified, structured, cited answer — in seconds, from 600GB of national data, without a single byte leaving Indian servers.
 
-**The prize:** ₹400 crore of national-scale funding, unlocked by a pitch deck that shows ministry officials a system they can operate independently.
+**The prize:** ₹400 crore of national-scale funding, unlocked by an operator-grade documentation set + verified production deployment that lets ministry officials run the system independently.
 
 ---
 
