@@ -23,7 +23,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, StreamingResponse
-from qdrant_client import QdrantClient
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
@@ -1102,6 +1101,7 @@ async def health_qdrant():
     collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     try:
+        from qdrant_client import QdrantClient
         client = QdrantClient(host=host, port=port, timeout=2.0)
         collections = client.get_collections()
         names = [item.name for item in getattr(collections, "collections", [])]
@@ -1134,6 +1134,7 @@ async def vectors_health():
     collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
 
     try:
+        from qdrant_client import QdrantClient
         client = QdrantClient(host=host, port=port, timeout=5.0)
         collection_info = client.get_collection(collection_name=collection)
         vectors_count = collection_info.vectors_count
@@ -1454,6 +1455,7 @@ async def health_all():
     try:
         host = os.getenv("QDRANT_HOST", "localhost")
         port = int(os.getenv("QDRANT_PORT", "6333"))
+        from qdrant_client import QdrantClient
         client = QdrantClient(host=host, port=port, timeout=2.0)
         cols = client.get_collections()
         checks["qdrant"] = {"status": "healthy", "collections": [c.name for c in getattr(cols, "collections", [])]}
