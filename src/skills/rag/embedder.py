@@ -128,7 +128,8 @@ class Embedder:
         self._primary_model = None
         self._indic_model = None
         self._chunker = SemanticChunker()
-        self._load_models()
+        # Lazy load: models loaded on first embed() call, not in __init__
+        self._models_loaded = False
 
     def _load_models(self):
         """Load embedding models (cached for reuse)."""
@@ -218,6 +219,9 @@ class Embedder:
 
     def embed(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for texts with language-gated model selection."""
+        if not self._models_loaded:
+            self._load_models()
+            self._models_loaded = True
         if not self._primary_model and not self._indic_model:
             raise EmbedderUnavailable("No embedding models loaded")
 
