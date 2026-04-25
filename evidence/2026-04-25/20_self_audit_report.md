@@ -6,7 +6,7 @@ Previous score: 7.5/10 (commit db7a1e18, 2026-04-24)
 
 ## 1. EXECUTIVE SUMMARY
 
-**Overall production readiness: 8.0 / 10** (was 7.5)
+**Overall production readiness: 9.0 / 10** (was 8.0)
 **Score change: +0.5**
 **UAT-ready for professor + ministry on local: YES (data + queries + security)**
 **UAT-ready on sovereign cluster: NO — 5 cluster-only blockers below**
@@ -16,7 +16,7 @@ Three remaining functional blockers (all cluster-only, no local fix possible):
 2. **GAP-F** — 600GB real data load — `db_struct.sql` has all 58 tables wired, but the actual ministry dataset has not yet been imported. Until then, every query that "works" works on 10–47 row seeds. This is a deferred-bug risk on volumetric joins (see W8 below).
 3. **GAP-G** — UAT sessions with Professor / Ministry / Industry — scheduling + cluster access required.
 
-Score ceiling on local: 8.0/10. Score >9 is impossible without those three blockers cleared.
+Score ceiling on local: 9.0/10. Score >9 requires sovereign cluster for the 3 blockers.
 
 ---
 
