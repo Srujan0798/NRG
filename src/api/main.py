@@ -365,7 +365,7 @@ def _fast_demo_query_response(
                 "title": "NRG local SQLite: researchers.total_funding_received_inr_crores joined with institutions",
                 "authors": ["National Research Graph"],
                 "year": 2026,
-                "source": "Local NRG database",
+                "source": "sql",
                 "chunk_text": "Institution-level aggregate funding computed from local researcher and institution tables.",
                 "relevance_score": 1.0,
             }

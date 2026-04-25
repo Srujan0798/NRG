@@ -731,7 +731,7 @@ class SovereignLLMMesh:
         self._provider_latency_p95: dict[str, float] = {p: 1000.0 for p in self.clients}
         self._latency_history: dict[str, list[float]] = {p: [] for p in self.clients}
         self._latency_history_max = 100
-        self._executor = ThreadPoolExecutor(max_workers=4)
+        self._executor = ThreadPoolExecutor(max_workers=8)
         self._redis = None
         self._redis_circuit_prefix = "circuit:state:"
         self._redis_failures_prefix = "circuit:failures:"
