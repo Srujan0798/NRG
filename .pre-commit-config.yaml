@@ -1,10 +1,11 @@
 repos:
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.18.2
-    hooks:
-      - id: gitleaks
   - repo: local
     hooks:
+      - id: gitleaks
+        name: Detect hardcoded secrets
+        entry: gitleaks git --pre-commit --staged --redact .
+        language: system
+        pass_filenames: false
       - id: check-cloud-synthesis-env
         name: Validate CLOUD_SYNTHESIS_ALLOWED boolean in .env
         entry: python scripts/check-env.py
