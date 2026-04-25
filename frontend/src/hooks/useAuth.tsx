@@ -85,8 +85,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(nextSession)
       })
       return true
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed'
+    } catch (error: any) {
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      const message = status === 401
+        ? 'Invalid username or password'
+        : status === 429
+          ? 'Too many login attempts. Please wait a moment and try again.'
+          : detail || 'Unable to sign in. Please check the API server and try again.'
       setLoginError(message)
       return false
     }

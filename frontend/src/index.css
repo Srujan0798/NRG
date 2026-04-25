@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Noto+Sans+Devanagari:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Tiro+Devanagari+Hindi:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -25,16 +25,16 @@
     --nrg-saffron-300: #ffbc89;
     --nrg-gold-500:    #c49538;
 
-    --nrg-bg:        #f7f9fc;
-    --nrg-surface:   #ffffff;
-    --nrg-text:     #0f172a;
-    --nrg-muted:    #64748b;
-    --nrg-border:   #e2e8f0;
-    --nrg-shadow:   rgba(26, 39, 68, 0.08);
+    --nrg-bg:        #f4efe3;
+    --nrg-surface:   #fffaf0;
+    --nrg-text:      #111320;
+    --nrg-muted:     #5f6473;
+    --nrg-border:    rgba(23, 28, 43, 0.14);
+    --nrg-shadow:    rgba(9, 13, 26, 0.12);
 
-    --glass-bg:     rgba(255, 255, 255, 0.82);
-    --glass-border: rgba(255, 255, 255, 0.5);
-    --glass-shadow: 0 8px 32px rgba(26, 39, 68, 0.06);
+    --glass-bg:     rgba(255, 248, 235, 0.78);
+    --glass-border: rgba(255, 255, 255, 0.52);
+    --glass-shadow: 0 24px 80px rgba(15, 22, 36, 0.16);
     --glass-blur:   20px;
 
     --radius-sm:  6px;
@@ -48,16 +48,16 @@
   }
 
   .dark {
-    --nrg-bg:        #060e1c;
-    --nrg-surface:   #0f1729;
-    --nrg-text:     #f1f5f9;
-    --nrg-muted:    #94a3b8;
-    --nrg-border:   rgba(255,255,255,0.08);
-    --nrg-shadow:   rgba(0, 0, 0, 0.3);
+    --nrg-bg:        #080c16;
+    --nrg-surface:   #101624;
+    --nrg-text:      #f5f1e8;
+    --nrg-muted:     #9aa5ba;
+    --nrg-border:    rgba(245, 235, 216, 0.14);
+    --nrg-shadow:    rgba(0, 0, 0, 0.45);
 
-    --glass-bg:     rgba(26, 39, 68, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-bg:     rgba(8, 12, 22, 0.68);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
   }
 
   * {
@@ -70,10 +70,14 @@
 
   body {
     @apply antialiased;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
     background: var(--nrg-bg);
     color: var(--nrg-text);
     transition: background var(--transition-base), color var(--transition-base);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(255, 107, 53, 0.16) 0%, transparent 38%),
+      radial-gradient(circle at 84% 18%, rgba(35, 77, 153, 0.2) 0%, transparent 45%),
+      linear-gradient(145deg, var(--nrg-bg) 0%, color-mix(in srgb, var(--nrg-bg) 80%, #ffffff 20%) 100%);
   }
 }
 
@@ -81,6 +85,20 @@
    NRG BRAND COMPONENTS
    ============================ */
 @layer components {
+  .nrg-app-canvas {
+    position: relative;
+    background:
+      radial-gradient(circle at 0% 0%, rgba(255, 107, 53, 0.16) 0%, transparent 30%),
+      radial-gradient(circle at 95% 8%, rgba(35, 77, 153, 0.2) 0%, transparent 34%),
+      linear-gradient(160deg, color-mix(in srgb, var(--nrg-bg) 88%, #000 12%) 0%, var(--nrg-bg) 48%, color-mix(in srgb, var(--nrg-bg) 86%, #fff 14%) 100%);
+  }
+
+  .nrg-panel {
+    border: 1px solid var(--nrg-border);
+    background: color-mix(in srgb, var(--nrg-surface) 92%, transparent);
+    box-shadow: 0 20px 55px color-mix(in srgb, var(--nrg-shadow) 65%, transparent);
+    border-radius: 1.125rem;
+  }
 
   /* Ashoka Chakra — spinner for loading states */
   .nrg-ashoka-spinner {
@@ -176,9 +194,9 @@
   /* Button — primary (saffron) */
   .nrg-btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm;
-    background: linear-gradient(135deg, #ff6b35 0%, #e85a1c 100%);
+    background: linear-gradient(135deg, #ff6b35 0%, #d24d19 45%, #8c2e10 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 12px 28px rgba(155, 55, 22, 0.35);
     transition: all var(--transition-spring);
     position: relative;
     overflow: hidden;
@@ -196,7 +214,7 @@
   .nrg-btn-primary:hover::after { opacity: 1; }
   .nrg-btn-primary:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 16px 34px rgba(155, 55, 22, 0.48);
   }
   .nrg-btn-primary:active { transform: translateY(0); }
 
@@ -222,14 +240,17 @@
 
   /* Tab — active underline style */
   .nrg-tab {
-    @apply px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200;
+    @apply px-4 py-2.5 text-sm font-semibold border-b-2 transition-all duration-200;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
     color: var(--nrg-muted);
     border-color: transparent;
   }
-  .nrg-tab:hover { color: var(--nrg-text); border-color: rgba(255,107,53,0.3); }
+  .nrg-tab:hover { color: var(--nrg-text); border-color: rgba(255,107,53,0.35); }
   .nrg-tab.active {
-    color: #ff6b35;
-    border-color: #ff6b35;
+    color: #a94624;
+    border-color: #a94624;
+    background: color-mix(in srgb, #ff6b35 11%, transparent);
   }
 
   /* Input */
@@ -278,12 +299,12 @@
 
   /* Devanagari typography */
   .font-devanagari {
-    font-family: 'Noto Sans Devanagari', system-ui, sans-serif;
+    font-family: 'Tiro Devanagari Hindi', system-ui, sans-serif;
   }
 
   /* Display headings */
   .font-display {
-    font-family: 'Playfair Display', Georgia, serif;
+    font-family: 'Fraunces', Georgia, serif;
   }
 }
 
@@ -291,6 +312,11 @@
    UTILITIES
    ============================ */
 @layer utilities {
+  .text-nrg-text { color: var(--nrg-text); }
+  .text-nrg-muted { color: var(--nrg-muted); }
+  .border-nrg-border { border-color: var(--nrg-border); }
+  .bg-nrg-surface { background-color: var(--nrg-surface); }
+
   .animate-delay-100 { animation-delay: 100ms; }
   .animate-delay-200 { animation-delay: 200ms; }
   .animate-delay-300 { animation-delay: 300ms; }

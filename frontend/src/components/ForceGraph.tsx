@@ -97,17 +97,21 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
     const g = svg.append('g')
     gRef.current = g.node()
 
-    const d3Nodes: D3GraphNode[] = filteredNodes.map((node) => ({
-      id: node.id,
-      label: node.label,
-      type: node.type,
-      year: node.year,
-      citations: node.citations,
-      x: 0,
-      y: 0,
-      fx: null,
-      fy: null,
-    }))
+    const radius = Math.max(80, Math.min(width, height) * 0.34)
+    const d3Nodes: D3GraphNode[] = filteredNodes.map((node, index) => {
+      const angle = (index / Math.max(filteredNodes.length, 1)) * Math.PI * 2
+      return {
+        id: node.id,
+        label: node.label,
+        type: node.type,
+        year: node.year,
+        citations: node.citations,
+        x: width / 2 + Math.cos(angle) * radius,
+        y: height / 2 + Math.sin(angle) * radius,
+        fx: null,
+        fy: null,
+      }
+    })
 
     const simulation = forceSimulation<D3GraphNode>(d3Nodes)
       .force('link', forceLink<D3GraphNode, GraphEdge>(filteredEdges as any).id((d: any) => d.id).distance(140))
@@ -193,6 +197,25 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
       .attr('font-size', '10px')
       .attr('fill', 'var(--nrg-text)')
       .attr('pointer-events', 'none')
+
+    link
+      .attr('x1', (d) => {
+        const source = d3Nodes.find((node) => node.id === d.source)
+        return source?.x ?? width / 2
+      })
+      .attr('y1', (d) => {
+        const source = d3Nodes.find((node) => node.id === d.source)
+        return source?.y ?? height / 2
+      })
+      .attr('x2', (d) => {
+        const target = d3Nodes.find((node) => node.id === d.target)
+        return target?.x ?? width / 2
+      })
+      .attr('y2', (d) => {
+        const target = d3Nodes.find((node) => node.id === d.target)
+        return target?.y ?? height / 2
+      })
+    node.attr('transform', (d) => `translate(${d.x ?? width / 2},${d.y ?? height / 2})`)
 
     simulation.on('tick', () => {
       link

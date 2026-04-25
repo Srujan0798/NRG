@@ -1,7 +1,10 @@
 import { useDPDPStore } from '../stores/dpdpStore';
+import { useState } from 'react';
 
 export function DPDPAuditLog() {
   const { auditLog, clearAuditLog } = useDPDPStore();
+  const [verifyStatus, setVerifyStatus] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
 
   const formatTimestamp = (ts: number) => {
     return new Date(ts).toLocaleString('en-IN', {
@@ -21,6 +24,25 @@ export function DPDPAuditLog() {
     return map[action] || 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
+  const verifyIntegrity = async () => {
+    setVerifying(true);
+    setVerifyStatus(null);
+    try {
+      const response = await fetch('/health', { signal: AbortSignal.timeout(5000) });
+      const payload = await response.json();
+      const chainValid = payload?.audit?.chain_valid;
+      const chainLength = payload?.audit?.chain_length ?? 0;
+      setVerifyStatus(chainValid === false
+        ? `Audit chain integrity compromised across ${chainLength.toLocaleString('en-IN')} events.`
+        : `Audit chain intact across ${chainLength.toLocaleString('en-IN')} events.`
+      );
+    } catch {
+      setVerifyStatus('Unable to verify integrity right now. Please try again.');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
@@ -28,16 +50,31 @@ export function DPDPAuditLog() {
           <h3 className="font-semibold text-gray-800"><span aria-hidden="true">📋</span> DPDP Audit Log</h3>
           <p className="text-xs text-gray-500">Sovereign compliance trail (last {auditLog.length} entries)</p>
         </div>
-        {auditLog.length > 0 && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={clearAuditLog}
-            className="text-xs text-gray-500 hover:text-red-600 transition"
-            aria-label="Clear audit log"
+            onClick={verifyIntegrity}
+            disabled={verifying}
+            className="text-xs font-medium text-blue-600 hover:text-blue-700 disabled:opacity-50 transition"
           >
-            Clear Log
+            {verifying ? 'Verifying...' : 'Verify integrity'}
           </button>
-        )}
+          {auditLog.length > 0 && (
+            <button
+              onClick={clearAuditLog}
+              className="text-xs text-gray-500 hover:text-red-600 transition"
+              aria-label="Clear audit log"
+            >
+              Clear Log
+            </button>
+          )}
+        </div>
       </div>
+
+      {verifyStatus && (
+        <div className="mx-4 mt-4 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+          {verifyStatus}
+        </div>
+      )}
 
       {auditLog.length === 0 ? (
         <div className="p-8 text-center text-gray-400 text-sm">

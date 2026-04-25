@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { ForceGraph, ForceGraphHandle } from '../ForceGraph'
 import { GraphNode, GraphData } from '../../services/queryService'
@@ -33,7 +33,21 @@ export const GraphView: React.FC<GraphViewProps> = ({
 }) => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
   const [showFilters, setShowFilters] = useState(false)
+  const [containerWidth, setContainerWidth] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
   const graphRef = useRef<ForceGraphHandle>(null)
+  const graphWidth = Math.max(320, Math.floor(containerWidth || width))
+
+  useEffect(() => {
+    const node = containerRef.current
+    if (!node || typeof ResizeObserver === 'undefined') return undefined
+
+    const observer = new ResizeObserver(([entry]) => {
+      setContainerWidth(entry.contentRect.width)
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
 
   const handleNodeClick = (node: GraphNode) => {
     setSelectedNode(node)
@@ -41,7 +55,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
   }
 
   return (
-    <div className="relative bg-white dark:bg-navy-800 rounded-2xl border border-slate-200/80 dark:border-navy-700 overflow-hidden">
+    <div ref={containerRef} className="relative bg-white dark:bg-navy-800 rounded-2xl border border-slate-200/80 dark:border-navy-700 overflow-hidden">
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         <motion.button
           onClick={() => setShowFilters(!showFilters)}
@@ -77,12 +91,12 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
       </div>
 
-      <div className="pl-16 pr-4 py-2 bg-slate-50 dark:bg-navy-900/50 border-b border-slate-200 dark:border-navy-700 flex items-center justify-between">
+      <div className="pl-16 pr-4 py-2 bg-slate-50 dark:bg-navy-900/50 border-b border-slate-200 dark:border-navy-700 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4 text-xs text-slate-500">
           <span>{data.nodes.length} nodes</span>
           <span>{data.edges.length} connections</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {Object.entries(nodeColors).filter(([k]) => k !== 'default').map(([type, color]) => (
             <div key={type} className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
@@ -92,11 +106,11 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </div>
       </div>
 
-      <div style={{ width, height }}>
+      <div style={{ width: '100%', height }}>
         <ForceGraph
           ref={graphRef}
           data={data}
-          width={width}
+          width={graphWidth}
           height={height - 40}
           onNodeClick={handleNodeClick}
         />

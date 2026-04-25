@@ -20,10 +20,11 @@ import MetricsDashboard from './MetricsDashboard'
 import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
 import { useQuery } from '@tanstack/react-query'
 import {
   Search, Users, FileText, Building,
-  Sun as SunIcon, Moon as MoonIcon, BookOpen, History
+  Sun as SunIcon, Moon as MoonIcon, BookOpen, History, LogOut
 } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 
@@ -40,12 +41,32 @@ const TABS = [
   { key: 'admin', label: 'Admin', labelHi: 'एडमिन', icon: '📈', tier: 1 },
 ] as const
 
+const DEMO_QUERY_SUGGESTIONS = [
+  'Which institutes in India have the highest grant amount in renewable energy?',
+  'Compare AI research output between Gujarat and Karnataka over the last 5 years',
+  'Show me the research network around hydrogen fuel cells',
+]
+
 const SaffronSpinner = ({ style }: { style?: React.CSSProperties }) => (
   <div
     className="w-9 h-9 rounded-full border-3 border-saffron-200 border-t-saffron-500 animate-spin"
     style={style}
   />
 )
+
+const toFriendlyQueryError = (err: any): string => {
+  const status = err?.response?.status
+  const detail = String(err?.response?.data?.detail || err?.message || '')
+  const lower = detail.toLowerCase()
+  if (status === 403) return 'Access restricted for your tier. This data is not available in your workspace.'
+  if (status === 422 || lower.includes('pii') || lower.includes('aadhaar') || lower.includes('security violation')) {
+    return 'This query contains sensitive information that cannot be processed.'
+  }
+  if (status === 429) return "You've made too many requests. Please wait a moment."
+  if (status >= 500) return 'Something went wrong. Our team has been notified. Please try again.'
+  if (lower.includes('network') || lower.includes('timeout')) return 'Something went wrong. Please try again.'
+  return detail || 'Something went wrong. Please try again.'
+}
 
 export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboardProps) {
   const { user, logout } = useAuth()
@@ -55,14 +76,16 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   } = useQueryStore()
   const { grantConsent, addAuditEntry, getConsentStatus } = useDPDPStore()
 
-  const hasExistingConsent = getConsentStatus('Research data analysis')?.granted
+  const hasExistingConsent = getConsentStatus('research_access')?.granted
   const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('dashboard')
   const [graphData, setGraphData] = useState(queryService.emptyGraphData())
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
-  const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
   const [queryError, setQueryError] = useState<string | null>(null)
-  const [graphTopic] = useState('machine learning')
+  const [queryValidation, setQueryValidation] = useState<string | null>(null)
+  const [isSlowQuery, setIsSlowQuery] = useState(false)
+  const [conversationTurns, setConversationTurns] = useState<Array<{ query: string; result: QueryResponse }>>([])
+  const [graphTopic, setGraphTopic] = useState('machine learning')
 
   const { data: publicationsData, isLoading: pubsLoading } = useQuery({
     queryKey: ['publications', user?.id],
@@ -91,6 +114,10 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     }
   }, [graphApiData])
 
+  useEffect(() => {
+    document.title = getDashboardDocumentTitle('researcher', activeTab)
+  }, [activeTab])
+
   const publications = publicationsData?.publications || []
 
   const consentExpiringCount = useDPDPStore((s) => {
@@ -99,22 +126,37 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   })
 
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return
+    const submittedQuery = currentQuery.trim()
+    if (!submittedQuery) {
+      setQueryValidation('Enter a research question before searching.')
+      return
+    }
+    setQueryValidation(null)
+    if (/research network|knowledge graph|graph around|network around/i.test(submittedQuery)) {
+      setGraphTopic(submittedQuery.replace(/show me|research network around|knowledge graph around/gi, '').trim() || submittedQuery)
+      setActiveTab('graph')
+      addToHistory({ query: submittedQuery, persona: 'researcher', resultsCount: 1 })
+      addAuditEntry({ action: 'data_accessed', persona: 'researcher', details: `Graph query: ${submittedQuery}` })
+      return
+    }
     setIsSearching(true)
-    setQueryResult(null)
     setQueryError(null)
+    setIsSlowQuery(false)
+    const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
     try {
-      const result = await queryService.query({ query: currentQuery })
-      setQueryResult(result)
+      const result = await queryService.query({ query: submittedQuery })
+      setConversationTurns((turns) => [...turns, { query: submittedQuery, result }])
       setLastResult(result)
-      addToHistory({ query: currentQuery, persona: 'researcher', resultsCount: result.verification_status ? 10 : 0 })
-      addAuditEntry({ action: 'data_accessed', persona: 'researcher', details: `Query: ${currentQuery}` })
+      addToHistory({ query: submittedQuery, persona: 'researcher', resultsCount: result.verification_status ? 10 : 0 })
+      addAuditEntry({ action: 'data_accessed', persona: 'researcher', details: `Query: ${submittedQuery}` })
     } catch (err: any) {
-      const message = err.response?.data?.detail || err.response?.data?.message || err.message || 'Search failed'
+      const message = toFriendlyQueryError(err)
       setQueryError(message)
-      addToHistory({ query: currentQuery, persona: 'researcher', resultsCount: 0, error: message })
+      addToHistory({ query: submittedQuery, persona: 'researcher', resultsCount: 0, error: message })
     } finally {
+      window.clearTimeout(slowTimer)
       setIsSearching(false)
+      setIsSlowQuery(false)
     }
   }, [currentQuery, addToHistory, addAuditEntry, setIsSearching, setLastResult])
 
@@ -136,20 +178,21 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
   return (
     <ErrorBoundary title="Researcher Dashboard failed to load">
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-navy-800/95 backdrop-blur-md border-b border-slate-200 dark:border-navy-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+      <div className="nrg-app-canvas min-h-screen">
+      <header className="sticky top-0 z-40 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-nrg-border">
+        <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-violet-400 to-navy-300" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <motion.div
-              className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center shadow-lg"
-              whileHover={{ scale: 1.05, rotate: 2 }}
+              className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-violet-600 to-navy-500 flex items-center justify-center shadow-lg"
+              whileHover={{ scale: 1.05, rotate: 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              <span className="text-white font-bold text-lg">न</span>
+              <span className="text-white font-display text-lg">न</span>
             </motion.div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 dark:text-white font-devanagari">राष्ट्रीय गवेषण मंच</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Researcher Workspace · शोधकर्ता कार्यस्थान</p>
+              <h1 className="text-lg font-bold text-nrg-text font-devanagari">राष्ट्रीय गवेषण मंच</h1>
+              <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">Researcher Workspace · शोधकर्ता कार्यस्थान</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -158,41 +201,45 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 value={user?.tier ?? 1}
                 onChange={(e) => {
                   const tier = parseInt(e.target.value)
-                  const personas = [
-                    { tier: 1, username: 'researcher_user', password: 'researcher-pass', label: 'Researcher (T1)' },
-                    { tier: 2, username: 'gov_user', password: 'government-pass', label: 'Government (T2)' },
-                    { tier: 3, username: 'industry_user', password: 'industry-pass', label: 'Industry (T3)' },
-                  ]
-                  const p = personas.find(p => p.tier === tier)
-                  if (p && confirm(`Switch to ${p.label}? This will log you out.`)) {
+                  if (tier !== user?.tier) {
                     logout()
                   }
                 }}
-                className="appearance-none pl-3 pr-8 py-1.5 rounded-xl text-xs font-medium border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-slate-700 dark:text-slate-200 cursor-pointer hover:border-violet-400 transition-all"
+                className="appearance-none pl-3 pr-8 py-1.5 rounded-xl text-xs font-semibold border border-nrg-border bg-[var(--nrg-surface)] text-nrg-muted cursor-pointer hover:border-violet-400 transition-all"
                 aria-label="Switch persona tier"
               >
                 <option value={1}>🔬 Researcher T1</option>
                 <option value={2}>🏛️ Government T2</option>
                 <option value={3}>🏢 Industry T3</option>
               </select>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-nrg-muted">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
               </div>
             </div>
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
-              className="w-9 h-9 rounded-xl border border-slate-200 dark:border-navy-600 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-violet-500 hover:border-violet-300 transition-all duration-200"
+              className="w-10 h-10 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-violet-500 hover:border-violet-300 transition-all duration-200"
               aria-label="Toggle theme"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
             </motion.button>
+            <motion.button
+              onClick={logout}
+              className="h-10 px-3 rounded-xl border border-nrg-border flex items-center gap-2 text-sm font-semibold text-nrg-muted hover:text-rose-600 hover:border-rose-300 transition-all duration-200"
+              aria-label="Log out"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <LogOut size={16} />
+              <span className="hidden sm:inline">Logout</span>
+            </motion.button>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 -mb-px overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto pb-1">
           {TABS.map((tab) => {
             if ('tier' in tab && tab.tier !== undefined && (user?.tier ?? 0) < tab.tier) return null
             return (
@@ -201,10 +248,10 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 onClick={() => setActiveTab(tab.key)}
                 aria-label={`${tab.label}, ${tab.labelHi} tab`}
                 aria-current={activeTab === tab.key ? 'page' : undefined}
-                className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
+                className={`nrg-tab flex items-center gap-1.5 whitespace-nowrap rounded-t-xl ${
                   activeTab === tab.key
-                    ? 'border-violet-500 text-violet-600 dark:text-violet-400'
-                    : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
+                    ? 'active'
+                    : 'text-nrg-muted hover:text-nrg-text'
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -212,7 +259,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               >
                 <span aria-hidden="true">{tab.icon}</span>
                 {tab.label}
-                <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
+                <span className="text-xs font-devanagari text-nrg-muted ml-1">{tab.labelHi}</span>
               </motion.button>
             )
           })}
@@ -225,37 +272,57 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
         expiringCount={consentExpiringCount}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {activeTab === 'dashboard' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
-              <div className="flex items-center gap-2 mb-4">
-                <Search size={18} className="text-violet-500" />
-                <div>
-                  <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Knowledge Graph Query</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">ज्ञान ग्राफ प्रश्न</p>
+            <div className="nrg-panel p-4 sm:p-5">
+              <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="flex items-center gap-2">
+                  <Search size={18} className="text-violet-500" />
+                  <div>
+                    <h2 className="text-sm font-semibold text-nrg-text">Ask NRG</h2>
+                    <p className="text-xs text-nrg-muted">Evidence-backed answers with citations, audit trail, and tier controls</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2" aria-label="Suggested demo queries">
+                  {DEMO_QUERY_SUGGESTIONS.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => {
+                        setCurrentQuery(suggestion)
+                        setQueryValidation(null)
+                      }}
+                      className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-medium text-violet-700 transition hover:border-violet-300 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-200"
+                    >
+                      {suggestion.length > 58 ? `${suggestion.slice(0, 56)}...` : suggestion}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <label htmlFor="researcher-search-input" className="sr-only">Research query</label>
                 <input
                   id="researcher-search-input"
                   type="text"
                   value={currentQuery}
-                  onChange={(e) => setCurrentQuery(e.target.value)}
+                  onChange={(e) => {
+                    setCurrentQuery(e.target.value)
+                    if (queryValidation) setQueryValidation(null)
+                  }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Enter research topic, author, institution, or DOI…"
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-all"
+                  placeholder="Ask anything about Indian research grants, institutions, publications, or collaborations..."
+                  className="nrg-input min-h-[48px] flex-1"
                   data-testid="researcher-search-input"
                 />
                 <motion.button
                   onClick={handleSearch}
                   disabled={isSearching || !currentQuery.trim()}
-                  className="px-6 py-3 rounded-xl text-sm font-medium bg-gradient-to-r from-violet-500 to-violet-600 text-white shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="nrg-btn-primary min-h-[48px] w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   data-testid="researcher-search-submit"
@@ -270,11 +337,14 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   )}
                 </motion.button>
               </div>
+              {queryValidation && (
+                <p className="mt-2 text-sm text-rose-600" role="alert">{queryValidation}</p>
+              )}
 
               {isSearching && (
-                <div className="mt-4 flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400" aria-live="polite" aria-label="Query in progress">
-                  <SaffronSpinner aria-hidden="true" />
-                  <span>Processing query through NRG LangGraph orchestration…</span>
+                <div className="mt-4 flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-100" aria-live="polite" aria-label="Query in progress">
+                  <SaffronSpinner style={{ width: 20, height: 20, borderWidth: 2 }} />
+                  <span>{getQueryStatusCopy({ isSlowQuery, domain: 'research' })}</span>
                 </div>
               )}
 
@@ -289,15 +359,42 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 </div>
               )}
 
-              {queryResult && !queryError && (
-                <div className="mt-4">
-                  <AnswerPanel
-                    response={queryResult.response}
-                    citations={queryResult.citations || []}
-                    provenance={queryResult.provenance}
-                    warnings={queryResult.warnings}
-                    verification_status={queryResult.verification_status}
-                  />
+              {conversationTurns.length > 0 && !queryError && (
+                <div className="mt-4 space-y-4">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Conversation</h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Each answer keeps the question visible for the demo flow.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setConversationTurns([])
+                        setQueryError(null)
+                        setCurrentQuery('')
+                      }}
+                      className="min-h-[40px] rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-violet-300 hover:text-violet-600 dark:border-navy-600 dark:text-slate-300"
+                    >
+                      New conversation
+                    </button>
+                  </div>
+                  {conversationTurns.map((turn, index) => (
+                    <div key={`${turn.result.query_id}-${index}`} className="rounded-2xl border border-slate-200 dark:border-navy-700 overflow-hidden">
+                      <div className="px-4 py-3 bg-slate-50 dark:bg-navy-700/40 border-b border-slate-200 dark:border-navy-700">
+                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Question {index + 1}</p>
+                        <p className="text-sm text-slate-900 dark:text-white">{turn.query}</p>
+                      </div>
+                      <div className="p-4">
+                        <AnswerPanel
+                          response={turn.result.response}
+                          citations={turn.result.citations || []}
+                          provenance={turn.result.provenance}
+                          warnings={turn.result.warnings}
+                          verification_status={turn.result.verification_status}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -497,7 +594,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
       <DPDPConsentDialog
         isOpen={showDPDPConsent}
-        onApprove={() => { grantConsent('Research data analysis', 365); setShowDPDPConsent(false) }}
+        onApprove={() => { grantConsent('research_access', 365); setShowDPDPConsent(false) }}
         onDeny={() => setShowDPDPConsent(false)}
       />
     </div>

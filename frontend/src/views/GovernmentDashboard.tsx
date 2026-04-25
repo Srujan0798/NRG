@@ -19,6 +19,7 @@ import { IndiaMapChoropleth } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
 import { useQuery } from '@tanstack/react-query'
 import { Building, Users, FileText, Shield, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
@@ -38,16 +39,24 @@ const TABS = [
 
 const AREA_COLORS = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
 
+const POLICY_DEMO_QUERIES = [
+  'Which states have the highest renewable energy research funding?',
+  'Compare AI research output between Gujarat and Karnataka over the last 5 years',
+  'Where should DST allocate the next clean energy research hub?',
+]
+
 export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboardProps) {
   const { user } = useAuth()
   const { addAuditEntry, grantConsent, getConsentStatus } = useDPDPStore()
-  const hasExistingConsent = getConsentStatus('Research data analysis')?.granted
+  const hasExistingConsent = getConsentStatus('research_access')?.granted
   const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('overview')
   const [currentQuery, setCurrentQuery] = useState('')
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)
   const [queryError, setQueryError] = useState<string | null>(null)
+  const [queryValidation, setQueryValidation] = useState<string | null>(null)
   const [isSearching, setIsSearching] = useState(false)
+  const [isSlowQuery, setIsSlowQuery] = useState(false)
   const [graphData, setGraphData] = useState(queryService.emptyGraphData())
   const [graphTopic, setGraphTopic] = useState('AI')
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
@@ -79,18 +88,33 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
     }
   }, [graphApiData])
 
+  useEffect(() => {
+    document.title = getDashboardDocumentTitle('government', activeTab)
+  }, [activeTab])
+
   const handleSearch = useCallback(async () => {
-    if (!currentQuery.trim()) return
+    const submittedQuery = currentQuery.trim()
+    if (!submittedQuery) {
+      setQueryValidation('Enter a policy question before searching.')
+      return
+    }
+    setQueryValidation(null)
     setIsSearching(true)
     setQueryError(null)
+    setIsSlowQuery(false)
+    const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
     try {
-      const result = await queryService.query({ query: currentQuery })
+      const result = await queryService.query({ query: submittedQuery })
       setQueryResult(result)
-      addAuditEntry({ action: 'data_accessed', persona: 'government', details: `Query: ${currentQuery}` })
+      addAuditEntry({ action: 'data_accessed', persona: 'government', details: `Query: ${submittedQuery}` })
     } catch (err: any) {
-      setQueryError(err.message || 'Search failed')
+      setQueryError(err?.response?.status === 403
+        ? 'Access restricted for this workspace. Aggregated policy data only is available.'
+        : err?.message || 'Search failed. Please try again.')
     } finally {
+      window.clearTimeout(slowTimer)
       setIsSearching(false)
+      setIsSlowQuery(false)
     }
   }, [currentQuery, addAuditEntry])
 
@@ -156,27 +180,27 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
 
   return (
     <ErrorBoundary title="Government Dashboard failed to load">
-      <div className="min-h-screen bg-slate-50 dark:bg-navy-900">
+      <div className="nrg-app-canvas min-h-screen">
         <GovernmentHeader onThemeToggle={onThemeToggle} theme={theme} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-1 -mb-px overflow-x-auto border-b border-slate-200 dark:border-navy-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto border-b border-nrg-border">
           {TABS.map((tab) => (
             <motion.button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               aria-label={`${tab.label}, ${tab.labelHi} tab`}
               aria-current={activeTab === tab.key ? 'page' : undefined}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 whitespace-nowrap ${
+              className={`nrg-tab flex items-center gap-1.5 whitespace-nowrap rounded-t-xl ${
                 activeTab === tab.key
-                  ? 'border-saffron-500 text-saffron-600 dark:text-saffron-400'
-                  : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-navy-600'
+                  ? 'active'
+                  : 'text-nrg-muted hover:text-nrg-text'
               }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               data-testid={`tab-${tab.key}`}
             >
               {tab.label}
-              <span className="text-xs font-devanagari text-slate-400 ml-1">{tab.labelHi}</span>
+              <span className="text-xs font-devanagari text-nrg-muted ml-1">{tab.labelHi}</span>
             </motion.button>
           ))}
         </div>
@@ -186,7 +210,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
           expiringCount={consentExpiringCount}
         />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
           {activeTab === 'overview' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -289,22 +313,40 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Query</h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">त्वरित प्रश्न</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {POLICY_DEMO_QUERIES.slice(0, 2).map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => {
+                            setCurrentQuery(suggestion)
+                            setQueryValidation(null)
+                          }}
+                          className="rounded-full border border-saffron-200 bg-saffron-50 px-3 py-1.5 text-xs font-medium text-saffron-700 transition hover:border-saffron-300 hover:bg-saffron-100"
+                        >
+                          {suggestion.length > 54 ? `${suggestion.slice(0, 52)}...` : suggestion}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row">
                       <label htmlFor="policy-query-input" className="sr-only">Policy query</label>
                       <input
                         id="policy-query-input"
                         type="text"
                         value={currentQuery}
-                        onChange={(e) => setCurrentQuery(e.target.value)}
+                        onChange={(e) => {
+                          setCurrentQuery(e.target.value)
+                          if (queryValidation) setQueryValidation(null)
+                        }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Enter policy query..."
-                        className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-saffron-500"
+                        className="min-h-[48px] flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-saffron-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
                         data-testid="policy-query-input"
                       />
                       <motion.button
                         onClick={handleSearch}
-                        disabled={isSearching}
-                        className="px-5 py-2.5 rounded-xl text-sm font-medium bg-gradient-to-r from-saffron-500 to-saffron-600 text-white shadow-md hover:shadow-lg disabled:opacity-50"
+                        disabled={isSearching || !currentQuery.trim()}
+                        className="min-h-[48px] rounded-xl bg-gradient-to-r from-saffron-500 to-saffron-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         data-testid="policy-query-submit"
@@ -312,6 +354,14 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         {isSearching ? 'Searching...' : 'Query'}
                       </motion.button>
                     </div>
+                    {queryValidation && (
+                      <p className="mt-2 text-sm text-rose-600" role="alert">{queryValidation}</p>
+                    )}
+                    {isSearching && (
+                      <div className="mt-4 rounded-xl border border-saffron-200 bg-saffron-50 px-4 py-3 text-sm text-saffron-800" aria-live="polite">
+                        {getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}
+                      </div>
+                    )}
                     {queryResult && (
                       <div className="mt-4">
                         <AnswerPanel
@@ -350,6 +400,116 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   </div>
                 </div>
               </WidgetErrorBoundary>
+            </motion.div>
+          )}
+
+          {activeTab === 'policy' && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              <WidgetErrorBoundary title="Policy analysis workspace failed to load">
+                <div className="nrg-panel p-4 sm:p-5">
+                  <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+                    <div>
+                      <h2 className="text-base font-semibold text-nrg-text">Policy Analysis Workbench</h2>
+                      <p className="text-sm text-nrg-muted">Ask cross-state and ministry questions, then show the cited answer directly in the room.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {POLICY_DEMO_QUERIES.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => {
+                            setCurrentQuery(suggestion)
+                            setQueryValidation(null)
+                          }}
+                          className="rounded-full border border-saffron-200 bg-saffron-50 px-3 py-1.5 text-xs font-medium text-saffron-700 transition hover:border-saffron-300 hover:bg-saffron-100"
+                        >
+                          {suggestion.length > 56 ? `${suggestion.slice(0, 54)}...` : suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row">
+                    <label htmlFor="policy-analysis-input" className="sr-only">Policy analysis query</label>
+                    <input
+                      id="policy-analysis-input"
+                      type="text"
+                      value={currentQuery}
+                      onChange={(e) => {
+                        setCurrentQuery(e.target.value)
+                        if (queryValidation) setQueryValidation(null)
+                      }}
+                      onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                      placeholder="Ask for state-level trends, funding concentration, or institutional performance..."
+                      className="nrg-input min-h-[48px] flex-1"
+                      data-testid="policy-analysis-input"
+                    />
+                    <motion.button
+                      onClick={handleSearch}
+                      disabled={isSearching || !currentQuery.trim()}
+                      className="nrg-btn-primary min-h-[48px] w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      data-testid="policy-analysis-submit"
+                    >
+                      {isSearching ? 'Searching...' : 'Run Analysis'}
+                    </motion.button>
+                  </div>
+
+                  {queryValidation && (
+                    <p className="mt-2 text-sm text-rose-600" role="alert">{queryValidation}</p>
+                  )}
+                  {isSearching && (
+                    <div className="mt-4 rounded-xl border border-saffron-200 bg-saffron-50 px-4 py-3 text-sm text-saffron-800" aria-live="polite">
+                      {getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}
+                    </div>
+                  )}
+                  {queryError && (
+                    <div className="mt-4">
+                      <ErrorState
+                        title="Analysis Failed"
+                        message={queryError}
+                        severity="error"
+                        onRetry={handleSearch}
+                      />
+                    </div>
+                  )}
+                  {queryResult && !queryError && (
+                    <div className="mt-4">
+                      <AnswerPanel
+                        response={queryResult.response}
+                        citations={queryResult.citations || []}
+                        provenance={queryResult.provenance}
+                        warnings={queryResult.warnings}
+                        verification_status={queryResult.verification_status}
+                      />
+                    </div>
+                  )}
+                </div>
+              </WidgetErrorBoundary>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <WidgetErrorBoundary title="Funding trend failed to load">
+                  <FundingTrendsLineChart
+                    data={fundingTrendData}
+                    title="Policy Funding Signal"
+                    titleHi="नीति वित्त संकेत"
+                    subtitle="Funding and publication movement for briefing context"
+                  />
+                </WidgetErrorBoundary>
+                <WidgetErrorBoundary title="Research area distribution failed to load">
+                  <ResearchAreasBarChart
+                    data={researchAreaData.slice(0, 6)}
+                    title="Strategic Research Areas"
+                    titleHi="रणनीतिक शोध क्षेत्र"
+                    subtitle="Top areas available for policy allocation"
+                  />
+                </WidgetErrorBoundary>
+              </div>
             </motion.div>
           )}
 
@@ -459,7 +619,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
         </main>
         <DPDPConsentDialog
           isOpen={showDPDPConsent}
-          onApprove={() => { grantConsent('Research data analysis', 365); setShowDPDPConsent(false) }}
+          onApprove={() => { grantConsent('research_access', 365); setShowDPDPConsent(false) }}
           onDeny={() => setShowDPDPConsent(false)}
         />
       </div>

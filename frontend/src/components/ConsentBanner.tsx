@@ -44,22 +44,22 @@ export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCo
         transition={{ duration: 0.3 }}
         className="overflow-hidden"
       >
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-b border-amber-200 dark:border-amber-700">
+        <div className="bg-gradient-to-r from-saffron-50/70 to-nrg-navy-50/80 border-b border-nrg-border backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-4">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                <Shield size={14} className="text-amber-600 dark:text-amber-400" />
+              <div className="shrink-0 w-8 h-8 rounded-full bg-saffron-100/70 dark:bg-saffron-900/30 flex items-center justify-center">
+                <Shield size={14} className="text-saffron-700 dark:text-saffron-300" />
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-amber-900 dark:text-amber-200">
+                <p className="text-sm text-nrg-text">
                   <span className="font-semibold">DPDP Act 2023:</span>{' '}
                   {labels.line1}
                 </p>
-                <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                <p className="text-xs text-nrg-muted mt-0.5">
                   {labels.line2}
                   {expiringCount > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1 bg-amber-200 dark:bg-amber-700 text-amber-800 dark:text-amber-200 px-2 py-0.5 rounded-full text-xs">
+                    <span className="ml-2 inline-flex items-center gap-1 bg-saffron-500/20 text-saffron-800 dark:text-saffron-200 px-2 py-0.5 rounded-full text-xs">
                       {expiringCount} consent{expiringCount > 1 ? 's' : ''} expiring soon
                     </span>
                   )}
@@ -70,7 +70,7 @@ export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCo
                 {onManageConsent && (
                   <button
                     onClick={onManageConsent}
-                    className="text-xs font-medium text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 flex items-center gap-1 transition-colors"
+                    className="text-xs font-medium text-saffron-700 dark:text-saffron-300 hover:text-saffron-900 dark:hover:text-saffron-100 flex items-center gap-1 transition-colors"
                     data-testid="manage-consent-btn"
                   >
                     Manage Consent
@@ -79,7 +79,7 @@ export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCo
                 )}
                 <button
                   onClick={() => setDismissed(true)}
-                  className="w-6 h-6 rounded flex items-center justify-center text-amber-500 hover:text-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                  className="w-6 h-6 rounded flex items-center justify-center text-saffron-500 hover:text-saffron-700 hover:bg-saffron-100/70 dark:hover:bg-saffron-900/40 transition-colors"
                   aria-label="Dismiss consent banner"
                   data-testid="dismiss-consent-banner"
                 >

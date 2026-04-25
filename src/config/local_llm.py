@@ -307,6 +307,11 @@ _LLAMA_CACHE_TTL_SECONDS = 30.0
 def get_llama_cpp_client() -> Optional[LlamaCppClient]:
     """Get LlamaCppClient if server is available (health-check cached, TTL 30s)."""
     global _llama_cpp_health_cache
+    if os.getenv("LOCAL_LLM_DISABLED", "false").lower() in {"1", "true", "yes"}:
+        logger.info("Local llama.cpp disabled by LOCAL_LLM_DISABLED")
+        _llama_cpp_health_cache = (time.time(), False)
+        return None
+
     now = time.time()
 
     if _llama_cpp_health_cache is not None:

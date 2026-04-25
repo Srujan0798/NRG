@@ -1,9 +1,9 @@
 export const typography = {
   fontFamily: {
-    sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-    devanagari: ['Noto Sans Devanagari', 'system-ui', 'sans-serif'],
-    mono: ['JetBrains Mono', 'Consolas', 'monospace'],
-    display: ['Playfair Display', 'Georgia', 'serif'],
+    sans: ['Hanken Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+    devanagari: ['Tiro Devanagari Hindi', 'system-ui', 'sans-serif'],
+    mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
+    display: ['Fraunces', 'Georgia', 'serif'],
   },
   fontSize: {
     xs: ['0.75rem', { lineHeight: '1rem' }],
