@@ -12,6 +12,7 @@ from typing import Awaitable, Callable, Optional
 
 from vector_drift_check import (
     COSINE_SHIFT_THRESHOLD,
+    _qdrant_ready_for_benchmark,
     _trigger_reindex,
     run_drift_check,
     run_health_check,
@@ -40,7 +41,7 @@ def _default_check() -> dict:
     """Run the real drift check once."""
     retriever = Retriever(timeout=5.0)
     health = run_health_check(retriever)
-    if health.get("status") not in {"ok", "degraded"}:
+    if not _qdrant_ready_for_benchmark(health):
         return {
             "drift": {"alert_level": "UNKNOWN", "drift_score": 0.0},
             "reindex_info": {

@@ -1,9 +1,25 @@
 """Regression tests for /query security validation before workflow execution."""
 
 import pytest
+import pytest_asyncio
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
+
+
+@pytest.fixture(scope="function")
+def test_client(request, monkeypatch):
+    """Create a fresh TestClient for each test, avoiding asyncio event-loop conflicts."""
+    import src.api.main as _api_main
+    from src.services.consent import ConsentService
+
+    monkeypatch.setattr(_api_main, "workflow", CountingWorkflow())
+    monkeypatch.setattr(_api_main, "audit_log_query", lambda *args, **kwargs: "audit-1")
+    _api_main._api_cache.invalidate()
+    monkeypatch.setattr(ConsentService, "has_consent", lambda self, uid, scope: True)
+    client = TestClient(_api_main.app)
+    yield client
+    client.close()
 
 
 class CountingWorkflow:
@@ -52,12 +68,27 @@ def _login(client: TestClient) -> str:
         "test DROP TABLE researchers",
         "*)(uid=*)[root]",
         "../../etc/passwd",
+        "Show all researchers",
     ],
 )
-def test_sql_injection_blocked_before_workflow(monkeypatch, payload):
+def test_sql_injection_blocked_before_workflow(test_client, payload):
+    CountingWorkflow.call_count = 0
+    token = _login(test_client)
+
+    response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"query": payload},
+    )
+
+    assert response.status_code == 400, response.text
+    assert "PROMPT_INJECTION" in response.json().get("detail", "")
+    assert CountingWorkflow.call_count == 0
+
+
+def test_length_bomb_blocked_before_workflow(monkeypatch):
     CountingWorkflow.call_count = 0
     monkeypatch.setattr(api_main, "workflow", CountingWorkflow())
-    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-1")
     api_main._api_cache.invalidate()
 
     from src.services.consent import ConsentService
@@ -70,9 +101,9 @@ def test_sql_injection_blocked_before_workflow(monkeypatch, payload):
     response = client.post(
         "/query",
         headers={"Authorization": f"Bearer {token}"},
-        json={"query": payload},
+        json={"query": "a" * 10000},
     )
 
     assert response.status_code == 400, response.text
-    assert "PROMPT_INJECTION" in response.json().get("detail", "")
+    assert "QUERY_TOO_LARGE" in response.json().get("detail", "")
     assert CountingWorkflow.call_count == 0
