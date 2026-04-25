@@ -20,6 +20,7 @@ export interface IntelligenceBriefProps {
   responseId?: string
   queryText?: string
   sessionId?: string
+  onCitationClick?: (citation: Citation) => void
 }
 
 interface HistoryItem {
@@ -38,13 +39,15 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
   verification_status,
   onExportPDF,
   isStreaming = false,
+  onCitationClick,
 }) => {
   const [showHistory, setShowHistory] = useState(false)
   const [pinnedQueries, setPinnedQueries] = useState<Set<string>>(new Set())
   const history: HistoryItem[] = []
 
-  const handleCitationClick = useCallback((_citation: Citation) => {
-  }, [])
+  const handleCitationClick = useCallback((citation: Citation) => {
+    onCitationClick?.(citation)
+  }, [onCitationClick])
 
   const parsedResult = useMemo(() => parseCitations(response, citations), [response, citations])
   const { segments, orderedCitations } = parsedResult
