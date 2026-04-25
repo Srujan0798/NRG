@@ -22,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response
+from starlette.responses import Response, StreamingResponse
 from qdrant_client import QdrantClient
 import uuid
 
@@ -547,8 +547,8 @@ async def query_stream(
             logger.error(f"Streaming query error: {e}")
             yield f"event: error\ndata: {str(e)}\n\n"
 
-    return Response(
-        content=event_generator(),
+    return StreamingResponse(
+        event_generator(),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
