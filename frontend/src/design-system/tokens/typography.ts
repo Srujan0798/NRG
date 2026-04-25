@@ -1,9 +1,20 @@
 export const typography = {
   fontFamily: {
-    sans: ['Hanken Grotesk', 'system-ui', '-apple-system', 'sans-serif'],
+    sans: ['Sohne Display', 'system-ui', '-apple-system', 'sans-serif'],
     devanagari: ['Tiro Devanagari Hindi', 'system-ui', 'sans-serif'],
-    mono: ['IBM Plex Mono', 'Consolas', 'monospace'],
-    display: ['Fraunces', 'Georgia', 'serif'],
+    mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+    display: ['Sohne Display', 'system-ui', 'sans-serif'],
+  },
+  roleScale: {
+    display: { fontSize: '56px', lineHeight: '60px', fontWeight: '700' },
+    h1: { fontSize: '40px', lineHeight: '48px', fontWeight: '700' },
+    h2: { fontSize: '28px', lineHeight: '36px', fontWeight: '600' },
+    h3: { fontSize: '20px', lineHeight: '28px', fontWeight: '600' },
+    bodyL: { fontSize: '18px', lineHeight: '28px', fontWeight: '400' },
+    body: { fontSize: '16px', lineHeight: '24px', fontWeight: '400' },
+    bodyS: { fontSize: '14px', lineHeight: '20px', fontWeight: '400' },
+    caption: { fontSize: '12px', lineHeight: '16px', fontWeight: '500', letterSpacing: '0.02em', textTransform: 'uppercase' },
+    mono: { fontSize: '14px', lineHeight: '20px', fontWeight: '400' },
   },
   fontSize: {
     xs: ['0.75rem', { lineHeight: '1rem' }],

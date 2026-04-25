@@ -45,7 +45,7 @@ export function DPDPWithdrawalPanel() {
                   <div className="flex-1">
                     <div className="text-sm text-gray-800">{c.purpose}</div>
                     <div className="text-xs text-gray-500">
-                      Expires: {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-IN') : 'N/A'}
+                      Expires: {c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('en-IN') : 'Unavailable'}
                       {expiringSoon.includes(c) && ' ⚠️'}
                     </div>
                   </div>

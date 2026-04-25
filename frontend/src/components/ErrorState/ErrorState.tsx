@@ -89,15 +89,15 @@ const errorMessages: Record<ErrorSeverity, { title: string; subtitle: string }> 
   },
   warning: {
     title: 'Warning',
-    subtitle: 'Something unexpected occurred. Please try again.',
+    subtitle: 'NRG could not complete that step. Refine the request or retry.',
   },
   error: {
     title: 'Request Failed',
-    subtitle: 'We encountered an issue processing your request.',
+    subtitle: 'NRG could not process the request. Your audit trail is safe.',
   },
   critical: {
-    title: 'System Error',
-    subtitle: 'A critical error occurred. Please contact support if this persists.',
+    title: 'System Recovery Needed',
+    subtitle: 'This screen needs support attention. Your audit trail is safe.',
   },
 }
 

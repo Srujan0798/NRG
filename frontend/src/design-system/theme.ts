@@ -1,13 +1,14 @@
 import { colors } from './tokens/colors'
+import { shadows } from './tokens/spacing'
 
 export const lightTheme = {
   name: 'light',
   colors: {
-    bg: '#f7f9fc',
-    surface: '#ffffff',
-    text: '#0f172a',
-    muted: '#64748b',
-    border: '#e2e8f0',
+    bg: colors.role.surface2.light,
+    surface: colors.role.surface1.light,
+    text: colors.role.ink.light,
+    muted: colors.role.inkMuted.light,
+    border: colors.role.border.light,
     shadow: 'rgba(26, 39, 68, 0.08)',
     saffron: colors.saffron,
     navy: colors.navy,
@@ -19,7 +20,7 @@ export const lightTheme = {
   glass: {
     bg: 'rgba(255, 255, 255, 0.82)',
     border: 'rgba(255, 255, 255, 0.5)',
-    shadow: '0 8px 32px rgba(26, 39, 68, 0.06)',
+    shadow: shadows.md,
     blur: '20px',
   },
 }
@@ -27,11 +28,11 @@ export const lightTheme = {
 export const darkTheme = {
   name: 'dark',
   colors: {
-    bg: '#060e1c',
-    surface: '#0f1729',
-    text: '#f1f5f9',
-    muted: '#94a3b8',
-    border: 'rgba(255,255,255,0.08)',
+    bg: colors.role.surface1.dark,
+    surface: colors.role.surface2.dark,
+    text: colors.role.ink.dark,
+    muted: colors.role.inkMuted.dark,
+    border: colors.role.border.dark,
     shadow: 'rgba(0, 0, 0, 0.3)',
     saffron: colors.saffron,
     navy: colors.navy,
@@ -49,3 +50,16 @@ export const darkTheme = {
 }
 
 export type Theme = typeof lightTheme
+
+export const printDesignTokenCss = `
+  :root {
+    --nrg-saffron: ${colors.role.saffron.light};
+    --nrg-saffron-soft: ${colors.saffron[400]};
+    --nrg-white: ${colors.role.white.light};
+    --nrg-ink: ${colors.role.ink.light};
+    --nrg-ink-muted: ${colors.role.inkMuted.light};
+    --nrg-surface-1: ${colors.role.surface1.light};
+    --nrg-surface-2: ${colors.role.surface2.light};
+    --nrg-border: ${colors.role.border.light};
+  }
+`

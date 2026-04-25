@@ -90,10 +90,10 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
           chunk_text: cite.chunk_text || `Chunk ${parsed.chunkId} content`,
           pub_id: cite.pub_id || parsed.pubId || 'unknown',
           chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',
-          institution: cite.research_area || 'Unknown Institution',
+          institution: cite.research_area || 'Source institution unavailable',
           citations: cite.citation_count || 0,
           doi: cite.doi || 'Not available',
-          journal: cite.journal || 'Unknown Journal',
+          journal: cite.journal || 'Journal unavailable',
           abstract: cite.abstract || null,
         })
         setLoading(false)
@@ -112,10 +112,10 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
               chunk_text: cite.chunk_text || `Chunk ${parsed.chunkId} content`,
               pub_id: parsed.pubId,
               chunk_id: parsed.chunkId,
-              institution: pub.institution || 'Unknown Institution',
+              institution: pub.institution || 'Source institution unavailable',
               citations: pub.citations || 0,
               doi: pub.doi || 'Not available',
-              journal: pub.venue || 'Unknown Journal',
+              journal: pub.venue || 'Journal unavailable',
               abstract: pub.abstract || null,
             })
             setLoading(false)
@@ -127,14 +127,14 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
       setDetails({
         title: cite.title || `Publication ${cite.pub_id || parsed.pubId || 'unknown'}`,
         year: cite.year || 2024,
-        authors: toStringArray(cite.authors)?.length ? toStringArray(cite.authors) : ['Unknown Author'],
+        authors: toStringArray(cite.authors)?.length ? toStringArray(cite.authors) : ['Author unavailable'],
         chunk_text: cite.chunk_text || `Chunk content for ${parsed.chunkId || 'unknown'}`,
         pub_id: cite.pub_id || parsed.pubId || 'unknown',
         chunk_id: cite.chunk_id || parsed.chunkId || 'unknown',
-        institution: cite.research_area || 'Unknown Institution',
+        institution: cite.research_area || 'Source institution unavailable',
         citations: cite.citation_count || 0,
         doi: cite.doi || 'Not available',
-        journal: cite.journal || 'Unknown Journal',
+        journal: cite.journal || 'Journal unavailable',
         abstract: cite.abstract || null,
       })
     } finally {
@@ -279,7 +279,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                       <div key={label} className="flex items-start justify-between py-2 border-b border-slate-100 dark:border-navy-700/50 last:border-0">
                         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</span>
                         <span className="text-xs text-slate-900 dark:text-slate-100 text-right max-w-[60%] font-mono">
-                          {value || 'N/A'}
+                          {value || 'Unavailable'}
                         </span>
                       </div>
                     ))}
@@ -305,7 +305,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                       <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2">Source</p>
                       <p className="text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1">
                         <SourceIcon source={citation?.source} />
-                        {citation?.source || 'Unknown source'}
+                        {citation?.source || 'Source unavailable'}
                       </p>
                     </div>
 
@@ -324,7 +324,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
             ) : (
               <div className="flex flex-col items-center justify-center h-48 text-slate-400">
                 <FileText size={40} className="mb-3 opacity-50" />
-                <p className="text-sm">No citation details available</p>
+                <p className="text-sm">Citation details are not available for this source.</p>
               </div>
             )}
           </div>

@@ -66,9 +66,9 @@ const toFriendlyQueryError = (err: any): string => {
     return 'This query contains sensitive information that cannot be processed.'
   }
   if (status === 429) return "You've made too many requests. Please wait a moment."
-  if (status >= 500) return 'Something went wrong. Our team has been notified. Please try again.'
-  if (lower.includes('network') || lower.includes('timeout')) return 'Something went wrong. Please try again.'
-  return detail || 'Something went wrong. Please try again.'
+  if (status >= 500) return 'NRG could not complete this request. Your audit trail is safe; refine the query or retry.'
+  if (lower.includes('network') || lower.includes('timeout')) return 'NRG cannot reach the evidence service right now. Your audit trail is safe.'
+  return detail || 'NRG could not complete this request. Your audit trail is safe; refine the query or retry.'
 }
 
 export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboardProps) {

@@ -46,7 +46,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
           {this.props.title || 'Widget failed to load'}
         </h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-          {this.props.description || this.state.error?.message || 'An unexpected error occurred.'}
+          {this.props.description || 'This widget could not render. The rest of the page is still available.'}
         </p>
         <button
           onClick={this.handleRetry}
@@ -67,10 +67,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
             <span className="text-2xl">⚠️</span>
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            {this.props.title || 'Something went wrong'}
+            {this.props.title || 'NRG could not render this section'}
           </h2>
           <p className="text-sm text-gray-500 mb-6">
-            {this.props.description || this.state.error?.message || 'An unexpected error occurred in this view.'}
+            {this.props.description || 'This view could not render. Your audit trail remains safe.'}
           </p>
           <button
             onClick={this.handleRetry}

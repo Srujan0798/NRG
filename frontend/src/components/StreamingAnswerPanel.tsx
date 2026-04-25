@@ -132,8 +132,8 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
 
   if (error) {
     return (
-      <div className="p-4 rounded-xl border border-red-200 bg-red-50 text-sm text-red-700">
-        Stream failed: {error}
+      <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-sm text-amber-800">
+        Live answer paused. Your audit trail is safe; retry the query or use the standard answer path.
       </div>
     )
   }

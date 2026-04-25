@@ -47,20 +47,20 @@ export const DataTable: React.FC<DataTableProps> = ({
 
   return (
     <motion.div
-      className="rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md overflow-hidden"
+      className="nrg-panel overflow-hidden"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <div className="px-5 py-4 bg-slate-50 dark:bg-navy-700/50 border-b border-slate-200 dark:border-navy-700 flex items-center justify-between">
+      <div className="px-5 py-4 bg-[var(--glass-bg)] border-b border-nrg-border flex items-center justify-between">
         <div>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <p className="text-xs font-devanagari text-slate-500 dark:text-slate-400">{titleHi}</p>
+          <h3 className="text-sm font-semibold text-nrg-text">{title}</h3>
+          <p className="text-xs font-devanagari text-nrg-muted">{titleHi}</p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-nrg-muted">
             Showing {paginatedData.length} of {data.length}
           </span>
-          <button className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-navy-600 text-slate-400">
+          <button className="p-1.5 rounded-lg hover:bg-saffron-500/10 text-nrg-muted">
             <Download size={14} />
           </button>
         </div>
@@ -68,12 +68,12 @@ export const DataTable: React.FC<DataTableProps> = ({
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50 dark:bg-navy-700/30">
+          <thead className="bg-[var(--glass-bg)]">
             <tr>
               {columns.map(col => (
                 <th
                   key={col.key}
-                  className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-navy-700 ${
+                  className={`px-5 py-3 text-xs font-semibold uppercase tracking-wider text-nrg-muted border-b border-nrg-border ${
                     col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                 >
@@ -100,12 +100,12 @@ export const DataTable: React.FC<DataTableProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: i * 0.03 }}
-                className="border-b border-slate-100 dark:border-navy-700/50 hover:bg-saffron-50/50 dark:hover:bg-navy-700/30 transition-colors"
+                className="border-b border-nrg-border/40 hover:bg-saffron-500/5 transition-colors"
               >
                 {columns.map(col => (
                   <td
                     key={col.key}
-                    className={`px-5 py-3 text-sm text-slate-700 dark:text-slate-300 ${
+                    className={`px-5 py-3 text-sm text-nrg-text ${
                       col.align === 'right' ? 'text-right font-mono' : ''
                     }`}
                   >
@@ -123,21 +123,21 @@ export const DataTable: React.FC<DataTableProps> = ({
       </div>
 
       {totalPages > 1 && (
-        <div className="px-5 py-3 bg-slate-50 dark:bg-navy-700/50 border-t border-slate-200 dark:border-navy-700 flex items-center justify-between">
+        <div className="px-5 py-3 bg-[var(--glass-bg)] border-t border-nrg-border flex items-center justify-between">
           <button
             onClick={() => setPage(p => Math.max(0, p - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-navy-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
-          <span className="text-xs text-slate-500 dark:text-slate-400">
+          <span className="text-xs text-nrg-muted">
             Page {page + 1} of {totalPages}
           </span>
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-200 dark:border-navy-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-navy-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>
@@ -167,59 +167,59 @@ export const AnonymizedResearcherTable: React.FC<ResearcherTableProps> = ({
   researchers,
 }) => (
   <motion.div
-    className="rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md overflow-hidden"
+    className="nrg-panel overflow-hidden"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
   >
-    <div className="px-5 py-4 bg-slate-50 dark:bg-navy-700/50 border-b border-slate-200 dark:border-navy-700">
+    <div className="px-5 py-4 bg-[var(--glass-bg)] border-b border-nrg-border">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users size={16} className="text-saffron-600" />
           <div>
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-            <p className="text-xs font-devanagari text-slate-500">{titleHi}</p>
+            <h3 className="text-sm font-semibold text-nrg-text">{title}</h3>
+            <p className="text-xs font-devanagari text-nrg-muted">{titleHi}</p>
           </div>
         </div>
-        <span className="text-xs text-slate-500 dark:text-slate-400">
+        <span className="text-xs text-nrg-muted">
           {researchers.length} researchers · anonymized
         </span>
       </div>
     </div>
 
-    <div className="divide-y divide-slate-100 dark:divide-navy-700/50">
+    <div className="divide-y divide-nrg-border/40">
       {researchers.map((r, i) => (
         <motion.div
           key={r.id}
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: i * 0.05 }}
-          className="px-5 py-3 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-navy-700/30 transition-colors"
+          className="px-5 py-3 flex items-center gap-4 hover:bg-saffron-500/5 transition-colors"
         >
           <div className="w-8 h-8 rounded-full bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs font-bold">
             {r.name[0]}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
-              Researcher {r.name}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
-              {r.institution} · {r.area}
-            </p>
-          </div>
-          <div className="flex items-center gap-6 text-xs">
-            <div className="text-right">
-              <p className="font-semibold text-slate-700 dark:text-slate-300">{r.publications}</p>
-              <p className="text-slate-400">papers</p>
+              <p className="text-sm font-medium text-nrg-text truncate">
+                Researcher {r.name}
+              </p>
+              <p className="text-xs text-nrg-muted truncate">
+                {r.institution} · {r.area}
+              </p>
             </div>
-            <div className="text-right">
-              <p className="font-semibold text-slate-700 dark:text-slate-300">{r.citations}</p>
-              <p className="text-slate-400">citations</p>
+            <div className="flex items-center gap-6 text-xs">
+              <div className="text-right">
+                <p className="font-semibold text-nrg-text">{r.publications}</p>
+                <p className="text-nrg-muted">papers</p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-nrg-text">{r.citations}</p>
+                <p className="text-nrg-muted">citations</p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold text-saffron-600 dark:text-saffron-400">h{r.hIndex}</p>
+                <p className="text-nrg-muted">h-index</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="font-semibold text-saffron-600 dark:text-saffron-400">h{r.hIndex}</p>
-              <p className="text-slate-400">h-index</p>
-            </div>
-          </div>
         </motion.div>
       ))}
     </div>

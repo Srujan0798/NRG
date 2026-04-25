@@ -29,7 +29,7 @@ export const CitationChip: React.FC<CitationChipProps> = ({ citation, index, onC
 
       {showTooltip && (
         <div className="absolute bottom-full left-0 mb-2 w-64 p-3 rounded-xl bg-nrg-surface border border-nrg-border shadow-nrg-card z-50">
-          <p className="text-xs font-medium text-nrg-text line-clamp-2 mb-1">{citation.title || 'Unknown Source'}</p>
+          <p className="text-xs font-medium text-nrg-text line-clamp-2 mb-1">{citation.title || 'Source title unavailable'}</p>
           <p className="text-xs text-nrg-muted">
             {displayAuthors}
             {extraCount > 0 && ` +${extraCount}`}
