@@ -157,14 +157,15 @@ class TestMeshResilience:
         }
 
         start = time.time()
+        result = None
         try:
-            fresh_mesh.generate("system", "user query", [])
+            result = fresh_mesh.generate("system", "user query", [])
         except Exception as e:
             result = str(e)
         elapsed = time.time() - start
 
-        assert "timeout budget exhausted" in result.lower() or elapsed < 5.0, \
-            "Should exhaust budget or fail gracefully"
+        assert "timeout budget exhausted" in str(result).lower() or elapsed < 5.0, \
+            f"Should exhaust budget or fail gracefully, got: {result}"
 
     @pytest.mark.skip(reason="Timing-sensitive test - flaky under system load")
     def test_parallel_race_faster_provider_wins(self, fresh_mesh):

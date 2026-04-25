@@ -106,12 +106,12 @@ def insert_qdrant_test_data():
     client = QdrantClient(
         host=os.getenv("QDRANT_HOST", "localhost"),
         port=int(os.getenv("QDRANT_PORT", "6333")),
-        check_compatibility=False,
     )
     collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
     embedder = Embedder()
     dimension = embedder.get_dimension()
-    vectors = np.random.rand(10, dimension).tolist()
+    point_count = 128
+    vectors = np.random.rand(point_count, dimension).tolist()
     points = [
         PointStruct(
             id=i + 100, # Avoid collision with synthetic papers
@@ -124,7 +124,7 @@ def insert_qdrant_test_data():
                 "text": f"Sample text for point {i}"
             },
         )
-        for i in range(10)
+        for i in range(point_count)
     ]
     client.upsert(collection_name=collection_name, points=points)
     print("Inserted test vectors into Qdrant")

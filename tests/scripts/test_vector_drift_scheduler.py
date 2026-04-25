@@ -50,6 +50,33 @@ class TestShouldTriggerReindex:
         assert should_trigger_reindex(drift, reindex_info) is False
 
 
+def test_default_check_skips_benchmark_when_qdrant_has_no_indexed_vectors(monkeypatch):
+    import scripts.vector_drift_scheduler as vds
+
+    monkeypatch.setattr(vds, "Retriever", lambda timeout=5.0: object())
+    monkeypatch.setattr(
+        vds,
+        "run_health_check",
+        lambda retriever: {
+            "status": "degraded",
+            "indexed_vectors": 0,
+            "total_vectors": 10,
+            "coverage_pct": 0.0,
+            "latency_ms": 10,
+        },
+    )
+
+    def fail_drift_check(*args, **kwargs):
+        raise AssertionError("run_drift_check should not run without indexed vectors")
+
+    monkeypatch.setattr(vds, "run_drift_check", fail_drift_check)
+
+    result = vds._default_check()
+
+    assert result["drift"]["alert_level"] == "UNKNOWN"
+    assert result["reindex_info"]["status"] == "qdrant_unavailable"
+
+
 @pytest.mark.asyncio
 async def test_run_once_calls_check_fn():
     from scripts.vector_drift_scheduler import run_once
