@@ -20,10 +20,24 @@ TEST_PASSES=0
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
 CYAN='\033[0;36m'; NC='\033[0m'
 
-log_pass() { echo -e "  ${GREEN}✓${NC} $1"; ((TEST_PASSES++)); }
+log_pass() {
+  if [[ "$1" == *"HTTP 000"* ]]; then
+    echo -e "  ${RED}✗${NC} Request timed out or connection failed — $1"
+    ((TEST_FAILURES++))
+    return
+  fi
+  echo -e "  ${GREEN}✓${NC} $1"; ((TEST_PASSES++))
+}
 log_fail() { echo -e "  ${RED}✗${NC} $1"; ((TEST_FAILURES++)); }
 log_info() { echo -e "  ${CYAN}ℹ${NC} $1"; }
-log_warn() { echo -e "  ${YELLOW}!${NC} $1"; }
+log_warn() {
+  if [[ "$1" == *"HTTP 000"* ]]; then
+    echo -e "  ${RED}✗${NC} Request timed out or connection failed — $1"
+    ((TEST_FAILURES++))
+    return
+  fi
+  echo -e "  ${YELLOW}!${NC} $1"
+}
 
 section() {
   echo ""
@@ -395,10 +409,12 @@ test_rt20() {
   code=$(echo "$res" | tail -1)
   local body
   body=$(echo "$res" | head -1)
-  if echo "$body" | grep -qi "<script>"; then
+  if [[ "$code" == "000" ]]; then
+    log_fail "XSS request timed out or connection failed (HTTP 000)"
+  elif echo "$body" | grep -qi "<script>"; then
     log_fail "XSS script tag reflected in response"
   else
-    log_pass "XSS script tag not reflected"
+    log_pass "XSS script tag not reflected (HTTP $code)"
   fi
 }
 
@@ -565,10 +581,12 @@ test_rt30() {
   code=$(echo "$res" | tail -1)
   local body
   body=$(echo "$res" | head -1)
-  if echo "$body" | grep -qi "onerror\|<img"; then
+  if [[ "$code" == "000" ]]; then
+    log_fail "CSP XSS request timed out or connection failed (HTTP 000)"
+  elif echo "$body" | grep -qi "onerror\|<img"; then
     log_fail "XSS vector reflected in response"
   else
-    log_pass "XSS vector not reflected"
+    log_pass "XSS vector not reflected (HTTP $code)"
   fi
 }
 
