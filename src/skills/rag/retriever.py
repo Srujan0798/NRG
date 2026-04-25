@@ -187,6 +187,7 @@ class Retriever:
         # Re-ranker configuration (cross-encoder for precision)
         self._rerank_enabled = os.getenv("RERANK_ENABLED", "true").lower() == "true"
         self._rerank_top_k = int(os.getenv("RERANK_TOP_K", "20"))  # Retrieve more, rerank to top_k
+        self._reranker = None
 
     def get_drift_status(self) -> dict:
         """Get current vector drift status."""
@@ -358,8 +359,9 @@ class Retriever:
 
         try:
             from src.skills.rag.reranker import Reranker
-            reranker = Reranker()
-            reranked = reranker.rerank(query=query_text, candidates=candidates, top_k=top_k)
+            if self._reranker is None:
+                self._reranker = Reranker()
+            reranked = self._reranker.rerank(query=query_text, candidates=candidates, top_k=top_k)
             return reranked
         except Exception as e:
             logger.warning("Re-ranking failed: %s, using vector scores only", e)
