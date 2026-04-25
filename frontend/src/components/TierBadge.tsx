@@ -39,7 +39,7 @@ export function TierBadge({ tier, role }: TierBadgeProps) {
     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
       {config.label}
-      <span className="opacity-60 ml-1 uppercase">{role}</span>
+      <span className="ml-1 uppercase">{role}</span>
     </span>
   );
 }

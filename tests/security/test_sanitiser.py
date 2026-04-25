@@ -46,7 +46,7 @@ class TestPromptSanitiserBenign:
 
     def test_benign_query_schema_only(self):
         """Verify sanitised query returns correct structure."""
-        query = "Show me all researchers"
+        query = "List all researchers in Gujarat"
         result = self.SANITISER.validate_query({"query": query})
         assert result["valid"] is True
         assert "query_hash" in result

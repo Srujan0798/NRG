@@ -5,6 +5,9 @@ on:
     branches: [main, fix/**]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "30 20 * * *"
+  workflow_dispatch:
 
 env:
   PYTEST_ADDOPTS: "-v --tb=short --color=yes"
@@ -83,7 +86,7 @@ jobs:
       - name: Run security tests (SQL injection, rate limiting, HMAC validation)
         run: |
           uv pip install pytest
-          pytest tests/security/test_sql_injection_blocked.py tests/security/test_rate_limit_enforced.py tests/security/test_hmac_validation.py -v --tb=short -m security
+          pytest tests/security/test_sql_injection_blocked.py tests/security/test_rate_limit_enforced.py tests/security/test_hmac_validation.py tests/scripts/test_red_team_live_replay.py -v --tb=short -m security
         continue-on-error: false
 
   contract-tests:
@@ -158,6 +161,82 @@ jobs:
   # ===========================================================================
   # FULL TEST RUN WITH COVERAGE
   # ===========================================================================
+
+  local-release-gate:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run sub-15-minute local gate
+        run: PYTHON_BIN=python bash scripts/run_test_suite.sh
+      - name: Upload local gate evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-suite-full
+          path: |
+            evidence/2026-04-26/test_suite_full.xml
+            evidence/2026-04-26/test_suite_full.log
+
+  slow-nightly:
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run slow suite
+        run: PYTHON_BIN=python bash scripts/run_test_suite.sh --slow
+      - name: Upload slow suite evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-suite-slow
+          path: |
+            evidence/2026-04-26/test_suite_full_slow.xml
+            evidence/2026-04-26/test_suite_full_slow.log
+
+  red-team-live-replay:
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run LB-5 live replay
+        run: |
+          PYTHON=python bash scripts/red_team_live_replay.py \
+            --start-api \
+            --api-base http://127.0.0.1:8010 \
+            --payloads tests/security/red_team_payloads.yaml \
+            --evidence evidence/2026-04-26/17_red_team_results.md
+      - name: Upload red-team evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: red-team-live-replay
+          path: evidence/2026-04-26/17_red_team_results.md
 
   test-python:
     runs-on: ${{ matrix.os }}
@@ -301,7 +380,7 @@ jobs:
 
   deploy-block:
     runs-on: ubuntu-22.04
-    needs: [test-python, test-node, lint, secrets-scan, docker-smoke, security-gate]
+    needs: [test-python, test-node, lint, secrets-scan, docker-smoke, security-gate, red-team-live-replay]
     if: always()
     steps:
       - name: Check for failures

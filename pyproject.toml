@@ -36,6 +36,8 @@ dependencies = [
 dev = [
     "pytest-asyncio",
     "pytest-xdist",
+    "pytest-rerunfailures",
+    "hypothesis==6.100.1",
     "black",
     "ruff",
     "mypy",

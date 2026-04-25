@@ -34,6 +34,12 @@
 | 13 | `/query/graph` returns `max_depth > 3` or raw PII for Tier 3 | Medium | Serious | Hard-cap `max_depth=3` in `src/api/main.py` `/query/graph`; Tier 3 anonymizer test covers labels; property-test in `tests/api/test_tier_isolation_live.py` | "Graph view for industry tier shows anonymized institute-level edges only — full researcher graph requires Tier 1 access" |
 | 14 | Page load >8s on the user's mobile / 4G | Medium | Minor | Lighthouse Performance ≥70 mobile; CDN caching active; bundle <500 KB gzipped | "Optimizing for national scale — cached results are loading"; precompute first paint with skeleton state |
 | 15 | User asks "Is this 100% verified?" and answer has no citation trail | High | Catastrophic | Verifier node enforces `[cite:pub_id:chunk_id]` on every synthesizer claim; `tests/orchestration/test_verifier.py` rejects uncited synthesis | "Every claim is cross-checked — clicking any cell opens the source row in the audit drawer"; demonstrate live citation drawer and audit_event_id lookup |
+| 16 | IIT-GN venue Wi-Fi fails or saturates mid-session | Medium | Catastrophic | Pre-cache the 3 KILLER query responses on the laptop; carry a 4G hotspot as backup; printed PDF of expected results | Switch to cached responses; narrate "engine is already proven on this question — here is the live audit hash you can verify after"; never sit in silence |
+| 17 | Engine returns a confident WRONG answer to an unscripted follow-up — silent failure (LB-7 not yet shipped) | Medium | Catastrophic | LB-7 anomaly detection live; `answer_confidence` field rendered on every response; if `low_clarify` shown, frontend renders clarification prompt instead of answer | Acknowledge immediately: "the engine flagged low confidence on that question — let me show you the SQL it tried, and the corrected version"; never argue with the user |
+| 18 | JWT token expires mid-session (default 30-min access) | Low | Serious | For user-acceptance window, extend JWT_ACCESS_TTL_MINUTES to 120; verify at T-60; refresh-token rotation tested | Quietly re-login in 5 seconds; tell user "session refreshed for security"; do not show the 401 error |
+| 19 | Engine runs on personal laptop with insufficient RAM/GPU; Qdrant or local SLM crashes mid-session | Medium | Catastrophic | Use a dedicated machine with ≥32 GB RAM, GPU available, no other heavy processes; cloud LLM as primary, local SLM as fallback only | Not recoverable mid-session. Switch to recorded acceptance-test capture |
+| 20 | Power outage / laptop crash | Low | Catastrophic | Fully charged tablet with offline copy of acceptance-test recording; printed copies of dashboards | Switch to backup device; the assistant can still see the proof |
+| 21 | UAT data shows numbers that contradict public NIRF / ministry figures (e.g., "you say 300 PhDs at IIT Madras, public records show 1200") | Medium | Catastrophic | Cross-validate aggregates against the latest published NIRF report before T-60; if a discrepancy exists, prepare an "official source vs internal cut" callout slide explaining the difference | Acknowledge the gap honestly: "this is a staging cut limited to 50k rows; production load against the 600 GB feed will reconcile to the official figure" |
 
 ---
 
@@ -50,11 +56,13 @@
 Each numbered risk traces back to one or more of the 6 Hard Constraints (`.claude/QUALITY_BAR.md`):
 
 - C1 (PII): #2, #15
-- C2 (per-user audit binding): #2, #6, #15
-- C3 (multi-hop / domain): #1, #7
-- C4 (P99 / concurrency): #1, #9, #11, #14
+- C2 (per-user audit binding): #2, #6, #15, #18
+- C3 (multi-hop / domain): #1, #7, #17
+- C4 (P99 / concurrency): #1, #9, #11, #14, #16
 - C5 (vector drift): #8
 - C6 (egress / schema allowlist): #2, #10, #13
+- LB-7 (silent wrong answer): #17
+- Schema parity (LB-6): #21
 
 A regression in any C# automatically promotes its bound rows to **Pre-launch P0 — must close before next session**.
 

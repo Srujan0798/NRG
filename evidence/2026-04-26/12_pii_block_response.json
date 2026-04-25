@@ -1,0 +1,7 @@
+{
+  "api_response": {
+    "detail": "Security violation: DLP_VIOLATION"
+  },
+  "captured_at": "2026-04-25T21:36:04.202787+00:00",
+  "http_status": 400
+}

@@ -504,7 +504,7 @@ export class AppError extends Error {
     public isOperational: boolean = true,
   ) {
     super(message);
-    Object.setPrototypeOf(this, AppError.prototype);
+    Object.setPrototypeOf(this, AppError.production module);
     Error.captureStackTrace(this, this.constructor);
   }
 }

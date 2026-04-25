@@ -5,6 +5,7 @@ import { queryService } from '../../services/queryService'
 import { toStringArray } from '../../types/api'
 import { X, Copy, FileText, Database, GitMerge, Shield } from 'lucide-react'
 import { t } from '../../i18n'
+import { emitTelemetry } from '../../lib/telemetry'
 
 interface CitationDrawerProps {
   citation: Citation | null
@@ -145,6 +146,10 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
 
   useEffect(() => {
     if (citation && isOpen) {
+      emitTelemetry('citation.opened', {
+        citation_id: citation.id,
+        query_id: citation.pub_id || citation.id,
+      })
       fetchCitationDetails(citation)
     }
   }, [citation, isOpen, fetchCitationDetails])
@@ -162,19 +167,25 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
       <DrawerBackdrop isOpen={isOpen} onClose={onClose} />
 
       <AnimatePresence>
-        <motion.div
-          initial={{ x: '100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '100%' }}
+        {isOpen && <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="citation-drawer-title"
+          data-testid="citation-drawer"
+          initial={{ y: '100%' }}
+          animate={{ y: 0 }}
+          exit={{ y: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed inset-y-0 right-0 z-50 w-full sm:w-[27.5rem] bg-[var(--nrg-surface)] shadow-2xl border-l border-nrg-border flex flex-col"
+          className="fixed inset-0 z-50 flex w-full flex-col border-l border-nrg-border bg-[var(--nrg-surface)] shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[27.5rem]"
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-nrg-border bg-[var(--glass-bg)] shrink-0">
             <div>
-              <h3 className="text-base font-semibold text-nrg-text">{t("auto.components.CitationDrawer.CitationDrawer.3")}</h3>
+              <h3 id="citation-drawer-title" className="text-base font-semibold text-nrg-text">{t("auto.components.CitationDrawer.CitationDrawer.3")}</h3>
               <p className="text-xs text-nrg-muted mt-0.5">{t("auto.components.CitationDrawer.CitationDrawer.4")}</p>
             </div>
             <motion.button
+              type="button"
+              aria-label={t("auto.components.CitationDrawer.CitationDrawer.14")}
               onClick={onClose}
               className="w-9 h-9 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-nrg-text hover:bg-saffron-500/10 transition-all duration-200"
               whileHover={{ scale: 1.05 }}
@@ -345,7 +356,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                 {t("auto.components.CitationDrawer.CitationDrawer.14")}</motion.button>
             </div>
           </div>
-        </motion.div>
+        </motion.div>}
       </AnimatePresence>
     </>
   )

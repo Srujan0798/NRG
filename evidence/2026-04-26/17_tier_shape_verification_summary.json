@@ -1,0 +1,105 @@
+{
+  "pii_markers": {
+    "1": {
+      "@": true,
+      "gstin_22AAAAA0000A1Z5": false,
+      "pan_ABCDE1234F": false,
+      "phone_9876543210": false,
+      "researcher_label": false
+    },
+    "2": {
+      "@": false,
+      "gstin_22AAAAA0000A1Z5": false,
+      "pan_ABCDE1234F": false,
+      "phone_9876543210": false,
+      "researcher_label": false
+    },
+    "3": {
+      "@": false,
+      "gstin_22AAAAA0000A1Z5": false,
+      "pan_ABCDE1234F": false,
+      "phone_9876543210": false,
+      "researcher_label": true
+    }
+  },
+  "policy_violations": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "row_keys": {
+    "1": [
+      "access_tier",
+      "created_at",
+      "department",
+      "email",
+      "h_index",
+      "institution_id",
+      "name",
+      "orcid",
+      "phone",
+      "query_topic",
+      "research_area",
+      "researcher_id",
+      "secondary_research_areas",
+      "state",
+      "tier_access",
+      "total_funding_received_inr_crores",
+      "updated_at",
+      "year_joined",
+      "years_experience"
+    ],
+    "2": [
+      "access_tier",
+      "created_at",
+      "department",
+      "h_index",
+      "institution_id",
+      "name",
+      "orcid",
+      "query_topic",
+      "research_area",
+      "researcher_id",
+      "secondary_research_areas",
+      "state",
+      "tier_access",
+      "total_funding_received_inr_crores",
+      "updated_at",
+      "year_joined",
+      "years_experience"
+    ],
+    "3": [
+      "access_tier",
+      "created_at",
+      "department",
+      "h_index",
+      "institution_id",
+      "name",
+      "orcid",
+      "query_topic",
+      "research_area",
+      "researcher_id",
+      "secondary_research_areas",
+      "state",
+      "tier_access",
+      "total_funding_received_inr_crores",
+      "updated_at",
+      "year_joined",
+      "years_experience"
+    ]
+  },
+  "t1_t3_shape_diff": [
+    "cloud_synthesis_used",
+    "email",
+    "phone",
+    "provider",
+    "query",
+    "synth"
+  ],
+  "t1_t3_shape_diff_count": 6,
+  "tier_response_files": {
+    "1": "evidence/2026-04-26/09_tier1_query_response.json",
+    "2": "evidence/2026-04-26/10_tier2_query_response.json",
+    "3": "evidence/2026-04-26/11_tier3_query_response.json"
+  }
+}

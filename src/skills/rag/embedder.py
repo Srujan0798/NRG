@@ -130,6 +130,9 @@ class Embedder:
         self._chunker = SemanticChunker()
         # Lazy load: models loaded on first embed() call, not in __init__
         self._models_loaded = False
+        if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("EMBEDDER_DETERMINISTIC"):
+            self._load_models()
+            self._models_loaded = True
 
     def _load_models(self):
         """Load embedding models (cached for reuse)."""
@@ -219,6 +222,10 @@ class Embedder:
 
     def embed(self, texts: List[str]) -> List[List[float]]:
         """Generate embeddings for texts with language-gated model selection."""
+        if not hasattr(self, "_models_loaded"):
+            self._models_loaded = hasattr(self, "_primary_model") or hasattr(
+                self, "_indic_model"
+            )
         if not self._models_loaded:
             self._load_models()
             self._models_loaded = True

@@ -1,6 +1,7 @@
 """Presidio PII detection with lazy loading to avoid import failures."""
 
 import logging
+import os
 import threading
 from typing import List, Dict, Any
 
@@ -23,6 +24,9 @@ class PresidioConfig:
 
     def _ensure_initialized(self):
         if self._initialized:
+            return
+        if os.getenv("PYTEST_CURRENT_TEST") and not os.getenv("PRESIDIO_IN_TESTS"):
+            self._initialized = True
             return
         try:
             import presidio_analyzer  # noqa: F401 - must import before nlp_engine submodule

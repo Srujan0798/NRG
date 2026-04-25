@@ -7,10 +7,16 @@ The tests verify the API is reachable and returns structured responses.
 """
 
 import pytest
+import os
 
 from tests.uat.researcher_scenarios import ResearcherUAT
 from tests.uat.government_scenarios import GovernmentUAT
 from tests.uat.industry_scenarios import IndustryUAT
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("NRG_RUN_LIVE_E2E") != "1",
+    reason="requires live API stack; set NRG_RUN_LIVE_E2E=1 to run",
+)
 
 
 @pytest.mark.uat

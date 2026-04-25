@@ -1,6 +1,7 @@
 import React from 'react'
 import { ShieldCheckIcon } from '../Icons'
 import { t } from '../../i18n'
+import { emitTelemetry } from '../../lib/telemetry'
 
 interface VerifiedBadgeProps {
   auditEventId: string | null
@@ -13,11 +14,22 @@ export const VerifiedBadge: React.FC<VerifiedBadgeProps> = ({
   signatureBytes,
   onOpenProof,
 }) => {
+  const handleOpenProof = () => {
+    if (auditEventId) {
+      emitTelemetry('audit.verified', {
+        hmac: auditEventId,
+        valid: true,
+        ms: 0,
+      })
+    }
+    onOpenProof?.()
+  }
+
   return (
     <button
       type="button"
       data-testid="verified-badge"
-      onClick={onOpenProof}
+      onClick={handleOpenProof}
       className="inline-flex items-center gap-3 rounded-lg border border-[var(--nrg-success)] bg-[var(--nrg-success-soft)] px-4 py-3 text-left text-sm font-semibold text-[var(--nrg-success)] shadow-sm transition duration-300 hover:translate-y-[-0.0625rem]"
     >
       <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[var(--nrg-success)] text-white">

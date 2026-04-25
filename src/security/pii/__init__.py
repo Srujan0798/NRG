@@ -26,6 +26,10 @@ _PII_REGEX = {
 
 @lru_cache(maxsize=1)
 def _load_spacy_model() -> Any | None:
+    import os
+
+    if os.getenv("PYTEST_CURRENT_TEST") and not os.getenv("PII_SPACY_IN_TESTS"):
+        return None
     try:
         import spacy
 

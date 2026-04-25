@@ -138,7 +138,7 @@ ACCEPTANCE CRITERIA:
   (These must verify ELEVATION, not just "it doesn't crash.")
   - [ ] Cost impact documented: estimated ₹ per 1,000 queries if this touches the hot path
   - [ ] If this touches any of the 6 Quality Bar constraints, compliance verified before claiming DONE
-  - [ ] **If this touches frontend/UI**: Demo Readiness verified — walk through the 10-step demo script (`.claude/rules/ux_audit_protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
+  - [ ] **If this touches frontend/UI**: Demo Readiness verified — walk through the 10-step launch script (`.claude/rules/ux_audit_protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
 
 BEFORE COMMIT:
   - Run /pre-commit — must pass all gates
@@ -203,7 +203,7 @@ DEPENDS ON: [other tasks, or "none"]
     │  → /test-suite for test status                │
     │  → /performance for regressions               │
     │  → /docs-sync for documentation drift         │
-    │  → /external-audit (quarterly or pre-demo)    │
+    │  → /external-audit (quarterly or pre-launch)    │
     │    — Run prompt from audit_protocol.md Sec 13 │
     │    — On 3+ AIs, compare findings              │
     │    — Union of gaps = real backlog             │

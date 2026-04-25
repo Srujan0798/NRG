@@ -561,7 +561,7 @@ def _synthesize(
             log_llm_call("synthesizer", query, {"response": response[:500] if response else ""}, "rule-based-trivial")
         except Exception:
             pass
-        return response, {"synth": "rule_based_trivial", "cloud_synthesis_used": False, "provider": actual_provider}
+        return response, {"synth": "rule_based_trivial", "cloud_synthesis_used": False}
 
     if complexity == "simple":
         local_client = get_local_llm_client()
@@ -590,7 +590,7 @@ def _synthesize(
                     log_llm_call("synthesizer", system_prompt[:1000], {"response": response[:500] if response else ""}, "local-slm")
                 except Exception:
                     pass
-                return response, {"synth": "local_llm_simple", "cloud_synthesis_used": False, "provider": actual_provider}
+                return response, {"synth": "local_llm_simple", "cloud_synthesis_used": False}
             except Exception as e:
                 logger.warning(f"Local LLM for simple query failed: {e}")
         cloud_allowed = True
@@ -640,7 +640,7 @@ def _synthesize(
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for cloud LLM", exc_info=True)
-            return response, {"synth": "cloud_llm", "cloud_synthesis_used": True, "provider": actual_provider}
+            return response, {"synth": "cloud_llm", "cloud_synthesis_used": True}
         except Exception as e:
             logger.warning(f"Cloud LLM mesh failed: {e}, trying local LLM")
 
@@ -675,7 +675,7 @@ def _synthesize(
                 )
             except Exception:
                 logger.warning("Audit log_llm_call failed for local LLM", exc_info=True)
-            return response, {"synth": "local_llm", "cloud_synthesis_used": False, "provider": actual_provider}
+            return response, {"synth": "local_llm", "cloud_synthesis_used": False}
         except Exception as e:
             logger.warning(f"Local LLM failed: {e}")
 
@@ -693,7 +693,7 @@ def _synthesize(
         )
     except Exception:
         logger.warning("Audit log_llm_call failed for rule-based synthesis", exc_info=True)
-    return response, {"synth": "rule_based", "cloud_synthesis_used": False, "provider": actual_provider}
+    return response, {"synth": "rule_based", "cloud_synthesis_used": False}
 
 
 def _build_context_summary(conversation_history: list) -> str:

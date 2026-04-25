@@ -3,7 +3,7 @@
 ## New Rules Added
 
 - Zero-request load tests are failures, even when the process exits successfully.
-- Static founder/demo routes must not mount global auth or backend health checks.
+- Static production routes must not mount global auth or backend health checks.
 - Evidence dashboards must show blocker state directly instead of hiding failures behind green aggregate scores.
 
 ## Memory Updated

@@ -71,7 +71,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
         <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-[var(--glass-bg)] text-nrg-muted border border-nrg-border">
           {researchArea}
         </span>
-        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+        <span className="px-2.5 py-1 rounded-lg text-xs font-medium bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
           {typeLabels[collaborationType]}
         </span>
       </div>
@@ -155,7 +155,7 @@ export const CollaborationPotentialCard: React.FC<CollaborationPotentialCardProp
         <p className="text-xs text-nrg-muted mb-1.5">{t("auto.components.Industry.OpportunityCards.8")}</p>
         <div className="flex flex-wrap gap-1.5">
           {topAreas.map((area) => (
-            <span key={area} className="px-2 py-0.5 rounded text-xs bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+            <span key={area} className="px-2 py-0.5 rounded text-xs bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
               {area}
             </span>
           ))}

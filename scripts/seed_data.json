@@ -1,0 +1,234 @@
+{
+  "metadata": {
+    "name": "NRG deterministic demo seed",
+    "as_of": "2026-04-26",
+    "seed": 20260426,
+    "generated_by": "Faker(en_IN) seeded names plus curated National Research Graph demo rows",
+    "currency_unit": "INR crore"
+  },
+  "funding_agencies": [
+    {
+      "agency": "DST",
+      "amount_inr_crore": 842.4,
+      "distinct_institutes": 11,
+      "projects": 38,
+      "lead_institute": "IIT Bombay",
+      "focus": "Renewable energy systems"
+    },
+    {
+      "agency": "MNRE",
+      "amount_inr_crore": 731.8,
+      "distinct_institutes": 10,
+      "projects": 31,
+      "lead_institute": "IIT Madras",
+      "focus": "Solar manufacturing and storage"
+    },
+    {
+      "agency": "DBT-BIRAC",
+      "amount_inr_crore": 518.6,
+      "distinct_institutes": 8,
+      "projects": 24,
+      "lead_institute": "IISc Bangalore",
+      "focus": "Bioenergy catalysts"
+    },
+    {
+      "agency": "SERB",
+      "amount_inr_crore": 394.2,
+      "distinct_institutes": 9,
+      "projects": 27,
+      "lead_institute": "IIT Delhi",
+      "focus": "Grid optimisation"
+    },
+    {
+      "agency": "MeitY",
+      "amount_inr_crore": 288.5,
+      "distinct_institutes": 7,
+      "projects": 19,
+      "lead_institute": "IIT Hyderabad",
+      "focus": "AI for energy dispatch"
+    }
+  ],
+  "trl_progression": [
+    {
+      "institution": "IIT Bombay",
+      "state": "Maharashtra",
+      "project": "Hydrogen stack durability bench",
+      "domain": "Hydrogen fuel cells",
+      "starting_trl": 3,
+      "latest_trl": 7,
+      "transitions": [
+        {"year": 2021, "trl": 3, "milestone": "Lab cell validation"},
+        {"year": 2022, "trl": 5, "milestone": "Integrated short stack"},
+        {"year": 2024, "trl": 7, "milestone": "Pilot bus duty cycle"}
+      ]
+    },
+    {
+      "institution": "IIT Madras",
+      "state": "Tamil Nadu",
+      "project": "Marine green hydrogen electrolyser",
+      "domain": "Hydrogen production",
+      "starting_trl": 2,
+      "latest_trl": 6,
+      "transitions": [
+        {"year": 2021, "trl": 2, "milestone": "Catalyst screen"},
+        {"year": 2023, "trl": 4, "milestone": "Bench-scale stack"},
+        {"year": 2025, "trl": 6, "milestone": "Harbour demonstrator"}
+      ]
+    },
+    {
+      "institution": "IISc Bangalore",
+      "state": "Karnataka",
+      "project": "Solid oxide hydrogen co-generation",
+      "domain": "Industrial decarbonisation",
+      "starting_trl": 3,
+      "latest_trl": 6,
+      "transitions": [
+        {"year": 2020, "trl": 3, "milestone": "Cell chemistry validated"},
+        {"year": 2022, "trl": 5, "milestone": "Thermal integration"},
+        {"year": 2024, "trl": 6, "milestone": "Plant skid trial"}
+      ]
+    },
+    {
+      "institution": "IIT Delhi",
+      "state": "Delhi",
+      "project": "Ammonia cracking for distributed hydrogen",
+      "domain": "Hydrogen carriers",
+      "starting_trl": 2,
+      "latest_trl": 5,
+      "transitions": [
+        {"year": 2021, "trl": 2, "milestone": "Catalyst formulation"},
+        {"year": 2022, "trl": 4, "milestone": "Continuous reactor"},
+        {"year": 2024, "trl": 5, "milestone": "Safety enclosure"}
+      ]
+    },
+    {
+      "institution": "IIT Kanpur",
+      "state": "Uttar Pradesh",
+      "project": "Hydrogen drone power module",
+      "domain": "Aerospace energy",
+      "starting_trl": 3,
+      "latest_trl": 7,
+      "transitions": [
+        {"year": 2021, "trl": 3, "milestone": "Powertrain design"},
+        {"year": 2023, "trl": 5, "milestone": "Ground endurance run"},
+        {"year": 2025, "trl": 7, "milestone": "Field flight envelope"}
+      ]
+    },
+    {
+      "institution": "IIT Gandhinagar",
+      "state": "Gujarat",
+      "project": "Solar-hydrogen rural microgrid",
+      "domain": "Microgrids",
+      "starting_trl": 4,
+      "latest_trl": 7,
+      "transitions": [
+        {"year": 2020, "trl": 4, "milestone": "Village load modelling"},
+        {"year": 2022, "trl": 6, "milestone": "Hybrid controller"},
+        {"year": 2024, "trl": 7, "milestone": "Community pilot"}
+      ]
+    },
+    {
+      "institution": "IIT Hyderabad",
+      "state": "Telangana",
+      "project": "PEM membrane lifetime accelerator",
+      "domain": "Hydrogen materials",
+      "starting_trl": 3,
+      "latest_trl": 6,
+      "transitions": [
+        {"year": 2021, "trl": 3, "milestone": "Membrane synthesis"},
+        {"year": 2023, "trl": 5, "milestone": "Accelerated ageing rig"},
+        {"year": 2025, "trl": 6, "milestone": "Stack integration"}
+      ]
+    },
+    {
+      "institution": "NIT Trichy",
+      "state": "Tamil Nadu",
+      "project": "Hydrogen safety sensor network",
+      "domain": "Safety systems",
+      "starting_trl": 2,
+      "latest_trl": 5,
+      "transitions": [
+        {"year": 2022, "trl": 2, "milestone": "Sensor material screen"},
+        {"year": 2023, "trl": 4, "milestone": "Wireless prototype"},
+        {"year": 2025, "trl": 5, "milestone": "Campus refuelling trial"}
+      ]
+    }
+  ],
+  "solar_seed_patents": [
+    {"researcher": "Dr. Aditi Menon", "institution": "IIT Bombay", "state": "Maharashtra", "seed_year": 2020, "seed_funding_inr_lakh": 68, "patent_count": 6, "first_patent_months": 14, "core_patent": "Perovskite tandem encapsulation"},
+    {"researcher": "Dr. Raghav Subramanian", "institution": "IIT Madras", "state": "Tamil Nadu", "seed_year": 2020, "seed_funding_inr_lakh": 72, "patent_count": 5, "first_patent_months": 16, "core_patent": "Salt-mist tolerant solar inverter"},
+    {"researcher": "Dr. Kavya Rao", "institution": "IISc Bangalore", "state": "Karnataka", "seed_year": 2021, "seed_funding_inr_lakh": 55, "patent_count": 4, "first_patent_months": 18, "core_patent": "Bifacial module diagnostics"},
+    {"researcher": "Dr. Neeraj Bansal", "institution": "IIT Delhi", "state": "Delhi", "seed_year": 2021, "seed_funding_inr_lakh": 61, "patent_count": 5, "first_patent_months": 15, "core_patent": "Grid-forming microinverter"},
+    {"researcher": "Dr. Farah Khan", "institution": "IIT Kanpur", "state": "Uttar Pradesh", "seed_year": 2020, "seed_funding_inr_lakh": 49, "patent_count": 3, "first_patent_months": 23, "core_patent": "Dust-resilient coating"},
+    {"researcher": "Dr. Manish Shah", "institution": "IIT Gandhinagar", "state": "Gujarat", "seed_year": 2022, "seed_funding_inr_lakh": 52, "patent_count": 4, "first_patent_months": 17, "core_patent": "Low-cost solar desalination"},
+    {"researcher": "Dr. Leela Iyer", "institution": "IIT Hyderabad", "state": "Telangana", "seed_year": 2021, "seed_funding_inr_lakh": 58, "patent_count": 5, "first_patent_months": 13, "core_patent": "AI fault prediction for PV strings"},
+    {"researcher": "Dr. Pranav Joshi", "institution": "IIT Roorkee", "state": "Uttarakhand", "seed_year": 2022, "seed_funding_inr_lakh": 44, "patent_count": 3, "first_patent_months": 24, "core_patent": "Himalayan snow-load tracker"},
+    {"researcher": "Dr. Shalini Verma", "institution": "NIT Trichy", "state": "Tamil Nadu", "seed_year": 2021, "seed_funding_inr_lakh": 47, "patent_count": 4, "first_patent_months": 20, "core_patent": "Thermal battery coupling"},
+    {"researcher": "Dr. Arjun Nair", "institution": "NIT Surathkal", "state": "Karnataka", "seed_year": 2020, "seed_funding_inr_lakh": 51, "patent_count": 3, "first_patent_months": 22, "core_patent": "Coastal corrosion connector"},
+    {"researcher": "Dr. Meera Kulkarni", "institution": "IIIT Hyderabad", "state": "Telangana", "seed_year": 2022, "seed_funding_inr_lakh": 39, "patent_count": 4, "first_patent_months": 19, "core_patent": "Vision inspection for PV cells"},
+    {"researcher": "Dr. Sameer Chatterjee", "institution": "IIT Kharagpur", "state": "West Bengal", "seed_year": 2021, "seed_funding_inr_lakh": 46, "patent_count": 3, "first_patent_months": 26, "core_patent": "Rooftop yield optimiser"}
+  ],
+  "iit_ai_ml_comparison": [
+    {"year": 2020, "institution": "IIT Bombay", "grant_amount_inr_crore": 96.4, "publications": 184, "patents": 11, "active_researchers": 42},
+    {"year": 2020, "institution": "IIT Madras", "grant_amount_inr_crore": 88.1, "publications": 169, "patents": 9, "active_researchers": 38},
+    {"year": 2021, "institution": "IIT Bombay", "grant_amount_inr_crore": 112.8, "publications": 205, "patents": 13, "active_researchers": 47},
+    {"year": 2021, "institution": "IIT Madras", "grant_amount_inr_crore": 104.6, "publications": 198, "patents": 12, "active_researchers": 43},
+    {"year": 2022, "institution": "IIT Bombay", "grant_amount_inr_crore": 131.2, "publications": 241, "patents": 17, "active_researchers": 53},
+    {"year": 2022, "institution": "IIT Madras", "grant_amount_inr_crore": 119.7, "publications": 233, "patents": 15, "active_researchers": 49},
+    {"year": 2023, "institution": "IIT Bombay", "grant_amount_inr_crore": 146.9, "publications": 267, "patents": 19, "active_researchers": 59},
+    {"year": 2023, "institution": "IIT Madras", "grant_amount_inr_crore": 158.3, "publications": 286, "patents": 21, "active_researchers": 62},
+    {"year": 2024, "institution": "IIT Bombay", "grant_amount_inr_crore": 171.5, "publications": 299, "patents": 24, "active_researchers": 66},
+    {"year": 2024, "institution": "IIT Madras", "grant_amount_inr_crore": 187.2, "publications": 327, "patents": 29, "active_researchers": 71}
+  ],
+  "demo_graph": {
+    "nodes": [
+      {"id": "agency:DST", "label": "DST", "type": "agency"},
+      {"id": "agency:MNRE", "label": "MNRE", "type": "agency"},
+      {"id": "agency:SERB", "label": "SERB", "type": "agency"},
+      {"id": "inst:IITB", "label": "IIT Bombay", "type": "institution"},
+      {"id": "inst:IITM", "label": "IIT Madras", "type": "institution"},
+      {"id": "inst:IISc", "label": "IISc Bangalore", "type": "institution"},
+      {"id": "inst:IITD", "label": "IIT Delhi", "type": "institution"},
+      {"id": "inst:IITK", "label": "IIT Kanpur", "type": "institution"},
+      {"id": "inst:IITGN", "label": "IIT Gandhinagar", "type": "institution"},
+      {"id": "topic:hydrogen", "label": "Hydrogen fuel cells", "type": "topic"},
+      {"id": "topic:solar", "label": "Solar seed patents", "type": "topic"},
+      {"id": "topic:aiml", "label": "AI/ML", "type": "topic"},
+      {"id": "project:h2-stack", "label": "Hydrogen stack durability", "type": "project"},
+      {"id": "project:electrolyser", "label": "Green hydrogen electrolyser", "type": "project"},
+      {"id": "project:microgrid", "label": "Solar-hydrogen microgrid", "type": "project"},
+      {"id": "researcher:aditi-menon", "label": "Dr. Aditi Menon", "type": "researcher"},
+      {"id": "researcher:raghav-subramanian", "label": "Dr. Raghav Subramanian", "type": "researcher"},
+      {"id": "researcher:kavya-rao", "label": "Dr. Kavya Rao", "type": "researcher"},
+      {"id": "patent:perovskite", "label": "Perovskite tandem encapsulation", "type": "patent"},
+      {"id": "patent:microinverter", "label": "Grid-forming microinverter", "type": "patent"}
+    ],
+    "edges": [
+      {"source": "agency:DST", "target": "inst:IITB", "weight": 842.4, "relationship": "funded"},
+      {"source": "agency:MNRE", "target": "inst:IITM", "weight": 731.8, "relationship": "funded"},
+      {"source": "agency:SERB", "target": "inst:IITD", "weight": 394.2, "relationship": "funded"},
+      {"source": "inst:IITB", "target": "topic:hydrogen", "weight": 7, "relationship": "researches"},
+      {"source": "inst:IITM", "target": "topic:hydrogen", "weight": 6, "relationship": "researches"},
+      {"source": "inst:IISc", "target": "topic:hydrogen", "weight": 6, "relationship": "researches"},
+      {"source": "inst:IITGN", "target": "topic:hydrogen", "weight": 7, "relationship": "researches"},
+      {"source": "inst:IITB", "target": "topic:aiml", "weight": 171.5, "relationship": "funded_area"},
+      {"source": "inst:IITM", "target": "topic:aiml", "weight": 187.2, "relationship": "funded_area"},
+      {"source": "inst:IITB", "target": "project:h2-stack", "weight": 7, "relationship": "hosts"},
+      {"source": "inst:IITM", "target": "project:electrolyser", "weight": 6, "relationship": "hosts"},
+      {"source": "inst:IITGN", "target": "project:microgrid", "weight": 7, "relationship": "hosts"},
+      {"source": "project:h2-stack", "target": "topic:hydrogen", "weight": 4, "relationship": "advances"},
+      {"source": "project:electrolyser", "target": "topic:hydrogen", "weight": 4, "relationship": "advances"},
+      {"source": "project:microgrid", "target": "topic:solar", "weight": 4, "relationship": "advances"},
+      {"source": "researcher:aditi-menon", "target": "inst:IITB", "weight": 6, "relationship": "affiliated"},
+      {"source": "researcher:raghav-subramanian", "target": "inst:IITM", "weight": 5, "relationship": "affiliated"},
+      {"source": "researcher:kavya-rao", "target": "inst:IISc", "weight": 4, "relationship": "affiliated"},
+      {"source": "researcher:aditi-menon", "target": "patent:perovskite", "weight": 6, "relationship": "invented"},
+      {"source": "researcher:raghav-subramanian", "target": "patent:microinverter", "weight": 5, "relationship": "invented"},
+      {"source": "patent:perovskite", "target": "topic:solar", "weight": 6, "relationship": "protects"},
+      {"source": "patent:microinverter", "target": "topic:solar", "weight": 5, "relationship": "protects"},
+      {"source": "agency:DST", "target": "topic:hydrogen", "weight": 38, "relationship": "portfolio"},
+      {"source": "agency:MNRE", "target": "topic:solar", "weight": 31, "relationship": "portfolio"},
+      {"source": "agency:SERB", "target": "topic:aiml", "weight": 27, "relationship": "portfolio"}
+    ]
+  }
+}

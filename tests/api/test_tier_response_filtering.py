@@ -34,6 +34,7 @@ class PIIWorkflow:
             "sql_query": "SELECT name, email, phone FROM researchers",
             "sql_results": [
                 {
+                    "researcher_id": "r-99",
                     "name": "Dr. Asha Mehta",
                     "email": "asha.mehta@iit.example",
                     "phone": "9876543210",
@@ -87,10 +88,14 @@ def test_query_industry_response_strips_pii_and_debug_fields(monkeypatch):
 
     assert "asha.mehta@iit.example" not in serialized
     assert "9876543210" not in serialized
+    assert "Dr. Asha Mehta" not in serialized
     assert "email" not in payload.get("sql_results", [{}])[0]
     assert "phone" not in payload.get("sql_results", [{}])[0]
+    assert payload.get("sql_results", [{}])[0]["name"] == "Researcher_r-99"
     assert payload["sql_query"] is None
     assert payload["sql_queries"] == []
-    assert payload["provenance"] == {}
+    assert payload["provenance"].get("sql") is None
+    assert payload["provenance"].get("synth") == "test"
+    assert payload["provenance"].get("cloud_synthesis_used") is False
     assert payload["conversation_history"] == []
     assert payload["retrieval_sources"] == []

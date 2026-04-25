@@ -8,7 +8,13 @@ Run with: .venv/bin/python -m pytest tests/benchmarks/volumetric/ -v
 
 import pytest
 import concurrent.futures
+import os
 from typing import List
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("NRG_RUN_LIVE_E2E") != "1",
+    reason="requires live API stack; set NRG_RUN_LIVE_E2E=1 to run",
+)
 
 
 class TestVolumetricDataIntegrity:

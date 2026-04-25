@@ -4,6 +4,7 @@ import { Citation, QueryRequest, queryService } from '../services/queryService'
 import { useQueryStore } from '../stores/queryStore'
 import { PlanDAG, StreamPhaseName, StreamQueryEvent } from '../types/api'
 import { errorCopy } from '../i18n/en-IN'
+import { emitTelemetry, trackQuerySubmitted } from '../lib/telemetry'
 
 export interface StreamPhase {
   phase: StreamPhaseName
@@ -102,6 +103,11 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fullTextRef = useRef('')
   const citationsRef = useRef<StreamCitation[]>([])
+  const submitStartedAtRef = useRef<number | null>(null)
+  const queryTelemetryIdRef = useRef<string | null>(null)
+  const personaRef = useRef<string>('anonymous')
+  const observedPhaseRef = useRef<Set<string>>(new Set())
+  const currentPhaseRef = useRef<StreamPhaseName>('planning')
 
   useEffect(() => {
     optionsRef.current = options
@@ -123,8 +129,23 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
 
   const setPhase = useCallback((phaseName: StreamPhaseName, override?: Partial<StreamPhase>) => {
     const nextPhase = { ...PHASES[phaseName], ...override }
+    currentPhaseRef.current = phaseName
     setCurrentPhase(nextPhase)
     useQueryStore.getState().setStreaming({ phase: phaseName })
+    if (
+      submitStartedAtRef.current &&
+      phaseName !== 'planning' &&
+      phaseName !== 'verified' &&
+      phaseName !== 'error' &&
+      !observedPhaseRef.current.has(phaseName)
+    ) {
+      observedPhaseRef.current.add(phaseName)
+      emitTelemetry('query.phase_observed', {
+        phase: phaseName,
+        ms_since_submit: Math.round(performance.now() - submitStartedAtRef.current),
+        query_id: queryTelemetryIdRef.current,
+      })
+    }
     optionsRef.current.onPhaseChange?.(nextPhase)
   }, [])
 
@@ -176,6 +197,14 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     setCitations(verifiedCitations)
     setAuditEventId(payload.audit_event_id)
     setSignatureBytes(payload.signature_bytes ?? 26)
+    if (submitStartedAtRef.current) {
+      emitTelemetry('query.completed', {
+        total_ms: Math.round(performance.now() - submitStartedAtRef.current),
+        citation_count: verifiedCitations.length,
+        persona: personaRef.current,
+        query_id: queryTelemetryIdRef.current,
+      })
+    }
     useQueryStore.getState().setStreaming({
       phase: 'verified',
       answer: fullTextRef.current,
@@ -272,6 +301,13 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   }, [addCitation, appendToken, completeStream, failRecoverably, resetSilenceTimer, setPhase])
 
   const abortStream = useCallback(() => {
+    if (eventSourceRef.current && submitStartedAtRef.current) {
+      emitTelemetry('query.aborted', {
+        ms_since_submit: Math.round(performance.now() - submitStartedAtRef.current),
+        phase_at_abort: currentPhaseRef.current,
+        query_id: queryTelemetryIdRef.current,
+      })
+    }
     closeSource()
     clearSilenceTimer()
     setIsStreaming(false)
@@ -287,6 +323,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     abortStream()
     fullTextRef.current = ''
     citationsRef.current = []
+    observedPhaseRef.current = new Set()
     setIsStreaming(true)
     setPlan(null)
     setSql('')
@@ -306,10 +343,14 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     setPhase('planning')
 
     const session = authService.getStoredSession()
+    const sessionId = session?.user?.id || 'anonymous'
+    personaRef.current = session?.user?.role || 'anonymous'
     const request: QueryRequest = {
       query: trimmedQuery,
-      sessionId: session?.user?.id || 'anonymous',
+      sessionId,
     }
+    submitStartedAtRef.current = performance.now()
+    queryTelemetryIdRef.current = trackQuerySubmitted(trimmedQuery, personaRef.current as any, { sessionId }).event_id
 
     const eventSource = optionsRef.current.eventSourceFactory
       ? optionsRef.current.eventSourceFactory(request)

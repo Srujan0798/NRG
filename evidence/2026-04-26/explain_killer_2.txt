@@ -1,0 +1,17 @@
+Killer query: KILLER-02
+Captured: 2026-04-25T21:00:43.034228+00:00
+Engine: local SQLite volumetric proxy
+
+SQL:
+WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20
+
+Plan:
+(3, 0, 0, 'MATERIALIZE stage_counts')
+(10, 3, 0, 'SEARCH innovations_at_various_stages_of_technology_readiness_level USING COVERING INDEX idx_lb3_trl_stage_institute_year (stage_of_technology=?)')
+(31, 3, 0, 'USE TEMP B-TREE FOR GROUP BY')
+(75, 0, 0, 'MATERIALIZE yearly_totals')
+(83, 75, 0, 'SCAN stage_counts')
+(85, 75, 0, 'USE TEMP B-TREE FOR GROUP BY')
+(128, 0, 0, 'SCAN s')
+(141, 0, 0, 'SEARCH y USING AUTOMATIC COVERING INDEX (financial_year=?)')
+(165, 0, 0, 'USE TEMP B-TREE FOR ORDER BY')

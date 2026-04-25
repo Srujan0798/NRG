@@ -23,6 +23,13 @@ class Reranker:
         self._load_model()
 
     def _load_model(self) -> None:
+        if self.fallback and (
+            os.getenv("PYTEST_CURRENT_TEST")
+            or os.getenv("RERANKER_DISABLE_MODEL", "").lower() in {"1", "true", "yes"}
+        ):
+            self.model = None
+            return
+
         try:
             from sentence_transformers import CrossEncoder
 

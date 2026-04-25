@@ -5,7 +5,7 @@ Based on Dhairya's 17-query audit. Each example includes:
 - Question category
 - User question (simplified for matching)
 - Generated SQL (from actual successful runs or corrected versions)
-- Key patterns demonstrated
+- Key patterns shown
 
 Examples are injected via similarity search (top-3 most relevant).
 """
@@ -95,14 +95,15 @@ LIMIT 10""",
     FROM innovation_grant_from_govt GROUP BY institute
 ),
 PatentData AS (
-    SELECT institute, COUNT(*) as patent_count
-    FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY institute
+    SELECT applicants, COUNT(*) as patent_count
+    FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY applicants
 )
 SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count,
     ROUND(g.total_grant / NULLIF(p.patent_count, 0), 2) as cost_per_patent
-FROM GrantData g LEFT JOIN PatentData p ON g.institute = p.institute
+FROM GrantData g LEFT JOIN PatentData p
+    ON lower(trim(p.applicants)) LIKE '%' || lower(trim(g.institute)) || '%'
 ORDER BY cost_per_patent ASC""",
-        "key_patterns": ["two CTEs for different metrics", "LEFT JOIN to combine", "NULLIF for division"],
+        "key_patterns": ["two CTEs for different metrics", "normalized applicants join", "NULLIF for division"],
         "failure_mode": "Q7 failed — JOIN on applicants vs institute mismatch",
     },
     {
@@ -179,16 +180,24 @@ LIMIT 100""",
     {
         "id": "ex_012",
         "category": "top_n_by_multiple_metrics",
-        "question_pattern": "top institutes by credit hours",
-        "sql": """SELECT institute, financial_year,
-    CAST(SUBSTR(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS INTEGER) +
-    CAST(SUBSTR(total_credit_score, INSTR(total_credit_score, ':') + 1) AS INTEGER) as total_credits
-FROM academic_courses_details
-WHERE financial_year = '2022-23'
-GROUP BY institute, financial_year
-ORDER BY total_credits DESC
+        "question_pattern": "highest total innovation credits",
+        "sql": """WITH parsed AS (
+    SELECT institute, financial_year,
+        SUM(SPLIT_PART(total_credit_score, ':', 1)::double precision
+            + COALESCE(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '')::double precision, 0)) AS total_credits
+    FROM academic_courses_details
+    WHERE financial_year = '2022-23'
+    GROUP BY institute, financial_year
+),
+national AS (
+    SELECT AVG(total_credits) AS avg_credits FROM parsed
+)
+SELECT p.institute, p.financial_year, p.total_credits, n.avg_credits,
+    p.total_credits - n.avg_credits AS above_national_average
+FROM parsed p CROSS JOIN national n
+ORDER BY p.total_credits DESC
 LIMIT 10""",
-        "key_patterns": ["SUBSTR + INSTR for credit parsing", "GROUP BY + ORDER BY aggregate", "LIMIT for top N"],
+        "key_patterns": ["SPLIT_PART for credit parsing", "GROUP BY institute", "compare to AVG"],
         "failure_mode": "Q1 failed — SPLIT_PART needed, LIMIT 1 unwanted",
     },
     {
@@ -245,7 +254,8 @@ ORDER BY i.total DESC""",
         "question_pattern": "year over year growth for pg courses",
         "sql": """WITH YearlyData AS (
     SELECT financial_year, COUNT(*) as course_count
-    FROM academic_courses_details WHERE level_of_course = 'PG'
+FROM academic_courses_details
+    WHERE level_of_course = 'PG'
     GROUP BY financial_year
 ),
 YoY AS (
@@ -277,8 +287,56 @@ ORDER BY financial_year DESC""",
         "failure_mode": "Q12 failed — phd_students vs courses confusion",
     },
 ]
+
+WRONG_SQL_BY_EXAMPLE_ID: Dict[str, Dict[str, str]] = {
+    "ex_001": {
+        "sql": "SELECT DISTINCT gov_organisation_name FROM innovation_grant_from_govt ORDER BY gov_organisation_name LIMIT 5",
+        "why": "Ranks alphabetically instead of by total grant amount.",
+    },
+    "ex_002": {
+        "sql": "SELECT institute, grant_received - LAG(grant_received) OVER (ORDER BY year_of_receiving) FROM innovation_grant_from_govt",
+        "why": "Compares raw rows instead of institute-year aggregates.",
+    },
+    "ex_006": {
+        "sql": "SELECT g.institute, g.grant_received / COUNT(p.id) FROM innovation_grant_from_govt g JOIN patents_details p ON g.institute = p.institute GROUP BY g.institute",
+        "why": "Uses the wrong patent source and skips applicant normalization.",
+    },
+    "ex_007": {
+        "sql": "SELECT * FROM actual_student_strength WHERE level = 'UG' LIMIT 10",
+        "why": "Leaves the course domain during a course follow-up.",
+    },
+    "ex_010": {
+        "sql": "SELECT stage_of_technology, COUNT(*) FROM innovations_at_various_stages_of_technology_readiness_level GROUP BY stage_of_technology",
+        "why": "Drops the financial_year dimension needed for stage trends.",
+    },
+    "ex_011": {
+        "sql": "SELECT * FROM innovations_at_various_stages_of_technology_readiness_level WHERE stage_of_technology LIKE '%TRL 9%' LIMIT 100",
+        "why": "Uses user wording instead of the stored Level value.",
+    },
+    "ex_012": {
+        "sql": "SELECT institute, CAST(total_credit_score AS INTEGER) AS total_credits FROM academic_courses_details ORDER BY total_credits DESC LIMIT 1",
+        "why": "Casts an X:Y text field directly and hides the national comparison.",
+    },
+    "ex_013": {
+        "sql": "SELECT institute FROM innovation_grant_from_govt HAVING grant_received > 10000000",
+        "why": "Uses HAVING without grouping an aggregate metric.",
+    },
+    "ex_015": {
+        "sql": "SELECT institute, grant_received FROM innovation_grant_from_govt WHERE grant_received > (SELECT AVG(grant_received) FROM innovation_grant_from_govt)",
+        "why": "Compares single rows instead of institute-year trends against the benchmark.",
+    },
+    "ex_016": {
+        "sql": "SELECT financial_year, SUM(total_credit_score) FROM academic_courses_details WHERE level_of_course = 'PG' GROUP BY financial_year",
+        "why": "Uses credits for a course-count growth question.",
+    },
+    "ex_017": {
+        "sql": "SELECT academic_year, COUNT(*) FROM phd_students GROUP BY academic_year",
+        "why": "Switches to student counts instead of course mix.",
+    },
+}
+
 CATEGORY_PATTERNS = {
-    "simple_aggregation": ["count", "total", "sum", "average", "top", "most", "unique funding"],
+    "simple_aggregation": ["count", "sum", "average", "top", "most", "unique funding"],
     "yoy_growth": ["growth", "year-over-year", "yoy", "drop", "declin", "trend", "change over time"],
     "yoy_course_growth": ["year-over-year", "yoy growth", "growth trend", "pg courses", "course growth"],
     "ratio_percentage": ["ratio", "percentage", "proportion", "fraction", "phd to undergraduate"],
@@ -290,7 +348,16 @@ CATEGORY_PATTERNS = {
     "gap_analysis": ["high low", "gap", "underperforming", "efficiency", "capital expense"],
     "pipeline_trend": ["trend", "over time", "fiscal year", "yearly", "trl", "pipeline progression"],
     "status_filter": ["ongoing", "completed", "active", "pending", "level 9", "market ready"],
-    "top_n_by_multiple_metrics": ["top institutes", "best", "leading", "credit hours"],
+    "top_n_by_multiple_metrics": [
+        "top institutes",
+        "best",
+        "leading",
+        "credit hours",
+        "innovation credits",
+        "total credits",
+        "credit intensity",
+        "total_credit_score",
+    ],
     "multi_stage_having": ["agencies with", "institutes that have", "HAVING", "utilization audit", "high grant"],
     "collaboration_network": ["collaboration", "partner", "industry", "academic exchange", "startup", "incubated"],
     "complex_compare_to_average": ["above average", "below average", "compared to average", "rising stars", "growing funding"],
@@ -334,7 +401,13 @@ def format_examples_for_prompt(examples: List[Dict[str, Any]]) -> str:
     for ex in examples:
         lines.append(f"\n### Example ({ex['category']}):")
         lines.append(f"Question pattern: {ex['question_pattern']}")
-        lines.append(f"SQL:\n{ex['sql']}")
+        wrong = WRONG_SQL_BY_EXAMPLE_ID.get(ex["id"])
+        if wrong:
+            lines.append(f"Wrong SQL to reject:\n{wrong['sql']}")
+            lines.append(f"Why wrong: {wrong['why']}")
+        lines.append(f"Correct SQL:\n{ex['sql']}")
         lines.append(f"Key patterns: {', '.join(ex['key_patterns'])}")
+        if ex.get("failure_mode"):
+            lines.append(f"Failure pattern: {ex['failure_mode']}")
 
     return "\n".join(lines)

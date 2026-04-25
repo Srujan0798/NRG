@@ -23,6 +23,11 @@ from playwright.sync_api import Page, expect
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
+pytestmark = pytest.mark.skipif(
+    os.getenv("NRG_RUN_LIVE_E2E") != "1",
+    reason="requires live browser/API stack; set NRG_RUN_LIVE_E2E=1 to run",
+)
+
 SCREENSHOT_DIR = Path("test_results")
 SCREENSHOT_DIR.mkdir(exist_ok=True)
 

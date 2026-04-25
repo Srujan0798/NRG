@@ -18,3 +18,8 @@ repos:
         pass_filenames: false
         always_run: true
         # See .claude/rules/production_only.md — NRG is production software.
+      - id: slow-test-marker-check
+        name: Require slow marker for long tests
+        entry: python scripts/check_slow_test_markers.py
+        language: system
+        files: ^tests/.*\.py$

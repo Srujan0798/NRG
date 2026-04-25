@@ -114,19 +114,20 @@ class TestXSSBlocking:
 
     @pytest.mark.parametrize("payload", XSS_PAYLOADS)
     def test_xss_payload_sanitized(self, client, payload):
-        """XSS payloads should not execute in responses."""
+        """XSS payloads should be blocked or sanitized."""
         token = _login(client)
         response = client.post(
             "/query",
             headers={"Authorization": f"Bearer {token}"},
             json={"query": payload},
         )
-        assert response.status_code == 200, f"XSS query should not crash: {payload}"
-        data = response.json()
-        response_text = str(data)
-        assert "<script>" not in response_text.lower(), "Script tag leaked"
-        assert "onerror=" not in response_text.lower(), "Event handler leaked"
-        assert "onload=" not in response_text.lower(), "Event handler leaked"
+        assert response.status_code in [200, 400], f"XSS query should not crash with 5xx: {payload}"
+        if response.status_code == 200:
+            data = response.json()
+            response_text = str(data)
+            assert "<script>" not in response_text.lower(), "Script tag leaked"
+            assert "onerror=" not in response_text.lower(), "Event handler leaked"
+            assert "onload=" not in response_text.lower(), "Event handler leaked"
 
 
 class TestCommandInjection:

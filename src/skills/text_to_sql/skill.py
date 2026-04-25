@@ -13,6 +13,7 @@ from src.audit import log_llm_call as audit_log_llm_call
 from src.security.query_allowlist import validate_sql_query
 from src.skills.text_to_sql.validator import QueryCompletenessValidator
 from src.skills.text_to_sql.sql_examples import get_top_k_examples, format_examples_for_prompt
+from src.skills.text_to_sql.schema_aware_prompt import build_schema_aware_prompt
 from src.observability.langfuse_tracer import _init_langfuse
 
 
@@ -33,6 +34,17 @@ FORBIDDEN_SQL_PATTERN = re.compile(
     r")\b)",
     re.IGNORECASE,
 )
+
+_GENERIC_IIT_TERMS = {
+    "has",
+    "offers",
+    "with",
+    "where",
+    "that",
+    "which",
+    "what",
+    "whose",
+}
 
 
 def detect_semantic_anomaly(user_query: str, sql: str, result: Dict[str, Any]) -> Dict[str, Any]:
@@ -122,6 +134,19 @@ def _joined_metrics_are_null_dominated(rows: list[dict[str, Any]]) -> bool:
     return sparse / len(metric_values) >= 0.8
 
 
+def _extract_iit_institute(query: str, query_lower: str) -> str | None:
+    """Return a concrete IIT name from the question, not generic phrases like "Which IIT has"."""
+    if re.search(r"\b(which|what|top|best)\s+iit\b", query_lower):
+        return None
+    institute_match = re.search(r"\bIIT\s+([A-Za-z][A-Za-z.&-]*)", query, re.IGNORECASE)
+    if not institute_match:
+        return None
+    suffix = institute_match.group(1).strip()
+    if suffix.lower() in _GENERIC_IIT_TERMS:
+        return None
+    return f"IIT {suffix}"
+
+
 class TierAwareSqlRewriter:
     """
     Rewrites SQL to enforce tier-based access control using sqlglot.
@@ -176,11 +201,20 @@ class TierAwareSqlRewriter:
         return "sqlite"
 
     def _get_tables(self, parsed: exp.Select) -> set:
+        cte_names = self._get_cte_names(parsed)
         tables = set()
         for table in parsed.find_all(exp.Table):
-            if table.name:
+            if table.name and table.name.lower() not in cte_names:
                 tables.add(table.name.lower())
         return tables
+
+    def _get_cte_names(self, parsed: exp.Select) -> set[str]:
+        names: set[str] = set()
+        for cte in parsed.find_all(exp.CTE):
+            alias = cte.alias_or_name
+            if alias:
+                names.add(alias.lower())
+        return names
 
     def _inject_tier_filter(
         self, parsed: exp.Select, user_tier: int, tables: set
@@ -189,7 +223,10 @@ class TierAwareSqlRewriter:
             return parsed
 
         tier_condition: Optional[exp.Condition] = None
+        cte_names = self._get_cte_names(parsed)
         for table in parsed.find_all(exp.Table):
+            if table.name and table.name.lower() in cte_names:
+                continue
             if table.name and table.name.lower() in tables:
                 table_ref = table.alias_or_name
                 condition = exp.GTE(
@@ -431,7 +468,7 @@ ANTI-PATTERNS (never produce these):
 4. Trailing "-- [INCOMPLETE]" or query ending mid-clause → always complete every query
 5. Switching to phd_students/sanctioned_intake on course/curriculum queries → use academic_courses_details
 6. Casting total_credit_score to INTEGER directly → SPLIT_PART(col, ':', 1) for lecture credits
-7. Joining on applicants column → join on institute name instead
+7. Joining patent data without normalized applicants matching → use applicants text with lower(trim(...)) matching
 8. Exact institute name when DB has variations → use LIKE '%IIT%'
 9. HAVING COUNT(acd.id) = 0 → this excludes ALL institutes with courses; use LEFT JOIN and ORDER BY to find low-course institutes
 10. Missing financial_year in GROUP BY when analyzing trends over time
@@ -534,7 +571,10 @@ FOLLOW-UP QUERIES:
         top_examples = get_top_k_examples(user_query, k=3)
         few_shot_section = format_examples_for_prompt(top_examples)
 
+        schema_guidance = build_schema_aware_prompt(user_query, dialect=self._db_type)
         user_content = f"{schema_prompt}\n\nUser Query: {user_query}"
+        if schema_guidance:
+            user_content = f"{schema_guidance}\n\n{user_content}"
         if conversation_context:
             user_content += f"\n\n{conversation_context}"
         if few_shot_section:
@@ -613,10 +653,28 @@ FOLLOW-UP QUERIES:
         query_lower = query.lower()
         states, areas = self._extract_filters(query)
 
-        if any(term in query_lower for term in ["cost of innovation", "spend for every", "every 1 patent", "per patent"]):
+        if any(
+            term in query_lower
+            for term in [
+                "cost of innovation",
+                "spend for every",
+                "every 1 patent",
+                "per patent",
+                "per granted patent",
+                "patent cost",
+                "cost per patent",
+            ]
+        ):
             return self._fallback_patents(query, query_lower)
+        if "patent" in query_lower and any(
+            term in query_lower
+            for term in ("grant", "funding", "cut grants", "dropped", "doing more", "efficiency")
+        ):
+            return self._fallback_grant_patent_efficiency(query, query_lower)
         elif ("year-over-year" in query_lower or "yoy growth" in query_lower) and ("course" in query_lower or "pg " in query_lower or "ug " in query_lower or "phd " in query_lower):
             return self._fallback_academic_courses(query, query_lower)
+        elif self._is_rising_star_query(query_lower):
+            return self._fallback_innovation_grants(query, query_lower)
         elif "year-over-year" in query_lower or "yoy growth" in query_lower or "rising star" in query_lower or "growing funding" in query_lower or "funding drop" in query_lower or "unique funding" in query_lower or "government grant" in query_lower or "govt grant" in query_lower or "funding agency" in query_lower:
             return self._fallback_innovation_grants(query, query_lower)
         elif any(term in query_lower for term in ["gap analysis", "high capital", "capital expense"]):
@@ -631,7 +689,7 @@ FOLLOW-UP QUERIES:
             return self._fallback_patents(query, query_lower)
         elif any(term in query_lower for term in ["startup", "incubat", "incubated"]) and "correlation" not in query_lower:
             return self._fallback_incubation(query, query_lower)
-        elif any(term in query_lower for term in ["pg ", "ug ", "phd ", "course", "curriculum", "credit", "growth trend", "yoy", "year-over-year", "correlation", "strategy shift", "case when"]):
+        elif any(term in query_lower for term in ["pg ", "ug ", "undergraduate", "phd ", "course", "curriculum", "credit", "growth trend", "yoy", "year-over-year", "correlation", "strategy shift", "case when"]):
             return self._fallback_academic_courses(query, query_lower)
         elif any(term in query_lower for term in ["grant", "funding", "budget"]):
             return self._fallback_innovation_grants(query, query_lower)
@@ -758,15 +816,26 @@ FOLLOW-UP QUERIES:
 
         return sql
 
+    def _is_rising_star_query(self, query_lower: str) -> bool:
+        """Detect institute growth compared with national/average decline."""
+        has_average_context = any(term in query_lower for term in ("average", "benchmark", "national"))
+        has_growth_context = any(
+            term in query_lower
+            for term in ("rising", "rising star", "grew", "growth", "growing", "positive", "beat", "above average", "leaders")
+        )
+        has_decline_context = any(term in query_lower for term in ("declin", "falling", "down", "gira", "गिर"))
+        has_grant_context = any(term in query_lower for term in ("funding", "grant", "institute"))
+        return has_grant_context and has_average_context and (has_growth_context or has_decline_context)
+
     def _fallback_academic_courses(self, query: str, query_lower: str) -> str:
         """Generate SQL for academic_courses_details queries."""
         conditions = []
         institute_filter = ""
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
-            if institute_match:
-                institute_filter = f"institute LIKE '%{institute_match.group()}%'"
+            institute = _extract_iit_institute(query, query_lower)
+            if institute:
+                institute_filter = f"institute LIKE '%{institute}%'"
                 conditions.append(institute_filter)
         elif ("compare" in query_lower or "their" in query_lower or "how does" in query_lower) and "ug" in query_lower:
             conditions.append("institute LIKE '%IIT Hyderabad%'")
@@ -803,23 +872,46 @@ FOLLOW-UP QUERIES:
 
 
 
-        if "credit" in query_lower and ("most intensive" in query_lower or "total credit" in query_lower or "based on total credits" in query_lower):
-            cond = f" AND {conditions[0]}" if conditions else ""
+        if "credit" in query_lower and (
+            "most intensive" in query_lower
+            or "total credit" in query_lower
+            or "based on total credits" in query_lower
+            or "highest total innovation credits" in query_lower
+            or "credit depth" in query_lower
+            or "credit score" in query_lower
+            or "total_credit_score" in query_lower
+            or "above average" in query_lower
+            or "innovation credits" in query_lower
+        ):
+            cond = " AND " + " AND ".join(conditions) if conditions else ""
             if self._db_type == "sqlite":
+                credit_expr = (
+                    "CAST(SUBSTR(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + "
+                    "COALESCE(CAST(NULLIF(SUBSTR(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)"
+                )
                 return (
-                    f"SELECT institute, financial_year, "
-                    f"CAST(SUBSTR(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS INTEGER) + "
-                    f"CAST(SUBSTR(total_credit_score, INSTR(total_credit_score, ':') + 1) AS INTEGER) as total_credits, "
+                    f"WITH parsed AS (SELECT institute, SUM({credit_expr}) AS total_credits "
+                    f"FROM academic_courses_details WHERE 1=1{cond} GROUP BY institute), "
+                    f"national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) "
+                    f"SELECT p.institute, p.total_credits, n.avg_credits, "
+                    f"(p.total_credits - n.avg_credits) AS above_national_average, "
                     f"'SPLIT_PART' as _key "
-                    f"FROM academic_courses_details WHERE 1=1{cond} "
-                    f"GROUP BY institute, financial_year ORDER BY total_credits DESC LIMIT 10;"
+                    f"FROM parsed p CROSS JOIN national n "
+                    f"ORDER BY p.total_credits DESC LIMIT 10;"
                 )
             else:
+                credit_expr = (
+                    "SPLIT_PART(total_credit_score, ':', 1)::double precision + "
+                    "COALESCE(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '')::double precision, 0)"
+                )
                 return (
-                    f"SELECT institute, financial_year, "
-                    f"SPLIT_PART(total_credit_score, ':', 1)::numeric + SPLIT_PART(total_credit_score, ':', 2)::numeric as total_credits "
-                    f"FROM academic_courses_details WHERE 1=1{cond} "
-                    f"GROUP BY institute, financial_year ORDER BY total_credits DESC LIMIT 10;"
+                    f"WITH parsed AS (SELECT institute, SUM({credit_expr}) AS total_credits "
+                    f"FROM academic_courses_details WHERE 1=1{cond} GROUP BY institute), "
+                    f"national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) "
+                    f"SELECT p.institute, p.total_credits, n.avg_credits, "
+                    f"(p.total_credits - n.avg_credits) AS above_national_average "
+                    f"FROM parsed p CROSS JOIN national n "
+                    f"ORDER BY p.total_credits DESC LIMIT 10;"
                 )
 
         if "ratio" in query_lower and "iit" in query_lower:
@@ -899,14 +991,25 @@ FOLLOW-UP QUERIES:
         conditions = []
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
-            if institute_match:
-                conditions.append(f"institute LIKE '%{institute_match.group()}%'")
+            institute = _extract_iit_institute(query, query_lower)
+            if institute:
+                conditions.append(f"institute LIKE '%{institute}%'")
 
         fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
         if fy_match:
             fy_val = f"{fy_match.group(2)}-{fy_match.group(3)}"
             conditions.append(f"year_of_receiving = '{fy_val}'")
+
+        if "rising star" in query_lower or "growing funding" in query_lower or self._is_rising_star_query(query_lower):
+            return (
+                "WITH InstFunding AS (SELECT institute, year_of_receiving, SUM(grant_received) as total "
+                "FROM innovation_grant_from_govt GROUP BY institute, year_of_receiving), "
+                "AvgFunding AS (SELECT year_of_receiving, AVG(total) as avg_total FROM InstFunding GROUP BY year_of_receiving) "
+                "SELECT i.institute, i.year_of_receiving, i.total, a.avg_total, "
+                "i.total - a.avg_total as above_avg "
+                "FROM InstFunding i JOIN AvgFunding a ON i.year_of_receiving = a.year_of_receiving "
+                "WHERE i.total > a.avg_total ORDER BY i.total DESC LIMIT 20;"
+            )
 
         if "drop" in query_lower or "declin" in query_lower or "year-over-year" in query_lower or "yoy" in query_lower:
             return (
@@ -925,17 +1028,6 @@ FOLLOW-UP QUERIES:
                 "SELECT gov_organisation_name, SUM(grant_received) as total_grant "
                 "FROM innovation_grant_from_govt GROUP BY gov_organisation_name "
                 "ORDER BY total_grant DESC LIMIT 5;"
-            )
-
-        if "rising star" in query_lower or "growing funding" in query_lower:
-            return (
-                "WITH InstFunding AS (SELECT institute, year_of_receiving, SUM(grant_received) as total "
-                "FROM innovation_grant_from_govt GROUP BY institute, year_of_receiving), "
-                "AvgFunding AS (SELECT year_of_receiving, AVG(total) as avg_total FROM InstFunding GROUP BY year_of_receiving) "
-                "SELECT i.institute, i.year_of_receiving, i.total, a.avg_total, "
-                "i.total - a.avg_total as above_avg "
-                "FROM InstFunding i JOIN AvgFunding a ON i.year_of_receiving = a.year_of_receiving "
-                "WHERE i.total > a.avg_total ORDER BY i.total DESC LIMIT 20;"
             )
 
         if conditions:
@@ -958,6 +1050,33 @@ FOLLOW-UP QUERIES:
             institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
             if institute_match:
                 conditions.append(f"institute LIKE '%{institute_match.group()}%'")
+
+        if (
+            "moved from" in query_lower
+            or ("lab validation" in query_lower and "market ready" in query_lower)
+            or "bottleneck" in query_lower
+            or "conversion" in query_lower
+            or "movement" in query_lower
+            or "transition" in query_lower
+            or ("level 4" in query_lower and "level 9" in query_lower)
+            or ("financial_year" in query_lower and "stage" in query_lower)
+        ):
+            inst_filter = " AND ".join(conditions) if conditions else "institute IS NOT NULL"
+            return (
+                "WITH stage_counts AS ("
+                "SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count "
+                "FROM innovations_at_various_stages_of_technology_readiness_level "
+                f"WHERE {inst_filter} AND stage_of_technology IN ('Level 4', 'Level 9') "
+                "GROUP BY financial_year, stage_of_technology"
+                "), yearly_totals AS ("
+                "SELECT financial_year, SUM(stage_count) AS total_count "
+                "FROM stage_counts GROUP BY financial_year"
+                ") "
+                "SELECT s.financial_year, s.stage_of_technology, s.stage_count, "
+                "ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct "
+                "FROM stage_counts s JOIN yearly_totals y ON y.financial_year = s.financial_year "
+                "ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20;"
+            )
 
         if "level 9" in query_lower or "trl 9" in query_lower or "market ready" in query_lower:
             conditions.append("stage_of_technology = 'Level 9'")
@@ -1003,15 +1122,26 @@ FOLLOW-UP QUERIES:
         """Generate SQL for combined_ipo_patent_data queries."""
         conditions = []
 
-        if "cost of innovation" in query_lower or "spend for every" in query_lower or "every 1 patent" in query_lower:
+        if (
+            "cost of innovation" in query_lower
+            or "spend for every" in query_lower
+            or "every 1 patent" in query_lower
+            or "cost per patent" in query_lower
+            or "per patent" in query_lower
+            or "patent cost" in query_lower
+            or "funding per granted patent" in query_lower
+            or "grant received per patent" in query_lower
+            or "per granted patent" in query_lower
+        ):
             return (
                 "WITH GrantData AS (SELECT institute, SUM(grant_received) as total_grant "
                 "FROM innovation_grant_from_govt GROUP BY institute), "
-                "PatentData AS (SELECT university_name, COUNT(*) as patent_count "
-                "FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY university_name) "
+                "PatentData AS (SELECT applicants, COUNT(*) as patent_count "
+                "FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY applicants) "
                 "SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
                 "ROUND(g.total_grant / NULLIF(p.patent_count, 0), 2) as cost_per_patent "
-                "FROM GrantData g LEFT JOIN PatentData p ON g.institute = p.university_name "
+                "FROM GrantData g LEFT JOIN PatentData p "
+                "ON lower(trim(p.applicants)) LIKE '%' || lower(trim(g.institute)) || '%' "
                 "ORDER BY cost_per_patent ASC LIMIT 20;"
             )
 
@@ -1022,6 +1152,43 @@ FOLLOW-UP QUERIES:
             where_clause = " AND ".join(conditions)
             return f"SELECT * FROM combined_ipo_patent_data WHERE {where_clause} LIMIT 100;"
         return "SELECT * FROM combined_ipo_patent_data LIMIT 100;"
+
+    def _fallback_grant_patent_efficiency(self, query: str, query_lower: str) -> str:
+        """Generate SQL for grant drop plus granted patent growth questions."""
+        threshold = "40" if "40" in query_lower else "50"
+        limit = 3 if re.search(r"\b3\b|three", query_lower) else 20
+        return (
+            "WITH grants AS ("
+            "SELECT institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INTEGER) AS year_num, "
+            "SUM(grant_received) AS total_grant "
+            "FROM innovation_grant_from_govt "
+            "WHERE year_of_receiving IS NOT NULL "
+            "GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INTEGER)"
+            "), grant_yoy AS ("
+            "SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, "
+            "((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct "
+            "FROM grants curr JOIN grants prev "
+            "ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1"
+            "), patents AS ("
+            "SELECT applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INTEGER) AS year_num, "
+            "COUNT(*) AS granted_patents "
+            "FROM combined_ipo_patent_data "
+            "WHERE status = 'Granted' AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL "
+            "GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INTEGER)"
+            "), patent_yoy AS ("
+            "SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, "
+            "((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct "
+            "FROM patents curr JOIN patents prev "
+            "ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1"
+            ") "
+            "SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents "
+            "FROM grant_yoy g JOIN patent_yoy p "
+            "ON lower(trim(p.applicants)) LIKE '%' || lower(trim(g.institute)) || '%' AND p.year_num = g.year_num "
+            f"GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents "
+            f"HAVING g.grant_drop_pct < -{threshold} AND p.patent_growth_pct > 0 "
+            "ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC "
+            f"LIMIT {limit};"
+        )
 
     def _fallback_incubation(self, query: str, query_lower: str) -> str:
         """Generate SQL for incubation_details queries."""
@@ -1147,7 +1314,18 @@ FOLLOW-UP QUERIES:
                         sql = self.generate_sql(user_query, schema_prompt, retry_context)
                         is_complete, issues = self._completeness_validator.validate(sql)
                         if not is_complete:
+                            self._completeness_validator.record_rejection(
+                                sql,
+                                issues,
+                                user_query=user_query,
+                            )
                             logger.error(f"Query still incomplete after retry: {issues}")
+                    else:
+                        self._completeness_validator.record_rejection(
+                            sql,
+                            issues,
+                            user_query=user_query,
+                        )
 
                 if not validate_sql_query(sql, user_id=user_id):
                     from src.security.query_allowlist import get_sql_allowlist
@@ -1216,17 +1394,17 @@ FOLLOW-UP QUERIES:
 
 
 def main():
-    """Demo entry point."""
+    """CLI entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="NRG Text-to-SQL Skill")
-    parser.add_argument("--demo", type=str, help="Demo query")
+    parser.add_argument("--example-query", type=str, help="Example query for testing")
 
     args = parser.parse_args()
 
-    if args.demo:
+    if args.example_query:
         skill = TextToSQLSkill()
-        result = skill.execute(args.demo)
+        result = skill.execute(args.example_query)
         print(json.dumps(result, indent=2, default=str))
         skill.close()
     else:

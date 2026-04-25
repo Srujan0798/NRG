@@ -8,11 +8,11 @@ Use this when a user wants to set up a Managed Agent from scratch. Three steps: 
 
 ---
 
-Claude Managed Agents is a hosted agent: Anthropic runs the agent loop on its orchestration layer and provisions a sandboxed container per session where the agent's tools execute. You supply the agent config and the environment config; the harness — event stream, sandbox orchestration, prompt caching, context compaction, and extended thinking — is handled for you.
+Claude Managed Agents is a hosted agent: Anthropic runs the agent loop on its orchestration layer and provisions a isolated environmented container per session where the agent's tools execute. You supply the agent config and the environment config; the harness — event stream, isolated environment orchestration, prompt caching, context compaction, and extended thinking — is handled for you.
 
 **What you supply:**
 - **An agent config** — tools, skills, model, system prompt. Reusable and versioned.
-- **An environment config** — the sandbox your agent's tools execute in (networking, packages). Reusable across agents.
+- **An environment config** — the isolated environment your agent's tools execute in (networking, packages). Reusable across agents.
 
 Each run of the agent is a **session**.
 

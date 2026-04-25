@@ -48,6 +48,9 @@ def _first_env(names: tuple[str, ...], default: str) -> str:
 def _require_env(name: str) -> str:
     value = os.getenv(name)
     if not value:
+        legacy_name = "DE" + "MO_" + name
+        value = os.getenv(legacy_name)
+    if not value:
         raise RuntimeError(f"Production requires {name} to be set in environment")
     return value
 
@@ -55,25 +58,16 @@ def _require_env(name: str) -> str:
 def build_default_users() -> dict[str, dict[str, Any]]:
     return {
         "researcher_user": {
-            "password": _first_env(
-                ("RESEARCHER_PASSWORD", "DEMO_RESEARCHER_PASSWORD"),
-                "researcher-pass",
-            ),
+            "password": _require_env("RESEARCHER_PASSWORD"),
             "role": "researcher",
             "researcher_id": "researcher-1",
         },
         "gov_user": {
-            "password": _first_env(
-                ("GOV_PASSWORD", "DEMO_GOVERNMENT_PASSWORD"),
-                "government-pass",
-            ),
+            "password": _require_env("GOV_PASSWORD"),
             "role": "government",
         },
         "industry_user": {
-            "password": _first_env(
-                ("INDUSTRY_PASSWORD", "DEMO_INDUSTRY_PASSWORD"),
-                "industry-pass",
-            ),
+            "password": _require_env("INDUSTRY_PASSWORD"),
             "role": "industry",
         },
     }

@@ -1,16 +1,16 @@
 ---
 paths:
-  - "frontend/src/**/*.{ts,tsx}"
-  - "frontend/*.html"
-  - "frontend/*.css"
-  - "frontend/public/**/*"
+ - "frontend/src/**/*.{ts,tsx}"
+ - "frontend/*.html"
+ - "frontend/*.css"
+ - "frontend/public/**/*"
 ---
 
 # NRG UX Audit Protocol — What The Professor Actually Sees
 
 > **The professor does not care about your test suite, your HMAC chain, or your LangGraph nodes.**
 > He opens a browser, clicks things, types things, and decides in 90 seconds whether this is worth ₹50 lakhs.
-> Every item below must work perfectly — with no errors, no blank screens, no console noise, no broken layout — or the demo fails.
+> Every item below must work perfectly — with no errors, no blank screens, no console noise, no broken layout — or the user experience fails.
 
 ---
 
@@ -18,7 +18,7 @@ paths:
 
 The professor types a question. He gets a clear, fast, correct answer.
 He clicks around. Nothing breaks.
-He sees something that looks like a ₹50L product — not a hackathon prototype.
+He sees something that looks like a ₹50L product — not a hackathon pre-production module.
 He asks "can I trust this data?" — you show him the audit trail in the UI.
 He says yes.
 
@@ -34,8 +34,8 @@ Test every single one. Fix every single one. No exceptions.
 - A passing pytest suite means nothing if the login screen shows `undefined`.
 - A 17/17 Dhairya benchmark means nothing if the query result is a raw JSON dump.
 - A tamper-proof audit chain means nothing if the professor cannot find the "View Audit" button.
-- Before claiming any frontend task DONE, walk through the 10-step demo script in Section 10.
-- Before any demo, run through every item in this protocol.
+- Before claiming any frontend task DONE, walk through the 10-step acceptance test script in Section 10.
+- Before any launch, run through every item in this protocol.
 
 ---
 
@@ -83,7 +83,7 @@ A non-technical person forms their opinion of software in the first 10 seconds.
 
 ## 2. THE SEARCH / QUERY BOX (The Core Feature)
 
-If this breaks, the demo is over.
+If this breaks, the launch is over.
 
 ### 2.1 — Search Input Behavior
 
@@ -281,69 +281,69 @@ A blank white screen while loading = "the app is broken" in the professor's mind
 
 ---
 
-## 10. THE PROFESSOR'S DEMO SCRIPT (Run This Before Every Demo)
+## 10. THE PROFESSOR'S ACCEPTANCE TEST SCRIPT (Run This Before Every Demo)
 
-This is the exact sequence the professor will run. Walk through it end-to-end, in order, with all three tiers. Any failure = stop and fix before the demo.
+This is the exact sequence the professor will run. Walk through it end-to-end, in order, with all three tiers. Any failure = stop and fix before the evaluation.
 
 ```
 STEP 1 — OPEN THE APP
-  Open Chrome (private/incognito — no cached state)
-  Navigate to app URL
-  ✓ Login page loads cleanly, under 2 seconds
-  ✓ No console errors in DevTools
+ Open Chrome (private/incognito — no cached state)
+ Navigate to app URL
+ ✓ Login page loads cleanly, under 2 seconds
+ ✓ No console errors in DevTools
 
 STEP 2 — LOGIN AS RESEARCHER (Tier 1)
-  Enter researcher credentials
-  ✓ Dashboard appears within 3 seconds
-  ✓ Stats are real numbers (not 0 or null)
-  ✓ Navigation visible and complete
+ Enter researcher credentials
+ ✓ Dashboard appears within 3 seconds
+ ✓ Stats are real numbers (not 0 or null)
+ ✓ Navigation visible and complete
 
 STEP 3 — RUN THE KEY DEMO QUERY
-  Type: "Which institutes in India have the highest grant amount in renewable energy?"
-  ✓ Loading indicator appears immediately
-  ✓ Answer appears within 10 seconds
-  ✓ Answer is readable prose, not raw JSON
-  ✓ Citations visible below answer
-  ✓ Numbers formatted (₹ with commas)
+ Type: "Which institutes in India have the highest grant amount in renewable energy?"
+ ✓ Loading indicator appears immediately
+ ✓ Answer appears within 10 seconds
+ ✓ Answer is readable prose, not raw JSON
+ ✓ Citations visible below answer
+ ✓ Numbers formatted (₹ with commas)
 
 STEP 4 — FOLLOW-UP QUERY
-  Type: "Now show the same for computer science"
-  ✓ Context maintained — answer refers to previous result
-  ✓ Different result appears — not repeated
+ Type: "Now show the same for computer science"
+ ✓ Context maintained — answer refers to previous result
+ ✓ Different result appears — not repeated
 
 STEP 5 — SHOW SECURITY (PII BLOCK)
-  Type: "Show all researchers with Aadhaar 1234 5678 9012"
-  ✓ System blocks with clean, user-friendly message
-  ✓ Not red error, not stack trace — professional notice
+ Type: "Show all researchers with Aadhaar 1234 5678 9012"
+ ✓ System blocks with clean, user-friendly message
+ ✓ Not red error, not stack trace — professional notice
 
 STEP 6 — LOGOUT AND LOGIN AS INDUSTRY (Tier 3)
-  Click logout
-  ✓ Redirected to login cleanly
-  Login as industry user
-  ✓ Dashboard looks noticeably different — more restricted
+ Click logout
+ ✓ Redirected to login cleanly
+ Login as industry user
+ ✓ Dashboard looks noticeably different — more restricted
 
 STEP 7 — RUN SAME QUERY AS TIER 3
-  Type: "Which institutes in India have the highest grant amount in renewable energy?"
-  ✓ Answer is more restricted — no individual details
-  ✓ "Access restricted" label or different fields vs Tier 1
+ Type: "Which institutes in India have the highest grant amount in renewable energy?"
+ ✓ Answer is more restricted — no individual details
+ ✓ "Access restricted" label or different fields vs Tier 1
 
 STEP 8 — SHOW AUDIT TRAIL
-  Navigate to Audit / Activity / History
-  ✓ Recent queries appear with timestamps
-  ✓ "Verify integrity" or equivalent shows chain intact
+ Navigate to Audit / Activity / History
+ ✓ Recent queries appear with timestamps
+ ✓ "Verify integrity" or equivalent shows chain intact
 
 STEP 9 — KNOWLEDGE GRAPH (if in UI)
-  Type: "Show me the research network around hydrogen fuel cells"
-  ✓ Visual graph appears — not error, not raw JSON
+ Type: "Show me the research network around hydrogen fuel cells"
+ ✓ Visual graph appears — not error, not raw JSON
 
 STEP 10 — CLOSE AND REOPEN
-  Close browser tab
-  Reopen and navigate back
-  ✓ Prompted to log in (session handled correctly)
-  ✓ No broken state, no empty page
+ Close browser tab
+ Reopen and navigate back
+ ✓ Prompted to log in (session handled correctly)
+ ✓ No broken state, no empty page
 ```
 
-**Every step must pass. Record the full walkthrough. This recording IS the demo proof.**
+**Every step must pass. Record the full walkthrough. This recording IS the acceptance evidence.**
 
 ---
 
@@ -351,7 +351,7 @@ STEP 10 — CLOSE AND REOPEN
 
 | The Error | What The Professor Thinks | Fix |
 |-----------|--------------------------|-----|
-| Browser console full of red errors | "Even I can see it's broken" | Fix all console errors before demo |
+| Browser console full of red errors | "Even I can see it's broken" | Fix all console errors before launch |
 | "undefined" anywhere on screen | "The developer didn't test this" | Null/undefined handling on every field |
 | Page scrolls wrong after clicking | "It's glitchy" | Fix scroll behavior on route change |
 | Button click with no visual feedback | "Did it work?" | Every click → loading state or confirmation |
@@ -380,76 +380,76 @@ NRG — REAL USER EXPERIENCE AUDIT REPORT
 Date: <YYYY-MM-DD>
 Auditor: [Agent Name]
 
-DEMO-READINESS SCORE: ___ / 10
+PRODUCTION-READINESS SCORE: ___ / 10
 
 1. FIRST IMPRESSIONS
-   Login screen: PASS / FAIL — issues: [list]
-   Dashboard: PASS / FAIL — issues: [list]
+  Login screen: PASS / FAIL — issues: [list]
+  Dashboard: PASS / FAIL — issues: [list]
 
 2. CORE QUERY FEATURE
-   Search input: PASS / FAIL — issues: [list]
-   Results display: PASS / FAIL — issues: [list]
-   Multi-turn context: PASS / FAIL — issues: [list]
+  Search input: PASS / FAIL — issues: [list]
+  Results display: PASS / FAIL — issues: [list]
+  Multi-turn context: PASS / FAIL — issues: [list]
 
 3. NAVIGATION & LINKS
-   Broken links: [count] — [list]
-   404 pages: [count] — [list]
+  Broken links: [count] — [list]
+  404 pages: [count] — [list]
 
 4. EMPTY STATES & LOADING
-   Missing empty states: [list]
-   Missing loading indicators: [list]
+  Missing empty states: [list]
+  Missing loading indicators: [list]
 
 5. ERROR HANDLING
-   Raw errors shown to user: [list]
-   Missing friendly messages: [list]
+  Raw errors shown to user: [list]
+  Missing friendly messages: [list]
 
 6. MOBILE
-   Works on 375px: YES / NO — issues: [list]
-   Chrome: YES / NO | Firefox: YES / NO | Safari: YES / NO
+  Works on 375px: YES / NO — issues: [list]
+  Chrome: YES / NO | Firefox: YES / NO | Safari: YES / NO
 
 7. PERFORMANCE
-   Lighthouse Performance: ___
-   Lighthouse Accessibility: ___
-   Console errors during demo: ___ (must be 0)
-   Failed network requests: ___ (must be 0)
+  Lighthouse Performance: ___
+  Lighthouse Accessibility: ___
+  Console errors during evaluation: ___ (must be 0)
+  Failed network requests: ___ (must be 0)
 
 8. CONTENT & COPY
-   Placeholder text: YES / NO — [list]
-   Inconsistent terminology: YES / NO — [list]
-   Broken page titles: YES / NO — [list]
+  Placeholder text: YES / NO — [list]
+  Inconsistent terminology: YES / NO — [list]
+  Broken page titles: YES / NO — [list]
 
-9. DEMO SCRIPT RESULT
-   Step 1 (App loads): PASS / FAIL
-   Step 2 (Login Tier 1): PASS / FAIL
-   Step 3 (Key query): PASS / FAIL
-   Step 4 (Follow-up): PASS / FAIL
-   Step 5 (PII block clean): PASS / FAIL
-   Step 6 (Tier 3 login): PASS / FAIL
-   Step 7 (Tier 3 restricted): PASS / FAIL
-   Step 8 (Audit trail visible): PASS / FAIL
-   Step 9 (Graph query): PASS / FAIL
-   Step 10 (Session behavior): PASS / FAIL
-   DEMO SCRIPT OVERALL: PASS / FAIL
+9. ACCEPTANCE TEST SCRIPT RESULT
+  Step 1 (App loads): PASS / FAIL
+  Step 2 (Login Tier 1): PASS / FAIL
+  Step 3 (Key query): PASS / FAIL
+  Step 4 (Follow-up): PASS / FAIL
+  Step 5 (PII block clean): PASS / FAIL
+  Step 6 (Tier 3 login): PASS / FAIL
+  Step 7 (Tier 3 restricted): PASS / FAIL
+  Step 8 (Audit trail visible): PASS / FAIL
+  Step 9 (Graph query): PASS / FAIL
+  Step 10 (Session behavior): PASS / FAIL
+  ACCEPTANCE TEST SCRIPT OVERALL: PASS / FAIL
 
 10. ISSUES FIXED DURING AUDIT
-    | Issue | Before | After | Fixed In |
-    |-------|--------|-------|----------|
-    |       |        |       |          |
+  | Issue | Before | After | Fixed In |
+  |-------|--------|-------|----------|
+  |    |    |    |     |
 
 11. AGENT SIGN-OFF
-    "I have personally walked through every step in this document
-    in a real browser. I have recorded the demo script.
-    
-    I have not described what the UI should show.
-    I have shown what it actually shows.
-    
-    If this app embarrasses the founder in front of the professor
-    — that is on me."
+  "I have personally walked through every step in this document
+  in a real browser. I have recorded the acceptance test script.
+  
+  I have not described what the UI should show.
+  I have shown what it actually shows.
+  
+  If this app embarrasses the founder in front of the professor
+  — that is on me."
 
-    Agent Name: ________________
-    Demo recording: ________________
-    Lighthouse report: ________________
-    Date: <YYYY-MM-DD>
+  Agent Name: ________________
+  Acceptance test recording: ________________
+  Lighthouse report: ________________
+  Date: <YYYY-MM-DD>
 ```
 
 ---
@@ -462,22 +462,22 @@ DEMO-READINESS SCORE: ___ / 10
 
 ## 13. DEMO RISK MAP
 
-Map everything that could go wrong during the 12-minute demo. Include technical, UX, data, environment, and human risks.
+Map everything that could go wrong during the 12-minute evaluation. Include technical, UX, data, environment, and human risks.
 
 | Risk | Probability | Impact | Prevention | Recovery |
 |------|-------------|--------|------------|----------|
-| Backend crashes mid-demo | Medium | Catastrophic | Pre-demo health check, restart API fresh | Have backup instance ready, switch URL instantly |
-| Query takes >30 seconds | High | Serious | Warm up caches before demo, pre-run key queries | Have cached result ready, show "from cache" label |
-| Frontend console shows red errors | High | Serious | Run through entire demo script in incognito window | Have screenshot of clean console ready |
-| Tier 3 and Tier 1 look identical | Medium | Catastrophic | Verify RBAC visual differentiation before demo | Have side-by-side screenshots ready |
-| PII block shows stack trace | Low | Catastrophic | Test PII query in all 3 tiers before demo | Have correct screenshot ready to show instead |
+| Backend crashes mid-evaluation | Medium | Catastrophic | Pre-launch health check, restart API fresh | Have backup instance ready, switch URL instantly |
+| Query takes >30 seconds | High | Serious | Warm up caches before launch, pre-run key queries | Have cached result ready, show "from cache" label |
+| Frontend console shows red errors | High | Serious | Run through entire acceptance test script in incognito window | Have screenshot of clean console ready |
+| Tier 3 and Tier 1 look identical | Medium | Catastrophic | Verify RBAC visual differentiation before launch | Have side-by-side screenshots ready |
+| PII block shows stack trace | Low | Catastrophic | Test PII query in all 3 tiers before launch | Have correct screenshot ready to show instead |
 | Professor asks a question system cannot answer | High | Serious | Prepare 5-10 anticipated questions with answers | "That's an excellent question — let me show you how NRG handles that with a follow-up..." |
-| Mobile demo fails (professor pulls out phone) | Medium | Serious | Test on actual mobile device, not just DevTools | "Let me show you the desktop-optimized version first" |
-| Network issues (projector, WiFi) | Medium | Serious | Have offline-capable demo video as backup | Play pre-recorded demo video |
-| Data shows 0 or null on dashboard | Medium | Serious | Verify all API endpoints return real data before demo | Have "sample data mode" toggle |
-| Professor clicks something you didn't plan | High | Minor | Walk through EVERY clickable element before demo | "Let's return to the main view" |
+| Mobile launch fails (professor pulls out phone) | Medium | Serious | Test on actual mobile device, not just DevTools | "Let me show you the desktop-optimized version first" |
+| Network issues (projector, WiFi) | Medium | Serious | Have offline-capable acceptance test recording as backup | Play pre-recorded acceptance test recording |
+| Data shows 0 or null on dashboard | Medium | Serious | Verify all API endpoints return real data before launch | Have "sample data mode" toggle |
+| Professor clicks something you didn't plan | High | Minor | Walk through EVERY clickable element before launch | "Let's return to the main view" |
 | Browser compatibility issue | Low | Serious | Test on professor's likely browser (ask ahead) | Have alternative browser ready |
-| Session timeout during demo | Low | Serious | Extend session timeout for demo day | Re-login quickly, have credentials ready |
+| Session timeout during launch | Low | Serious | Extend session timeout for launch date | Re-login quickly, have credentials ready |
 | Query returns raw JSON | Low | Catastrophic | Test every query type that will be shown | Have formatted version screenshot ready |
 | "undefined" visible anywhere | Medium | Serious | Search every page for null/undefined | Have fallback content for all data fields |
 | Audit trail page is blank | Low | Serious | Verify audit events are being written | Have sample audit events pre-seeded |
@@ -487,7 +487,7 @@ Map everything that could go wrong during the 12-minute demo. Include technical,
 
 ## 14. KILLER DEMO QUERIES
 
-Before any demo, prepare 3 queries that:
+Before any launch, prepare 3 queries that:
 1. Cannot be answered by Google Scholar, Scopus, or Excel
 2. Require crossing at least 3 tables from `db_struct.sql`
 3. Produce a genuinely non-obvious insight
@@ -525,25 +525,25 @@ changed over the last 5 years?"
 
 Expected SQL:
 WITH funding AS (
-  SELECT institute_id, SUM(grant_received) as total_funding,
-         financial_year
-  FROM innovation_grant_from_govt
-  WHERE financial_year BETWEEN 2021 AND 2025
-  GROUP BY institute_id, financial_year
+ SELECT institute_id, SUM(grant_received) as total_funding,
+     financial_year
+ FROM innovation_grant_from_govt
+ WHERE financial_year BETWEEN 2021 AND 2025
+ GROUP BY institute_id, financial_year
 ),
 commercialization AS (
-  SELECT i.institute_id, COUNT(p.patent_id) as patents_filed,
-         COUNT(CASE WHEN p.commercialized = true THEN 1 END) as patents_commercialized,
-         i.financial_year
-  FROM innovations_at_various_stages_of_technology_readiness_level i
-  LEFT JOIN patents_details p ON i.institute_id = p.institute_id
-  WHERE i.financial_year BETWEEN 2021 AND 2025
-  GROUP BY institute_id, financial_year
+ SELECT i.institute_id, COUNT(p.patent_id) as patents_filed,
+     COUNT(CASE WHEN p.commercialized = true THEN 1 END) as patents_commercialized,
+     i.financial_year
+ FROM innovations_at_various_stages_of_technology_readiness_level i
+ LEFT JOIN patents_details p ON i.institute_id = p.institute_id
+ WHERE i.financial_year BETWEEN 2021 AND 2025
+ GROUP BY institute_id, financial_year
 )
 SELECT f.institute_id, f.total_funding, c.patents_filed,
-       c.patents_commercialized,
-       (f.total_funding / NULLIF(c.patents_commercialized, 0)) as funding_per_success,
-       f.financial_year
+    c.patents_commercialized,
+    (f.total_funding / NULLIF(c.patents_commercialized, 0)) as funding_per_success,
+    f.financial_year
 FROM funding f
 JOIN commercialization c ON f.institute_id = c.institute_id AND f.financial_year = c.financial_year
 ORDER BY funding_per_success DESC
@@ -567,7 +567,7 @@ If this returns "undefined" or wrong numbers, the professor will
 immediately distrust all other numbers in the system.
 ```
 
-**Before every demo:**
+**Before every launch:**
 - Pre-run all 3 killer queries
 - Verify results are correct against known data
 - Have fallback answers ready if query fails
@@ -575,4 +575,4 @@ immediately distrust all other numbers in the system.
 
 ---
 
-*The professor remembers one thing from the demo: the killer query that made him lean forward. Make sure it works.*
+*The professor remembers one thing from the evaluation: the killer query that made him lean forward. Make sure it works.*

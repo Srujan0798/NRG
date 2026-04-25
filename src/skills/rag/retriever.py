@@ -11,6 +11,11 @@ from datetime import datetime, UTC
 
 logger = logging.getLogger(__name__)
 
+try:
+    from qdrant_client import QdrantClient
+except Exception:  # pragma: no cover - exercised when optional client is absent
+    QdrantClient = None
+
 
 class VectorDriftDetector:
     """
@@ -192,9 +197,14 @@ class Retriever:
     def client(self):
         """Lazily initialize Qdrant client on first access."""
         if self._client is None:
-            from qdrant_client import QdrantClient
+            if QdrantClient is None:
+                raise RetrieverUnavailable("Qdrant client is not installed")
             self._client = QdrantClient(host=self.host, port=self.port, timeout=self._timeout)
         return self._client
+
+    @client.setter
+    def client(self, value):
+        self._client = value
 
     def get_drift_status(self) -> dict:
         """Get current vector drift status."""
@@ -280,8 +290,8 @@ class Retriever:
                 )
                 results = search_result.points
         except Exception as e:
-            logger.warning("Qdrant search failed (returning empty results): %s", e)
-            return {"chunks": [], "metadata": [], "scores": []}
+            logger.warning("Qdrant search failed: %s", e)
+            raise RetrieverUnavailable(f"Qdrant search failed: {e}") from e
 
         # Collect results and scores
         candidates = []

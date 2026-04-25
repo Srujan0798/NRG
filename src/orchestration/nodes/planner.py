@@ -41,7 +41,31 @@ QUERY_DECOMPOSITION_PATTERNS = {
 }
 
 SKILL_KEYWORDS = {
-    "sql": ["researcher", "lab", "funding", "grant", "publication", "institution", "count", "list", "find", "show"],
+    "sql": [
+        "researcher",
+        "lab",
+        "funding",
+        "grant",
+        "publication",
+        "institution",
+        "institute",
+        "iit",
+        "count",
+        "list",
+        "find",
+        "show",
+        "which",
+        "credit",
+        "curriculum",
+        "innovation",
+        "stage",
+        "technology readiness",
+        "market ready",
+        "bottleneck",
+        "patent",
+        "yoy",
+        "year-over-year",
+    ],
     "rag": ["explain", "describe", "trend", "advance", "overview", "analysis", "summarize", "what are", "latest"],
 }
 

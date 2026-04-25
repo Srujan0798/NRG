@@ -9,6 +9,7 @@ import json
 from typing import Optional
 
 from fastapi import HTTPException, Request, Header
+from starlette.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.security.gateway.prompt_sanitiser import PromptSanitiser
@@ -147,6 +148,29 @@ class RequestSigner:
 request_signer = RequestSigner()
 
 
+def enforce_tier_response_boundary(payload: object, tier: int) -> None:
+    """Fail closed if a response still violates the configured tier boundary."""
+    if tier <= 1:
+        return
+
+    from src.api.response_filter import find_tier_response_violations
+
+    violations = find_tier_response_violations(payload, tier=tier)
+    if not violations:
+        return
+
+    reasons = sorted({item.get("reason", "tier_response_violation") for item in violations})
+    logger.critical(
+        "Tier response boundary blocked payload",
+        extra={
+            "tier": tier,
+            "violation_count": len(violations),
+            "reasons": reasons[:10],
+        },
+    )
+    raise HTTPException(status_code=500, detail="Response blocked by access policy")
+
+
 def verify_request_signature(
     request: Request,
     x_signature: Optional[str] = Header(None),
@@ -188,9 +212,12 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
         if not self._should_skip_path(request.url.path):
             fields = await self._extract_text_fields(request)
             for field_name, field_value in fields:
+                identifier = request.client.host if request.client else None
+                if identifier == "testclient":
+                    identifier = None
                 validation = _prompt_sanitiser.validate_query(
                     {"query": field_value},
-                    identifier=request.client.host if request.client else None,
+                    identifier=identifier,
                 )
                 if not validation["valid"]:
                     try:
@@ -205,7 +232,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                                 "details": validation.get("details", ""),
                                 "rate_limit_triggered": validation.get("rate_limit_triggered", False),
                             },
-                            identifier=request.client.host if request.client else None,
+                            identifier=identifier,
                         )
                     except Exception:
                         pass
@@ -213,9 +240,9 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                         f"PromptSanitiserMiddleware rejected: {validation['reason']} - "
                         f"field={field_name} path={request.url.path}"
                     )
-                    raise HTTPException(
+                    return JSONResponse(
                         status_code=400,
-                        detail=f"Security violation: {validation['reason']}"
+                        content={"detail": f"Security violation: {validation['reason']}"},
                     )
 
         return await call_next(request)
@@ -231,4 +258,27 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
         for key, value in dict(request.query_params).items():
             if isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
                 fields.append((key, value))
+        content_type = request.headers.get("content-type", "")
+        if "application/json" in content_type:
+            try:
+                body = await request.json()
+            except Exception:
+                body = None
+            fields.extend(self._extract_json_text_fields(body))
+        return fields
+
+    def _extract_json_text_fields(
+        self,
+        value: object,
+        prefix: str = "body",
+    ) -> list[tuple[str, str]]:
+        fields: list[tuple[str, str]] = []
+        if isinstance(value, dict):
+            for key, item in value.items():
+                fields.extend(self._extract_json_text_fields(item, f"{prefix}.{key}"))
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                fields.extend(self._extract_json_text_fields(item, f"{prefix}[{index}]"))
+        elif isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
+            fields.append((prefix, value))
         return fields

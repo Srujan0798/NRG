@@ -131,14 +131,14 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="NRG RAG Skill")
-    parser.add_argument("--demo", type=str, help="Demo query")
+    parser.add_argument("--example-query", type=str, help="Example query for testing")
 
     args = parser.parse_args()
 
     skill = RAGSkill()
 
-    if args.demo:
-        result = skill.retrieve(args.demo)
+    if args.example_query:
+        result = skill.retrieve(args.example_query)
         print(json.dumps(result, indent=2, default=str))
     else:
         status = skill.get_status()

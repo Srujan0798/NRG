@@ -3,6 +3,9 @@ import { test, expect } from '@playwright/test'
 test('skip link is the first focusable element and moves focus to main content', async ({ page }) => {
   await page.goto('/app')
   await page.locator('#main-content').waitFor({ state: 'attached' })
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+  })
 
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: /skip to main content/i })).toBeFocused()
@@ -28,6 +31,7 @@ test('reduced motion preference is reflected in the app shell', async ({ page },
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/app')
 
-  await expect(page.locator('[data-reduced-motion="true"]')).toBeVisible()
+  await expect(page.locator('html[data-reduced-motion="true"]')).toBeAttached()
+  await expect(page.locator('div[data-reduced-motion="true"]')).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('reduced-motion-app.png'), fullPage: true })
 })
