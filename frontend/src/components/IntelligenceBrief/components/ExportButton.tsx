@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { Citation } from '../../../services/queryService'
 import { toStringArray } from '../../../types/api'
+import { printDesignTokenCss } from '../../../design-system/theme'
 
 interface ExportButtonProps {
   onExport?: () => void
@@ -26,24 +27,25 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
 <head>
   <title>NRG Intelligence Brief</title>
   <style>
+    ${printDesignTokenCss}
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: var(--nrg-white); }
-    .header { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); margin-bottom: 30px; }
-    .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--nrg-chart-1), var(--nrg-saffron-soft)); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-    .logo-icon span { color: white; font-size: 24px; font-weight: bold; }
-    .logo-text { font-size: 24px; font-weight: bold; color: var(--nrg-chart-1); }
-    .subtitle { font-size: 12px; color: var(--nrg-ink-muted); margin-top: 4px; }
-    .section { margin-bottom: 24px; }
-    .section-title { font-size: 14px; font-weight: bold; color: var(--nrg-ink); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .summary { font-size: 14px; line-height: 1.7; color: var(--nrg-ink-muted); padding-left: 16px; border-left: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); }
-    .content { font-size: 13px; line-height: 1.7; color: var(--nrg-ink-muted); white-space: pre-wrap; }
-    .citations { font-size: 12px; color: var(--nrg-ink-muted); }
-    .citation-item { padding: 12px; background: var(--nrg-surface-2); border-radius: 8px; margin-bottom: 8px; }
+    body { font-family: var(--nrg-font-sans); padding: var(--nrg-space-10); max-width: var(--nrg-export-width); margin: 0 auto; background: var(--nrg-white); }
+    .header { display: flex; align-items: center; gap: var(--nrg-space-4); padding-bottom: var(--nrg-space-5); border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); margin-bottom: var(--nrg-space-7); }
+    .logo-icon { width: var(--nrg-space-12); height: var(--nrg-space-12); background: linear-gradient(135deg, var(--nrg-chart-1), var(--nrg-saffron-soft)); border-radius: var(--nrg-space-3); display: flex; align-items: center; justify-content: center; }
+    .logo-icon span { color: white; font-size: var(--nrg-type-body-line); font-weight: bold; }
+    .logo-text { font-size: var(--nrg-type-body-line); font-weight: bold; color: var(--nrg-chart-1); }
+    .subtitle { font-size: var(--nrg-type-caption-size); color: var(--nrg-ink-muted); margin-top: var(--nrg-space-1); }
+    .section { margin-bottom: var(--nrg-space-6); }
+    .section-title { font-size: var(--nrg-type-body-s-size); font-weight: bold; color: var(--nrg-ink); margin-bottom: var(--nrg-space-3); text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary { font-size: var(--nrg-type-body-s-size); line-height: 1.7; color: var(--nrg-ink-muted); padding-left: var(--nrg-space-4); border-left: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); }
+    .content { font-size: var(--nrg-type-export-body); line-height: 1.7; color: var(--nrg-ink-muted); white-space: pre-wrap; }
+    .citations { font-size: var(--nrg-type-caption-size); color: var(--nrg-ink-muted); }
+    .citation-item { padding: var(--nrg-space-3); background: var(--nrg-surface-2); border-radius: var(--nrg-space-2); margin-bottom: var(--nrg-space-2); }
     .citation-title { font-weight: 500; color: var(--nrg-ink); }
-    .citation-meta { font-size: 11px; color: var(--nrg-ink-muted); margin-top: 4px; }
-    .footer { margin-top: 40px; padding-top: 16px; border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: 11px; color: var(--nrg-ink-muted); text-align: center; }
+    .citation-meta { font-size: var(--nrg-type-caption-tight); color: var(--nrg-ink-muted); margin-top: var(--nrg-space-1); }
+    .footer { margin-top: var(--nrg-space-10); padding-top: var(--nrg-space-4); border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: var(--nrg-type-caption-tight); color: var(--nrg-ink-muted); text-align: center; }
     @media print {
-      body { padding: 20px; }
+      body { padding: var(--nrg-space-5); }
       .header { border-bottom-color: var(--nrg-chart-1); }
     }
   </style>

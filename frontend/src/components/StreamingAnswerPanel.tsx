@@ -155,7 +155,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
       <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
         <PhaseProgress currentPhase={currentPhase} />
 
-        <div className="mt-4 min-h-[80px]">
+        <div className="mt-4 min-h-20">
           {isStreaming && <StreamingText text={fullText} />}
           {!isStreaming && !currentPhase && (
             <div className="flex items-center gap-2 text-sm text-slate-500">

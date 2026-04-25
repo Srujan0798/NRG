@@ -61,5 +61,25 @@ export const printDesignTokenCss = `
     --nrg-surface-1: ${colors.role.surface1.light};
     --nrg-surface-2: ${colors.role.surface2.light};
     --nrg-border: ${colors.role.border.light};
+    --nrg-chart-1: ${colors.role.saffron.light};
+    --nrg-font-sans: 'Sohne Display', system-ui, sans-serif;
+    --nrg-space-0: 1px;
+    --nrg-space-1: 4px;
+    --nrg-space-2: 8px;
+    --nrg-space-3: 12px;
+    --nrg-space-4: 16px;
+    --nrg-space-5: 20px;
+    --nrg-space-6: 24px;
+    --nrg-space-7: 30px;
+    --nrg-space-10: 40px;
+    --nrg-space-12: 48px;
+    --nrg-space-three-quarter: 3px;
+    --nrg-export-width: 800px;
+    --nrg-type-body-line: 24px;
+    --nrg-type-body-size: 16px;
+    --nrg-type-body-s-size: 14px;
+    --nrg-type-caption-size: 12px;
+    --nrg-type-caption-tight: 11px;
+    --nrg-type-export-body: 13px;
   }
 `
