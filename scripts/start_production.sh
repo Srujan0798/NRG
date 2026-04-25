@@ -12,13 +12,13 @@ pkill -f "vite" 2>/dev/null
 
 # Initialize fresh database
 echo "Initializing database..."
-cd /Users/roshwinram/Desktop/National-Research-Graph
+cd "$(dirname "$0")/.."
 rm -f nrg_research.db
 python3 src/data/database.py
 
 # Start API server
 echo "Starting API server..."
-nohup python3 -m src.api.main > api.log 2>&1 &
+nohup uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 2 > api.log 2>&1 &
 
 # Wait for API to start
 sleep 3
