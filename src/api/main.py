@@ -18,6 +18,8 @@ from typing import Any, Literal, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
@@ -2483,6 +2485,14 @@ async def get_rbac_persona(
         "requires_open_access_filter": policy.requires_open_access_filter,
     }
 
+
+# Serve built frontend static assets
+app.mount("/assets", StaticFiles(directory="dist/frontend/assets"), name="assets")
+
+# SPA catch-all — serve index.html for any unmatched route (React Router)
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    return FileResponse("dist/frontend/index.html")
 
 if __name__ == "__main__":
     import uvicorn

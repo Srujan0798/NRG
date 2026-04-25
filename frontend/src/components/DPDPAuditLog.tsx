@@ -26,13 +26,14 @@ export function DPDPAuditLog() {
     <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
       <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-gray-800">📋 DPDP Audit Log</h3>
+          <h3 className="font-semibold text-gray-800"><span aria-hidden="true">📋</span> DPDP Audit Log</h3>
           <p className="text-xs text-gray-500">Sovereign compliance trail (last {auditLog.length} entries)</p>
         </div>
         {auditLog.length > 0 && (
           <button
             onClick={clearAuditLog}
             className="text-xs text-gray-500 hover:text-red-600 transition"
+            aria-label="Clear audit log"
           >
             Clear Log
           </button>

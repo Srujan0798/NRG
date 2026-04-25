@@ -1,107 +1,151 @@
-# NRG Demo Script
+# NRG Demo Script — 3-Minute Sovereign AI Demo
 
-## 10-Minute Sponsor Demo
+> **Timing:** Exactly 3 minutes. Rehearse to ±5s.
+> **Audience:** Government/sponsor. Senior but non-technical.
+> **Goal:** "This works, it's sovereign, it's ready."
 
-### Setup (30 seconds)
+---
 
+## Setup — 15 seconds
+**Before demo starts:**
 ```bash
-cd /Users/srujansai/Desktop/NRG
-bash scripts/launch_dashboard.sh
+# Terminal 1 — API
+kubectl port-forward svc/api 8000:8000 &
+# OR if local:
+.venv/bin/python -m uvicorn src.api.main:app --port 8000
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev
+```
+Open: http://localhost:3000
+
+---
+
+## SCENE 1: Login + Multi-Tier — 45 seconds
+
+**[0:00]** Open browser at http://localhost:3000
+- Show the login screen with 3 persona tiles
+
+**[0:05]** "NRG serves three tiers — Researcher, Government, Industry. Each sees only what they're cleared for."
+
+Click **Tier 1 — Researcher** → Login as `researcher_user` / `researcher-pass`
+
+**[0:15]** Dashboard loads. Point to researcher-focused UI (left nav, search bar, stats panels).
+
+**[0:25]** "Tier 1 sees full researcher details — name, institution, h-index, contact."
+
+Click persona switcher (top-right avatar) → **Tier 2 — Government**
+
+**[0:35]** Login as `gov_user` / `government-pass`
+
+**[0:40]** "Tier 2 sees only aggregated statistics. No individual names. Fully anonymized per DPDP-2023."
+
+Click persona switcher → **Tier 3 — Industry**
+
+**[0:45]** Login as `industry_user` / `industry-pass`
+
+**[0:50]** "Tier 3 sees institution names and research areas — no personal data, no contact info."
+
+**[0:55]** Switch back to Tier 1 Researcher for the query demo.
+
+---
+
+## SCENE 2: Natural Language Query — 60 seconds
+
+**[1:00]** Clear query box. Type:
+
+```
+find robotics researchers in Gujarat
 ```
 
----
+**[1:05]** Press Enter. Show streaming response appearing.
 
-### Segment 1: Login (1 minute)
+**[1:15]** "Plain English. No SQL. The system writes the query, executes it, and returns a cited answer — in seconds."
 
-**Narrative:** "NRG serves three personas with tier-appropriate access."
+**[1:20]** Point to the answer format: structured results with citation superscripts `[1][2]`.
 
-**Actions:**
-1. Open http://localhost:3000
-2. Show persona selector (Researcher, Government, Industry)
-3. Login as `researcher_user` / `researcher-pass`
-4. **Expected:** Dashboard loads with research-focused UI
+**[1:30]** "Every claim is backed by source data. Let's verify."
 
----
+Click citation **[1]**.
 
-### Segment 2: Natural Language Query (2 minutes)
+**[1:40]** Drawer opens showing:
+- Paper/publication title
+- Year and venue
+- Author names
+- Excerpt from source
 
-**Narrative:** "Researchers ask questions in plain English."
+**[1:45]** Close drawer.
 
-**Actions:**
-1. Type: "find robotics researchers in Gujarat"
-2. Submit query
-3. **Expected:** 
-   - Response appears with formatted answer
-   - Citations shown as superscripts
-   - Provenance badge shows "synth=local_llama"
+**[1:50]** "That's C3 — Citation Accuracy. Every answer is verifiable."
 
 ---
 
-### Segment 3: Citations (2 minutes)
+## SCENE 3: Multi-Hop Query — 45 seconds
 
-**Narrative:** "Every claim is backed by source evidence."
+**[1:50]** Clear box. Type:
 
-**Actions:**
-1. Click first citation `[cite:...]`
-2. **Expected:** Drawer opens showing:
-   - Paper title and year
-   - Author names
-   - Chunk excerpt
-3. Close drawer
+```
+Compare AI research output between Gujarat and Karnataka over the last 5 years
+```
 
----
+**[1:55]** Submit. Show that it runs TWO parallel sub-queries (Gujarat + Karnataka) and synthesizes a comparison.
 
-### Segment 4: Graph View (2 minutes)
+**[2:05]** "This is a multi-hop query — two states, five years, aggregated. Our Two-Brain planner decomposes it, races both branches, then synthesizes a combined answer."
 
-**Narrative:** "Visualize research networks and collaborations."
+**[2:10]** Show the comparison table/chart in the answer.
 
-**Actions:**
-1. Type: "machine learning" in topic field
-2. Click "Visualize"
-3. **Expected:** Graph renders with nodes (papers, authors, institutions)
-4. Pan and zoom to show responsiveness
-5. Click a node to filter answer panel
+**[2:15]** "That's the architecture working — Planner → Router → Executor → Synthesizer."
 
 ---
 
-### Segment 5: Government Tier Demo (1.5 minutes)
+## SCENE 4: Audit Chain Verification — 30 seconds
 
-**Narrative:** "Government sees only aggregated data."
+**[2:20]** Open new tab or navigate to `/audit/verify`
 
-**Actions:**
-1. Logout
-2. Login as `gov_user` / `gov-pass`
-3. **Expected:** Dashboard shows aggregate statistics
-4. Query: "total researchers by state"
-5. **Expected:** Chart view, no individual researcher details
+**[2:25]** "Every query is logged. Every log is chained with HMAC-SHA256. The chain is immutable and can be cryptographically verified."
 
----
+Show: `Chain valid: True, Events: [count], Last hash: [hash]`
 
-### Segment 6: Audit Verification (1 minute)
-
-**Narrative:** "Every action is logged with tamper-proof chain."
-
-**Actions:**
-1. Login as admin
-2. Navigate to /audit/verify
-3. **Expected:** Shows `ok: true`, chain integrity verified
-4. Show last sealed timestamp
+**[2:35]** "That's C2 — Audit Integrity. Tamper-evident, non-repudiation."
 
 ---
 
-### Close (30 seconds)
+## CLOSE — 15 seconds
 
-**Summary:**
-- "Sovereign AI for Indian research"
-- "600 GB corpus, fully compliant"
-- "Ready for national deployment"
+**[2:40]**
+
+"Sovereign AI for Indian research."
+
+"600 GB corpus. Fully on Indian soil."
+
+"DPDP-2023 compliant. Audit-chain sealed."
+
+"NRG — ready for national deployment."
+
+**[2:50]** Stop recording.
 
 ---
 
-## Expected Outcomes
+## Expected Outcomes Checklist
 
-- Zero 404s
-- All responses < 10 seconds
-- Citations visible in all answers
-- Graph renders non-empty
-- Audit chain verifies
+| Check | Pass Criteria |
+|-------|-------------|
+| Login (T1/T2/T3) | All 3 tiers login without error |
+| Query response | < 5s for simple query |
+| Citations | ≥1 citation shown per answer |
+| Multi-hop | Two sub-queries shown in answer |
+| Tier separation | T2/T3 answers anonymized |
+| Audit verify | `chain valid: True` shown |
+| No 404s | Zero broken UI elements |
+
+---
+
+## Backup Triggers (if demo fails)
+
+| Symptom | Fix |
+|---------|-----|
+| Login 500 | Restart API: `kubectl rollout restart deploy/api` |
+| Query timeout | Check Qdrant: `localhost:6333/dashboard` |
+| Citations empty | Verify DB has data: `sqlite3 nrg_research.db "SELECT COUNT(*) FROM publications"` |
+| Graph blank | Check vector index: `scripts/vector_drift_check.py` |
+| Chain invalid | Run: `python scripts/audit_rebuild.py --rebuild` |

@@ -114,7 +114,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
         </div>
       )}
       {/* Left Panel — Branding */}
-      <div className="relative flex-1 flex flex-col justify-between p-10 lg:p-16 overflow-hidden">
+      <div className="relative flex-1 flex flex-col justify-between p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[450px]">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-nrg-saffron-500/5 blur-3xl" />
           <div className="absolute bottom-0 left-0 w-64 h-64 rounded-full bg-nrg-navy-400/10 blur-3xl" />
@@ -147,7 +147,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           </div>
 
           <div className="mb-10">
-            <h2 className="text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-4 text-balance">
+            <h2 className="text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-4">
               Sovereign Intelligence<br />
               <span className="text-nrg-saffron-400">for India's Research</span>
             </h2>

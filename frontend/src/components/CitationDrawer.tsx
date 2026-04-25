@@ -72,7 +72,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
             })
             return
           }
-        } catch {}
+        } catch { /* citation fetch failed */ }
       }
 
       setDetails({

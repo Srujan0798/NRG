@@ -41,8 +41,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   return (
     <form onSubmit={handleSubmit} className="relative w-full max-w-2xl">
       <div className="relative">
-        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <label htmlFor="search-bar-input" className="sr-only">{getPersonaPlaceholder()}</label>
+        <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" aria-hidden="true" />
         <input
+          id="search-bar-input"
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -51,7 +53,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           disabled={isLoading}
         />
         {isLoading && (
-          <LoaderIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-spin text-blue-500 w-5 h-5" />
+          <LoaderIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 animate-spin text-blue-500 w-5 h-5" aria-hidden="true" />
         )}
       </div>
       <button

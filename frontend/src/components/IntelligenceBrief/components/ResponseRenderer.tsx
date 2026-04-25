@@ -69,7 +69,7 @@ const extractStatisticalData = (response: string): Array<{ label: string; value:
   
   percentMatches.slice(0, 6).forEach((p, i) => {
     data.push({
-      label: labels[i]?.replace(/^[•\-]\s*/, '').substring(0, 30) || `Item ${i + 1}`,
+      label: labels[i]?.replace(/^[•-]\s*/, '').substring(0, 30) || `Item ${i + 1}`,
       value: parseFloat(p.replace('%', ''))
     })
   })

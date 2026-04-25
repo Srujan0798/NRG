@@ -6,87 +6,85 @@ interface LayoutProps {
   children: React.ReactNode
 }
 
+const TIER_STYLES: Record<number, { label: string; bg: string; text: string }> = {
+  1: { label: 'Researcher', bg: 'bg-blue-100', text: 'text-blue-800' },
+  2: { label: 'Government', bg: 'bg-green-100', text: 'text-green-800' },
+  3: { label: 'Industry', bg: 'bg-purple-100', text: 'text-purple-800' },
+};
+
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth()
-
-  const getUserTypeLabel = () => {
-    if (!user) return ''
-    
-    switch(user.tier) {
-      case 1: return 'Researcher'
-      case 2: return 'Government'
-      case 3: return 'Industry'
-      default: return ''
-    }
-  }
-
-  const getUserTypeColor = () => {
-    if (!user) return 'gray'
-    
-    switch(user.tier) {
-      case 1: return 'blue'
-      case 2: return 'green'
-      case 3: return 'purple'
-      default: return 'gray'
-    }
-  }
+  const tierStyle = user ? TIER_STYLES[user.tier] ?? TIER_STYLES[0] : null
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">
-                National Research Intelligence
-              </h1>
-            </div>
-            
-            {user && (
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:font-medium"
+      >
+        Skip to main content
+      </a>
+      <div className="min-h-screen flex flex-col">
+        <header className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between h-16">
               <div className="flex items-center">
-                <div className={`flex items-center px-3 py-1 rounded-full text-sm font-medium bg-${getUserTypeColor()}-100 text-${getUserTypeColor()}-800`}>
-                  {getUserTypeLabel()}
-                </div>
-                <div className="ml-4 flex items-center">
-                  <span className="text-sm text-gray-700 mr-3">
-                    {user.username}
-                  </span>
-                  <button
-                    onClick={() => void logout()}
-                    className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                  >
-                    <LogOutIcon className="w-4 h-4 mr-1" />
-                    Sign out
-                  </button>
-                </div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  National Research Intelligence
+                </h1>
               </div>
-            )}
-          </div>
-        </div>
-      </header>
-      
-      <main className="flex-grow">
-        {children}
-      </main>
-      
-      <footer className="bg-white border-t border-gray-200">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              © 2026 National Research Intelligence Platform. All rights reserved.
+
+              {user && tierStyle && (
+                <div className="flex items-center">
+                  <div
+                    role="status"
+                    aria-label={`User tier: ${tierStyle.label}`}
+                    className={`flex items-center px-3 py-1 rounded-full text-sm font-medium ${tierStyle.bg} ${tierStyle.text}`}
+                  >
+                    {tierStyle.label}
+                  </div>
+                  <div className="ml-4 flex items-center">
+                    <span className="text-sm text-gray-700 mr-3">
+                      {user.username}
+                    </span>
+                    <button
+                      onClick={() => void logout()}
+                      className="flex items-center text-sm text-gray-500 hover:text-gray-700"
+                      aria-label="Sign out"
+                    >
+                      <LogOutIcon className="w-4 h-4 mr-1" aria-hidden="true" />
+                      Sign out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-gray-500">
-                Privacy Policy
-              </a>
-              <a href="#" className="text-gray-400 hover:text-gray-500">
-                Terms of Service
-              </a>
+          </div>
+        </header>
+
+        <main id="main-content" className="flex-grow">
+          {children}
+        </main>
+
+        <footer className="bg-white border-t border-gray-200">
+          <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500">
+                © 2026 National Research Intelligence Platform. All rights reserved.
+              </div>
+              <div className="flex space-x-6">
+                <a href="/privacy" className="text-gray-400 hover:text-gray-500">
+                  Privacy Policy
+                </a>
+                <a href="/terms" className="text-gray-400 hover:text-gray-500">
+                  Terms of Service
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </>
   )
 }
 
