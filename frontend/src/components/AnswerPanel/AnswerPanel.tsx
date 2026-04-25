@@ -5,6 +5,7 @@ import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../../servic
 import { parseCitations } from '../../utils/parseCitations'
 import { toStringArray } from '../../types/api'
 import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download } from 'lucide-react'
+import { printDesignTokenCss } from '../../design-system/theme'
 
 interface AnswerPanelProps {
   response: string
@@ -189,15 +190,16 @@ const extractTabularData = (response: string): { headers: string[]; rows: string
 
 const generatePDF = async (response: string, citations: Citation[]) => {
   const content = `<!DOCTYPE html><html><head><title>NRG Intelligence Brief</title><style>
-    body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-    .header { border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); padding-bottom: 20px; margin-bottom: 30px; }
-    .logo { font-size: 24px; font-weight: bold; color: var(--nrg-chart-1); }
-    .subtitle { color: var(--nrg-ink-muted); font-size: 14px; margin-top: 5px; }
-    .section { margin-bottom: 25px; }
-    .section-title { font-size: 16px; font-weight: bold; color: var(--nrg-ink); margin-bottom: 10px; }
-    .content { font-size: 14px; line-height: 1.6; color: var(--nrg-ink-muted); white-space: pre-wrap; }
-    .citations { font-size: 12px; color: var(--nrg-ink-muted); border-top: var(--nrg-space-0) solid var(--nrg-border); padding-top: 15px; }
-    .footer { margin-top: 40px; padding-top: 15px; border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: 11px; color: var(--nrg-ink-muted); }
+    ${printDesignTokenCss}
+    body { font-family: var(--nrg-font-sans); padding: var(--nrg-space-10); max-width: var(--nrg-export-width); margin: 0 auto; }
+    .header { border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); padding-bottom: var(--nrg-space-5); margin-bottom: var(--nrg-space-7); }
+    .logo { font-size: var(--nrg-type-body-line); font-weight: bold; color: var(--nrg-chart-1); }
+    .subtitle { color: var(--nrg-ink-muted); font-size: var(--nrg-type-body-s-size); margin-top: var(--nrg-space-tight); }
+    .section { margin-bottom: var(--nrg-space-6); }
+    .section-title { font-size: var(--nrg-type-body-size); font-weight: bold; color: var(--nrg-ink); margin-bottom: var(--nrg-space-2); }
+    .content { font-size: var(--nrg-type-body-s-size); line-height: 1.6; color: var(--nrg-ink-muted); white-space: pre-wrap; }
+    .citations { font-size: var(--nrg-type-caption-size); color: var(--nrg-ink-muted); border-top: var(--nrg-space-0) solid var(--nrg-border); padding-top: var(--nrg-space-3); }
+    .footer { margin-top: var(--nrg-space-10); padding-top: var(--nrg-space-3); border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: var(--nrg-type-caption-tight); color: var(--nrg-ink-muted); }
   </style></head><body>
   <div class="header"><div class="logo">राष्ट्रीय गवेषण मंच</div><div class="subtitle">National Research Graph — Intelligence Brief</div></div>
   <div class="section"><div class="section-title">Analysis</div><div class="content">${response}</div></div>
