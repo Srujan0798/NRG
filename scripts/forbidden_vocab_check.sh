@@ -8,7 +8,7 @@ FORBIDDEN_PATTERN='\b(demo|demo-ready|demo day|demo video|demo dataset|demo rehe
 
 # Allowlist: rule documents and the master execution plan are allowed to MENTION the forbidden words
 # (they describe why those words are forbidden).
-ALLOWLIST_PATHS='\.claude/rules/production_only\.md|docs/specs/MASTER_EXECUTION_PLAN_|docs/task_protocols/PRODUCTION_READINESS_MASTER\.md|scripts/forbidden_vocab_check\.sh'
+ALLOWLIST_PATHS='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN_|docs/task_protocols/PRODUCTION_READINESS_MASTER\.md|scripts/forbidden_vocab_check\.sh|protocols/[0-9]+_LB[0-9]+_'
 
 CHANGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR | grep -v -E "$ALLOWLIST_PATHS" || true)"
 

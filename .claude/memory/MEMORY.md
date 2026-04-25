@@ -10,6 +10,7 @@
 - [Audit Singleton Cache Bug](bugs_audit_singleton.md) — rebuild scripts must reset BOTH AuditLog singletons or chain self-breaks at the rebuild event itself
 - [Tier-Shape Boundary Rule](feedback_tier_shape_boundary.md) — RBAC must be enforced at the API response-shape layer in addition to the SQL boundary
 - [Live Evidence Requirement](feedback_live_evidence_requirement.md) — every Quality Bar PASS needs evidence against a running stack with ≥50k seed rows; unit tests alone are deferred bugs
+- [Real Audience for v1.0 Showing](feedback_real_audience.md) — first audience is the professor's assistant clicking on a laptop, not formal UAT/ministry/DPDP processes
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
