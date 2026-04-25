@@ -194,7 +194,11 @@ _fast_query_context: dict[str, dict[str, Any]] = {}
 def _get_db() -> NRGDatabaseV2:
     global _db_instance
     if _db_instance is None:
-        url = f"sqlite:///{resolve_database_path()}"
+        raw_url = os.getenv("DATABASE_URL", f"sqlite:///{resolve_database_path()}")
+        if raw_url.startswith("postgresql://"):
+            url = raw_url
+        else:
+            url = f"sqlite:///{resolve_database_path()}"
         _db_instance = NRGDatabaseV2(url=url)
         _db_instance.create_tables()
     return _db_instance
@@ -2790,7 +2794,8 @@ async def get_rbac_persona(
 
 
 # Serve built frontend static assets
-app.mount("/assets", StaticFiles(directory="dist/frontend/assets"), name="assets")
+if Path("dist/frontend/assets").exists():
+    app.mount("/assets", StaticFiles(directory="dist/frontend/assets"), name="assets")
 
 # SPA catch-all — serve index.html for any unmatched route (React Router)
 @app.get("/{full_path:path}")
