@@ -1,11 +1,5 @@
 import { test, expect } from './fixtures';
 
-const testUsers = {
-  researcher: { username: 'researcher_user', password: 'researcher-pass' },
-  government: { username: 'gov_user', password: 'government-pass' },
-  industry: { username: 'industry_user', password: 'industry-pass' },
-};
-
 async function login(page, persona: string) {
   await page.goto('/');
   await page.waitForLoadState('networkidle');
