@@ -213,11 +213,26 @@ class PromptSanitiser:
             _Rule("policy_bypass", re.compile(r"\bconsent\s+is\s+waived\b")),
             _Rule("policy_bypass", re.compile(r"\bsafety\s+niyam\s+hatao\b")),
             _Rule("policy_bypass", re.compile(r"\breveal\s+all\s+tier\s*1\s+fields\b")),
+            _Rule("policy_bypass", re.compile(r"\btier\s*1\s+personal\s+data\b")),
+            _Rule("policy_bypass", re.compile(r"\bgovernment\s+reviewer\b.*\btier\s*1\b")),
             _Rule("policy_bypass", re.compile(r"\bhidden-context\s+request\b")),
             _Rule("policy_bypass", re.compile(r"\brepeat\s+.*\breveal\s+policy\b")),
             _Rule(
                 "audit_leakage",
                 re.compile(r"\b(audit\s+chain|jwt\s+key\s+id|request\s+fingerprints?|hmac\s+salts?)\b"),
+            ),
+            _Rule("audit_leakage", re.compile(r"\baudit_chain_key\b")),
+            _Rule(
+                "schema_probing",
+                re.compile(r"\b(schema\s+ka\s+raw\s+dump|raw\s+dump|hidden\s+relations?)\b"),
+            ),
+            _Rule(
+                "schema_probing",
+                re.compile(r"\b(schema_prompt|db_struct\.sql|restricted\s+columns?)\b"),
+            ),
+            _Rule(
+                "schema_probing",
+                re.compile(r"\b(user_credentials|private_notes|secret_researchers)\b"),
             ),
             _Rule("schema_probing", re.compile(r"\b(raw_schema|information_schema|pg_catalog)\b")),
             _Rule(
@@ -229,6 +244,8 @@ class PromptSanitiser:
                 ),
             ),
             _Rule("data_exfiltration", re.compile(r"\bpasswords?\s+and\s+tokens?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bsecret\s+keys?\b")),
+            _Rule("data_exfiltration", re.compile(r"\bhidden\s+config\s+values?\b")),
             _Rule("data_exfiltration", re.compile(r"\bdatabase\s+password\b")),
             _Rule("data_exfiltration", re.compile(r"\bcontact\s+details?\b")),
             _Rule("data_exfiltration", re.compile(r"\bcontact\s+info\b")),
@@ -288,6 +305,10 @@ class PromptSanitiser:
                 "data_exfiltration",
                 re.compile(r"\bselect\s+.*\b(email|aadhaar|phone|pan|password)\b.*\bfrom\b"),
             ),
+            _Rule("system_prompt_exfiltration", re.compile(r"\binternal\s+tool\s+result\b")),
+            _Rule("system_prompt_exfiltration", re.compile(r"\bhidden\s+messages?\b")),
+            _Rule("system_prompt_exfiltration", re.compile(r"\bconfidential\s+policy\b")),
+            _Rule("verifier_bypass", re.compile(r"\bwithout\s+citations?\b.*\binvent\b")),
             _Rule("sql_injection", re.compile(r";\s*(drop|select|exec|delete|update|insert)\b")),
             _Rule("sql_injection", re.compile(r"\bdrop\s+table\b")),
             _Rule("sql_injection", re.compile(r"\bunion\s+select\b")),
@@ -450,6 +471,11 @@ class PromptSanitiser:
     def _normalise_for_detection(self, text: str) -> str:
         """Normalize common obfuscation before applying conservative regexes."""
         normalized = unicodedata.normalize("NFKC", text).lower()
+        normalized = "".join(
+            ch
+            for ch in normalized
+            if unicodedata.category(ch) not in {"Cf", "Mn"}
+        )
         homoglyphs = str.maketrans(
             {
                 "ɪ": "i",

@@ -576,7 +576,10 @@ def write_evidence(
                 f"{result.status_code} | {result.decision} | {', '.join(result.reasons)} |"
             )
     else:
-        lines.append("All baseline RT-01..RT-30 calls resolved to BLOCKED or DOWNGRADED.")
+        if summary["baseline_payloads"] >= 30:
+            lines.append("All baseline RT-01..RT-30 calls resolved to BLOCKED or DOWNGRADED.")
+        else:
+            lines.append("All replayed baseline calls resolved to BLOCKED or DOWNGRADED.")
 
     if replay_errors:
         lines.extend([
