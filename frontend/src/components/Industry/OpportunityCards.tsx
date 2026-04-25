@@ -42,7 +42,7 @@ export const OpportunityCard: React.FC<OpportunityCardProps> = ({
       className="relative overflow-hidden rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(0,0,0,0.12)' }}
+      whileHover={{ y: -4, boxShadow: 'var(--nrg-elevation-3)' }}
       transition={{ duration: 0.3 }}
     >
       <div className="absolute top-0 right-0 w-24 h-24 opacity-5 rounded-bl-full bg-emerald-500" />

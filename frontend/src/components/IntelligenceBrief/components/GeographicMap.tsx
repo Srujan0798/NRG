@@ -49,7 +49,7 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
   return (
     <div className="relative w-full h-80 bg-nrg-navy-50 rounded-xl border border-nrg-border overflow-hidden">
       <svg viewBox="100 0 400 500" className="w-full h-full">
-        <rect x="100" y="0" width="400" height="500" fill="#f8fafc" />
+        <rect x="100" y="0" width="400" height="500" fill="var(--nrg-surface-2)" />
         
         {data.map((d, i) => {
           const key = getStateKey(d.state)
@@ -64,7 +64,7 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
                 cy={coords.y}
                 r={10 + intensity * 20}
                 fill={`rgba(255, 107, 53, ${0.3 + intensity * 0.5})`}
-                stroke="#ff6b35"
+                stroke="var(--nrg-chart-1)"
                 strokeWidth="1"
               />
               <text
@@ -72,7 +72,7 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
                 y={coords.y}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-[6px] fill-white font-medium pointer-events-none"
+                className="text-[0.375rem] fill-white font-medium pointer-events-none"
               >
                 {d.value}
               </text>

@@ -27,10 +27,10 @@ interface D3GraphNode extends SimulationNodeDatum {
 }
 
 const NODE_COLORS: Record<string, string> = {
-  paper: '#6366f1',
-  author: '#10b981',
-  institution: '#2563eb',
-  topic: '#ff6b35',
+  paper: 'var(--nrg-chart-5)',
+  author: 'var(--nrg-chart-3)',
+  institution: 'var(--nrg-chart-2)',
+  topic: 'var(--nrg-chart-1)',
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -89,7 +89,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
         .attr('y', height / 2)
         .attr('text-anchor', 'middle')
         .attr('fill', 'var(--nrg-muted)')
-        .attr('font-size', '14px')
+        .attr('font-size', 'var(--nrg-type-body-s-size)')
         .text('No nodes match the current filter.')
       return
     }
@@ -163,16 +163,16 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
 
     node.append('circle')
       .attr('r', 12)
-      .attr('fill', (d) => NODE_COLORS[d.type] || '#6366f1')
+      .attr('fill', (d) => NODE_COLORS[d.type] || 'var(--nrg-chart-5)')
       .attr('opacity', 0.15)
       .attr('class', 'pointer-events-none')
 
     node.append('circle')
       .attr('r', 8)
-      .attr('fill', (d) => NODE_COLORS[d.type] || '#6366f1')
-      .attr('stroke', '#ffffff')
+      .attr('fill', (d) => NODE_COLORS[d.type] || 'var(--nrg-chart-5)')
+      .attr('stroke', 'var(--nrg-white)')
       .attr('stroke-width', 2)
-      .style('filter', 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))')
+      .style('filter', 'drop-shadow(0 var(--nrg-space-half) var(--nrg-space-1) rgba(0,0,0,0.15))')
       .on('mouseover', (event, d) => {
         select(event.currentTarget)
           .transition().duration(150)
@@ -194,7 +194,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
       .text((d) => d.label.length > 16 ? d.label.slice(0, 14) + '...' : d.label)
       .attr('x', 14)
       .attr('y', 4)
-      .attr('font-size', '10px')
+      .attr('font-size', 'var(--nrg-type-caption-size)')
       .attr('fill', 'var(--nrg-text)')
       .attr('pointer-events', 'none')
 

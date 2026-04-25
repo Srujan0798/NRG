@@ -52,13 +52,13 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
               <path
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
-                stroke="#e5e7eb"
+                stroke="var(--nrg-border)"
                 strokeWidth="3"
               />
               <path
                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                 fill="none"
-                stroke={level === 'high' ? '#10b981' : level === 'medium' ? '#f59e0b' : '#ef4444'}
+                stroke={level === 'high' ? 'var(--nrg-chart-3)' : level === 'medium' ? 'var(--nrg-warning)' : 'var(--nrg-danger)'}
                 strokeWidth="3"
                 strokeDasharray={`${score * 100}, 100`}
                 strokeLinecap="round"

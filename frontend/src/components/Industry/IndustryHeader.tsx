@@ -38,7 +38,7 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
             <PersonaToggle />
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10">
               <HeartHandshake size={14} className="text-emerald-700 dark:text-emerald-300" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
                 Partnership Rail
               </span>
             </div>

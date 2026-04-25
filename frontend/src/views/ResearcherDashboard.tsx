@@ -173,7 +173,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     handleSearch()
   }, [handleSearch])
 
-  const pieColors = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1']
+  const pieColors = ['var(--nrg-chart-1)', 'var(--nrg-chart-2)', 'var(--nrg-chart-3)', 'var(--nrg-chart-4)', 'var(--nrg-chart-5)']
   const researchAreaChartData = (statsData?.research_area_distribution || []).slice(0, 6).map((a: any) => ({
     area: a.area?.length > 12 ? a.area.slice(0, 10) + '…' : a.area,
     count: a.count,
@@ -300,13 +300,13 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   placeholder="Ask anything about Indian research grants, institutions, publications, or collaborations..."
-                  className="nrg-input min-h-[48px] flex-1"
+                  className="nrg-input min-h-12 flex-1"
                   data-testid="researcher-search-input"
                 />
                 <motion.button
                   onClick={handleSearch}
                   disabled={isSearching || !currentQuery.trim()}
-                  className="nrg-btn-primary min-h-[48px] w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                  className="nrg-btn-primary min-h-12 w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   data-testid="researcher-search-submit"
@@ -357,7 +357,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                         setQueryError(null)
                         setCurrentQuery('')
                       }}
-                      className="min-h-[40px] rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-violet-300 hover:text-violet-600 dark:border-navy-600 dark:text-slate-300"
+                      className="min-h-10 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-violet-300 hover:text-violet-600 dark:border-navy-600 dark:text-slate-300"
                     >
                       New conversation
                     </button>
@@ -397,7 +397,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   labelHi="कुल शोधकर्ता"
                   value={statsData?.total_researchers ?? 5615}
                   sublabel="Across 181 institutions"
-                  accentColor="#6366f1"
+                  accentColor="var(--nrg-chart-5)"
                   icon={<Users size={20} />}
                   delay={0}
                   data-testid="stat-researchers"
@@ -407,7 +407,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   labelHi="प्रकाशन"
                   value={statsData?.total_publications ?? 12847}
                   sublabel="Peer-reviewed works"
-                  accentColor="#2563eb"
+                  accentColor="var(--nrg-chart-2)"
                   icon={<FileText size={20} />}
                   delay={100}
                   data-testid="stat-publications"
@@ -417,7 +417,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   labelHi="संस्थान"
                   value={statsData?.total_institutions ?? 181}
                   sublabel="Academic + Research"
-                  accentColor="#10b981"
+                  accentColor="var(--nrg-chart-3)"
                   icon={<Building size={20} />}
                   delay={200}
                   data-testid="stat-institutions"
@@ -427,7 +427,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   labelHi="आपके प्रश्न"
                   value={history.length}
                   sublabel="This session"
-                  accentColor="#ff6b35"
+                  accentColor="var(--nrg-chart-1)"
                   icon={<History size={20} />}
                   delay={300}
                   data-testid="stat-queries"

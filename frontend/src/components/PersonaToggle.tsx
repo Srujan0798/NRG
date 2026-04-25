@@ -3,9 +3,9 @@ import { authService, PersonaRole } from '../services/authService'
 import { useAuth } from '../hooks/useAuth'
 
 const PERSONAS: Array<{ role: PersonaRole; label: string; shortLabel: string; username: string; password: string; color: string }> = [
-  { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher_user', password: 'researcher-pass', color: '#1E40AF' },
-  { role: 'government', label: 'Government', shortLabel: 'G', username: 'gov_user', password: 'government-pass', color: '#065F46' },
-  { role: 'industry', label: 'Industry', shortLabel: 'I', username: 'industry_user', password: 'industry-pass', color: '#7C2D12' },
+  { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher_user', password: 'researcher-pass', color: 'var(--nrg-tier-1)' },
+  { role: 'government', label: 'Government', shortLabel: 'G', username: 'gov_user', password: 'government-pass', color: 'var(--nrg-tier-2)' },
+  { role: 'industry', label: 'Industry', shortLabel: 'I', username: 'industry_user', password: 'industry-pass', color: 'var(--nrg-tier-3)' },
 ]
 
 export function PersonaToggle() {
@@ -51,7 +51,7 @@ export function PersonaToggle() {
       <div
         role="tablist"
         aria-label="Switch demo persona"
-        className="grid min-h-[40px] grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm"
+        className="grid min-h-10 grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm"
       >
         {PERSONAS.map((persona) => {
           const active = user?.role === persona.role
@@ -64,7 +64,7 @@ export function PersonaToggle() {
               aria-selected={active}
               onClick={() => void switchPersona(persona.role)}
               disabled={Boolean(switchingRole)}
-              className={`min-h-[32px] min-w-[42px] rounded-full px-3 text-[11px] font-semibold uppercase tracking-[0.08em] transition sm:min-w-[112px] ${
+              className={`min-h-8 min-w-11 rounded-full px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition sm:min-w-28 ${
                 active
                   ? 'text-white shadow-sm'
                   : 'text-nrg-muted hover:bg-slate-100 hover:text-nrg-text dark:hover:bg-navy-700'
@@ -78,7 +78,7 @@ export function PersonaToggle() {
         })}
       </div>
       {switchError && (
-        <p className="max-w-[260px] text-right text-xs text-rose-600" role="status">
+        <p className="max-w-64 text-right text-xs text-rose-600" role="status">
           {switchError}
         </p>
       )}

@@ -27,24 +27,24 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
   <title>NRG Intelligence Brief</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: #fff; }
-    .header { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: 3px solid #ff6b35; margin-bottom: 30px; }
-    .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, #ff6b35, #ff8b4a); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; background: var(--nrg-white); }
+    .header { display: flex; align-items: center; gap: 16px; padding-bottom: 20px; border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); margin-bottom: 30px; }
+    .logo-icon { width: 48px; height: 48px; background: linear-gradient(135deg, var(--nrg-chart-1), var(--nrg-saffron-soft)); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
     .logo-icon span { color: white; font-size: 24px; font-weight: bold; }
-    .logo-text { font-size: 24px; font-weight: bold; color: #ff6b35; }
-    .subtitle { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    .logo-text { font-size: 24px; font-weight: bold; color: var(--nrg-chart-1); }
+    .subtitle { font-size: 12px; color: var(--nrg-ink-muted); margin-top: 4px; }
     .section { margin-bottom: 24px; }
-    .section-title { font-size: 14px; font-weight: bold; color: #1f2937; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .summary { font-size: 14px; line-height: 1.7; color: #374151; padding-left: 16px; border-left: 3px solid #ff6b35; }
-    .content { font-size: 13px; line-height: 1.7; color: #374151; white-space: pre-wrap; }
-    .citations { font-size: 12px; color: #6b7280; }
-    .citation-item { padding: 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px; }
-    .citation-title { font-weight: 500; color: #1f2937; }
-    .citation-meta { font-size: 11px; color: #9ca3af; margin-top: 4px; }
-    .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; text-align: center; }
+    .section-title { font-size: 14px; font-weight: bold; color: var(--nrg-ink); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary { font-size: 14px; line-height: 1.7; color: var(--nrg-ink-muted); padding-left: 16px; border-left: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); }
+    .content { font-size: 13px; line-height: 1.7; color: var(--nrg-ink-muted); white-space: pre-wrap; }
+    .citations { font-size: 12px; color: var(--nrg-ink-muted); }
+    .citation-item { padding: 12px; background: var(--nrg-surface-2); border-radius: 8px; margin-bottom: 8px; }
+    .citation-title { font-weight: 500; color: var(--nrg-ink); }
+    .citation-meta { font-size: 11px; color: var(--nrg-ink-muted); margin-top: 4px; }
+    .footer { margin-top: 40px; padding-top: 16px; border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: 11px; color: var(--nrg-ink-muted); text-align: center; }
     @media print {
       body { padding: 20px; }
-      .header { border-bottom-color: #ff6b35; }
+      .header { border-bottom-color: var(--nrg-chart-1); }
     }
   </style>
 </head>

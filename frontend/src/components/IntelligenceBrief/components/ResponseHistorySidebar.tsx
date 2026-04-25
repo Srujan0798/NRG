@@ -160,7 +160,7 @@ const HistoryItemCard: React.FC<HistoryItemCardProps> = ({
               <p className="text-xs font-medium text-nrg-text line-clamp-1">{preview}</p>
             </button>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] text-nrg-muted">{formatTime(item.timestamp)}</span>
+              <span className="text-[0.625rem] text-nrg-muted">{formatTime(item.timestamp)}</span>
             </div>
           </div>
           <button

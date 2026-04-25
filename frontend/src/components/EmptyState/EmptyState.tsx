@@ -35,7 +35,7 @@ export function EmptyState({
           <button
             type="button"
             onClick={onPrimary}
-            className="min-h-[44px] rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800"
+            className="min-h-11 rounded-xl bg-amber-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-800"
           >
             {primaryLabel}
           </button>
@@ -44,7 +44,7 @@ export function EmptyState({
           <button
             type="button"
             onClick={onSecondary}
-            className="min-h-[44px] rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:text-amber-100"
+            className="min-h-11 rounded-xl border border-amber-300 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 dark:text-amber-100"
           >
             {secondaryLabel}
           </button>

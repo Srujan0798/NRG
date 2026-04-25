@@ -19,7 +19,7 @@ const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
 
 const RelevanceBadge: React.FC<{ score?: number }> = ({ score }) => {
   if (score === undefined) return null
-  const color = score > 0.7 ? '#22c55e' : score > 0.4 ? '#f59e0b' : '#ef4444'
+  const color = score > 0.7 ? 'var(--nrg-green)' : score > 0.4 ? 'var(--nrg-warning)' : 'var(--nrg-danger)'
   const label = score > 0.7 ? 'High' : score > 0.4 ? 'Medium' : 'Low'
 
   return (
@@ -166,7 +166,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed inset-y-0 right-0 z-50 w-full sm:w-[440px] bg-white dark:bg-navy-800 shadow-2xl border-l border-slate-200 dark:border-navy-700 flex flex-col"
+          className="fixed inset-y-0 right-0 z-50 w-full sm:w-[27.5rem] bg-white dark:bg-navy-800 shadow-2xl border-l border-slate-200 dark:border-navy-700 flex flex-col"
         >
           <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-navy-700 bg-slate-50 dark:bg-navy-800 shrink-0">
             <div>

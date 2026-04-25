@@ -19,7 +19,7 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   change,
   changeType = 'neutral',
   icon,
-  accentColor = '#ff6b35',
+  accentColor = 'var(--nrg-chart-1)',
 }) => {
   const changeColor = {
     positive: 'text-green-600 dark:text-green-400',
@@ -30,10 +30,10 @@ export const SummaryCard: React.FC<SummaryCardProps> = ({
   return (
     <motion.div
       className="relative overflow-hidden rounded-2xl p-5 bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md"
-      style={{ borderLeft: `4px solid ${accentColor}` }}
+      style={{ borderLeft: `var(--nrg-accent-border-width) solid ${accentColor}` }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+      whileHover={{ y: -2, boxShadow: 'var(--nrg-elevation-2)' }}
       transition={{ duration: 0.3 }}
     >
       <div className="absolute top-0 right-0 w-24 h-24 opacity-5 rounded-bl-full" style={{ background: accentColor }} />
@@ -83,7 +83,7 @@ export const MinistrySummaryCard: React.FC<MinistrySummaryCardProps> = ({
     className="rounded-2xl bg-white dark:bg-navy-800 border border-slate-200 dark:border-navy-700 shadow-md overflow-hidden"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    whileHover={{ y: -2, boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}
+    whileHover={{ y: -2, boxShadow: 'var(--nrg-elevation-2)' }}
   >
     <div className="px-5 py-4 bg-gradient-to-r from-saffron-50 to-white dark:from-navy-700/50 dark:to-navy-800 border-b border-slate-100 dark:border-navy-700">
       <div className="flex items-center gap-2">

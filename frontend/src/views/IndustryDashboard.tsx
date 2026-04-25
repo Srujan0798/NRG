@@ -26,7 +26,7 @@ interface IndustryDashboardProps {
   theme: Theme
 }
 
-const AREA_COLORS = ['#10b981', '#6366f1', '#2563eb', '#ff6b35', '#ec4899', '#c49538', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
+const AREA_COLORS = ['var(--nrg-chart-3)', 'var(--nrg-chart-5)', 'var(--nrg-chart-2)', 'var(--nrg-chart-1)', 'var(--nrg-chart-6)', 'var(--nrg-chart-4)', 'var(--nrg-chart-7)', 'var(--nrg-warning)', 'var(--nrg-chart-9)', 'var(--nrg-chart-10)']
 
 const INDUSTRY_DEMO_QUERIES = [
   'What AI capabilities do Indian research institutions offer?',
@@ -184,11 +184,11 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
       }))
     }
     return [
-      { area: 'AI & Machine Learning', count: 423, color: '#10b981' },
-      { area: 'Semiconductor Tech', count: 312, color: '#6366f1' },
-      { area: 'Renewable Energy', count: 287, color: '#2563eb' },
-      { area: 'Biotechnology', count: 234, color: '#ff6b35' },
-      { area: 'Pharmaceuticals', count: 198, color: '#ec4899' },
+      { area: 'AI & Machine Learning', count: 423, color: 'var(--nrg-chart-3)' },
+      { area: 'Semiconductor Tech', count: 312, color: 'var(--nrg-chart-5)' },
+      { area: 'Renewable Energy', count: 287, color: 'var(--nrg-chart-2)' },
+      { area: 'Biotechnology', count: 234, color: 'var(--nrg-chart-1)' },
+      { area: 'Pharmaceuticals', count: 198, color: 'var(--nrg-chart-6)' },
     ]
   }, [statsData?.research_areas])
 
@@ -236,7 +236,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   labelHi="साझेदारी के अवसर"
                   value={statsData?.total_researchers ?? 847}
                   sublabel="Active opportunities"
-                  accentColor="#10b981"
+                  accentColor="var(--nrg-chart-3)"
                   icon={<HeartHandshake size={20} />}
                   delay={0}
                   data-testid="stat-opportunities"
@@ -246,7 +246,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   labelHi="साझेदार संस्थान"
                   value={statsData?.total_institutions ?? 156}
                   sublabel="IITs, IISc, NITs, AIIMS"
-                  accentColor="#2563eb"
+                  accentColor="var(--nrg-chart-2)"
                   icon={<Building2 size={20} />}
                   delay={100}
                   data-testid="stat-institutions"
@@ -256,7 +256,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   labelHi="सक्रिय शोधकर्ता"
                   value={statsData?.total_researchers ?? 3421}
                   sublabel="Available for collab"
-                  accentColor="#ff6b35"
+                  accentColor="var(--nrg-chart-1)"
                   icon={<Users size={20} />}
                   delay={200}
                   data-testid="stat-researchers"
@@ -266,7 +266,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   labelHi="शोध प्रकाशन"
                   value={statsData?.total_publications ?? 12847}
                   sublabel="In partnering institutions"
-                  accentColor="#6366f1"
+                  accentColor="var(--nrg-chart-5)"
                   icon={<FileText size={20} />}
                   delay={300}
                   data-testid="stat-publications"
@@ -352,14 +352,14 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Ask about industry partnerships, institution capacity, or research funding..."
-                        className="min-h-[48px] w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
+                        className="min-h-12 w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
                         data-testid="industry-search-input"
                       />
                     </div>
                     <motion.button
                       onClick={handleSearch}
                       disabled={isSearching || !currentQuery.trim()}
-                      className="min-h-[48px] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
+                      className="min-h-12 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       data-testid="industry-search-submit"

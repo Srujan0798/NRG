@@ -81,7 +81,7 @@ function StreamingCitationChips({
             hover:bg-saffron-100 dark:hover:bg-saffron-900/50 transition-all cursor-pointer"
         >
           <span className="font-bold">[{i + 1}]</span>
-          <span className="max-w-[100px] truncate">{c.pub_id}</span>
+          <span className="max-w-24 truncate">{c.pub_id}</span>
         </button>
       ))}
     </div>

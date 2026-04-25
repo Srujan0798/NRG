@@ -38,7 +38,7 @@ export const GovernmentHeader: React.FC<GovernmentHeaderProps> = ({ onThemeToggl
             <PersonaToggle />
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-saffron-400/40 bg-saffron-500/10">
               <Shield size={14} className="text-saffron-700 dark:text-saffron-300" />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-saffron-700 dark:text-saffron-300">
+              <span className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-saffron-700 dark:text-saffron-300">
                 Command Node
               </span>
             </div>

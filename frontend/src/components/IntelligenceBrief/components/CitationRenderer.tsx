@@ -17,14 +17,14 @@ export const CitationChip: React.FC<CitationChipProps> = ({ citation, index, onC
   return (
     <div className="relative inline-block">
       <button
-        className="inline-flex min-h-[32px] items-center gap-1 rounded-md border border-saffron-200 bg-saffron-50 px-2.5 py-1 text-xs font-semibold text-saffron-700 transition-all hover:-translate-y-0.5 hover:bg-saffron-600 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+        className="inline-flex min-h-8 items-center gap-1 rounded-md border border-saffron-200 bg-saffron-50 px-2.5 py-1 text-xs font-semibold text-saffron-700 transition-all hover:-translate-y-0.5 hover:bg-saffron-600 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
         onClick={onClick}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         aria-label={`Open citation ${index}: ${citation.title || citation.pub_id || 'source'}`}
       >
         <span className="font-bold">[{index}]</span>
-        <span className="max-w-[120px] truncate">{citation.title?.split(':')[0] || 'Source'}</span>
+        <span className="max-w-32 truncate">{citation.title?.split(':')[0] || 'Source'}</span>
       </button>
 
       {showTooltip && (
