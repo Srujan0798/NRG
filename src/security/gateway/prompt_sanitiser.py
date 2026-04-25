@@ -220,8 +220,13 @@ class PromptSanitiser:
             _Rule("sql_injection", re.compile(r"\bunion\s+select\b")),
             _Rule("sql_injection", re.compile(r"\bxp_cmdshell\b")),
             _Rule("sql_injection", re.compile(r"'\s*or\s*'?\d+'?\s*=\s*'?\d+'?")),
-            _Rule(
-                "encoding_attack",
+            _Rule("command_injection", re.compile(r"\;\s*(ls|cat|rm|mkdir|chmod|wget|curl|whoami|id|uname|ps|grep|find|cp|mv|pwd|echo|cd|chdir|touch)\b", re.IGNORECASE)),
+            _Rule("command_injection", re.compile(r"\|\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl|nc|bash|sh)\b", re.IGNORECASE)),
+            _Rule("command_injection", re.compile(r"`\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl)\b", re.IGNORECASE)),
+            _Rule("command_injection", re.compile(r"\$\(\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl|bash|sh)\b", re.IGNORECASE)),
+            _Rule("command_injection", re.compile(r"&&\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl)\b", re.IGNORECASE)),
+            _Rule("command_injection", re.compile(r">\s*(/dev/|/etc/|/tmp/|/var/)")),
+            _Rule("encoding_attack",
                 re.compile(
                     r"\b(base64|decode|b64decode|frombase64)\b.{0,60}\b"
                     r"(instruction|prompt|system|policy)\b"
