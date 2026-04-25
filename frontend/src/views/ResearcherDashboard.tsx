@@ -9,7 +9,10 @@ import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
 import { GlassCard } from '../components/GlassCard'
 import { AnswerPanel } from '../components/AnswerPanel'
+import { EmptyState } from '../components/EmptyState'
 import { GraphView } from '../components/GraphView'
+import { PersonaToggle } from '../components/PersonaToggle'
+import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { StatsCard } from '../components/StatsCard'
 import { ErrorState } from '../components/ErrorState'
 import { ErrorBoundary } from '../components/ErrorBoundary'
@@ -21,6 +24,7 @@ import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
 import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import {
   Search, Users, FileText, Building,
@@ -196,26 +200,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="relative">
-              <select
-                value={user?.tier ?? 1}
-                onChange={(e) => {
-                  const tier = parseInt(e.target.value)
-                  if (tier !== user?.tier) {
-                    logout()
-                  }
-                }}
-                className="appearance-none pl-3 pr-8 py-1.5 rounded-xl text-xs font-semibold border border-nrg-border bg-[var(--nrg-surface)] text-nrg-muted cursor-pointer hover:border-violet-400 transition-all"
-                aria-label="Switch persona tier"
-              >
-                <option value={1}>🔬 Researcher T1</option>
-                <option value={2}>🏛️ Government T2</option>
-                <option value={3}>🏢 Industry T3</option>
-              </select>
-              <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-nrg-muted">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
-              </div>
-            </div>
+            <PersonaToggle />
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
@@ -342,9 +327,9 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               )}
 
               {isSearching && (
-                <div className="mt-4 flex items-center gap-3 rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-100" aria-live="polite" aria-label="Query in progress">
-                  <SaffronSpinner style={{ width: 20, height: 20, borderWidth: 2 }} />
-                  <span>{getQueryStatusCopy({ isSlowQuery, domain: 'research' })}</span>
+                <div className="mt-4" aria-label="Query in progress">
+                  <QueryPhaseProgress domain="research" isSlowQuery={isSlowQuery} />
+                  <p className="mt-2 text-xs text-nrg-muted">{getQueryStatusCopy({ isSlowQuery, domain: 'research' })}</p>
                 </div>
               )}
 
@@ -385,13 +370,20 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                         <p className="text-sm text-slate-900 dark:text-white">{turn.query}</p>
                       </div>
                       <div className="p-4">
-                        <AnswerPanel
-                          response={turn.result.response}
-                          citations={turn.result.citations || []}
-                          provenance={turn.result.provenance}
-                          warnings={turn.result.warnings}
-                          verification_status={turn.result.verification_status}
-                        />
+                        {isEmptyResultResponse(turn.result.response) ? (
+                          <EmptyState
+                            onPrimary={() => setCurrentQuery(buildRelaxedQuery(turn.query))}
+                            onSecondary={() => setCurrentQuery(turn.query)}
+                          />
+                        ) : (
+                          <AnswerPanel
+                            response={turn.result.response}
+                            citations={turn.result.citations || []}
+                            provenance={turn.result.provenance}
+                            warnings={turn.result.warnings}
+                            verification_status={turn.result.verification_status}
+                          />
+                        )}
                       </div>
                     </div>
                   ))}

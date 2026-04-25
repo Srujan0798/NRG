@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Shield, LogOut, Moon, Sun } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { PersonaToggle } from '../PersonaToggle'
 
 interface GovernmentHeaderProps {
   onThemeToggle: () => void
@@ -33,7 +34,8 @@ export const GovernmentHeader: React.FC<GovernmentHeaderProps> = ({ onThemeToggl
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PersonaToggle />
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-saffron-400/40 bg-saffron-500/10">
               <Shield size={14} className="text-saffron-700 dark:text-saffron-300" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-saffron-700 dark:text-saffron-300">

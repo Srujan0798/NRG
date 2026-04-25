@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { HeartHandshake, LogOut, Moon, Sun } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { PersonaToggle } from '../PersonaToggle'
 
 interface IndustryHeaderProps {
   onThemeToggle: () => void
@@ -33,7 +34,8 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <PersonaToggle />
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/40 bg-emerald-500/10">
               <HeartHandshake size={14} className="text-emerald-700 dark:text-emerald-300" />
               <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">

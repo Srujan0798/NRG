@@ -10,11 +10,14 @@ import { AnswerPanel } from '../components/AnswerPanel'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
+import { EmptyState } from '../components/EmptyState'
+import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { ResearchAreasBarChart } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, QueryResponse } from '../services/queryService'
 import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import { Building2, Users, FileText, HeartHandshake, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
@@ -370,18 +373,28 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   )}
                   {isSearching && (
                     <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-100" aria-live="polite">
-                      {getQueryStatusCopy({ isSlowQuery, domain: 'industry' })}
+                      <QueryPhaseProgress domain="industry" isSlowQuery={isSlowQuery} />
+                      <p className="mt-2 text-xs">{getQueryStatusCopy({ isSlowQuery, domain: 'industry' })}</p>
                     </div>
                   )}
                   {queryResult && (
                     <div className="mt-4">
-                      <AnswerPanel
-                        response={queryResult.response}
-                        citations={queryResult.citations || []}
-                        provenance={queryResult.provenance}
-                        warnings={queryResult.warnings}
-                        verification_status={queryResult.verification_status}
-                      />
+                      {isEmptyResultResponse(queryResult.response) ? (
+                        <EmptyState
+                          title="No partnership matches in this slice."
+                          body="Try widening sector, maturity, or state filters. Industry mode only shows anonymized aggregate opportunities."
+                          onPrimary={() => setCurrentQuery(buildRelaxedQuery(currentQuery))}
+                          onSecondary={() => setCurrentQuery(currentQuery)}
+                        />
+                      ) : (
+                        <AnswerPanel
+                          response={queryResult.response}
+                          citations={queryResult.citations || []}
+                          provenance={queryResult.provenance}
+                          warnings={queryResult.warnings}
+                          verification_status={queryResult.verification_status}
+                        />
+                      )}
                     </div>
                   )}
                   {queryError && (
