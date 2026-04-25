@@ -39,7 +39,7 @@ const TABS = [
   { key: 'rights', label: 'Data Rights', labelHi: 'डेटा अधिकार' },
 ] as const
 
-const AREA_COLORS = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1', '#ec4899', '#8b5cf6', '#f59e0b', '#06b6d4', '#84cc16']
+const AREA_COLORS = ['var(--nrg-chart-1)', 'var(--nrg-chart-2)', 'var(--nrg-chart-3)', 'var(--nrg-chart-4)', 'var(--nrg-chart-5)', 'var(--nrg-chart-6)', 'var(--nrg-chart-7)', 'var(--nrg-warning)', 'var(--nrg-chart-9)', 'var(--nrg-chart-10)']
 
 const POLICY_DEMO_QUERIES = [
   'Which states have the highest renewable energy research funding?',
@@ -158,11 +158,11 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
       }))
     }
     return [
-      { area: 'AI/ML', count: 239, color: '#ff6b35' },
-      { area: 'Sustainable Energy', count: 224, color: '#2563eb' },
-      { area: 'Robotics', count: 209, color: '#10b981' },
-      { area: 'Advanced Materials', count: 198, color: '#c49538' },
-      { area: 'NLP', count: 198, color: '#6366f1' },
+      { area: 'AI/ML', count: 239, color: 'var(--nrg-chart-1)' },
+      { area: 'Sustainable Energy', count: 224, color: 'var(--nrg-chart-2)' },
+      { area: 'Robotics', count: 209, color: 'var(--nrg-chart-3)' },
+      { area: 'Advanced Materials', count: 198, color: 'var(--nrg-chart-4)' },
+      { area: 'NLP', count: 198, color: 'var(--nrg-chart-5)' },
     ]
   }, [statsData?.research_area_distribution])
 
@@ -230,7 +230,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         labelHi="कुल शोधकर्ता"
                         value={statsData?.total_researchers ?? 0}
                         sublabel="Across government institutions"
-                        accentColor="#ff6b35"
+                        accentColor="var(--nrg-chart-1)"
                         icon={<Users size={20} />}
                         delay={0}
                         data-testid="stat-researchers"
@@ -240,7 +240,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         labelHi="प्रकाशन"
                         value={statsData?.total_publications ?? 0}
                         sublabel="Peer-reviewed works"
-                        accentColor="#2563eb"
+                        accentColor="var(--nrg-chart-2)"
                         icon={<FileText size={20} />}
                         delay={100}
                         data-testid="stat-publications"
@@ -250,7 +250,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         labelHi="शोध प्रयोगशालाएं"
                         value={statsData?.total_labs ?? 0}
                         sublabel="Across institutions"
-                        accentColor="#10b981"
+                        accentColor="var(--nrg-chart-3)"
                         icon={<Building size={20} />}
                         delay={200}
                         data-testid="stat-labs"
@@ -260,7 +260,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         labelHi="संस्थान"
                         value={statsData?.total_institutions ?? 0}
                         sublabel="Government affiliated"
-                        accentColor="#c49538"
+                        accentColor="var(--nrg-chart-4)"
                         icon={<Shield size={20} />}
                         delay={300}
                         data-testid="stat-institutions"
@@ -342,13 +342,13 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Enter policy query..."
-                        className="min-h-[48px] flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-saffron-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
+                        className="min-h-12 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-saffron-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
                         data-testid="policy-query-input"
                       />
                       <motion.button
                         onClick={handleSearch}
                         disabled={isSearching || !currentQuery.trim()}
-                        className="min-h-[48px] rounded-xl bg-gradient-to-r from-saffron-500 to-saffron-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
+                        className="min-h-12 rounded-xl bg-gradient-to-r from-saffron-500 to-saffron-600 px-5 py-2.5 text-sm font-medium text-white shadow-md hover:shadow-lg disabled:opacity-50 sm:w-auto"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         data-testid="policy-query-submit"
@@ -455,13 +455,13 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       }}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                       placeholder="Ask for state-level trends, funding concentration, or institutional performance..."
-                      className="nrg-input min-h-[48px] flex-1"
+                      className="nrg-input min-h-12 flex-1"
                       data-testid="policy-analysis-input"
                     />
                     <motion.button
                       onClick={handleSearch}
                       disabled={isSearching || !currentQuery.trim()}
-                      className="nrg-btn-primary min-h-[48px] w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                      className="nrg-btn-primary min-h-12 w-full px-6 py-3 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       data-testid="policy-analysis-submit"

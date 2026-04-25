@@ -28,17 +28,17 @@ const PERSONA_CREDENTIALS: Record<PersonaKey, { username: string; password: stri
   researcher: {
     username: 'researcher_user',
     password: 'researcher-pass',
-    accent: '#6366f1',
+    accent: 'var(--nrg-chart-5)',
   },
   government: {
     username: 'gov_user',
     password: 'government-pass',
-    accent: '#2563eb',
+    accent: 'var(--nrg-chart-2)',
   },
   industry: {
     username: 'industry_user',
     password: 'industry-pass',
-    accent: '#10b981',
+    accent: 'var(--nrg-chart-3)',
   },
 }
 
@@ -50,16 +50,16 @@ interface LoginProps {
 
 const AshokaLogo: React.FC<{ className?: string }> = ({ className }) => (
   <svg viewBox="0 0 60 60" className={className} aria-hidden="true">
-    <circle cx="30" cy="30" r="28" fill="none" stroke="#ff6b35" strokeWidth="1.5" opacity="0.4"/>
-    <circle cx="30" cy="30" r="20" fill="none" stroke="#ff6b35" strokeWidth="1" opacity="0.3"/>
-    <circle cx="30" cy="30" r="12" fill="none" stroke="#ff6b35" strokeWidth="0.75" opacity="0.2"/>
+    <circle cx="30" cy="30" r="28" fill="none" stroke="var(--nrg-chart-1)" strokeWidth="1.5" opacity="0.4"/>
+    <circle cx="30" cy="30" r="20" fill="none" stroke="var(--nrg-chart-1)" strokeWidth="1" opacity="0.3"/>
+    <circle cx="30" cy="30" r="12" fill="none" stroke="var(--nrg-chart-1)" strokeWidth="0.75" opacity="0.2"/>
     {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((angle) => {
       const rad = (angle * Math.PI) / 180
       const x1 = 30 + 12 * Math.cos(rad)
       const y1 = 30 + 12 * Math.sin(rad)
       const x2 = 30 + 28 * Math.cos(rad)
       const y2 = 30 + 28 * Math.sin(rad)
-      return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#ff6b35" strokeWidth="0.75" opacity="0.35"/>
+      return <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--nrg-chart-1)" strokeWidth="0.75" opacity="0.35"/>
     })}
     {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
       const rad = (angle * Math.PI) / 180
@@ -67,7 +67,7 @@ const AshokaLogo: React.FC<{ className?: string }> = ({ className }) => (
       const y1 = 30 + 20 * Math.sin(rad)
       const x2 = 30 + 28 * Math.cos(rad)
       const y2 = 30 + 28 * Math.sin(rad)
-      return <line key={`diagonal-${angle}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#c49538" strokeWidth="0.5" opacity="0.3"/>
+      return <line key={`diagonal-${angle}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--nrg-chart-4)" strokeWidth="0.5" opacity="0.3"/>
     })}
   </svg>
 )
@@ -130,12 +130,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
       )}
       <div className="flex min-h-screen flex-col lg:flex-row">
         {/* Left Panel — Branding */}
-        <div className="relative flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[450px] bg-[#08111f] text-white lg:rounded-r-[2rem] shadow-2xl">
+        <div className="relative flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[28.125rem] bg-[var(--nrg-founder-ink)] text-white lg:rounded-r-[2rem] shadow-2xl">
         <div className="absolute inset-0 pointer-events-none">
           <svg className="absolute inset-0 w-full h-full opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#ffffff" strokeWidth="0.5"/>
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="var(--nrg-white)" strokeWidth="0.5"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#grid)" />
@@ -228,7 +228,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
       </div>
 
       {/* Right Panel — Login Form */}
-        <div className="w-full lg:w-[500px] bg-[var(--nrg-surface)]/95 backdrop-blur-xl border-l border-nrg-border flex flex-col justify-center p-6 sm:p-10 lg:p-16 relative overflow-hidden">
+        <div className="w-full lg:w-[31.25rem] bg-[var(--nrg-surface)]/95 backdrop-blur-xl border-l border-nrg-border flex flex-col justify-center p-6 sm:p-10 lg:p-16 relative overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-nrg-saffron-500 via-nrg-gold-500 to-nrg-navy-400 opacity-70" />
         </div>

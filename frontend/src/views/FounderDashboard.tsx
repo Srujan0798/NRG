@@ -165,7 +165,7 @@ const barWidths = {
 const StatusPill = React.memo(function StatusPill({ status }: { status: Status }) {
   const style = statusStyles[status]
   return (
-    <span className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-bold tracking-wide ${style.bg} ${style.border} ${style.text}`}>
+    <span className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[0.6875rem] font-bold tracking-wide ${style.bg} ${style.border} ${style.text}`}>
       {style.label}
     </span>
   )
@@ -175,7 +175,7 @@ const MetricTile = React.memo(function MetricTile({ metric, index }: { metric: M
   const style = statusStyles[metric.status]
   return (
     <article
-      className={`relative min-h-[148px] rounded-lg border bg-white p-4 shadow-sm opacity-0 animate-fade-in-up ${style.border}`}
+      className={`relative min-h-[9.25rem] rounded-lg border bg-white p-4 shadow-sm opacity-0 animate-fade-in-up ${style.border}`}
       style={{ animationDelay: `${index * 45}ms` }}
       data-testid={`founder-metric-${metric.label.toLowerCase().replace(/\s+/g, '-')}`}
     >
@@ -187,7 +187,7 @@ const MetricTile = React.memo(function MetricTile({ metric, index }: { metric: M
         <StatusPill status={metric.status} />
       </div>
       <div className="mt-5">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-stone-500">{metric.label}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-500">{metric.label}</p>
         <div className="mt-1 flex items-baseline gap-1">
           <span className="font-mono text-3xl font-bold text-stone-950">{metric.value}</span>
           {metric.unit && <span className="font-mono text-sm font-semibold text-stone-500">{metric.unit}</span>}
@@ -212,11 +212,11 @@ const ProgressRow = ({ label, width, status }: { label: string; width: string; s
 
 export default function FounderDashboard() {
   return (
-    <div className="min-h-screen bg-[#f5f1e8] text-stone-950">
-      <div className="border-b border-stone-300 bg-[#f5f1e8]/95 backdrop-blur">
+    <div className="min-h-screen bg-[var(--nrg-founder-paper)] text-stone-950">
+      <div className="border-b border-stone-300 bg-[var(--nrg-founder-paper)]/95 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-stone-900 bg-stone-950 text-sm font-black text-[#f5f1e8]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-stone-900 bg-stone-950 text-sm font-black text-[var(--nrg-founder-paper)]">
               NRG
             </div>
             <div>
@@ -258,7 +258,7 @@ export default function FounderDashboard() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-stone-900 bg-stone-950 p-5 text-[#f5f1e8] shadow-sm">
+          <div className="rounded-lg border border-stone-900 bg-stone-950 p-5 text-[var(--nrg-founder-paper)] shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-400">Cost posture</p>
@@ -302,7 +302,7 @@ export default function FounderDashboard() {
                   <div key={gate.gate} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-stone-100 py-2 last:border-b-0">
                     <span className="text-sm font-semibold text-stone-800">{gate.gate}</span>
                     <span className="font-mono text-xs text-stone-500">{gate.value}</span>
-                    <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${style.bg} ${style.text}`}>{gate.target}</span>
+                    <span className={`rounded-full px-2 py-1 text-[0.625rem] font-bold ${style.bg} ${style.text}`}>{gate.target}</span>
                   </div>
                 )
               })}
@@ -390,7 +390,7 @@ export default function FounderDashboard() {
           </div>
           <div className="grid gap-3 md:grid-cols-5">
             {blockers.map((blocker, index) => (
-              <div key={blocker} className="min-h-[112px] rounded-md border border-rose-200 bg-white p-3">
+              <div key={blocker} className="min-h-28 rounded-md border border-rose-200 bg-white p-3">
                 <div className="mb-3 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600 font-mono text-xs font-bold text-white">{index + 1}</div>
                 <p className="text-sm font-semibold leading-5 text-stone-800">{blocker}</p>
               </div>

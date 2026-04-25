@@ -10,7 +10,7 @@ interface CitationLinkProps {
 export function CitationLink({ citation, index, onClick }: CitationLinkProps) {
   const trustScore = citation.relevance_score ?? citation.enriched ? (citation.citation_count ? Math.min(citation.citation_count / 100, 1) : 0.5) : 0;
 
-  const trustColor = trustScore >= 0.7 ? '#10b981' : trustScore >= 0.4 ? '#f59e0b' : '#ef4444';
+  const trustColor = trustScore >= 0.7 ? 'var(--nrg-chart-3)' : trustScore >= 0.4 ? 'var(--nrg-warning)' : 'var(--nrg-danger)';
 
   return (
     <button
@@ -20,7 +20,7 @@ export function CitationLink({ citation, index, onClick }: CitationLinkProps) {
       data-testid={`citation-link-${index}`}
     >
       <span
-        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[10px] font-bold shrink-0"
+        className="inline-flex items-center justify-center w-4 h-4 rounded-full text-white text-[0.625rem] font-bold shrink-0"
         style={{ background: trustColor }}
       >
         {index}

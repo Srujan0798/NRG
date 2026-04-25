@@ -147,7 +147,7 @@ const StatisticalChart: React.FC<{ response: string }> = ({ response }) => {
             <motion.div
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #ff6b35, #ff8b4a)',
+                background: 'linear-gradient(90deg, var(--nrg-chart-1), var(--nrg-saffron-soft))',
               }}
               initial={{ width: 0 }}
               animate={{ width: `${(d.value / maxVal) * 100}%` }}
@@ -190,14 +190,14 @@ const extractTabularData = (response: string): { headers: string[]; rows: string
 const generatePDF = async (response: string, citations: Citation[]) => {
   const content = `<!DOCTYPE html><html><head><title>NRG Intelligence Brief</title><style>
     body { font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; }
-    .header { border-bottom: 3px solid #ff6b35; padding-bottom: 20px; margin-bottom: 30px; }
-    .logo { font-size: 24px; font-weight: bold; color: #ff6b35; }
-    .subtitle { color: #6b7280; font-size: 14px; margin-top: 5px; }
+    .header { border-bottom: var(--nrg-space-three-quarter) solid var(--nrg-chart-1); padding-bottom: 20px; margin-bottom: 30px; }
+    .logo { font-size: 24px; font-weight: bold; color: var(--nrg-chart-1); }
+    .subtitle { color: var(--nrg-ink-muted); font-size: 14px; margin-top: 5px; }
     .section { margin-bottom: 25px; }
-    .section-title { font-size: 16px; font-weight: bold; color: #1f2937; margin-bottom: 10px; }
-    .content { font-size: 14px; line-height: 1.6; color: #374151; white-space: pre-wrap; }
-    .citations { font-size: 12px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 15px; }
-    .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; }
+    .section-title { font-size: 16px; font-weight: bold; color: var(--nrg-ink); margin-bottom: 10px; }
+    .content { font-size: 14px; line-height: 1.6; color: var(--nrg-ink-muted); white-space: pre-wrap; }
+    .citations { font-size: 12px; color: var(--nrg-ink-muted); border-top: var(--nrg-space-0) solid var(--nrg-border); padding-top: 15px; }
+    .footer { margin-top: 40px; padding-top: 15px; border-top: var(--nrg-space-0) solid var(--nrg-border); font-size: 11px; color: var(--nrg-ink-muted); }
   </style></head><body>
   <div class="header"><div class="logo">राष्ट्रीय गवेषण मंच</div><div class="subtitle">National Research Graph — Intelligence Brief</div></div>
   <div class="section"><div class="section-title">Analysis</div><div class="content">${response}</div></div>

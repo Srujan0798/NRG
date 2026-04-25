@@ -65,7 +65,7 @@ const VisualizationDashboard: React.FC<VisualizationDashboardProps> = ({
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke', '#999')
+      .attr('stroke', 'var(--nrg-ink-muted)')
       .attr('stroke-opacity', 0.6)
       .attr('stroke-width', (d: any) => Math.sqrt(d.weight))
 
@@ -75,8 +75,8 @@ const VisualizationDashboard: React.FC<VisualizationDashboardProps> = ({
       .enter().append('circle')
       .attr('r', (d: any) => d.size)
       .attr('fill', (d: any) => 
-        d.type === 'researcher' ? '#3b82f6' :
-        d.type === 'institution' ? '#ef4444' : '#10b981'
+        d.type === 'researcher' ? 'var(--nrg-focus)' :
+        d.type === 'institution' ? 'var(--nrg-danger)' : 'var(--nrg-chart-3)'
       )
 
     simulation.on('tick', () => {
@@ -129,7 +129,7 @@ const VisualizationDashboard: React.FC<VisualizationDashboardProps> = ({
       .attr('y', (d: any) => y(d.size))
       .attr('width', x.bandwidth())
       .attr('height', (d: any) => innerHeight - y(d.size))
-      .attr('fill', '#3b82f6')
+      .attr('fill', 'var(--nrg-focus)')
   }
 
   const renderTrendsChart = (
@@ -168,7 +168,7 @@ const VisualizationDashboard: React.FC<VisualizationDashboardProps> = ({
     g.append('path')
       .datum(data.nodes)
       .attr('fill', 'none')
-      .attr('stroke', '#3b82f6')
+      .attr('stroke', 'var(--nrg-focus)')
       .attr('stroke-width', 2)
       .attr('d', line)
   }

@@ -80,7 +80,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   value,
   sublabel,
   icon,
-  accentColor = '#ff6b35',
+  accentColor = 'var(--nrg-chart-1)',
   delay = 0,
   format = 'number',
   'data-testid': testId,
@@ -94,7 +94,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     <motion.div
       className="nrg-panel relative overflow-hidden p-5 transition-all duration-300 hover:-translate-y-0.5"
       style={{
-        borderLeft: `4px solid ${accentColor}`,
+        borderLeft: `var(--nrg-accent-border-width) solid ${accentColor}`,
       }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -106,7 +106,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <p className="text-[11px] font-semibold text-nrg-muted uppercase tracking-[0.12em]">{label}</p>
+          <p className="text-[0.6875rem] font-semibold text-nrg-muted uppercase tracking-[0.12em]">{label}</p>
           {isHindi && (
             <p className="text-xs font-medium text-nrg-muted font-devanagari mt-0.5">{labelHi}</p>
           )}

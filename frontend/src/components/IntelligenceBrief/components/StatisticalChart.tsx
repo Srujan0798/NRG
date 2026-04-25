@@ -8,7 +8,7 @@ interface StatisticalChartProps {
 export const StatisticalChart: React.FC<StatisticalChartProps> = ({ data, type = 'bar' }) => {
   const maxVal = useMemo(() => Math.max(...data.map(d => d.value), 1), [data])
   
-  const colors = ['#ff6b35', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dfe6e9', '#fd79a8', '#a29bfe']
+  const colors = ['var(--nrg-chart-1)', 'var(--nrg-chart-11)', 'var(--nrg-chart-12)', 'var(--nrg-chart-13)', 'var(--nrg-chart-14)', 'var(--nrg-chart-15)', 'var(--nrg-chart-16)', 'var(--nrg-chart-17)']
 
   if (type === 'pie') {
     let currentAngle = 0

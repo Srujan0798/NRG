@@ -38,21 +38,21 @@ const stateCoordinates: Record<string, { x: number; y: number }> = {
 
 const IndiaMapPlaceholder: React.FC<{ maxCount: number; data: StateData[] }> = ({ maxCount, data }) => {
   const getColor = (count: number): string => {
-    if (count === 0) return '#e2e8f0'
+    if (count === 0) return 'var(--nrg-border)'
     const intensity = Math.log(count + 1) / Math.log(maxCount + 1)
-    if (intensity > 0.8) return '#ff6b35'
-    if (intensity > 0.6) return '#ff8b4a'
-    if (intensity > 0.4) return '#ffbc89'
-    if (intensity > 0.2) return '#ffd4b8'
-    return '#ffedd5'
+    if (intensity > 0.8) return 'var(--nrg-chart-1)'
+    if (intensity > 0.6) return 'var(--nrg-saffron-soft)'
+    if (intensity > 0.4) return 'var(--nrg-saffron-muted)'
+    if (intensity > 0.2) return 'var(--nrg-saffron-subtle)'
+    return 'var(--nrg-saffron-wash)'
   }
 
   return (
     <svg viewBox="0 0 100 100" className="w-full h-full">
       <path
         d="M25 35 L35 30 L45 32 L55 30 L65 35 L70 40 L68 50 L70 55 L65 60 L75 65 L70 70 L60 68 L55 72 L50 75 L45 72 L40 75 L35 70 L30 65 L25 55 L28 45 Z"
-        fill="#f1f5f9"
-        stroke="#cbd5e1"
+        fill="var(--nrg-surface-3)"
+        stroke="var(--nrg-border)"
         strokeWidth="0.5"
       />
       {data.map((state) => {
@@ -70,7 +70,7 @@ const IndiaMapPlaceholder: React.FC<{ maxCount: number; data: StateData[] }> = (
               cy={coords.y}
               r={Math.max(2, Math.min(6, Math.sqrt(state.count) * 0.8))}
               fill={getColor(state.count)}
-              stroke="#fff"
+              stroke="var(--nrg-white)"
               strokeWidth="0.5"
             />
           </motion.g>

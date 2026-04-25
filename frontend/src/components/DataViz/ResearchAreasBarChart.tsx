@@ -31,7 +31,7 @@ export const ResearchAreasBarChart: React.FC<ResearchAreasBarChartProps> = ({
   subtitle = 'Top research areas across the network',
   height = 280,
 }) => {
-  const chartColors = ['#ff6b35', '#2563eb', '#10b981', '#c49538', '#6366f1', '#ec4899', '#8b5cf6']
+  const chartColors = ['var(--nrg-chart-1)', 'var(--nrg-chart-2)', 'var(--nrg-chart-3)', 'var(--nrg-chart-4)', 'var(--nrg-chart-5)', 'var(--nrg-chart-6)', 'var(--nrg-chart-7)']
 
   return (
     <motion.div
@@ -48,10 +48,10 @@ export const ResearchAreasBarChart: React.FC<ResearchAreasBarChartProps> = ({
 
       <ResponsiveContainer width="100%" height={height}>
         <BarChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--nrg-border)" strokeOpacity={0.5} vertical={false} />
           <XAxis
             dataKey="area"
-            tick={{ fontSize: 10, fill: '#64748b' }}
+            tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }}
             axisLine={false}
             tickLine={false}
             angle={-30}
@@ -59,7 +59,7 @@ export const ResearchAreasBarChart: React.FC<ResearchAreasBarChartProps> = ({
             height={60}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: '#64748b' }}
+            tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }}
             axisLine={false}
             tickLine={false}
             tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}

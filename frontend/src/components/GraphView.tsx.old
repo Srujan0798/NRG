@@ -98,10 +98,10 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
         .attr('height', height);
 
       const colorMap: Record<string, string> = {
-        paper: '#0ea5e9',
-        author: '#10b981',
-        institution: '#f59e0b',
-        topic: '#8b5cf6',
+        paper: 'var(--nrg-chart-9)',
+        author: 'var(--nrg-chart-3)',
+        institution: 'var(--nrg-warning)',
+        topic: 'var(--nrg-chart-7)',
       };
 
       const nodes = graphData.nodes.map((n) => ({ ...n }));
@@ -116,7 +116,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
         .selectAll('line')
         .data(links)
         .join('line')
-        .attr('stroke', '#94a3b8')
+        .attr('stroke', 'var(--nrg-ink-muted)')
         .attr('stroke-width', (d: any) => d.weight * 1.5 || 1);
 
       const node = svg.append('g')
@@ -124,8 +124,8 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
         .data(nodes)
         .join('circle')
         .attr('r', 8)
-        .attr('fill', (d: any) => colorMap[d.type] || '#64748b')
-        .attr('stroke', '#fff')
+        .attr('fill', (d: any) => colorMap[d.type] || 'var(--nrg-ink-muted)')
+        .attr('stroke', 'var(--nrg-white)')
         .attr('stroke-width', 2)
         .on('click', (_event: any, d: any) => handleNodeClick(d))
         .call((d3 as any).drag()
@@ -151,7 +151,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
         .join('text')
         .attr('font-size', 10)
         .attr('text-anchor', 'middle')
-        .attr('fill', '#1e293b')
+        .attr('fill', 'var(--nrg-surface-2)')
         .text((d: any) => d.label?.slice(0, 15) || '');
 
       simulation.on('tick', () => {
@@ -188,7 +188,7 @@ export const GraphView: React.FC<GraphViewProps> = ({ topic, onNodeClick }) => {
     <div className="relative">
       <div
         ref={containerRef}
-        className="w-full h-[500px] bg-slate-50 rounded-lg border border-gray-200 cursor-pointer"
+        className="w-full h-[31.25rem] bg-slate-50 rounded-lg border border-gray-200 cursor-pointer"
       />
       {selectedNode && (
         <div className="absolute bottom-4 left-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">

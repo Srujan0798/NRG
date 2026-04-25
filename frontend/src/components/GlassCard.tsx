@@ -12,10 +12,10 @@ export interface GlassCardProps {
 }
 
 const ACCENT_MAP: Record<string, string> = {
-  researcher: '#6366f1',
-  government: '#2563eb',
-  industry:   '#10b981',
-  sovereign:  '#ff6b35',
+  researcher: 'var(--nrg-chart-5)',
+  government: 'var(--nrg-chart-2)',
+  industry:   'var(--nrg-chart-3)',
+  sovereign:  'var(--nrg-chart-1)',
 }
 
 const ACCENT_BG_MAP: Record<string, string> = {

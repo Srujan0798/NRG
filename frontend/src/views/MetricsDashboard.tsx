@@ -78,7 +78,7 @@ export default function MetricsDashboard() {
   })
 
   const sloPercent = data?.slo?.compliance_percent ?? 0
-  const sloColor = sloPercent >= 95 ? '#10b981' : sloPercent >= 80 ? '#c49538' : '#ef4444'
+  const sloColor = sloPercent >= 95 ? 'var(--nrg-chart-3)' : sloPercent >= 80 ? 'var(--nrg-chart-4)' : 'var(--nrg-danger)'
 
   const cacheHitRate = data?.cache?.hit_rate ?? 0
 
@@ -162,7 +162,7 @@ export default function MetricsDashboard() {
               value={Math.round(cacheHitRate * 100)}
               sublabel={`${data?.cache?.total_hits ?? 0} hits / ${(data?.cache?.total_hits ?? 0) + (data?.cache?.total_misses ?? 0)} total`}
               icon={<HardDrive size={20} />}
-              accentColor={cacheHitRate > 0.7 ? '#10b981' : '#c49538'}
+              accentColor={cacheHitRate > 0.7 ? 'var(--nrg-chart-3)' : 'var(--nrg-chart-4)'}
               delay={100}
               format="number"
               data-testid="cache-hit-rate"
@@ -173,7 +173,7 @@ export default function MetricsDashboard() {
               value={data?.training?.total_pairs ?? 0}
               sublabel={`${data?.training?.exported ?? 0} exported`}
               icon={<Database size={20} />}
-              accentColor="#6366f1"
+              accentColor="var(--nrg-chart-5)"
               delay={200}
               format="number"
               data-testid="training-pairs"
@@ -184,7 +184,7 @@ export default function MetricsDashboard() {
               value={circuitTrips.length}
               sublabel={circuitTrips.length > 0 ? `Breaker trips: ${circuitTrips.join(', ')}` : 'All providers nominal'}
               icon={<Zap size={20} />}
-              accentColor={circuitTrips.length > 0 ? '#ef4444' : '#10b981'}
+              accentColor={circuitTrips.length > 0 ? 'var(--nrg-danger)' : 'var(--nrg-chart-3)'}
               delay={300}
               format="number"
               data-testid="active-circuits"
@@ -294,8 +294,8 @@ export default function MetricsDashboard() {
             />
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               {data?.training?.by_grade && Object.entries(data.training.by_grade).map(([grade, count]) => {
-                const gradeColors: Record<string, string> = { gold: '#ffd700', silver: '#c0c0c0', bronze: '#cd7f32', reject: '#ef4444', ungraded: '#94a3b8' }
-                const color = gradeColors[grade] || '#94a3b8'
+                const gradeColors: Record<string, string> = { gold: 'var(--nrg-grade-gold)', silver: 'var(--nrg-grade-silver)', bronze: 'var(--nrg-grade-bronze)', reject: 'var(--nrg-danger)', ungraded: 'var(--nrg-ink-muted)' }
+                const color = gradeColors[grade] || 'var(--nrg-ink-muted)'
                 return (
                   <div key={grade} className="rounded-xl p-4 text-center" style={{ background: `${color}15` }}>
                     <p className="text-2xl font-bold" style={{ color }}>{Number(count).toLocaleString()}</p>

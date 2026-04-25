@@ -84,7 +84,7 @@ export function SecurityMonitor() {
 
         <button
           onClick={trackRequest}
-          className="min-h-[44px] w-full rounded-lg border border-nrg-border bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-200"
+          className="min-h-11 w-full rounded-lg border border-nrg-border bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-navy-800 dark:text-slate-200"
         >
           Run Local Safety Check
         </button>

@@ -61,19 +61,19 @@ export const FundingTrendsLineChart: React.FC<FundingTrendsLineChartProps> = ({
           <AreaChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -10 }}>
             <defs>
               <linearGradient id="fundingGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#ff6b35" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#ff6b35" stopOpacity={0} />
+                <stop offset="5%" stopColor="var(--nrg-chart-1)" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="var(--nrg-chart-1)" stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--nrg-border)" strokeOpacity={0.5} vertical={false} />
             <XAxis
               dataKey="year"
-              tick={{ fontSize: 10, fill: '#64748b' }}
+              tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 10, fill: '#64748b' }}
+              tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }}
               axisLine={false}
               tickLine={false}
               tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`}
@@ -82,26 +82,26 @@ export const FundingTrendsLineChart: React.FC<FundingTrendsLineChartProps> = ({
             <Area
               type="monotone"
               dataKey="funding"
-              stroke="#ff6b35"
+              stroke="var(--nrg-chart-1)"
               strokeWidth={2}
               fill="url(#fundingGradient)"
-              dot={{ r: 3, fill: '#ff6b35', strokeWidth: 0 }}
-              activeDot={{ r: 5, fill: '#ff6b35', strokeWidth: 2, stroke: '#fff' }}
+              dot={{ r: 3, fill: 'var(--nrg-chart-1)', strokeWidth: 0 }}
+              activeDot={{ r: 5, fill: 'var(--nrg-chart-1)', strokeWidth: 2, stroke: 'var(--nrg-white)' }}
               animationDuration={1500}
             />
           </AreaChart>
         ) : (
           <LineChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: -10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} vertical={false} />
-            <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--nrg-border)" strokeOpacity={0.5} vertical={false} />
+            <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: 'var(--nrg-ink-muted)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `₹${(v / 10000000).toFixed(0)}Cr`} />
             <Tooltip content={<CustomTooltip />} />
             <Line
               type="monotone"
               dataKey="funding"
-              stroke="#ff6b35"
+              stroke="var(--nrg-chart-1)"
               strokeWidth={2}
-              dot={{ r: 3, fill: '#ff6b35', strokeWidth: 0 }}
+              dot={{ r: 3, fill: 'var(--nrg-chart-1)', strokeWidth: 0 }}
               activeDot={{ r: 5 }}
               animationDuration={1500}
             />

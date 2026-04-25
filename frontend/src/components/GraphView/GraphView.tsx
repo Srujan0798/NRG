@@ -17,12 +17,12 @@ interface GraphViewProps {
 }
 
 const nodeColors: Record<string, string> = {
-  researcher: '#6366f1',
-  institution: '#2563eb',
-  research_area: '#10b981',
-  publication: '#ff6b35',
-  funding: '#c49538',
-  default: '#64748b',
+  researcher: 'var(--nrg-chart-5)',
+  institution: 'var(--nrg-chart-2)',
+  research_area: 'var(--nrg-chart-3)',
+  publication: 'var(--nrg-chart-1)',
+  funding: 'var(--nrg-chart-4)',
+  default: 'var(--nrg-ink-muted)',
 }
 
 export const GraphView: React.FC<GraphViewProps> = ({
