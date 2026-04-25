@@ -2,7 +2,6 @@ import React from 'react'
 import {
   AlertTriangle,
   ArrowUpRight,
-  CheckCircle2,
   CircleDot,
   Database,
   FileCheck2,

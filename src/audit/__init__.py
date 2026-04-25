@@ -237,14 +237,16 @@ class ImmutableAuditLog:
             self.last_hash_file.write_text(new_hash)
             self.event_count += 1
 
-            def _cosign_fire_and_forget():
-                from src.audit.db_cosign import cosign_event as _cosign
-                _cosign(event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
+            cosign_args = (event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
 
-            threading.Thread(target=_cosign_fire_and_forget, daemon=True).start()
+        def _cosign_fire_and_forget():
+            from src.audit.db_cosign import cosign_event as _cosign
+            _cosign(*cosign_args)
 
-            logger.info(f"Audit event {event.event_id} appended, chain: {new_hash[:16]}..., user_bind: {per_user_hash[:8]}...")
-            return new_hash
+        threading.Thread(target=_cosign_fire_and_forget, daemon=True).start()
+
+        logger.info(f"Audit event {event.event_id} appended, chain: {new_hash[:16]}..., user_bind: {per_user_hash[:8]}...")
+        return new_hash
 
     def rotate_key(self, old_key: str, new_key: str) -> str:
         """Rotate the chain key, creating a provable transition event signed with both keys."""

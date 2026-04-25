@@ -1,12 +1,11 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import React, { useMemo } from 'react'
 import { StatsCard } from '../components/StatsCard'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { useAuth } from '../hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import {
   Activity, Zap, Shield, Database, Clock, TrendingUp,
-  AlertTriangle, CheckCircle, Server, Cpu, HardDrive, Users
+  AlertTriangle, CheckCircle, Server, Cpu, HardDrive
 } from 'lucide-react'
 
 interface MetricsData {
@@ -24,7 +23,6 @@ interface MetricsData {
 }
 
 const formatMs = (v: number | undefined) => v !== undefined ? `${v.toFixed(1)}ms` : '—'
-const formatPct = (v: number) => `${v.toFixed(1)}%`
 
 const SectionHeader: React.FC<{ icon: React.ReactNode; title: string; subtitle?: string }> = ({ icon, title, subtitle }) => (
   <div className="flex items-center gap-3 mb-4">
