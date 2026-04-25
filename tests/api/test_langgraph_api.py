@@ -60,7 +60,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         client = TestClient(api_main.app)
         response = client.post(
             "/query",
-            json={"query": "Find robotics researchers", "session_id": "session-123"},
+            json={"query": "Show funding for quantum computing projects", "session_id": "session-123"},
             headers=_auth_headers(client),
         )
 
@@ -86,7 +86,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         assert payload["retrieval_sources"] == ["structured"]
         assert len(stub_workflow.calls) == 1
         call = stub_workflow.calls[0]
-        assert call["query"] == "Find robotics researchers"
+        assert call["query"] == "Show funding for quantum computing projects"
         assert call["user_tier"] == 1
         assert call["session_id"] == "session-123"
         assert "user_id" in call

@@ -276,11 +276,11 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               <WidgetErrorBoundary title="Opportunities list failed to load">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                    <h2 className="text-lg font-semibold text-nrg-text">
                       Partnership Opportunities
-                      <span className="text-sm font-normal text-slate-500 ml-2 font-devanagari">साझेदारी के अवसर</span>
+                      <span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">साझेदारी के अवसर</span>
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-sm text-nrg-muted">
                       {filteredOpportunities.length} opportunities found · Anonymized researcher data
                     </p>
                   </div>
@@ -289,7 +289,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                     <select
                       value={collaborationFilter}
                       onChange={(e) => setCollaborationFilter(e.target.value)}
-                      className="px-3 py-2 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white"
+                      className="px-3 py-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] text-sm text-nrg-text"
                       data-testid="filter-collaboration-type"
                     >
                       <option value="all">All Types</option>
@@ -316,11 +316,11 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
               </WidgetErrorBoundary>
 
               <WidgetErrorBoundary title="Search panel failed to load">
-                <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+                <div className="nrg-panel p-5">
                   <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Search Research Network</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Aggregate-only partnership answers with tier-safe evidence</p>
+                      <h3 className="text-sm font-semibold text-nrg-text">Search Research Network</h3>
+                      <p className="text-xs text-nrg-muted">Aggregate-only partnership answers with tier-safe evidence</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {INDUSTRY_DEMO_QUERIES.map((suggestion) => (
@@ -340,7 +340,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   </div>
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <div className="relative flex-1">
-                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+                      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-nrg-muted" aria-hidden="true" />
                       <label htmlFor="industry-search-input" className="sr-only">Search research network</label>
                       <input
                         id="industry-search-input"
@@ -352,7 +352,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Ask about industry partnerships, institution capacity, or research funding..."
-                        className="min-h-12 w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
+                        className="min-h-12 w-full rounded-xl border border-nrg-border bg-[var(--nrg-surface)] py-2.5 pl-10 pr-4 text-sm text-nrg-text placeholder:text-nrg-muted focus:border-emerald-500 focus:outline-none"
                         data-testid="industry-search-input"
                       />
                     </div>
@@ -475,7 +475,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                         ['IP licensing candidates', '1 active', 'text-blue-600'],
                         ['Joint research candidates', '3 active', 'text-saffron-700'],
                       ].map(([label, value, color]) => (
-                        <div key={label} className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-navy-700 dark:bg-navy-800/60">
+                        <div key={label} className="flex items-center justify-between rounded-xl border border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
                           <span className="text-sm text-slate-600 dark:text-slate-300">{label}</span>
                           <span className={`text-sm font-semibold ${color}`}>{value}</span>
                         </div>

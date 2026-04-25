@@ -42,6 +42,8 @@ _TIER3_STRIPPED_FIELDS = {
     "conversation_history",
     "provenance",
     "retrieval_sources",
+    "sql_query",
+    "sql_queries",
 }
 
 _DROP = object()

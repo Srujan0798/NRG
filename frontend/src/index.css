@@ -448,6 +448,8 @@
 @layer utilities {
   .text-nrg-text { color: var(--nrg-text); }
   .text-nrg-muted { color: var(--nrg-muted); }
+  .text-saffron-600 { color: var(--nrg-warning); }
+  .dark .dark\:text-saffron-300 { color: var(--nrg-saffron-soft); }
   .border-nrg-border { border-color: var(--nrg-border); }
   .bg-nrg-surface { background-color: var(--nrg-surface); }
 

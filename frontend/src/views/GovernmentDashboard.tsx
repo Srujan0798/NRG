@@ -310,10 +310,10 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                 </WidgetErrorBoundary>
 
                 <WidgetErrorBoundary title="Quick query panel failed to load">
-                  <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+                  <div className="nrg-panel p-5">
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Quick Query</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 font-devanagari">त्वरित प्रश्न</p>
+                      <h3 className="text-sm font-semibold text-nrg-text">Quick Query</h3>
+                      <p className="text-xs text-nrg-muted font-devanagari">त्वरित प्रश्न</p>
                     </div>
                     <div className="mb-3 flex flex-wrap gap-2">
                       {POLICY_DEMO_QUERIES.slice(0, 2).map((suggestion) => (
@@ -342,7 +342,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         placeholder="Enter policy query..."
-                        className="min-h-12 flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-saffron-500 focus:outline-none dark:border-navy-600 dark:bg-navy-800 dark:text-white"
+                        className="min-h-12 flex-1 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] px-4 py-2.5 text-sm text-nrg-text placeholder:text-nrg-muted focus:border-saffron-500 focus:outline-none"
                         data-testid="policy-query-input"
                       />
                       <motion.button
@@ -399,9 +399,9 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
 
               <WidgetErrorBoundary title="Ministry summary failed to load">
                 <div className="space-y-4">
-                  <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+                  <h2 className="text-lg font-semibold text-nrg-text">
                     Ministry Summary
-                    <span className="text-sm font-normal text-slate-500 ml-2 font-devanagari">मंत्रालय सारांश</span>
+                    <span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">मंत्रालय सारांश</span>
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {ministryData.map((m, i) => (
@@ -568,7 +568,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               className="space-y-4"
             >
               <WidgetErrorBoundary title="Knowledge graph failed to load">
-                <div className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200 dark:border-navy-700 shadow-md p-5">
+                <div className="nrg-panel p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 flex gap-3">
                       <div className="relative flex-1 max-w-sm">
@@ -579,7 +579,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                           onChange={(e) => setGraphTopic(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && setGraphTopic(graphTopic)}
                           placeholder="Enter topic for knowledge graph..."
-                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-navy-600 bg-white dark:bg-navy-800 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:border-saffron-500"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] text-sm text-nrg-text placeholder:text-nrg-muted focus:outline-none focus:border-saffron-500"
                           data-testid="graph-topic-input"
                         />
                       </div>
@@ -604,14 +604,14 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-[var(--glass-bg)] border border-nrg-border"
                   >
                     <div className="w-10 h-10 rounded-lg bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-sm font-bold">
                       {selectedNode.label[0]?.toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{selectedNode.label}</p>
-                      <p className="text-xs text-slate-500 capitalize">
+                      <p className="text-sm font-semibold text-nrg-text truncate">{selectedNode.label}</p>
+                      <p className="text-xs text-nrg-muted capitalize">
                         {selectedNode.type}
                         {selectedNode.year && ` · FY${selectedNode.year}`}
                         {selectedNode.citations !== undefined && ` · ${selectedNode.citations} citations`}

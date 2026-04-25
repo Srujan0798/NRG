@@ -55,11 +55,11 @@ export const GraphView: React.FC<GraphViewProps> = ({
   }
 
   return (
-    <div ref={containerRef} className="relative bg-white dark:bg-navy-800 rounded-2xl border border-slate-200/80 dark:border-navy-700 overflow-hidden">
+    <div ref={containerRef} className="nrg-panel relative overflow-hidden">
       <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
         <motion.button
           onClick={() => setShowFilters(!showFilters)}
-          className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -67,7 +67,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.zoomIn()}
-          className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -75,7 +75,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.zoomOut()}
-          className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -83,7 +83,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.resetZoom()}
-          className="w-10 h-10 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600 shadow-md flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-saffron-500 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
@@ -91,8 +91,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
       </div>
 
-      <div className="pl-16 pr-4 py-2 bg-slate-50 dark:bg-navy-900/50 border-b border-slate-200 dark:border-navy-700 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-4 text-xs text-slate-500">
+      <div className="pl-16 pr-4 py-2 bg-[var(--glass-bg)] border-b border-nrg-border flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-4 text-xs text-nrg-muted">
           <span>{data.nodes.length} nodes</span>
           <span>{data.edges.length} connections</span>
         </div>
@@ -100,7 +100,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
           {Object.entries(nodeColors).filter(([k]) => k !== 'default').map(([type, color]) => (
             <div key={type} className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-              <span className="text-xs capitalize text-slate-500">{type.replace('_', ' ')}</span>
+              <span className="text-xs capitalize text-nrg-muted">{type.replace('_', ' ')}</span>
             </div>
           ))}
         </div>
@@ -120,12 +120,12 @@ export const GraphView: React.FC<GraphViewProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute bottom-4 right-4 bg-white dark:bg-navy-700 rounded-xl border border-slate-200 dark:border-navy-600 shadow-lg p-3 w-64"
+          className="absolute bottom-4 right-4 bg-[var(--glass-bg)] rounded-xl border border-nrg-border shadow-lg p-3 w-64 backdrop-blur-md"
         >
-          <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
+          <p className="text-sm font-semibold text-nrg-text truncate">
             {selectedNode?.label}
           </p>
-          <p className="text-xs text-slate-500 capitalize">
+          <p className="text-xs text-nrg-muted capitalize">
             {selectedNode?.type}
             {selectedNode?.year && ` · FY${selectedNode?.year}`}
           </p>

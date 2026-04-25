@@ -22,8 +22,8 @@ interface FundingTrendsLineChartProps {
 const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white dark:bg-navy-800 px-3 py-2 rounded-lg shadow-lg border border-slate-200 dark:border-navy-600">
-        <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">FY {label}</p>
+      <div className="bg-[var(--nrg-surface)] px-3 py-2 rounded-lg shadow-lg border border-nrg-border">
+        <p className="text-xs font-semibold text-nrg-text">FY {label}</p>
         {payload.map((p: any, i: number) => (
           <p key={i} className="text-xs" style={{ color: p.color }}>
             {p.name}: ₹{(p.value / 10000000).toFixed(1)}Cr
@@ -45,15 +45,15 @@ export const FundingTrendsLineChart: React.FC<FundingTrendsLineChartProps> = ({
 }) => {
   return (
     <motion.div
-      className="bg-white dark:bg-navy-800 rounded-2xl border border-slate-200/80 dark:border-navy-700 p-5 shadow-md"
+      className="nrg-panel p-5"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{title}</h3>
-        <p className="text-xs font-devanagari text-slate-500 dark:text-slate-400">{titleHi}</p>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+        <h3 className="text-sm font-semibold text-nrg-text">{title}</h3>
+        <p className="text-xs font-devanagari text-nrg-muted">{titleHi}</p>
+        <p className="text-xs text-nrg-muted mt-0.5">{subtitle}</p>
       </div>
 
       <ResponsiveContainer width="100%" height={height}>

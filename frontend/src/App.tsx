@@ -9,6 +9,7 @@ const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
 const IndustryDashboard = lazy(() => import('./views/IndustryDashboard'))
 const FounderDashboard = lazy(() => import('./views/FounderDashboard'))
+const Hero = lazy(() => import('./views/Hero'))
 
 const DashboardLoading = () => (
   <div className="nrg-app-canvas min-h-screen">
@@ -82,6 +83,14 @@ const App: React.FC = () => {
     return (
       <Suspense fallback={<DashboardLoading />}>
         <FounderDashboard />
+      </Suspense>
+    )
+  }
+
+  if (window.location.pathname === '/app') {
+    return (
+      <Suspense fallback={<DashboardLoading />}>
+        <Hero />
       </Suspense>
     )
   }

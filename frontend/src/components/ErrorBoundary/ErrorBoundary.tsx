@@ -38,19 +38,19 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
 
   renderWidgetFallback() {
     return (
-      <div className={`bg-white dark:bg-navy-800 rounded-2xl border border-rose-200 dark:border-rose-800 p-6 text-center ${this.props.className || ''}`}>
-        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/30">
+      <div className={`nrg-panel border-rose-200/70 dark:border-rose-800/60 p-6 text-center ${this.props.className || ''}`}>
+        <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-rose-100/70 dark:bg-rose-900/30">
           <RefreshCw size={18} className="text-rose-500" />
         </div>
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">
+        <h3 className="text-sm font-semibold text-nrg-text mb-1">
           {this.props.title || 'Widget failed to load'}
         </h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+        <p className="text-xs text-nrg-muted mb-4">
           {this.props.description || 'This widget could not render. The rest of the page is still available.'}
         </p>
         <button
           onClick={this.handleRetry}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 dark:bg-navy-700 px-3 py-1.5 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-navy-600 transition"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-nrg-border bg-[var(--glass-bg)] px-3 py-1.5 text-xs font-medium text-nrg-text hover:bg-saffron-500/10 transition"
         >
           <RefreshCw size={12} />
           Retry
@@ -61,20 +61,20 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
 
   renderPageFallback() {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-50">
+      <div className="min-h-screen flex items-center justify-center nrg-app-canvas px-6">
+        <div className="max-w-md w-full nrg-panel p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100/70 dark:bg-rose-900/30">
             <span className="text-2xl">⚠️</span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold text-nrg-text mb-2">
             {this.props.title || 'NRG could not render this section'}
           </h2>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-nrg-muted mb-6">
             {this.props.description || 'This view could not render. Your audit trail remains safe.'}
           </p>
           <button
             onClick={this.handleRetry}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-6 py-2.5 text-sm font-medium text-white hover:bg-slate-800 transition"
+            className="nrg-btn-primary inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-medium"
           >
             Retry
           </button>

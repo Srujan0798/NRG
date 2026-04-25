@@ -347,8 +347,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <div className="mt-4 space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Conversation</h3>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Each answer keeps the question visible for the demo flow.</p>
+                      <h3 className="text-sm font-semibold text-nrg-text">Conversation</h3>
+                      <p className="text-xs text-nrg-muted">Each answer keeps the question visible for the demo flow.</p>
                     </div>
                     <button
                       type="button"
@@ -357,16 +357,16 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                         setQueryError(null)
                         setCurrentQuery('')
                       }}
-                      className="min-h-10 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:border-violet-300 hover:text-violet-600 dark:border-navy-600 dark:text-slate-300"
+                      className="min-h-10 rounded-lg border border-nrg-border px-3 py-1.5 text-xs font-medium text-nrg-muted transition-colors hover:border-violet-300 hover:text-violet-600"
                     >
                       New conversation
                     </button>
                   </div>
                   {conversationTurns.map((turn, index) => (
-                    <div key={`${turn.result.query_id}-${index}`} className="rounded-2xl border border-slate-200 dark:border-navy-700 overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-50 dark:bg-navy-700/40 border-b border-slate-200 dark:border-navy-700">
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Question {index + 1}</p>
-                        <p className="text-sm text-slate-900 dark:text-white">{turn.query}</p>
+                    <div key={`${turn.result.query_id}-${index}`} className="rounded-2xl border border-nrg-border overflow-hidden">
+                      <div className="px-4 py-3 bg-[var(--glass-bg)] border-b border-nrg-border">
+                        <p className="text-xs font-semibold text-nrg-muted">Question {index + 1}</p>
+                        <p className="text-sm text-nrg-text">{turn.query}</p>
                       </div>
                       <div className="p-4">
                         {isEmptyResultResponse(turn.result.response) ? (
@@ -445,7 +445,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                       {publications.map((pub: any, i: number) => (
                         <motion.div
                           key={i}
-                          className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-navy-700 bg-slate-50 dark:bg-navy-700/30 hover:border-violet-200 hover:bg-violet-50/50 dark:hover:border-violet-700 transition-all cursor-pointer"
+                          className="flex items-center gap-3 p-3 rounded-xl border border-nrg-border/60 bg-[var(--glass-bg)] hover:border-violet-200 hover:bg-violet-50/50 dark:hover:border-violet-700 transition-all cursor-pointer"
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.06 }}
@@ -455,18 +455,18 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                             {pub.year?.toString().slice(-2) || '?'}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{pub.title}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">{typeof pub.authors === 'string' ? pub.authors.split(',').slice(0, 2).join(', ') : Array.isArray(pub.authors) ? pub.authors.slice(0, 2).join(', ') : ''}</p>
+                            <p className="text-sm font-medium text-nrg-text truncate">{pub.title}</p>
+                            <p className="text-xs text-nrg-muted">{typeof pub.authors === 'string' ? pub.authors.split(',').slice(0, 2).join(', ') : Array.isArray(pub.authors) ? pub.authors.slice(0, 2).join(', ') : ''}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{pub.citations || 0}</p>
-                            <p className="text-xs text-slate-400 dark:text-slate-500">citations</p>
+                            <p className="text-xs text-nrg-muted">citations</p>
                           </div>
                         </motion.div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-10 text-slate-400 dark:text-slate-500">
+                    <div className="text-center py-10 text-nrg-muted">
                       <BookOpen size={40} className="mx-auto mb-3 opacity-50" />
                       <p className="text-sm">No publications found.</p>
                     </div>
@@ -488,10 +488,10 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   <GlassCard accent="sovereign" title="Recent Queries" description="Your query history this session">
                     <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-nrg">
                       {history.slice(0, 6).map((entry) => (
-                        <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-slate-100 dark:border-navy-700/50 last:border-0">
+                        <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-nrg-border/40 last:border-0">
                           <div className={`w-2 h-2 rounded-full shrink-0 ${entry.error ? 'bg-red-400' : 'bg-violet-400'}`} />
-                          <span className="flex-1 text-sm text-slate-900 dark:text-slate-100 truncate font-medium">{entry.query}</span>
-                          <span className="text-xs text-slate-500 shrink-0">
+                          <span className="flex-1 text-sm text-nrg-text truncate font-medium">{entry.query}</span>
+                          <span className="text-xs text-nrg-muted shrink-0">
                             {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           <span className={`text-xs font-medium shrink-0 ${entry.error ? 'text-red-500' : 'text-green-600'}`}>
@@ -529,14 +529,14 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-4 rounded-xl bg-white dark:bg-navy-700 border border-slate-200 dark:border-navy-600"
+                className="flex items-center gap-3 p-4 rounded-xl bg-[var(--glass-bg)] border border-nrg-border"
               >
                 <div className="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 flex items-center justify-center text-sm font-bold">
                   {selectedNode.label[0]?.toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{selectedNode.label}</p>
-                  <p className="text-xs text-slate-500 capitalize">
+                  <p className="text-sm font-semibold text-nrg-text truncate">{selectedNode.label}</p>
+                  <p className="text-xs text-nrg-muted capitalize">
                     {selectedNode.type}
                     {selectedNode.year && ` · FY${selectedNode.year}`}
                     {selectedNode.citations !== undefined && ` · ${selectedNode.citations} citations`}
