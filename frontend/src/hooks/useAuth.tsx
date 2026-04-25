@@ -27,6 +27,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true)
   const [loginError, setLoginError] = useState<string | null>(null)
   const [backendAvailable, setBackendAvailable] = useState(true)
+  const [consecutiveFailures, setConsecutiveFailures] = useState(0)
 
   useEffect(() => {
     const storedSession = authService.getStoredSession()
@@ -38,17 +39,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   useEffect(() => {
+    let mounted = true
+
     const checkBackend = async () => {
+      if (!mounted) return
+
       try {
-        const res = await fetch('/health', { signal: AbortSignal.timeout(5000) })
-        setBackendAvailable(res.ok)
+        const res = await fetch('/health', { signal: AbortSignal.timeout(10000) })
+        if (!mounted) return
+
+        if (res.ok) {
+          setConsecutiveFailures(0)
+          setBackendAvailable(true)
+        } else {
+          setConsecutiveFailures(prev => {
+            const next = prev + 1
+            if (next >= 3) setBackendAvailable(false)
+            return next
+          })
+        }
       } catch {
-        setBackendAvailable(false)
+        if (!mounted) return
+        setConsecutiveFailures(prev => {
+          const next = prev + 1
+          if (next >= 3) setBackendAvailable(false)
+          return next
+        })
       }
     }
+
     checkBackend()
-    const interval = setInterval(checkBackend, 30000)
-    return () => clearInterval(interval)
+    const interval = setInterval(checkBackend, 15000)
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
   }, [])
 
   const login = async (username: string, password: string): Promise<boolean> => {
