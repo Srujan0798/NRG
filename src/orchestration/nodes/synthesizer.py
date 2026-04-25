@@ -472,7 +472,8 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
             logger.warning("Local streaming failed: %s", e)
 
     synthesized = _fallback_synthesis(
-        user_query, sql_results, retrieved_chunks, context_summary, intent, routing_decision, user_tier
+        user_query, sql_results, retrieved_chunks, context_summary, intent, routing_decision, user_tier,
+        warning="All LLM providers failed (cloud + local). Using rule-based template synthesis.",
     )
     yield {"event": "done", "data": synthesized}
     return {
@@ -552,7 +553,9 @@ def _synthesize(
 
     if complexity == "trivial":
         logger.info("Complexity=trivial — using rule-based synthesis")
-        response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
+        response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier,
+            warning="Complexity=trivial — using rule-based template synthesis (no LLM cost).",
+        )
         actual_provider = "rule_based"
         try:
             log_llm_call("synthesizer", query, {"response": response[:500] if response else ""}, "rule-based-trivial")
@@ -676,8 +679,10 @@ def _synthesize(
         except Exception as e:
             logger.warning(f"Local LLM failed: {e}")
 
-    logger.info("Using rule-based synthesis")
-    response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier)
+    logger.info("Using rule-based synthesis after cloud and local LLM failures")
+    response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier,
+        warning="Cloud LLM mesh and local llama.cpp both failed. Using rule-based template synthesis.",
+    )
     actual_provider = "rule_based"
     try:
         log_llm_call(
@@ -927,6 +932,7 @@ def _fallback_synthesis(
     intent: str = "",
     routing_decision: str = "",
     user_tier: int = 1,
+    warning: str = "",
 ) -> str:
     """Intelligent fallback that formats data beautifully without LLM.
 
@@ -940,6 +946,12 @@ def _fallback_synthesis(
     lines.append("")
     lines.append(f"Query: {query}")
     lines.append("")
+
+    if warning:
+        lines.append("┌─ ⚠️  AI Synthesis Unavailable")
+        lines.append(f"│  {warning}")
+        lines.append("└" + "─" * 40)
+        lines.append("")
 
     if intent or routing_decision:
         lines.append("┌─ Query Classification")

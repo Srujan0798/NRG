@@ -802,15 +802,39 @@ async def health_check():
 
 @app.get("/health/llm")
 async def health_llm():
-    """Check LLM provider health."""
+    """Check LLM provider health including local llama.cpp model status."""
     from src.config.llm_config import get_llm_client, LLMConfigError
+    from src.config.local_llm import get_llama_cpp_client, _llama_cpp_health_cache
+
+    local_info = {"available": False, "model_loaded": False, "load_time": None}
+
+    llama_client = get_llama_cpp_client()
+    if llama_client is not None:
+        local_info["available"] = True
+        local_info["model_loaded"] = True
+        if _llama_cpp_health_cache is not None:
+            local_info["load_time"] = _llama_cpp_health_cache[0]
+    else:
+        try:
+            import httpx
+            r = httpx.get("http://localhost:8080/health", timeout=2.0)
+            if r.status_code == 200:
+                data = r.json()
+                local_info["available"] = True
+                local_info["model_loaded"] = data.get("model_loaded", False)
+                if data.get("model_loaded"):
+                    local_info["load_time"] = data.get("loaded_at")
+        except Exception:
+            pass
+
     try:
         client = get_llm_client()
         if client is None:
             return {
                 "ready": False,
                 "provider": None,
-                "error": "No LLM configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env"
+                "error": "No LLM configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env",
+                "local": local_info,
             }
         test_response = client.generate(
             "You are a health check system.",
@@ -824,12 +848,13 @@ async def health_llm():
             "ready": True,
             "provider": provider,
             "model": model,
-            "test_response": test_response[:10] if test_response else None
+            "test_response": test_response[:10] if test_response else None,
+            "local": local_info,
         }
     except LLMConfigError as e:
-        return {"ready": False, "provider": None, "error": str(e)}
+        return {"ready": False, "provider": None, "error": str(e), "local": local_info}
     except Exception as e:
-        return {"ready": False, "provider": None, "error": str(e)}
+        return {"ready": False, "provider": None, "error": str(e), "local": local_info}
 
 
 @app.get("/api/providers/health")
