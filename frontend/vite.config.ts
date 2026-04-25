@@ -1,98 +1,100 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000'
+
 export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
     proxy: {
       '/login': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/refresh': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/logout': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/query': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/researchers': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/health': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/stats': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/publications': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/query/graph': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/api/query/stream': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true,
         ws: true
       },
       '/me/': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/consent': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/audit/': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/health/llm': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/health/db': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/health/qdrant': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/projects': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/patents': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/collaborations': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/funding': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/labs': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       },
       '/research-documents': {
-        target: 'http://localhost:8000',
+        target: apiProxyTarget,
         changeOrigin: true
       }
     }

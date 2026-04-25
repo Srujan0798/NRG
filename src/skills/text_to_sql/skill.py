@@ -35,6 +35,93 @@ FORBIDDEN_SQL_PATTERN = re.compile(
 )
 
 
+def detect_semantic_anomaly(user_query: str, sql: str, result: Dict[str, Any]) -> Dict[str, Any]:
+    """Detect wrong-but-plausible SQL results that need user clarification.
+
+    This does not try to prove correctness. It catches high-risk cases where a
+    generated analytical join returns no rows or mostly-null joined metrics,
+    especially around applicant/institute joins that need normalization.
+    """
+    sql_lower = " ".join(sql.lower().split())
+    query_lower = user_query.lower()
+    row_count = int(result.get("row_count") or 0)
+    results = result.get("results") or []
+    issues: list[str] = []
+
+    has_join = " join " in f" {sql_lower} "
+    analytical_intent = any(
+        token in query_lower
+        for token in (
+            "compare",
+            "correlat",
+            "cost per",
+            "efficiency",
+            "grant",
+            "funding",
+            "patent",
+            "ratio",
+            "trend",
+        )
+    )
+
+    applicants_join = bool(
+        re.search(r"\binstitute\s*=\s*[\w.]*applicants\b", sql_lower)
+        or re.search(r"\bapplicants\s*=\s*[\w.]*institute\b", sql_lower)
+    )
+    normalized_applicants_join = "applicants" in sql_lower and (
+        "lower(" in sql_lower or "trim(" in sql_lower or " like " in sql_lower
+    )
+
+    if has_join and analytical_intent and row_count == 0:
+        issues.append("analytical join returned zero rows")
+
+    if applicants_join and not normalized_applicants_join:
+        issues.append("applicants/institute join is not normalized")
+
+    if has_join and row_count > 0 and _joined_metrics_are_null_dominated(results):
+        issues.append("joined metrics are mostly NULL or zero")
+
+    if not issues:
+        return {"detected": False, "needs_clarification": False, "issues": []}
+
+    if "applicants" in sql_lower or "patent" in query_lower:
+        question = (
+            "The patent/grant join looks ambiguous. Should applicant text be matched "
+            "to institute names, AISHE code, or a curated institute mapping?"
+        )
+    else:
+        question = (
+            "The analytical join returned sparse results. Should I broaden matching "
+            "keys, normalize institute names, or ask for a narrower filter?"
+        )
+
+    return {
+        "detected": True,
+        "needs_clarification": True,
+        "issues": issues,
+        "clarification_question": question,
+    }
+
+
+def _joined_metrics_are_null_dominated(rows: list[dict[str, Any]]) -> bool:
+    if not rows:
+        return False
+
+    metric_values: list[Any] = []
+    for row in rows:
+        for key, value in row.items():
+            key_lower = str(key).lower()
+            if any(label in key_lower for label in ("id", "name", "institute", "year", "state")):
+                continue
+            metric_values.append(value)
+
+    if len(metric_values) < 3:
+        return False
+
+    sparse = sum(value in (None, "", 0, 0.0, "0") for value in metric_values)
+    return sparse / len(metric_values) >= 0.8
+
+
 class TierAwareSqlRewriter:
     """
     Rewrites SQL to enforce tier-based access control using sqlglot.
@@ -1071,6 +1158,18 @@ FOLLOW-UP QUERIES:
                 sql = self._apply_tier_filter(sql, user_tier)
 
                 result = self.sandbox.execute_readonly(sql, user_tier)
+                semantic_anomaly = detect_semantic_anomaly(user_query, sql, result)
+                if semantic_anomaly["detected"]:
+                    warnings = list(result.get("warnings") or [])
+                    warnings.extend(semantic_anomaly["issues"])
+                    result.update(
+                        {
+                            "semantic_anomaly_detected": True,
+                            "needs_clarification": True,
+                            "clarification_question": semantic_anomaly["clarification_question"],
+                            "warnings": warnings,
+                        }
+                    )
                 break
 
             except Exception as e:
