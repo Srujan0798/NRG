@@ -275,6 +275,7 @@ class LoginRequest(BaseModel):
 
 class RefreshRequest(BaseModel):
     refresh_token: str
+    access_token: Optional[str] = None
 
 
 class LogoutRequest(BaseModel):
@@ -418,8 +419,7 @@ async def query_stream(
 ):
     """
     Streaming query endpoint — streams tokens as they arrive via SSE.
-    Uses the SovereignLLLMesh with parallel provider race for fast first-token delivery.
-    Client receives: event:token (text delta), event:done, event:error, event:meta
+    Client receives: event:phase, event:token (text delta), event:citation, event:done, event:error, event:meta
     """
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
     user_tier = token_payload.get("tier", 1)
@@ -438,8 +438,20 @@ async def query_stream(
     if not consent_service.has_consent(user_id, "research_access"):
         raise HTTPException(status_code=403, detail="Consent required for research_access")
 
+    query_id = str(uuid.uuid4())
+
     async def event_generator():
+        import json
+        import re
         import time
+
+        cite_pattern = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
+
+        def extract_citations(text: str):
+            results = []
+            for pub_id, chunk_id in cite_pattern.findall(text):
+                results.append({"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id})
+            return results
 
         try:
             from src.orchestration.nodes.synthesizer import synthesizer_node_streaming
@@ -450,6 +462,9 @@ async def query_stream(
             start = time.time()
             sql_results = []
             chunks = []
+
+            yield f"event: phase\ndata: {{\"phase\": \"intent_detection\", \"label\": \"Analysing query\", \"progress\": 0.1}}\n\n"
+            await asyncio.sleep(0.05)
 
             intent, routing = "structured", "text_to_sql"
             try:
@@ -463,6 +478,8 @@ async def query_stream(
                 kw in query_lower
                 for kw in ["explain", "summarize", "what is", "describe", "latest", "recent", "trends", "advances"]
             )
+
+            yield f"event: phase\ndata: {{\"phase\": \"retrieval\", \"label\": \"Fetching evidence\", \"progress\": 0.3}}\n\n"
 
             if needs_rag:
                 rag = RAGSkill()
@@ -482,6 +499,8 @@ async def query_stream(
                 except Exception as e:
                     logger.warning(f"SQL execution failed: {e}")
 
+            yield f"event: phase\ndata: {{\"phase\": \"synthesis\", \"label\": \"Generating response\", \"progress\": 0.6}}\n\n"
+
             state = {
                 "user_query": request.query,
                 "sql_results": sql_results,
@@ -493,17 +512,36 @@ async def query_stream(
             }
 
             synthesis_tier = "cloud"
-            try:
-                for event in synthesizer_node_streaming(state):
-                    if event["event"] == "token":
-                        yield f"data: {event['data']}\n\n"
-                    elif event["event"] == "done":
-                        synthesis_tier = "rule_based"
-                        yield f"event: meta\ndata: {{\"elapsed_ms\": {(time.time()-start)*1000:.0f}, \"synthesis_tier\": \"{synthesis_tier}\"}}\n\n"
-                        yield "event: done\ndata: \n\n"
-            except Exception as e:
-                logger.error(f"Streaming synthesis error: {e}")
-                yield f"event: error\ndata: {str(e)}\n\n"
+            streamed_citations = []
+
+            for event in synthesizer_node_streaming(state):
+                if event["event"] == "token":
+                    token_text = event["data"]
+                    yield f"data: {token_text}\n\n"
+
+                    for cite in extract_citations(token_text):
+                        if cite["id"] not in [c["id"] for c in streamed_citations]:
+                            streamed_citations.append(cite)
+                            yield f"event: citation\ndata: {json.dumps(cite)}\n\n"
+
+                elif event["event"] == "done":
+                    synthesis_tier = "rule_based"
+                    elapsed_ms = (time.time() - start) * 1000
+                    final_state = event.get("state", {})
+                    citations = final_state.get("citations", streamed_citations)
+                    verification = final_state.get("verification_status", False)
+                    provenance = final_state.get("provenance", {})
+
+                    meta = {
+                        "elapsed_ms": elapsed_ms,
+                        "synthesis_tier": synthesis_tier,
+                        "verification_status": verification,
+                        "citations": citations,
+                        "provenance": provenance,
+                        "query_id": query_id,
+                    }
+                    yield f"event: meta\ndata: {json.dumps(meta)}\n\n"
+                    yield "event: done\ndata: \n\n"
 
         except Exception as e:
             logger.error(f"Streaming query error: {e}")
@@ -518,6 +556,16 @@ async def query_stream(
             "X-Accel-Buffering": "no",
         },
     )
+
+
+def _extract_citations_from_text(text: str) -> list[dict]:
+    import re
+    citations = []
+    cite_pattern = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
+    for pub_id, chunk_id in cite_pattern.findall(text):
+        citations.append({"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id})
+    return citations
+
 
 @app.post("/query")
 async def query_with_langgraph(

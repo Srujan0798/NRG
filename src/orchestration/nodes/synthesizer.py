@@ -703,11 +703,45 @@ def _build_context_summary(conversation_history: list) -> str:
 
 
 def _fallback_response(query: str, context_summary: str) -> str:
+    suggestions = _generate_search_suggestions(query)
+    suggestion_text = f"\n\n**Search suggestions:**\n{suggestions}" if suggestions else ""
+
     if context_summary:
         return (
             f"No new data found for '{query}'. Prior research context: {context_summary}"
+            + suggestion_text
         )
-    return f"No data found for your query: '{query}'."
+    return f"No data found for your query: '{query}'.{suggestion_text}"
+
+
+def _generate_search_suggestions(query: str) -> str:
+    """Generate helpful search suggestions when a query returns no results."""
+    import re
+    suggestions = []
+
+    terms = re.findall(r'\b[a-z]{3,}\b', query.lower())
+    if terms:
+        suggestions.append(f"• Try broader terms: {' or '.join(terms[:3])}")
+        suggestions.append(f"• Use partial matches: '{terms[0][:4]}*'")
+        suggestions.append(f"• Search by author name or institution")
+
+    suggest_terms = [
+        ("machine learning", "deep learning OR neural networks"),
+        ("AI", "artificial intelligence OR machine learning"),
+        ("cancer", "oncology OR tumor OR chemotherapy"),
+        ("climate", "environment OR global warming OR carbon"),
+        ("quantum", "computing OR physics OR cryptography"),
+    ]
+
+    for q_term, replacement in suggest_terms:
+        if q_term.lower() in query.lower():
+            suggestions.append(f"• Related: try searching for '{replacement}'")
+            break
+
+    if len(query.split()) < 3:
+        suggestions.append("• Add more context: include institution, year, or research area")
+
+    return "\n".join(suggestions[:4]) if suggestions else ""
 
 
 def _format_sql_results(query: str, sql_results: list) -> str:

@@ -42,6 +42,11 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true
       },
+      '/api/query/stream': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        ws: true
+      },
       '/me/': {
         target: 'http://localhost:8000',
         changeOrigin: true
