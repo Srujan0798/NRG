@@ -13,6 +13,8 @@ import { GraphView } from '../components/GraphView'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
+import { EmptyState } from '../components/EmptyState'
+import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { ResearchAreasBarChart } from '../components/DataViz'
 import { FundingTrendsLineChart } from '../components/DataViz'
 import { IndiaMapChoropleth } from '../components/DataViz'
@@ -20,6 +22,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
 import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import { Building, Users, FileText, Shield, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
@@ -359,18 +362,26 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                     )}
                     {isSearching && (
                       <div className="mt-4 rounded-xl border border-saffron-200 bg-saffron-50 px-4 py-3 text-sm text-saffron-800" aria-live="polite">
-                        {getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}
+                        <QueryPhaseProgress domain="policy" isSlowQuery={isSlowQuery} />
+                        <p className="mt-2 text-xs">{getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}</p>
                       </div>
                     )}
                     {queryResult && (
                       <div className="mt-4">
-                        <AnswerPanel
-                          response={queryResult.response}
-                          citations={queryResult.citations || []}
-                          provenance={queryResult.provenance}
-                          warnings={queryResult.warnings}
-                          verification_status={queryResult.verification_status}
-                        />
+                        {isEmptyResultResponse(queryResult.response) ? (
+                          <EmptyState
+                            onPrimary={() => setCurrentQuery(buildRelaxedQuery(currentQuery))}
+                            onSecondary={() => setCurrentQuery(currentQuery)}
+                          />
+                        ) : (
+                          <AnswerPanel
+                            response={queryResult.response}
+                            citations={queryResult.citations || []}
+                            provenance={queryResult.provenance}
+                            warnings={queryResult.warnings}
+                            verification_status={queryResult.verification_status}
+                          />
+                        )}
                       </div>
                     )}
                     {queryError && (
@@ -465,7 +476,8 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   )}
                   {isSearching && (
                     <div className="mt-4 rounded-xl border border-saffron-200 bg-saffron-50 px-4 py-3 text-sm text-saffron-800" aria-live="polite">
-                      {getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}
+                      <QueryPhaseProgress domain="policy" isSlowQuery={isSlowQuery} />
+                      <p className="mt-2 text-xs">{getQueryStatusCopy({ isSlowQuery, domain: 'policy' })}</p>
                     </div>
                   )}
                   {queryError && (
@@ -480,13 +492,20 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   )}
                   {queryResult && !queryError && (
                     <div className="mt-4">
-                      <AnswerPanel
-                        response={queryResult.response}
-                        citations={queryResult.citations || []}
-                        provenance={queryResult.provenance}
-                        warnings={queryResult.warnings}
-                        verification_status={queryResult.verification_status}
-                      />
+                      {isEmptyResultResponse(queryResult.response) ? (
+                        <EmptyState
+                          onPrimary={() => setCurrentQuery(buildRelaxedQuery(currentQuery))}
+                          onSecondary={() => setCurrentQuery(currentQuery)}
+                        />
+                      ) : (
+                        <AnswerPanel
+                          response={queryResult.response}
+                          citations={queryResult.citations || []}
+                          provenance={queryResult.provenance}
+                          warnings={queryResult.warnings}
+                          verification_status={queryResult.verification_status}
+                        />
+                      )}
                     </div>
                   )}
                 </div>
