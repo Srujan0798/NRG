@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Building2, AlertCircle, CheckCircle, TrendingUp } from 'lucide-react'
+import { t } from '../../i18n'
 
 interface SummaryCardProps {
   title: string
@@ -94,19 +95,19 @@ export const MinistrySummaryCard: React.FC<MinistrySummaryCardProps> = ({
     </div>
     <div className="p-5 grid grid-cols-2 gap-4">
       <div>
-        <p className="text-xs text-nrg-muted">Institutions</p>
+        <p className="text-xs text-nrg-muted">{t("auto.components.Government.SummaryCards.1")}</p>
         <p className="text-lg font-bold text-nrg-text">{institutionCount.toLocaleString('en-IN')}</p>
       </div>
       <div>
-        <p className="text-xs text-nrg-muted">Researchers</p>
+        <p className="text-xs text-nrg-muted">{t("auto.components.Government.SummaryCards.2")}</p>
         <p className="text-lg font-bold text-nrg-text">{researcherCount.toLocaleString('en-IN')}</p>
       </div>
       <div>
-        <p className="text-xs text-nrg-muted">Funding</p>
+        <p className="text-xs text-nrg-muted">{t("auto.components.Government.SummaryCards.3")}</p>
         <p className="text-lg font-bold text-nrg-text">₹{fundingCr}Cr</p>
       </div>
       <div>
-        <p className="text-xs text-nrg-muted">Top Area</p>
+        <p className="text-xs text-nrg-muted">{t("auto.components.Government.SummaryCards.4")}</p>
         <p className="text-sm font-medium text-nrg-text truncate">{topArea}</p>
       </div>
     </div>

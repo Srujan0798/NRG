@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import SearchBar from '../components/SearchBar'
 import { ScaleStrip } from '../components/ScaleStrip/ScaleStrip'
+import StreamingAnswerPanel from '../components/StreamingAnswerPanel'
+import { t } from '../i18n'
 
 export const Hero: React.FC = () => {
   const [lastQuery, setLastQuery] = useState('')
@@ -14,25 +16,18 @@ export const Hero: React.FC = () => {
       <section className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl flex-col justify-center gap-8">
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-[0.24em] text-[var(--nrg-warning)]">
-            National Research Graph
-          </p>
+            {t("auto.views.Hero.1")}</p>
           <h1 className="max-w-4xl text-4xl font-bold leading-tight text-nrg-text sm:text-5xl">
-            Hello Professor — ask anything about Indian research.
-          </h1>
+            {t("auto.views.Hero.2")}</h1>
           <p className="max-w-2xl text-base leading-7 text-nrg-muted sm:text-lg">
-            Every answer cited. Every byte signed.
-          </p>
+            {t("auto.views.Hero.3")}</p>
         </div>
 
         <SearchBar onSubmit={handleSubmit} />
 
         <ScaleStrip />
 
-        {lastQuery && (
-          <div className="rounded-xl border border-nrg-border bg-[var(--nrg-surface-1)] px-4 py-3 text-sm text-nrg-muted shadow-sm" role="status">
-            Preparing evidence for: <span className="font-semibold text-nrg-text">{lastQuery}</span>
-          </div>
-        )}
+        <StreamingAnswerPanel query={lastQuery} />
       </section>
     </main>
   )

@@ -22,7 +22,7 @@ import MetricsDashboard from './MetricsDashboard'
 import { useQueryStore } from '../stores/queryStore'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
-import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/dashboardCopy'
 import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import {
@@ -30,6 +30,7 @@ import {
   Sun as SunIcon, Moon as MoonIcon, BookOpen, History, LogOut
 } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
+import { t } from '../i18n'
 
 interface ResearcherDashboardProps {
   onThemeToggle: () => void
@@ -180,7 +181,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   }))
 
   return (
-    <ErrorBoundary title="Researcher Dashboard failed to load">
+    <ErrorBoundary title={t("auto.views.ResearcherDashboard.1")}>
       <div className="nrg-app-canvas min-h-screen">
       <header className="sticky top-0 z-40 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-nrg-border">
         <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-violet-400 to-navy-300" />
@@ -195,7 +196,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             </motion.div>
             <div>
               <h1 className="text-lg font-bold text-nrg-text font-devanagari">राष्ट्रीय गवेषण मंच</h1>
-              <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">Researcher Workspace · शोधकर्ता कार्यस्थान</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">{t("auto.views.ResearcherDashboard.2")}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -204,7 +205,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             <motion.button
               onClick={onThemeToggle}
               className="w-10 h-10 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-violet-500 hover:border-violet-300 transition-all duration-200"
-              aria-label="Toggle theme"
+              aria-label={t("auto.views.ResearcherDashboard.3")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -213,12 +214,12 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             <motion.button
               onClick={logout}
               className="h-10 px-3 rounded-xl border border-nrg-border flex items-center gap-2 text-sm font-semibold text-nrg-muted hover:text-rose-600 hover:border-rose-300 transition-all duration-200"
-              aria-label="Log out"
+              aria-label={t("auto.views.ResearcherDashboard.4")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <LogOut size={16} />
-              <span className="hidden sm:inline">Logout</span>
+              <span className="hidden sm:inline">{t("auto.views.ResearcherDashboard.5")}</span>
             </motion.button>
           </div>
         </div>
@@ -268,11 +269,11 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <div className="flex items-center gap-2">
                   <Search size={18} className="text-violet-500" />
                   <div>
-                    <h2 className="text-sm font-semibold text-nrg-text">Ask NRG</h2>
-                    <p className="text-xs text-nrg-muted">Evidence-backed answers with citations, audit trail, and tier controls</p>
+                    <h2 className="text-sm font-semibold text-nrg-text">{t("auto.views.ResearcherDashboard.6")}</h2>
+                    <p className="text-xs text-nrg-muted">{t("auto.views.ResearcherDashboard.7")}</p>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-2" aria-label="Suggested demo queries">
+                <div className="flex flex-wrap gap-2" aria-label={t("auto.views.ResearcherDashboard.8")}>
                   {DEMO_QUERY_SUGGESTIONS.map((suggestion) => (
                     <button
                       key={suggestion}
@@ -289,7 +290,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 </div>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <label htmlFor="researcher-search-input" className="sr-only">Research query</label>
+                <label htmlFor="researcher-search-input" className="sr-only">{t("auto.views.ResearcherDashboard.9")}</label>
                 <input
                   id="researcher-search-input"
                   type="text"
@@ -299,7 +300,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                     if (queryValidation) setQueryValidation(null)
                   }}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                  placeholder="Ask anything about Indian research grants, institutions, publications, or collaborations..."
+                  placeholder={t("auto.views.ResearcherDashboard.10")}
                   className="nrg-input min-h-12 flex-1"
                   data-testid="researcher-search-input"
                 />
@@ -314,8 +315,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   {isSearching ? (
                     <span className="flex items-center gap-2">
                       <SaffronSpinner style={{ width: 16, height: 16, borderWidth: 2 }} />
-                      Processing…
-                    </span>
+                      {t("auto.views.ResearcherDashboard.11")}</span>
                   ) : (
                     'Search'
                   )}
@@ -326,7 +326,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               )}
 
               {isSearching && (
-                <div className="mt-4" aria-label="Query in progress">
+                <div className="mt-4" aria-label={t("auto.views.ResearcherDashboard.12")}>
                   <QueryPhaseProgress domain="research" isSlowQuery={isSlowQuery} />
                   <p className="mt-2 text-xs text-nrg-muted">{getQueryStatusCopy({ isSlowQuery, domain: 'research' })}</p>
                 </div>
@@ -335,7 +335,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               {queryError && (
                 <div className="mt-4">
                   <ErrorState
-                    title="Query Failed"
+                    title={t("auto.views.ResearcherDashboard.13")}
                     message={queryError}
                     severity="error"
                     onRetry={handleRetry}
@@ -347,8 +347,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <div className="mt-4 space-y-4">
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-nrg-text">Conversation</h3>
-                      <p className="text-xs text-nrg-muted">Each answer keeps the question visible for the demo flow.</p>
+                      <h3 className="text-sm font-semibold text-nrg-text">{t("auto.views.ResearcherDashboard.14")}</h3>
+                      <p className="text-xs text-nrg-muted">{t("auto.views.ResearcherDashboard.15")}</p>
                     </div>
                     <button
                       type="button"
@@ -359,13 +359,12 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                       }}
                       className="min-h-10 rounded-lg border border-nrg-border px-3 py-1.5 text-xs font-medium text-nrg-muted transition-colors hover:border-violet-300 hover:text-violet-600"
                     >
-                      New conversation
-                    </button>
+                      {t("auto.views.ResearcherDashboard.16")}</button>
                   </div>
                   {conversationTurns.map((turn, index) => (
                     <div key={`${turn.result.query_id}-${index}`} className="rounded-2xl border border-nrg-border overflow-hidden">
                       <div className="px-4 py-3 bg-[var(--glass-bg)] border-b border-nrg-border">
-                        <p className="text-xs font-semibold text-nrg-muted">Question {index + 1}</p>
+                        <p className="text-xs font-semibold text-nrg-muted">{t("auto.views.ResearcherDashboard.17")}{index + 1}</p>
                         <p className="text-sm text-nrg-text">{turn.query}</p>
                       </div>
                       <div className="p-4">
@@ -390,10 +389,10 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               )}
             </div>
 
-            <WidgetErrorBoundary title="Stats cards failed to load">
+            <WidgetErrorBoundary title={t("auto.views.ResearcherDashboard.18")}>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <StatsCard
-                  label="Total Researchers"
+                  label={t("auto.views.ResearcherDashboard.19")}
                   labelHi="कुल शोधकर्ता"
                   value={statsData?.total_researchers ?? 5615}
                   sublabel="Across 181 institutions"
@@ -403,7 +402,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   data-testid="stat-researchers"
                 />
                 <StatsCard
-                  label="Publications"
+                  label={t("auto.views.ResearcherDashboard.20")}
                   labelHi="प्रकाशन"
                   value={statsData?.total_publications ?? 12847}
                   sublabel="Peer-reviewed works"
@@ -413,7 +412,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   data-testid="stat-publications"
                 />
                 <StatsCard
-                  label="Institutions"
+                  label={t("auto.views.ResearcherDashboard.21")}
                   labelHi="संस्थान"
                   value={statsData?.total_institutions ?? 181}
                   sublabel="Academic + Research"
@@ -423,7 +422,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   data-testid="stat-institutions"
                 />
                 <StatsCard
-                  label="Your Queries"
+                  label={t("auto.views.ResearcherDashboard.22")}
                   labelHi="आपके प्रश्न"
                   value={history.length}
                   sublabel="This session"
@@ -437,7 +436,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="space-y-4">
-                <GlassCard accent="researcher" title="My Publications" description="Recent works from your profile">
+                <GlassCard accent="researcher" title={t("auto.views.ResearcherDashboard.23")} description={t("auto.views.ResearcherDashboard.24")}>
                   {pubsLoading ? (
                     <SkeletonLoader type="list" count={4} />
                   ) : publications.length > 0 ? (
@@ -460,7 +459,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-xs font-semibold text-violet-600 dark:text-violet-400">{pub.citations || 0}</p>
-                            <p className="text-xs text-nrg-muted">citations</p>
+                            <p className="text-xs text-nrg-muted">{t("auto.views.ResearcherDashboard.25")}</p>
                           </div>
                         </motion.div>
                       ))}
@@ -468,7 +467,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   ) : (
                     <div className="text-center py-10 text-nrg-muted">
                       <BookOpen size={40} className="mx-auto mb-3 opacity-50" />
-                      <p className="text-sm">No publications found.</p>
+                      <p className="text-sm">{t("auto.views.ResearcherDashboard.26")}</p>
                     </div>
                   )}
                 </GlassCard>
@@ -478,14 +477,14 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 {researchAreaChartData.length > 0 && (
                   <ResearchAreasBarChart
                     data={researchAreaChartData.map((d, i) => ({ ...d, color: pieColors[i % pieColors.length] }))}
-                    title="Top Research Areas"
+                    title={t("auto.views.ResearcherDashboard.27")}
                     titleHi="शीर्ष शोध क्षेत्र"
-                    subtitle="Distribution by specialization"
+                    subtitle={t("auto.views.ResearcherDashboard.28")}
                   />
                 )}
 
                 {history.length > 0 && (
-                  <GlassCard accent="sovereign" title="Recent Queries" description="Your query history this session">
+                  <GlassCard accent="sovereign" title={t("auto.views.ResearcherDashboard.29")} description={t("auto.views.ResearcherDashboard.30")}>
                     <div className="space-y-2 max-h-48 overflow-y-auto scrollbar-nrg">
                       {history.slice(0, 6).map((entry) => (
                         <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-nrg-border/40 last:border-0">
@@ -515,7 +514,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <WidgetErrorBoundary title="Knowledge graph failed to load">
+            <WidgetErrorBoundary title={t("auto.views.ResearcherDashboard.31")}>
               <GraphView
                 data={graphData}
                 width={1100}
@@ -548,8 +547,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Query
-                </motion.button>
+                  {t("auto.views.ResearcherDashboard.32")}</motion.button>
               </motion.div>
             )}
             </WidgetErrorBoundary>
@@ -562,7 +560,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
           >
-            <WidgetErrorBoundary title="Data rights panel failed to load">
+            <WidgetErrorBoundary title={t("auto.views.ResearcherDashboard.33")}>
               <DPDPPanel role="researcher" />
             </WidgetErrorBoundary>
           </motion.div>
@@ -570,7 +568,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
         {activeTab === 'audit' && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-            <WidgetErrorBoundary title="Audit log failed to load">
+            <WidgetErrorBoundary title={t("auto.views.ResearcherDashboard.34")}>
               <DPDPAuditLog />
             </WidgetErrorBoundary>
           </motion.div>

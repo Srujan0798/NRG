@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { t } from '../../i18n'
 
 interface StateData {
   state: string
@@ -122,11 +123,11 @@ export const IndiaMapChoropleth: React.FC<IndiaMapChoroplethProps> = ({
       <div className="mt-4 flex items-center justify-center gap-3 text-xs text-nrg-muted">
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-saffron-500" />
-          <span>High</span>
+          <span>{t("auto.components.DataViz.IndiaMapChoropleth.1")}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-saffron-300" />
-          <span>Medium</span>
+          <span>{t("auto.components.DataViz.IndiaMapChoropleth.2")}</span>
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-saffron-100" />

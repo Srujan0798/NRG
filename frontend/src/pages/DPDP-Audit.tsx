@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../i18n'
 export default function DPDPAudit() {
   const [events, setEvents] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -17,11 +18,11 @@ export default function DPDPAudit() {
 
   return (
     <div className="iitgn-dpdp-audit p-6">
-      <h1 className="text-2xl font-bold mb-4">DPDP 2023 Compliance Audit</h1>
-      {error && <div className="text-red-600 mb-4">Unable to load audit events. {error}</div>}
+      <h1 className="text-2xl font-bold mb-4">{t("auto.pages.DPDP.Audit.1")}</h1>
+      {error && <div className="text-red-600 mb-4">{t("auto.pages.DPDP.Audit.2")}{error}</div>}
       <table className="w-full text-sm border">
         <thead className="bg-gray-100">
-          <tr><th className="p-2 border">Time</th><th className="p-2 border">User</th><th className="p-2 border">Action</th></tr>
+          <tr><th className="p-2 border">{t("auto.pages.DPDP.Audit.3")}</th><th className="p-2 border">{t("auto.pages.DPDP.Audit.4")}</th><th className="p-2 border">{t("auto.pages.DPDP.Audit.5")}</th></tr>
         </thead>
         <tbody>
           {events.map((ev, idx) => (

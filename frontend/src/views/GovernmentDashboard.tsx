@@ -20,11 +20,12 @@ import { IndiaMapChoropleth } from '../components/DataViz'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
-import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/demoPresentation'
+import { getDashboardDocumentTitle, getQueryStatusCopy } from '../utils/dashboardCopy'
 import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import { Building, Users, FileText, Shield, Search } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
+import { t } from '../i18n'
 
 interface GovernmentDashboardProps {
   onThemeToggle: () => void
@@ -181,7 +182,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
   })
 
   return (
-    <ErrorBoundary title="Government Dashboard failed to load">
+    <ErrorBoundary title={t("auto.views.GovernmentDashboard.1")}>
       <div className="nrg-app-canvas min-h-screen">
         <GovernmentHeader onThemeToggle={onThemeToggle} theme={theme} />
 
@@ -219,14 +220,14 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Stats cards failed to load" description="Could not load dashboard statistics">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.2")} description={t("auto.views.GovernmentDashboard.3")}>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {statsLoading ? (
                     <SkeletonLoader type="stats" />
                   ) : (
                     <>
                       <StatsCard
-                        label="Total Researchers"
+                        label={t("auto.views.GovernmentDashboard.4")}
                         labelHi="कुल शोधकर्ता"
                         value={statsData?.total_researchers ?? 0}
                         sublabel="Across government institutions"
@@ -236,7 +237,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         data-testid="stat-researchers"
                       />
                       <StatsCard
-                        label="Publications"
+                        label={t("auto.views.GovernmentDashboard.5")}
                         labelHi="प्रकाशन"
                         value={statsData?.total_publications ?? 0}
                         sublabel="Peer-reviewed works"
@@ -246,7 +247,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         data-testid="stat-publications"
                       />
                       <StatsCard
-                        label="Research Labs"
+                        label={t("auto.views.GovernmentDashboard.6")}
                         labelHi="शोध प्रयोगशालाएं"
                         value={statsData?.total_labs ?? 0}
                         sublabel="Across institutions"
@@ -256,7 +257,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         data-testid="stat-labs"
                       />
                       <StatsCard
-                        label="Institutions"
+                        label={t("auto.views.GovernmentDashboard.7")}
                         labelHi="संस्थान"
                         value={statsData?.total_institutions ?? 0}
                         sublabel="Government affiliated"
@@ -271,48 +272,48 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               </WidgetErrorBoundary>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <WidgetErrorBoundary title="Research area chart failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.8")}>
                   <div className="lg:col-span-2">
                     {statsLoading ? (
                       <SkeletonLoader type="chart" />
                     ) : (
                       <ResearchAreasBarChart
                         data={researchAreaData}
-                        title="Research Area Distribution"
+                        title={t("auto.views.GovernmentDashboard.9")}
                         titleHi="शोध क्षेत्र वितरण"
-                        subtitle="Top research areas across government institutions"
+                        subtitle={t("auto.views.GovernmentDashboard.10")}
                       />
                     )}
                   </div>
                 </WidgetErrorBoundary>
-                <WidgetErrorBoundary title="State map failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.11")}>
                   {statsLoading ? (
                     <SkeletonLoader type="chart" />
                   ) : (
                     <IndiaMapChoropleth
                       data={stateData}
-                      title="State Distribution"
+                      title={t("auto.views.GovernmentDashboard.12")}
                       titleHi="राज्य वितरण"
-                      subtitle="Research activity by state"
+                      subtitle={t("auto.views.GovernmentDashboard.13")}
                     />
                   )}
                 </WidgetErrorBoundary>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <WidgetErrorBoundary title="Funding trends chart failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.14")}>
                   <FundingTrendsLineChart
                     data={fundingTrendData}
-                    title="Funding Trends"
+                    title={t("auto.views.GovernmentDashboard.15")}
                     titleHi="वित्तीय रुझान"
-                    subtitle="Research funding over time (in Crores)"
+                    subtitle={t("auto.views.GovernmentDashboard.16")}
                   />
                 </WidgetErrorBoundary>
 
-                <WidgetErrorBoundary title="Quick query panel failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.17")}>
                   <div className="nrg-panel p-5">
                     <div className="mb-4">
-                      <h3 className="text-sm font-semibold text-nrg-text">Quick Query</h3>
+                      <h3 className="text-sm font-semibold text-nrg-text">{t("auto.views.GovernmentDashboard.18")}</h3>
                       <p className="text-xs text-nrg-muted font-devanagari">त्वरित प्रश्न</p>
                     </div>
                     <div className="mb-3 flex flex-wrap gap-2">
@@ -331,7 +332,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       ))}
                     </div>
                     <div className="flex flex-col gap-3 sm:flex-row">
-                      <label htmlFor="policy-query-input" className="sr-only">Policy query</label>
+                      <label htmlFor="policy-query-input" className="sr-only">{t("auto.views.GovernmentDashboard.19")}</label>
                       <input
                         id="policy-query-input"
                         type="text"
@@ -341,7 +342,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                           if (queryValidation) setQueryValidation(null)
                         }}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder="Enter policy query..."
+                        placeholder={t("auto.views.GovernmentDashboard.20")}
                         className="min-h-12 flex-1 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] px-4 py-2.5 text-sm text-nrg-text placeholder:text-nrg-muted focus:border-saffron-500 focus:outline-none"
                         data-testid="policy-query-input"
                       />
@@ -386,7 +387,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                     {queryError && (
                       <div className="mt-4">
                         <ErrorState
-                          title="Query Failed"
+                          title={t("auto.views.GovernmentDashboard.21")}
                           message={queryError}
                           severity="error"
                           onRetry={handleSearch}
@@ -397,11 +398,10 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                 </WidgetErrorBoundary>
               </div>
 
-              <WidgetErrorBoundary title="Ministry summary failed to load">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.22")}>
                 <div className="space-y-4">
                   <h2 className="text-lg font-semibold text-nrg-text">
-                    Ministry Summary
-                    <span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">मंत्रालय सारांश</span>
+                    {t("auto.views.GovernmentDashboard.23")}<span className="text-sm font-normal text-nrg-muted ml-2 font-devanagari">मंत्रालय सारांश</span>
                   </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {ministryData.map((m, i) => (
@@ -419,12 +419,12 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Policy analysis workspace failed to load">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.24")}>
                 <div className="nrg-panel p-4 sm:p-5">
                   <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                     <div>
-                      <h2 className="text-base font-semibold text-nrg-text">Policy Analysis Workbench</h2>
-                      <p className="text-sm text-nrg-muted">Ask cross-state and ministry questions, then show the cited answer directly in the room.</p>
+                      <h2 className="text-base font-semibold text-nrg-text">{t("auto.views.GovernmentDashboard.25")}</h2>
+                      <p className="text-sm text-nrg-muted">{t("auto.views.GovernmentDashboard.26")}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {POLICY_DEMO_QUERIES.map((suggestion) => (
@@ -444,7 +444,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <label htmlFor="policy-analysis-input" className="sr-only">Policy analysis query</label>
+                    <label htmlFor="policy-analysis-input" className="sr-only">{t("auto.views.GovernmentDashboard.27")}</label>
                     <input
                       id="policy-analysis-input"
                       type="text"
@@ -454,7 +454,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                         if (queryValidation) setQueryValidation(null)
                       }}
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                      placeholder="Ask for state-level trends, funding concentration, or institutional performance..."
+                      placeholder={t("auto.views.GovernmentDashboard.28")}
                       className="nrg-input min-h-12 flex-1"
                       data-testid="policy-analysis-input"
                     />
@@ -482,7 +482,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   {queryError && (
                     <div className="mt-4">
                       <ErrorState
-                        title="Analysis Failed"
+                        title={t("auto.views.GovernmentDashboard.29")}
                         message={queryError}
                         severity="error"
                         onRetry={handleSearch}
@@ -511,20 +511,20 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               </WidgetErrorBoundary>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <WidgetErrorBoundary title="Funding trend failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.30")}>
                   <FundingTrendsLineChart
                     data={fundingTrendData}
-                    title="Policy Funding Signal"
+                    title={t("auto.views.GovernmentDashboard.31")}
                     titleHi="नीति वित्त संकेत"
-                    subtitle="Funding and publication movement for briefing context"
+                    subtitle={t("auto.views.GovernmentDashboard.32")}
                   />
                 </WidgetErrorBoundary>
-                <WidgetErrorBoundary title="Research area distribution failed to load">
+                <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.33")}>
                   <ResearchAreasBarChart
                     data={researchAreaData.slice(0, 6)}
-                    title="Strategic Research Areas"
+                    title={t("auto.views.GovernmentDashboard.34")}
                     titleHi="रणनीतिक शोध क्षेत्र"
-                    subtitle="Top areas available for policy allocation"
+                    subtitle={t("auto.views.GovernmentDashboard.35")}
                   />
                 </WidgetErrorBoundary>
               </div>
@@ -537,9 +537,9 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Institution table failed to load">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.36")}>
                 <DataTable
-                  title="Institution Directory"
+                  title={t("auto.views.GovernmentDashboard.37")}
                   titleHi="संस्थान निर्देशिका"
                   columns={[
                     { key: 'institution', label: 'Institution' },
@@ -567,7 +567,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               animate={{ opacity: 1, y: 0 }}
               className="space-y-4"
             >
-              <WidgetErrorBoundary title="Knowledge graph failed to load">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.38")}>
                 <div className="nrg-panel p-5">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 flex gap-3">
@@ -578,7 +578,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                           value={graphTopic}
                           onChange={(e) => setGraphTopic(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && setGraphTopic(graphTopic)}
-                          placeholder="Enter topic for knowledge graph..."
+                          placeholder={t("auto.views.GovernmentDashboard.39")}
                           className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] text-sm text-nrg-text placeholder:text-nrg-muted focus:outline-none focus:border-saffron-500"
                           data-testid="graph-topic-input"
                         />
@@ -629,7 +629,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
               animate={{ opacity: 1, y: 0 }}
               className="space-y-6"
             >
-              <WidgetErrorBoundary title="Data rights panel failed to load">
+              <WidgetErrorBoundary title={t("auto.views.GovernmentDashboard.40")}>
                 <DPDPPanel role="government" />
               </WidgetErrorBoundary>
             </motion.div>

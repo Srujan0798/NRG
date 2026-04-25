@@ -1,5 +1,14 @@
+# [SUPERSEDED HEADER, SPEC BODY STILL VALID]
+
+> **The architectural and UX spec below is technically sound** — design tokens, component contracts, accessibility, mobile, motion, telemetry, etc. all remain correct.
+> **What is replaced:** the framing "extraordinary for a demo" / "wins the room" / "demo-day polish" — NRG is production software for real users, not a presentation.
+> **Read alongside:** `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` for production framing of the same work.
+> **Reference rule:** `.claude/rules/production_only.md`.
+
+---
+
 # NRG — FRONTEND / UI / UX MASTER SPEC
-**Version:** 1.0 — ETERNAL DEMO-READY
+**Version:** 1.1 — PRODUCTION HARDENING SPEC
 **Date:** 2026-04-25
 **Author:** Guru Agent (Claude)
 **Audience:** Execution agents (Athena-UX, Hermes-UI, Apollo-Polish, Iris-A11y, Vulcan-Perf)

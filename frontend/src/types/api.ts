@@ -14,7 +14,7 @@
  * - stats field presence: government gets full fields; industry gets limited set.
  */
 
-import type { GraphEdge, QueryWarning } from '../services/queryService';
+import type { Citation, GraphEdge, QueryWarning } from '../services/queryService';
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
@@ -204,6 +204,33 @@ export interface NRGQueryResponse {
   synthesis_method?: string
   conversation_history: Array<{ query: string; response: string }>
 }
+
+// ─── Streaming Query ─────────────────────────────────────────────────────────
+
+export interface PlanDAG {
+  steps: string[]
+  nodes?: Array<{
+    id: string
+    label: string
+    status?: 'pending' | 'active' | 'complete'
+  }>
+}
+
+export type StreamPhaseName =
+  | 'planning'
+  | 'planned'
+  | 'executing'
+  | 'synthesizing'
+  | 'verified'
+  | 'error'
+
+export type StreamQueryEvent =
+  | { phase: 'planned'; plan: PlanDAG }
+  | { phase: 'executing'; sql?: string; retrieved_count?: number }
+  | { phase: 'synthesizing'; token: string; citation?: Citation }
+  | { phase: 'verified'; citations: Citation[]; audit_event_id: string; signature_bytes?: number }
+  | { phase: 'heartbeat' }
+  | { phase: 'error'; message?: string }
 
 // ─── Consent ──────────────────────────────────────────────────────────────────
 

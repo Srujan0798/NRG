@@ -4,6 +4,7 @@ import { Shield, Download, Trash2, CheckCircle2, XCircle, RefreshCw, AlertTriang
 import { useDPDPStore } from '../stores/dpdpStore';
 import { CONSENT_SCOPES } from '../services/dpdpService';
 import type { ConsentScope } from '../services/dpdpService';
+import { t } from '../i18n'
 
 interface DPDPPanelProps {
   role?: 'researcher' | 'government' | 'industry';
@@ -85,8 +86,7 @@ function ConfirmationDialog({
               onClick={onCancel}
               className="flex-1 px-4 py-2.5 rounded-xl border border-nrg-border text-nrg-muted text-sm font-medium hover:bg-saffron-500/10 transition-colors"
             >
-              Cancel
-            </button>
+              {t("auto.components.DPDPPanel.1")}</button>
             <button
               onClick={onConfirm}
               className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white transition-colors ${
@@ -167,7 +167,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
       <AnimatePresence>
         {confirmDialog.type === 'erase' && (
           <ConfirmationDialog
-            title="Erase All My Data"
+            title={t("auto.components.DPDPPanel.2")}
             message="This will permanently anonymize your query history and delete your consent records. This action cannot be undone within the 30-day grace period per DPDP Act 2023."
             confirmLabel="Erase My Data"
             confirmDanger
@@ -185,8 +185,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
         >
           <CheckCircle2 size={18} className="text-green-600 dark:text-green-400 shrink-0" />
           <p className="text-sm text-green-800 dark:text-green-200">
-            Data erasure initiated. You will be logged out and redirected shortly.
-          </p>
+            {t("auto.components.DPDPPanel.3")}</p>
         </motion.div>
       )}
 
@@ -198,17 +197,15 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
         >
           <p className="text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
             <AlertTriangle size={16} className="shrink-0" />
-            <strong>{expiringConsents.length} consent{expiringConsents.length > 1 ? 's' : ''}</strong> will
-            expire within 30 days. Please review and re-consent to maintain access.
-          </p>
+            <strong>{expiringConsents.length} {t("auto.components.DPDPPanel.4")}{expiringConsents.length > 1 ? 's' : ''}</strong> {t("auto.components.DPDPPanel.5")}</p>
         </motion.div>
       )}
 
       <div className="nrg-panel overflow-hidden">
         <div className="px-5 py-4 border-b border-nrg-border bg-[var(--glass-bg)] flex items-center justify-between">
           <div>
-            <h3 className="text-base font-semibold text-nrg-text">Data Processing Consents</h3>
-            <p className="text-xs text-nrg-muted">Per DPDP Act 2023 · आपके अधिकार</p>
+            <h3 className="text-base font-semibold text-nrg-text">{t("auto.components.DPDPPanel.6")}</h3>
+            <p className="text-xs text-nrg-muted">{t("auto.components.DPDPPanel.7")}</p>
           </div>
           <button
             onClick={() => { setSyncing(true); syncWithBackend().finally(() => setSyncing(false)); }}
@@ -244,9 +241,9 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
                     {CONSENT_SCOPES[scope]}
                   </p>
                   <p className="text-xs text-nrg-muted">
-                    Scope: <code className="text-xs">{scope}</code>
+                    {t("auto.components.DPDPPanel.8")}<code className="text-xs">{scope}</code>
                     {expiresAt && isGranted && (
-                      <span className="ml-2 text-green-600 dark:text-green-400">Expires: {expiresAt}</span>
+                      <span className="ml-2 text-green-600 dark:text-green-400">{t("auto.components.DPDPPanel.9")}{expiresAt}</span>
                     )}
                   </p>
                 </div>
@@ -258,16 +255,14 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
                       className="px-3 py-1.5 rounded-lg text-xs font-medium border border-red-200 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       data-testid={`revoke-${scope}`}
                     >
-                      Revoke
-                    </button>
+                      {t("auto.components.DPDPPanel.10")}</button>
                   ) : (
                     <button
                       onClick={() => grantConsent(scope, 365)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
                       data-testid={`grant-${scope}`}
                     >
-                      Grant
-                    </button>
+                      {t("auto.components.DPDPPanel.11")}</button>
                   )}
                 </div>
               </div>
@@ -283,13 +278,12 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
               <Download size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-nrg-text">Export My Data</p>
-              <p className="text-xs text-nrg-muted">DPDP Right to Access</p>
+              <p className="text-sm font-semibold text-nrg-text">{t("auto.components.DPDPPanel.12")}</p>
+              <p className="text-xs text-nrg-muted">{t("auto.components.DPDPPanel.13")}</p>
             </div>
           </div>
           <p className="text-xs text-nrg-muted mb-4">
-            Download all your query history, consent records, and audit trail as a JSON file.
-          </p>
+            {t("auto.components.DPDPPanel.14")}</p>
           <button
             onClick={handleExport}
             disabled={isExporting}
@@ -297,11 +291,11 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
             data-testid="export-data-btn"
           >
             {isExporting ? (
-              <><Loader2 size={14} className="animate-spin" /> Preparing export…</>
+              <><Loader2 size={14} className="animate-spin" /> {t("auto.components.DPDPPanel.15")}</>
             ) : exportSuccess ? (
-              <><CheckCircle2 size={14} /> Downloaded!</>
+              <><CheckCircle2 size={14} /> {t("auto.components.DPDPPanel.16")}</>
             ) : (
-              <><Download size={14} /> Download Data</>
+              <><Download size={14} /> {t("auto.components.DPDPPanel.17")}</>
             )}
           </button>
         </div>
@@ -312,13 +306,12 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
               <Trash2 size={16} className="text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-nrg-text">Erase My Data</p>
-              <p className="text-xs text-nrg-muted">DPDP Right to Erasure</p>
+              <p className="text-sm font-semibold text-nrg-text">{t("auto.components.DPDPPanel.18")}</p>
+              <p className="text-xs text-nrg-muted">{t("auto.components.DPDPPanel.19")}</p>
             </div>
           </div>
           <p className="text-xs text-nrg-muted mb-4">
-            Permanently delete your PII. Query history will be anonymized and consent records removed. 30-day grace period applies.
-          </p>
+            {t("auto.components.DPDPPanel.20")}</p>
           <button
             onClick={() => setConfirmDialog({ type: 'erase' })}
             disabled={isErasing}
@@ -326,9 +319,9 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
             data-testid="erase-data-btn"
           >
             {isErasing ? (
-              <><Loader2 size={14} className="animate-spin" /> Erasing…</>
+              <><Loader2 size={14} className="animate-spin" /> {t("auto.components.DPDPPanel.21")}</>
             ) : (
-              <><Trash2 size={14} /> Request Erasure</>
+              <><Trash2 size={14} /> {t("auto.components.DPDPPanel.22")}</>
             )}
           </button>
         </div>

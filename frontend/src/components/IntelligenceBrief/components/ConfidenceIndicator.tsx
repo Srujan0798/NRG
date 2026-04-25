@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '../../../i18n'
 
 interface ConfidenceIndicatorProps {
   score: number
@@ -77,7 +78,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
 
         <div className="flex-1 grid grid-cols-2 gap-4">
           <div>
-            <p className="text-xs font-medium text-nrg-muted mb-1.5">Factors</p>
+            <p className="text-xs font-medium text-nrg-muted mb-1.5">{t("auto.components.IntelligenceBrief.components.ConfidenceIndicator.1")}</p>
             <ul className="space-y-1">
               {factors.map((f, i) => (
                 <li key={i} className="flex items-center gap-1.5 text-xs text-green-700">
@@ -88,7 +89,7 @@ export const ConfidenceIndicator: React.FC<ConfidenceIndicatorProps> = ({
             </ul>
           </div>
           <div>
-            <p className="text-xs font-medium text-nrg-muted mb-1.5">Limitations</p>
+            <p className="text-xs font-medium text-nrg-muted mb-1.5">{t("auto.components.IntelligenceBrief.components.ConfidenceIndicator.2")}</p>
             <ul className="space-y-1">
               {limitations.map((l, i) => (
                 <li key={i} className="flex items-center gap-1.5 text-xs text-amber-700">

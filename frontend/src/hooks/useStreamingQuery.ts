@@ -1,8 +1,12 @@
-import { useState, useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { authService } from '../services/authService'
+import { Citation, QueryRequest, queryService } from '../services/queryService'
+import { useQueryStore } from '../stores/queryStore'
+import { PlanDAG, StreamPhaseName, StreamQueryEvent } from '../types/api'
+import { errorCopy } from '../i18n/en-IN'
 
 export interface StreamPhase {
-  phase: string
+  phase: StreamPhaseName
   label: string
   progress: number
 }
@@ -11,6 +15,7 @@ export interface StreamCitation {
   id: string
   pub_id: string
   chunk_id: string
+  title?: string
 }
 
 export interface StreamMeta {
@@ -20,6 +25,15 @@ export interface StreamMeta {
   citations: StreamCitation[]
   provenance: Record<string, unknown>
   query_id: string
+  audit_event_id?: string
+  signature_bytes?: number
+}
+
+export interface EventSourceLike {
+  addEventListener: EventSource['addEventListener']
+  close: EventSource['close']
+  onmessage: EventSource['onmessage']
+  onerror: EventSource['onerror']
 }
 
 export interface UseStreamingQueryOptions {
@@ -27,108 +41,320 @@ export interface UseStreamingQueryOptions {
   onCitation?: (citation: StreamCitation) => void
   onComplete?: (meta: StreamMeta, fullText: string) => void
   onError?: (error: string) => void
+  eventSourceFactory?: (request: QueryRequest) => EventSourceLike
+  silenceTimeoutMs?: number
+}
+
+const PHASES: Record<StreamPhaseName, StreamPhase> = {
+  planning: { phase: 'planning', label: 'Planning evidence path', progress: 0.1 },
+  planned: { phase: 'planned', label: 'Evidence plan ready', progress: 0.25 },
+  executing: { phase: 'executing', label: 'Retrieving signed records', progress: 0.55 },
+  synthesizing: { phase: 'synthesizing', label: 'Writing answer with citations', progress: 0.8 },
+  verified: { phase: 'verified', label: 'Verified by HMAC chain', progress: 1 },
+  error: { phase: 'error', label: 'Answer paused', progress: 0 },
+}
+
+const SILENCE_ERROR = 'This is taking longer than usual. Please try again.'
+const CONNECTION_ERROR = errorCopy.generic
+
+const toStreamCitation = (citation: Citation | StreamCitation): StreamCitation => ({
+  id: citation.id,
+  pub_id: citation.pub_id || ('source' in citation ? citation.source : undefined) || citation.id,
+  chunk_id: citation.chunk_id || '0',
+  title: citation.title,
+})
+
+type StreamEventPayload = Partial<StreamQueryEvent> & Record<string, any>
+
+const parseEventData = (data: string): StreamEventPayload | string | null => {
+  if (!data || data === '[DONE]') return null
+
+  try {
+    return JSON.parse(data) as StreamEventPayload
+  } catch {
+    return data
+  }
+}
+
+const normalizeLegacyPhase = (phase: string): StreamPhaseName => {
+  if (phase === 'intent_detection') return 'planning'
+  if (phase === 'retrieval') return 'executing'
+  if (phase === 'synthesis') return 'synthesizing'
+  if (phase in PHASES) return phase as StreamPhaseName
+  return 'planning'
 }
 
 export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [currentPhase, setCurrentPhase] = useState<StreamPhase | null>(null)
+  const [plan, setPlan] = useState<PlanDAG | null>(null)
+  const [sql, setSql] = useState('')
+  const [retrievedCount, setRetrievedCount] = useState(0)
   const [fullText, setFullText] = useState('')
   const [citations, setCitations] = useState<StreamCitation[]>([])
+  const [auditEventId, setAuditEventId] = useState<string | null>(null)
+  const [signatureBytes, setSignatureBytes] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const eventSourceRef = useRef<EventSource | null>(null)
+  const [isRecoverableError, setIsRecoverableError] = useState(false)
 
-  const abortStream = useCallback(() => {
+  const optionsRef = useRef(options)
+  const eventSourceRef = useRef<EventSourceLike | null>(null)
+  const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fullTextRef = useRef('')
+  const citationsRef = useRef<StreamCitation[]>([])
+
+  useEffect(() => {
+    optionsRef.current = options
+  }, [options])
+
+  const clearSilenceTimer = useCallback(() => {
+    if (silenceTimerRef.current) {
+      clearTimeout(silenceTimerRef.current)
+      silenceTimerRef.current = null
+    }
+  }, [])
+
+  const closeSource = useCallback(() => {
     if (eventSourceRef.current) {
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
-    setIsStreaming(false)
   }, [])
 
+  const setPhase = useCallback((phaseName: StreamPhaseName, override?: Partial<StreamPhase>) => {
+    const nextPhase = { ...PHASES[phaseName], ...override }
+    setCurrentPhase(nextPhase)
+    useQueryStore.getState().setStreaming({ phase: phaseName })
+    optionsRef.current.onPhaseChange?.(nextPhase)
+  }, [])
+
+  const failRecoverably = useCallback((message: string) => {
+    closeSource()
+    clearSilenceTimer()
+    setIsStreaming(false)
+    setIsRecoverableError(true)
+    setError(message)
+    useQueryStore.getState().setStreaming({ phase: 'error', error: message })
+    setPhase('error')
+    optionsRef.current.onError?.(message)
+  }, [clearSilenceTimer, closeSource, setPhase])
+
+  const resetSilenceTimer = useCallback(() => {
+    clearSilenceTimer()
+    const timeoutMs = optionsRef.current.silenceTimeoutMs ?? 25000
+    silenceTimerRef.current = setTimeout(() => {
+      failRecoverably(SILENCE_ERROR)
+    }, timeoutMs)
+  }, [clearSilenceTimer, failRecoverably])
+
+  const addCitation = useCallback((citation: Citation | StreamCitation) => {
+    const normalized = toStreamCitation(citation)
+    setCitations((current) => {
+      if (current.some((item) => item.id === normalized.id)) return current
+      const next = [...current, normalized]
+      citationsRef.current = next
+      return next
+    })
+    optionsRef.current.onCitation?.(normalized)
+  }, [])
+
+  const appendToken = useCallback((token: string) => {
+    if (!token) return
+    setFullText((current) => {
+      const next = current + token
+      fullTextRef.current = next
+      useQueryStore.getState().setStreaming({ answer: next })
+      return next
+    })
+  }, [])
+
+  const completeStream = useCallback((payload: Extract<StreamQueryEvent, { phase: 'verified' }>) => {
+    closeSource()
+    clearSilenceTimer()
+    const verifiedCitations = payload.citations.map(toStreamCitation)
+    citationsRef.current = verifiedCitations
+    setCitations(verifiedCitations)
+    setAuditEventId(payload.audit_event_id)
+    setSignatureBytes(payload.signature_bytes ?? 26)
+    useQueryStore.getState().setStreaming({
+      phase: 'verified',
+      answer: fullTextRef.current,
+      auditEventId: payload.audit_event_id,
+    })
+    setError(null)
+    setIsRecoverableError(false)
+    setIsStreaming(false)
+    setPhase('verified')
+    optionsRef.current.onComplete?.({
+      elapsed_ms: 0,
+      synthesis_tier: 'stream',
+      verification_status: true,
+      citations: verifiedCitations,
+      provenance: { verifier: 'hmac' },
+      query_id: payload.audit_event_id,
+      audit_event_id: payload.audit_event_id,
+      signature_bytes: payload.signature_bytes ?? 26,
+    }, fullTextRef.current)
+  }, [clearSilenceTimer, closeSource, setPhase])
+
+  const handleEvent = useCallback((eventType: string, data: string) => {
+    const parsed = parseEventData(data)
+    if (!parsed) return
+
+    resetSilenceTimer()
+
+    if (typeof parsed === 'string') {
+      setPhase('synthesizing')
+      appendToken(parsed)
+      return
+    }
+
+    const phaseName = parsed.phase || eventType
+
+    if (phaseName === 'heartbeat') return
+
+    if (phaseName === 'planned') {
+      setPlan(parsed.plan || { steps: ['Classify research intent', 'Retrieve matching evidence', 'Prepare verified answer'] })
+      setPhase('planned')
+      return
+    }
+
+    if (phaseName === 'executing') {
+      setSql(parsed.sql || '')
+      if (typeof parsed.retrieved_count === 'number') setRetrievedCount(parsed.retrieved_count)
+      setPhase('executing')
+      return
+    }
+
+    if (phaseName === 'synthesizing') {
+      setPhase('synthesizing')
+      appendToken(parsed.token || '')
+      if (parsed.citation) addCitation(parsed.citation)
+      return
+    }
+
+    if (phaseName === 'citation' && 'id' in parsed) {
+      addCitation(parsed as Citation)
+      return
+    }
+
+    if (phaseName === 'verified') {
+      completeStream({
+        phase: 'verified',
+        citations: parsed.citations || [],
+        audit_event_id: parsed.audit_event_id || `stream-${Date.now()}`,
+        signature_bytes: parsed.signature_bytes,
+      })
+      return
+    }
+
+    if (phaseName === 'error') {
+      failRecoverably(parsed.message || CONNECTION_ERROR)
+      return
+    }
+
+    if (phaseName === 'done') {
+      completeStream({
+        phase: 'verified',
+        citations: citationsRef.current,
+        audit_event_id: `stream-${Date.now()}`,
+        signature_bytes: 26,
+      })
+      return
+    }
+
+    if (typeof parsed.phase === 'string') {
+      setPhase(normalizeLegacyPhase(parsed.phase), {
+        label: parsed.label,
+        progress: parsed.progress,
+      })
+    }
+  }, [addCitation, appendToken, completeStream, failRecoverably, resetSilenceTimer, setPhase])
+
+  const abortStream = useCallback(() => {
+    closeSource()
+    clearSilenceTimer()
+    setIsStreaming(false)
+  }, [clearSilenceTimer, closeSource])
+
   const startStream = useCallback((query: string) => {
-    const session = authService.getStoredSession()
-    if (!session) {
-      options.onError?.('Not authenticated')
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery) {
+      failRecoverably('Ask a question before starting the answer.')
       return
     }
 
     abortStream()
+    fullTextRef.current = ''
+    citationsRef.current = []
     setIsStreaming(true)
+    setPlan(null)
+    setSql('')
+    setRetrievedCount(0)
     setFullText('')
     setCitations([])
+    setAuditEventId(null)
+    setSignatureBytes(null)
     setError(null)
-    setCurrentPhase(null)
+    setIsRecoverableError(false)
+    useQueryStore.getState().setStreaming({
+      phase: 'planning',
+      answer: '',
+      auditEventId: undefined,
+      error: undefined,
+    })
+    setPhase('planning')
 
-    const url = `/api/query/stream?query=${encodeURIComponent(query)}&session_id=${session.user.id || 'anonymous'}`
-    const eventSource = new EventSource(url, {
-      // EventSource doesn't support custom headers; token goes in cookie or URL for SSE
-    } as EventSourceInit)
+    const session = authService.getStoredSession()
+    const request: QueryRequest = {
+      query: trimmedQuery,
+      sessionId: session?.user?.id || 'anonymous',
+    }
+
+    const eventSource = optionsRef.current.eventSourceFactory
+      ? optionsRef.current.eventSourceFactory(request)
+      : queryService.streamQuery(request)
 
     eventSourceRef.current = eventSource
+    resetSilenceTimer()
 
-    eventSource.addEventListener('phase', (e) => {
-      try {
-        const phase = JSON.parse(e.data) as StreamPhase
-        setCurrentPhase(phase)
-        options.onPhaseChange?.(phase)
-      } catch { /* ignore parse error */ }
-    })
-
-    eventSource.addEventListener('citation', (e) => {
-      try {
-        const citation = JSON.parse(e.data) as StreamCitation
-        setCitations(prev => {
-          if (prev.some(c => c.id === citation.id)) return prev
-          return [...prev, citation]
-        })
-        options.onCitation?.(citation)
-      } catch { /* ignore parse error */ }
-    })
-
-    eventSource.onmessage = (e) => {
-      if (e.data) {
-        setFullText(prev => prev + e.data)
-      }
+    const addTypedListener = (type: string) => {
+      eventSource.addEventListener(type, ((event: MessageEvent<string>) => {
+        handleEvent(type, event.data)
+      }) as EventListener)
     }
 
-    eventSource.addEventListener('meta', (e) => {
-      try {
-        const meta = JSON.parse(e.data) as StreamMeta
-        options.onComplete?.(meta, fullText)
-      } catch { /* ignore parse error */ }
-    })
+    for (const eventType of ['planned', 'executing', 'synthesizing', 'verified', 'heartbeat', 'citation', 'phase', 'meta', 'done', 'error']) {
+      addTypedListener(eventType)
+    }
 
-    eventSource.addEventListener('done', () => {
-      abortStream()
-      const meta: StreamMeta = {
-        elapsed_ms: 0,
-        synthesis_tier: currentPhase?.phase || 'unknown',
-        verification_status: false,
-        citations,
-        provenance: {},
-        query_id: '',
-      }
-      options.onComplete?.(meta, fullText)
-    })
-
-    eventSource.addEventListener('error', () => {
-      const errMsg = 'Stream connection failed'
-      setError(errMsg)
-      options.onError?.(errMsg)
-      abortStream()
-    })
+    eventSource.onmessage = (event) => {
+      handleEvent('message', event.data)
+    }
 
     eventSource.onerror = () => {
-      abortStream()
+      failRecoverably(CONNECTION_ERROR)
     }
-  }, [options, abortStream, fullText, citations, currentPhase])
+  }, [abortStream, failRecoverably, handleEvent, resetSilenceTimer, setPhase])
+
+  useEffect(() => () => {
+    closeSource()
+    clearSilenceTimer()
+  }, [clearSilenceTimer, closeSource])
 
   return {
     isStreaming,
     currentPhase,
+    plan,
+    sql,
+    retrievedCount,
     fullText,
     citations,
+    auditEventId,
+    signatureBytes,
     error,
+    isRecoverableError,
+    isVerified: currentPhase?.phase === 'verified',
     startStream,
     abortStream,
   }

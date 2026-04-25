@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '../../../i18n'
 
 interface SourceBreakdownProps {
   sources?: string[]
@@ -45,8 +46,7 @@ export const SourceBreakdown: React.FC<SourceBreakdownProps> = ({ sources }) => 
       {sources.length > 0 && (
         <details className="group">
           <summary className="text-xs text-nrg-muted cursor-pointer hover:text-nrg-text">
-            View {sources.length} sources queried
-          </summary>
+            {t("auto.components.IntelligenceBrief.components.SourceBreakdown.1")}{sources.length} {t("auto.components.IntelligenceBrief.components.SourceBreakdown.2")}</summary>
           <div className="mt-2 p-2 rounded-lg bg-nrg-navy-50 border border-nrg-border">
             <ul className="space-y-1">
               {sources.map((source, i) => (

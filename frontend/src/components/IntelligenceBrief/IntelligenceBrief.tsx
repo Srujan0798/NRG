@@ -7,6 +7,7 @@ import { ResponseRenderer } from './components/ResponseRenderer'
 import { ResponseHistorySidebar } from './components/ResponseHistorySidebar'
 import { ExportButton } from './components/ExportButton'
 import { StreamIndicator } from './components/StreamIndicator'
+import { t } from '../../i18n'
 
 export interface IntelligenceBriefProps {
   response: string
@@ -101,8 +102,8 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
                   <span className="text-white text-lg">र</span>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-nrg-text">Intelligence Brief</h2>
-                  <p className="text-xs text-nrg-muted">National Research Graph</p>
+                  <h2 className="text-lg font-semibold text-nrg-text">{t("auto.components.IntelligenceBrief.IntelligenceBrief.1")}</h2>
+                  <p className="text-xs text-nrg-muted">{t("auto.components.IntelligenceBrief.IntelligenceBrief.2")}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -122,7 +123,7 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-saffron-500">📋</span>
-                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">Summary</h3>
+                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">{t("auto.components.IntelligenceBrief.IntelligenceBrief.3")}</h3>
               </div>
               <p className="text-sm text-nrg-text leading-relaxed pl-6 border-l-2 border-saffron-300">
                 {summary}
@@ -132,12 +133,12 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-saffron-500">🔍</span>
-                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">Evidence</h3>
+                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">{t("auto.components.IntelligenceBrief.IntelligenceBrief.4")}</h3>
               </div>
               <div className="pl-6 space-y-4">
                 {keyFindings.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-medium text-nrg-muted mb-2">Key Findings</h4>
+                    <h4 className="text-xs font-medium text-nrg-muted mb-2">{t("auto.components.IntelligenceBrief.IntelligenceBrief.5")}</h4>
                     <ul className="space-y-1.5">
                       {keyFindings.map((finding, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm text-nrg-text">
@@ -161,7 +162,7 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
               <section>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-saffron-500">📚</span>
-                  <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">Citations</h3>
+                  <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">{t("auto.components.IntelligenceBrief.IntelligenceBrief.6")}</h3>
                 </div>
                 <CitationList
                   citations={orderedCitations}
@@ -173,7 +174,7 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-saffron-500">🎯</span>
-                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">Confidence</h3>
+                <h3 className="text-sm font-semibold text-nrg-text uppercase tracking-wider">{t("auto.components.IntelligenceBrief.IntelligenceBrief.7")}</h3>
               </div>
               <div className="pl-6">
                 <ConfidenceIndicator
@@ -188,8 +189,7 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
           {warnings && warnings.length > 0 && (
             <div className="mx-6 mb-6 p-4 rounded-xl border border-amber-200 bg-amber-50">
               <h4 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
-                <span>⚠️</span> Notes
-              </h4>
+                <span>⚠️</span> {t("auto.components.IntelligenceBrief.IntelligenceBrief.8")}</h4>
               <ul className="text-sm text-amber-700 space-y-1">
                 {warnings.map((warning, index) => (
                   <li key={index} className="flex items-start gap-2">

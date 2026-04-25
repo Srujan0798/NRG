@@ -5,6 +5,7 @@ import { TabularView } from './TabularView'
 import { StatisticalChart } from './StatisticalChart'
 import { GeographicMap } from './GeographicMap'
 import { ComparisonCards } from './ComparisonCards'
+import { t } from '../../../i18n'
 
 type ResponseType = 'tabular' | 'geographic' | 'statistical' | 'comparison' | 'time_series' | 'text'
 
@@ -98,14 +99,12 @@ export const ResponseRenderer: React.FC<ResponseRendererProps> = ({
       <div className="space-y-4">
         <div className="p-4 rounded-xl bg-nrg-navy-50 border border-nrg-border">
           <p className="text-sm text-nrg-text font-medium">
-            Summary: {resultCount} results found. Showing aggregated view.
-          </p>
+            {t("auto.components.IntelligenceBrief.components.ResponseRenderer.1")}{resultCount} {t("auto.components.IntelligenceBrief.components.ResponseRenderer.2")}</p>
           <button
             onClick={() => setShowRawData(!showRawData)}
             className="mt-2 text-xs text-saffron-600 hover:text-saffron-700"
           >
-            {showRawData ? 'Hide' : 'Show'} raw data table
-          </button>
+            {showRawData ? 'Hide' : 'Show'} {t("auto.components.IntelligenceBrief.components.ResponseRenderer.3")}</button>
         </div>
         {tabularData && <TabularView headers={tabularData.headers} rows={tabularData.rows} />}
       </div>
@@ -133,13 +132,12 @@ export const ResponseRenderer: React.FC<ResponseRendererProps> = ({
       <div className="space-y-4">
         <StatisticalChart data={statData} />
         <div className="flex items-center justify-between">
-          <p className="text-xs text-nrg-muted">Statistical analysis</p>
+          <p className="text-xs text-nrg-muted">{t("auto.components.IntelligenceBrief.components.ResponseRenderer.4")}</p>
           <button
             onClick={() => setShowRawData(!showRawData)}
             className="text-xs text-saffron-600 hover:text-saffron-700"
           >
-            {showRawData ? 'Hide' : 'Show'} raw data
-          </button>
+            {showRawData ? 'Hide' : 'Show'} {t("auto.components.IntelligenceBrief.components.ResponseRenderer.5")}</button>
         </div>
       </div>
     )

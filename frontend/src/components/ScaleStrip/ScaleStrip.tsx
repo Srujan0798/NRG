@@ -1,5 +1,6 @@
 import React from 'react'
 import { useAnimatedCounter } from '../../hooks/useAnimatedCounter'
+import { t } from '../../i18n'
 
 interface ScaleMetric {
   label: string
@@ -37,7 +38,7 @@ const Counter: React.FC<{ metric: ScaleMetric; delay: number }> = ({ metric, del
 }
 
 export const ScaleStrip: React.FC = () => (
-  <section aria-label="NRG platform scale" className="grid gap-3 sm:grid-cols-4">
+  <section aria-label={t("auto.components.ScaleStrip.ScaleStrip.1")} className="grid gap-3 sm:grid-cols-4">
     {metrics.map((metric, index) => (
       <Counter key={metric.label} metric={metric} delay={index * 80} />
     ))}

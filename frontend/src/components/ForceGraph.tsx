@@ -4,6 +4,7 @@ import { zoom, zoomIdentity, ZoomBehavior } from 'd3-zoom'
 import { drag } from 'd3-drag'
 import { select } from 'd3-selection'
 import { GraphData, GraphNode, GraphEdge } from '../services/queryService'
+import { t } from '../i18n'
 
 export interface ForceGraphProps {
   data: GraphData
@@ -299,7 +300,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-nrg-muted">Year:</span>
+          <span className="text-xs text-nrg-muted">{t("auto.components.ForceGraph.1")}</span>
           <input
             type="number"
             value={yearRange[0]}
@@ -323,8 +324,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
           onClick={resetZoom}
           className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:text-nrg-text hover:bg-nrg-navy-50 transition-all duration-200"
         >
-          Reset View
-        </button>
+          {t("auto.components.ForceGraph.2")}</button>
 
         <div className="flex items-center gap-2 text-xs text-nrg-muted">
           {Object.entries(NODE_COLORS).map(([type, color]) => (
@@ -365,8 +365,8 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
             </div>
             <div className="space-y-0.5 text-nrg-muted">
               <p className="capitalize">{TYPE_LABELS[tooltip.node.type]}</p>
-              {tooltip.node.year && <p>Year: {tooltip.node.year}</p>}
-              {tooltip.node.citations !== undefined && <p>Citations: {tooltip.node.citations}</p>}
+              {tooltip.node.year && <p>{t("auto.components.ForceGraph.3")}{tooltip.node.year}</p>}
+              {tooltip.node.citations !== undefined && <p>{t("auto.components.ForceGraph.4")}{tooltip.node.citations}</p>}
             </div>
           </div>
         )}

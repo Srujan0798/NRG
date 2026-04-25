@@ -1,4 +1,5 @@
 import React from 'react'
+import { t } from '../../../i18n'
 
 export const StreamIndicator: React.FC = () => {
   return (
@@ -8,7 +9,7 @@ export const StreamIndicator: React.FC = () => {
         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '150ms' }} />
         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" style={{ animationDelay: '300ms' }} />
       </div>
-      <span className="text-xs font-medium text-blue-700">Streaming</span>
+      <span className="text-xs font-medium text-blue-700">{t("auto.components.IntelligenceBrief.components.StreamIndicator.1")}</span>
     </div>
   )
 }

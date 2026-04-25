@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { authService, PersonaRole } from '../services/authService'
 import { useAuth } from '../hooks/useAuth'
+import { t } from '../i18n'
 
 const PERSONAS: Array<{ role: PersonaRole; label: string; shortLabel: string; username: string; password: string; color: string }> = [
   { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher_user', password: 'researcher-pass', color: 'var(--nrg-tier-1)' },
@@ -50,7 +51,7 @@ export function PersonaToggle() {
     <div className="flex flex-col items-end gap-1">
       <div
         role="tablist"
-        aria-label="Switch demo persona"
+        aria-label={t("auto.components.PersonaToggle.1")}
         className="grid min-h-10 grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm"
       >
         {PERSONAS.map((persona) => {

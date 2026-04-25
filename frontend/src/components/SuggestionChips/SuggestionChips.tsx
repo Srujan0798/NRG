@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import { heroCopy } from '../../i18n/en-IN'
+import { t } from '../../i18n'
 
 interface SuggestionChipsProps {
   suggestions?: string[]
@@ -25,7 +26,7 @@ export const SuggestionChips: React.FC<SuggestionChipsProps> = ({
   }
 
   return (
-    <div className="grid gap-3 sm:grid-cols-2" aria-label="Suggested demo queries">
+    <div className="grid gap-3 sm:grid-cols-2" aria-label={t("auto.components.SuggestionChips.SuggestionChips.1")}>
       {suggestions.slice(0, 4).map((suggestion) => (
         <button
           key={suggestion}

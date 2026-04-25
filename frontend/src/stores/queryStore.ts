@@ -10,18 +10,33 @@ export interface QueryHistoryEntry {
   error?: string;
 }
 
+export interface StreamingQuerySnapshot {
+  phase: 'idle' | 'planning' | 'planned' | 'executing' | 'synthesizing' | 'verified' | 'error';
+  answer: string;
+  auditEventId?: string;
+  error?: string;
+}
+
 interface QueryState {
   history: QueryHistoryEntry[];
   currentQuery: string;
   isSearching: boolean;
   lastResult: unknown;
+  streaming: StreamingQuerySnapshot;
   
   setCurrentQuery: (query: string) => void;
   setIsSearching: (loading: boolean) => void;
   addToHistory: (entry: Omit<QueryHistoryEntry, 'id' | 'timestamp'>) => void;
   clearHistory: () => void;
   setLastResult: (result: unknown) => void;
+  setStreaming: (snapshot: Partial<StreamingQuerySnapshot>) => void;
+  resetStreaming: () => void;
 }
+
+const initialStreaming: StreamingQuerySnapshot = {
+  phase: 'idle',
+  answer: '',
+};
 
 export const useQueryStore = create<QueryState>()(
   persist(
@@ -30,6 +45,7 @@ export const useQueryStore = create<QueryState>()(
       currentQuery: '',
       isSearching: false,
       lastResult: null,
+      streaming: initialStreaming,
 
       setCurrentQuery: (query) => set({ currentQuery: query }),
       setIsSearching: (loading) => set({ isSearching: loading }),
@@ -47,6 +63,10 @@ export const useQueryStore = create<QueryState>()(
 
       clearHistory: () => set({ history: [] }),
       setLastResult: (result) => set({ lastResult: result }),
+      setStreaming: (snapshot) => set((state) => ({
+        streaming: { ...state.streaming, ...snapshot },
+      })),
+      resetStreaming: () => set({ streaming: initialStreaming }),
     }),
     {
       name: 'nrg-query-state',

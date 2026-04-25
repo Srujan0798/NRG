@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import { t } from '../../../i18n'
 
 interface TabularViewProps {
   headers: string[]
@@ -83,23 +84,21 @@ export const TabularView: React.FC<TabularViewProps> = ({
       
       {paginated && totalPages > 1 && (
         <div className="flex items-center justify-between text-xs text-nrg-muted">
-          <span>Showing {page * pageSize + 1}-{Math.min((page + 1) * pageSize, sortedRows.length)} of {sortedRows.length}</span>
+          <span>{t("auto.components.IntelligenceBrief.components.TabularView.1")}{page * pageSize + 1}-{Math.min((page + 1) * pageSize, sortedRows.length)} of {sortedRows.length}</span>
           <div className="flex gap-1">
             <button
               onClick={() => setPage(p => Math.max(0, p - 1))}
               disabled={page === 0}
               className="px-2 py-1 rounded border border-nrg-border hover:bg-nrg-navy-50 disabled:opacity-50"
             >
-              Prev
-            </button>
-            <span className="px-2 py-1">Page {page + 1}/{totalPages}</span>
+              {t("auto.components.IntelligenceBrief.components.TabularView.2")}</button>
+            <span className="px-2 py-1">{t("auto.components.IntelligenceBrief.components.TabularView.3")}{page + 1}/{totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
               disabled={page === totalPages - 1}
               className="px-2 py-1 rounded border border-nrg-border hover:bg-nrg-navy-50 disabled:opacity-50"
             >
-              Next
-            </button>
+              {t("auto.components.IntelligenceBrief.components.TabularView.4")}</button>
           </div>
         </div>
       )}

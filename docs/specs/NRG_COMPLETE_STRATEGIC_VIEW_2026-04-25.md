@@ -1,4 +1,13 @@
-# NRG — THE COMPLETE STRATEGIC VIEW
+# [PARTIALLY SUPERSEDED — see correction below]
+
+> **The 11-layer technical analysis (§2) and the proactive commitments (§6) remain valid and binding.**
+> **What is replaced:** the framing "demo to professor's assistant earns ₹50L" — NRG is production software for IIT Gandhinagar + Gov of India ministries, not a sales demo.
+> **Use alongside:** `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` for production-only framing.
+> **Reference rule:** `.claude/rules/production_only.md`.
+
+---
+
+# NRG — THE COMPLETE STRATEGIC VIEW (PRODUCTION FRAMING)
 **Date:** 2026-04-25
 **Audience:** Founder (Srujan) + every agent that touches this project
 **Purpose:** ONE document that maps every layer, every risk, every focus point of NRG. After reading this, you know what the project actually is — not the slice I last described.

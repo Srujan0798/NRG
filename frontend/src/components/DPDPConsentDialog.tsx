@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { t } from '../i18n'
 
 export interface DPDPConsentDialogProps {
   isOpen: boolean;
@@ -72,32 +73,32 @@ export function DPDPConsentDialog({
       >
         <div className="bg-gradient-to-r from-saffron-50/90 to-amber-50/80 dark:from-saffron-900/30 dark:to-amber-900/20 px-6 py-4 border-b border-nrg-border">
           <div className="flex items-center gap-3">
-            <span role="img" aria-label="Shield protection" className="text-2xl">🛡️</span>
+            <span role="img" aria-label={t("auto.components.DPDPConsentDialog.1")} className="text-2xl">🛡️</span>
             <div>
-              <h2 id="dpdp-dialog-title" className="text-lg font-bold text-nrg-text">DPDP Consent Required</h2>
-              <p id="dpdp-dialog-desc" className="text-xs text-nrg-muted">डेटा संरक्षण अनुमति · Data Protection Authorization</p>
+              <h2 id="dpdp-dialog-title" className="text-lg font-bold text-nrg-text">{t("auto.components.DPDPConsentDialog.2")}</h2>
+              <p id="dpdp-dialog-desc" className="text-xs text-nrg-muted">{t("auto.components.DPDPConsentDialog.3")}</p>
             </div>
           </div>
         </div>
 
         <div className="px-6 py-4 space-y-4">
           <div className="rounded-lg p-3 text-sm border border-blue-200/70 bg-blue-50/75 dark:bg-blue-900/20 dark:border-blue-800/50">
-            <div className="font-semibold text-blue-800 dark:text-blue-300 mb-1">Purpose of Data Use</div>
+            <div className="font-semibold text-blue-800 dark:text-blue-300 mb-1">{t("auto.components.DPDPConsentDialog.4")}</div>
             <div className="text-blue-700 dark:text-blue-200/90">{dataPurpose}</div>
           </div>
 
           <div className="rounded-lg p-3 text-sm border border-green-200/70 bg-green-50/75 dark:bg-green-900/20 dark:border-green-800/50">
-            <div className="font-semibold text-green-800 dark:text-green-300 mb-1">Data Retention Period</div>
-            <div className="text-green-700 dark:text-green-200/90">{retentionDays} days from access date</div>
+            <div className="font-semibold text-green-800 dark:text-green-300 mb-1">{t("auto.components.DPDPConsentDialog.5")}</div>
+            <div className="text-green-700 dark:text-green-200/90">{retentionDays} {t("auto.components.DPDPConsentDialog.6")}</div>
           </div>
 
           <div className="bg-[var(--glass-bg)] border border-nrg-border rounded-lg p-3 text-xs space-y-1 text-nrg-muted">
-            <div className="font-semibold">Your Rights (DPDP Act 2023):</div>
+            <div className="font-semibold">{t("auto.components.DPDPConsentDialog.7")}</div>
             <ul className="list-disc list-inside space-y-0.5 ml-1">
-              <li>Right to withdraw consent at any time</li>
-              <li>Right to data portability</li>
-              <li>Right to correction and erasure</li>
-              <li>Right to grievance redressal</li>
+              <li>{t("auto.components.DPDPConsentDialog.8")}</li>
+              <li>{t("auto.components.DPDPConsentDialog.9")}</li>
+              <li>{t("auto.components.DPDPConsentDialog.10")}</li>
+              <li>{t("auto.components.DPDPConsentDialog.11")}</li>
             </ul>
           </div>
 
@@ -110,8 +111,7 @@ export function DPDPConsentDialog({
               className="mt-0.5 w-4 h-4 text-saffron-600 border-nrg-border rounded focus:ring-saffron-500"
             />
             <span className="text-nrg-text">
-              I understand and consent to the data usage as described above, per India's DPDP Act 2023.
-            </span>
+              {t("auto.components.DPDPConsentDialog.12")}</span>
           </label>
         </div>
 
@@ -121,8 +121,7 @@ export function DPDPConsentDialog({
             onClick={onDeny}
             className="flex-1 px-4 py-2 border border-nrg-border rounded-lg text-nrg-text hover:bg-saffron-500/10 transition font-medium"
           >
-            Deny Access
-          </button>
+            {t("auto.components.DPDPConsentDialog.13")}</button>
           <button
             onClick={onApprove}
             disabled={!acknowledged}
@@ -133,8 +132,7 @@ export function DPDPConsentDialog({
                 : 'bg-[var(--nrg-border)] text-nrg-muted cursor-not-allowed'
             }`}
           >
-            Approve & Continue
-          </button>
+            {t("auto.components.DPDPConsentDialog.14")}</button>
         </div>
       </div>
     </div>
