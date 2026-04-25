@@ -1,5 +1,6 @@
 # NRG — National Research Graph
 
+> **PRODUCTION-ONLY RULE**: See @.claude/rules/production_only.md — NRG is a production web app for IIT Gandhinagar + the Government of India. NEVER use words like "demo", "pitch", "prototype", "MVP", "rehearsal", "demo-ready". Every spec is written for production deployment under DPDP Act 2023.
 > **Operating Mode**: See @.claude/GURU_PROTOCOL.md — Claude is Guru (strategy only), Agents execute.
 > **Constitution**: See @.claude/NRG_CONSTITUTION.md — Sovereign rules governing all NRG AI behavior.
 > **Quality Bar**: See @.claude/QUALITY_BAR.md — The 6 Hard Constraints. Every deliverable must satisfy these or it is NOT complete.
@@ -7,16 +8,19 @@
 > **Every task must include skill assignments.** Agents must report which skills they used.
 
 ## SESSION START PROTOCOL (do this EVERY new session)
-1. Read .claude/memory/MEMORY.md — recall user, feedback, project state
-2. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
-3. Read .claude/rules/audit_protocol.md — know the eternal verification standard
-4. Read .claude/rules/ux_audit_protocol.md — know the professor UX standard
-5. Check if external audit is due (quarterly or pre-demo) — see `.claude/skills/external-audit/SKILL.md`
-6. Check git state: `git status`, `git log --oneline -5`
-7. Check system: API health, frontend, tests if relevant
-8. Read BACKLOG.md — know what's pending, what agents are working on
-9. Review the 3 Data Sources (below) — know what inputs drive the project
-10. THEN respond to the Founder
+1. **Read .claude/rules/production_only.md FIRST** — internalize forbidden vocabulary and production-only framing.
+2. Read .claude/memory/MEMORY.md — recall user, feedback, project state
+3. Read .claude/GURU_PROTOCOL.md Section 3 + Section 7 — the task format and response rules
+4. Read .claude/rules/audit_protocol.md — know the eternal verification standard
+5. Read .claude/rules/ux_audit_protocol.md — know the production UX standard
+6. Check if external audit is due (quarterly or pre-launch) — see `.claude/skills/external-audit/SKILL.md`
+7. Check git state: `git status`, `git log --oneline -5`
+8. Check system: API health, frontend, tests if relevant
+9. Read BACKLOG.md — know what's pending, what agents are working on
+10. Read docs/task_protocols/PRODUCTION_READINESS_MASTER.md — the 8-milestone production roadmap
+11. Read docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md — the unified production execution plan
+12. Review the 3 Data Sources (below) — know what inputs drive the project
+13. THEN respond to the Founder
 
 ## GURU RULES (always enforced, no exceptions)
 - **NEVER write production code.** Produce ═══ task protocols only.
