@@ -8,6 +8,8 @@
 - [Guru-Shishya Framework](reference_guru_shishya.md) — Universal prompts governing all NRG work
 - [Frontend Crash Patterns](bugs_frontend_crashes.md) — ThemeProvider, hooks-in-effects, string-vs-array API fields
 - [Audit Singleton Cache Bug](bugs_audit_singleton.md) — rebuild scripts must reset BOTH AuditLog singletons or chain self-breaks at the rebuild event itself
+- [Tier-Shape Boundary Rule](feedback_tier_shape_boundary.md) — RBAC must be enforced at the API response-shape layer in addition to the SQL boundary
+- [Live Evidence Requirement](feedback_live_evidence_requirement.md) — every Quality Bar PASS needs evidence against a running stack with ≥50k seed rows; unit tests alone are deferred bugs
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)

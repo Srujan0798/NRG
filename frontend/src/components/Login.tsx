@@ -83,7 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const [localMessage, setLocalMessage] = useState<string | null>(null)
 
   useEffect(() => {
-    document.title = 'Sign In | National Research Graph'
+    document.title = 'NRG · Sign In'
   }, [])
 
   const applyPersona = (persona: PersonaKey) => {
@@ -128,7 +128,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
           {error}
         </div>
       )}
-      <div className="flex min-h-screen flex-col lg:flex-row">
+      <main id="main-content" tabIndex={-1} className="flex min-h-screen flex-col lg:flex-row">
         {/* Left Panel — Branding */}
         <div className="relative flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-16 overflow-hidden min-w-0 lg:min-w-[28.125rem] bg-[var(--nrg-founder-ink)] text-white lg:rounded-r-[2rem] shadow-2xl">
         <div className="absolute inset-0 pointer-events-none">
@@ -362,7 +362,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
         </div>
       </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }

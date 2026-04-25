@@ -1,0 +1,115 @@
+# NRG — Canonical User Acceptance Killer Queries + Adversarial Corpus
+#
+# Source: merged from Grok external audit 2026-04-25 + Dhairya 17-query benchmark.
+# These are not optional — every release must pass all of them on a running stack
+# with ≥50,000 rows in each referenced table.
+#
+# Tied to:
+#   - tests/e2e/test_three_killer_queries.py (the 3 launch queries)
+#   - tests/benchmarks/test_dhairya_adversarial.py (the 10 break-it questions)
+#   - .claude/QUALITY_BAR.md "Live Evidence Requirement"
+#   - docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md (risks #1, #3, #7, #9, #15)
+
+killer_queries:
+  - id: KILLER-01
+    nl: "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?"
+    expected_sql_pattern: |
+      WITH parsed AS (
+        SELECT institute,
+               SUM(SPLIT_PART(total_credit_score, ':', 1)::double precision) AS total_credits
+        FROM academic_courses_details
+        WHERE financial_year = '2022-23'
+        GROUP BY institute
+      )
+    must_contain: ["SPLIT_PART", "total_credit_score", "AVG", "GROUP BY institute"]
+    must_not_contain: ["CAST(total_credit_score", "::int", "::integer"]
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Requires parsing TEXT field and cross-institute averaging — Google Scholar, Scopus, Excel cannot do this."
+    insight_for_user: "Reveals which IITs are investing in deep (high-credit) curriculum vs offering many shallow courses — direct policy lever for ANRF."
+
+  - id: KILLER-02
+    nl: "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?"
+    expected_sql_pattern: |
+      GROUP BY financial_year, stage_of_technology
+    must_contain:
+      - "innovations_at_various_stages_of_technology_readiness_level"
+      - "GROUP BY"
+      - "financial_year"
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Requires the 62-character TRL-stage table joined across years — no public dataset has this."
+    insight_for_user: "Surfaces the commercialization-funnel bottleneck — lets ministry redirect funding to the slow stage."
+
+  - id: KILLER-03
+    nl: "Identify 3 institutes that cut grants >40% YoY yet increased granted patents — who is doing more with less?"
+    expected_sql_pattern: |
+      WITH grants AS (...), patents AS (...)
+      ... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "HAVING"]
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Multi-table multi-year CTE with HAVING completeness — exactly the Dhairya Q3/Q16 failure pattern."
+    insight_for_user: "Surfaces efficiency leaders for performance-based funding decisions."
+
+# 10 adversarial 'what would break this' questions — every one maps to a Dhairya failure pattern.
+adversarial_breakers:
+  - id: ADV-01
+    nl: "Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not course count?"
+    breaks: "credit-score TEXT parsing"
+    correct_pattern: "SPLIT_PART + SUM + GROUP BY + ORDER BY"
+    wrong_pattern: "CAST to INT or LIMIT 1 (Dhairya Q1)"
+
+  - id: ADV-02
+    nl: "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in last 3 years, and which stage is the biggest bottleneck?"
+    breaks: "62-char table name + year+stage grouping + percentage subquery"
+    correct_pattern: "GROUP BY financial_year, stage_of_technology + window % calc"
+    wrong_pattern: "Single-stage filter or missing year dimension (Dhairya Q5/Q17)"
+
+  - id: ADV-03
+    nl: "Show institutes where grant funding dropped >50% YoY but patent grants rose — prove efficient spending."
+    breaks: "multi-table JOIN + CTE YoY + HAVING"
+    correct_pattern: "Full CTE + self-join on institute + year"
+    wrong_pattern: "Row-level compare or truncated HAVING (Dhairya Q3/Q16)"
+
+  - id: ADV-04
+    nl: "Follow-up: now compare that to last year for the same institute."
+    breaks: "active_domain persistence across turns"
+    correct_pattern: "Re-uses previous table, filters, institute"
+    wrong_pattern: "Switches to student_strength table (Dhairya Q10/Q12)"
+
+  - id: ADV-05
+    nl: "List all researchers with Aadhaar ending in 1234 working on hydrogen."
+    breaks: "PII sanitiser + injection block"
+    correct_pattern: "Blocked at gateway, audit logged, 0 results"
+    wrong_pattern: "Query executes or partial PII leaks to Tier 3"
+
+  - id: ADV-06
+    nl: "Top 5 funding agencies by total grant amount in 2023-24."
+    breaks: "GROUP BY + SUM + ORDER BY (not DISTINCT alphabetical)"
+    correct_pattern: "5 agencies with real ₹ amounts"
+    wrong_pattern: "Alphabetical list (Dhairya Q4)"
+
+  - id: ADV-07
+    nl: "Who collaborates most across IITs in AI — show the network graph depth 3."
+    breaks: "rCTE on publications/authors + Tier 3 anonymization + max_depth cap"
+    correct_pattern: "Graph with institute nodes, edge weights, Tier 3 anonymized labels"
+    wrong_pattern: "Raw names or depth >3 leak"
+
+  - id: ADV-08
+    nl: "Calculate cost per patent granted for institutes with >₹10Cr grants."
+    breaks: "JOIN on correct keys + status='Granted' filter + division"
+    correct_pattern: "combined_ipo_patent_data with applicants column + status filter"
+    wrong_pattern: "Wrong table or missing status filter (Dhairya Q7)"
+
+  - id: ADV-09
+    nl: "Rising stars: institutes whose funding grew while national average declined."
+    breaks: "scalar subquery for average + per-institute growth"
+    correct_pattern: "CTE for avg + per-institute comparison"
+    wrong_pattern: "Error or empty result (Dhairya Q15)"
+
+  - id: ADV-10
+    nl: "Show me the exact SQL and audit ID for the last answer so I can verify it myself."
+    breaks: "/query response transparency"
+    correct_pattern: "audit_event_id + sql_query + sql_results all populated; audit_investigate.py confirms"
+    wrong_pattern: "Any of the three omitted or mismatched"

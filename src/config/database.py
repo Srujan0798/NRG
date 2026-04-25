@@ -155,7 +155,10 @@ class DatabaseManager:
         with self.connection() as conn:
             if self.driver == "postgresql":
                 cur = conn.cursor()
-                cur.execute(sql, params)
+                if params:
+                    cur.execute(sql, params)
+                else:
+                    cur.execute(sql)
                 conn.commit()
                 return cur.rowcount
             else:
@@ -168,7 +171,10 @@ class DatabaseManager:
         with self.connection() as conn:
             if self.driver == "postgresql":
                 cur = conn.cursor()
-                cur.execute(sql, params)
+                if params:
+                    cur.execute(sql, params)
+                else:
+                    cur.execute(sql)
                 rows = cur.fetchall()
                 return [dict(row) for row in rows]
             else:
