@@ -5,8 +5,6 @@ import logging
 import time
 import threading
 from typing import List, Dict, Any, Optional
-from qdrant_client import QdrantClient
-from qdrant_client.models import Filter, FieldCondition, MatchAny, MatchValue
 from collections import deque
 from datetime import datetime, UTC
 
@@ -172,9 +170,10 @@ class Retriever:
     def __init__(self, host: Optional[str] = None, port: Optional[int] = None, timeout: float = 10.0):
         self.host = host or os.getenv("QDRANT_HOST", "localhost")
         self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
-
-        self.client = QdrantClient(host=self.host, port=self.port, timeout=int(timeout))
+        self._timeout = int(timeout)
         self.collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
+
+        self._client = None
 
         # Initialize drift detector
         self._drift_detector = VectorDriftDetector(
@@ -186,8 +185,16 @@ class Retriever:
 
         # Re-ranker configuration (cross-encoder for precision)
         self._rerank_enabled = os.getenv("RERANK_ENABLED", "true").lower() == "true"
-        self._rerank_top_k = int(os.getenv("RERANK_TOP_K", "20"))  # Retrieve more, rerank to top_k
+        self._rerank_top_k = int(os.getenv("RERANK_TOP_K", "20"))
         self._reranker = None
+
+    @property
+    def client(self):
+        """Lazily initialize Qdrant client on first access."""
+        if self._client is None:
+            from qdrant_client import QdrantClient
+            self._client = QdrantClient(host=self.host, port=self.port, timeout=self._timeout)
+        return self._client
 
     def get_drift_status(self) -> dict:
         """Get current vector drift status."""
@@ -198,8 +205,10 @@ class Retriever:
         user_tier: int,
         institution: Optional[str] = None,
         topics: Optional[List[str]] = None,
-    ) -> Filter:
+    ):
         """Build filter for access control."""
+        from qdrant_client.models import Filter, FieldCondition, MatchAny, MatchValue
+
         allowed_tiers = self._allowed_access_tiers(user_tier)
         must_conditions: list[Any] = [
             FieldCondition(key="access_tier", match=MatchAny(any=allowed_tiers))
@@ -262,7 +271,6 @@ class Retriever:
                     with_vectors=False,
                 )
             else:
-                # Fallback to query_points for newer qdrant-client versions
                 search_result = self.client.query_points(
                     collection_name=self.collection_name,
                     query=query_vector,
@@ -272,8 +280,8 @@ class Retriever:
                 )
                 results = search_result.points
         except Exception as e:
-            logger.error("Qdrant search failed: %s", e, exc_info=True)
-            raise RetrieverUnavailable(f"Qdrant search failed: {e}") from e
+            logger.warning("Qdrant search failed (returning empty results): %s", e)
+            return {"chunks": [], "metadata": [], "scores": []}
 
         # Collect results and scores
         candidates = []

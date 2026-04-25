@@ -1021,6 +1021,7 @@ class SovereignLLMMesh:
                 )
                 futures[fut] = provider
 
+            completed_futures = set()
             for fut in as_completed(futures, timeout=budget_remaining):
                 provider = futures[fut]
                 try:
@@ -1028,9 +1029,17 @@ class SovereignLLMMesh:
                     if result is not None:
                         response, latency_ms = result
                         logger.info(f"✅ LLM Mesh: {provider} won race (latency={latency_ms:.0f}ms)")
+                        for f in futures:
+                            if f not in completed_futures:
+                                f.cancel()
                         return response
                 except Exception:
                     pass
+                completed_futures.add(fut)
+
+            for fut in futures:
+                if fut not in completed_futures:
+                    fut.cancel()
 
             budget_remaining = max(0, budget_remaining - 1)
             if budget_remaining <= 0:
