@@ -82,7 +82,6 @@ const countResults = (response: string): number => {
 
 export const ResponseRenderer: React.FC<ResponseRendererProps> = ({
   response,
-  citations,
   segments,
   onCitationClick,
 }) => {
