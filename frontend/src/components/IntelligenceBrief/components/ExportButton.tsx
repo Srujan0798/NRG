@@ -73,7 +73,7 @@ export const ExportButton: React.FC<ExportButtonProps> = ({
     <div class="citations">
       ${citations.map((c, i) => `
         <div class="citation-item">
-          <div class="citation-title">[${i + 1}] ${c.title || 'Unknown Publication'}</div>
+          <div class="citation-title">[${i + 1}] ${c.title || 'Publication title unavailable'}</div>
           <div class="citation-meta">
             ${toStringArray(c.authors)?.slice(0, 3).join(', ')}${(toStringArray(c.authors)?.length ?? 0) > 3 ? ' et al.' : ''}
             ${c.year ? ` (${c.year})` : ''}

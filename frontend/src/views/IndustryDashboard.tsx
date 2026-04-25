@@ -43,8 +43,8 @@ const toFriendlyQueryError = (err: any): string => {
     return 'This query contains sensitive information that cannot be processed.'
   }
   if (status === 429) return "You've made too many requests. Please wait a moment."
-  if (status >= 500) return 'Something went wrong. Our team has been notified. Please try again.'
-  return detail || 'Something went wrong. Please try again.'
+  if (status >= 500) return 'NRG could not complete this request. Your audit trail is safe; refine the query or retry.'
+  return detail || 'NRG could not complete this request. Your audit trail is safe; refine the query or retry.'
 }
 
 export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardProps) {

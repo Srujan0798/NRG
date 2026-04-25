@@ -1,4 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Hanken+Grotesk:wght@400;500;600;700;800&family=Tiro+Devanagari+Hindi:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@font-face {
+  font-family: 'Sohne Display';
+  src: url('/fonts/SohneDisplay.woff2') format('woff2');
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  size-adjust: 100%;
+}
 
 @tailwind base;
 @tailwind components;
@@ -9,6 +25,103 @@
    ============================ */
 @layer base {
   :root {
+    --nrg-saffron: #FF9933;
+    --nrg-saffron-soft: #FFB366;
+    --nrg-saffron-muted: #ffbc89;
+    --nrg-saffron-subtle: #ffd4b8;
+    --nrg-saffron-wash: #ffedd5;
+    --nrg-white: #FFFFFF;
+    --nrg-green: #138808;
+    --nrg-navy: #0B1F4A;
+    --nrg-ink: #111827;
+    --nrg-ink-muted: #4B5563;
+    --nrg-surface-1: #FFFFFF;
+    --nrg-surface-2: #F9FAFB;
+    --nrg-surface-3: #F3F4F6;
+    --nrg-border-token: #E5E7EB;
+    --nrg-focus: #2563EB;
+    --nrg-danger: #B91C1C;
+    --nrg-warning: #B45309;
+    --nrg-success: #047857;
+    --nrg-tier-1: #1E40AF;
+    --nrg-tier-2: #065F46;
+    --nrg-tier-3: #7C2D12;
+    --nrg-chart-1: #FF9933;
+    --nrg-chart-2: #2563EB;
+    --nrg-chart-3: #047857;
+    --nrg-chart-4: #B45309;
+    --nrg-chart-5: #6366F1;
+    --nrg-chart-6: #EC4899;
+    --nrg-chart-7: #8B5CF6;
+    --nrg-chart-8: #F59E0B;
+    --nrg-chart-9: #06B6D4;
+    --nrg-chart-10: #84CC16;
+    --nrg-chart-11: #4ECDC4;
+    --nrg-chart-12: #45B7D1;
+    --nrg-chart-13: #96CEB4;
+    --nrg-chart-14: #FFEAA7;
+    --nrg-chart-15: #DFE6E9;
+    --nrg-chart-16: #FD79A8;
+    --nrg-chart-17: #A29BFE;
+    --nrg-grade-gold: #FFD700;
+    --nrg-grade-silver: #C0C0C0;
+    --nrg-grade-bronze: #CD7F32;
+    --nrg-founder-paper: #F5F1E8;
+    --nrg-founder-ink: #08111F;
+
+    --nrg-space-0: 0;
+    --nrg-space-1: 4px;
+    --nrg-space-2: 8px;
+    --nrg-space-3: 12px;
+    --nrg-space-4: 16px;
+    --nrg-space-6: 24px;
+    --nrg-space-8: 32px;
+    --nrg-space-12: 48px;
+    --nrg-space-16: 64px;
+    --nrg-space-24: 96px;
+    --nrg-space-32: 128px;
+    --nrg-space-half: 2px;
+    --nrg-space-three-quarter: 3px;
+    --nrg-touch-target: 44px;
+    --nrg-input-height: 48px;
+    --nrg-accent-border-width: 4px;
+
+    --nrg-radius-0: 0;
+    --nrg-radius-sm: 6px;
+    --nrg-radius-md: 12px;
+    --nrg-radius-lg: 18px;
+    --nrg-radius-pill: 9999px;
+
+    --nrg-type-display-size: 56px;
+    --nrg-type-display-line: 60px;
+    --nrg-type-h1-size: 40px;
+    --nrg-type-h1-line: 48px;
+    --nrg-type-h2-size: 28px;
+    --nrg-type-h2-line: 36px;
+    --nrg-type-h3-size: 20px;
+    --nrg-type-h3-line: 28px;
+    --nrg-type-body-l-size: 18px;
+    --nrg-type-body-l-line: 28px;
+    --nrg-type-body-size: 16px;
+    --nrg-type-body-line: 24px;
+    --nrg-type-body-s-size: 14px;
+    --nrg-type-body-s-line: 20px;
+    --nrg-type-caption-size: 12px;
+    --nrg-type-caption-line: 16px;
+    --nrg-type-micro-size: 10px;
+    --nrg-type-micro-line: 12px;
+    --nrg-type-nano-size: 6px;
+    --nrg-type-nano-line: 8px;
+
+    --nrg-font-display: 'Sohne Display', system-ui, -apple-system, sans-serif;
+    --nrg-font-sans: 'Sohne Display', system-ui, -apple-system, sans-serif;
+    --nrg-font-mono: 'JetBrains Mono', Consolas, monospace;
+
+    --nrg-elevation-0: none;
+    --nrg-elevation-1: 0 1px 2px rgba(15,23,42,0.06), 0 1px 1px rgba(15,23,42,0.04);
+    --nrg-elevation-2: 0 4px 8px rgba(15,23,42,0.08), 0 2px 4px rgba(15,23,42,0.04);
+    --nrg-elevation-3: 0 16px 40px rgba(15,23,42,0.16), 0 4px 12px rgba(15,23,42,0.08);
+
     --nrg-navy-900: #060e1c;
     --nrg-navy-800: #0b1428;
     --nrg-navy-700: #101a34;
@@ -48,6 +161,23 @@
   }
 
   .dark {
+    --nrg-saffron: #FFB366;
+    --nrg-white: #F5F7FA;
+    --nrg-green: #2BA821;
+    --nrg-ink: #E5E7EB;
+    --nrg-ink-muted: #9CA3AF;
+    --nrg-surface-1: #0F172A;
+    --nrg-surface-2: #1E293B;
+    --nrg-surface-3: #334155;
+    --nrg-border-token: #334155;
+    --nrg-focus: #60A5FA;
+    --nrg-danger: #F87171;
+    --nrg-warning: #F59E0B;
+    --nrg-success: #34D399;
+    --nrg-tier-1: #60A5FA;
+    --nrg-tier-2: #34D399;
+    --nrg-tier-3: #FFB366;
+
     --nrg-bg:        #080c16;
     --nrg-surface:   #101624;
     --nrg-text:      #f5f1e8;
@@ -70,7 +200,7 @@
 
   body {
     @apply antialiased;
-    font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+    font-family: var(--nrg-font-sans);
     background: var(--nrg-bg);
     color: var(--nrg-text);
     transition: background var(--transition-base), color var(--transition-base);
@@ -304,7 +434,11 @@
 
   /* Display headings */
   .font-display {
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: var(--nrg-font-display);
+  }
+
+  .font-mono {
+    font-family: var(--nrg-font-mono);
   }
 }
 

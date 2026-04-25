@@ -368,7 +368,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-slate-900 dark:text-slate-100 line-clamp-2 leading-snug">
-                        {citation.title || 'Unknown Publication'}
+                        {citation.title || 'Publication title unavailable'}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1">
                         <SourceIcon source={citation.source} />

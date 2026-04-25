@@ -1,4 +1,23 @@
 export const colors = {
+  role: {
+    saffron: { light: '#FF9933', dark: '#FFB366' },
+    white: { light: '#FFFFFF', dark: '#F5F7FA' },
+    green: { light: '#138808', dark: '#2BA821' },
+    navy: { light: '#0B1F4A', dark: '#0B1F4A' },
+    ink: { light: '#111827', dark: '#E5E7EB' },
+    inkMuted: { light: '#4B5563', dark: '#9CA3AF' },
+    surface1: { light: '#FFFFFF', dark: '#0F172A' },
+    surface2: { light: '#F9FAFB', dark: '#1E293B' },
+    surface3: { light: '#F3F4F6', dark: '#334155' },
+    border: { light: '#E5E7EB', dark: '#334155' },
+    focus: { light: '#2563EB', dark: '#60A5FA' },
+    danger: { light: '#B91C1C', dark: '#F87171' },
+    warning: { light: '#B45309', dark: '#F59E0B' },
+    success: { light: '#047857', dark: '#34D399' },
+    tier1: { light: '#1E40AF', dark: '#60A5FA' },
+    tier2: { light: '#065F46', dark: '#34D399' },
+    tier3: { light: '#7C2D12', dark: '#FFB366' },
+  },
   saffron: {
     50: '#fff7ed',
     100: '#ffedd5',
@@ -47,6 +66,63 @@ export const colors = {
   black: '#000000',
 } as const
 
+export const colorVars = {
+  saffron: 'var(--nrg-saffron)',
+  saffronSoft: 'var(--nrg-saffron-soft)',
+  saffronMuted: 'var(--nrg-saffron-muted)',
+  saffronSubtle: 'var(--nrg-saffron-subtle)',
+  saffronWash: 'var(--nrg-saffron-wash)',
+  white: 'var(--nrg-white)',
+  green: 'var(--nrg-green)',
+  navy: 'var(--nrg-navy)',
+  ink: 'var(--nrg-ink)',
+  inkMuted: 'var(--nrg-ink-muted)',
+  surface1: 'var(--nrg-surface-1)',
+  surface2: 'var(--nrg-surface-2)',
+  surface3: 'var(--nrg-surface-3)',
+  border: 'var(--nrg-border)',
+  focus: 'var(--nrg-focus)',
+  danger: 'var(--nrg-danger)',
+  warning: 'var(--nrg-warning)',
+  success: 'var(--nrg-success)',
+  tier1: 'var(--nrg-tier-1)',
+  tier2: 'var(--nrg-tier-2)',
+  tier3: 'var(--nrg-tier-3)',
+  founderPaper: 'var(--nrg-founder-paper)',
+  founderInk: 'var(--nrg-founder-ink)',
+  chart: [
+    'var(--nrg-chart-1)',
+    'var(--nrg-chart-2)',
+    'var(--nrg-chart-3)',
+    'var(--nrg-chart-4)',
+    'var(--nrg-chart-5)',
+    'var(--nrg-chart-6)',
+    'var(--nrg-chart-7)',
+    'var(--nrg-chart-8)',
+    'var(--nrg-chart-9)',
+    'var(--nrg-chart-10)',
+  ],
+  grade: {
+    gold: 'var(--nrg-grade-gold)',
+    silver: 'var(--nrg-grade-silver)',
+    bronze: 'var(--nrg-grade-bronze)',
+    reject: 'var(--nrg-danger)',
+    ungraded: 'var(--nrg-ink-muted)',
+  },
+  node: {
+    paper: 'var(--nrg-chart-5)',
+    author: 'var(--nrg-chart-3)',
+    institution: 'var(--nrg-chart-2)',
+    topic: 'var(--nrg-chart-1)',
+    researcher: 'var(--nrg-chart-5)',
+    researchArea: 'var(--nrg-chart-3)',
+    publication: 'var(--nrg-chart-1)',
+    funding: 'var(--nrg-chart-4)',
+    default: 'var(--nrg-ink-muted)',
+  },
+} as const
+
 export type ColorToken = typeof colors
+export type ColorVarToken = typeof colorVars
 export type SaffronShade = keyof typeof colors.saffron
 export type NavyShade = keyof typeof colors.navy

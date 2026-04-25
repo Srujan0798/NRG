@@ -15,7 +15,7 @@ export function PermissionBoundary({ tier, children, fallback }: PermissionBound
         <span className="text-4xl mb-4">🔒</span>
         <h3 className="text-lg font-semibold text-gray-700">IITGN Access Restricted</h3>
         <p className="text-sm text-gray-500 mt-2">
-          Your clearance level ({user?.tier || 'N/A'}) does not permit access to Tier {tier} resources.
+          Your clearance level ({user?.tier || 'unavailable'}) does not permit access to Tier {tier} resources.
         </p>
         <p className="text-xs text-gray-400 mt-1">Contact your institution admin for access escalation.</p>
       </div>
