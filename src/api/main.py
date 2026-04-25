@@ -493,8 +493,10 @@ async def query_stream(
             if schema_prompt and not needs_rag:
                 try:
                     db = NRGDatabase()
+                    search_term = request.query.split()[0]
                     sql_results = db.execute_query(
-                        f"SELECT * FROM researchers WHERE research_area LIKE '%{request.query.split()[0]}%' LIMIT 10",
+                        "SELECT * FROM researchers WHERE research_area LIKE ? LIMIT 10",
+                        (f"%{search_term}%",),
                         user_tier=user_tier,
                     )
                 except Exception as e:
