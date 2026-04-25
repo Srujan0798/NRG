@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Building2, HeartHandshake, Users, TrendingUp, Shield } from 'lucide-react'
+import { Building2, HeartHandshake, Users, TrendingUp } from 'lucide-react'
 
 interface IndustryHeaderProps {
   onThemeToggle: () => void

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { ForceGraph, ForceGraphHandle } from '../ForceGraph'
 import { GraphNode, GraphData } from '../../services/queryService'
-import { ZoomIn, ZoomOut, RotateCcw, Filter, X } from 'lucide-react'
+import { ZoomIn, ZoomOut, RotateCcw, Filter } from 'lucide-react'
 
 interface GraphViewProps {
   data: GraphData
@@ -30,23 +30,14 @@ export const GraphView: React.FC<GraphViewProps> = ({
   width = 1100,
   height = 500,
   onNodeClick,
-  onNodeHover,
-  availableYears = [],
-  availableTopics = [],
 }) => {
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
-  const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null)
   const [showFilters, setShowFilters] = useState(false)
   const graphRef = useRef<ForceGraphHandle>(null)
 
   const handleNodeClick = (node: GraphNode) => {
     setSelectedNode(node)
     onNodeClick?.(node)
-  }
-
-  const handleNodeHover = (node: GraphNode | null) => {
-    setHoveredNode(node)
-    onNodeHover?.(node)
   }
 
   return (
@@ -111,18 +102,18 @@ export const GraphView: React.FC<GraphViewProps> = ({
         />
       </div>
 
-      {(hoveredNode || selectedNode) && (
+      {selectedNode && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="absolute bottom-4 right-4 bg-white dark:bg-navy-700 rounded-xl border border-slate-200 dark:border-navy-600 shadow-lg p-3 w-64"
         >
           <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-            {(hoveredNode || selectedNode)?.label}
+            {selectedNode?.label}
           </p>
           <p className="text-xs text-slate-500 capitalize">
-            {(hoveredNode || selectedNode)?.type}
-            {(hoveredNode || selectedNode)?.year && ` · FY${(hoveredNode || selectedNode)?.year}`}
+            {selectedNode?.type}
+            {selectedNode?.year && ` · FY${selectedNode?.year}`}
           </p>
         </motion.div>
       )}

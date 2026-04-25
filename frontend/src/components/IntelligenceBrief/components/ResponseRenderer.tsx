@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Citation, GraphNode } from '../../../services/queryService'
+import { Citation } from '../../../services/queryService'
 import { ParsedTextSegment } from '../../../utils/parseCitations'
 import { TabularView } from './TabularView'
 import { StatisticalChart } from './StatisticalChart'

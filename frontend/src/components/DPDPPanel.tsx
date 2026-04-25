@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Download, Trash2, CheckCircle2, XCircle, RefreshCw, AlertTriangle, Loader2 } from 'lucide-react';
 import { useDPDPStore } from '../stores/dpdpStore';
-import { dpdpService, CONSENT_SCOPES } from '../services/dpdpService';
+import { CONSENT_SCOPES } from '../services/dpdpService';
 import type { ConsentScope } from '../services/dpdpService';
 
 interface DPDPPanelProps {
@@ -104,7 +104,7 @@ function ConfirmationDialog({
   );
 }
 
-export function DPDPPanel({ role = 'researcher', onClose }: DPDPPanelProps) {
+export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProps) {
   const { consents, syncWithBackend, withdrawConsent, grantConsent, exportUserData, eraseUserData, getExpiringConsents } = useDPDPStore();
   const [isExporting, setIsExporting] = useState(false);
   const [isErasing, setIsErasing] = useState(false);
@@ -122,7 +122,7 @@ export function DPDPPanel({ role = 'researcher', onClose }: DPDPPanelProps) {
       setSyncing(false);
     };
     sync();
-  }, []);
+  }, [syncWithBackend]);
 
   const handleExport = async () => {
     setIsExporting(true);

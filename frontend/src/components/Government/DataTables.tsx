@@ -1,9 +1,6 @@
 import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown, Download, FileText, Search, Users, Building2 } from 'lucide-react'
-import { ResearchAreasBarChart } from '../DataViz'
-import { FundingTrendsLineChart } from '../DataViz'
-import { IndiaMapChoropleth } from '../DataViz'
+import { motion } from 'framer-motion'
+import { ChevronDown, Download, Users } from 'lucide-react'
 
 interface DataTableProps {
   title: string

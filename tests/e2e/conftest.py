@@ -441,3 +441,21 @@ def unconsented_client(test_client, researcher_credentials):
     consent_service.revoke_consent(user_id, "research_access")
 
     return test_client, token, user_id
+
+
+@pytest.fixture(scope="session")
+def pw_browser():
+    """Session-scoped Playwright chromium browser — launched once, shared across all tests."""
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(pw_browser):
+    """Per-test browser page — each test gets a fresh page."""
+    page = pw_browser.new_page()
+    yield page
+    page.close()

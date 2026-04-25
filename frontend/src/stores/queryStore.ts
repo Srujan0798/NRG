@@ -25,7 +25,7 @@ interface QueryState {
 
 export const useQueryStore = create<QueryState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       history: [],
       currentQuery: '',
       isSearching: false,

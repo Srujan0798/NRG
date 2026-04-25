@@ -144,8 +144,8 @@ services:
   # ---------------------------------------------------------------------------
   frontend:
     build:
-      context: ./frontend
-      dockerfile: ../Dockerfile.frontend
+      context: .
+      dockerfile: Dockerfile.frontend
       args:
         - NODE_ENV=production
     container_name: nrg-frontend

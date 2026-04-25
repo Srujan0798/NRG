@@ -173,6 +173,15 @@ export const queryService = {
     });
   },
 
+  async fetchResearchers(): Promise<{ results: unknown[] }> {
+    return authService.withAuthenticatedRequest(async (accessToken) => {
+      const response = await api.get<{ results: unknown[] }>('/researchers', {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      return response.data;
+    });
+  },
+
   emptyGraphData(): GraphData {
     return { nodes: [], edges: [], warnings: [] };
   },

@@ -1,6 +1,5 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, TrendingUp } from 'lucide-react'
 
 interface StateData {
   state: string
@@ -109,7 +108,7 @@ export const IndiaMapChoropleth: React.FC<IndiaMapChoroplethProps> = ({
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2">
-        {topStates.map((state, i) => (
+        {topStates.map((state) => (
           <div key={state.state} className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-saffron-400" />
             <span className="text-xs text-slate-600 dark:text-slate-300 truncate">{state.state}</span>

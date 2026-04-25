@@ -12,6 +12,7 @@
 set -uo pipefail
 
 API_BASE="${NRG_API_URL:-http://localhost:8000}"
+CURL_MAX_TIME="${NRG_CURL_MAX_TIME:-12}"
 TOKEN=""
 TEST_FAILURES=0
 TEST_PASSES=0
@@ -32,7 +33,7 @@ section() {
 get_token() {
   local user="${1:-researcher_user}"; local pass="${2:-researcher-pass}"
   local resp
-  resp=$(curl -s -X POST "$API_BASE/login" \
+  resp=$(curl -s --max-time "$CURL_MAX_TIME" -X POST "$API_BASE/login" \
     -H "Content-Type: application/json" \
     -d "{\"username\":\"$user\",\"password\":\"$pass\"}" 2>/dev/null)
   TOKEN=$(echo "$resp" | python3 -c "import sys,json; print(json.load(sys.stdin).get('access_token',''))" 2>/dev/null || echo "")
@@ -44,11 +45,11 @@ get_token() {
 }
 
 do_get() {
-  curl -s -w "\n%{http_code}" "$API_BASE$1" -H "Authorization: Bearer $TOKEN"
+  curl -s --max-time "$CURL_MAX_TIME" -w "\n%{http_code}" "$API_BASE$1" -H "Authorization: Bearer $TOKEN"
 }
 
 do_post() {
-  curl -s -w "\n%{http_code}" "$API_BASE$1" -X POST \
+  curl -s --max-time "$CURL_MAX_TIME" -w "\n%{http_code}" "$API_BASE$1" -X POST \
     -H "Authorization: Bearer $TOKEN" \
     -H "Content-Type: application/json" \
     -d "$2"
@@ -214,7 +215,7 @@ test_rt09() {
   local blocked=0 passed=0
   for i in $(seq 1 15); do
     local code
-    code=$(do_post "/query" "{\"query\":\"test query $i\"}" | tail -1)
+    code=$(do_post "/query" "{\"query\":\"UNION SELECT password FROM users $i\"}" | tail -1)
     if [[ "$code" == "429" ]]; then ((blocked++)); else ((passed++)); fi
   done
   if [[ "$blocked" -gt 0 ]]; then
@@ -231,7 +232,7 @@ test_rt10() {
   section "RT-10 — Authentication: Expired JWT"
   local expired_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoxfQ.foobar"
   local code
-  code=$(curl -s -w "%{http_code}" "$API_BASE/health" \
+  code=$(curl -s --max-time "$CURL_MAX_TIME" -o /dev/null -w "%{http_code}" "$API_BASE/stats" \
     -H "Authorization: Bearer $expired_token" 2>/dev/null | tail -1)
   if [[ "$code" == "401" || "$code" == "403" ]]; then
     log_pass "Expired token rejected (HTTP $code)"
@@ -260,7 +261,7 @@ test_rt11() {
 test_rt12() {
   section "RT-12 — CORS: Cross-origin request"
   local code
-  code=$(curl -s -o /dev/null -w "%{http_code}" \
+  code=$(curl -s --max-time "$CURL_MAX_TIME" -o /dev/null -w "%{http_code}" \
     -H "Origin: https://evil.com" \
     -H "Access-Control-Request-Method: POST" \
     "$API_BASE/login" 2>/dev/null)
@@ -424,7 +425,7 @@ test_rt22() {
   section "RT-22 — JWT: None algorithm"
   local none_token="eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdWIiOiJ0ZXN0IiwiaWF0IjoxfQ."
   local code
-  code=$(curl -s -w "%{http_code}" "$API_BASE/health" \
+  code=$(curl -s --max-time "$CURL_MAX_TIME" -o /dev/null -w "%{http_code}" "$API_BASE/stats" \
     -H "Authorization: Bearer $none_token" 2>/dev/null | tail -1)
   if [[ "$code" == "401" || "$code" == "403" ]]; then
     log_pass "JWT none algorithm rejected (HTTP $code)"
@@ -440,14 +441,14 @@ test_rt23() {
   section "RT-23 — Brute Force: Repeated failed login"
   local i
   for i in $(seq 1 5); do
-    curl -s -X POST "$API_BASE/login" \
+    curl -s --max-time "$CURL_MAX_TIME" -X POST "$API_BASE/login" \
       -H "Content-Type: application/json" \
-      -d "{\"username\":\"researcher_user\",\"password\":\"wrongpassword$i\"}" >/dev/null 2>&1 || true
+      -d "{\"username\":\"rt_bruteforce_user\",\"password\":\"wrongpassword$i\"}" >/dev/null 2>&1 || true
   done
   local resp
-  resp=$(curl -s -X POST "$API_BASE/login" \
+  resp=$(curl -s --max-time "$CURL_MAX_TIME" -X POST "$API_BASE/login" \
     -H "Content-Type: application/json" \
-    -d "{\"username\":\"researcher_user\",\"password\":\"wrongpassword\"}")
+    -d "{\"username\":\"rt_bruteforce_user\",\"password\":\"wrongpassword\"}")
   if echo "$resp" | grep -qi "locked\|rate.limit\|too.many\|blocked"; then
     log_pass "Brute force protection triggered after 5 failed attempts"
   else
@@ -496,7 +497,7 @@ test_rt26() {
   section "RT-26 — Audit: Token tampering detection"
   local tampered="${TOKEN:0:50}XXXXX${TOKEN:55}"
   local code
-  code=$(curl -s -w "%{http_code}" "$API_BASE/health" \
+  code=$(curl -s --max-time "$CURL_MAX_TIME" -o /dev/null -w "%{http_code}" "$API_BASE/stats" \
     -H "Authorization: Bearer $tampered" 2>/dev/null | tail -1)
   if [[ "$code" == "401" || "$code" == "403" ]]; then
     log_pass "Tampered token rejected (HTTP $code)"
@@ -630,7 +631,7 @@ main() {
     exit 1
   fi
 
-  get_token
+  get_token || exit 1
 
   local run_all=true
   while [[ $# -gt 0 ]]; do

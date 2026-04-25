@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Building2Icon, BuildingIcon, LogInIcon, UserIcon } from './Icons'
+import { LogInIcon, UserIcon } from './Icons'
 
 type PersonaKey = 'researcher' | 'government' | 'industry'
 

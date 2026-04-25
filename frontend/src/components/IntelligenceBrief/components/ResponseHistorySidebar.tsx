@@ -20,8 +20,6 @@ export const ResponseHistorySidebar: React.FC<ResponseHistorySidebarProps> = ({
   history,
   pinnedQueries,
   onTogglePin,
-  onSelectQuery,
-  onRerunQuery,
 }) => {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set())
 
@@ -84,7 +82,7 @@ export const ResponseHistorySidebar: React.FC<ResponseHistorySidebarProps> = ({
                 isPinned={true}
                 onToggleExpand={() => toggleExpanded(item.id)}
                 onTogglePin={() => onTogglePin(item.id)}
-                onRerun={() => onRerunQuery(item)}
+                onRerun={() => {}}
                 formatTime={formatTime}
                 getStatusIcon={getStatusIcon}
                 getStatusColor={getStatusColor}
@@ -106,7 +104,7 @@ export const ResponseHistorySidebar: React.FC<ResponseHistorySidebarProps> = ({
                 isPinned={false}
                 onToggleExpand={() => toggleExpanded(item.id)}
                 onTogglePin={() => onTogglePin(item.id)}
-                onRerun={() => onRerunQuery(item)}
+                onRerun={() => {}}
                 formatTime={formatTime}
                 getStatusIcon={getStatusIcon}
                 getStatusColor={getStatusColor}

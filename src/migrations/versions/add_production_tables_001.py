@@ -4,9 +4,9 @@ Revision ID: add_production_tables_001
 Revises: a1b2c3d4e002
 Create Date: 2026-04-23
 
-This migration adds 47 tables from the professor's production
-PostgreSQL schema (db_struct.sql, pg_dump from 2026-01-09) plus the
-missing user_registration_old table to enable the full Dhairya SQL
+This migration adds all 58 tables from the professor's production
+PostgreSQL schema (db_struct.sql, pg_dump from 2026-01-09) to enable
+the full Dhairya SQL
 benchmark to run on PostgreSQL.
 
 Tables added (47 from source + user_registration_old):
@@ -32,10 +32,8 @@ Tables added (47 from source + user_registration_old):
 - tb_academic_year_mstr, tb_course_program_types
 - user_registration, founders_of_fortune_500_companies
 - startup_recognition_old
-- user_registration_old (missing table from db_struct.sql)
-
-Note: Django auth tables (auth_*, django_*) are NOT migrated as they are
-framework internal tables, not NRG business data.
+- user_registration_old
+- Django/auth support tables required for schema parity
 """
 
 from typing import Sequence, Union
@@ -49,8 +47,113 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+def _create_django_auth_tables() -> None:
+    op.create_table(
+        'auth_group',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(length=150), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('name'),
+    )
+
+    op.create_table(
+        'django_content_type',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('app_label', sa.String(length=100), nullable=False),
+        sa.Column('model', sa.String(length=100), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('app_label', 'model'),
+    )
+
+    op.create_table(
+        'auth_permission',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('content_type_id', sa.Integer(), nullable=False),
+        sa.Column('codename', sa.String(length=100), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('content_type_id', 'codename'),
+    )
+
+    op.create_table(
+        'auth_user',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('password', sa.String(length=128), nullable=False),
+        sa.Column('last_login', sa.DateTime(timezone=True), nullable=True),
+        sa.Column('is_superuser', sa.Boolean(), nullable=False),
+        sa.Column('username', sa.String(length=150), nullable=False),
+        sa.Column('first_name', sa.String(length=150), nullable=False),
+        sa.Column('last_name', sa.String(length=150), nullable=False),
+        sa.Column('email', sa.String(length=254), nullable=False),
+        sa.Column('is_staff', sa.Boolean(), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=False),
+        sa.Column('date_joined', sa.DateTime(timezone=True), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('username'),
+    )
+
+    op.create_table(
+        'auth_group_permissions',
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('group_id', sa.Integer(), nullable=False),
+        sa.Column('permission_id', sa.Integer(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('group_id', 'permission_id'),
+    )
+
+    op.create_table(
+        'auth_user_groups',
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('group_id', sa.Integer(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('user_id', 'group_id'),
+    )
+
+    op.create_table(
+        'auth_user_user_permissions',
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.Column('permission_id', sa.Integer(), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+        sa.UniqueConstraint('user_id', 'permission_id'),
+    )
+
+    op.create_table(
+        'django_admin_log',
+        sa.Column('id', sa.Integer(), nullable=False),
+        sa.Column('action_time', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('object_id', sa.Text(), nullable=True),
+        sa.Column('object_repr', sa.String(length=200), nullable=False),
+        sa.Column('action_flag', sa.SmallInteger(), nullable=False),
+        sa.Column('change_message', sa.Text(), nullable=False),
+        sa.Column('content_type_id', sa.Integer(), nullable=True),
+        sa.Column('user_id', sa.Integer(), nullable=False),
+        sa.CheckConstraint('action_flag >= 0', name='django_admin_log_action_flag_check'),
+        sa.PrimaryKeyConstraint('id'),
+    )
+
+    op.create_table(
+        'django_migrations',
+        sa.Column('id', sa.BigInteger(), nullable=False),
+        sa.Column('app', sa.String(length=255), nullable=False),
+        sa.Column('name', sa.String(length=255), nullable=False),
+        sa.Column('applied', sa.DateTime(timezone=True), nullable=False),
+        sa.PrimaryKeyConstraint('id'),
+    )
+
+    op.create_table(
+        'django_session',
+        sa.Column('session_key', sa.String(length=40), nullable=False),
+        sa.Column('session_data', sa.Text(), nullable=False),
+        sa.Column('expire_date', sa.DateTime(timezone=True), nullable=False),
+        sa.PrimaryKeyConstraint('session_key'),
+    )
+
+
 def upgrade() -> None:
     op.execute("CREATE EXTENSION IF NOT EXISTS tablefunc")
+    _create_django_auth_tables()
 
     op.create_table(
         'academic_courses_details',
@@ -962,6 +1065,16 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_table('user_registration_old')
     op.drop_table('user_registration')
+    op.drop_table('django_session')
+    op.drop_table('django_migrations')
+    op.drop_table('django_admin_log')
+    op.drop_table('auth_user_user_permissions')
+    op.drop_table('auth_user_groups')
+    op.drop_table('auth_group_permissions')
+    op.drop_table('auth_user')
+    op.drop_table('auth_permission')
+    op.drop_table('django_content_type')
+    op.drop_table('auth_group')
     op.drop_table('tb_institute_scrap_data_url')
     op.drop_table('tb_institute_mstr')
     op.drop_table('tb_goi_ministries_mstr')

@@ -136,11 +136,15 @@ ACCEPTANCE CRITERIA:
   - [ ] [Testable condition 1]
   - [ ] [Testable condition 2]
   (These must verify ELEVATION, not just "it doesn't crash.")
+  - [ ] Cost impact documented: estimated ₹ per 1,000 queries if this touches the hot path
+  - [ ] If this touches any of the 6 Quality Bar constraints, compliance verified before claiming DONE
+  - [ ] **If this touches frontend/UI**: Demo Readiness verified — walk through the 10-step demo script (`.claude/rules/ux_audit_protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
 
 BEFORE COMMIT:
   - Run /pre-commit — must pass all gates
   - Run /code-review-and-quality on your own changes
   - Report which skills you used and how each ELEVATED the work
+  - If any cluster-only gaps exist (requires K8s/sovereign infra), acknowledge them explicitly — do NOT use them as excuses to skip locally-fixable work
 
 GURU ASSIGNMENT NOTE:
   [WHY this task matters to NRG's sovereign mission. Connect to
@@ -199,6 +203,10 @@ DEPENDS ON: [other tasks, or "none"]
     │  → /test-suite for test status                │
     │  → /performance for regressions               │
     │  → /docs-sync for documentation drift         │
+    │  → /external-audit (quarterly or pre-demo)    │
+    │    — Run prompt from audit_protocol.md Sec 13 │
+    │    — On 3+ AIs, compare findings              │
+    │    — Union of gaps = real backlog             │
     │                                               │
     ├──── EVOLVE ──────────────────────────────────┤
     │                                               │
@@ -255,6 +263,10 @@ After completing any task, agents MUST report:
 ```
 TASK COMPLETE: [task name]
 STATUS: [done / partial / blocked]
+
+CLUSTER GAPS ACKNOWLEDGED (if any):
+  - [ ] Items requiring sovereign cluster — acknowledged, do NOT block local sign-off
+  - [ ] All locally-fixable gaps are FIXED before reporting done
 
 SKILLS USED:
   - /python-backend — Used for [what]

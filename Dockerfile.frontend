@@ -28,8 +28,8 @@ RUN npm run build
 # ------------------------------------------------------------------------------
 FROM nginx:1.25-alpine
 
-# Create nginx user with proper uid/gid (80:80 is traditional nginx uid)
-RUN adduser -D -u 82 -g 82 nginx && \
+# nginx:alpine has adduser, create nginx user if needed
+RUN adduser -D -u 82 -g 82 -s /bin/sh nginx 2>/dev/null || true && \
     chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \

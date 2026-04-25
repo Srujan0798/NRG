@@ -2,9 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../../services/queryService'
 import { parseCitations } from '../../utils/parseCitations'
 import { ConfidenceIndicator } from './components/ConfidenceIndicator'
-import { ProvenanceBadge } from './components/ProvenanceBadge'
-import { CitationChip, CitationList } from './components/CitationRenderer'
-import { SourceBreakdown } from './components/SourceBreakdown'
+import { CitationList } from './components/CitationRenderer'
 import { ResponseRenderer } from './components/ResponseRenderer'
 import { ResponseHistorySidebar } from './components/ResponseHistorySidebar'
 import { ExportButton } from './components/ExportButton'
@@ -40,19 +38,12 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
   verification_status,
   onExportPDF,
   isStreaming = false,
-  responseId,
-  queryText,
-  sessionId,
 }) => {
-  const [history, setHistory] = useState<HistoryItem[]>([])
-  const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
   const [pinnedQueries, setPinnedQueries] = useState<Set<string>>(new Set())
+  const history: HistoryItem[] = []
 
-  const handleCitationClick = useCallback((citation: Citation) => {
-    setSelectedCitation(citation)
-    setDrawerOpen(true)
+  const handleCitationClick = useCallback((_citation: Citation) => {
   }, [])
 
   const parsedResult = useMemo(() => parseCitations(response, citations), [response, citations])
@@ -86,11 +77,6 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
     }
     return findings
   }, [response])
-
-  const handleAddToHistory = useCallback((item: Omit<HistoryItem, 'id'>) => {
-    const newItem = { ...item, id: `query-${Date.now()}` }
-    setHistory(prev => [newItem, ...prev].slice(0, 50))
-  }, [])
 
   const handleTogglePin = useCallback((id: string) => {
     setPinnedQueries(prev => {
@@ -219,9 +205,9 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
           history={history}
           pinnedQueries={pinnedQueries}
           onTogglePin={handleTogglePin}
-          onSelectQuery={(item) => {
+          onSelectQuery={(_item) => {
           }}
-          onRerunQuery={(item) => {
+          onRerunQuery={(_item) => {
           }}
         />
       )}
