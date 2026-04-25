@@ -13,6 +13,22 @@
 
 ---
 
+## 2026-04-26 PRODUCTION LAUNCH BLOCKERS (merged from external audit)
+
+These 5 gaps must close before the IIT-GN user acceptance session. Each is bound to a Quality Bar constraint and the new live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`.
+
+| # | Gap | Bound to | Live evidence required | Owner |
+|---|-----|----------|------------------------|-------|
+| LB-1 | Tier-shape filter at API response boundary (not only SQL boundary) | C2 | `tests/api/test_tier_isolation_live.py`; evidence/2026-04-26/09–11_tierN_query_response.json from running uvicorn | backend + security |
+| LB-2 | Text-to-SQL production prompt covers all 7 Dhairya patterns + 10 adversarial mutations (`tests/benchmarks/killer_queries.yaml`) — not just regression fixture | C3, Dhairya source #2 | `tests/benchmarks/test_dhairya_adversarial.py` (≥70/70) + EXPLAIN ANALYZE on the 3 KILLER queries against staging PG ≥50k rows | backend + ml |
+| LB-3 | Three KILLER queries pass end-to-end against running stack with ≥50k rows, p95<4s, citations attached | C3 + C4 (local proxy) | `tests/e2e/test_three_killer_queries.py` + evidence JSONs per tier | testing + data |
+| LB-4 | Full `pytest` finishes <15 min, all green, parallelised | quality gate | `scripts/run_test_suite.sh` + junit XML in evidence/ | testing + devops |
+| LB-5 | Red-team live replay against running API (≥30 baseline + ≥50 extended payloads) — all BLOCKED or DOWNGRADED | C6 | `scripts/red_team_live_replay.py` + evidence/2026-04-26/17_red_team_results.md (timestamped, audit-bound) | security |
+
+Cluster-only (post-launch, not session blockers): C4 1000-user locust, C5 vector-drift baseline against populated Qdrant, real 600 GB ingest.
+
+---
+
 ## 2026-04-25 V4 Eternal Wrap — SEALED at `1562d694`
 
 Tag `v1.0.0-client-handover` re-pushed. Live API smoke test against running uvicorn passed:

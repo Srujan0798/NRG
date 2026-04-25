@@ -397,7 +397,12 @@ def _extract_comparison_entities(query_lower: str) -> list[str]:
 
 
 def _build_schema_prompt(user_query: str) -> str:
-    extractor = SQLiteSchemaExtractor()
+    db_url = os.getenv("DATABASE_URL", "")
+    if db_url.startswith("postgresql") or db_url.startswith("postgres"):
+        from src.skills.text_to_sql.schema_extractor import SchemaExtractor
+        extractor = SchemaExtractor(connection_string=db_url)
+    else:
+        extractor = SQLiteSchemaExtractor()
     try:
         tables = extractor.get_relevant_tables(user_query)
         schema = extractor.get_schema_metadata(tables)

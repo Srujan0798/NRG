@@ -257,7 +257,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
         expiringCount={consentExpiringCount}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+      <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {activeTab === 'dashboard' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

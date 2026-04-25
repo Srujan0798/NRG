@@ -21,7 +21,7 @@ export function getTabDisplayName(tabKey: string): string {
 
 export function getDashboardDocumentTitle(role: DashboardRole, tabKey: string): string {
   const tabLabel = DOCUMENT_TITLE_TAB_OVERRIDES[tabKey] || getTabDisplayName(tabKey)
-  return `${ROLE_LABELS[role]} ${tabLabel} | NRG`
+  return `NRG · ${ROLE_LABELS[role]} ${tabLabel}`
 }
 
 export function getQueryStatusCopy({

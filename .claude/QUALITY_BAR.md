@@ -73,3 +73,45 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 ## The Rule
 
 > If any agent or Guru response claims "complete" on a task that touches any of the 6 constraints, verify compliance before accepting. A protocol is **not complete** if it regresses any of the 6 bars.
+
+---
+
+## Live Evidence Requirement (added 2026-04-26)
+
+A unit-test pass alone never satisfies any constraint above. For every claim of "PASS", the evidence must include **at least one of**:
+
+1. A captured response from a **running uvicorn API + populated Qdrant + ≥50k-row staging PostgreSQL**, committed under `evidence/<YYYY-MM-DD>/` as JSON or Markdown.
+2. A scorecard run by `scripts/quality_bar_scorecard.py` against that running stack — the JSON output is the source of truth.
+3. A signed audit-chain entry in `.audit/chain.jsonl` referencing the same artifact.
+
+> **Tests on 10-row seed data are deferred bugs, not passing tests.** Every Quality Bar PASS must be reproducible against a running system at production-realistic volume — see `.claude/rules/audit_protocol.md` "Real Volume Reality Check".
+
+---
+
+## Tier-Shape Boundary (added 2026-04-26)
+
+RBAC enforcement must happen at **two** layers, not one:
+
+| Layer | Mechanism | Failure mode if missing |
+|---|---|---|
+| SQL boundary | `tier_query_filters` in `rbac_policies.yaml` strips columns from SELECT | Researcher email never enters the executor result |
+| **Response-shape boundary** | Last-mile filter in `src/api/main.py` re-applies the tier allowlist before `JSONResponse` | Synthesizer can never accidentally render a column the SQL boundary missed |
+
+Constraint #2 (Per-User Audit Binding) is regressed if any /query, /query/graph, /publications, /stats, or /api/query/stream response delivers a column not in the requesting user's tier allowlist — even if the SQL filter blocked it. Property-test with hypothesis to prove no PII leaks across 1000 random payloads × 3 tiers.
+
+---
+
+## Verdict Template (binding for every audit-style response)
+
+Any audit-style report (Guru, agent, or external reviewer) must end with this exact block:
+
+```
+OVERALL READINESS: <X.Y / 10>
+LAUNCH-READY:      <YES / NO> — if NO, three items that must close first
+PRODUCTION-READY:  <YES / NO> — if NO, three items that must close first
+BIGGEST SINGLE RISK: <one sentence, traced to file:line or evidence file>
+WHAT WILL IMPRESS THE USER:    <one sentence>
+WHAT WILL EMBARRASS THE TEAM:  <one sentence>
+```
+
+This is the only acceptance template. Free-form scoring is rejected.

@@ -9,7 +9,7 @@ export const colors = {
     surface1: { light: '#FFFFFF', dark: '#0F172A' },
     surface2: { light: '#F9FAFB', dark: '#1E293B' },
     surface3: { light: '#F3F4F6', dark: '#334155' },
-    border: { light: '#E5E7EB', dark: '#334155' },
+    border: { light: '#6B7280', dark: '#64748B' },
     focus: { light: '#2563EB', dark: '#60A5FA' },
     danger: { light: '#B91C1C', dark: '#F87171' },
     warning: { light: '#B45309', dark: '#F59E0B' },

@@ -233,7 +233,8 @@ def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tupl
 def _query_institution_funding(topic: str, patterns: list[str]) -> list[dict[str, Any]]:
     import sqlite3
 
-    conn = sqlite3.connect(resolve_database_path())
+    db_path = Path(__file__).resolve().parents[2] / 'nrg_research.db'
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     ors = " OR ".join(
         ["lower(r.research_area) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?)" for _ in patterns]

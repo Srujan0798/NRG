@@ -8,6 +8,7 @@ module.exports = {
     '<rootDir>/tests/design-system',
     '<rootDir>/tests/hooks',
     '<rootDir>/tests/i18n',
+    '<rootDir>/tests/a11y',
   ],
   testPathIgnorePatterns: [
     '/node_modules/',

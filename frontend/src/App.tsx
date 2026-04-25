@@ -1,9 +1,11 @@
-import React, { lazy, Suspense } from 'react'
+import React, { lazy, Suspense, useEffect } from 'react'
 import Login from './components/Login'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import { SkeletonLoader } from './components/Skeleton'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { useTheme } from './design-system/ThemeProvider'
+import SkipLink from './components/SkipLink/SkipLink'
+import { useReducedMotion } from './hooks/useReducedMotion'
 
 const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
@@ -26,7 +28,7 @@ const DashboardLoading = () => (
         </div>
       </div>
     </header>
-    <main className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+    <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-4 py-8 relative z-10">
       <SkeletonLoader type="stats" />
     </main>
   </div>
@@ -79,26 +81,47 @@ const AppShell: React.FC = () => {
 }
 
 const App: React.FC = () => {
+  const reducedMotion = useReducedMotion()
+  const pathname = window.location.pathname
+
+  useEffect(() => {
+    document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false'
+  }, [reducedMotion])
+
+  useEffect(() => {
+    if (pathname === '/app') document.title = 'NRG · Ask National Research Graph'
+    if (pathname === '/founder') document.title = 'NRG · Founder Readiness'
+  }, [pathname])
+
+  let content: React.ReactNode
+
   if (window.location.pathname === '/founder') {
-    return (
+    content = (
       <Suspense fallback={<DashboardLoading />}>
         <FounderDashboard />
       </Suspense>
     )
-  }
-
-  if (window.location.pathname === '/app') {
-    return (
+  } else if (window.location.pathname === '/app') {
+    content = (
       <Suspense fallback={<DashboardLoading />}>
         <Hero />
       </Suspense>
     )
+  } else {
+    content = (
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
+    )
   }
 
   return (
-    <AuthProvider>
-      <AppShell />
-    </AuthProvider>
+    <>
+      <SkipLink />
+      <div data-reduced-motion={reducedMotion ? 'true' : 'false'}>
+        {content}
+      </div>
+    </>
   )
 }
 

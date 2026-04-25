@@ -232,7 +232,7 @@ export default function FounderDashboard() {
         </div>
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">

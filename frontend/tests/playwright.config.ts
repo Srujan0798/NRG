@@ -2,7 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: '.',
-  testMatch: ['e2e/**/*.spec.ts'],
+  testMatch: ['e2e/**/*.spec.ts', 'a11y/**/*.test.ts'],
   timeout: 30000,
   expect: {
     timeout: 5000
@@ -22,5 +22,11 @@ export default defineConfig({
       name: 'chromium',
       use: { browserName: 'chromium' }
     }
-  ]
+  ],
+  webServer: {
+    command: 'node ../e2e-server.js',
+    port: 3000,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000
+  }
 });
