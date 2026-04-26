@@ -1,0 +1,43 @@
+# Engineering Patterns & Feedback
+
+Permanent learnings from user feedback, architectural decisions, and operational constraints. These are NOT bugs — they are the rules that shape how NRG is built.
+
+## Security & Privacy
+
+| Pattern | Source | Key Rule |
+|---------|--------|----------|
+| [acceptance-path-discipline](acceptance-path-discipline.md) | Founder | Feature-flag every UI surface that depends on an unmet Quality Bar constraint |
+| [intent-aware-pii](intent-aware-pii.md) | Founder | PII regex misses schema-aware extraction intent; add intent classifier above sanitiser |
+| [k-anonymity-threshold](k-anonymity-threshold.md) | Founder | Reject Tier 2/3 queries whose cohort < k=5 (DPDP §8) |
+| [network-policy-worm-logs](network-policy-worm-logs.md) | Founder | Pod-to-pod zero-trust + WORM-locked object storage for audit chain |
+
+## Architecture & Performance
+
+| Pattern | Source | Key Rule |
+|---------|--------|----------|
+| [async-compute-queue](async-compute-queue.md) | Founder | Gov LBs kill HTTP at 60s; return 202+task_id and poll/WebSocket |
+| [dashboard-decoupled-metadata](dashboard-decoupled-metadata.md) | Founder | Hero counters render from `display_metadata.yaml`, not `COUNT(*)` on seeded rows |
+| [db-layer-defence](db-layer-defence.md) | Founder | Third defence layer: pg_anonymizer dynamic masking + PL/pgSQL HMAC trigger |
+| [partitioning-pitr](partitioning-pitr.md) | Founder | Range-partition by year for >50M-row tables; quarterly DR drill with WAL replay |
+| [tier-shape-boundary](tier-shape-boundary.md) | Founder | RBAC enforced at API response-shape layer AND SQL boundary |
+
+## Quality & Process
+
+| Pattern | Source | Key Rule |
+|---------|--------|----------|
+| [audit-reliability-check](audit-reliability-check.md) | Founder | When two same-day self-audits disagree by ≥3 points, reconcile before any external session |
+| [live-evidence-requirement](live-evidence-requirement.md) | Founder | Every Quality Bar PASS needs evidence against running stack with ≥50k seed rows |
+| [real-audience](real-audience.md) | Founder | First audience is the professor's assistant clicking on a laptop, not formal UAT |
+| [storage-location](storage-location.md) | Founder | NEVER store in local `~/.claude/`; ALWAYS in repo `.claude/memory/` |
+
+## Workflow
+
+| Pattern | Source | Key Rule |
+|---------|--------|----------|
+| [guru-protocol-enforcement](guru-protocol-enforcement.md) | Founder | NEVER give simple fix tasks; use full ═══ format with Shishya framework |
+| [workflow](workflow.md) | Founder | Guru mode: don't implement, give task protocols with skill + shishya assignments |
+
+---
+
+**When to add:** After any user correction or architectural decision that should never be repeated.
+**Format:** `context → constraint → enforcement-mechanism`

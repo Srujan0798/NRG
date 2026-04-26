@@ -2,7 +2,7 @@
 
 > **Trigger:** Before major demos, quarterly, or when internal audits feel "too easy."  
 > **Purpose:** Get independent AI auditors to find gaps your own agents missed.  
-> **Source:** `.claude/rules/audit_protocol.md` Section 13
+> **Source:** `.claude/rules/audit/protocol.md` Section 13
 
 ---
 
@@ -46,7 +46,7 @@ Run the same prompt + 4 files on **at least 3 different AIs** (Claude, Grok, GPT
 
 ### Step 2: Copy the Prompt
 
-Open `.claude/rules/audit_protocol.md` Section 13.6 — the copy-paste ready prompt template is there.
+Open `.claude/rules/audit/protocol.md` Section 13.6 — the copy-paste ready prompt template is there.
 
 ### Step 3: Run on 3+ AIs
 
@@ -94,19 +94,19 @@ Fix the gaps. Then re-run the external audit. If the AI no longer flags the gap 
 Read it out loud to the team. This is the truth they need to hear.
 
 ### Deliverable 2 (Technical Checklist)
-Compare against your own D1-D10 checklist in `.claude/rules/audit_protocol.md`. Items the AI found that you missed = gaps in your internal audit process.
+Compare against your own D1-D10 checklist in `.claude/rules/audit/protocol.md`. Items the AI found that you missed = gaps in your internal audit process.
 
 ### Deliverable 3 (UX Audit)
-Compare against your own UI/UX audit in `.claude/rules/ux_audit_protocol.md`. Items the AI found that you missed = gaps in your frontend testing.
+Compare against your own UI/UX audit in `.claude/rules/ux_audit/protocol.md`. Items the AI found that you missed = gaps in your frontend testing.
 
 ### Deliverable 4 (Top 10 Questions)
 Run these against your system. If any expose a real weakness — fix before launch.
 
 ### Deliverable 5 (Killer Demo Queries)
-Add these to your launch script in `.claude/rules/ux_audit_protocol.md` Section 14. Pre-run them before every launch review.
+Add these to your launch script in `.claude/rules/ux_audit/protocol.md` Section 14. Pre-run them before every launch review.
 
 ### Deliverable 6 (Risk Map)
-Merge with your own risk map in `.claude/rules/ux_audit_protocol.md` Section 13.
+Merge with your own risk map in `.claude/rules/ux_audit/protocol.md` Section 13.
 
 ### Deliverable 7 (Self-Fix Protocol)
 This IS your sprint backlog. Sort by "Blocks Demo: YES" first. Assign to agents.

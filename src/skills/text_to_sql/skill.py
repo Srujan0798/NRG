@@ -18,6 +18,7 @@ from src.skills.text_to_sql.schema_retriever import (
     get_default_retriever,
     build_relevant_ddl_prompt_section,
 )
+from src.skills.text_to_sql.result_anomaly_detector import detect_result_anomalies
 from src.observability.langfuse_tracer import _init_langfuse
 
 
@@ -52,70 +53,29 @@ _GENERIC_IIT_TERMS = {
 
 
 def detect_semantic_anomaly(user_query: str, sql: str, result: Dict[str, Any]) -> Dict[str, Any]:
-    """Detect wrong-but-plausible SQL results that need user clarification.
+    """Detect plausible SQL result anomalies that need correction or clarification."""
+    report = detect_result_anomalies(user_query, sql, result)
+    if not report.detected:
+        return {
+            "detected": False,
+            "needs_clarification": False,
+            "issues": [],
+            "answer_confidence": report.answer_confidence,
+            "confidence_score": report.confidence_score,
+            "report": report.to_dict(),
+        }
 
-    This does not try to prove correctness. It catches high-risk cases where a
-    generated analytical join returns no rows or mostly-null joined metrics,
-    especially around applicant/institute joins that need normalization.
-    """
-    sql_lower = " ".join(sql.lower().split())
-    query_lower = user_query.lower()
-    row_count = int(result.get("row_count") or 0)
-    results = result.get("results") or []
-    issues: list[str] = []
-
-    has_join = " join " in f" {sql_lower} "
-    analytical_intent = any(
-        token in query_lower
-        for token in (
-            "compare",
-            "correlat",
-            "cost per",
-            "efficiency",
-            "grant",
-            "funding",
-            "patent",
-            "ratio",
-            "trend",
-        )
-    )
-
-    applicants_join = bool(
-        re.search(r"\binstitute\s*=\s*[\w.]*applicants\b", sql_lower)
-        or re.search(r"\bapplicants\s*=\s*[\w.]*institute\b", sql_lower)
-    )
-    normalized_applicants_join = "applicants" in sql_lower and (
-        "lower(" in sql_lower or "trim(" in sql_lower or " like " in sql_lower
-    )
-
-    if has_join and analytical_intent and row_count == 0:
-        issues.append("analytical join returned zero rows")
-
-    if applicants_join and not normalized_applicants_join:
-        issues.append("applicants/institute join is not normalized")
-
-    if has_join and row_count > 0 and _joined_metrics_are_null_dominated(results):
-        issues.append("joined metrics are mostly NULL or zero")
-
-    if not issues:
-        return {"detected": False, "needs_clarification": False, "issues": []}
-
-    if "applicants" in sql_lower or "patent" in query_lower:
-        question = (
-            "The patent/grant join looks ambiguous. Should applicant text be matched "
-            "to institute names, AISHE code, or a curated institute mapping?"
-        )
-    else:
-        question = (
-            "The analytical join returned sparse results. Should I broaden matching "
-            "keys, normalize institute names, or ask for a narrower filter?"
-        )
-
+    issues = [signal.message for signal in report.signals]
     return {
         "detected": True,
-        "needs_clarification": True,
+        "needs_clarification": report.needs_clarification,
         "issues": issues,
-        "clarification_question": question,
+        "signal_names": [signal.name for signal in report.signals],
+        "clarification_question": report.clarification_question,
+        "answer_confidence": report.answer_confidence,
+        "confidence_score": report.confidence_score,
+        "corrective_hints": report.corrective_hints,
+        "report": report.to_dict(),
     }
 
 
@@ -1361,11 +1321,34 @@ FOLLOW-UP QUERIES:
                     result.update(
                         {
                             "semantic_anomaly_detected": True,
-                            "needs_clarification": True,
+                            "needs_clarification": semantic_anomaly["needs_clarification"],
                             "clarification_question": semantic_anomaly["clarification_question"],
+                            "answer_confidence": semantic_anomaly["answer_confidence"],
+                            "answer_confidence_score": semantic_anomaly["confidence_score"],
+                            "sql_anomaly_report": semantic_anomaly["report"],
                             "warnings": warnings,
                         }
                     )
+                    try:
+                        from src.audit import log_anomaly
+
+                        log_anomaly(
+                            user_id,
+                            "sql_anomaly",
+                            {
+                                "signals": semantic_anomaly.get("signal_names", []),
+                                "answer_confidence": semantic_anomaly["answer_confidence"],
+                                "confidence_score": semantic_anomaly["confidence_score"],
+                                "corrective_hints": semantic_anomaly.get("corrective_hints", []),
+                            },
+                            identifier=user_query,
+                        )
+                    except Exception:
+                        logger.warning("Audit log for SQL anomaly failed", exc_info=True)
+                else:
+                    result.setdefault("answer_confidence", semantic_anomaly["answer_confidence"])
+                    result.setdefault("answer_confidence_score", semantic_anomaly["confidence_score"])
+                    result.setdefault("sql_anomaly_report", semantic_anomaly["report"])
                 break
 
             except Exception as e:
@@ -1378,6 +1361,8 @@ FOLLOW-UP QUERIES:
                         "results": [],
                         "row_count": 0,
                         "error": str(e),
+                        "answer_confidence": "low_clarify",
+                        "answer_confidence_score": 0.05,
                     }
                     break
 

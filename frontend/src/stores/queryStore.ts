@@ -17,12 +17,20 @@ export interface StreamingQuerySnapshot {
   error?: string;
 }
 
+export interface PersonaSwitchSnapshot {
+  from: 'researcher' | 'government' | 'industry' | 'anonymous';
+  to: 'researcher' | 'government' | 'industry';
+  switchedAt: number;
+  lastQuery?: string;
+}
+
 interface QueryState {
   history: QueryHistoryEntry[];
   currentQuery: string;
   isSearching: boolean;
   lastResult: unknown;
   streaming: StreamingQuerySnapshot;
+  personaSwitch: PersonaSwitchSnapshot | null;
   
   setCurrentQuery: (query: string) => void;
   setIsSearching: (loading: boolean) => void;
@@ -31,6 +39,7 @@ interface QueryState {
   setLastResult: (result: unknown) => void;
   setStreaming: (snapshot: Partial<StreamingQuerySnapshot>) => void;
   resetStreaming: () => void;
+  switchPersona: (snapshot: Omit<PersonaSwitchSnapshot, 'switchedAt'>) => void;
 }
 
 const initialStreaming: StreamingQuerySnapshot = {
@@ -46,6 +55,7 @@ export const useQueryStore = create<QueryState>()(
       isSearching: false,
       lastResult: null,
       streaming: initialStreaming,
+      personaSwitch: null,
 
       setCurrentQuery: (query) => set({ currentQuery: query }),
       setIsSearching: (loading) => set({ isSearching: loading }),
@@ -67,6 +77,12 @@ export const useQueryStore = create<QueryState>()(
         streaming: { ...state.streaming, ...snapshot },
       })),
       resetStreaming: () => set({ streaming: initialStreaming }),
+      switchPersona: (snapshot) => set({
+        personaSwitch: {
+          ...snapshot,
+          switchedAt: Date.now(),
+        },
+      }),
     }),
     {
       name: 'nrg-query-state',

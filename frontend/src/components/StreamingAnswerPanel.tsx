@@ -121,6 +121,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
                         pub_id: citation.pub_id,
                         chunk_id: citation.chunk_id,
                         title: citation.title || citation.pub_id,
+                        audit_event_id: citation.audit_event_id || auditEventId,
                       })}
                       className="rounded-full border border-nrg-border bg-[var(--nrg-surface-2)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
                     >

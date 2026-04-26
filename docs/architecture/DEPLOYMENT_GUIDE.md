@@ -130,6 +130,15 @@ REDIS_URL=redis://redis:6379/0
 AWS_REGION=ap-south-1
 AWS_ROLE_ARN_PROD=<arn>
 ECR_REGISTRY=<account>.dkr.ecr.ap-south-1.amazonaws.com
+
+# Persona credentials (used for tier-based auth)
+RESEARCHER_PASSWORD=<generate: openssl rand -hex 16>
+GOV_PASSWORD=<generate: openssl rand -hex 16>
+INDUSTRY_PASSWORD=<generate: openssl rand -hex 16>
+
+# Audit chain
+SECRET_KEY=<generate: openssl rand -hex 32>
+AUDIT_CHAIN_KEY=<generate: openssl rand -hex 32>
 ```
 
 **Validation:** The deploy script checks required vars and warns if missing. Missing vars at runtime cause startup failure with clear error messages.

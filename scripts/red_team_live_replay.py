@@ -152,7 +152,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--payloads", type=Path, default=DEFAULT_PAYLOADS)
     parser.add_argument("--evidence", type=Path, default=DEFAULT_EVIDENCE)
     parser.add_argument("--timeout", type=float, default=float(os.getenv("NRG_REPLAY_TIMEOUT", "12")))
+    parser.add_argument("--startup-timeout", type=float, default=float(os.getenv("NRG_REPLAY_STARTUP_TIMEOUT", "45")))
     parser.add_argument("--workers", type=int, default=DEFAULT_WORKERS, help="Maximum concurrent HTTP calls.")
+    parser.add_argument(
+        "--chunk-size",
+        type=int,
+        default=int(os.getenv("NRG_REPLAY_CHUNK_SIZE", "0")),
+        help="When starting the API locally, replay this many payloads per fresh API process.",
+    )
     parser.add_argument("--only", help="Comma-separated payload ids, for focused replay.")
     parser.add_argument("--dry-run", action="store_true", help="Validate corpus and render plan without HTTP calls.")
     parser.add_argument("--start-api", action="store_true", help="Start uvicorn if the API health check is unavailable.")
@@ -212,8 +219,14 @@ def validate_corpus(payloads: list[Payload]) -> None:
         raise ValueError(f"unknown targets: {', '.join(unknown_targets)}")
 
 
-def maybe_start_api(api_base: str, timeout: float, enabled: bool) -> subprocess.Popen[str] | None:
-    if is_api_available(api_base, timeout=3):
+def maybe_start_api(
+    api_base: str,
+    timeout: float,
+    enabled: bool,
+    startup_timeout: float,
+) -> subprocess.Popen[str] | None:
+    readiness_timeout = min(max(timeout, 3.0), 10.0)
+    if is_api_available(api_base, timeout=readiness_timeout):
         return None
     if not enabled:
         raise RuntimeError(f"API is not reachable at {api_base}; start it or pass --start-api")
@@ -234,16 +247,16 @@ def maybe_start_api(api_base: str, timeout: float, enabled: bool) -> subprocess.
         stderr=subprocess.STDOUT,
         text=True,
     )
-    deadline = time.time() + 30
+    deadline = time.time() + startup_timeout
     while time.time() < deadline:
-        if is_api_available(api_base, timeout=2):
+        if is_api_available(api_base, timeout=readiness_timeout):
             return process
         if process.poll() is not None:
             output = process.stdout.read() if process.stdout else ""
             raise RuntimeError(f"uvicorn exited before replay started:\n{output[-2000:]}")
         time.sleep(1)
     process.terminate()
-    raise RuntimeError("API did not become reachable within 30 seconds")
+    raise RuntimeError(f"API did not become reachable within {startup_timeout:g} seconds")
 
 
 def is_api_available(api_base: str, timeout: float) -> bool:
@@ -313,6 +326,15 @@ def replay_payloads(
         )
     )
     return results
+
+
+def stop_api_process(process: subprocess.Popen[str] | None) -> None:
+    if process is not None and process.poll() is None:
+        process.terminate()
+        try:
+            process.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            process.kill()
 
 
 def replay_one(
@@ -726,12 +748,40 @@ def main() -> int:
             )
         return 0
 
-    process = None
     try:
-        process = maybe_start_api(args.api_base, args.timeout, args.start_api)
-        roles = {tier for payload in payloads for tier in payload.tiers}
-        tokens = obtain_tokens(args.api_base, args.timeout, roles)
-        results = replay_payloads(args.api_base, payloads, tokens, args.timeout, args.workers)
+        results: list[ReplayResult] = []
+        chunk_size = args.chunk_size if args.start_api and args.chunk_size > 0 else len(payloads)
+        payload_chunks = [
+            payloads[index:index + chunk_size]
+            for index in range(0, len(payloads), chunk_size)
+        ]
+        for chunk_index, payload_chunk in enumerate(payload_chunks, start=1):
+            process = None
+            try:
+                if len(payload_chunks) > 1:
+                    print(f"Replay chunk {chunk_index}/{len(payload_chunks)}: {len(payload_chunk)} payloads")
+                process = maybe_start_api(
+                    args.api_base,
+                    args.timeout,
+                    args.start_api,
+                    args.startup_timeout,
+                )
+                roles = {tier for payload in payload_chunk for tier in payload.tiers}
+                tokens = obtain_tokens(args.api_base, args.timeout, roles)
+                results.extend(
+                    replay_payloads(
+                        args.api_base,
+                        payload_chunk,
+                        tokens,
+                        args.timeout,
+                        args.workers,
+                    )
+                )
+            finally:
+                if args.start_api:
+                    stop_api_process(process)
+                    if len(payload_chunks) > 1:
+                        time.sleep(1)
         finished_at = datetime.now(UTC).isoformat()
         summary = summarize(payloads, results)
         audit_event_id = None if args.no_audit else append_audit_event(args.evidence, summary)
@@ -775,13 +825,6 @@ def main() -> int:
         print(f"Replay blocked before authenticated calls: {exc}", file=sys.stderr)
         print(f"Evidence written: {args.evidence}", file=sys.stderr)
         return 2
-    finally:
-        if process is not None and process.poll() is None:
-            process.terminate()
-            try:
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
 
 
 if __name__ == "__main__":

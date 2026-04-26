@@ -51,6 +51,9 @@ export interface QueryResponse {
   intent?: string;
   routing_decision?: string;
   verification_status: boolean;
+  answer_confidence?: 'high' | 'partial' | 'low_clarify';
+  answer_confidence_score?: number;
+  sql_anomaly_report?: Record<string, unknown>;
   citation_validity?: number;
   citations?: Citation[];
   warnings?: QueryWarning[];

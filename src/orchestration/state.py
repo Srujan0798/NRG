@@ -54,6 +54,11 @@ class NRGState:
 
     sql_query: Optional[str] = None
     sql_results: list = field(default_factory=list)
+    sql_anomaly_report: dict = field(default_factory=dict)
+    answer_confidence: str = "high"
+    answer_confidence_score: float = 0.95
+    needs_clarification: bool = False
+    clarification_question: Optional[str] = None
 
     retrieved_chunks: list = field(default_factory=list)
     retrieval_metadata: list = field(default_factory=list)

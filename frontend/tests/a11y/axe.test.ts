@@ -87,6 +87,7 @@ for (const routeCase of routes) {
     await page.goto(routeCase.path)
     await page.locator('#main-content').waitFor({ state: 'attached' })
     await page.waitForLoadState('networkidle')
+    await page.waitForTimeout(800)
 
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

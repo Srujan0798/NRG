@@ -153,7 +153,18 @@ def _parse_pytest_output(output: str) -> dict:
 def _run_pytest(test_path: str, verbose: bool = False) -> dict:
     """Run a pytest test file and return parsed results."""
     abs_path = ROOT / test_path
-    cmd = [str(VENV_PYTEST), "-m", "pytest", str(abs_path), "-v", "--tb=short", "--no-header", "-q"]
+    cmd = [
+        str(VENV_PYTEST),
+        "-m",
+        "pytest",
+        str(abs_path),
+        "-o",
+        "addopts=",
+        "-v",
+        "--tb=short",
+        "--no-header",
+        "-q",
+    ]
 
     try:
         result = subprocess.run(
@@ -234,14 +245,20 @@ def _run_drift_check(verbose: bool = False) -> dict:
 def _run_c4_load_test(verbose: bool = False) -> dict:
     """Run C4 1000-concurrent-user load test via locust."""
     import socket
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(2)
-    try:
-        sock.connect(("localhost", 8000))
-        sock.close()
-        api_up = True
-    except Exception:
-        api_up = False
+    api_host = None
+    for candidate in ("127.0.0.1", "localhost"):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(2)
+        try:
+            sock.connect((candidate, 8000))
+            api_host = candidate
+            break
+        except Exception:
+            pass
+        finally:
+            sock.close()
+
+    api_up = api_host is not None
 
     if not api_up:
         return {
@@ -262,7 +279,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "-u", "1000",
         "-r", "100",
         "--run-time", "5m",
-        "--host", "http://localhost:8000",
+        "--host", f"http://{api_host}:8000",
         "--html", str(ROOT / ".cache" / "locust_report.html"),
         "--json",
     ]

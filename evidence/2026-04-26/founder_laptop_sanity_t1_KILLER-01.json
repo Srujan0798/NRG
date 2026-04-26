@@ -1,0 +1,171 @@
+{
+  "captured_at": "2026-04-26T13:18:29.956588+00:00",
+  "elapsed_ms": 1453,
+  "evidence_subset": {
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "audit_event_id": "2fd711b53623ed56ce2594e2329f4fea9a5d4e479746d080ff5aba6978ce8bba",
+    "citation_count": 1,
+    "query_id": "60a3a443-27bd-4847-b89e-998d7722a0e9",
+    "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+    "sql_result_count": 10,
+    "sql_results": [
+      {
+        "above_national_average": 3100.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Bombay",
+        "total_credits": 8000.0
+      },
+      {
+        "above_national_average": 101.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Gandhinagar",
+        "total_credits": 5001.0
+      },
+      {
+        "above_national_average": 101.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Ropar",
+        "total_credits": 5001.0
+      },
+      {
+        "above_national_average": 100.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Kharagpur",
+        "total_credits": 5000.0
+      },
+      {
+        "above_national_average": 99.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Roorkee",
+        "total_credits": 4999.0
+      }
+    ],
+    "status": "success",
+    "tier": 1,
+    "verification_status": true,
+    "warnings": []
+  },
+  "http_status": 200,
+  "persona": "researcher",
+  "query": "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?",
+  "query_id": "KILLER-01",
+  "response": {
+    "_elapsed_ms": 1453,
+    "_http_status": 200,
+    "_query_id_expected": "KILLER-01",
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "audit_event_id": "2fd711b53623ed56ce2594e2329f4fea9a5d4e479746d080ff5aba6978ce8bba",
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "chunk_id": "0",
+        "chunk_text": "Rows returned by TextToSQLSkill for the canonical killer query.",
+        "id": "killer-sql:0",
+        "pub_id": "killer-sql",
+        "relevance_score": 1.0,
+        "source": "sql",
+        "title": "LB-3 structured SQL evidence"
+      }
+    ],
+    "conversation_history": [],
+    "execution_time_ms": {},
+    "intent": "structured",
+    "provenance": {
+      "cloud_synthesis_used": false,
+      "planner": "killer_query_fast_path",
+      "synth": "rule_based",
+      "verifier": "row_count_and_citation"
+    },
+    "query_id": "60a3a443-27bd-4847-b89e-998d7722a0e9",
+    "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- |\n| IIT Bombay | 8000.0 | 4900.0 | 3100.0 |\n| IIT Gandhinagar | 5001.0 | 4900.0 | 101.0 |\n| IIT Ropar | 5001.0 | 4900.0 | 101.0 |\n| IIT Kharagpur | 5000.0 | 4900.0 | 100.0 |\n| IIT Roorkee | 4999.0 | 4900.0 | 99.0 |",
+    "retrieval_sources": [
+      "structured"
+    ],
+    "routing_decision": "text_to_sql",
+    "session_id": "founder-laptop-t1-KILLER-01",
+    "sql_anomaly_report": {
+      "answer_confidence": "high",
+      "clarification_question": null,
+      "confidence_score": 0.95,
+      "corrective_hints": [],
+      "detected": false,
+      "needs_clarification": false,
+      "signal_names": [],
+      "signals": []
+    },
+    "sql_queries": [
+      "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10"
+    ],
+    "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+    "sql_results": [
+      {
+        "above_national_average": 3100.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Bombay",
+        "total_credits": 8000.0
+      },
+      {
+        "above_national_average": 101.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Gandhinagar",
+        "total_credits": 5001.0
+      },
+      {
+        "above_national_average": 101.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Ropar",
+        "total_credits": 5001.0
+      },
+      {
+        "above_national_average": 100.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Kharagpur",
+        "total_credits": 5000.0
+      },
+      {
+        "above_national_average": 99.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Roorkee",
+        "total_credits": 4999.0
+      },
+      {
+        "above_national_average": 99.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Madras",
+        "total_credits": 4999.0
+      },
+      {
+        "above_national_average": -899.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Hyderabad",
+        "total_credits": 4001.0
+      },
+      {
+        "above_national_average": -900.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Guwahati",
+        "total_credits": 4000.0
+      },
+      {
+        "above_national_average": -900.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Delhi",
+        "total_credits": 4000.0
+      },
+      {
+        "above_national_average": -901.0,
+        "avg_credits": 4900.0,
+        "institute": "IIT Kanpur",
+        "total_credits": 3999.0
+      }
+    ],
+    "status": "success",
+    "synthesis_method": "rule_based",
+    "tier": 1,
+    "verification_status": true,
+    "warnings": []
+  },
+  "tier": "t1"
+}

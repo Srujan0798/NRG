@@ -179,6 +179,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   key={key}
                   type="button"
                   onClick={() => applyPersona(key)}
+                  data-testid={`persona-${key}`}
                   className={`
                     relative min-h-[8.25rem] rounded-xl p-4 text-left transition-all duration-300 border overflow-hidden
                     ${isActive
@@ -270,6 +271,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 </div>
                 <input
                   type="text"
+                  data-testid="login-username"
                   value={username}
                   onChange={(e) => {
                     setUsername(e.target.value)
@@ -304,6 +306,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 </div>
                 <input
                   type="password"
+                  data-testid="login-password"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value)
@@ -337,6 +340,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
 
             <button
               type="submit"
+              data-testid="login-submit"
               disabled={isLoading}
               className="nrg-btn-primary w-full text-base py-3"
             >

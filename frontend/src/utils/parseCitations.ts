@@ -38,7 +38,11 @@ export function parseCitations(responseText: string, citations: Citation[]): Par
         citationNumber: existingNumber,
       });
     } else {
-      const citation = citations.find((item) => item.pub_id === pubId && item.chunk_id === chunkId);
+      const citation = citations.find((item) => (
+        (item.pub_id === pubId && item.chunk_id === chunkId) ||
+        item.id === `cite:${pubId}:${chunkId}` ||
+        item.id === `${pubId}:${chunkId}`
+      ));
       if (citation) {
         orderedCitations.push(citation);
         const number = orderedCitations.length;

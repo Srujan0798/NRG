@@ -1,0 +1,127 @@
+{
+  "captured_at": "2026-04-26T13:18:36.825031+00:00",
+  "elapsed_ms": 1080,
+  "evidence_subset": {
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "audit_event_id": "2699f1ce4f2d02f8401a7537fe65f4726f168e2151932745802f722310e92186",
+    "citation_count": 1,
+    "query_id": "794b7ca5-6b9f-40c7-9cd7-1310b56d96b4",
+    "sql_query": "WITH grants AS (SELECT institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT) AS year_num, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt WHERE NOT year_of_receiving IS NULL GROUP BY institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT)), grant_yoy AS (SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct FROM grants AS curr JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1), patents AS (SELECT applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT) AS year_num, COUNT(*) AS granted_patents FROM combined_ipo_patent_data WHERE status = 'Granted' AND NOT COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NULL GROUP BY applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT)), patent_yoy AS (SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct FROM patents AS curr JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1) SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents FROM grant_yoy AS g JOIN patent_yoy AS p ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%' AND p.year_num = g.year_num GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0 ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC LIMIT 3",
+    "sql_result_count": 3,
+    "sql_results": [
+      {
+        "grant_drop_pct": -61.996,
+        "granted_patents": 3334,
+        "institute": "IIT Kanpur",
+        "patent_growth_pct": 100.12004801920769,
+        "year_num": 2023
+      },
+      {
+        "grant_drop_pct": -61.542307692307695,
+        "granted_patents": 3334,
+        "institute": "IIT Madras",
+        "patent_growth_pct": 100.12004801920769,
+        "year_num": 2023
+      },
+      {
+        "grant_drop_pct": -61.53846153846154,
+        "granted_patents": 3333,
+        "institute": "IIT Gandhinagar",
+        "patent_growth_pct": 99.94001199760048,
+        "year_num": 2023
+      }
+    ],
+    "status": "success",
+    "tier": 2,
+    "verification_status": true,
+    "warnings": [
+      "Response policy applied: pii_strip:tier2:bank_account"
+    ]
+  },
+  "http_status": 200,
+  "persona": "government",
+  "query": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+  "query_id": "KILLER-03",
+  "response": {
+    "_elapsed_ms": 1080,
+    "_http_status": 200,
+    "_query_id_expected": "KILLER-03",
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "audit_event_id": "2699f1ce4f2d02f8401a7537fe65f4726f168e2151932745802f722310e92186",
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "chunk_id": "0",
+        "chunk_text": "Rows returned by TextToSQLSkill for the canonical killer query.",
+        "id": "killer-sql:0",
+        "pub_id": "killer-sql",
+        "relevance_score": 1.0,
+        "source": "sql",
+        "title": "LB-3 structured SQL evidence"
+      }
+    ],
+    "conversation_history": [],
+    "execution_time_ms": {},
+    "intent": "structured",
+    "provenance": {
+      "cloud_synthesis_used": false,
+      "planner": "killer_query_fast_path",
+      "synth": "rule_based",
+      "verifier": "row_count_and_citation"
+    },
+    "query_id": "794b7ca5-6b9f-40c7-9cd7-1310b56d96b4",
+    "response": "Structured evidence query returned 3 rows. [cite:killer-sql:0]\n\n| institute | year_num | grant_drop_pct | patent_growth_pct | granted_patents |\n| --- | --- | --- | --- | --- |\n| IIT Kanpur | 2023 | -61.[REDACTED] | 100.[REDACTED] | 3334 |\n| IIT Madras | 2023 | -61.[REDACTED] | 100.[REDACTED] | 3334 |\n| IIT Gandhinagar | 2023 | -61.[REDACTED] | 99.[REDACTED] | 3333 |",
+    "retrieval_sources": [
+      "structured"
+    ],
+    "routing_decision": "text_to_sql",
+    "session_id": "founder-laptop-t2-KILLER-03",
+    "sql_anomaly_report": {
+      "answer_confidence": "high",
+      "clarification_question": null,
+      "confidence_score": 0.95,
+      "corrective_hints": [],
+      "detected": false,
+      "needs_clarification": false,
+      "signal_names": [],
+      "signals": []
+    },
+    "sql_queries": [
+      "WITH grants AS (SELECT institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT) AS year_num, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt WHERE NOT year_of_receiving IS NULL GROUP BY institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT)), grant_yoy AS (SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct FROM grants AS curr JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1), patents AS (SELECT applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT) AS year_num, COUNT(*) AS granted_patents FROM combined_ipo_patent_data WHERE status = 'Granted' AND NOT COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NULL GROUP BY applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT)), patent_yoy AS (SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct FROM patents AS curr JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1) SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents FROM grant_yoy AS g JOIN patent_yoy AS p ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%' AND p.year_num = g.year_num GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0 ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC LIMIT 3"
+    ],
+    "sql_query": "WITH grants AS (SELECT institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT) AS year_num, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt WHERE NOT year_of_receiving IS NULL GROUP BY institute, CAST(SUBSTRING(year_of_receiving FROM 1 FOR 4) AS INT)), grant_yoy AS (SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct FROM grants AS curr JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1), patents AS (SELECT applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT) AS year_num, COUNT(*) AS granted_patents FROM combined_ipo_patent_data WHERE status = 'Granted' AND NOT COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NULL GROUP BY applicants, CAST(SUBSTRING(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) FROM 1 FOR 4) AS INT)), patent_yoy AS (SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct FROM patents AS curr JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1) SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents FROM grant_yoy AS g JOIN patent_yoy AS p ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%' AND p.year_num = g.year_num GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0 ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC LIMIT 3",
+    "sql_results": [
+      {
+        "grant_drop_pct": -61.996,
+        "granted_patents": 3334,
+        "institute": "IIT Kanpur",
+        "patent_growth_pct": 100.12004801920769,
+        "year_num": 2023
+      },
+      {
+        "grant_drop_pct": -61.542307692307695,
+        "granted_patents": 3334,
+        "institute": "IIT Madras",
+        "patent_growth_pct": 100.12004801920769,
+        "year_num": 2023
+      },
+      {
+        "grant_drop_pct": -61.53846153846154,
+        "granted_patents": 3333,
+        "institute": "IIT Gandhinagar",
+        "patent_growth_pct": 99.94001199760048,
+        "year_num": 2023
+      }
+    ],
+    "status": "success",
+    "synthesis_method": "rule_based",
+    "tier": 2,
+    "verification_status": true,
+    "warnings": [
+      "Response policy applied: pii_strip:tier2:bank_account"
+    ]
+  },
+  "tier": "t2"
+}

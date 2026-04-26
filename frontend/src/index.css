@@ -43,6 +43,9 @@
     --nrg-danger: #B91C1C;
     --nrg-warning: #B45309;
     --nrg-success: #047857;
+    --nrg-danger-soft: #FEE2E2;
+    --nrg-warning-soft: #FEF3C7;
+    --nrg-success-soft: #D1FAE5;
     --nrg-tier-1: #1E40AF;
     --nrg-tier-2: #065F46;
     --nrg-tier-3: #7C2D12;
@@ -174,6 +177,9 @@
     --nrg-danger: #F87171;
     --nrg-warning: #F59E0B;
     --nrg-success: #34D399;
+    --nrg-danger-soft: #450A0A;
+    --nrg-warning-soft: #422006;
+    --nrg-success-soft: #052E16;
     --nrg-tier-1: #60A5FA;
     --nrg-tier-2: #34D399;
     --nrg-tier-3: #FFB366;

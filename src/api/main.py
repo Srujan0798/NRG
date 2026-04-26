@@ -200,6 +200,14 @@ _db_instance: NRGDatabaseV2 | None = None
 _fast_query_context: dict[str, dict[str, Any]] = {}
 
 
+def _answer_confidence_from_verification(verification_status: Any) -> str:
+    if verification_status in (True, "ok", "pass"):
+        return "high"
+    if verification_status == "retry":
+        return "partial"
+    return "low_clarify"
+
+
 def _apply_tier_response_filter(
     payload: Any,
     tier: int,
@@ -563,11 +571,17 @@ def _killer_query_response(
     rows = sql_result.get("results") or []
     sql_query = sql_result.get("query")
     row_count = len(rows)
-    preview_rows = rows[:5]
+    payload_rows = _restricted_structured_rows(rows) if user_tier >= 3 else rows
+    preview_rows = payload_rows[:5]
     lines = [
         f"Structured evidence query returned {row_count} rows. [cite:killer-sql:0]",
         "",
     ]
+    if user_tier >= 3 and row_count > 0:
+        lines.append(
+            "Access restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden."
+        )
+        lines.append("")
     if preview_rows:
         headers = list(preview_rows[0].keys())[:5]
         lines.append("| " + " | ".join(headers) + " |")
@@ -598,10 +612,17 @@ def _killer_query_response(
                 "relevance_score": 1.0,
             }
         ],
-        "warnings": sql_result.get("warnings", []),
+        "warnings": sql_result.get("warnings", []) + (
+            ["Access restricted: Tier 3 receives aggregate bands, not exact internal metrics."]
+            if user_tier >= 3 and row_count > 0
+            else []
+        ),
+        "answer_confidence": sql_result.get("answer_confidence", "high" if row_count > 0 else "low_clarify"),
+        "answer_confidence_score": sql_result.get("answer_confidence_score", 0.95 if row_count > 0 else 0.05),
+        "sql_anomaly_report": sql_result.get("sql_anomaly_report", {}),
         "sql_query": sql_query,
         "sql_queries": [sql_query] if sql_query else [],
-        "sql_results": rows,
+        "sql_results": payload_rows,
         "retrieval_sources": ["structured"] if rows else [],
         "provenance": {
             "planner": "killer_query_fast_path",
@@ -615,6 +636,46 @@ def _killer_query_response(
     }
 
 
+def _restricted_structured_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Return a Tier 3 shape with aggregate bands instead of exact metrics."""
+    restricted: list[dict[str, Any]] = []
+    for index, row in enumerate(rows, start=1):
+        institution = str(
+            row.get("institute")
+            or row.get("institution")
+            or row.get("applicants")
+            or row.get("university_name")
+            or "Institution aggregate"
+        )
+        numeric_values = [
+            float(value)
+            for value in row.values()
+            if isinstance(value, (int, float)) and not isinstance(value, bool)
+        ]
+        restricted.append(
+            {
+                "rank": index,
+                "institution": institution,
+                "access_scope": "institution_aggregate",
+                "metric_band": _metric_band(numeric_values),
+                "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+                "source_rows": "cited_structured_result",
+            }
+        )
+    return restricted
+
+
+def _metric_band(values: list[float]) -> str:
+    if not values:
+        return "not_available"
+    magnitude = max(abs(value) for value in values)
+    if magnitude >= 1000:
+        return "high"
+    if magnitude >= 100:
+        return "medium"
+    return "low"
+
+
 workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
@@ -623,6 +684,17 @@ jwt_handler = JWTHandler()
 async def lifespan(app: FastAPI):
     """Graceful shutdown handler - drains connections before exit."""
     logger.info("Starting NRG API server...")
+    from src.skills.rag.embedder import Embedder
+    try:
+        embedder = Embedder()
+        logger.info("Warming up sentence_transformers (may take ~48s)...")
+        warm_start = time.time()
+        embedder.embed(["initialization ping"])
+        elapsed = time.time() - warm_start
+        logger.info(f"Embedder warm-up complete in {elapsed:.1f}s")
+        embedder.close()
+    except Exception as e:
+        logger.warning(f"Embedder warm-up skipped: {e}")
     yield
     logger.info("Received shutdown signal, draining connections...")
     await drain_connections()
@@ -1347,6 +1419,15 @@ async def query_with_langgraph(
             "planner_metadata": result.get("planner_metadata", {}),
             "citations": result.get("citations", []),
             "warnings": result.get("warnings", result.get("errors", [])),
+            "answer_confidence": result.get(
+                "answer_confidence",
+                _answer_confidence_from_verification(result.get("verification_status", False)),
+            ),
+            "answer_confidence_score": result.get(
+                "answer_confidence_score",
+                result.get("faithfulness_score", 0.95 if result.get("verification_status", False) else 0.45),
+            ),
+            "sql_anomaly_report": result.get("sql_anomaly_report", {}),
             "sql_query": result.get("sql_query"),
             "sql_queries": result.get("sql_queries", []),
             "sql_results": result.get("sql_results", []),

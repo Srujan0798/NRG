@@ -2,16 +2,16 @@ import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { IndustryHeader } from '../components/Industry/IndustryHeader'
 import { OpportunityCard, CollaborationPotentialCard } from '../components/Industry/OpportunityCards'
-import { StatsCard } from '../components/StatsCard'
-import { ErrorState } from '../components/ErrorState'
-import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary'
-import { AnswerPanel } from '../components/AnswerPanel'
+import { StatsCard } from '../components/StatsCard/StatsCard'
+import { ErrorState } from '../components/ErrorState/ErrorState'
+import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
+import { AnswerPanel } from '../components/AnswerPanel/AnswerPanel'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
-import { EmptyState } from '../components/EmptyState'
+import { EmptyState } from '../components/EmptyState/EmptyState'
 import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
-import { ResearchAreasBarChart } from '../components/DataViz'
+import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, QueryResponse } from '../services/queryService'
@@ -392,6 +392,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                           provenance={queryResult.provenance}
                           warnings={queryResult.warnings}
                           verification_status={queryResult.verification_status}
+                          answer_confidence={queryResult.answer_confidence}
                         />
                       )}
                     </div>

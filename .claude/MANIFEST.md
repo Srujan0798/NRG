@@ -2,7 +2,7 @@
 
 > **Canonical reference for `.claude/` and `.agents/` structure.**
 > Last updated: 2026-04-25
-> Total unique skills: 66 (41 in `.claude/skills/`, 25 in `.agents/skills/`)
+> Total unique skills: 65 (41 in `.claude/skills/`, 24 in `.agents/skills/`)
 > Duplicate skills: 0
 > Forbidden vocabulary violations: 0
 
@@ -25,23 +25,34 @@
 .claude/
 ├── CLAUDE.md                    ← Session entry point (read first)
 ├── MANIFEST.md                  ← This file
-├── AGENT_WARFARE.md             ← Role hierarchy + evolution loop
-├── GURU_PROTOCOL.md             ← Task format + response rules
-├── NRG_CONSTITUTION.md          ← Sovereign AI behavior rules
-├── QUALITY_BAR.md               ← 6 Hard Constraints
+├── agent-warfare.md             ← Role hierarchy + evolution loop
+├── protocol.md             ← Task format + response rules
+├── constitution.md          ← Sovereign AI behavior rules
+├── quality-bar.md               ← 6 Hard Constraints
 ├── rules/
+│   ├── index.md                 ← Rules directory overview
 │   ├── production_only.md       ← Forbidden vocabulary (PERMANENT)
-│   ├── audit_protocol.md        ← Eternal verification standard
-│   ├── ux_audit_protocol.md     ← Production UX standard
 │   ├── backend.md               ← Backend coding rules
 │   ├── frontend.md              ← Frontend coding rules
 │   ├── security.md              ← Security rules
-│   └── cost_budget.yaml         ← Cost controls
+│   ├── cost_budget.yaml         ← Cost controls
+│   ├── audit/
+│   │   ├── index.md             ← Audit rules index
+│   │   └── protocol.md          ← Eternal verification standard
+│   └── ux/
+│       ├── index.md             ← UX rules index
+│       └── protocol.md          ← Production UX standard
 ├── prompts/
 │   └── guru_universal.md        ← Guru universal prompt
 ├── memory/
 │   ├── MEMORY.md                ← User profile + project state
-│   └── *.md                     ← Feedback + retrospectives
+│   ├── INDEX.md                 ← Memory directory index
+│   ├── bugs/                    ← Bug postmortems
+│   ├── patterns/                ← Engineering patterns
+│   ├── projects/                ← Project overviews
+│   ├── references/              ← Reference materials
+│   ├── user_profile.md          ← User preferences
+│   └── sprint_retrospective.md  ← Sprint reviews
 └── skills/                      ← 41 skills (see below)
 ```
 
@@ -73,8 +84,8 @@
 #### Data + Analysis (8)
 `explore-data`, `validate-data`, `statistical-analysis`, `sql-queries`, `build-dashboard`, `create-viz`, `data-visualization`, `database-schema-designer`
 
-#### Frontend + Design (7)
-`frontend-design`, `design-critique`, `ux-copy`, `accessibility-review`, `react-composition-patterns`, `vercel-react-best-practices`, `documentation`
+#### Frontend + Design (6)
+`frontend-design`, `design-critique`, `ux-copy`, `accessibility-review`, `react-composition-patterns`, `documentation`
 
 #### Backend + DevOps (5)
 `debug`, `test-driven-development`, `database-migration`, `neon-postgres`, `secure-linux-web-hosting`

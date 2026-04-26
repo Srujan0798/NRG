@@ -247,6 +247,40 @@ def verifier_node(state: Any) -> dict:
     citations = _extract_citations(response)
     sql_results = _state_get(state, "sql_results", []) or []
     synth_method = _state_get(state, "synthesis_method", "unknown")
+    anomaly_report = _state_get(state, "sql_anomaly_report", {}) or {}
+
+    if _is_low_confidence_sql_anomaly(anomaly_report):
+        clarification = (
+            anomaly_report.get("clarification_question")
+            or _state_get(state, "clarification_question")
+            or "The SQL result is low confidence. Please narrow the question or allow a corrected query."
+        )
+        signals = anomaly_report.get("signal_names") or [
+            signal.get("name")
+            for signal in anomaly_report.get("signals", [])
+            if isinstance(signal, dict) and signal.get("name")
+        ]
+        return {
+            "verification_status": "fail",
+            "faithfulness_score": min(float(anomaly_report.get("confidence_score", 0.05) or 0.05), 0.5),
+            "score_breakdown": {
+                "citation_present": 0.0,
+                "evidence_match": 0.0,
+                "no_fabrication": 0.0,
+                "tier_compliance": FAITHFULNESS_WEIGHTS["tier_compliance"],
+            },
+            "unsupported_claims": [f"SQL anomaly requires clarification: {', '.join(signals)}"],
+            "verification_retries": retries,
+            "synthesis_method": synth_method,
+            "citation_validity": 0.0,
+            "citation_coverage": 0.0,
+            "invalid_citations": [],
+            "citations": [],
+            "synthesized_response": clarification,
+            "answer_confidence": "low_clarify",
+            "answer_confidence_score": float(anomaly_report.get("confidence_score", 0.05) or 0.05),
+            "sql_anomaly_report": anomaly_report,
+        }
 
     score_breakdown = {
         "citation_present": 0.0,
@@ -503,6 +537,14 @@ def _failure_result(
         "unsupported_claims": unsupported_claims,
         "synthesized_response": response,
     }
+
+
+def _is_low_confidence_sql_anomaly(report: Any) -> bool:
+    if not isinstance(report, dict) or not report.get("detected"):
+        return False
+    if report.get("answer_confidence") == "low_clarify":
+        return True
+    return bool(report.get("needs_clarification"))
 
 
 def _extract_citations(response: str) -> list[dict]:

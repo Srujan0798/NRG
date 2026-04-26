@@ -67,7 +67,7 @@ Output format:
 [One sentence: what does success look like?]
 
 ### Quality Bar Target
-Which of the 6 Hard Constraints (see `.claude/QUALITY_BAR.md`) does this sprint move? Target score delta per constraint.
+Which of the 6 Hard Constraints (see `.claude/quality-bar.md`) does this sprint move? Target score delta per constraint.
 
 ### P1 — Must Complete
 | Task | Verb | Agent | Files | Acceptance Criteria |
@@ -92,11 +92,11 @@ Which of the 6 Hard Constraints (see `.claude/QUALITY_BAR.md`) does this sprint 
 ```
 
 ### Step 5: Produce Task Protocols
-For each P1 task, produce a copy-paste-ready task protocol using the FULL ═══ format from `.claude/GURU_PROTOCOL.md` Section 3. This includes:
+For each P1 task, produce a copy-paste-ready task protocol using the FULL ═══ format from `.claude/protocol.md` Section 3. This includes:
 - GURU ASSIGNMENT NOTE (the WHY)
 - Phased ACTION (Fortify → Elevate → Immortalize)
 - 3+ SKILLS with reasons
-- AGENT INSTRUCTIONS block (verbatim from GURU_PROTOCOL.md Section 3)
+- AGENT INSTRUCTIONS block (verbatim from protocol.md Section 3)
 - ACCEPTANCE CRITERIA that verify ELEVATION, not just "it works"
 
 **NEVER produce flat step lists or simple fix-tasks.** Every task is an elevation protocol.
