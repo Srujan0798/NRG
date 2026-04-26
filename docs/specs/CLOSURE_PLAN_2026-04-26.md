@@ -34,6 +34,19 @@ The latest synthesis prompt repeats useful launch discipline, but it also contai
 | Qdrant/vector baseline | Still open as runtime evidence | `evidence/2026-04-27/local_release_gates_2026-04-27.md` reports local Qdrant vectors = 0 |
 | Product acceptance cache prewarm | Closed locally with a production-named utility and tests | `scripts/prewarm_release_cache.py`, `tests/scripts/test_prewarm_release_cache.py` |
 | Production-path Hall of Shame | Closed locally with all seven Dhairya patterns in the validator ledger | `src/data/schema/failed_queries/HALL_OF_SHAME.md`, `tests/data/test_failed_queries_hall_of_shame.py` |
+| Real-user UX acceptance protocol | Merged into a production UX acceptance report; live browser recording and device evidence remain required before handover | `docs/audits/ui_ux_2026-04-27/PRODUCTION_UX_ACCEPTANCE_REPORT.md`, `evidence/2026-04-27/final_validation/ux_acceptance_protocol_merge.md` |
+
+## Real-User UX Acceptance Addendum - 2026-04-27
+
+The latest real-user UX protocol is now merged as a production acceptance artifact, not as another parallel checklist.
+
+| UX concern | Durable home | Current repo truth |
+|---|---|---|
+| First impression, login, role selection, dashboard, query, result, navigation, loading, errors, mobile, performance, and copy checks | `docs/audits/ui_ux_2026-04-27/PRODUCTION_UX_ACCEPTANCE_REPORT.md` | Consolidated into one evidence-backed report |
+| Source-data trust controls | `frontend/src/i18n/en-IN.ts`, `AnswerPanel`, frontend hardening report | Copy Answer and View Source Data controls exist; browser proof should be refreshed |
+| Browser noise and failed requests | `docs/audits/frontend_hardening_2026-04-27/console-summary.txt` | Previous captured run shows zero console errors, page errors, request failures, and HTTP 4xx/5xx |
+| Placeholder and native-alert hygiene | Static source scan recorded in `ux_acceptance_protocol_merge.md` | No production frontend source matches for the checked placeholder or native-alert patterns |
+| Full live walkthrough, mobile, Lighthouse, and Tier 3 API proof | Closure protocols #56 and #61 | Still requires a running stack on a machine with Docker daemon access |
 
 ## Gap Matrix
 

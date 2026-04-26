@@ -88,6 +88,20 @@ If any same-day Principal Engineer, Product Auditor, Kimi/Moonshot, or MiniMax r
 3. #58, #59, and #60 for schema parity, confidence defense, and semantic retrieval.
 4. #61 and #62 for local seal and sovereign activation.
 
+## Real-User UX Protocol Addendum - 2026-04-27
+
+The latest product-reality UX protocol is merged into the existing production acceptance workflow. It does not create a new source of truth.
+
+| Added emphasis | Durable home | Current status |
+|---|---|---|
+| Browser first impression, login validation, role dashboards, query loading, results, citations, follow-up, navigation, empty states, errors, mobile, performance, and content hygiene | `docs/audits/ui_ux_2026-04-27/PRODUCTION_UX_ACCEPTANCE_REPORT.md` | Consolidated with current evidence and explicit live-evidence blockers |
+| Copy Answer and View Source Data are essential trust controls | `frontend/src/i18n/en-IN.ts`; `AnswerPanel`; frontend hardening report | Present; must be shown in the next current-head browser recording |
+| Console, page, request, and HTTP failure counts must be zero in the browser path | `docs/audits/frontend_hardening_2026-04-27/console-summary.txt` | Previously captured as zero; refresh after live stack startup |
+| Placeholder, native alert, and test-person content must not appear in production frontend paths | `evidence/2026-04-27/final_validation/ux_acceptance_protocol_merge.md` | Production source hygiene scan returned zero matches for the checked patterns |
+| Mobile, Lighthouse, network, Tier 3 API privacy, and audit-trail UI proof must be live artifacts, not source-code assertions | Closure protocols #56 and #61 | Still open until a running stack is available |
+
+Execution rule: if this UX protocol is pasted again, point to the production UX acceptance report and continue with live walkthrough evidence capture instead of creating another report.
+
 ## Final Ultimate Synthesis Addendum - 2026-04-27
 
 The later "final ultimate synthesis" paste is merged here as a reconciliation update, not as a new parallel protocol. Its durable content is the same rule already enforced by the active workflow: no claim is complete without current-head evidence from the right environment.
