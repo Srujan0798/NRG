@@ -407,6 +407,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                           verification_status={queryResult.verification_status}
                           answer_confidence={queryResult.answer_confidence}
                           sqlQuery={queryResult.sql_query}
+                          sqlResults={queryResult.sql_results}
                           rowsReturned={queryResult.sql_results?.length}
                           auditEventId={queryResult.audit_event_id || queryResult.query_id}
                         />

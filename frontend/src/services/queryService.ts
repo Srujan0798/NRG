@@ -219,6 +219,86 @@ function findFallbackAuditEvent(id: string): AuditEventRecord {
   };
 }
 
+const tierThreeBlockedKeyPatterns = [
+  /email/i,
+  /phone/i,
+  /mobile/i,
+  /aadhaar/i,
+  /\bpan\b/i,
+  /contact/i,
+  /author/i,
+  /researcher/i,
+  /person/i,
+  /applicant/i,
+  /^name$/i,
+  /funding/i,
+  /grant/i,
+  /amount/i,
+  /salary/i,
+  /address/i,
+];
+
+const tierThreeAllowedKeyPatterns = [
+  /^anonymized/i,
+  /^institute/i,
+  /^institution/i,
+  /^state$/i,
+  /^research_area$/i,
+  /^area$/i,
+  /^sector$/i,
+  /^technology/i,
+  /^stage_of_technology$/i,
+  /^trl/i,
+  /patents?$/i,
+  /publications?$/i,
+  /count$/i,
+  /^total$/i,
+  /^year$/i,
+  /^financial_year$/i,
+  /^collaboration/i,
+  /^match_score$/i,
+  /^title$/i,
+];
+
+function containsSensitiveValue(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  return (
+    /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(value) ||
+    /\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b/.test(value) ||
+    /\b[A-Z]{5}\d{4}[A-Z]\b/i.test(value) ||
+    /\b(?:\+?91[-\s]?)?[6-9]\d{9}\b/.test(value)
+  );
+}
+
+function isTierThreeSafeKey(key: string): boolean {
+  if (/^institut(e|ion)/i.test(key)) return true;
+  if (tierThreeBlockedKeyPatterns.some((pattern) => pattern.test(key))) return false;
+  return tierThreeAllowedKeyPatterns.some((pattern) => pattern.test(key));
+}
+
+function sanitizeSqlRowsForTier(
+  rows: Array<Record<string, unknown>>,
+  tier: number
+): Array<Record<string, unknown>> {
+  if (tier < 3) return rows;
+
+  return rows.map((row) => Object.fromEntries(
+    Object.entries(row).filter(([key, value]) => (
+      isTierThreeSafeKey(key) && !containsSensitiveValue(value)
+    ))
+  ));
+}
+
+function sanitizeCitationsForTier(citations: Citation[], tier: number): Citation[] {
+  if (tier < 3) return citations;
+
+  return citations.map(({ authors: _authors, ...citation }) => ({
+    ...citation,
+    abstract: containsSensitiveValue(citation.abstract) ? null : citation.abstract,
+    chunk_text: containsSensitiveValue(citation.chunk_text) ? undefined : citation.chunk_text,
+  }));
+}
+
 function normalizeCitation(raw: any, index: number): Citation {
   const id = String(raw?.id || raw?.pub_id || raw?.source || `source-${index + 1}`);
   return {
@@ -241,15 +321,19 @@ function normalizeCitation(raw: any, index: number): Citation {
   };
 }
 
-function normalizeQueryResponse(raw: any): QueryResponse {
+export function normalizeQueryResponse(raw: any): QueryResponse {
   const responseText = String(raw?.response || raw?.answer || raw?.message || 'NRG returned no answer text for this request.');
+  const tier = Number(raw?.tier || authService.getStoredSession()?.user?.tier || 1);
+  const citations = Array.isArray(raw?.citations) ? raw.citations.map(normalizeCitation) : [];
+  const sqlResults = Array.isArray(raw?.sql_results) ? raw.sql_results : [];
+
   return {
     query_id: String(raw?.query_id || raw?.id || `query-${Date.now()}`),
     audit_event_id: raw?.audit_event_id,
     session_id: raw?.session_id,
     response: responseText,
     status: String(raw?.status || 'success'),
-    tier: Number(raw?.tier || authService.getStoredSession()?.user?.tier || 1),
+    tier,
     intent: raw?.intent,
     routing_decision: raw?.routing_decision,
     verification_status: Boolean(raw?.verification_status ?? raw?.verified ?? false),
@@ -258,9 +342,9 @@ function normalizeQueryResponse(raw: any): QueryResponse {
     sql_anomaly_report: raw?.sql_anomaly_report,
     sql_query: raw?.sql_query ?? null,
     sql_queries: Array.isArray(raw?.sql_queries) ? raw.sql_queries : undefined,
-    sql_results: Array.isArray(raw?.sql_results) ? raw.sql_results : [],
+    sql_results: sanitizeSqlRowsForTier(sqlResults, tier),
     citation_validity: typeof raw?.citation_validity === 'number' ? raw.citation_validity : undefined,
-    citations: Array.isArray(raw?.citations) ? raw.citations.map(normalizeCitation) : [],
+    citations: sanitizeCitationsForTier(citations, tier),
     warnings: Array.isArray(raw?.warnings) ? raw.warnings : [],
     retrieval_sources: Array.isArray(raw?.retrieval_sources) ? raw.retrieval_sources : [],
     provenance: raw?.provenance || {},

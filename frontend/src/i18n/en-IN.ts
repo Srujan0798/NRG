@@ -147,6 +147,8 @@ export const generatedCopy: Record<string, string> = {
   "auto.components.AnswerTrustActions.7": "Audit ID",
   "auto.components.AnswerTrustActions.8": "Pending",
   "auto.components.AnswerTrustActions.9": "This answer is recorded in the HMAC audit chain.",
+  "auto.components.GraphView.emptyBody": "Try a different topic or expand your search.",
+  "auto.components.GraphView.emptyTitle": "No research connections found",
   "auto.components.CitationDrawer.CitationDrawer.1": "Relevance Score",
   "auto.components.CitationDrawer.CitationDrawer.10": "Source",
   "auto.components.CitationDrawer.CitationDrawer.11": "DPDP Notice",

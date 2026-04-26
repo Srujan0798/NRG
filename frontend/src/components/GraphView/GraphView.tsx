@@ -113,6 +113,26 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </div>
       </div>
 
+      {data.nodes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 text-center">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-navy-800">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-400">
+              <circle cx="12" cy="12" r="3"/>
+              <circle cx="5" cy="6" r="2"/>
+              <circle cx="19" cy="6" r="2"/>
+              <circle cx="5" cy="18" r="2"/>
+              <circle cx="19" cy="18" r="2"/>
+              <line x1="12" y1="9" x2="7" y2="7.5"/>
+              <line x1="12" y1="9" x2="17" y2="7.5"/>
+              <line x1="12" y1="15" x2="7" y2="16.5"/>
+              <line x1="12" y1="15" x2="17" y2="16.5"/>
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-nrg-muted">{t('auto.components.GraphView.emptyTitle')}</p>
+          <p className="mt-1 text-xs text-nrg-muted">{t('auto.components.GraphView.emptyBody')}</p>
+        </div>
+      ) : (
+      <>
       <div className="p-4 sm:hidden">
         <button
           type="button"
@@ -123,7 +143,6 @@ export const GraphView: React.FC<GraphViewProps> = ({
           {t('auto.components.MobileGraphModal.2')}
         </button>
       </div>
-
       <div className="hidden sm:block" style={{ width: '100%', height }}>
         <ForceGraph
           ref={graphRef}
@@ -148,6 +167,8 @@ export const GraphView: React.FC<GraphViewProps> = ({
             {selectedNode?.year && ` · FY${selectedNode?.year}`}
           </p>
         </motion.div>
+      )}
+      </>
       )}
 
       <MobileGraphModal
