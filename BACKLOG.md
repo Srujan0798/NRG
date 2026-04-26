@@ -15,7 +15,7 @@
 
 ## 2026-04-26 PRODUCTION LAUNCH BLOCKERS (merged from external audits)
 
-These 7 gaps must close before the IIT-GN user-acceptance session and follow-up production deployment. Each is bound to a Quality Bar constraint and the live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`. New rows LB-6 + LB-7 added 2026-04-26 from second external review (Claude-as-Principal-Engineer audit).
+These 7 gaps must close before the IIT-GN user-acceptance session and follow-up production deployment. Each is bound to a Quality Bar constraint and the live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`. New rows LB-6 + LB-7 added 2026-04-26 from second external review (Claude-as-Principal-Engineer audit). Principal Auditor review 2026-04-26 is merged as a reference map in `.claude/memory/references/principal-auditor-2026-04-26.md`; it reinforces LB-6/LB-7/LB-8 instead of adding duplicate rows.
 
 | # | Gap | Bound to | Live evidence required | Owner |
 |---|-----|----------|------------------------|-------|

@@ -22,3 +22,7 @@ NRG is a production web application for IIT Gandhinagar and Government of India 
 ## 2026-04-26 Commercial Readiness
 
 34 - [Commercial Sprint 2026-04-26](../../docs/business/COMMERCIAL_SPRINT_2026-04-26.md) - commercial blockers C1..C8 for INR 50 lakh readiness: entity, IP rights, external assurance, reference deployment, buyer narrative deck, pricing, use-of-funds, and warm introductions.
+
+## 2026-04-26 Principal Auditor Merge
+
+35 - [Principal Auditor External Audit Merge](references/principal-auditor-2026-04-26.md) - mapped the sovereign AI readiness findings into LB-6, LB-7, LB-8, the risk register, the UX protocol, and the canonical query corpus; no duplicate protocols created.
