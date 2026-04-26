@@ -104,6 +104,8 @@ The later "final ultimate synthesis" paste is merged here as a reconciliation up
 | HALL_OF_SHAME and Dhairya failure patterns must remain visible | `HALL_OF_SHAME.md`; `src/data/schema/failed_queries/HALL_OF_SHAME.md` | Present |
 | Copy Answer and View Source Data are required user trust controls | Frontend production workspace; `frontend/src/i18n/en-IN.ts`; frontend tests | Present in UI strings; browser evidence should be refreshed after any UI change |
 | DB co-sign and runtime evidence are part of the final seal | Audit DB co-sign tests; local release gates; cluster activation | Local tests pass; production Postgres runtime proof still required |
+| Product acceptance cache must be warm for canonical questions | `scripts/prewarm_release_cache.py`; `tests/scripts/test_prewarm_release_cache.py` | Closed locally with dry-run and post-contract tests |
+| The production-path failure ledger must contain all seven Dhairya patterns | `src/data/schema/failed_queries/HALL_OF_SHAME.md`; `tests/data/test_failed_queries_hall_of_shame.py` | Closed locally |
 
 ### Corrections To The Synthesis Prompt
 
@@ -119,3 +121,15 @@ If the final synthesis prompt is pasted again, do not reprocess it. Continue fro
 1. Start a live stack and regenerate LB-1/LB-5 evidence.
 2. Run the three critical production queries with SQL, citations, audit IDs, and timing evidence.
 3. Close cluster-only C4/C5/600GB gates only on the sovereign environment.
+
+## Complete Product Delivery Addendum - 2026-04-27
+
+The later product-delivery paste adds browser-path and operator-readiness detail. It maps to existing workflow files rather than creating a new protocol.
+
+| Delivery concern | Durable home | Current repo truth |
+|---|---|---|
+| Operator must prove speed, unique insight, and trust in-browser | `docs/operations/PRODUCTION_ACCEPTANCE_RUN.md`; frontend hardening evidence | Runbook exists; current browser evidence should be refreshed when a live stack is available |
+| Backend GAP-A/B/C closure | `src/audit/db_cosign.py`; `scripts/vector_drift_scheduler.py`; `src/data/schema/failed_queries/HALL_OF_SHAME.md` | DB co-sign tests and scheduler tests pass; Hall ledger now has seven structured patterns |
+| Acceptance-scale seed data | `scripts/seed_release_data.py`; `scripts/seed_production_initial_dataset.py` | Scripts exist; production-realistic row counts still require a running database |
+| Cache preparation before acceptance use | `scripts/prewarm_release_cache.py` | Added with tests and dry-run output |
+| Browser UI polish checks | frontend tests, Lighthouse artifacts, production acceptance runbook | Existing evidence present; physical device/projector checks remain operator gates |
