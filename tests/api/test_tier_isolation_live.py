@@ -108,10 +108,12 @@ def test_same_query_returns_distinct_tier_shapes_and_audit_events(monkeypatch):
         assert forbidden not in tier2_text
         assert forbidden not in tier3_text
 
-    assert payloads[3]["sql_results"][0]["personal_name"] == "Researcher_r-42"
+    assert payloads[2]["blocked"] is True
+    assert payloads[2]["sql_results"] == []
+    assert payloads[3]["blocked"] is True
+    assert payloads[3]["sql_results"] == []
     assert "Dr. Asha Mehta" not in tier3_text
-    assert "Researcher_r-42" in tier3_text
-    assert any(event["reason"] == "pii_strip:tier3:email" for event in captured_events)
+    assert any(event["reason"] == "k_anonymity_block:tier3:small_cohort" for event in captured_events)
 
 
 def test_internal_tier_diff_is_tier1_only(monkeypatch):

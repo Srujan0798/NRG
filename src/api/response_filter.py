@@ -17,6 +17,19 @@ class TierResponseFilterReport:
 
 
 _DROP = object()
+K_ANONYMITY_THRESHOLD = 5
+INDIVIDUAL_IDENTIFIER_KEYS = frozenset(
+    {
+        "researcher_id",
+        "author_id",
+        "person_id",
+        "faculty_id",
+        "student_id",
+        "employee_id",
+        "pi_id",
+        "investigator_id",
+    }
+)
 
 
 def filter_query_response_for_tier(
@@ -26,6 +39,58 @@ def filter_query_response_for_tier(
     """Compatibility wrapper used by older call sites."""
     filtered, report = filter_response_payload_for_tier(payload, tier=tier)
     return filtered, report.warnings
+
+
+def apply_k_anonymity_threshold(
+    payload: Any,
+    tier: int,
+    threshold: int = K_ANONYMITY_THRESHOLD,
+) -> tuple[Any, list[dict[str, Any]]]:
+    """Block lower-tier individual cohorts below the configured privacy threshold."""
+    tier_int = int(tier)
+    if tier_int <= 1 or not isinstance(payload, dict):
+        return payload, []
+
+    rows = payload.get("sql_results")
+    if not isinstance(rows, list) or not rows:
+        return payload, []
+
+    identifiers = _collect_individual_identifiers(rows)
+    if not identifiers or len(identifiers) >= int(threshold):
+        return payload, []
+
+    blocked = dict(payload)
+    blocked["status"] = "blocked"
+    blocked["blocked"] = True
+    blocked["response"] = (
+        f"Result set too small -- privacy threshold not met. "
+        f"Broaden the query to at least {int(threshold)} individuals."
+    )
+    blocked["sql_query"] = None
+    blocked["sql_queries"] = []
+    blocked["sql_results"] = []
+    blocked["citations"] = []
+    blocked["retrieval_sources"] = []
+
+    existing_warnings = blocked.get("warnings", [])
+    if not isinstance(existing_warnings, list):
+        existing_warnings = [existing_warnings]
+    blocked["warnings"] = existing_warnings + [
+        f"k_anonymity_block: cohort below k={int(threshold)} threshold"
+    ]
+
+    return blocked, [
+        {
+            "reason": f"k_anonymity_block:tier{tier_int}:small_cohort",
+            "tier": tier_int,
+            "field": "sql_results",
+            "key": "sql_results",
+            "path": "$.sql_results",
+            "action": "block",
+            "cohort_size": len(identifiers),
+            "threshold": int(threshold),
+        }
+    ]
 
 
 def filter_response_payload_for_tier(
@@ -78,6 +143,19 @@ def collect_shape_columns(payload: Any) -> list[str]:
 
     walk(payload, "")
     return sorted(columns)
+
+
+def _collect_individual_identifiers(rows: list[Any]) -> set[str]:
+    identifiers: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        for item_key, item_value in row.items():
+            normalized = _normalize_key(item_key)
+            if normalized in INDIVIDUAL_IDENTIFIER_KEYS and item_value not in (None, ""):
+                identifiers.add(str(item_value))
+                break
+    return identifiers
 
 
 @dataclass
