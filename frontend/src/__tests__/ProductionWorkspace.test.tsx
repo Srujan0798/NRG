@@ -185,4 +185,18 @@ describe('ProductionWorkspaceView', () => {
     expect(JSON.stringify(rows)).not.toContain('email')
     expect(JSON.stringify(rows)).not.toContain('phone')
   })
+
+  it('keeps the industry capability screen populated when only aggregate totals are available', () => {
+    const rows = buildIndustryCapabilityRowsFromStats({
+      total_researchers: 50000,
+      total_publications: 50000,
+      total_institutions: 58,
+    })
+
+    expect(rows[0]).toMatchObject({
+      institution: 'National capability cluster',
+      research_area: 'Multi-domain research capacity',
+      publications: 50000,
+    })
+  })
 })
