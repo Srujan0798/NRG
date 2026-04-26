@@ -1,7 +1,7 @@
 # ==============================================================================
 # Multi-stage Dockerfile for NRG API
 # Stage 1: Builder - compile dependencies and assets
-# Stage 2: Runner - minimal runtime image
+# Stage 2: Runner - non-root local stack runtime
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
@@ -42,30 +42,12 @@ COPY src/ ./src/
 COPY scripts/ ./scripts/
 
 # ------------------------------------------------------------------------------
-# Stage 2: Runner - Production image
+# Stage 2: Runner
 # ------------------------------------------------------------------------------
-FROM python:3.11-slim AS runner
+FROM builder AS runner
 
 # Security: non-root user setup
 RUN groupadd -r app && useradd -r -g app app
-
-# Install runtime dependencies only
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-# Copy virtualenv from builder
-COPY --from=builder /app/venv /app/venv
-
-# Copy application code
-COPY --from=builder /app/src/ ./src/
-COPY --from=builder /app/scripts/ ./scripts/
-COPY --from=builder /app/pyproject.toml .
-
-# Create non-root user ownership
-RUN chown -R app:app /app
 
 USER app
 
