@@ -65,6 +65,11 @@ function serveStatic(req, res) {
 }
 
 function proxyRequest(req, res) {
+  let clientClosed = false;
+  res.on('close', () => {
+    clientClosed = true;
+  });
+
   const options = {
     hostname: API_TARGET.split(':')[0],
     port: API_TARGET.split(':')[1] || 8000,
@@ -77,6 +82,11 @@ function proxyRequest(req, res) {
   };
 
   const proxyReq = http.request(options, (proxyRes) => {
+    if (clientClosed || res.destroyed) {
+      proxyRes.resume();
+      return;
+    }
+
     // Merge CORS headers into proxy response so browser can read the response
     const headers = {
       ...proxyRes.headers,
@@ -85,16 +95,33 @@ function proxyRequest(req, res) {
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
     res.writeHead(proxyRes.statusCode, headers);
-    pipeline(proxyRes, res, () => {});
+    try {
+      pipeline(proxyRes, res, (err) => {
+        if (err && !clientClosed && !res.destroyed) {
+          console.error('Proxy response stream error:', err.message);
+        }
+      });
+    } catch (err) {
+      if (!clientClosed && !res.destroyed) {
+        console.error('Proxy response stream error:', err.message);
+        res.destroy(err);
+      }
+    }
   });
 
   proxyReq.on('error', (err) => {
     console.error('Proxy error:', err.message);
-    res.writeHead(502);
-    res.end(JSON.stringify({ error: 'Bad Gateway' }));
+    if (!clientClosed && !res.destroyed) {
+      res.writeHead(502);
+      res.end(JSON.stringify({ error: 'Bad Gateway' }));
+    }
   });
 
-  pipeline(req, proxyReq, () => {});
+  pipeline(req, proxyReq, (err) => {
+    if (err && !clientClosed) {
+      proxyReq.destroy(err);
+    }
+  });
 }
 
 const server = http.createServer((req, res) => {

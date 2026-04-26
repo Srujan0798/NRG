@@ -37,9 +37,9 @@ def wait_for_kong(timeout_seconds: int = 60) -> None:
 
 @pytest.fixture(scope="module")
 def kong_stack():
-    """Bypass docker compose for existing environment."""
+    """Use an existing Kong environment only when the Kong admin API is ready."""
     try:
         wait_for_kong(timeout_seconds=5)
-        yield
-    except Exception:
-        yield
+    except Exception as exc:
+        pytest.skip(f"Kong Gateway admin API not ready: {exc}")
+    yield

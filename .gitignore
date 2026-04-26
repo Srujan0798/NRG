@@ -61,14 +61,23 @@ nrg_checkpoints.db
 nrg_research.db
 .qwen/
 
-.idea/
-.vscode/
-*.sublime-*
-.venv311/
-TASKS_COMPLETED.md
-TASK_EXECUTION_STATUS.md
-DASHBOARD_URLS.md
-*.gguf
-.cache/
+# Test and backup artifacts
+test-results/
+test_results/
+*.log
+backups/
+demo_sprint/
+experiments/
+pitch/
+dist/
+models/
+logs/
 coverage.xml
-.claude/scheduled_tasks.lock
+
+# Claude artifacts
+claude_docs_backup/
+.cache/
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+.protocol/

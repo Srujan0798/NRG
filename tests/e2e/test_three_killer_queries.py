@@ -22,13 +22,35 @@ ROLES = {
 }
 
 
+def _resolve_local_database_url() -> str:
+    configured_test = os.getenv("NRG_TEST_DATABASE_URL")
+    if configured_test:
+        return configured_test
+
+    configured = os.getenv("DATABASE_URL")
+    populated = ROOT / "data/nrg_research.db"
+    if populated.exists():
+        if not configured:
+            return f"sqlite:///{populated}"
+        if configured in {
+            "sqlite:///nrg_research.db",
+            f"sqlite:///{ROOT / 'nrg_research.db'}",
+        }:
+            return f"sqlite:///{populated}"
+
+    if configured:
+        return configured
+
+    return f"sqlite:///{ROOT / 'nrg_research.db'}"
+
+
 def _load_queries() -> list[dict[str, Any]]:
     return list((yaml.safe_load(CORPUS.read_text()) or {}).get("killer_queries", []))
 
 
 class _LocalClient:
     def __init__(self):
-        os.environ["DATABASE_URL"] = f"sqlite:///{ROOT / 'nrg_research.db'}"
+        os.environ["DATABASE_URL"] = _resolve_local_database_url()
         os.environ["TESTING"] = "true"
         from src.config.database import DatabaseManager
 

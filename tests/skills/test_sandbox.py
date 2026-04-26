@@ -152,3 +152,13 @@ def test_sandbox_uses_database_url_when_present(monkeypatch):
     sandbox_module.Sandbox()
 
     assert seen["connection_string"] == "postgresql://demo:demo@localhost:5432/nrg"
+
+
+def test_sqlite_sandbox_registers_split_part_function():
+    sb = sandbox_module.Sandbox("sqlite:///:memory:")
+    try:
+        result = sb.execute_readonly("SELECT SPLIT_PART('3:1', ':', 1) AS lecture_credit")
+    finally:
+        sb.close()
+
+    assert result["results"][0]["lecture_credit"] == "3"

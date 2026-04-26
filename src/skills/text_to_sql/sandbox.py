@@ -9,10 +9,11 @@ from pathlib import Path
 import uuid
 import json
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.audit import log_sql as audit_log_sql
+from src.config.database import register_sqlite_compat_functions
 
 
 logger = logging.getLogger(__name__)
@@ -32,8 +33,14 @@ class Sandbox:
         self.engine = create_engine(
             self.connection_string, echo=False, pool_pre_ping=True
         )
+        if getattr(getattr(self.engine, "dialect", None), "name", None) == "sqlite":
+            event.listen(self.engine, "connect", self._register_sqlite_functions)
         self.audit_log_path = Path(".protocol/audit_log.jsonl")
         self._ensure_audit_log()
+
+    @staticmethod
+    def _register_sqlite_functions(dbapi_connection: Any, _connection_record: Any) -> None:
+        register_sqlite_compat_functions(dbapi_connection)
 
     def _ensure_audit_log(self):
         self.audit_log_path.parent.mkdir(parents=True, exist_ok=True)

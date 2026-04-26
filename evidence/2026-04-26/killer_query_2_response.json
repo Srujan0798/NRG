@@ -15,9 +15,9 @@
   },
   "responses": {
     "researcher": {
-      "elapsed_ms": 37.19,
+      "elapsed_ms": 54.48,
       "payload": {
-        "query_id": "11f084ea-9941-4e26-a1f8-afa0fe1cac31",
+        "query_id": "44fc21de-6000-4e1c-8403-8b46dcdf3059",
         "session_id": "lb3-evidence-KILLER-02-researcher",
         "response": "Structured evidence query returned 4 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2022-23 | Level 4 | 555 | 64.39 |\n| 2022-23 | Level 9 | 307 | 35.61 |\n| 2021-22 | Level 4 | 1111 | 64.52 |\n| 2021-22 | Level 9 | 611 | 35.48 |",
         "status": "success",
@@ -38,9 +38,12 @@
           }
         ],
         "warnings": [],
-        "sql_query": "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
         "sql_queries": [
-          "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20"
+          "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        "
         ],
         "sql_results": [
           {
@@ -73,19 +76,20 @@
         ],
         "provenance": {
           "planner": "killer_query_fast_path",
-          "synth": "template",
+          "synth": "rule_based",
           "verifier": "row_count_and_citation",
           "cloud_synthesis_used": false
         },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "24be0d26892badd07ab7f029da807d549b716e469707b8ae38d98e19a84c7072"
+        "execution_time_ms": 16,
+        "audit_event_id": "d712ca7f7031ca40986a2e5d92e36214898be05cb4d9e4c4156aa8dd4b1abab0"
       }
     },
     "government": {
-      "elapsed_ms": 41.48,
+      "elapsed_ms": 54.23,
       "payload": {
-        "query_id": "57363dc1-4cac-4e38-8881-036e3d57a0df",
+        "query_id": "3072816b-8bff-4a5f-9c61-15fe12600810",
         "session_id": "lb3-evidence-KILLER-02-government",
         "response": "Structured evidence query returned 4 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2022-23 | Level 4 | 555 | 64.39 |\n| 2022-23 | Level 9 | 307 | 35.61 |\n| 2021-22 | Level 4 | 1111 | 64.52 |\n| 2021-22 | Level 9 | 611 | 35.48 |",
         "status": "success",
@@ -106,9 +110,12 @@
           }
         ],
         "warnings": [],
-        "sql_query": "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
         "sql_queries": [
-          "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20"
+          "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        "
         ],
         "sql_results": [
           {
@@ -141,21 +148,22 @@
         ],
         "provenance": {
           "planner": "killer_query_fast_path",
-          "synth": "template",
+          "synth": "rule_based",
           "verifier": "row_count_and_citation",
           "cloud_synthesis_used": false
         },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "538424a3c2dba764890a96e1a252ae90012828895ce5766793f5f368bd496194"
+        "execution_time_ms": 9,
+        "audit_event_id": "b4ecbbc8ba2037c6fe98890f7c15c74f6209f914a13298b9d482dff2c3a5f12e"
       }
     },
     "industry": {
-      "elapsed_ms": 49.25,
+      "elapsed_ms": 140.92,
       "payload": {
-        "query_id": "66e25e9e-37c4-4eb8-8a06-b4deb6e0aecb",
+        "query_id": "495aae53-b7b1-42c3-a82a-4ca090826c95",
         "session_id": "lb3-evidence-KILLER-02-industry",
-        "response": "Structured evidence query returned 4 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2022-23 | Level 4 | 555 | 64.39 |\n| 2022-23 | Level 9 | 307 | 35.61 |\n| 2021-22 | Level 4 | 1111 | 64.52 |\n| 2021-22 | Level 9 | 611 | 35.48 |",
+        "response": "Structured evidence query returned 4 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 2 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 3 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 4 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |",
         "status": "success",
         "tier": 3,
         "intent": "structured",
@@ -174,68 +182,86 @@
           }
         ],
         "warnings": [
+          "Access restricted: Tier 3 receives aggregate bands, not exact internal metrics.",
           "Response policy applied: pii_strip:tier3:debug_trace"
         ],
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
         "sql_query": null,
         "sql_queries": [],
         "sql_results": [
           {
-            "financial_year": "2022-23",
-            "stage_of_technology": "Level 4",
-            "stage_count": 555,
-            "stage_pct": 64.39
+            "rank": 1,
+            "institution": "Institution aggregate",
+            "access_scope": "institution_aggregate",
+            "metric_band": "medium",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "financial_year": "2022-23",
-            "stage_of_technology": "Level 9",
-            "stage_count": 307,
-            "stage_pct": 35.61
+            "rank": 2,
+            "institution": "Institution aggregate",
+            "access_scope": "institution_aggregate",
+            "metric_band": "medium",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "financial_year": "2021-22",
-            "stage_of_technology": "Level 4",
-            "stage_count": 1111,
-            "stage_pct": 64.52
+            "rank": 3,
+            "institution": "Institution aggregate",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "financial_year": "2021-22",
-            "stage_of_technology": "Level 9",
-            "stage_count": 611,
-            "stage_pct": 35.48
+            "rank": 4,
+            "institution": "Institution aggregate",
+            "access_scope": "institution_aggregate",
+            "metric_band": "medium",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           }
         ],
         "retrieval_sources": [],
-        "provenance": {},
+        "provenance": {
+          "planner": "killer_query_fast_path",
+          "synth": "rule_based",
+          "verifier": "row_count_and_citation",
+          "cloud_synthesis_used": false
+        },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "d5fd35cc66443a13558b5fb5b3af3f9550c2666e10455daa6e4fa36ca634c881"
+        "execution_time_ms": 12,
+        "audit_event_id": "30ac49ee3157ca1d99fdb512238e56d2716546abf551a738333777cf8a7d3af9"
       }
     }
   },
   "latency_runs_ms": [
-    9.55,
-    9.79,
-    9.36,
-    9.15,
-    8.46,
-    8.62,
-    8.73,
-    10.52,
-    8.88,
-    8.32,
-    8.47,
-    7.96,
-    8.11,
-    7.42,
-    7.96,
-    9.22,
-    8.21,
-    7.7,
-    8.74,
-    8.46
+    34.35,
+    19.66,
+    21.62,
+    22.77,
+    29.9,
+    31.81,
+    52.95,
+    21.85,
+    25.44,
+    27.22,
+    27.32,
+    29.27,
+    39.64,
+    33.18,
+    27.1,
+    132.71,
+    28.19,
+    25.92,
+    26.03,
+    32.98
   ],
-  "p95_latency_ms": 9.79,
-  "captured_at": "2026-04-25T21:00:43.035421+00:00",
+  "p95_latency_ms": 52.95,
+  "captured_at": "2026-04-26T17:34:38.043867+00:00",
   "row_floor": {
     "academic_courses_details": 50000,
     "innovations_at_various_stages_of_technology_readiness_level": 10000,

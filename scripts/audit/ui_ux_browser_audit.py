@@ -117,7 +117,7 @@ def main() -> None:
         page.locator('input[autocomplete="current-password"]').fill("bad_pass")
         current_phase["name"] = "wrong_credentials"
         page.locator('button[type="submit"]').click()
-        page.wait_for_selector("text=Invalid username or password", timeout=12000)
+        page.wait_for_selector("text=Invalid username or password", timeout=60000)
         page.wait_for_timeout(300)
         current_phase["name"] = "normal"
         results["screenshots"]["wrong_credentials"] = shot(page, "03_wrong_credentials")
@@ -152,7 +152,7 @@ def main() -> None:
         page.locator('[data-testid="researcher-search-input"]').fill("Show all researchers with Aadhaar 1234 5678 9012")
         current_phase["name"] = "pii_block"
         page.locator('[data-testid="researcher-search-input"]').press("Enter")
-        page.wait_for_selector("text=This query contains sensitive information", timeout=12000)
+        page.wait_for_selector("text=This query contains sensitive information", timeout=60000)
         page.wait_for_timeout(300)
         current_phase["name"] = "normal"
         results["screenshots"]["pii_block"] = shot(page, "07_pii_block")

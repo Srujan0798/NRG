@@ -1,6 +1,6 @@
 {
   "status": "healthy",
-  "last_run_time": "2026-04-25T21:00:43.476173+00:00",
+  "last_run_time": "2026-04-26T17:34:39.186481+00:00",
   "source": "local_volumetric_sqlite_proxy",
   "row_floor": {
     "academic_courses_details": 50000,
@@ -13,8 +13,8 @@
   "queries": [
     {
       "id": "KILLER-01",
-      "last_run_time": "2026-04-25T21:00:42.731821+00:00",
-      "p95_latency_ms": 9.78,
+      "last_run_time": "2026-04-26T17:34:37.096091+00:00",
+      "p95_latency_ms": 25.04,
       "threshold_ms": 4000,
       "row_count": 8,
       "citation_count": 1,
@@ -24,8 +24,8 @@
     },
     {
       "id": "KILLER-02",
-      "last_run_time": "2026-04-25T21:00:43.038137+00:00",
-      "p95_latency_ms": 9.79,
+      "last_run_time": "2026-04-26T17:34:38.065546+00:00",
+      "p95_latency_ms": 52.95,
       "threshold_ms": 4000,
       "row_count": 4,
       "citation_count": 1,
@@ -35,8 +35,8 @@
     },
     {
       "id": "KILLER-03",
-      "last_run_time": "2026-04-25T21:00:43.476136+00:00",
-      "p95_latency_ms": 8.69,
+      "last_run_time": "2026-04-26T17:34:39.183282+00:00",
+      "p95_latency_ms": 22.8,
       "threshold_ms": 4000,
       "row_count": 3,
       "citation_count": 1,

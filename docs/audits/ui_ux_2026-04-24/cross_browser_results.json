@@ -1,14 +1,17 @@
 {
   "chromium": {
     "status": "pass",
-    "title": "Sign In | National Research Graph"
+    "title": "NRG \u00b7 Sign In",
+    "screenshot": "docs/audits/ui_ux_2026-04-24/screenshots/cross_chromium_login.png"
   },
   "firefox": {
-    "status": "fail",
-    "error": "BrowserType.launch: Executable doesn't exist at /Users/srujansai/Library/Caches/ms-playwright/firefox-1509/firefox/Nightly.app/Contents/MacOS/firefox\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551                                                            \u2551\n\u2551     playwright install                                     \u2551\n\u2551                                  "
+    "status": "pass",
+    "title": "NRG \u00b7 Sign In",
+    "screenshot": "docs/audits/ui_ux_2026-04-24/screenshots/cross_firefox_login.png"
   },
   "webkit": {
-    "status": "fail",
-    "error": "BrowserType.launch: Executable doesn't exist at /Users/srujansai/Library/Caches/ms-playwright/webkit-2248/pw_run.sh\n\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557\n\u2551 Looks like Playwright was just installed or updated.       \u2551\n\u2551 Please run the following command to download new browsers: \u2551\n\u2551                                                            \u2551\n\u2551     playwright install                                     \u2551\n\u2551                                                            \u2551\n\u2551 <3 P"
+    "status": "pass",
+    "title": "NRG \u00b7 Sign In",
+    "screenshot": "docs/audits/ui_ux_2026-04-24/screenshots/cross_webkit_login.png"
   }
 }

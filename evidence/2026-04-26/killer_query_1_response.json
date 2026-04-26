@@ -21,11 +21,11 @@
   },
   "responses": {
     "researcher": {
-      "elapsed_ms": 454.41,
+      "elapsed_ms": 851.47,
       "payload": {
-        "query_id": "599a3c0a-01bd-4bca-ac71-b0b438f3b4c6",
+        "query_id": "f16d640c-41b6-4a68-b7d0-2cf3e0997db0",
         "session_id": "lb3-evidence-KILLER-01-researcher",
-        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average | _key |\n| --- | --- | --- | --- | --- |\n| IIT Bombay | 9968.0 | 6701.0 | 3267.0 | SPLIT_PART |\n| IIT Hyderabad | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Roorkee | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Delhi | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |\n| IIT Madras | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |",
+        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- |\n| IIT Bombay | 9968.0 | 6701.0 | 3267.0 |\n| IIT Hyderabad | 6236.0 | 6701.0 | -465.0 |\n| IIT Roorkee | 6236.0 | 6701.0 | -465.0 |\n| IIT Delhi | 6235.0 | 6701.0 | -466.0 |\n| IIT Madras | 6235.0 | 6701.0 | -466.0 |",
         "status": "success",
         "tier": 1,
         "intent": "structured",
@@ -44,66 +44,61 @@
           }
         ],
         "warnings": [],
-        "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SUBSTRING(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + COALESCE(CAST(NULLIF(SUBSTRING(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average, 'SPLIT_PART' AS _key FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
         "sql_queries": [
-          "WITH parsed AS (SELECT institute, SUM(CAST(SUBSTRING(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + COALESCE(CAST(NULLIF(SUBSTRING(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average, 'SPLIT_PART' AS _key FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10"
+          "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        "
         ],
         "sql_results": [
           {
             "institute": "IIT Bombay",
             "total_credits": 9968.0,
             "avg_credits": 6701.0,
-            "above_national_average": 3267.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": 3267.0
           },
           {
             "institute": "IIT Hyderabad",
             "total_credits": 6236.0,
             "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -465.0
           },
           {
             "institute": "IIT Roorkee",
             "total_credits": 6236.0,
             "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -465.0
           },
           {
             "institute": "IIT Delhi",
             "total_credits": 6235.0,
             "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -466.0
           },
           {
             "institute": "IIT Madras",
             "total_credits": 6235.0,
             "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -466.0
           },
           {
             "institute": "IIT Gandhinagar",
             "total_credits": 6234.0,
             "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -467.0
           },
           {
             "institute": "IIT Kanpur",
             "total_credits": 6234.0,
             "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -467.0
           },
           {
             "institute": "IIT Kharagpur",
             "total_credits": 6230.0,
             "avg_credits": 6701.0,
-            "above_national_average": -471.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -471.0
           }
         ],
         "retrieval_sources": [
@@ -111,21 +106,22 @@
         ],
         "provenance": {
           "planner": "killer_query_fast_path",
-          "synth": "template",
+          "synth": "rule_based",
           "verifier": "row_count_and_citation",
           "cloud_synthesis_used": false
         },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "278b6bd88d22149ae9a4d7cfc599725f78ccae06ae96023ab8bea6dde36e1766"
+        "execution_time_ms": 809,
+        "audit_event_id": "8c73b565c6a90513969689d506b9860256196ea880d896213ce95d3a32e107a1"
       }
     },
     "government": {
-      "elapsed_ms": 39.53,
+      "elapsed_ms": 112.79,
       "payload": {
-        "query_id": "2c1287bb-2808-424f-a34b-d67de904f692",
+        "query_id": "241b7a23-5af4-4fae-9349-2775f7721615",
         "session_id": "lb3-evidence-KILLER-01-government",
-        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average | _key |\n| --- | --- | --- | --- | --- |\n| IIT Bombay | 9968.0 | 6701.0 | 3267.0 | SPLIT_PART |\n| IIT Hyderabad | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Roorkee | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Delhi | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |\n| IIT Madras | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |",
+        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- |\n| IIT Bombay | 9968.0 | 6701.0 | 3267.0 |\n| IIT Hyderabad | 6236.0 | 6701.0 | -465.0 |\n| IIT Roorkee | 6236.0 | 6701.0 | -465.0 |\n| IIT Delhi | 6235.0 | 6701.0 | -466.0 |\n| IIT Madras | 6235.0 | 6701.0 | -466.0 |",
         "status": "success",
         "tier": 2,
         "intent": "structured",
@@ -144,66 +140,61 @@
           }
         ],
         "warnings": [],
-        "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SUBSTRING(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + COALESCE(CAST(NULLIF(SUBSTRING(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average, 'SPLIT_PART' AS _key FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
         "sql_queries": [
-          "WITH parsed AS (SELECT institute, SUM(CAST(SUBSTRING(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + COALESCE(CAST(NULLIF(SUBSTRING(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average, 'SPLIT_PART' AS _key FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10"
+          "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        "
         ],
         "sql_results": [
           {
             "institute": "IIT Bombay",
             "total_credits": 9968.0,
             "avg_credits": 6701.0,
-            "above_national_average": 3267.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": 3267.0
           },
           {
             "institute": "IIT Hyderabad",
             "total_credits": 6236.0,
             "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -465.0
           },
           {
             "institute": "IIT Roorkee",
             "total_credits": 6236.0,
             "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -465.0
           },
           {
             "institute": "IIT Delhi",
             "total_credits": 6235.0,
             "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -466.0
           },
           {
             "institute": "IIT Madras",
             "total_credits": 6235.0,
             "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -466.0
           },
           {
             "institute": "IIT Gandhinagar",
             "total_credits": 6234.0,
             "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -467.0
           },
           {
             "institute": "IIT Kanpur",
             "total_credits": 6234.0,
             "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -467.0
           },
           {
             "institute": "IIT Kharagpur",
             "total_credits": 6230.0,
             "avg_credits": 6701.0,
-            "above_national_average": -471.0,
-            "_key": "SPLIT_PART"
+            "above_national_average": -471.0
           }
         ],
         "retrieval_sources": [
@@ -211,21 +202,22 @@
         ],
         "provenance": {
           "planner": "killer_query_fast_path",
-          "synth": "template",
+          "synth": "rule_based",
           "verifier": "row_count_and_citation",
           "cloud_synthesis_used": false
         },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "aa674abcdfac5748a3b8203c90e0e4868429e6715d3b4e28e271f33d04c63228"
+        "execution_time_ms": 74,
+        "audit_event_id": "fddef1c474c35ca250a2c36b786a614e7ebc5488b14f94894f1ace4b82c55f2e"
       }
     },
     "industry": {
-      "elapsed_ms": 42.68,
+      "elapsed_ms": 209.5,
       "payload": {
-        "query_id": "9d61c0ff-cc5a-47be-8b94-d35531c28ed8",
+        "query_id": "949ab71f-8959-43eb-92ab-65e2ee654504",
         "session_id": "lb3-evidence-KILLER-01-industry",
-        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average | _key |\n| --- | --- | --- | --- | --- |\n| IIT Bombay | 9968.0 | 6701.0 | 3267.0 | SPLIT_PART |\n| IIT Hyderabad | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Roorkee | 6236.0 | 6701.0 | -465.0 | SPLIT_PART |\n| IIT Delhi | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |\n| IIT Madras | 6235.0 | 6701.0 | -466.0 | SPLIT_PART |",
+        "response": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | IIT Bombay | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 2 | IIT Hyderabad | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 3 | IIT Roorkee | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 4 | IIT Delhi | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 5 | IIT Madras | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |",
         "status": "success",
         "tier": 3,
         "intent": "structured",
@@ -244,100 +236,118 @@
           }
         ],
         "warnings": [
+          "Access restricted: Tier 3 receives aggregate bands, not exact internal metrics.",
           "Response policy applied: pii_strip:tier3:debug_trace"
         ],
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
         "sql_query": null,
         "sql_queries": [],
         "sql_results": [
           {
-            "institute": "IIT Bombay",
-            "total_credits": 9968.0,
-            "avg_credits": 6701.0,
-            "above_national_average": 3267.0,
-            "_key": "SPLIT_PART"
+            "rank": 1,
+            "institution": "IIT Bombay",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Hyderabad",
-            "total_credits": 6236.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "rank": 2,
+            "institution": "IIT Hyderabad",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Roorkee",
-            "total_credits": 6236.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -465.0,
-            "_key": "SPLIT_PART"
+            "rank": 3,
+            "institution": "IIT Roorkee",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Delhi",
-            "total_credits": 6235.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "rank": 4,
+            "institution": "IIT Delhi",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Madras",
-            "total_credits": 6235.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -466.0,
-            "_key": "SPLIT_PART"
+            "rank": 5,
+            "institution": "IIT Madras",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Gandhinagar",
-            "total_credits": 6234.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "rank": 6,
+            "institution": "IIT Gandhinagar",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Kanpur",
-            "total_credits": 6234.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -467.0,
-            "_key": "SPLIT_PART"
+            "rank": 7,
+            "institution": "IIT Kanpur",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           },
           {
-            "institute": "IIT Kharagpur",
-            "total_credits": 6230.0,
-            "avg_credits": 6701.0,
-            "above_national_average": -471.0,
-            "_key": "SPLIT_PART"
+            "rank": 8,
+            "institution": "IIT Kharagpur",
+            "access_scope": "institution_aggregate",
+            "metric_band": "high",
+            "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+            "source_rows": "cited_structured_result"
           }
         ],
         "retrieval_sources": [],
-        "provenance": {},
+        "provenance": {
+          "planner": "killer_query_fast_path",
+          "synth": "rule_based",
+          "verifier": "row_count_and_citation",
+          "cloud_synthesis_used": false
+        },
+        "synthesis_method": "rule_based",
         "conversation_history": [],
-        "execution_time_ms": {},
-        "audit_event_id": "1f55b01d5588b7660741d154ae6b044ac5122279223761cb792f3b0683acd505"
+        "execution_time_ms": 142,
+        "audit_event_id": "a5e9691490a2fe17fb67e9f29ef63f5ed887ae09e66eeaaf63bf75fe2d19d259"
       }
     }
   },
   "latency_runs_ms": [
-    9.06,
-    8.26,
-    9.51,
-    8.64,
-    8.87,
-    9.38,
-    8.33,
-    9.78,
-    8.56,
-    8.54,
-    8.92,
-    9.78,
-    8.71,
-    8.78,
-    8.61,
-    9.69,
-    9.93,
-    8.67,
-    8.85,
-    8.17
+    25.04,
+    22.69,
+    23.22,
+    21.84,
+    18.72,
+    16.33,
+    18.35,
+    17.2,
+    17.22,
+    16.38,
+    17.34,
+    16.52,
+    18.73,
+    20.88,
+    20.67,
+    18.66,
+    19.6,
+    20.49,
+    21.36,
+    29.59
   ],
-  "p95_latency_ms": 9.78,
-  "captured_at": "2026-04-25T21:00:42.669766+00:00",
+  "p95_latency_ms": 25.04,
+  "captured_at": "2026-04-26T17:34:36.995461+00:00",
   "row_floor": {
     "academic_courses_details": 50000,
     "innovations_at_various_stages_of_technology_readiness_level": 10000,

@@ -42,12 +42,12 @@
     "mobile_query_result": "docs/audits/ui_ux_2026-04-24/screenshots/15_mobile_query_result.png"
   },
   "timings": {
-    "login_page_load_seconds": 1.74,
-    "researcher_login_seconds": 4.52,
-    "key_query_seconds": 0.65,
-    "followup_query_seconds": 0.6,
-    "industry_login_seconds": 1.8,
-    "tier3_query_seconds": 0.27
+    "login_page_load_seconds": 1.01,
+    "researcher_login_seconds": 2.07,
+    "key_query_seconds": 0.36,
+    "followup_query_seconds": 1.42,
+    "industry_login_seconds": 1.19,
+    "tier3_query_seconds": 1.22
   },
   "checks": {
     "login_placeholders": {

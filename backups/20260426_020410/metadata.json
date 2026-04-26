@@ -1,7 +1,0 @@
-{
-  "timestamp": "2026-04-25T20:34:39Z",
-  "postgres_dump": "nrg_postgres.dump",
-  "qdrant_snapshot_response": "qdrant_snapshot.json",
-  "pg_container": "nrg-postgres",
-  "qdrant_container": "nrg-qdrant"
-}
