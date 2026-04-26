@@ -8,7 +8,7 @@
 
 ## How to use this register
 
-1. **T-60 min before any live session** (UAT, ministry walkthrough, industry pilot, demo to leadership): walk every row, mark Prevention as DONE.
+1. **T-60 min before any live session** (UAT, ministry walkthrough, industry pilot, leadership review): walk every row, mark Prevention as DONE.
 2. **During the session**, if any risk fires, follow the Recovery line verbatim. Do not improvise.
 3. **After the session**, log every fired risk in `evidence/<YYYY-MM-DD>/launch_risk_log.md` with timestamp + recovery taken + outcome. Append to audit chain.
 4. **After 3 sessions without a fired risk in a row**, retire the row to `archive/` only after `/self-evolve` confirms it is no longer relevant.
@@ -40,6 +40,13 @@
 | 19 | Engine runs on personal laptop with insufficient RAM/GPU; Qdrant or local SLM crashes mid-session | Medium | Catastrophic | Use a dedicated machine with ≥32 GB RAM, GPU available, no other heavy processes; cloud LLM as primary, local SLM as fallback only | Not recoverable mid-session. Switch to recorded acceptance-test capture |
 | 20 | Power outage / laptop crash | Low | Catastrophic | Fully charged tablet with offline copy of acceptance-test recording; printed copies of dashboards | Switch to backup device; the assistant can still see the proof |
 | 21 | UAT data shows numbers that contradict public NIRF / ministry figures (e.g., "you say 300 PhDs at IIT Madras, public records show 1200") | Medium | Catastrophic | Cross-validate aggregates against the latest published NIRF report before T-60; if a discrepancy exists, prepare an "official source vs internal cut" callout slide explaining the difference | Acknowledge the gap honestly: "this is a staging cut limited to 50k rows; production load against the 600 GB feed will reconcile to the official figure" |
+| 22 | PostgreSQL identifier truncation crash on the 62-char `innovations_at_various_stages_of_technology_readiness_level` column — any LLM-emitted alias (`_count`, `_summary`) trips error 42602 | High | Serious | LB-6 acceptance: schema migration renames to `tech_readiness_stage` OR creates view `vw_innovations_trl`; semantic layer (LB-8) emits only the safe alias; never expose the raw 62-char column to the LLM | Acknowledge the constraint honestly, switch to the view-backed query path; never argue with PostgreSQL on this — the 63-byte limit is hard |
+| 23 | Cleartext PII (Aadhaar, PAN, phone) returned via direct DB access path bypassing API response-shape filter | Low | Catastrophic (DPDP §8) | LB-1 Phase 3 + `feedback_db_layer_defence.md`: install `pg_anonymizer`, dynamic masking policies bound to PostgreSQL roles per tier; T3 sees `12******7890` even on raw `psql` SELECT | Force-logout the session; show the audit log entry where the masking policy fired; switch the walk-through to a tier where the policy is visibly active |
+| 24 | Sovereign-cluster deploy: synchronous HTTP request to SLURM-scheduled inference node killed by 60-second government load-balancer timeout | High in cluster / N/A locally | Catastrophic in cluster | `feedback_async_compute_queue.md` + master plan M1: Celery + Redis broker; `/query` returns 202 + task_id; frontend polls or WebSocket; SLURM `sbatch` worker writes result to Redis | Switch to local SLM provider (configured fallback in mesh); session continues without cluster GPU |
+| 25 | Database connection pool exhaustion under concurrent traffic — LangGraph nodes open new TCP per agent step, hit `max_connections` | Low locally / Medium under sustained load | Catastrophic | Deploy `PgBouncer` (transaction-pooling mode) between app and PostgreSQL; pool size capped; LangGraph agent connections go through the pool | Fast: restart application-layer containers to drop deadlocked connections; medium: failover to read-replica for SELECT traffic |
+| 26 | HMAC audit chain desynchronises after a manual `psql` UPDATE that bypassed the application-layer ORM | Low | Serious (zero-leakage proof breaks) | `feedback_db_layer_defence.md` + LB-6: native PL/pgSQL `BEFORE INSERT OR UPDATE` trigger function recomputes HMAC server-side using `current_setting('nrg.chain_secret')`; trigger is `SECURITY DEFINER` | Skip live audit-chain proof in the session; rebuild via `scripts/audit_rebuild.py` afterwards (see `bugs_audit_singleton.md`) |
+| 27 | Bhashini NLP API timeout / unavailable when a user submits a Hindi/Hinglish query | Medium | Minor | 1000 ms timeout on the translation node; on timeout, fall back to English-only path with a one-line user-visible note ("translation gateway slow — proceeding in English") | Inform the audience the external NLP gateway is lagging; demonstrate the platform's resilience by toggling to English-only bypass; never silently mistranslate |
+| 28 | k-anonymity inference attack: Tier 2/3 user narrows WHERE clause until cohort = 1 individual, extracts financial/personal data via aggregated columns | Medium | Catastrophic (DPDP §8) | `feedback_k_anonymity_threshold.md`: verifier-node check rejects queries whose filtered cohort < k=5; audit-logs every block; Tier 1 override path with explicit consent + reason | Show the rejection message live: "Query result cohort below privacy-preserving threshold (k=5)"; this is itself a credibility win — the system refuses to leak |
 
 ---
 
@@ -55,14 +62,18 @@
 
 Each numbered risk traces back to one or more of the 6 Hard Constraints (`.claude/QUALITY_BAR.md`):
 
-- C1 (PII): #2, #15
-- C2 (per-user audit binding): #2, #6, #15, #18
-- C3 (multi-hop / domain): #1, #7, #17
-- C4 (P99 / concurrency): #1, #9, #11, #14, #16
+- C1 (PII): #2, #15, #23, #28
+- C2 (per-user audit binding): #2, #6, #15, #18, #26
+- C3 (multi-hop / domain): #1, #7, #17, #22
+- C4 (P99 / concurrency): #1, #9, #11, #14, #16, #24, #25
 - C5 (vector drift): #8
-- C6 (egress / schema allowlist): #2, #10, #13
+- C6 (egress / schema allowlist): #2, #10, #13, #27
 - LB-7 (silent wrong answer): #17
-- Schema parity (LB-6): #21
+- LB-6 (schema parity + 62-char column): #21, #22, #26
+- LB-8 (semantic layer + schema RAG): #1, #17, #22
+- DB-layer defence-in-depth (`feedback_db_layer_defence.md`): #23, #26
+- Async compute queue (`feedback_async_compute_queue.md`): #24
+- k-anonymity threshold (`feedback_k_anonymity_threshold.md`): #28
 
 A regression in any C# automatically promotes its bound rows to **Pre-launch P0 — must close before next session**.
 
