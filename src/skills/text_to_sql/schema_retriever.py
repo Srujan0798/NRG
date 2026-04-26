@@ -30,10 +30,10 @@ import yaml
 logger = logging.getLogger(__name__)
 
 _SCHEMA_RETRIEVER_DIR = Path(__file__).resolve().parent
-_NRG_ROOT = _SCHEMA_RETRIEVER_DIR.parents[3]
+_NRG_ROOT = _SCHEMA_RETRIEVER_DIR.parents[2]
 DEFAULT_DB_STRUCT_PATH = _NRG_ROOT / "db_struct.sql"
 DEFAULT_SEMANTIC_LAYER_PATH = _SCHEMA_RETRIEVER_DIR / "semantic_layer.yaml"
-DEFAULT_GLOSSARY_PATH = _SCHEMA_RETRIEVER_DIR.parents[2] / "src" / "data" / "schema" / "business_term_glossary.yaml"
+DEFAULT_GLOSSARY_PATH = _NRG_ROOT / "src" / "data" / "schema" / "business_term_glossary.yaml"
 _SCHEMA_RETRIEVER_TOP_K: int = 5
 _MAX_TABLES_IN_PROMPT: int = 8
 
@@ -253,8 +253,7 @@ class SchemaRetriever:
 
     def _load_semantic_layer(self) -> None:
         """Load semantic_layer.yaml join graphs."""
-        _RETRIEVER_DIR = Path(__file__).resolve().parent
-        semantic_path = _RETRIEVER_DIR / "semantic_layer.yaml"
+        semantic_path = self.semantic_layer_path
         if not semantic_path.exists():
             logger.warning("semantic_layer.yaml not found at %s", semantic_path)
             return
