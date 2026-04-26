@@ -84,9 +84,12 @@ function getRoute(screen: ProductionWorkspaceScreen): ProductionWorkspaceRoute {
   return productionWorkspaceRoutes.find((route) => route.screen === screen) || productionWorkspaceRoutes[0]
 }
 
-function formatNumber(value?: number | null): string {
-  if (typeof value !== 'number') return t('productionWorkspace.common.notAvailable')
-  return value.toLocaleString('en-IN')
+function formatNumber(value?: number | string | null): string {
+  const numericValue = typeof value === 'string' ? Number(value) : value
+  if (typeof numericValue !== 'number' || !Number.isFinite(numericValue)) {
+    return t('productionWorkspace.common.notAvailable')
+  }
+  return numericValue.toLocaleString('en-IN')
 }
 
 function normaliseResearcherRows(payload: { results?: unknown[] } | unknown): ResearcherProfileRow[] {
@@ -104,13 +107,14 @@ function normaliseResearcherRows(payload: { results?: unknown[] } | unknown): Re
 export function buildIndustryCapabilityRowsFromStats(stats: StatsResponse): IndustryCapabilityRow[] {
   const areas = stats.research_area_distribution || []
   const states = stats.state_distribution || []
+  const totalPublications = Number(stats.total_publications || 0)
 
-  if (!areas.length && stats.total_publications) {
+  if (!areas.length && totalPublications > 0) {
     return [
       {
         institution: t('productionWorkspace.industry.nationalCluster'),
         research_area: t('productionWorkspace.industry.multiDomain'),
-        publications: stats.total_publications,
+        publications: totalPublications,
       },
     ]
   }
@@ -122,7 +126,7 @@ export function buildIndustryCapabilityRowsFromStats(stats: StatsResponse): Indu
         ? t('productionWorkspace.industry.regionalCluster', { state: state.state })
         : t('productionWorkspace.industry.nationalCluster'),
       research_area: area.area,
-      publications: area.count,
+      publications: Number(area.count || 0),
     }
   })
 }
