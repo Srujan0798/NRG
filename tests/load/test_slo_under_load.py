@@ -80,12 +80,15 @@ def mock_llm(monkeypatch):
     import src.config.llm_config as llm_module
     import src.orchestration.nodes.synthesizer as synth_module
     import src.orchestration.nodes.executor as executor_module
+    import src.orchestration.nodes.verifier as verifier_module
 
+    monkeypatch.setenv("CLOUD_SYNTHESIS_ALLOWED", "false")
     monkeypatch.setattr(llm_module, "get_llm_client", lambda provider=None: fake)
     monkeypatch.setattr(llm_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", lambda provider=None: fake)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
+    monkeypatch.setattr(verifier_module, "get_llm_client", lambda provider=None: fake)
 
     fake_rag_result = {
         "retrieved_chunks": [

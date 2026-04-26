@@ -23,6 +23,7 @@ SLO: P99 < 500ms @ 1000 concurrent users
 """
 
 from locust import HttpUser, task, between, events
+from locust.exception import StopUser
 import os
 import random
 import statistics
@@ -70,11 +71,40 @@ def _handle_query_response(resp) -> None:
         resp.failure(f"HTTP {resp.status_code}")
 
 
-def _handle_login_failure(user: HttpUser, response) -> None:
+def _handle_login_failure(user: HttpUser, response) -> bool:
     user.headers = {}
     response.failure(f"Login failed: {response.status_code}")
-    if user.environment.runner:
+    if response.status_code in {401, 403} and user.environment.runner:
         user.environment.runner.quit()
+        return True
+    return False
+
+
+def _login_user(
+    user: HttpUser,
+    username_env: str,
+    default_username: str,
+    password_env: str,
+    default_password: str,
+) -> None:
+    """Authenticate a Locust persona using a catch_response context."""
+    should_quit = False
+    with user.client.post(
+        "/auth/login",
+        json=_credentials(username_env, default_username, password_env, default_password),
+        catch_response=True,
+        name="/auth/login",
+    ) as response:
+        if response.status_code == 200:
+            token = response.json().get("access_token")
+            user.headers = {"Authorization": f"Bearer {token}"}
+            response.success()
+        else:
+            should_quit = _handle_login_failure(user, response)
+    if not user.headers:
+        if should_quit and user.environment.runner:
+            user.environment.runner.quit()
+        raise StopUser()
 
 
 @events.request.add_listener
@@ -158,22 +188,13 @@ class C4ResearcherUser(HttpUser):
     weight = 50
 
     def on_start(self):
-        r = self.client.post(
-            "/auth/login",
-            json=_credentials(
-                "LOAD_TEST_RESEARCHER_USER",
-                "researcher_user",
-                "LOAD_TEST_RESEARCHER_PASS",
-                "researcher-pass",
-            ),
-            catch_response=True,
+        _login_user(
+            self,
+            "LOAD_TEST_RESEARCHER_USER",
+            "researcher_user",
+            "LOAD_TEST_RESEARCHER_PASS",
+            "researcher-pass",
         )
-        if r.status_code == 200:
-            self.token = r.json().get("access_token")
-            self.headers = {"Authorization": f"Bearer {self.token}"}
-            r.success()
-        else:
-            _handle_login_failure(self, r)
 
     @task(8)
     def query(self):
@@ -193,22 +214,13 @@ class C4GovernmentUser(HttpUser):
     weight = 30
 
     def on_start(self):
-        r = self.client.post(
-            "/auth/login",
-            json=_credentials(
-                "LOAD_TEST_GOV_USER",
-                "gov_user",
-                "LOAD_TEST_GOV_PASS",
-                "government-pass",
-            ),
-            catch_response=True,
+        _login_user(
+            self,
+            "LOAD_TEST_GOV_USER",
+            "gov_user",
+            "LOAD_TEST_GOV_PASS",
+            "government-pass",
         )
-        if r.status_code == 200:
-            self.token = r.json().get("access_token")
-            self.headers = {"Authorization": f"Bearer {self.token}"}
-            r.success()
-        else:
-            _handle_login_failure(self, r)
 
     @task(5)
     def aggregate(self):
@@ -228,22 +240,13 @@ class C4IndustryUser(HttpUser):
     weight = 15
 
     def on_start(self):
-        r = self.client.post(
-            "/auth/login",
-            json=_credentials(
-                "LOAD_TEST_INDUSTRY_USER",
-                "industry_user",
-                "LOAD_TEST_INDUSTRY_PASS",
-                "industry-pass",
-            ),
-            catch_response=True,
+        _login_user(
+            self,
+            "LOAD_TEST_INDUSTRY_USER",
+            "industry_user",
+            "LOAD_TEST_INDUSTRY_PASS",
+            "industry-pass",
         )
-        if r.status_code == 200:
-            self.token = r.json().get("access_token")
-            self.headers = {"Authorization": f"Bearer {self.token}"}
-            r.success()
-        else:
-            _handle_login_failure(self, r)
 
     @task(4)
     def partnership(self):

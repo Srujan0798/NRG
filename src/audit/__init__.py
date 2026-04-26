@@ -13,6 +13,7 @@ import os
 import threading
 import time
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, UTC
 from pathlib import Path
 from typing import Optional
@@ -30,6 +31,8 @@ AUDIT_ALERT_WEBHOOK = os.environ.get("AUDIT_ALERT_WEBHOOK")
 AUDIT_LOCK_TIMEOUT = float(os.environ.get("AUDIT_LOCK_TIMEOUT", "5.0"))
 _chain_key_cache: bytes | None = None
 _chain_key_lock = threading.Lock()
+_cosign_executor: ThreadPoolExecutor | None = None
+_cosign_executor_lock = threading.Lock()
 
 
 def _configured_chain_key_text() -> str:
@@ -55,6 +58,35 @@ def reset_chain_key_cache() -> None:
 
 def chain_key_hash() -> str:
     return hashlib.sha256(get_chain_key()).hexdigest()[:16]
+
+
+def _is_postgres_database_url(database_url: str | None) -> bool:
+    return bool(database_url and database_url.startswith(("postgresql://", "postgres://")))
+
+
+def should_db_cosign() -> bool:
+    """Return True when DB co-signing is configured for a PostgreSQL target."""
+    return _is_postgres_database_url(os.environ.get("DATABASE_URL")) and bool(
+        os.environ.get("AUDIT_DB_COSIGN_KEY")
+    )
+
+
+def _get_cosign_executor() -> ThreadPoolExecutor:
+    """Return the bounded DB co-sign executor.
+
+    Audit-chain append must stay on the request path, but DB co-signing can be
+    written asynchronously. A bounded worker count prevents one thread per
+    request during bursts.
+    """
+    global _cosign_executor
+    with _cosign_executor_lock:
+        if _cosign_executor is None:
+            workers = max(1, int(os.environ.get("AUDIT_DB_COSIGN_WORKERS", "1")))
+            _cosign_executor = ThreadPoolExecutor(
+                max_workers=workers,
+                thread_name_prefix="audit-db-cosign",
+            )
+        return _cosign_executor
 
 
 def verify_chain_continuity(stored_key_hash: str) -> bool:
@@ -286,13 +318,19 @@ class ImmutableAuditLog:
             logger.error("Audit lock timeout exceeded — could not append event %s", event.event_id)
             raise
 
-        def _cosign_fire_and_forget():
-            from src.audit.db_cosign import cosign_event as _cosign
-            _cosign(*cosign_args)
+        if should_db_cosign():
+            def _cosign_fire_and_forget():
+                from src.audit.db_cosign import cosign_event as _cosign
+                _cosign(*cosign_args)
 
-        threading.Thread(target=_cosign_fire_and_forget, daemon=True).start()
+            _get_cosign_executor().submit(_cosign_fire_and_forget)
 
-        logger.info(f"Audit event {event.event_id} appended, chain: {new_hash[:16]}..., user_bind: {per_user_hash[:8]}...")
+        logger.debug(
+            "Audit event %s appended, chain=%s..., user_bind=%s...",
+            event.event_id,
+            new_hash[:16],
+            per_user_hash[:8],
+        )
         return new_hash
 
     def rotate_key(self, old_key: str, new_key: str) -> str:
