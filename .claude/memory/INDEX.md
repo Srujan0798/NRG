@@ -16,7 +16,10 @@
 - **User**: NRG architect/founder at IIT Gandhinagar, manages coding agents
 - **Current focus**: Production hardening — auth, Docker, e2e tests, deployment docs
 - **Quality Bar**: See [.claude/quality-bar.md](../quality-bar.md)
-- **Production rule**: See [.claude/rules/production-only.md](../rules/production-only.md)
+- **Production rule**: See [.claude/rules/production_only.md](../rules/production_only.md)
+- **Closure wave**: See [docs/specs/CLOSURE_PLAN_2026-04-26.md](../../docs/specs/CLOSURE_PLAN_2026-04-26.md)
+- **Commercial sprint**: See [docs/business/COMMERCIAL_SPRINT_2026-04-26.md](../../docs/business/COMMERCIAL_SPRINT_2026-04-26.md)
+- **Durable directives**: See [MEMORY.md](MEMORY.md)
 
 ## Per-Session Checklist
 
@@ -29,5 +32,6 @@
 
 | File | Purpose |
 |------|---------|
+| [MEMORY.md](MEMORY.md) | Founder directives that must survive handoff |
 | [user_profile.md](user_profile.md) | Founder profile and preferences |
 | [sprint_retrospective.md](sprint_retrospective.md) | Last sprint summary |

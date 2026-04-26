@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Seed deterministic demo data for the four NRG killer queries.
+"""Seed deterministic release data for the four NRG killer queries.
 
 The committed fixture is intentionally small, readable, and deterministic. The
-SQLite seeding path writes demo_* tables so rehearsal checks can validate row
-counts without mutating production-shaped tables unless an operator explicitly
-uses this script against a chosen database.
+SQLite seeding path writes release check tables so acceptance checks can
+validate row counts without mutating production-shaped tables unless an
+operator explicitly uses this script against a chosen database.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ DEFAULT_DATABASE = REPO_ROOT / "nrg_research.db"
 
 
 def load_seed_data(path: Path | str = DEFAULT_FIXTURE) -> dict[str, Any]:
-    """Load the deterministic demo fixture."""
+    """Load the deterministic release fixture."""
     fixture_path = Path(path)
     with fixture_path.open("r", encoding="utf-8") as handle:
         return json.load(handle)
@@ -61,7 +61,7 @@ def build_killer_query_results(data: dict[str, Any] | None = None) -> dict[str, 
             source["iit_ai_ml_comparison"],
             key=lambda row: (row["year"], row["institution"]),
         ),
-        "demo_graph": source["demo_graph"],
+        "release_graph": source["release_graph"],
     }
 
 
@@ -75,23 +75,23 @@ def _connect(db_path: Path | str) -> sqlite3.Connection:
 
 
 def seed_sqlite(db_path: Path | str = DEFAULT_DATABASE, fixture_path: Path | str = DEFAULT_FIXTURE) -> dict[str, int]:
-    """Create and populate demo_* tables from the deterministic fixture."""
+    """Create and populate release_* tables from the deterministic fixture."""
     data = load_seed_data(fixture_path)
     conn = _connect(db_path)
     try:
-        _create_demo_tables(conn)
-        _clear_demo_tables(conn)
-        _insert_demo_rows(conn, data)
+        _create_release_tables(conn)
+        _clear_release_tables(conn)
+        _insert_release_rows(conn, data)
         conn.commit()
-        return _demo_table_counts(conn)
+        return _release_table_counts(conn)
     finally:
         conn.close()
 
 
-def _create_demo_tables(conn: sqlite3.Connection) -> None:
+def _create_release_tables(conn: sqlite3.Connection) -> None:
     conn.executescript(
         """
-        CREATE TABLE IF NOT EXISTS demo_funding_agencies (
+        CREATE TABLE IF NOT EXISTS release_funding_agencies (
             agency TEXT PRIMARY KEY,
             amount_inr_crore REAL NOT NULL,
             distinct_institutes INTEGER NOT NULL,
@@ -100,7 +100,7 @@ def _create_demo_tables(conn: sqlite3.Connection) -> None:
             focus TEXT NOT NULL
         );
 
-        CREATE TABLE IF NOT EXISTS demo_trl_progression (
+        CREATE TABLE IF NOT EXISTS release_trl_progression (
             institution TEXT NOT NULL,
             state TEXT NOT NULL,
             project TEXT NOT NULL,
@@ -113,7 +113,7 @@ def _create_demo_tables(conn: sqlite3.Connection) -> None:
             PRIMARY KEY (institution, project, transition_year, trl)
         );
 
-        CREATE TABLE IF NOT EXISTS demo_solar_seed_patents (
+        CREATE TABLE IF NOT EXISTS release_solar_seed_patents (
             researcher TEXT PRIMARY KEY,
             institution TEXT NOT NULL,
             state TEXT NOT NULL,
@@ -124,7 +124,7 @@ def _create_demo_tables(conn: sqlite3.Connection) -> None:
             core_patent TEXT NOT NULL
         );
 
-        CREATE TABLE IF NOT EXISTS demo_iit_ai_ml_comparison (
+        CREATE TABLE IF NOT EXISTS release_iit_ai_ml_comparison (
             year INTEGER NOT NULL,
             institution TEXT NOT NULL,
             grant_amount_inr_crore REAL NOT NULL,
@@ -134,13 +134,13 @@ def _create_demo_tables(conn: sqlite3.Connection) -> None:
             PRIMARY KEY (year, institution)
         );
 
-        CREATE TABLE IF NOT EXISTS demo_graph_nodes (
+        CREATE TABLE IF NOT EXISTS release_graph_nodes (
             id TEXT PRIMARY KEY,
             label TEXT NOT NULL,
             type TEXT NOT NULL
         );
 
-        CREATE TABLE IF NOT EXISTS demo_graph_edges (
+        CREATE TABLE IF NOT EXISTS release_graph_edges (
             source TEXT NOT NULL,
             target TEXT NOT NULL,
             weight REAL NOT NULL,
@@ -151,22 +151,22 @@ def _create_demo_tables(conn: sqlite3.Connection) -> None:
     )
 
 
-def _clear_demo_tables(conn: sqlite3.Connection) -> None:
+def _clear_release_tables(conn: sqlite3.Connection) -> None:
     for table in (
-        "demo_funding_agencies",
-        "demo_trl_progression",
-        "demo_solar_seed_patents",
-        "demo_iit_ai_ml_comparison",
-        "demo_graph_edges",
-        "demo_graph_nodes",
+        "release_funding_agencies",
+        "release_trl_progression",
+        "release_solar_seed_patents",
+        "release_iit_ai_ml_comparison",
+        "release_graph_edges",
+        "release_graph_nodes",
     ):
         conn.execute(f"DELETE FROM {table}")
 
 
-def _insert_demo_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
+def _insert_release_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
     conn.executemany(
         """
-        INSERT INTO demo_funding_agencies
+        INSERT INTO release_funding_agencies
         (agency, amount_inr_crore, distinct_institutes, projects, lead_institute, focus)
         VALUES (:agency, :amount_inr_crore, :distinct_institutes, :projects, :lead_institute, :focus)
         """,
@@ -191,7 +191,7 @@ def _insert_demo_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
             )
     conn.executemany(
         """
-        INSERT INTO demo_trl_progression
+        INSERT INTO release_trl_progression
         (institution, state, project, domain, transition_year, trl, milestone, starting_trl, latest_trl)
         VALUES
         (:institution, :state, :project, :domain, :transition_year, :trl, :milestone, :starting_trl, :latest_trl)
@@ -201,7 +201,7 @@ def _insert_demo_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
 
     conn.executemany(
         """
-        INSERT INTO demo_solar_seed_patents
+        INSERT INTO release_solar_seed_patents
         (researcher, institution, state, seed_year, seed_funding_inr_lakh, patent_count, first_patent_months, core_patent)
         VALUES
         (:researcher, :institution, :state, :seed_year, :seed_funding_inr_lakh, :patent_count, :first_patent_months, :core_patent)
@@ -211,7 +211,7 @@ def _insert_demo_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
 
     conn.executemany(
         """
-        INSERT INTO demo_iit_ai_ml_comparison
+        INSERT INTO release_iit_ai_ml_comparison
         (year, institution, grant_amount_inr_crore, publications, patents, active_researchers)
         VALUES
         (:year, :institution, :grant_amount_inr_crore, :publications, :patents, :active_researchers)
@@ -220,24 +220,24 @@ def _insert_demo_rows(conn: sqlite3.Connection, data: dict[str, Any]) -> None:
     )
 
     conn.executemany(
-        "INSERT INTO demo_graph_nodes (id, label, type) VALUES (:id, :label, :type)",
-        data["demo_graph"]["nodes"],
+        "INSERT INTO release_graph_nodes (id, label, type) VALUES (:id, :label, :type)",
+        data["release_graph"]["nodes"],
     )
     conn.executemany(
-        "INSERT INTO demo_graph_edges (source, target, weight, relationship) VALUES (:source, :target, :weight, :relationship)",
-        data["demo_graph"]["edges"],
+        "INSERT INTO release_graph_edges (source, target, weight, relationship) VALUES (:source, :target, :weight, :relationship)",
+        data["release_graph"]["edges"],
     )
 
 
-def _demo_table_counts(conn: sqlite3.Connection) -> dict[str, int]:
+def _release_table_counts(conn: sqlite3.Connection) -> dict[str, int]:
     counts: dict[str, int] = {}
     for table in (
-        "demo_funding_agencies",
-        "demo_trl_progression",
-        "demo_solar_seed_patents",
-        "demo_iit_ai_ml_comparison",
-        "demo_graph_nodes",
-        "demo_graph_edges",
+        "release_funding_agencies",
+        "release_trl_progression",
+        "release_solar_seed_patents",
+        "release_iit_ai_ml_comparison",
+        "release_graph_nodes",
+        "release_graph_edges",
     ):
         counts[table] = int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
     return counts
@@ -249,7 +249,7 @@ def query_top_funding_agencies(db_path: Path | str = DEFAULT_DATABASE) -> list[d
         rows = conn.execute(
             """
             SELECT agency, amount_inr_crore, distinct_institutes, projects, lead_institute, focus
-            FROM demo_funding_agencies
+            FROM release_funding_agencies
             ORDER BY amount_inr_crore DESC
             LIMIT 5
             """
@@ -265,7 +265,7 @@ def query_trl_progression(db_path: Path | str = DEFAULT_DATABASE) -> list[dict[s
         rows = conn.execute(
             """
             SELECT institution, state, project, domain, transition_year, trl, milestone, starting_trl, latest_trl
-            FROM demo_trl_progression
+            FROM release_trl_progression
             ORDER BY institution, project, transition_year
             """
         ).fetchall()
@@ -307,7 +307,7 @@ def query_solar_seed_to_patents(db_path: Path | str = DEFAULT_DATABASE) -> dict[
             """
             SELECT researcher, institution, state, seed_year, seed_funding_inr_lakh,
                    patent_count, first_patent_months, core_patent
-            FROM demo_solar_seed_patents
+            FROM release_solar_seed_patents
             ORDER BY patent_count DESC, first_patent_months ASC, researcher ASC
             """
         ).fetchall()
@@ -330,7 +330,7 @@ def query_iit_b_vs_iit_m_ai_ml(db_path: Path | str = DEFAULT_DATABASE) -> list[d
         rows = conn.execute(
             """
             SELECT year, institution, grant_amount_inr_crore, publications, patents, active_researchers
-            FROM demo_iit_ai_ml_comparison
+            FROM release_iit_ai_ml_comparison
             ORDER BY year ASC, institution ASC
             """
         ).fetchall()
@@ -339,14 +339,14 @@ def query_iit_b_vs_iit_m_ai_ml(db_path: Path | str = DEFAULT_DATABASE) -> list[d
         conn.close()
 
 
-def query_demo_graph(db_path: Path | str = DEFAULT_DATABASE) -> dict[str, list[dict[str, Any]]]:
+def query_release_graph(db_path: Path | str = DEFAULT_DATABASE) -> dict[str, list[dict[str, Any]]]:
     conn = _connect(db_path)
     try:
         nodes = conn.execute(
-            "SELECT id, label, type FROM demo_graph_nodes ORDER BY type, label"
+            "SELECT id, label, type FROM release_graph_nodes ORDER BY type, label"
         ).fetchall()
         edges = conn.execute(
-            "SELECT source, target, weight, relationship FROM demo_graph_edges ORDER BY relationship, source, target"
+            "SELECT source, target, weight, relationship FROM release_graph_edges ORDER BY relationship, source, target"
         ).fetchall()
         return {
             "nodes": [dict(row) for row in nodes],
@@ -362,13 +362,13 @@ def build_sqlite_killer_query_results(db_path: Path | str = DEFAULT_DATABASE) ->
         "trl_progression": query_trl_progression(db_path),
         "solar_seed_to_patents": query_solar_seed_to_patents(db_path),
         "iit_b_vs_iit_m_ai_ml": query_iit_b_vs_iit_m_ai_ml(db_path),
-        "demo_graph": query_demo_graph(db_path),
+        "release_graph": query_release_graph(db_path),
     }
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Seed deterministic NRG demo data.")
-    parser.add_argument("--database", type=Path, default=None, help="SQLite database to seed with demo_* tables.")
+    parser = argparse.ArgumentParser(description="Seed deterministic NRG release data.")
+    parser.add_argument("--database", type=Path, default=None, help="SQLite database to seed with release_* tables.")
     parser.add_argument("--fixture", type=Path, default=DEFAULT_FIXTURE, help="Seed fixture JSON path.")
     parser.add_argument("--print-json", action="store_true", help="Print killer-query result sets as JSON.")
     args = parser.parse_args(argv)

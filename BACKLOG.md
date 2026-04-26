@@ -34,6 +34,45 @@ Cluster-only (post-launch, not session blockers): C4 1000-user locust, C5 vector
 
 ---
 
+## 2026-04-26 CLOSURE WAVE (#54..#62)
+
+Source of truth: `docs/specs/CLOSURE_PLAN_2026-04-26.md`. This section tracks the sealing wave that converts in-flight LB work into committed, evidenced production state.
+
+| Protocol | Scope | Status | Evidence / Seal |
+|---|---|---|---|
+| #54 | Vocabulary purge and production acceptance artifact cleanup | IN PROGRESS | `scripts/forbidden_vocab_check.sh`, `.github/workflows/ci.yml`, `docs/operations/PRODUCTION_ACCEPTANCE_RUN.md`, `scripts/seed_release_data.py` |
+| #55 | Working-tree sealing by LB owner slice | PENDING | commit hashes required for LB-1..LB-8 |
+| #56 | LB-1..LB-5 live evidence reproduction | PENDING | `evidence/2026-04-26/{09,10,11}_tier*_query_response.json`, `16_killer_queries_e2e_proof.md`, `17_red_team_results.md` |
+| #57 | LB-4 full test suite under 15 minutes | PENDING | `evidence/2026-04-26/test_suite_full_final.xml` |
+| #58 | LB-6 schema parity, hot indexes, RLS | PENDING | `tests/data/test_schema_parity.py`, `tests/data/test_rls_policies.py`, `evidence/2026-04-26/explain_index_usage.txt` |
+| #59 | LB-7 anomaly detector and confidence UI | PENDING | `tests/skills/test_result_anomaly_detector.py`, `tests/orchestration/test_silent_wrong_answer.py`, frontend confidence render |
+| #60 | LB-8 semantic layer and schema-RAG | PENDING | `tests/orchestration/test_join_graph_blindness.py`, `evidence/2026-04-26/schema_rag_token_payload_proof.txt` |
+| #61 | Launch-ready local seal | PENDING | `evidence/2026-04-26/NRG_PRODUCTION_AUDIT_2026-04-26.md`, signed tag `v1.0.0-launch-ready` |
+| #62 | Sovereign activation | CLUSTER-PENDING | cluster evidence folder, handover signatures, signed tag `v1.0.0-eternal` |
+
+Founder dependencies before #62: DNS, IIT-GN SSO contract, GPG key, Langfuse keys, sovereign cluster availability, final GO/NO-GO sign-off.
+
+---
+
+## 2026-04-26 COMMERCIAL READINESS SPRINT (C1..C8)
+
+Source of truth: `docs/business/COMMERCIAL_SPRINT_2026-04-26.md`. This runs in parallel with the engineering closure wave. It tracks the non-code blockers to an INR 50 lakh funding or contract path.
+
+| ID | Scope | Status | Evidence / Seal |
+|---|---|---|---|
+| C1 | Legal entity, GST, PAN, current account | PENDING | incorporation docs, GST/PAN proof, bank proof |
+| C2 | IITGN IP rights clarity | PENDING | signed rights letter or spin-off agreement draft |
+| C3 | External security and DPDP assurance | PENDING | auditor SOW, findings register, final letter |
+| C4 | First reference deployment | PENDING | reference note, user-acceptance transcript, environment identifier |
+| C5 | Eight-slide buyer narrative deck | PENDING | PDF deck and source file |
+| C6 | Pricing model | PENDING | three-package pricing memo and quote template |
+| C7 | Cap table and 12-month use-of-funds | PENDING | spreadsheet and CA-reviewed summary |
+| C8 | Warm introduction tracker | PENDING | tracker covering P1/P2/P3 routes with owner and next step |
+
+Default path priority: P1 IITGN-routed seed or spin-off support first; P2 grant route and P3 industry proof-of-contract in parallel as C1/C2 mature.
+
+---
+
 ## 2026-04-25 V4 Eternal Wrap — SEALED at `1562d694`
 
 Tag `v1.0.0-client-handover` re-pushed. Live API smoke test against running uvicorn passed:
