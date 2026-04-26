@@ -124,6 +124,57 @@ class TestSchemaRetrieverLoad:
         assert len(retriever._glossary) > 0
         assert "glossary" in retriever._glossary
 
+    def test_glossary_covers_at_least_30_ambiguous_terms(self):
+        from src.skills.text_to_sql.schema_retriever import SchemaRetriever
+
+        required_terms = {
+            "status",
+            "score",
+            "rank",
+            "level",
+            "type",
+            "output",
+            "capacity",
+            "intake",
+            "funding",
+            "researcher",
+            "institute",
+            "year",
+            "domain",
+            "stage",
+            "strength",
+            "project",
+            "approved",
+            "efficiency",
+            "publication",
+            "patent",
+            "startup",
+            "income",
+            "expense",
+            "cost",
+            "salary",
+            "collaboration",
+            "citation",
+            "enrollment",
+            "graduation",
+            "location",
+        }
+
+        with patch.dict(os.environ, {"EMBEDDER_DETERMINISTIC": "1"}):
+            retriever = SchemaRetriever()
+            retriever._embedder = MagicMock()
+            retriever._embed_all_tables = MagicMock()
+            retriever.load()
+
+        glossary_terms = {
+            item["term"]
+            for item in retriever._glossary["glossary"]
+            if item.get("category") == "ambiguous"
+        }
+
+        assert len(glossary_terms) >= 30
+        assert required_terms <= glossary_terms
+
     def test_double_load_is_noop(self):
         from src.skills.text_to_sql.schema_retriever import SchemaRetriever
 

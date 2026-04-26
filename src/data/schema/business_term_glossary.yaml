@@ -1,0 +1,719 @@
+# NRG Business Term Glossary — Ambiguous Term → Schema Column Mapping
+# Source: docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md + killer_queries.yaml analysis
+# Covers: 30+ ambiguous terms mapped to their schema columns
+# Built: 2026-04-26
+
+version: "1.0"
+description: |
+  Maps ambiguous business terms to precise schema columns.
+  Used by: schema_retriever (planner phase) + LLM prompt builder.
+  When user query contains an ambiguous term, planner MUST disambiguate
+  using context OR emit low_clarify (ask user to specify).
+
+# ─────────────────────────────────────────────────────────────────
+# AMBIGUOUS TERMS — Multiple Schema Meanings
+# ─────────────────────────────────────────────────────────────────
+
+glossary:
+
+  # ── STATUS ──────────────────────────────────────────────────────
+  - term: status
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: grant_application_status
+        schema_path: innovation_grant_from_govt.gov_organisation_name
+        description: "Government organisation that gave the grant"
+        example_queries: ["grant status", "application approved", "funds sanctioned"]
+        hint: "If query mentions 'grant' or 'funding' → use this"
+
+      - meaning: trl_stage
+        schema_path: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+        description: "Technology Readiness Level 1-9"
+        example_queries: ["TRL status", "stage of development", "technology maturity"]
+        hint: "If query mentions 'Level 4' or 'Market Ready' → use this"
+
+      - meaning: review_phase
+        schema_path: advance_search_data.review_phase
+        description: "Peer review phase of a publication"
+        example_queries: ["review status", "publication under review"]
+        hint: "If query mentions 'publication' or 'paper' → use this"
+
+      - meaning: patent_status
+        schema_path: combined_ipo_patent_data.status
+        description: "Status of patent application (Filed, Granted, etc.)"
+        example_queries: ["patent granted", "application status", "IPR status"]
+        hint: "If query mentions 'patent' or 'IPO' → use this"
+
+      - meaning: active_funding_stage
+        schema_path: innovation_grant_from_govt.year_of_receiving
+        description: "Year grant was received (proxy for active funding window)"
+        example_queries: ["active funding", "current grants", "recent grants"]
+        hint: "If query mentions 'active' + 'grant' → use year_of_receiving"
+
+  # ── SCORE ─────────────────────────────────────────────────────
+  - term: score
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: total_credit_score
+        schema_path: academic_courses_details.total_credit_score
+        description: "Course credit value (TEXT format 'integer:integer')"
+        parse_method: SPLIT_PART(total_credit_score, ':', 1)
+        example_queries: ["credit score", "course credits", "curriculum depth"]
+        hint: "If query mentions 'course' or 'curriculum' → use this"
+
+      - meaning: nirf_total_score
+        schema_path: nirf_extracted_table.total_score
+        description: "NIRF overall ranking score"
+        example_queries: ["NIRF score", "ranking score", "institute ranking"]
+        hint: "If query mentions 'NIRF' or 'rank' → use this"
+
+      - meaning: performance_score
+        schema_path: faculty_strength.sanctioned
+        description: "Sanctioned faculty positions (proxy for institutional performance)"
+        example_queries: ["faculty score", "institutional performance"]
+        hint: "If query mentions 'faculty' + 'performance' → use this"
+
+      - meaning: citation_count
+        schema_path: advance_search_data.total_citations
+        description: "Total citations for a publication (TEXT, may contain 'N/A')"
+        parse_method: CASE WHEN total_citations ~ '^[0-9]+$' THEN total_citations::int ELSE NULL END
+        example_queries: ["citation count", "h-index", "impact metric"]
+        hint: "If query mentions 'citation' → use this"
+
+  # ── RANKING / RANK ────────────────────────────────────────────
+  - term: rank
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: nirf_rank
+        schema_path: nirf_extracted_table.nirf_rank
+        description: "NIRF ranking position (1, 2, 3, ...)"
+        example_queries: ["NIRF rank", "top ranked institute", "India ranking"]
+        hint: "If query mentions 'NIRF' → use this"
+
+      - meaning: nirf_rank_row
+        schema_path: nirf_table_row.row_number
+        description: "Row number within NIRF scorecard table"
+        example_queries: ["NIRF row", "scorecard row"]
+        hint: "Only for NIRF scorecard traversal"
+
+  # ── LEVEL ────────────────────────────────────────────────────
+  - term: level
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: trl_level
+        schema_path: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+        description: "Technology Readiness Level (Level 1-9)"
+        example_queries: ["TRL level", "technology level", "Level 4 to Level 9"]
+        hint: "If query mentions 'TRL' or technology readiness → use this"
+
+      - meaning: course_level
+        schema_path: academic_courses_details.level_of_course
+        description: "UG/PG/PhD course level"
+        example_queries: ["course level", "undergraduate", "postgraduate"]
+        hint: "If query mentions 'course' or 'program' level → use this"
+
+      - meaning: intake_level
+        schema_path: sanctioned_intake.level_of_course
+        description: "Program level (sanctioned intake)"
+        example_queries: ["intake level", "seat availability"]
+        hint: "If query mentions 'intake' or 'seats' → use this"
+
+  # ── TYPE ────────────────────────────────────────────────────
+  - term: type
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: course_type
+        schema_path: academic_courses_details.type_of_course
+        description: "Type of academic course"
+        example_queries: ["course type", "elective vs core"]
+        hint: "If query mentions 'course' → use this"
+
+      - meaning: institute_type
+        schema_path: tb_institute_mstr.institute_type
+        description: "IIT/NIT/IIIT/Government/Private"
+        example_queries: ["institute type", "IIT vs NIT", "government institute"]
+        hint: "If query mentions 'type of institute' → use this"
+
+      - meaning: program_type
+        schema_path: tb_course_program_types.program_type
+        description: "B.Tech/M.Sc/PhD etc."
+        example_queries: ["program type", "degree type"]
+        hint: "If query mentions 'program' or 'degree' → use this"
+
+  # ── OUTPUT / OUTPUTS ─────────────────────────────────────────
+  - term: output
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: publications_output
+        schema_path: advance_search_data.total_citations
+        description: "Research publication output (proxy: citations)"
+        example_queries: ["research output", "publication output", "academic output"]
+        hint: "If query mentions 'output' + 'publication' → use this"
+
+      - meaning: patent_output
+        schema_path: patents_details.patents_granted
+        description: "Granted patents count"
+        example_queries: ["patent output", "IP output", "innovation output"]
+        hint: "If query mentions 'patent' → use this"
+
+      - meaning: phd_output
+        schema_path: phd_students.phd_students_graduated
+        description: "PhD students graduated"
+        example_queries: ["PhD output", "doctoral output", "researcher pipeline"]
+        hint: "If query mentions 'PhD' or 'doctoral' → use this"
+
+  # ── CAPACITY ─────────────────────────────────────────────────
+  - term: capacity
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: intake_capacity
+        schema_path: sanctioned_intake.sanctioned_intake
+        description: "Sanctioned student intake (number of seats)"
+        example_queries: ["intake capacity", "seat count", "admission capacity"]
+        hint: "If query mentions 'intake' or 'seats' → use this"
+
+      - meaning: faculty_capacity
+        schema_path: faculty_strength.sanctioned
+        description: "Sanctioned faculty positions"
+        example_queries: ["faculty capacity", "professor positions"]
+        hint: "If query mentions 'faculty' + 'positions' → use this"
+
+      - meaning: gpu_capacity
+        schema_path: package_data.gpu_hours_allocated
+        description: "AIRAWAT GPU compute hours allocated"
+        example_queries: ["GPU capacity", "compute allocation", "AIRAWAT hours"]
+        hint: "If query mentions 'GPU' or 'AIRAWAT' or 'compute' → use this"
+
+  # ── INTAKE ───────────────────────────────────────────────────
+  - term: intake
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: sanctioned_intake
+        schema_path: sanctioned_intake.sanctioned_intake
+        description: "Approved number of seats for a program"
+        example_queries: ["sanctioned intake", "approved seats"]
+        hint: "Always use with institute + program + year"
+
+      - meaning: actual_intake
+        schema_path: actual_student_strength.actual_student
+        description: "Actual number of students enrolled"
+        example_queries: ["actual enrollment", "students enrolled"]
+        hint: "Compare with sanctioned_intake to find vacancy"
+
+  # ── FUNDING / GRANT / INVESTMENT ─────────────────────────────
+  - term: funding
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: government_grant
+        schema_path: innovation_grant_from_govt.grant_received
+        description: "Government grant amount (₹)"
+        example_queries: ["government grant", "govt funding", "ANRF grant"]
+        hint: "If query mentions 'grant' or 'government' → use this"
+
+      - meaning: fdi_investment
+        schema_path: fdi_investment.amount_received
+        description: "Foreign Direct Investment amount"
+        example_queries: ["FDI", "foreign investment", "investment amount"]
+        hint: "If query mentions 'FDI' or 'foreign' → use this"
+
+      - meaning: seed_investment
+        schema_path: seed_funding.amount
+        description: "Seed funding for startups (₹)"
+        example_queries: ["seed funding", "startup investment", "angel investment"]
+        hint: "If query mentions 'seed' or 'startup' → use this"
+
+      - meaning: industry_funding
+        schema_path: research_consultancy_details_sponsered.total_amount
+        description: "Industry-sponsored research consultancy amount"
+        example_queries: ["industry funding", "consultancy income", "corporate research"]
+        hint: "If query mentions 'industry' + 'research' → use this"
+
+  # ── RESEARCHER / SCIENTIST ─────────────────────────────────
+  - term: researcher
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: author_researcher
+        schema_path: advance_search_data.authors
+        description: "Publication author(s) — free text field"
+        example_queries: ["researcher", "author", "who published"]
+        hint: "Contains names; may have affiliation embedded"
+
+      - meaning: faculty_researcher
+        schema_path: faculty_details.faculty_name
+        description: "Named faculty member"
+        example_queries: ["faculty member", "professor", "named researcher"]
+        hint: "If query asks for a specific person → use this"
+
+      - meaning: student_researcher
+        schema_path: phd_students.phd_scholar_name
+        description: "PhD student name"
+        example_queries: ["PhD student", "doctoral scholar"]
+        hint: "If query mentions 'PhD' + 'student' → use this"
+
+  # ── INSTITUTE / INSTITUTION / ORGANISATION ───────────────────
+  - term: institute
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: institute_master
+        schema_path: tb_institute_mstr.institute_name
+        description: "Full institute name"
+        normalization: UPPER(TRIM(institute_name))
+        example_queries: ["institute", "IIT", "university"]
+
+      - meaning: gov_organisation
+        schema_path: innovation_grant_from_govt.gov_organisation_name
+        description: "Government funding organization (DST, DBT, etc.)"
+        example_queries: ["funding agency", "government body", "DST"]
+        hint: "If query mentions 'organisation' that 'gives grant' → use gov_organisation_name"
+
+  # ── YEAR / PERIOD / TENURE ───────────────────────────────────
+  - term: year
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: financial_year
+        schema_path: academic_courses_details.financial_year
+        description: "Academic financial year (e.g., '2022-23')"
+        example_queries: ["FY", "financial year", "academic year 2022-23"]
+        hint: "Standard for courses, grants, patents"
+
+      - meaning: calendar_year
+        schema_path: advance_search_data.year
+        description: "Calendar year of publication"
+        example_queries: ["published in 2023", "calendar year"]
+        hint: "For publication data"
+
+      - meaning: academic_year
+        schema_path: actual_student_strength.academic_year
+        description: "Academic session year"
+        example_queries: ["academic year", "session"]
+        hint: "For student enrollment data"
+
+  # ── DOMAIN / AREA / FIELD ─────────────────────────────────
+  - term: domain
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: research_area
+        schema_path: advance_search_data.area_ofResearch
+        description: "Research area/subject"
+        example_queries: ["research domain", "subject area", "field of study"]
+        hint: "For publication/institution data"
+
+      - meaning: sector
+        schema_path: fdi_investment.sector
+        description: "Industry sector for FDI"
+        example_queries: ["sector", "industry sector", "domain"]
+        hint: "For FDI/investment data"
+
+  # ── STAGE / PHASE / MILESTONE ───────────────────────────────
+  - term: stage
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: trl_stage
+        schema_path: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+        description: "Technology Readiness Level 1-9"
+        example_queries: ["TRL stage", "development stage", "Level 4"]
+        hint: "For innovation/technology data"
+
+      - meaning: course_stage
+        schema_path: academic_courses_details.level_of_course
+        description: "UG/PG/PhD level"
+        example_queries: ["course stage", "program level"]
+        hint: "For academic course data"
+
+  # ── STRENGTH / COUNT / NUMBER ───────────────────────────────
+  - term: strength
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: faculty_strength
+        schema_path: faculty_strength.sanctioned
+        description: "Number of faculty positions (sanctioned)"
+        example_queries: ["faculty strength", "faculty count"]
+        hint: "If query mentions 'faculty' + 'number' → use this"
+
+      - meaning: student_strength
+        schema_path: actual_student_strength.actual_student
+        description: "Number of students enrolled"
+        example_queries: ["student strength", "enrollment count"]
+        hint: "If query mentions 'student' + 'number' → use this"
+
+  # ── PROJECT / WORK / INITIATIVE ──────────────────────────────
+  - term: project
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: innovation_project
+        schema_path: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+        description: "Innovation/research project tracked by TRL"
+        example_queries: ["innovation project", "research initiative"]
+        hint: "When TRL stage mentioned → use this"
+
+      - meaning: consultancy_project
+        schema_path: research_consultancy_details_consultancy.project_title
+        description: "Industry consultancy project"
+        example_queries: ["consultancy project", "industry collaboration"]
+        hint: "When industry + consultancy mentioned → use this"
+
+  # ── APPROVAL / SANCTION / GRANTED ────────────────────────────
+  - term: approved
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: grant_approved
+        schema_path: innovation_grant_from_govt.grant_received
+        description: "Grant amount received (proxy for approved)"
+        example_queries: ["grant approved", "funds sanctioned"]
+        hint: "If query mentions 'grant' → grant_received"
+
+      - meaning: patent_granted
+        schema_path: patents_details.patents_granted
+        description: "Number of patents granted"
+        example_queries: ["patent approved", "IP granted"]
+        hint: "If query mentions 'patent' → patents_granted"
+
+      - meaning: intake_sanctioned
+        schema_path: sanctioned_intake.sanctioned_intake
+        description: "Seats sanctioned for program"
+        example_queries: ["seats approved", "intake sanctioned"]
+        hint: "If query mentions 'seats' or 'intake' → sanctioned_intake"
+
+  # ── EFFICIENCY / PERFORMANCE / PRODUCTIVITY ───────────────
+  - term: efficiency
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: grant_patent_efficiency
+        formula: "SUM(patents_granted) / SUM(grant_received)"
+        description: "Patents per rupee of grant"
+        example_queries: ["grant efficiency", "patent efficiency", "R&D productivity"]
+        hint: "Requires join of patents_details + innovation_grant_from_govt"
+
+      - meaning: faculty_productivity
+        formula: "SUM(publications) / COUNT(faculty)"
+        description: "Publications per faculty"
+        example_queries: ["faculty productivity", "researcher output"]
+        hint: "Requires join of advance_search_data + faculty_details"
+
+  # ── PUBLICATION / PAPER / ARTICLE ───────────────────────────
+  - term: publication
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: publication_record
+        schema_path: advance_search_data.title
+        description: "Publication or paper title"
+        example_queries: ["publication title", "papers by institute", "articles"]
+        hint: "If query asks for research papers or authored work → use advance_search_data"
+
+      - meaning: patent_publication
+        schema_path: combined_ipo_patent_data.publication_number
+        description: "Patent publication number"
+        example_queries: ["patent publication", "published patent"]
+        hint: "If query mentions patent + publication → use combined_ipo_patent_data"
+
+  # ── PATENT / IPR / INVENTION ────────────────────────────────
+  - term: patent
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: aggregate_patent_count
+        schema_path: patents_details.patents_granted
+        description: "Institution-level granted patent count"
+        example_queries: ["patents granted by institute", "patent output"]
+        hint: "For annual institute-level patent counts → use patents_details"
+
+      - meaning: ipo_patent_record
+        schema_path: combined_ipo_patent_data.patent_number
+        description: "Individual IPO patent record"
+        example_queries: ["patent applicants", "granted patent title", "patent status"]
+        hint: "For applicants, status, dates, or titles → use combined_ipo_patent_data"
+
+  # ── STARTUP / INCUBATION / COMPANY ──────────────────────────
+  - term: startup
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: incubated_startup
+        schema_path: incubation_details.startup_name
+        description: "Startup incubated by an institute"
+        example_queries: ["startups incubated", "incubation pipeline"]
+        hint: "For incubated-company counts → use incubation_details"
+
+      - meaning: funded_startup
+        schema_path: seed_funding.startup_name
+        description: "Startup receiving seed funding"
+        example_queries: ["seed-funded startups", "startup grants"]
+        hint: "For startup funding → use seed_funding"
+
+      - meaning: turnover_startup
+        schema_path: startups_turnover_50_lacs.startup_name
+        description: "Startup with reported company turnover"
+        example_queries: ["startup turnover", "companies above 50 lacs"]
+        hint: "For revenue output → use startups_turnover_50_lacs"
+
+  # ── INCOME / REVENUE / TURNOVER ─────────────────────────────
+  - term: income
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: consultancy_income
+        schema_path: research_consultancy_details_consultancy.amount_recieved_consultancy_projects
+        description: "Income from consultancy projects"
+        example_queries: ["consultancy income", "industry income"]
+        hint: "If query mentions consultancy → use consultancy table"
+
+      - meaning: sponsored_research_income
+        schema_path: research_consultancy_details_sponsered.amount_recieved_sponsered_research
+        description: "Income from sponsored research projects"
+        example_queries: ["sponsored research income", "research funding income"]
+        hint: "If query mentions sponsored research → use sponsored research table"
+
+      - meaning: startup_turnover
+        schema_path: startups_turnover_50_lacs.company_turnover
+        description: "Company turnover reported for startup output"
+        example_queries: ["startup revenue", "company turnover"]
+        hint: "If query mentions startup revenue or turnover → use startups_turnover_50_lacs"
+
+  # ── EXPENSE / SPEND / OUTLAY ────────────────────────────────
+  - term: expense
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: operational_expense
+        schema_path: financial_expenses_operational.salaries
+        formula: "salaries + maintenance + seminars"
+        description: "Operational expense across salaries, maintenance, and seminars"
+        example_queries: ["operational expense", "annual operating spend"]
+        hint: "Use all three operational columns for total operating expense"
+
+      - meaning: capital_expense
+        schema_path: financial_expenses_capital.library
+        description: "Capital expenditure line item"
+        example_queries: ["capital expense", "library spend", "equipment spend"]
+        hint: "If query says capital spend → use financial_expenses_capital"
+
+  # ── COST / UNIT ECONOMICS ───────────────────────────────────
+  - term: cost
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: cost_per_patent
+        formula: "SUM(innovation_grant_from_govt.grant_received) / NULLIF(COUNT(combined_ipo_patent_data.patent_number), 0)"
+        description: "Grant rupees per granted patent"
+        example_queries: ["cost per patent", "grant efficiency"]
+        hint: "Join grants to combined_ipo_patent_data.applicants and filter status='Granted'"
+
+      - meaning: operating_cost
+        formula: "financial_expenses_operational.salaries + financial_expenses_operational.maintenance + financial_expenses_operational.seminars"
+        description: "Operational cost proxy"
+        example_queries: ["low operational cost", "operating expenditure"]
+        hint: "Use operational expense formula, not grant amount"
+
+  # ── SALARY / COMPENSATION ───────────────────────────────────
+  - term: salary
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: operational_salary_expense
+        schema_path: financial_expenses_operational.salaries
+        description: "Total salary expense line item"
+        example_queries: ["salary expense", "staff salaries"]
+        hint: "For institutional operating spend → use financial_expenses_operational"
+
+      - meaning: placement_salary
+        schema_path: placements_and_higher_studies.median_salary_per_annum
+        description: "Median placement salary for graduates"
+        example_queries: ["median salary", "placement salary"]
+        hint: "For student outcomes → use placements_and_higher_studies"
+
+  # ── COLLABORATION / NETWORK ─────────────────────────────────
+  - term: collaboration
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: publication_collaboration
+        schema_path: advance_search_data.collaboration
+        description: "Publication collaboration metadata"
+        example_queries: ["collaboration network", "co-authorship"]
+        hint: "For research collaboration → use advance_search_data.collaboration"
+
+      - meaning: consultancy_client_collaboration
+        schema_path: research_consultancy_details_consultancy.client_organisations
+        description: "Client organisation count for consultancy work"
+        example_queries: ["industry collaboration", "client organisations"]
+        hint: "For industry-client relationships → use consultancy table"
+
+  # ── CITATION / IMPACT ───────────────────────────────────────
+  - term: citation
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: total_citation_count
+        schema_path: advance_search_data.total_citations
+        description: "Total citation count, stored as text"
+        parse_method: "CASE WHEN total_citations ~ '^[0-9]+$' THEN total_citations::int ELSE NULL END"
+        example_queries: ["citation count", "most cited papers"]
+        hint: "Guard text casts with regex before numeric aggregation"
+
+      - meaning: recent_citation_count
+        schema_path: advance_search_data.recent_citations
+        description: "Recent citation count, stored as text"
+        example_queries: ["recent citations", "latest citation impact"]
+        hint: "Use for recent impact, not lifetime impact"
+
+  # ── ENROLLMENT / ADMISSION ──────────────────────────────────
+  - term: enrollment
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: actual_enrollment
+        schema_path: actual_student_strength.total_students
+        description: "Actual enrolled student count"
+        example_queries: ["actual enrollment", "students enrolled"]
+        hint: "For actual student counts → use actual_student_strength"
+
+      - meaning: sanctioned_seats
+        schema_path: sanctioned_intake.seats
+        description: "Approved seat count"
+        example_queries: ["approved enrollment", "available seats"]
+        hint: "For approved capacity → use sanctioned_intake"
+
+  # ── GRADUATION / OUTCOME ────────────────────────────────────
+  - term: graduation
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: program_graduation
+        schema_path: placements_and_higher_studies.graduated_students
+        description: "Graduated students for a program"
+        example_queries: ["graduates", "graduation count"]
+        hint: "For program output → use placements_and_higher_studies"
+
+      - meaning: phd_graduation
+        schema_path: phd_students.phd_students_graduated
+        description: "PhD students graduated"
+        example_queries: ["PhD graduates", "doctoral graduation"]
+        hint: "For doctoral output → use phd_students"
+
+  # ── LOCATION / GEOGRAPHY ────────────────────────────────────
+  - term: location
+    category: ambiguous
+    disambiguation_required: true
+    meanings:
+
+      - meaning: institute_state
+        schema_path: tb_institute_mstr.state
+        description: "State where an institute is located"
+        example_queries: ["by state", "state-wise institutes"]
+        hint: "For geography grouped by state → use tb_institute_mstr.state"
+
+      - meaning: institute_city
+        schema_path: tb_institute_mstr.city
+        description: "City where an institute is located"
+        example_queries: ["by city", "city-wise institutes"]
+        hint: "For geography grouped by city → use tb_institute_mstr.city"
+
+# ─────────────────────────────────────────────────────────────────
+# UNAMBIGUOUS TERMS — Direct mappings (no disambiguation needed)
+# ─────────────────────────────────────────────────────────────────
+
+unambiguous_terms:
+
+  institute_name: tb_institute_mstr.institute_name
+  state: tb_institute_mstr.state
+  city: tb_institute_mstr.city
+  established_year: tb_institute_mstr.established_year
+  grant_received: innovation_grant_from_govt.grant_received
+  year_of_receiving: innovation_grant_from_receiving.year_of_receiving
+  patents_granted: patents_details.patents_granted
+  patents_published: patents_details.patents_published
+  financial_year: academic_courses_details.financial_year
+  total_credit_score: academic_courses_details.total_credit_score
+  authors: advance_search_data.authors
+  total_citations: advance_search_data.total_citations
+  nirf_rank: nirf_extracted_table.nirf_rank
+  sanctioned_intake: sanctioned_intake.sanctioned_intake
+  actual_student: actual_student_strength.actual_student
+  phd_students_graduated: phd_students.phd_students_graduated
+  stage_of_technology: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+  grant_amount: innovations_at_various_stages_of_technology_readiness_level.grant_amount
+  gpu_hours_allocated: package_data.gpu_hours_allocated
+  total_amount: research_consultancy_details_sponsered.total_amount
+  turnover: startups_turnover_50_lacs.turnover
+  amount_received: fdi_investment.amount_received
+  seed_amount: seed_funding.amount
+
+# ─────────────────────────────────────────────────────────────────
+# DOMAIN-SPECIFIC VOCABULARY
+# Maps natural language phrases to schema columns
+# ─────────────────────────────────────────────────────────────────
+
+phrase_mappings:
+
+  "highest innovation credits":
+    - column: academic_courses_details.total_credit_score
+      aggregation: SUM
+      parse: SPLIT_PART(total_credit_score, ':', 1)
+
+  "lab validation":
+    - column: innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+      filter: "stage_of_technology = 'Level 4'"
+
+  "market ready":
+    - column: innovations_at_various_states_of_technology_readiness_level.stage_of_technology
+      filter: "stage_of_technology = 'Level 9'"
+
+  "trending up":
+    - column: (computed YoY delta)
+      method: LAG() window function
+
+  "cut grants":
+    - column: innovation_grant_from_govt.grant_received
+      comparison: "grant_received < LAG(grant_received) OVER (PARTITION BY institute)"
+
+  "national average":
+    - column: (computed scalar)
+      method: AVG() OVER () as national_avg
