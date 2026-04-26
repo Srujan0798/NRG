@@ -35,6 +35,7 @@ The latest synthesis prompt repeats useful launch discipline, but it also contai
 | Product acceptance cache prewarm | Closed locally with a production-named utility and tests | `scripts/prewarm_release_cache.py`, `tests/scripts/test_prewarm_release_cache.py` |
 | Production-path Hall of Shame | Closed locally with all seven Dhairya patterns in the validator ledger | `src/data/schema/failed_queries/HALL_OF_SHAME.md`, `tests/data/test_failed_queries_hall_of_shame.py` |
 | Real-user UX acceptance protocol | Merged into a production UX acceptance report; live browser recording and device evidence remain required before handover | `docs/audits/ui_ux_2026-04-27/PRODUCTION_UX_ACCEPTANCE_REPORT.md`, `evidence/2026-04-27/final_validation/ux_acceptance_protocol_merge.md` |
+| Principal v4.1 forced-completion protocol | Local GAP-A/B/C verification rerun and recorded; live-stack and cluster-bound gates remain explicit | `evidence/2026-04-27/final_validation/principal_v41_forced_completion_status.md`, `principal_v41_gap_abc_tests.log`, `principal_v41_dhairya_benchmark.log` |
 
 ## Real-User UX Acceptance Addendum - 2026-04-27
 
@@ -47,6 +48,18 @@ The latest real-user UX protocol is now merged as a production acceptance artifa
 | Browser noise and failed requests | `docs/audits/frontend_hardening_2026-04-27/console-summary.txt` | Previous captured run shows zero console errors, page errors, request failures, and HTTP 4xx/5xx |
 | Placeholder and native-alert hygiene | Static source scan recorded in `ux_acceptance_protocol_merge.md` | No production frontend source matches for the checked placeholder or native-alert patterns |
 | Full live walkthrough, mobile, Lighthouse, and Tier 3 API proof | Closure protocols #56 and #61 | Still requires a running stack on a machine with Docker daemon access |
+
+## Principal v4.1 Forced-Completion Addendum - 2026-04-27
+
+The latest Principal v4.1 protocol is merged as a verification pass over existing launch blockers, not as a new task track. Local GAP-A/B/C have current-head proof; remaining live-evidence items stay bound to #56 and #61/#62.
+
+| Protocol demand | Durable home | Current repo truth |
+|---|---|---|
+| Fix GAP-A DB co-sign | `src/audit/db_cosign.py`; audit trigger migrations; `tests/audit/test_db_cosign.py`; `tests/security/test_per_user_audit_binding.py` | Current-head focused run passed as part of 62-test GAP-A/B/C suite |
+| Fix GAP-B 60-second vector drift scheduler | `scripts/vector_drift_scheduler.py`; scheduler tests | Current-head focused run passed; dry-run reports 60-second interval and `/api/reindex` |
+| Fix GAP-C Text-to-SQL failure ledger | `src/data/schema/failed_queries/HALL_OF_SHAME.md`; ledger tests | Current-head focused run passed; seven patterns counted |
+| Preserve Dhairya regression | `tests/benchmarks/test_dhairya_regression.py` | Current-head run: 43 passed |
+| Produce live API, red-team, load, and SQL plan evidence | #56, #58, #61, #62 | Still requires a running API, PostgreSQL, and intended load environment |
 
 ## Gap Matrix
 

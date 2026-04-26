@@ -1,0 +1,11 @@
+
+============================================================
+NRG QUALITY BAR SCORECARD
+============================================================
+
+  Running C1 (DPDP-Compliant Indian PII Detection)... PASS (10/10 passed, 100.0%)
+  Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (29/29 passed, 100.0%)
+  Running C3 (Multi-Hop Intent Decomposition (DAG Planner))... PASS (28/28 passed, 100.0%)
+  Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))...
+
+LOCAL RUN INTERRUPTED: C4 launched a 1000-user Locust run against http://127.0.0.1:8000 while no live API stack was available in this workstation session. The process was stopped instead of treating a blocked load run as a completed scorecard. Existing full-suite and focused evidence remain valid; C4 still requires a running stack or sovereign cluster load run.

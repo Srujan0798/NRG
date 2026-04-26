@@ -102,6 +102,20 @@ The latest product-reality UX protocol is merged into the existing production ac
 
 Execution rule: if this UX protocol is pasted again, point to the production UX acceptance report and continue with live walkthrough evidence capture instead of creating another report.
 
+## Principal v4.1 Forced-Completion Addendum - 2026-04-27
+
+The latest Principal v4.1 forced-completion paste is merged as a current-head verification pass. It does not supersede the closure plan or create a parallel evidence package.
+
+| Added emphasis | Durable home | Current status |
+|---|---|---|
+| GAP-A, GAP-B, and GAP-C must be fixed locally before anything else | `src/audit/db_cosign.py`; `scripts/vector_drift_scheduler.py`; `src/data/schema/failed_queries/HALL_OF_SHAME.md` | Current-head verification passed: 62 focused tests |
+| Dhairya regression must be rerun after verification work | `tests/benchmarks/test_dhairya_regression.py` | Current-head run passed: 43/43 |
+| Quality Bar claims must not be accepted if C4 runs against a missing API | `evidence/2026-04-27/final_validation/principal_v41_quality_bar_scorecard.log` | C1-C3 passed; C4 stopped and remains live-stack evidence |
+| Red-team dry-run is not live proof | `scripts/red_team_live_replay.py`; closure #56 | Dry-run rendered 60 payloads; live replay still required |
+| Schema claims in pasted protocols must be corrected against `db_struct.sql` | `evidence/2026-04-27/final_validation/principal_v41_forced_completion_status.md` | Corrected long-table length and composite-key claims |
+
+Execution rule: if this Principal v4.1 protocol is pasted again, point to `principal_v41_forced_completion_status.md` and continue with live-stack evidence capture for the still-open gates.
+
 ## Final Ultimate Synthesis Addendum - 2026-04-27
 
 The later "final ultimate synthesis" paste is merged here as a reconciliation update, not as a new parallel protocol. Its durable content is the same rule already enforced by the active workflow: no claim is complete without current-head evidence from the right environment.
