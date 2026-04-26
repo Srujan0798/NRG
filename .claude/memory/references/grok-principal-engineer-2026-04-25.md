@@ -31,6 +31,19 @@ The later Claude Principal Engineer review on 2026-04-25 maps to the same execut
 | Dashboard scale and visible trust signals must not rely on tiny seed counts | `.claude/memory/patterns/dashboard-decoupled-metadata.md`; LB-3 seed-scale evidence | Covered; must be rechecked after frontend changes |
 | Runtime tier filtering and live red-team replay remain mandatory before local seal | LB-1 and LB-5; closure protocol #56 | Still open until regenerated against current HEAD |
 
+## Product Auditor Funding-Readiness Addendum
+
+The later Product Auditor review emphasized funding-readiness, data-sovereignty proof, browser-path stability, and scale evidence. It maps to existing execution homes and does not create a new task track.
+
+| Added emphasis | Durable home | Status |
+|---|---|---|
+| The Dhairya 41 percent baseline remains the external starting point; a team-written regression suite is insufficient without live generalization evidence | `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`; LB-2, LB-7, LB-8; `tests/benchmarks/killer_queries.yaml` | Covered; current-head live evidence still required |
+| TRL term handling, exact schema naming, aggregation logic, join validity, and no-result behavior are user-trust risks | LB-2, LB-3, LB-7, LB-8; `tests/benchmarks/killer_queries.yaml`; `tests/orchestration/test_join_graph_blindness.py` | Covered by corpus and semantic-retrieval work; must be rerun against current stack |
+| PII masking, RBAC response shaping, egress control, WORM logs, and tamper-proof audit trails must be demonstrated, not asserted | LB-1, LB-5; protocols #39, #46, #50; `.claude/memory/patterns/db-layer-defence.md`; `.claude/memory/patterns/network-policy-worm-logs.md` | Covered; live API and cluster evidence still required |
+| Browser-path risks include slow dashboard render, blank zero-result state, raw error exposure, and unsupported answers | Frontend M5a work; `.claude/rules/ux/protocol.md`; LB-3 evidence; `frontend/tests/` | Covered; needs fresh browser evidence after frontend changes |
+| Scale roadmap requires composite indexes, partitioning, materialized views, load evidence, Helm, and disaster-recovery proof | LB-6; C4/C5 cluster gates; `.claude/memory/patterns/partitioning-pitr.md`; `infrastructure/helm/nrg/`; `infrastructure/sovereign/disaster_recovery.sh` | Covered; cluster-bound proof still required |
+| Three strategic Product Auditor queries on TRL conversion by state, academic-origin patent growth, and three-party collaboration | `tests/benchmarks/killer_queries.yaml` `KILLER-10..12` | Already in canonical corpus |
+
 ## Verification Performed During Merge
 
 - `tests/benchmarks/test_text_to_sql_prompt_hardening.py` passed on 2026-04-26.
@@ -39,7 +52,7 @@ The later Claude Principal Engineer review on 2026-04-25 maps to the same execut
 
 ## Execution Rule
 
-If either same-day Principal Engineer review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
+If any same-day Principal Engineer or Product Auditor review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
 
 1. #56 for LB-1, LB-2, LB-3, and LB-5 live evidence.
 2. #57 for LB-4 full-suite seal.
