@@ -13,15 +13,20 @@ def test_dev_profile_starts_all_dev_dependencies():
     # Core services should be available (with or without profiles)
     for svc in ["postgres", "qdrant", "redis", "api", "frontend"]:
         assert svc in services, f"Service {svc} missing from compose"
-    # Postgres and kong remain profile-gated
-    assert "profiles" in services["postgres"]
+    # Kong remains profile-gated for local development.
     assert "profiles" in services["kong"]
+
+
+def test_default_compose_up_includes_postgres_dependency():
+    services = _compose()["services"]
+
+    assert "profiles" not in services["postgres"]
 
 
 def test_prod_profile_starts_postgres_dependency():
     services = _compose()["services"]
 
-    assert "prod" in services["postgres"]["profiles"]
+    assert "profiles" not in services["postgres"]
 
 
 def test_api_container_uses_service_hostnames_for_dependencies():

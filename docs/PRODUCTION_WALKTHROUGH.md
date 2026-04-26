@@ -20,7 +20,7 @@ This guide provides a step-by-step walkthrough of the NRG system for production 
 
 ```bash
 # Start all services
-docker compose --profile prod up -d
+docker compose up -d
 
 # Verify services are healthy
 docker compose ps

@@ -82,6 +82,7 @@ Additional 2026-04-27 evidence:
 | `docs/audits/frontend_hardening_2026-04-27/before/` | Before screenshots for login and all authenticated support screens on desktop and mobile. |
 | `docs/audits/frontend_hardening_2026-04-27/after/` | After screenshots for login and all authenticated support screens on desktop and mobile. |
 | `docs/audits/frontend_hardening_2026-04-27/videos/` | Production walkthrough recording captured from the local hardened running stack. |
+| `evidence/2026-04-27/final_validation/FINAL_PRODUCTION_REVALIDATION.md` | Final local revalidation summary, one-command compose fix, test evidence, and honest Docker-daemon limitation. |
 
 ## Local Operator Quick Start
 

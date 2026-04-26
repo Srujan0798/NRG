@@ -30,3 +30,7 @@ NRG is a production web application for IIT Gandhinagar and Government of India 
 ## 2026-04-26 Grok Principal Engineer Merge
 
 36 - [Principal Engineer Audit Merge](references/grok-principal-engineer-2026-04-25.md) - mapped the 2026-04-25 Grok, Claude, Product Auditor, Kimi/Moonshot, and MiniMax findings into existing LB rows, Text-to-SQL prompt hardening, vector-drift and cluster-bound gates, and the canonical query corpus; no duplicate protocols created.
+
+## 2026-04-27 Compose One-Command Contract
+
+37 - [Compose One-Command Contract](feedback_compose_one_command.md) - plain `docker compose up -d` must include the core data services required by the API; optional profiles may not hide Postgres from the default handover path.

@@ -7,7 +7,7 @@
 | Category | What | Count |
 |----------|------|-------|
 | [bugs/](bugs/INDEX.md) | Known bugs, root causes, permanent fixes | 7 |
-| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 15 |
+| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 16 |
 | [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 9 |
 | [projects/](projects/INDEX.md) | Multi-session project trackers | 2 |
 
@@ -35,3 +35,4 @@
 | [MEMORY.md](MEMORY.md) | Founder directives that must survive handoff |
 | [user_profile.md](user_profile.md) | Founder profile and preferences |
 | [sprint_retrospective.md](sprint_retrospective.md) | Last sprint summary |
+| [feedback_compose_one_command.md](feedback_compose_one_command.md) | Plain Compose startup must include core data services |
