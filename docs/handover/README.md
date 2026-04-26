@@ -63,6 +63,16 @@ Additional 2026-04-27 evidence:
 | `critical_query_regression.log` | Dhairya adversarial suite plus API critical-query tests completed: 78 passed in 4.84s. |
 | `cost_per_patent_10cr_results.csv` | Local reference data returns valid cost-per-granted-patent rows for institutes above the ₹10Cr grant threshold. |
 | `critical_query_cost_per_patent.md` | Engineering note for the cost-per-granted-patent production-query hardening. |
+| `PRODUCTION_WEB_APP_STATUS.md` | Full authenticated web application support screens, role-aware navigation, screenshot/video evidence, and remaining external blockers. |
+| `researchers_schema_drift_regression.log` | Regression coverage for `/researchers` schema drift when deployed tables lack newer ORM columns. |
+| `researchers_endpoint_schema_drift_live.txt` | Live Tier 1 `/researchers` request returns HTTP 200 after the schema-drift fix. |
+| `tier3_researchers_pii_guard_live.txt` | Live Tier 3 `/researchers` request returns anonymized aggregates rather than individual records. |
+| `tier3_researchers_pii_guard_assertion.log` | Automated assertion that the Tier 3 `/researchers` response contains no email, phone, name, or `@` token. |
+| `docs/audits/frontend_production_app_2026-04-27/frontend-tests.log` | Frontend Jest suite completed: 19 suites passed, 71 tests passed. |
+| `docs/audits/frontend_production_app_2026-04-27/frontend-build.log` | Vite production build completed successfully. |
+| `docs/audits/frontend_production_app_2026-04-27/frontend-lint.log` | ESLint completed with no warnings. |
+| `docs/audits/frontend_production_app_2026-04-27/screenshots/` | Desktop and mobile captures for login, publications, researchers, reports, industry, and settings. |
+| `docs/audits/frontend_production_app_2026-04-27/videos/` | Production walkthrough recordings captured from the local running stack. |
 
 ## Local Operator Quick Start
 

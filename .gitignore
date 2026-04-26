@@ -43,7 +43,7 @@ frontend/playwright-report/
 *.swp
 *.swo
 
-data/
+/data/
 *.db
 *.sqlite3
 *.csv

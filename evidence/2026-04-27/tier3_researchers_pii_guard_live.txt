@@ -1,0 +1,5 @@
+# Tier 3 researcher PII guard live evidence
+captured_at=2026-04-26T22:42:04Z
+request=GET /researchers?limit=3 as Tier 3
+{"role":"industry","persona":"industry","tier":3,"scope":"anonymized","results":{"total_researchers":3,"state_distribution":{"Maharashtra":1,"Tamil Nadu":1,"Delhi":1},"research_area_distribution":{"Artificial Intelligence":1,"Renewable Energy":1,"Hydrogen Fuel Cells":1},"note":"Individual records anonymized per policy"}}
+http_status=200
