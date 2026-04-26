@@ -21,7 +21,7 @@
 | **Business** | startup-financial-modeling · startup-metrics-framework · better-auth-security-best-practices |
 | **Docs** | documentation |
 
-**Canonical skills** (in `.claude/skills/`, use when assigned): pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
+**Canonical skills** (in `.claude/skills/`, use when assigned): external-prompt-merge · pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
 
 ---
 

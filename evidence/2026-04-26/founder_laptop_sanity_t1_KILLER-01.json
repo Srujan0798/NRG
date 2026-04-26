@@ -1,13 +1,13 @@
 {
-  "captured_at": "2026-04-26T13:18:29.956588+00:00",
-  "elapsed_ms": 1453,
+  "captured_at": "2026-04-26T14:36:15.328501+00:00",
+  "elapsed_ms": 2864,
   "evidence_subset": {
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "2fd711b53623ed56ce2594e2329f4fea9a5d4e479746d080ff5aba6978ce8bba",
+    "audit_event_id": "30c64053262bbf2edc9221da3c5d4d9fdd7963eb84e4eac1e033f0f6b3be5ecb",
     "citation_count": 1,
-    "query_id": "60a3a443-27bd-4847-b89e-998d7722a0e9",
-    "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+    "query_id": "27abdc41-5f6e-46b0-8049-91ceb8d48f57",
+    "sql_query": "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
     "sql_result_count": 10,
     "sql_results": [
       {
@@ -51,12 +51,12 @@
   "query": "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?",
   "query_id": "KILLER-01",
   "response": {
-    "_elapsed_ms": 1453,
+    "_elapsed_ms": 2864,
     "_http_status": 200,
     "_query_id_expected": "KILLER-01",
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "2fd711b53623ed56ce2594e2329f4fea9a5d4e479746d080ff5aba6978ce8bba",
+    "audit_event_id": "30c64053262bbf2edc9221da3c5d4d9fdd7963eb84e4eac1e033f0f6b3be5ecb",
     "citation_validity": 1.0,
     "citations": [
       {
@@ -70,7 +70,7 @@
       }
     ],
     "conversation_history": [],
-    "execution_time_ms": {},
+    "execution_time_ms": 2782,
     "intent": "structured",
     "provenance": {
       "cloud_synthesis_used": false,
@@ -78,27 +78,18 @@
       "synth": "rule_based",
       "verifier": "row_count_and_citation"
     },
-    "query_id": "60a3a443-27bd-4847-b89e-998d7722a0e9",
+    "query_id": "27abdc41-5f6e-46b0-8049-91ceb8d48f57",
     "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\n| institute | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- |\n| IIT Bombay | 8000.0 | 4900.0 | 3100.0 |\n| IIT Gandhinagar | 5001.0 | 4900.0 | 101.0 |\n| IIT Ropar | 5001.0 | 4900.0 | 101.0 |\n| IIT Kharagpur | 5000.0 | 4900.0 | 100.0 |\n| IIT Roorkee | 4999.0 | 4900.0 | 99.0 |",
     "retrieval_sources": [
       "structured"
     ],
     "routing_decision": "text_to_sql",
     "session_id": "founder-laptop-t1-KILLER-01",
-    "sql_anomaly_report": {
-      "answer_confidence": "high",
-      "clarification_question": null,
-      "confidence_score": 0.95,
-      "corrective_hints": [],
-      "detected": false,
-      "needs_clarification": false,
-      "signal_names": [],
-      "signals": []
-    },
+    "sql_anomaly_report": {},
     "sql_queries": [
-      "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10"
+      "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        "
     ],
-    "sql_query": "WITH parsed AS (SELECT institute, SUM(CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION) + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10",
+    "sql_query": "\n        WITH parsed AS (\n            SELECT\n                institute,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details\n            WHERE financial_year = '2022-23'\n            GROUP BY institute\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
     "sql_results": [
       {
         "above_national_average": 3100.0,

@@ -3,14 +3,14 @@ export function isEmptyResultResponse(response: string): boolean {
   if (!normalized) return true
 
   return [
-    '0 rows',
-    'zero rows',
-    'no rows',
-    'no result',
-    'no matches',
-    '0 result',
-    'empty result',
-  ].some((needle) => normalized.includes(needle))
+    /\b0\s+rows?\b/,
+    /\bzero\s+rows?\b/,
+    /\bno\s+rows?\b/,
+    /\bno\s+results?\b/,
+    /\bno\s+matches?\b/,
+    /\b0\s+results?\b/,
+    /\bempty\s+results?\b/,
+  ].some((pattern) => pattern.test(normalized))
 }
 
 export function buildRelaxedQuery(query: string): string {

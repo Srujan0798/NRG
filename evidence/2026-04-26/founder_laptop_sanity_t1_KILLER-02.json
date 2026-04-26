@@ -1,13 +1,13 @@
 {
-  "captured_at": "2026-04-26T13:18:31.438770+00:00",
-  "elapsed_ms": 552,
+  "captured_at": "2026-04-26T14:36:17.325100+00:00",
+  "elapsed_ms": 1137,
   "evidence_subset": {
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "ddc7eb587a57f1d5c7041b6cbe2bc46a8aeabf0a906fa24d10a86dfe61fd97b6",
+    "audit_event_id": "85cfa7bbcb3c10221d89092f4fd6fe7b5033dd45814dae42dddad163a9afd612",
     "citation_count": 1,
-    "query_id": "73570709-7ff9-4b04-973e-8fb41964ed7d",
-    "sql_query": "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+    "query_id": "b5772560-762e-432b-a6f5-783de34b2eea",
+    "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
     "sql_result_count": 10,
     "sql_results": [
       {
@@ -51,12 +51,12 @@
   "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
   "query_id": "KILLER-02",
   "response": {
-    "_elapsed_ms": 552,
+    "_elapsed_ms": 1137,
     "_http_status": 200,
     "_query_id_expected": "KILLER-02",
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "ddc7eb587a57f1d5c7041b6cbe2bc46a8aeabf0a906fa24d10a86dfe61fd97b6",
+    "audit_event_id": "85cfa7bbcb3c10221d89092f4fd6fe7b5033dd45814dae42dddad163a9afd612",
     "citation_validity": 1.0,
     "citations": [
       {
@@ -70,7 +70,7 @@
       }
     ],
     "conversation_history": [],
-    "execution_time_ms": {},
+    "execution_time_ms": 864,
     "intent": "structured",
     "provenance": {
       "cloud_synthesis_used": false,
@@ -78,27 +78,18 @@
       "synth": "rule_based",
       "verifier": "row_count_and_citation"
     },
-    "query_id": "73570709-7ff9-4b04-973e-8fb41964ed7d",
+    "query_id": "b5772560-762e-432b-a6f5-783de34b2eea",
     "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2024-25 | Level 4 | 2500 | 83.33 |\n| 2024-25 | Level 9 | 500 | 16.67 |\n| 2023-24 | Level 4 | 2500 | 83.33 |\n| 2023-24 | Level 9 | 500 | 16.67 |\n| 2022-23 | Level 4 | 2500 | 83.33 |",
     "retrieval_sources": [
       "structured"
     ],
     "routing_decision": "text_to_sql",
     "session_id": "founder-laptop-t1-KILLER-02",
-    "sql_anomaly_report": {
-      "answer_confidence": "high",
-      "clarification_question": null,
-      "confidence_score": 0.95,
-      "corrective_hints": [],
-      "detected": false,
-      "needs_clarification": false,
-      "signal_names": [],
-      "signals": []
-    },
+    "sql_anomaly_report": {},
     "sql_queries": [
-      "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20"
+      "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        "
     ],
-    "sql_query": "WITH stage_counts AS (SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') GROUP BY financial_year, stage_of_technology), yearly_totals AS (SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+    "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
     "sql_results": [
       {
         "financial_year": "2024-25",

@@ -66,6 +66,10 @@ export default defineConfig({
         changeOrigin: true,
         ws: true
       },
+      '/api/telemetry': {
+        target: apiProxyTarget,
+        changeOrigin: true
+      },
       '/me/': {
         target: apiProxyTarget,
         changeOrigin: true

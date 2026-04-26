@@ -1,12 +1,12 @@
 {
-  "captured_at": "2026-04-26T13:18:30.882829+00:00",
-  "elapsed_ms": 466,
+  "captured_at": "2026-04-26T14:36:16.184765+00:00",
+  "elapsed_ms": 356,
   "evidence_subset": {
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "e99d03aafb0187197d687a4bd1f339bf06fada04d339f85c751ad7007b9233a3",
+    "audit_event_id": "91c1f431a7edaab16db81a6122a28a9a621a2f8f85912e7f44839c87abdca8e7",
     "citation_count": 1,
-    "query_id": "2b8f30f6-a0e8-4c09-8ab9-00dee2b9e215",
+    "query_id": "435e6df0-80c8-4178-9415-feeb538f8290",
     "sql_query": null,
     "sql_result_count": 10,
     "sql_results": [
@@ -64,12 +64,12 @@
   "query": "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?",
   "query_id": "KILLER-01",
   "response": {
-    "_elapsed_ms": 466,
+    "_elapsed_ms": 356,
     "_http_status": 200,
     "_query_id_expected": "KILLER-01",
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "e99d03aafb0187197d687a4bd1f339bf06fada04d339f85c751ad7007b9233a3",
+    "audit_event_id": "91c1f431a7edaab16db81a6122a28a9a621a2f8f85912e7f44839c87abdca8e7",
     "citation_validity": 1.0,
     "citations": [
       {
@@ -83,7 +83,7 @@
       }
     ],
     "conversation_history": [],
-    "execution_time_ms": {},
+    "execution_time_ms": 257,
     "intent": "structured",
     "provenance": {
       "cloud_synthesis_used": false,
@@ -91,21 +91,12 @@
       "synth": "rule_based",
       "verifier": "row_count_and_citation"
     },
-    "query_id": "2b8f30f6-a0e8-4c09-8ab9-00dee2b9e215",
+    "query_id": "435e6df0-80c8-4178-9415-feeb538f8290",
     "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | IIT Bombay | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 2 | IIT Gandhinagar | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 3 | IIT Ropar | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 4 | IIT Kharagpur | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 5 | IIT Roorkee | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |",
     "retrieval_sources": [],
     "routing_decision": "text_to_sql",
     "session_id": "founder-laptop-t3-KILLER-01",
-    "sql_anomaly_report": {
-      "answer_confidence": "high",
-      "clarification_question": null,
-      "confidence_score": 0.95,
-      "corrective_hints": [],
-      "detected": false,
-      "needs_clarification": false,
-      "signal_names": [],
-      "signals": []
-    },
+    "sql_anomaly_report": {},
     "sql_queries": [],
     "sql_query": null,
     "sql_results": [

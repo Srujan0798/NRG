@@ -5,41 +5,41 @@
     "tier_shape_gate": true
   },
   "api_base": "http://127.0.0.1:8000",
-  "captured_at": "2026-04-26T13:18:28.222055+00:00",
+  "captured_at": "2026-04-26T14:36:11.907967+00:00",
   "failures": [],
   "latencies_ms": [
-    1453,
-    453,
-    466,
-    552,
-    1473,
-    1269,
-    1514,
-    1080,
-    1032
+    2864,
+    491,
+    356,
+    1137,
+    347,
+    282,
+    1002,
+    473,
+    626
   ],
   "logins": {
     "t1": {
-      "elapsed_ms": 137,
+      "elapsed_ms": 279,
       "status": 200
     },
     "t2": {
-      "elapsed_ms": 29,
+      "elapsed_ms": 164,
       "status": 200
     },
     "t3": {
-      "elapsed_ms": 112,
+      "elapsed_ms": 99,
       "status": 200
     }
   },
-  "max_ms": 1514,
-  "p95_ms": 1497,
+  "max_ms": 2864,
+  "p95_ms": 2173,
   "queries": {
     "KILLER-01": {
       "t1": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1453,
+        "elapsed_ms": 2864,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t1_KILLER-01.json",
         "fields": [
           "above_national_average",
@@ -53,7 +53,7 @@
       "t2": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 453,
+        "elapsed_ms": 491,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t2_KILLER-01.json",
         "fields": [
           "above_national_average",
@@ -67,7 +67,7 @@
       "t3": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 466,
+        "elapsed_ms": 356,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t3_KILLER-01.json",
         "fields": [
           "access_scope",
@@ -85,7 +85,7 @@
       "t1": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 552,
+        "elapsed_ms": 1137,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t1_KILLER-02.json",
         "fields": [
           "financial_year",
@@ -99,7 +99,7 @@
       "t2": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1473,
+        "elapsed_ms": 347,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t2_KILLER-02.json",
         "fields": [
           "financial_year",
@@ -113,7 +113,7 @@
       "t3": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1269,
+        "elapsed_ms": 282,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t3_KILLER-02.json",
         "fields": [
           "access_scope",
@@ -131,7 +131,7 @@
       "t1": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1514,
+        "elapsed_ms": 1002,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t1_KILLER-03.json",
         "fields": [
           "grant_drop_pct",
@@ -146,7 +146,7 @@
       "t2": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1080,
+        "elapsed_ms": 473,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t2_KILLER-03.json",
         "fields": [
           "grant_drop_pct",
@@ -161,7 +161,7 @@
       "t3": {
         "answer_confidence": "high",
         "citations": 1,
-        "elapsed_ms": 1032,
+        "elapsed_ms": 626,
         "evidence": "evidence/2026-04-26/founder_laptop_sanity_t3_KILLER-03.json",
         "fields": [
           "access_scope",
