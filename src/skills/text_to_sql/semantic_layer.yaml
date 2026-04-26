@@ -512,6 +512,38 @@ safe_views:
       - alias: grant_amount
         actual: grant_amount
         description: "Grant amount for projects at this stage"
+  trl_stages:
+    actual_table: innovations_at_various_stages_of_technology_readiness_level
+    description: "Short production-safe TRL view; prefer this for direct stage queries"
+    columns:
+      - alias: institute
+        actual: institute
+        description: "Institute name"
+      - alias: financial_year
+        actual: financial_year
+        description: "Financial year"
+      - alias: stage_of_technology
+        actual: stage_of_technology
+        description: "TRL stage (Level 1-9)"
+      - alias: tech_readiness_stage
+        actual: stage_of_technology
+        description: "TRL stage alias for readable SQL"
+  tech_trl_stages:
+    actual_table: innovations_at_various_stages_of_technology_readiness_level
+    description: "Semantic alias used by schema retrieval for TRL progression queries"
+    columns:
+      - alias: institute
+        actual: institute
+        description: "Institute name"
+      - alias: financial_year
+        actual: financial_year
+        description: "Financial year"
+      - alias: stage_of_technology
+        actual: stage_of_technology
+        description: "TRL stage (Level 1-9)"
+      - alias: tech_readiness_stage
+        actual: stage_of_technology
+        description: "TRL stage alias for readable SQL"
 
 # ─────────────────────────────────────────────────────────────────
 # JUNCTION TABLE REGISTRY

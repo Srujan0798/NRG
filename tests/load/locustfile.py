@@ -11,32 +11,62 @@ P99 assertion (run after):
 """
 
 from locust import HttpUser, task, between, events
+import os
 import random
-import json
-import statistics
-import re
 
 P99_THRESHOLD_MS = 500
 SUCCESS_RATE_THRESHOLD = 0.95
 _query_durations_ms: list[float] = []
 
 
-class ResearcherUser(HttpUser):
-    """Tier 1 — Researcher persona. Full access, institution details."""
-    wait_time = between(1, 4)
-    weight = 6
+class AuthenticatedNRGUser(HttpUser):
+    abstract = True
+    username_env = ""
+    password_env = ""
+    default_username = ""
+    default_password = ""
 
     def on_start(self):
+        username = os.environ.get(self.username_env, self.default_username)
+        password = os.environ.get(self.password_env, self.default_password)
         response = self.client.post("/auth/login", json={
-            "username": "researcher_user",
-            "password": "researcher-pass"
+            "username": username,
+            "password": password,
         })
         if response.status_code == 200:
             data = response.json()
             self.token = data.get("access_token") or data.get("token")
             self.headers = {"Authorization": f"Bearer {self.token}"}
+            self.client.headers.update(self.headers)
         else:
             self.headers = {}
+            if self.environment.runner:
+                self.environment.runner.quit()
+
+    def _do_query(self, query_text: str):
+        with self.client.post(
+            "/query",
+            headers=self.headers,
+            json={"query": query_text, "session_id": "load-test"},
+            catch_response=True,
+            name="/query",
+        ) as resp:
+            if resp.duration and resp.duration > 0:
+                _query_durations_ms.append(resp.duration * 1000)
+            if resp.status_code in (200, 429):
+                resp.success()
+            else:
+                resp.failure(f"Status {resp.status_code}")
+
+
+class ResearcherUser(AuthenticatedNRGUser):
+    """Tier 1 — Researcher persona. Full access, institution details."""
+    wait_time = between(1, 4)
+    weight = 6
+    username_env = "LOAD_TEST_RESEARCHER_USER"
+    password_env = "LOAD_TEST_RESEARCHER_PASS"
+    default_username = "researcher_user"
+    default_password = "researcher-pass"
 
     @task(10)
     def query_researchers(self):
@@ -78,41 +108,15 @@ class ResearcherUser(HttpUser):
         """Health endpoint."""
         self.client.get("/health/all", headers=self.headers, name="/health/all")
 
-    def _do_query(self, query_text: str):
-        start = _time_ms()
-        with self.client.post(
-            "/api/query/stream",
-            headers=self.headers,
-            json={"query": query_text, "session_id": "load-test"},
-            catch_response=True,
-            name="/api/query/stream",
-        ) as resp:
-            if resp.duration and resp.duration > 0:
-                _query_durations_ms.append(resp.duration * 1000)
-            if resp.status_code == 200:
-                resp.success()
-            elif resp.status_code == 429:
-                resp.success()
-            else:
-                resp.failure(f"Status {resp.status_code}")
 
-
-class GovernmentUser(HttpUser):
+class GovernmentUser(AuthenticatedNRGUser):
     """Tier 2 — Government persona. Aggregated stats, policy view."""
     wait_time = between(2, 8)
     weight = 2
-
-    def on_start(self):
-        response = self.client.post("/auth/login", json={
-            "username": "gov_user",
-            "password": "government-pass"
-        })
-        if response.status_code == 200:
-            data = response.json()
-            self.token = data.get("access_token") or data.get("token")
-            self.headers = {"Authorization": f"Bearer {self.token}"}
-        else:
-            self.headers = {}
+    username_env = "LOAD_TEST_GOV_USER"
+    password_env = "LOAD_TEST_GOV_PASS"
+    default_username = "gov_user"
+    default_password = "government-pass"
 
     @task(8)
     def aggregate_stats(self):
@@ -140,39 +144,15 @@ class GovernmentUser(HttpUser):
     def health_check(self):
         self.client.get("/health/all", headers=self.headers, name="/health/all")
 
-    def _do_query(self, query_text: str):
-        start = _time_ms()
-        with self.client.post(
-            "/api/query/stream",
-            headers=self.headers,
-            json={"query": query_text, "session_id": "load-test"},
-            catch_response=True,
-            name="/api/query/stream",
-        ) as resp:
-            if resp.duration and resp.duration > 0:
-                _query_durations_ms.append(resp.duration * 1000)
-            if resp.status_code in (200, 429):
-                resp.success()
-            else:
-                resp.failure(f"Status {resp.status_code}")
 
-
-class IndustryUser(HttpUser):
+class IndustryUser(AuthenticatedNRGUser):
     """Tier 3 — Industry persona. Limited, anonymized data."""
     wait_time = between(3, 12)
     weight = 1
-
-    def on_start(self):
-        response = self.client.post("/auth/login", json={
-            "username": "industry_user",
-            "password": "industry-pass"
-        })
-        if response.status_code == 200:
-            data = response.json()
-            self.token = data.get("access_token") or data.get("token")
-            self.headers = {"Authorization": f"Bearer {self.token}"}
-        else:
-            self.headers = {}
+    username_env = "LOAD_TEST_INDUSTRY_USER"
+    password_env = "LOAD_TEST_INDUSTRY_PASS"
+    default_username = "industry_user"
+    default_password = "industry-pass"
 
     @task(6)
     def partnership_query(self):
@@ -197,27 +177,6 @@ class IndustryUser(HttpUser):
     @task(1)
     def health_check(self):
         self.client.get("/health/all", headers=self.headers, name="/health/all")
-
-    def _do_query(self, query_text: str):
-        start = _time_ms()
-        with self.client.post(
-            "/api/query/stream",
-            headers=self.headers,
-            json={"query": query_text, "session_id": "load-test"},
-            catch_response=True,
-            name="/api/query/stream",
-        ) as resp:
-            if resp.duration and resp.duration > 0:
-                _query_durations_ms.append(resp.duration * 1000)
-            if resp.status_code in (200, 429):
-                resp.success()
-            else:
-                resp.failure(f"Status {resp.status_code}")
-
-
-def _time_ms() -> float:
-    import time
-    return time.time() * 1000
 
 
 @events.test_stop.add_listener
