@@ -6,6 +6,7 @@ import { toStringArray } from '../../types/api'
 import { X, Copy, FileText, Database, GitMerge, Shield } from 'lucide-react'
 import { t } from '../../i18n'
 import { emitTelemetry } from '../../lib/telemetry'
+import HmacProof from '../HmacProof/HmacProof'
 
 interface CitationDrawerProps {
   citation: Citation | null
@@ -65,7 +66,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
 }) => {
   const [loading, setLoading] = useState(false)
   const [details, setDetails] = useState<any>(null)
-  const [activeSection, setActiveSection] = useState<'source' | 'metadata' | 'context'>('source')
+  const [activeSection, setActiveSection] = useState<'source' | 'metadata' | 'context' | 'proof'>('source')
   const [copied, setCopied] = useState(false)
 
   const parseCiteToken = (id: string): { pubId: string; chunkId: string } | null => {
@@ -154,6 +155,15 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
     }
   }, [citation, isOpen, fetchCitationDetails])
 
+  useEffect(() => {
+    if (!isOpen) return undefined
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isOpen, onClose])
+
   const handleCopy = async () => {
     if (!details) return
     const text = `${details.title}. ${details.authors.join(', ')} (${details.year}). ${details.journal}.`
@@ -161,6 +171,8 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
+
+  const auditEventId = citation?.audit_event_id || citation?.id || details?.pub_id || 'hmac-release-001'
 
   return (
     <>
@@ -225,12 +237,15 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                 </div>
 
                 <RelevanceBadge score={citation?.relevance_score} />
+                <HmacProof auditEventId={auditEventId} />
 
                 <div className="flex gap-1 border-b border-nrg-border">
-                  {(['source', 'metadata', 'context'] as const).map((tab) => (
+                  {(['source', 'metadata', 'context', 'proof'] as const).map((tab) => (
                     <motion.button
                       key={tab}
+                      type="button"
                       onClick={() => setActiveSection(tab)}
+                      data-testid={`citation-tab-${tab}`}
                       className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-all duration-200 ${
                         activeSection === tab
                           ? 'border-saffron-500 text-saffron-600 dark:text-saffron-400'
@@ -325,6 +340,15 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
                       <p className="text-xs text-saffron-600 dark:text-saffron-400 leading-relaxed">
                         {t("auto.components.CitationDrawer.CitationDrawer.12")}</p>
                     </div>
+                  </motion.div>
+                )}
+
+                {activeSection === 'proof' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    <HmacProof auditEventId={auditEventId} />
                   </motion.div>
                 )}
               </div>

@@ -64,6 +64,16 @@ export const emptyStateCopy = {
     body: 'No publication records match this view.',
     cta: 'Refresh publications',
   },
+  noGraph: {
+    headline: 'No graph edges found',
+    body: 'Try a broader topic so NRG can build a visible network.',
+    cta: 'Broaden topic',
+  },
+  noFilters: {
+    headline: 'No filters selected',
+    body: 'Choose at least one area, institution, or year range to continue.',
+    cta: 'Select filters',
+  },
 }
 
 export const errorCopy = {
@@ -74,6 +84,13 @@ export const errorCopy = {
   rateLimited: "You've made too many requests. Please wait a moment.",
   slowStream: 'This is taking longer than usual. Run the query again.',
   emptyQuery: 'Ask a question before starting the answer.',
+  recoverableTitle: 'Try that again',
+  recoverableBody: 'NRG could not complete this request. Your audit trail is safe.',
+  restrictedTitle: 'Access restricted',
+  restrictedBody: 'This workspace can only view aggregate evidence for that request.',
+  systemTitle: 'Request not completed',
+  systemBody: 'NRG could not complete the step. The signed audit trail remains intact.',
+  sanitizedBody: 'NRG could not complete the step. Use the reference code if support needs to investigate.',
   supportHint: 'If this persists, contact support with the reference code.',
 }
 

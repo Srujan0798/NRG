@@ -1,8 +1,8 @@
 import React, { lazy, Suspense, useEffect } from 'react'
 import Login from './components/Login'
 import { AuthProvider, useAuth } from './hooks/useAuth'
-import { SkeletonLoader } from './components/Skeleton'
-import { ErrorBoundary } from './components/ErrorBoundary'
+import { SkeletonLoader } from './components/Skeleton/SkeletonLoader'
+import { ErrorBoundary } from './components/ErrorBoundary/ErrorBoundary'
 import { useTheme } from './design-system/ThemeProvider'
 import SkipLink from './components/SkipLink/SkipLink'
 import { useReducedMotion } from './hooks/useReducedMotion'
@@ -13,6 +13,8 @@ const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
 const IndustryDashboard = lazy(() => import('./views/IndustryDashboard'))
 const FounderDashboard = lazy(() => import('./views/FounderDashboard'))
 const Hero = lazy(() => import('./views/Hero'))
+const DPDPAudit = lazy(() => import('./pages/DPDP-Audit'))
+const AuditEvent = lazy(() => import('./pages/AuditEvent'))
 
 const DashboardLoading = () => (
   <div className="nrg-app-canvas min-h-screen">
@@ -83,7 +85,13 @@ const AppShell: React.FC = () => {
 
 const App: React.FC = () => {
   const reducedMotion = useReducedMotion()
-  const pathname = window.location.pathname
+  const [pathname, setPathname] = React.useState(window.location.pathname)
+
+  useEffect(() => {
+    const handlePopState = () => setPathname(window.location.pathname)
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
 
   useEffect(() => {
     document.documentElement.dataset.reducedMotion = reducedMotion ? 'true' : 'false'
@@ -96,17 +104,31 @@ const App: React.FC = () => {
   useEffect(() => {
     if (pathname === '/app') document.title = 'NRG · Ask National Research Graph'
     if (pathname === '/founder') document.title = 'NRG · Founder Readiness'
+    if (pathname === '/app/audit') document.title = 'NRG · Audit Trail'
+    if (pathname.startsWith('/app/audit/event/')) document.title = 'NRG · Audit Event'
   }, [pathname])
 
   let content: React.ReactNode
 
-  if (window.location.pathname === '/founder') {
+  if (pathname === '/founder') {
     content = (
       <Suspense fallback={<DashboardLoading />}>
         <FounderDashboard />
       </Suspense>
     )
-  } else if (window.location.pathname === '/app') {
+  } else if (pathname.startsWith('/app/audit/event/')) {
+    content = (
+      <Suspense fallback={<DashboardLoading />}>
+        <AuditEvent />
+      </Suspense>
+    )
+  } else if (pathname === '/app/audit') {
+    content = (
+      <Suspense fallback={<DashboardLoading />}>
+        <DPDPAudit />
+      </Suspense>
+    )
+  } else if (pathname === '/app') {
     content = (
       <Suspense fallback={<DashboardLoading />}>
         <Hero />
