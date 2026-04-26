@@ -10,6 +10,7 @@ def jwt_handler():
         secret_key="test-secret",
         access_token_ttl_seconds=300,
         refresh_token_ttl_seconds=3600,
+        users={},
     )
 
 
@@ -68,9 +69,13 @@ def test_revoked_access_token_is_rejected(jwt_handler):
         jwt_handler.verify_access_token(tokens["access_token"])
 
 
-def test_demo_password_environment_names_are_supported(monkeypatch):
+def test_legacy_dev_password_environment_names_are_supported(monkeypatch):
     monkeypatch.delenv("RESEARCHER_PASSWORD", raising=False)
-    monkeypatch.setenv("DEMO_RESEARCHER_PASSWORD", "demo-researcher-pass")
+    monkeypatch.delenv("GOV_PASSWORD", raising=False)
+    monkeypatch.delenv("INDUSTRY_PASSWORD", raising=False)
+    monkeypatch.setenv("DEMO_RESEARCHER_PASSWORD", "legacy-researcher-pass")
+    monkeypatch.setenv("DEMO_GOVERNMENT_PASSWORD", "legacy-government-pass")
+    monkeypatch.setenv("DEMO_INDUSTRY_PASSWORD", "legacy-industry-pass")
 
     users = jwt_handler_module.build_default_users()
     handler = JWTHandler(
@@ -79,8 +84,12 @@ def test_demo_password_environment_names_are_supported(monkeypatch):
         users=users,
     )
 
-    user = handler.authenticate_user("researcher_user", "demo-researcher-pass")
-    assert user["role"] == "researcher"
+    researcher = handler.authenticate_user("researcher_user", "legacy-researcher-pass")
+    government = handler.authenticate_user("gov_user", "legacy-government-pass")
+    industry = handler.authenticate_user("industry_user", "legacy-industry-pass")
+    assert researcher["role"] == "researcher"
+    assert government["role"] == "government"
+    assert industry["role"] == "industry"
 
 
 def test_refresh_token_survives_handler_restart_with_store(tmp_path, monkeypatch):
@@ -93,10 +102,10 @@ def test_refresh_token_survives_handler_restart_with_store(tmp_path, monkeypatch
         "role": "researcher",
         "tier": 1,
     }
-    first_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    first_handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
     tokens = first_handler.issue_token_pair(user)
 
-    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
     claims = restarted_handler.verify_refresh_token(tokens["refresh_token"])
 
     assert claims["sub"] == "user-persisted"
@@ -112,10 +121,10 @@ def test_logout_revokes_refresh_token_in_store(tmp_path, monkeypatch):
         "role": "researcher",
         "tier": 1,
     }
-    handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
     tokens = handler.issue_token_pair(user)
     handler.revoke_token(tokens["refresh_token"])
 
-    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret")
+    restarted_handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
     with pytest.raises(AuthError):
         restarted_handler.verify_refresh_token(tokens["refresh_token"])
