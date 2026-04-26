@@ -8,7 +8,7 @@
 |----------|------|-------|
 | [bugs/](bugs/INDEX.md) | Known bugs, root causes, permanent fixes | 7 |
 | [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 15 |
-| [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 8 |
+| [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 9 |
 | [projects/](projects/INDEX.md) | Multi-session project trackers | 2 |
 
 ## Session State
