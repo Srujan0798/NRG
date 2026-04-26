@@ -64,6 +64,7 @@ def test_root_health_uses_canonical_database(monkeypatch):
 
 
 def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
+    monkeypatch.setenv("QDRANT_URL", "http://localhost:6333")
     monkeypatch.setattr(api_main, "QdrantClient", FakeQdrantClient)
     client = TestClient(api_main.app)
 
