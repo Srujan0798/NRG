@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { LogInIcon, UserIcon } from './Icons'
+import { AtomIcon, Building2Icon, BuildingIcon, LogInIcon, UserIcon } from './Icons'
 import { t } from '../i18n'
 
 type PersonaKey = 'researcher' | 'government' | 'industry'
@@ -41,6 +41,12 @@ const PERSONA_CREDENTIALS: Record<PersonaKey, { username: string; password: stri
     password: 'industry-pass',
     accent: 'var(--nrg-chart-3)',
   },
+}
+
+const PERSONA_ICON: Record<PersonaKey, React.FC<React.SVGProps<SVGSVGElement>>> = {
+  researcher: AtomIcon,
+  government: BuildingIcon,
+  industry: Building2Icon,
 }
 
 interface LoginProps {
@@ -174,11 +180,15 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               const isActive = selectedPersona === key
               const info = PERSONA_LABELS[key]
               const creds = PERSONA_CREDENTIALS[key]
+              const PersonaIcon = PERSONA_ICON[key]
               return (
                 <button
                   key={key}
                   type="button"
                   onClick={() => applyPersona(key)}
+                  disabled={isLoading}
+                  aria-label={`Select ${info.en} persona`}
+                  aria-pressed={isActive}
                   data-testid={`persona-${key}`}
                   className={`
                     relative min-h-[8.25rem] rounded-xl p-4 text-left transition-all duration-300 border overflow-hidden
@@ -197,9 +207,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                       className="w-6 h-6 rounded-full flex items-center justify-center"
                       style={{ background: isActive ? creds.accent : 'var(--nrg-white-10)' }}
                     >
-                      <span className="text-white text-xs">
-                        {key === 'researcher' ? '🔬' : key === 'government' ? '🏛️' : '🏢'}
-                      </span>
+                      <PersonaIcon className="h-3.5 w-3.5 text-white" />
                     </div>
                     <span className="text-white font-semibold text-sm">{info.en}</span>
                     <span className="text-white/40 text-xs ml-auto font-mono">{info.tier}</span>
@@ -342,6 +350,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               type="submit"
               data-testid="login-submit"
               disabled={isLoading}
+              aria-busy={isLoading}
               className="nrg-btn-primary w-full text-base py-3"
             >
               {isLoading ? (

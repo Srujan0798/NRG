@@ -1,6 +1,7 @@
 import React, { Component, ReactNode } from 'react'
 import { RefreshCw } from 'lucide-react'
 import { t } from '../../i18n'
+import { emitTelemetry } from '../../lib/telemetry'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -29,7 +30,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    emitTelemetry('ui.error_boundary', {
+      message: error.message,
+      component_stack: errorInfo.componentStack?.slice(0, 500),
+      scope: this.props.scope || 'page',
+    })
   }
 
   handleRetry() {

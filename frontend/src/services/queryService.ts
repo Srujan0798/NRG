@@ -95,6 +95,7 @@ export interface GraphData {
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 20000,
 });
 
 export interface StatsResponse {
@@ -218,6 +219,66 @@ function findFallbackAuditEvent(id: string): AuditEventRecord {
   };
 }
 
+function normalizeCitation(raw: any, index: number): Citation {
+  const id = String(raw?.id || raw?.pub_id || raw?.source || `source-${index + 1}`);
+  return {
+    id,
+    source: raw?.source,
+    pub_id: raw?.pub_id || id,
+    chunk_id: raw?.chunk_id || '0',
+    audit_event_id: raw?.audit_event_id,
+    title: raw?.title || raw?.source || `Source ${index + 1}`,
+    authors: Array.isArray(raw?.authors) ? raw.authors : typeof raw?.authors === 'string' ? raw.authors.split(',').map((item: string) => item.trim()).filter(Boolean) : undefined,
+    year: typeof raw?.year === 'number' ? raw.year : undefined,
+    relevance_score: typeof raw?.relevance_score === 'number' ? raw.relevance_score : undefined,
+    chunk_text: raw?.chunk_text,
+    doi: raw?.doi ?? null,
+    journal: raw?.journal ?? null,
+    abstract: raw?.abstract ?? null,
+    citation_count: typeof raw?.citation_count === 'number' ? raw.citation_count : undefined,
+    research_area: raw?.research_area ?? null,
+    enriched: Boolean(raw?.enriched),
+  };
+}
+
+function normalizeQueryResponse(raw: any): QueryResponse {
+  const responseText = String(raw?.response || raw?.answer || raw?.message || 'NRG returned no answer text for this request.');
+  return {
+    query_id: String(raw?.query_id || raw?.id || `query-${Date.now()}`),
+    audit_event_id: raw?.audit_event_id,
+    session_id: raw?.session_id,
+    response: responseText,
+    status: String(raw?.status || 'success'),
+    tier: Number(raw?.tier || authService.getStoredSession()?.user?.tier || 1),
+    intent: raw?.intent,
+    routing_decision: raw?.routing_decision,
+    verification_status: Boolean(raw?.verification_status ?? raw?.verified ?? false),
+    answer_confidence: raw?.answer_confidence,
+    answer_confidence_score: typeof raw?.answer_confidence_score === 'number' ? raw.answer_confidence_score : undefined,
+    sql_anomaly_report: raw?.sql_anomaly_report,
+    sql_query: raw?.sql_query ?? null,
+    sql_queries: Array.isArray(raw?.sql_queries) ? raw.sql_queries : undefined,
+    sql_results: Array.isArray(raw?.sql_results) ? raw.sql_results : [],
+    citation_validity: typeof raw?.citation_validity === 'number' ? raw.citation_validity : undefined,
+    citations: Array.isArray(raw?.citations) ? raw.citations.map(normalizeCitation) : [],
+    warnings: Array.isArray(raw?.warnings) ? raw.warnings : [],
+    retrieval_sources: Array.isArray(raw?.retrieval_sources) ? raw.retrieval_sources : [],
+    provenance: raw?.provenance || {},
+    conversation_history: Array.isArray(raw?.conversation_history) ? raw.conversation_history : [],
+  };
+}
+
+function normalizeGraphData(raw: any): GraphData {
+  return {
+    nodes: Array.isArray(raw?.nodes) ? raw.nodes : [],
+    edges: Array.isArray(raw?.edges) ? raw.edges : [],
+    warnings: Array.isArray(raw?.warnings) ? raw.warnings : [],
+    query: raw?.query,
+    depth: typeof raw?.depth === 'number' ? raw.depth : undefined,
+    tier: typeof raw?.tier === 'number' ? raw.tier : undefined,
+  };
+}
+
 export const queryService = {
   async query(request: QueryRequest): Promise<QueryResponse> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
@@ -226,7 +287,7 @@ export const queryService = {
         { query: request.query, session_id: request.sessionId },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      return response.data;
+      return normalizeQueryResponse(response.data);
     });
   },
 
@@ -236,7 +297,7 @@ export const queryService = {
         params: { topic },
         headers: { Authorization: `Bearer ${accessToken}` },
       });
-      return response.data;
+      return normalizeGraphData(response.data);
     });
   },
 
@@ -247,7 +308,7 @@ export const queryService = {
         { query: request.query, depth: request.depth ?? 2 },
         { headers: { Authorization: `Bearer ${accessToken}` } }
       );
-      return response.data;
+      return normalizeGraphData(response.data);
     });
   },
 

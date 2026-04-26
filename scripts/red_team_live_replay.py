@@ -236,6 +236,8 @@ def maybe_start_api(
     env.setdefault("RESEARCHER_PASSWORD", "researcher-pass")
     env.setdefault("GOV_PASSWORD", "government-pass")
     env.setdefault("INDUSTRY_PASSWORD", "industry-pass")
+    env.setdefault("NRG_SKIP_EMBEDDER_WARMUP", "1")
+    env.setdefault("EMBEDDING_DISABLE_INDIC", "1")
     parsed = urlparse(api_base)
     host = parsed.hostname or "127.0.0.1"
     port = str(parsed.port or 8000)

@@ -13,6 +13,9 @@ export const telemetryEventNames = [
   'proof.verified',
   'persona.switched',
   'error.shown',
+  'ui.error_boundary',
+  'dpdp.export_failed',
+  'dpdp.erasure_failed',
   'empty.shown',
 ] as const
 

@@ -62,6 +62,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
       <div className="hidden absolute top-4 left-4 z-10 flex-col gap-2 sm:flex">
         <motion.button
           onClick={() => setShowFilters(!showFilters)}
+          aria-label={t("auto.components.GraphView.GraphView.3")}
           className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -70,6 +71,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.zoomIn()}
+          aria-label={t("auto.components.GraphView.GraphView.4")}
           className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -78,6 +80,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.zoomOut()}
+          aria-label={t("auto.components.GraphView.GraphView.5")}
           className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -86,6 +89,7 @@ export const GraphView: React.FC<GraphViewProps> = ({
         </motion.button>
         <motion.button
           onClick={() => graphRef.current?.resetZoom()}
+          aria-label={t("auto.components.GraphView.GraphView.6")}
           className="w-10 h-10 rounded-xl bg-[var(--glass-bg)] border border-nrg-border shadow-md flex items-center justify-center text-nrg-muted hover:text-saffron-500 transition-colors"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

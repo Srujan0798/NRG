@@ -5,6 +5,7 @@ import { useDPDPStore } from '../stores/dpdpStore';
 import { CONSENT_SCOPES } from '../services/dpdpService';
 import type { ConsentScope } from '../services/dpdpService';
 import { t } from '../i18n'
+import { emitTelemetry } from '../lib/telemetry'
 
 interface DPDPPanelProps {
   role?: 'researcher' | 'government' | 'industry';
@@ -112,6 +113,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
   const [eraseSuccess, setEraseSuccess] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState<{ type: 'erase' | null }>({ type: null });
   const [syncing, setSyncing] = useState(false);
+  const [operationError, setOperationError] = useState<string | null>(null);
 
   const expiringConsents = getExpiringConsents(30);
 
@@ -126,6 +128,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
 
   const handleExport = async () => {
     setIsExporting(true);
+    setOperationError(null);
     try {
       const blob = await exportUserData();
       const url = URL.createObjectURL(blob);
@@ -139,7 +142,8 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
       setExportSuccess(true);
       setTimeout(() => setExportSuccess(false), 3000);
     } catch (err) {
-      console.error('Export failed:', err);
+      emitTelemetry('dpdp.export_failed', { message: err instanceof Error ? err.message : 'unknown' });
+      setOperationError('NRG could not prepare the data export. Please try again.');
     } finally {
       setIsExporting(false);
     }
@@ -148,6 +152,7 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
   const handleErase = async () => {
     setConfirmDialog({ type: null });
     setIsErasing(true);
+    setOperationError(null);
     try {
       await eraseUserData();
       setEraseSuccess(true);
@@ -156,7 +161,8 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
         onClose?.();
       }, 2000);
     } catch (err) {
-      console.error('Erasure failed:', err);
+      emitTelemetry('dpdp.erasure_failed', { message: err instanceof Error ? err.message : 'unknown' });
+      setOperationError('NRG could not submit the erasure request. Please try again.');
     } finally {
       setIsErasing(false);
     }
@@ -186,6 +192,17 @@ export function DPDPPanel({ role: _role = 'researcher', onClose }: DPDPPanelProp
           <CheckCircle2 size={18} className="text-green-600 dark:text-green-400 shrink-0" />
           <p className="text-sm text-green-800 dark:text-green-200">
             {t("auto.components.DPDPPanel.3")}</p>
+        </motion.div>
+      )}
+
+      {operationError && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100"
+          role="alert"
+        >
+          {operationError}
         </motion.div>
       )}
 

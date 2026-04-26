@@ -7,6 +7,7 @@ import { useTheme } from './design-system/ThemeProvider'
 import SkipLink from './components/SkipLink/SkipLink'
 import { useReducedMotion } from './hooks/useReducedMotion'
 import { trackFirstPaint } from './lib/telemetry'
+import NetworkStatusBanner from './components/NetworkStatusBanner'
 
 const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
@@ -83,6 +84,18 @@ const AppShell: React.FC = () => {
   )
 }
 
+const AuthenticatedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isLoading, login, loginError, user, backendAvailable } = useAuth()
+
+  if (isLoading) return <DashboardLoading />
+
+  if (!user) {
+    return <Login onLogin={login} error={loginError} backendAvailable={backendAvailable} />
+  }
+
+  return <>{children}</>
+}
+
 const App: React.FC = () => {
   const reducedMotion = useReducedMotion()
   const [pathname, setPathname] = React.useState(window.location.pathname)
@@ -118,21 +131,33 @@ const App: React.FC = () => {
     )
   } else if (pathname.startsWith('/app/audit/event/')) {
     content = (
-      <Suspense fallback={<DashboardLoading />}>
-        <AuditEvent />
-      </Suspense>
+      <AuthProvider>
+        <AuthenticatedRoute>
+          <Suspense fallback={<DashboardLoading />}>
+            <AuditEvent />
+          </Suspense>
+        </AuthenticatedRoute>
+      </AuthProvider>
     )
   } else if (pathname === '/app/audit') {
     content = (
-      <Suspense fallback={<DashboardLoading />}>
-        <DPDPAudit />
-      </Suspense>
+      <AuthProvider>
+        <AuthenticatedRoute>
+          <Suspense fallback={<DashboardLoading />}>
+            <DPDPAudit />
+          </Suspense>
+        </AuthenticatedRoute>
+      </AuthProvider>
     )
   } else if (pathname === '/app') {
     content = (
-      <Suspense fallback={<DashboardLoading />}>
-        <Hero />
-      </Suspense>
+      <AuthProvider>
+        <AuthenticatedRoute>
+          <Suspense fallback={<DashboardLoading />}>
+            <Hero />
+          </Suspense>
+        </AuthenticatedRoute>
+      </AuthProvider>
     )
   } else {
     content = (
@@ -145,8 +170,11 @@ const App: React.FC = () => {
   return (
     <>
       <SkipLink />
+      <NetworkStatusBanner />
       <div data-reduced-motion={reducedMotion ? 'true' : 'false'}>
-        {content}
+        <ErrorBoundary title="NRG could not render this page">
+          {content}
+        </ErrorBoundary>
       </div>
     </>
   )

@@ -41,6 +41,10 @@ export const Hero: React.FC = () => {
   const [isSlowQuery, setIsSlowQuery] = useState(false)
   const { user } = useAuth()
 
+  useEffect(() => {
+    document.title = 'NRG · Ask National Research Graph'
+  }, [])
+
   const handleSubmit = (query: string) => {
     setSearchValue(query)
     if (typeof window !== 'undefined') {

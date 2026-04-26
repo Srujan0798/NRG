@@ -43,7 +43,7 @@ const TABS = [
 
 const AREA_COLORS = ['var(--nrg-chart-1)', 'var(--nrg-chart-2)', 'var(--nrg-chart-3)', 'var(--nrg-chart-4)', 'var(--nrg-chart-5)', 'var(--nrg-chart-6)', 'var(--nrg-chart-7)', 'var(--nrg-warning)', 'var(--nrg-chart-9)', 'var(--nrg-chart-10)']
 
-const POLICY_DEMO_QUERIES = [
+const POLICY_QUERY_SUGGESTIONS = [
   'Which states have the highest renewable energy research funding?',
   'Compare AI research output between Gujarat and Karnataka over the last 5 years',
   'Where should DST allocate the next clean energy research hub?',
@@ -322,7 +322,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <p className="text-xs text-nrg-muted font-devanagari">त्वरित प्रश्न</p>
                     </div>
                     <div className="mb-3 flex flex-wrap gap-2">
-                      {POLICY_DEMO_QUERIES.slice(0, 2).map((suggestion) => (
+                      {POLICY_QUERY_SUGGESTIONS.slice(0, 2).map((suggestion) => (
                         <button
                           key={suggestion}
                           type="button"
@@ -436,7 +436,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <p className="text-sm text-nrg-muted">{t("auto.views.GovernmentDashboard.26")}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {POLICY_DEMO_QUERIES.map((suggestion) => (
+                      {POLICY_QUERY_SUGGESTIONS.map((suggestion) => (
                         <button
                           key={suggestion}
                           type="button"

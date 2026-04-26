@@ -955,17 +955,25 @@ jwt_handler = JWTHandler()
 async def lifespan(app: FastAPI):
     """Graceful shutdown handler - drains connections before exit."""
     logger.info("Starting NRG API server...")
-    from src.skills.rag.embedder import Embedder
-    try:
-        embedder = Embedder()
-        logger.info("Warming up sentence_transformers (may take ~48s)...")
-        warm_start = time.time()
-        embedder.embed(["initialization ping"])
-        elapsed = time.time() - warm_start
-        logger.info(f"Embedder warm-up complete in {elapsed:.1f}s")
-        embedder.close()
-    except Exception as e:
-        logger.warning(f"Embedder warm-up skipped: {e}")
+    skip_embedder_warmup = os.getenv("NRG_SKIP_EMBEDDER_WARMUP", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if skip_embedder_warmup:
+        logger.info("Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP")
+    else:
+        from src.skills.rag.embedder import Embedder
+        try:
+            embedder = Embedder()
+            logger.info("Warming up sentence_transformers (may take ~48s)...")
+            warm_start = time.time()
+            embedder.embed(["initialization ping"])
+            elapsed = time.time() - warm_start
+            logger.info(f"Embedder warm-up complete in {elapsed:.1f}s")
+            embedder.close()
+        except Exception as e:
+            logger.warning(f"Embedder warm-up skipped: {e}")
     yield
     logger.info("Received shutdown signal, draining connections...")
     await drain_connections()

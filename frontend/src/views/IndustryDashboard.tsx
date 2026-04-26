@@ -30,7 +30,7 @@ interface IndustryDashboardProps {
 
 const AREA_COLORS = ['var(--nrg-chart-3)', 'var(--nrg-chart-5)', 'var(--nrg-chart-2)', 'var(--nrg-chart-1)', 'var(--nrg-chart-6)', 'var(--nrg-chart-4)', 'var(--nrg-chart-7)', 'var(--nrg-warning)', 'var(--nrg-chart-9)', 'var(--nrg-chart-10)']
 
-const INDUSTRY_DEMO_QUERIES = [
+const INDUSTRY_QUERY_SUGGESTIONS = [
   'What AI capabilities do Indian research institutions offer?',
   'Find industry-academia collaboration examples in renewable energy',
   'Which institutions are strongest for semiconductor partnerships?',
@@ -328,7 +328,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                       <p className="text-xs text-nrg-muted">{t("auto.views.IndustryDashboard.16")}</p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {INDUSTRY_DEMO_QUERIES.map((suggestion) => (
+                      {INDUSTRY_QUERY_SUGGESTIONS.map((suggestion) => (
                         <button
                           key={suggestion}
                           type="button"
