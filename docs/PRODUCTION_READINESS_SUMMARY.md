@@ -1,6 +1,6 @@
 # NRG Production Readiness Summary
 
-Date: 2026-04-26
+Date: 2026-04-26, updated 2026-04-27
 Scope: local release validation on the founder laptop plus evidence captured in `evidence/2026-04-26/`
 
 ## Executive Status
@@ -55,6 +55,25 @@ Critical query P95 timings from `killer_query_health.json`:
 - KILLER-01: 25.04ms, 8 rows, citation present.
 - KILLER-02: 52.95ms, 4 rows, citation present.
 - KILLER-03: 22.8ms, 3 rows, citation present.
+
+### 2026-04-27 Critical Query Addendum
+
+The requested critical query set now includes **Cost per granted patent for institutes with >₹10Cr grants**. That path is covered by fresh code, regression tests, and local data evidence:
+
+- API bounded query path: `src/api/main.py`
+- Text-to-SQL fallback path: `src/skills/text_to_sql/skill.py`
+- Regression evidence: `evidence/2026-04-27/critical_query_regression.log` (`78 passed in 4.84s`)
+- Result evidence: `evidence/2026-04-27/cost_per_patent_10cr_results.csv`
+- Detailed note: `evidence/2026-04-27/critical_query_cost_per_patent.md`
+
+The SQL semantics are:
+
+- grants grouped by `innovation_grant_from_govt.institute`
+- threshold preserved as `HAVING SUM(grant_received) > 100000000`
+- patents counted from `combined_ipo_patent_data`
+- patents filtered with `status = 'Granted'`
+- applicant-to-institute join uses `combined_ipo_patent_data.applicants`
+- null cost-per-patent values sorted after valid numeric ratios
 
 ## Handoff Position
 

@@ -1111,16 +1111,24 @@ FOLLOW-UP QUERIES:
             or "grant received per patent" in query_lower
             or "per granted patent" in query_lower
         ):
+            high_grant_filter = "HAVING SUM(grant_received) > 100000000 " if (
+                "10cr" in query_lower
+                or "10 cr" in query_lower
+                or "10 crore" in query_lower
+                or "10cr" in query_lower.replace("₹", "")
+            ) else ""
             return (
                 "WITH GrantData AS (SELECT institute, SUM(grant_received) as total_grant "
-                "FROM innovation_grant_from_govt GROUP BY institute), "
-                "PatentData AS (SELECT applicants, COUNT(*) as patent_count "
-                "FROM combined_ipo_patent_data WHERE status = 'Granted' GROUP BY applicants) "
-                "SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
-                "ROUND(g.total_grant / NULLIF(p.patent_count, 0), 2) as cost_per_patent "
-                "FROM GrantData g LEFT JOIN PatentData p "
+                "FROM innovation_grant_from_govt GROUP BY institute "
+                f"{high_grant_filter}), "
+                "PatentData AS (SELECT g.institute, COUNT(*) as patent_count "
+                "FROM GrantData g JOIN combined_ipo_patent_data p "
                 "ON lower(trim(p.applicants)) LIKE '%' || lower(trim(g.institute)) || '%' "
-                "ORDER BY cost_per_patent ASC LIMIT 20;"
+                "WHERE status = 'Granted' GROUP BY g.institute) "
+                "SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
+                "ROUND(g.total_grant * 1.0 / NULLIF(p.patent_count, 0), 2) as cost_per_patent "
+                "FROM GrantData g LEFT JOIN PatentData p ON p.institute = g.institute "
+                "ORDER BY cost_per_patent IS NULL, cost_per_patent ASC LIMIT 20;"
             )
 
         if "granted" in query_lower:

@@ -1,6 +1,6 @@
 # NRG Handoff Package - Master Index
 
-**Version:** 2026-04-26 local validation refresh
+**Version:** 2026-04-27 local validation refresh
 **Classification:** IIT-GN internal handoff
 **Owner:** NRG engineering team
 
@@ -45,6 +45,7 @@ Supporting documents outside this directory:
 ## Evidence Index
 
 Fresh evidence from 2026-04-26 is stored under `evidence/2026-04-26/`.
+Additional 2026-04-27 evidence is stored under `evidence/2026-04-27/`.
 
 | Evidence | What It Proves |
 |---|---|
@@ -54,6 +55,14 @@ Fresh evidence from 2026-04-26 is stored under `evidence/2026-04-26/`.
 | `schema_parity_58_58.txt` | Alembic/schema parity reached 58/58 tables with expected skips only. |
 | `explain_index_usage.txt` | Local query-plan evidence for critical indexes and query paths. |
 | `production_validation/tier_differentiation_live.json` | Tier-filtering evidence for API responses. |
+
+Additional 2026-04-27 evidence:
+
+| Evidence | What It Proves |
+|---|---|
+| `critical_query_regression.log` | Dhairya adversarial suite plus API critical-query tests completed: 78 passed in 4.84s. |
+| `cost_per_patent_10cr_results.csv` | Local reference data returns valid cost-per-granted-patent rows for institutes above the ₹10Cr grant threshold. |
+| `critical_query_cost_per_patent.md` | Engineering note for the cost-per-granted-patent production-query hardening. |
 
 ## Local Operator Quick Start
 
@@ -83,4 +92,4 @@ For detailed setup, seed, test, and troubleshooting instructions, start with [..
 
 NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, vector baseline, and official dataset ingestion have all been run and attached as evidence.
 
-*Last updated: 2026-04-26*
+*Last updated: 2026-04-27*

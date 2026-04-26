@@ -63,6 +63,12 @@ Verified locally on 2026-04-27:
 - `npm run build`: TypeScript and Vite production build passed.
 - `npm run lint`: passed with no warnings.
 
+Revalidated after the critical-query backend hardening:
+
+- `npm test -- --runInBand`: 18 suites passed, 64 tests passed.
+- `npm run build`: passed, Vite production bundle built successfully.
+- `npm run lint`: passed with no warnings.
+
 ## New Regression Coverage
 
 - `frontend/tests/lib/queryServiceSanitization.test.ts`
