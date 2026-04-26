@@ -39,9 +39,13 @@ const stateCoordinates: Record<string, { x: number; y: number }> = {
   'west bengal': { x: 340, y: 250 },
 }
 
+const SaffronColor = (opacity: number) => {
+  return `color-mix(in srgb, var(--nrg-saffron-soft) ${Math.round(opacity * 100)}%, transparent)`
+}
+
 export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
   const maxValue = Math.max(...data.map(d => d.value), 1)
-  
+
   const getStateKey = (state: string): string | undefined => {
     const normalized = state.toLowerCase().trim()
     return Object.keys(stateCoordinates).find(k => normalized.includes(k) || k.includes(normalized))
@@ -51,20 +55,20 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
     <div className="relative w-full h-80 bg-nrg-navy-50 rounded-xl border border-nrg-border overflow-hidden">
       <svg viewBox="100 0 400 500" className="w-full h-full">
         <rect x="100" y="0" width="400" height="500" fill="var(--nrg-surface-2)" />
-        
+
         {data.map((d, i) => {
           const key = getStateKey(d.state)
           if (!key) return null
           const coords = stateCoordinates[key]
           const intensity = d.value / maxValue
-          
+
           return (
             <g key={i}>
               <circle
                 cx={coords.x}
                 cy={coords.y}
                 r={10 + intensity * 20}
-                fill={`rgba(255, 107, 53, ${0.3 + intensity * 0.5})`}
+                fill={SaffronColor(0.3 + intensity * 0.5)}
                 stroke="var(--nrg-chart-1)"
                 strokeWidth="1"
               />
@@ -81,15 +85,15 @@ export const GeographicMap: React.FC<GeographicMapProps> = ({ data }) => {
           )
         })}
       </svg>
-      
+
       <div className="absolute bottom-4 right-4 bg-white/90 rounded-lg p-3 shadow-sm">
         <p className="text-xs font-medium text-nrg-muted mb-2">{t("auto.components.IntelligenceBrief.components.GeographicMap.1")}</p>
         <div className="flex items-center gap-1">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.3)' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: SaffronColor(0.3) }} />
           <span className="text-xs text-nrg-muted">Low</span>
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.6)' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: SaffronColor(0.6) }} />
           <span className="text-xs text-nrg-muted">Med</span>
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.8)' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: SaffronColor(0.8) }} />
           <span className="text-xs text-nrg-muted">{t("auto.components.IntelligenceBrief.components.GeographicMap.2")}</span>
         </div>
       </div>
