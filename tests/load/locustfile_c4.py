@@ -23,10 +23,58 @@ SLO: P99 < 500ms @ 1000 concurrent users
 """
 
 from locust import HttpUser, task, between, events
+import os
 import random
 import statistics
 
 _response_times: list = []
+
+
+def _credentials(
+    username_env: str,
+    default_username: str,
+    password_env: str,
+    default_password: str,
+) -> dict[str, str]:
+    return {
+        "username": os.environ.get(username_env, default_username),
+        "password": os.environ.get(password_env, default_password),
+    }
+
+
+def _has_query_payload(data: dict) -> bool:
+    return bool(
+        data.get("sql_query")
+        or data.get("sql_results")
+        or data.get("response")
+        or data.get("answer")
+        or data.get("sql")
+        or data.get("results")
+    )
+
+
+def _handle_query_response(resp) -> None:
+    if resp.status_code == 200:
+        try:
+            data = resp.json()
+        except Exception:
+            resp.failure("JSON parse error")
+            return
+        if _has_query_payload(data):
+            resp.success()
+        else:
+            resp.failure("Empty response")
+    elif resp.status_code == 429:
+        resp.success()
+    else:
+        resp.failure(f"HTTP {resp.status_code}")
+
+
+def _handle_login_failure(user: HttpUser, response) -> None:
+    user.headers = {}
+    response.failure(f"Login failed: {response.status_code}")
+    if user.environment.runner:
+        user.environment.runner.quit()
 
 
 @events.request.add_listener
@@ -110,16 +158,22 @@ class C4ResearcherUser(HttpUser):
     weight = 50
 
     def on_start(self):
-        r = self.client.post("/auth/login", json={
-            "username": "researcher_user",
-            "password": "researcher-pass"
-        }, catch_response=True)
+        r = self.client.post(
+            "/auth/login",
+            json=_credentials(
+                "LOAD_TEST_RESEARCHER_USER",
+                "researcher_user",
+                "LOAD_TEST_RESEARCHER_PASS",
+                "researcher-pass",
+            ),
+            catch_response=True,
+        )
         if r.status_code == 200:
             self.token = r.json().get("access_token")
             self.headers = {"Authorization": f"Bearer {self.token}"}
             r.success()
         else:
-            r.failure(f"Login failed: {r.status_code}")
+            _handle_login_failure(self, r)
 
     @task(8)
     def query(self):
@@ -130,19 +184,7 @@ class C4ResearcherUser(HttpUser):
             catch_response=True,
             name="/query"
         ) as resp:
-            if resp.status_code == 200:
-                try:
-                    data = resp.json()
-                    if data.get("sql") or data.get("results"):
-                        resp.success()
-                    else:
-                        resp.failure("Empty response")
-                except Exception:
-                    resp.failure("JSON parse error")
-            elif resp.status_code == 429:
-                resp.success()
-            else:
-                resp.failure(f"HTTP {resp.status_code}")
+            _handle_query_response(resp)
 
 
 class C4GovernmentUser(HttpUser):
@@ -151,16 +193,22 @@ class C4GovernmentUser(HttpUser):
     weight = 30
 
     def on_start(self):
-        r = self.client.post("/auth/login", json={
-            "username": "gov_user",
-            "password": "gov-pass"
-        }, catch_response=True)
+        r = self.client.post(
+            "/auth/login",
+            json=_credentials(
+                "LOAD_TEST_GOV_USER",
+                "gov_user",
+                "LOAD_TEST_GOV_PASS",
+                "government-pass",
+            ),
+            catch_response=True,
+        )
         if r.status_code == 200:
             self.token = r.json().get("access_token")
             self.headers = {"Authorization": f"Bearer {self.token}"}
             r.success()
         else:
-            r.failure(f"Login failed: {r.status_code}")
+            _handle_login_failure(self, r)
 
     @task(5)
     def aggregate(self):
@@ -171,12 +219,7 @@ class C4GovernmentUser(HttpUser):
             catch_response=True,
             name="/query"
         ) as resp:
-            if resp.status_code == 200:
-                resp.success()
-            elif resp.status_code == 429:
-                resp.success()
-            else:
-                resp.failure(f"HTTP {resp.status_code}")
+            _handle_query_response(resp)
 
 
 class C4IndustryUser(HttpUser):
@@ -185,16 +228,22 @@ class C4IndustryUser(HttpUser):
     weight = 15
 
     def on_start(self):
-        r = self.client.post("/auth/login", json={
-            "username": "industry_user",
-            "password": "industry-pass"
-        }, catch_response=True)
+        r = self.client.post(
+            "/auth/login",
+            json=_credentials(
+                "LOAD_TEST_INDUSTRY_USER",
+                "industry_user",
+                "LOAD_TEST_INDUSTRY_PASS",
+                "industry-pass",
+            ),
+            catch_response=True,
+        )
         if r.status_code == 200:
             self.token = r.json().get("access_token")
             self.headers = {"Authorization": f"Bearer {self.token}"}
             r.success()
         else:
-            r.failure(f"Login failed: {r.status_code}")
+            _handle_login_failure(self, r)
 
     @task(4)
     def partnership(self):
@@ -205,12 +254,7 @@ class C4IndustryUser(HttpUser):
             catch_response=True,
             name="/query"
         ) as resp:
-            if resp.status_code == 200:
-                resp.success()
-            elif resp.status_code == 429:
-                resp.success()
-            else:
-                resp.failure(f"HTTP {resp.status_code}")
+            _handle_query_response(resp)
 
     @task(1)
     def stats(self):
