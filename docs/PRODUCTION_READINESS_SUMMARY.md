@@ -75,6 +75,35 @@ The SQL semantics are:
 - applicant-to-institute join uses `combined_ipo_patent_data.applicants`
 - null cost-per-patent values sorted after valid numeric ratios
 
+### 2026-04-27 Production Web Application Addendum
+
+The authenticated web app now includes production support screens beyond the front page:
+
+- `/app/publications`: live publications explorer.
+- `/app/researchers`: Tier 1 researcher profile workspace.
+- `/app/reports`: Tier 2 aggregate government reports.
+- `/app/industry`: Tier 3 anonymized capability view.
+- `/app/settings`: session profile and audit trail view.
+
+Fresh evidence:
+
+- `docs/audits/frontend_production_app_2026-04-27/frontend-tests.log`: 19 suites passed, 71 tests passed.
+- `docs/audits/frontend_production_app_2026-04-27/frontend-build.log`: Vite production build passed.
+- `docs/audits/frontend_production_app_2026-04-27/frontend-lint.log`: ESLint passed with no warnings.
+- `docs/audits/frontend_production_app_2026-04-27/screenshots/`: desktop and mobile captures for login, publications, researchers, reports, industry, and settings.
+- `docs/audits/frontend_production_app_2026-04-27/videos/`: production walkthrough recordings from the local running stack.
+
+The `/researchers` API crash found during screen validation is fixed and covered:
+
+- `tests/data/test_database_v2_schema_drift.py`
+- `evidence/2026-04-27/researchers_schema_drift_regression.log`
+- `evidence/2026-04-27/researchers_endpoint_schema_drift_live.txt`
+
+Tier 3 researcher PII protection was replayed live:
+
+- `evidence/2026-04-27/tier3_researchers_pii_guard_live.txt`
+- `evidence/2026-04-27/tier3_researchers_pii_guard_assertion.log`
+
 ## Handoff Position
 
 The project can be handed to the professor’s assistant for local evaluation with this constraint statement:

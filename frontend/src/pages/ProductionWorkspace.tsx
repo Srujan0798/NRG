@@ -24,6 +24,11 @@ import {
   type ProductionWorkspaceRoute,
   type ProductionWorkspaceScreen,
 } from './productionWorkspaceConfig'
+import {
+  buildIndustryCapabilityRowsFromStats,
+  type IndustryCapabilityRow,
+  parseMetricNumber,
+} from './productionWorkspaceData'
 
 type Loadable<T> =
   | { status: 'idle' | 'loading'; rows?: T[]; value?: T; message?: string }
@@ -39,17 +44,6 @@ export interface ResearcherProfileRow {
   research_area?: string
   email?: string
   phone?: string
-}
-
-export interface IndustryCapabilityRow {
-  institution?: string
-  institute?: string
-  research_area?: string
-  sector?: string
-  patents?: number
-  publications?: number
-  match_score?: number
-  year?: number
 }
 
 export interface ProductionWorkspaceData {
@@ -85,10 +79,8 @@ function getRoute(screen: ProductionWorkspaceScreen): ProductionWorkspaceRoute {
 }
 
 function formatNumber(value?: number | string | null): string {
-  const numericValue = typeof value === 'string' ? Number(value) : value
-  if (typeof numericValue !== 'number' || !Number.isFinite(numericValue)) {
-    return t('productionWorkspace.common.notAvailable')
-  }
+  const numericValue = parseMetricNumber(value)
+  if (numericValue === null) return t('productionWorkspace.common.notAvailable')
   return numericValue.toLocaleString('en-IN')
 }
 
@@ -102,33 +94,6 @@ function normaliseResearcherRows(payload: { results?: unknown[] } | unknown): Re
   return rows
     .filter((row): row is ResearcherProfileRow => Boolean(row && typeof row === 'object'))
     .slice(0, 12)
-}
-
-export function buildIndustryCapabilityRowsFromStats(stats: StatsResponse): IndustryCapabilityRow[] {
-  const areas = stats.research_area_distribution || []
-  const states = stats.state_distribution || []
-  const totalPublications = Number(stats.total_publications || 0)
-
-  if (!areas.length && totalPublications > 0) {
-    return [
-      {
-        institution: t('productionWorkspace.industry.nationalCluster'),
-        research_area: t('productionWorkspace.industry.multiDomain'),
-        publications: totalPublications,
-      },
-    ]
-  }
-
-  return areas.slice(0, 10).map((area, index) => {
-    const state = states[index % Math.max(states.length, 1)]
-    return {
-      institution: state?.state
-        ? t('productionWorkspace.industry.regionalCluster', { state: state.state })
-        : t('productionWorkspace.industry.nationalCluster'),
-      research_area: area.area,
-      publications: Number(area.count || 0),
-    }
-  })
 }
 
 function downloadCsv(filename: string, rows: Array<Record<string, unknown>>): void {

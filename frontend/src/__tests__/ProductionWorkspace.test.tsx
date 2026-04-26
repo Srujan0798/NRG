@@ -1,10 +1,10 @@
 import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import {
-  buildIndustryCapabilityRowsFromStats,
   ProductionWorkspaceView,
   type ProductionWorkspaceData,
 } from '../pages/ProductionWorkspace'
+import { buildIndustryCapabilityRowsFromStats } from '../pages/productionWorkspaceData'
 import { productionWorkspaceRoutes } from '../pages/productionWorkspaceConfig'
 import type { AuthUser } from '../services/authService'
 
@@ -198,5 +198,14 @@ describe('ProductionWorkspaceView', () => {
       research_area: 'Multi-domain research capacity',
       publications: 50000,
     })
+  })
+
+  it('parses compact aggregate totals returned by lower-tier stats endpoints', () => {
+    const rows = buildIndustryCapabilityRowsFromStats({
+      total_researchers: '10K+' as unknown as number,
+      total_publications: '10K+' as unknown as number,
+    })
+
+    expect(rows[0]?.publications).toBe(10000)
   })
 })

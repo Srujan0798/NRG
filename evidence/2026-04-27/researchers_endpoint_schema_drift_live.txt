@@ -1,0 +1,5 @@
+# /researchers live schema-drift evidence
+captured_at=2026-04-26T22:42:03Z
+request=GET /researchers?limit=3 as Tier 1
+{"role":"researcher","persona":"researcher","tier":1,"results":[{"researcher_id":"cc3cdc7d-db4a-5de3-bb06-aaa88706a16c","name":"Researcher 00000","institution_id":null,"department":null,"state":"Maharashtra","research_area":"Artificial Intelligence","secondary_research_areas":null,"years_experience":null,"year_joined":2000,"h_index":null,"email":null,"phone":null,"orcid":null},{"researcher_id":"204c86b8-11bc-5908-b3fa-5b0f89920802","name":"Researcher 00001","institution_id":null,"department":null,"state":"Tamil Nadu","research_area":"Renewable Energy","secondary_research_areas":null,"years_experience":null,"year_joined":2001,"h_index":null,"email":null,"phone":null,"orcid":null},{"researcher_id":"01381e0f-2db3-5e0f-8e3f-a992f787fd05","name":"Researcher 00002","institution_id":null,"department":null,"state":"Delhi","research_area":"Hydrogen Fuel Cells","secondary_research_areas":null,"years_experience":null,"year_joined":2002,"h_index":null,"email":null,"phone":null,"orcid":null}],"scope":"own_and_public"}
+http_status=200
