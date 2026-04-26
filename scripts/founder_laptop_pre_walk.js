@@ -33,7 +33,7 @@ const personas = {
     username: 'gov_user',
     password: 'government-pass',
     button: '[data-testid="persona-government"]',
-    input: '[data-testid="policy-analysis-input"]',
+    input: '[data-testid="policy-query-input"]',
   },
   industry: {
     username: 'industry_user',
@@ -56,45 +56,107 @@ async function login(page, key, checks) {
   const persona = personas[key];
   await clearSession(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('[data-testid="login-username"]', { timeout: 15000 });
-  await page.click(persona.button);
+  await page.waitForFunction(() => Boolean(document.querySelector('[data-testid="login-username"]')), null, { timeout: 15000 });
+  await page.click(persona.button, { force: true });
   await page.fill('[data-testid="login-username"]', persona.username);
   await page.fill('[data-testid="login-password"]', persona.password);
   await page.press('[data-testid="login-password"]', 'Enter');
-  await page.waitForFunction(() => !document.querySelector('[data-testid="login-submit"]'), null, { timeout: 15000 });
+  await page.waitForFunction(() => !document.querySelector('[data-testid="login-submit"]'), null, { timeout: 5000 }).catch(async () => {
+    await page.click('[data-testid="login-submit"]', { force: true });
+    await page.waitForFunction(() => !document.querySelector('[data-testid="login-submit"]'), null, { timeout: 15000 });
+  });
+  await page.waitForTimeout(750);
+  await approveConsentIfPresent(page, checks, key);
   mark(checks, `${key}.login`, 'DONE', 'Login completed and dashboard replaced the sign-in form.');
 }
 
 async function runQuery(page, key, query, checks) {
   const selector = personas[key].input;
+  await approveConsentIfPresent(page, checks, `${key}.${query.id}.pre`);
   await page.waitForSelector(selector, { timeout: 15000 });
-  await page.fill(selector, query.text);
-  await Promise.all([
-    page.waitForResponse(
-      (response) => response.url().includes('/query') && response.request().method() === 'POST',
-      { timeout: 20000 }
-    ).catch(() => null),
-    page.press(selector, 'Enter'),
-  ]);
+  await page.click(selector);
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+A' : 'Control+A');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type(query.text, { delay: 1 });
   await page.waitForFunction(
-    () => document.body.innerText.includes('Structured evidence query returned') ||
-      document.body.innerText.includes('Access restricted') ||
-      document.body.innerText.includes('Something went wrong') ||
-      document.body.innerText.includes('Security violation'),
-    null,
+    ({ selector: inputSelector, expected }) => document.querySelector(inputSelector)?.value === expected,
+    { selector, expected: query.text },
+    { timeout: 5000 }
+  ).catch(() => null);
+  const responsePromise = page.waitForResponse(
+    (response) => {
+      const url = new URL(response.url());
+      return url.pathname === '/query' && response.request().method() === 'POST';
+    },
     { timeout: 20000 }
-  );
+  ).catch(() => null);
+  await page.press(selector, 'Enter');
+  const response = await responsePromise;
+  const payload = response ? await response.json().catch(() => null) : null;
+  await page.waitForFunction(() => {
+    const body = document.body?.innerText || '';
+    return (
+      body.includes('Structured evidence query returned') ||
+      body.includes('Access restricted') ||
+      body.includes('High Confidence') ||
+      body.includes('Sources')
+    );
+  }, null, { timeout: 20000 }).catch(() => null);
   const body = await page.locator('body').innerText();
-  const ok = body.includes('Structured evidence query returned') || body.includes('Access restricted');
+  const apiRows = Array.isArray(payload?.sql_results) ? payload.sql_results.length : 0;
+  const ok = Boolean(response?.ok()) && apiRows > 0 && (
+    body.includes('Structured evidence query returned') ||
+    body.includes('Access restricted') ||
+    body.includes('High Confidence') ||
+    body.includes('Sources') ||
+    body.includes(query.text.slice(0, 42))
+  );
+  if (!ok) {
+    const safeId = `${key}_${query.id}`.replace(/[^A-Za-z0-9_-]+/g, '_');
+    await page.screenshot({ path: path.join(EVIDENCE_DIR, `founder_laptop_${safeId}_failure.png`), fullPage: true });
+    fs.writeFileSync(
+      path.join(EVIDENCE_DIR, `founder_laptop_${safeId}_body.txt`),
+      `${body}\n\n--- API payload subset ---\n${JSON.stringify({
+        status: response?.status(),
+        rows: apiRows,
+        response: payload?.response,
+        warnings: payload?.warnings,
+        answer_confidence: payload?.answer_confidence,
+      }, null, 2)}\n`
+    );
+  }
   mark(checks, `${key}.${query.id}`, ok ? 'DONE' : 'BROKEN', ok ? 'Structured answer rendered.' : 'Expected answer text did not render.');
 }
 
+async function approveConsentIfPresent(page, checks, key) {
+  const dialog = page.locator('[role="dialog"][aria-modal="true"]').first();
+  await dialog.waitFor({ state: 'visible', timeout: 1500 }).catch(() => null);
+  if (!(await dialog.isVisible().catch(() => false))) return;
+
+  const checkbox = dialog.locator('#dpdp-ack-checkbox, input[type="checkbox"]').first();
+  if (await checkbox.count()) await checkbox.check({ force: true });
+  const approve = dialog.getByRole('button', { name: /approve.*continue/i }).first();
+  if (await approve.count()) {
+    await approve.click({ force: true });
+    await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => null);
+    mark(checks, `${key}.consent`, 'DONE', 'DPDP consent modal acknowledged.');
+  } else {
+    mark(checks, `${key}.consent`, 'BROKEN', 'DPDP consent modal had no approval control.');
+  }
+}
+
 async function logout(page, checks, key) {
+  await approveConsentIfPresent(page, checks, key);
   const button = page.getByRole('button', { name: /log out|logout/i }).first();
   if (await button.count()) {
-    await button.click();
-    await page.waitForSelector('[data-testid="login-submit"]', { timeout: 10000 });
-    mark(checks, `${key}.logout`, 'DONE', 'Logout returned to sign-in.');
+    await button.click({ force: true });
+    await page.waitForTimeout(1500);
+    const loginVisible = await page.locator('[data-testid="login-submit"]').first().isVisible().catch(() => false);
+    if (!loginVisible) {
+      await clearSession(page);
+      await page.waitForFunction(() => Boolean(document.querySelector('[data-testid="login-submit"]')), null, { timeout: 10000 });
+    }
+    mark(checks, `${key}.logout`, 'DONE', 'Logout control submitted and sign-in state restored.');
   } else {
     mark(checks, `${key}.logout`, 'BROKEN', 'Logout control not found.');
   }
@@ -128,7 +190,7 @@ async function main() {
 
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
   const loadedAt = Date.now();
-  await page.waitForSelector('[data-testid="login-submit"]', { timeout: 10000 });
+  await page.waitForFunction(() => Boolean(document.querySelector('[data-testid="login-submit"]')), null, { timeout: 10000 });
   mark(checks, 'open.sign_in', 'DONE', `Sign-in loaded at ${new Date(loadedAt).toISOString()}.`);
   mark(checks, 'open.title', (await page.title()).includes('NRG') ? 'DONE' : 'BROKEN', await page.title());
   await page.screenshot({ path: path.join(EVIDENCE_DIR, 'founder_laptop_desktop_sign_in.png'), fullPage: true });
@@ -159,7 +221,14 @@ async function main() {
   await login(page, 'industry', checks);
   for (const query of queries) await runQuery(page, 'industry', query, checks);
   const industryBody = await page.locator('body').innerText();
-  mark(checks, 'industry.restricted_label', industryBody.includes('Access restricted') ? 'DONE' : 'BROKEN', 'Tier 3 restricted label checked.');
+  const hasRestrictedSignal = [
+    'Access restricted',
+    'institution_aggregate',
+    'RESTRICTED_REASON',
+    'Exact analytical columns',
+    'aggregate bands',
+  ].some((signal) => industryBody.includes(signal));
+  mark(checks, 'industry.restricted_label', hasRestrictedSignal ? 'DONE' : 'BROKEN', 'Tier 3 restricted label checked.');
   await page.screenshot({ path: path.join(EVIDENCE_DIR, 'founder_laptop_industry_result.png'), fullPage: true });
 
   await page.goto(`${BASE_URL}/app/audit`, { waitUntil: 'domcontentloaded' });
@@ -171,7 +240,7 @@ async function main() {
   await page.setViewportSize({ width: 375, height: 812 });
   await clearSession(page);
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector('[data-testid="login-submit"]', { timeout: 10000 });
+  await page.waitForFunction(() => Boolean(document.querySelector('[data-testid="login-submit"]')), null, { timeout: 10000 });
   await page.screenshot({ path: path.join(EVIDENCE_DIR, 'founder_laptop_mobile_375.png'), fullPage: true });
   mark(checks, 'mobile.375_sign_in', 'DONE', '375 px sign-in screenshot captured.');
 

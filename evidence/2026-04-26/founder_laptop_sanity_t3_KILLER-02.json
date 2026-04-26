@@ -1,12 +1,12 @@
 {
-  "captured_at": "2026-04-26T13:18:34.214842+00:00",
-  "elapsed_ms": 1269,
+  "captured_at": "2026-04-26T14:36:17.963130+00:00",
+  "elapsed_ms": 282,
   "evidence_subset": {
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "5a04a746867f1023f8d10f23d08ab115d5fbdc37301afcd53d1442e44b958a13",
+    "audit_event_id": "30faadef4ef6e396ea686524a55225a897d5632fb61bbce2e1c6f03acea3ffeb",
     "citation_count": 1,
-    "query_id": "0ecebb69-55b2-44e4-9b3c-ab89f5e1049d",
+    "query_id": "1d412718-c93b-4cfa-bbc4-8ca072595caa",
     "sql_query": null,
     "sql_result_count": 10,
     "sql_results": [
@@ -64,12 +64,12 @@
   "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
   "query_id": "KILLER-02",
   "response": {
-    "_elapsed_ms": 1269,
+    "_elapsed_ms": 282,
     "_http_status": 200,
     "_query_id_expected": "KILLER-02",
     "answer_confidence": "high",
     "answer_confidence_score": 0.95,
-    "audit_event_id": "5a04a746867f1023f8d10f23d08ab115d5fbdc37301afcd53d1442e44b958a13",
+    "audit_event_id": "30faadef4ef6e396ea686524a55225a897d5632fb61bbce2e1c6f03acea3ffeb",
     "citation_validity": 1.0,
     "citations": [
       {
@@ -83,7 +83,7 @@
       }
     ],
     "conversation_history": [],
-    "execution_time_ms": {},
+    "execution_time_ms": 177,
     "intent": "structured",
     "provenance": {
       "cloud_synthesis_used": false,
@@ -91,21 +91,12 @@
       "synth": "rule_based",
       "verifier": "row_count_and_citation"
     },
-    "query_id": "0ecebb69-55b2-44e4-9b3c-ab89f5e1049d",
+    "query_id": "1d412718-c93b-4cfa-bbc4-8ca072595caa",
     "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 2 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 3 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 4 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 5 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |",
     "retrieval_sources": [],
     "routing_decision": "text_to_sql",
     "session_id": "founder-laptop-t3-KILLER-02",
-    "sql_anomaly_report": {
-      "answer_confidence": "high",
-      "clarification_question": null,
-      "confidence_score": 0.95,
-      "corrective_hints": [],
-      "detected": false,
-      "needs_clarification": false,
-      "signal_names": [],
-      "signals": []
-    },
+    "sql_anomaly_report": {},
     "sql_queries": [],
     "sql_query": null,
     "sql_results": [
