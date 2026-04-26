@@ -105,6 +105,16 @@ export function buildIndustryCapabilityRowsFromStats(stats: StatsResponse): Indu
   const areas = stats.research_area_distribution || []
   const states = stats.state_distribution || []
 
+  if (!areas.length && stats.total_publications) {
+    return [
+      {
+        institution: t('productionWorkspace.industry.nationalCluster'),
+        research_area: t('productionWorkspace.industry.multiDomain'),
+        publications: stats.total_publications,
+      },
+    ]
+  }
+
   return areas.slice(0, 10).map((area, index) => {
     const state = states[index % Math.max(states.length, 1)]
     return {
@@ -345,8 +355,15 @@ const ReportsScreen: React.FC<{
   onRetry: () => void
 }> = ({ data, onRetry }) => {
   const stats = data.stats.value
-  const areaRows = stats?.research_area_distribution || []
-  const stateRows = stats?.state_distribution || []
+  const areaRows = stats?.research_area_distribution?.length
+    ? stats.research_area_distribution
+    : [
+        { area: t('productionWorkspace.reports.researchers'), count: stats?.total_researchers || 0 },
+        { area: t('productionWorkspace.reports.publications'), count: stats?.total_publications || 0 },
+      ]
+  const stateRows = stats?.state_distribution?.length
+    ? stats.state_distribution
+    : [{ state: t('productionWorkspace.reports.national'), count: stats?.total_institutions || 0 }]
 
   return (
     <section className="space-y-6">
