@@ -249,3 +249,25 @@ v11_killer_queries:
     insight_for_user: "Surfaces individuals who bridge public, private, and academic sectors — the human nodes of the innovation graph that policy can reinforce or replicate."
     notes: "Multi-tier traversal (Tier 2 + Tier 3 institution types via institution_master). Junction-table heavy (LB-8 semantic-layer test)."
 
+  # KILLER-13..15 sourced from fifth external review (Kimi/Moonshot 2026-04-26).
+  # Each is high-leverage analytics that triple-tests the engine: cross-table joins,
+  # time-series window functions, and conditional efficiency thresholds.
+
+  - id: KILLER-13
+    nl: "Institutes with the highest ratio of granted patents to government grants received, but with low operational expenditure — efficient innovators, not just well-funded ones."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "applicants", "FILTER (WHERE", "status = 'Granted'", "financial_expenses_operational", "cost_per_patent", "ORDER BY", "ASC", "LIMIT"]
+    insight_for_user: "Exposes whether well-funded institutes are productive or just expensive. Direct ANRF / DST / DPIIT input for redirecting grant capital."
+    notes: "Correct join key is combined_ipo_patent_data.applicants (not patents_details.institute) — Dhairya Q7 semantic trap. Anti-join via FILTER. Three-table join."
+
+  - id: KILLER-14
+    nl: "TRL pipeline progression: per institute, what percentage of innovations are stuck at Low TRL (Levels 1-4) versus High TRL (Levels 8-9), and how has that ratio changed over the last 5 years?"
+    must_contain: ["WITH", "innovations_at_various_stages_of_technology_readiness_level", "tech_readiness_stage", "FILTER (WHERE", "Level 1", "Level 4", "Level 8", "Level 9", "LAG(", "PARTITION BY", "ORDER BY"]
+    insight_for_user: "Exposes whether India is building a research-commercialisation culture or a perpetual-pilot culture. Year-over-year ratio shift = systemic policy-fixable signal."
+    notes: "Forces semantic-layer rename of the 62-char column (LB-6/LB-8). Window function LAG() across financial_year. Bucketed COUNT FILTER aggregates."
+
+  - id: KILLER-15
+    nl: "Institutes that have increased innovation courses AND seed funding simultaneously, without a corresponding consultancy-income increase — building products, not services."
+    must_contain: ["WITH", "academic_courses_details", "seed_funding", "research_consultancy_details_consultancy", "LAG(", "WINDOW", "PARTITION BY", "course_count", "seed_total", "consultancy_total"]
+    insight_for_user: "Reveals which institutes are transforming into innovation hubs versus remaining consulting shops. Direct hiring + partnership + national-rankings input."
+    notes: "Four-table join. Three independent LAG() window functions. Boolean compound condition on growth deltas. Hardest LB-8 semantic-layer test in the corpus."
+
