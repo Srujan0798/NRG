@@ -45,7 +45,7 @@ SchemaRetriever configuration:
   - Embedder: bge-m3 (via src/skills/rag/embedder.py)
   - top_k: 5 (+ up to 3 junction tables = 8 max)
   - Semantic layer: 16 join graphs from semantic_layer.yaml
-  - Glossary: 18 ambiguous terms from business_term_glossary.yaml
+  - Glossary: 30 ambiguous terms from business_term_glossary.yaml
   - DDL parsed from: db_struct.sql (48 research tables)
 
 Per-query token counts (5 representative queries):
@@ -199,10 +199,12 @@ Junction tables registered in semantic_layer.yaml:
 SECTION 7: AMBIGUOUS TERM GLOSSARY COVERAGE
 =================================================================
 
-18 business terms mapped in business_term_glossary.yaml:
+30 business terms mapped in business_term_glossary.yaml:
   status, score, rank, level, type, output, capacity, intake,
   funding, researcher, institute, year, domain, stage, strength,
-  project, approved, efficiency
+  project, approved, efficiency, publication, patent, startup,
+  income, expense, cost, salary, collaboration, citation,
+  enrollment, graduation, location
 
 Each term has multiple schema meanings with disambiguation hints.
 Planner uses glossary at query-classification time; ambiguous
@@ -217,7 +219,7 @@ LB-8 Schema RAG is functioning as designed:
 
   [x] 48 tables parsed from db_struct.sql
   [x] 16 join graphs loaded from semantic_layer.yaml
-  [x] 18 ambiguous terms mapped in business_term_glossary.yaml
+  [x] 30 ambiguous terms mapped in business_term_glossary.yaml
   [x] bge-m3 embedder integrated via src/skills/rag/embedder.py
   [x] Token reduction: 88.2% (exceeds 60% requirement)
   [x] Recall@5: 100% on 20-query benchmark (exceeds 90% requirement)
