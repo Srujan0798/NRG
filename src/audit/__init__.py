@@ -28,6 +28,38 @@ if not CHAIN_KEY and os.environ.get("NRG_ENV", "dev") != "dev":
 AUDIT_CHAIN_VERSION = 1
 AUDIT_ALERT_WEBHOOK = os.environ.get("AUDIT_ALERT_WEBHOOK")
 AUDIT_LOCK_TIMEOUT = float(os.environ.get("AUDIT_LOCK_TIMEOUT", "5.0"))
+_chain_key_cache: bytes | None = None
+_chain_key_lock = threading.Lock()
+
+
+def _configured_chain_key_text() -> str:
+    return os.environ.get("AUDIT_CHAIN_KEY") or CHAIN_KEY or "nrg-audit-chain-dev-key"
+
+
+def get_chain_key() -> bytes:
+    """Return the active audit chain key bytes."""
+    global _chain_key_cache
+    configured = _configured_chain_key_text().encode()
+    with _chain_key_lock:
+        if _chain_key_cache != configured:
+            _chain_key_cache = configured
+        return _chain_key_cache
+
+
+def reset_chain_key_cache() -> None:
+    """Clear cached chain-key bytes after environment changes in tests."""
+    global _chain_key_cache
+    with _chain_key_lock:
+        _chain_key_cache = None
+
+
+def chain_key_hash() -> str:
+    return hashlib.sha256(get_chain_key()).hexdigest()[:16]
+
+
+def verify_chain_continuity(stored_key_hash: str) -> bool:
+    """Verify that the process is using the same chain key family."""
+    return stored_key_hash == chain_key_hash()
 
 
 class AuditEvent:
@@ -101,7 +133,7 @@ class AuditEvent:
 class ImmutableAuditLog:
     """Thread-safe append-only audit log with HMAC chaining and key rotation."""
 
-    CHAIN_KEY = CHAIN_KEY or "nrg-audit-chain-dev-key"
+    CHAIN_KEY = _configured_chain_key_text()
     _instance: Optional["ImmutableAuditLog"] = None
     _lock = threading.Lock()
 
@@ -112,6 +144,7 @@ class ImmutableAuditLog:
             cls._instance = None
         global _chain_health_cache
         _chain_health_cache = None
+        globals().pop("_audit_log_instance", None)
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
@@ -125,6 +158,7 @@ class ImmutableAuditLog:
         if "_initialized" in self.__dict__ and self.__dict__.get("_initialized") is True and self.__dict__.get("storage_path") == new_path:
             return
         self.__dict__["_initialized"] = True
+        self.CHAIN_KEY = _configured_chain_key_text()
         self.storage_path = new_path
         self.storage_path.mkdir(exist_ok=True)
         self.chain_file = self.storage_path / "chain.jsonl"
@@ -616,14 +650,8 @@ class ImmutableAuditLog:
         return events[-limit:] if events else []
 
 
-_audit_log_instance: Optional[ImmutableAuditLog] = None
-
-
 def get_audit_log() -> ImmutableAuditLog:
-    global _audit_log_instance
-    if _audit_log_instance is None:
-        _audit_log_instance = ImmutableAuditLog()
-    return _audit_log_instance
+    return ImmutableAuditLog()
 
 
 def log_query(user_id: str, query: str, jwt_kid: Optional[str] = None, request_fingerprint: Optional[str] = None) -> str:

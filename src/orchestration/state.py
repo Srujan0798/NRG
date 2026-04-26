@@ -83,6 +83,9 @@ class NRGState:
 
     user_tier: int = 1
     active_domain: str = ""  # locks table context across follow-up turns
+    last_domain_table: str = ""  # exact table context from the previous turn
+    last_query_type: str = ""  # coarse query type for short follow-up turns
+    last_primary_entity: str = ""  # institute/entity carried into follow-up turns
     previous_domain: str = ""  # tracks domain switches for cross-domain detection
     domain_switch_detected: bool = False  # True if current query switches domain
     complexity: str = "moderate"  # LLM cost complexity: trivial/simple/moderate/complex/synthesis_heavy

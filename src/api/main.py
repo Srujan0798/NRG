@@ -39,7 +39,11 @@ from src.auth.middleware import (
     filter_researcher_records,
     get_current_user,
 )
-from src.api.response_filter import TierResponseFilterReport, filter_response_payload_for_tier
+from src.api.response_filter import (
+    TierResponseFilterReport,
+    apply_k_anonymity_threshold,
+    filter_response_payload_for_tier,
+)
 from src.data.database import resolve_database_path
 from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
@@ -217,10 +221,11 @@ def _apply_tier_response_filter(
     request_fingerprint: str | None = None,
     endpoint: str = "unknown",
 ) -> Any:
-    filtered, report = filter_response_payload_for_tier(payload, tier=tier)
+    bounded_payload, k_anonymity_events = apply_k_anonymity_threshold(payload, tier=tier)
+    filtered, report = filter_response_payload_for_tier(bounded_payload, tier=tier)
     enforce_tier_response_boundary(filtered, tier)
     _audit_tier_filter_events(
-        report.strip_events,
+        k_anonymity_events + report.strip_events,
         user_id=user_id,
         jwt_kid=jwt_kid,
         request_fingerprint=request_fingerprint,

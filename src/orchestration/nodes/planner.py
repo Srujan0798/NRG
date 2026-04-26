@@ -129,15 +129,21 @@ def planner_node(state: Any) -> dict:
     conversation_history = _state_get(state, "conversation_history", [])
     user_id = _state_get(state, "user_id", "planner")
     previous_domain = _state_get(state, "active_domain", "")
+    planning_query = _enrich_followup_query(
+        user_query,
+        last_domain_table=_state_get(state, "last_domain_table", ""),
+        last_primary_entity=_state_get(state, "last_primary_entity", ""),
+        last_query_type=_state_get(state, "last_query_type", ""),
+    )
 
     client = _get_planner_client()
-    schema_prompt = _build_schema_prompt(user_query)
+    schema_prompt = _build_schema_prompt(planning_query)
 
     if client is not None:
         system_prompt = _load_prompt()
         user_prompt = (
             f"{schema_prompt}\n\n"
-            f"User Query: {user_query}\n\n"
+            f"User Query: {planning_query}\n\n"
             "Return the strict JSON plan only."
         )
 
@@ -146,7 +152,7 @@ def planner_node(state: Any) -> dict:
             plan = _parse_plan(raw)
             plan_dict = plan.model_dump()
             try:
-                log_plan(user_id, user_query, plan_dict)
+                log_plan(user_id, planning_query, plan_dict)
                 log_llm_call(
                     "planner",
                     user_prompt[:1000],
@@ -163,6 +169,7 @@ def planner_node(state: Any) -> dict:
                     "model": _client_model_name(client),
                 },
                 **_domain_update(plan_dict, previous_domain),
+                **_context_update(plan_dict, state, planning_query),
             }
         except Exception as first_error:
             logger.warning("Planner failed first parse/call: %s", first_error)
@@ -175,7 +182,7 @@ def planner_node(state: Any) -> dict:
                 plan = _parse_plan(repaired)
                 plan_dict = plan.model_dump()
                 try:
-                    log_plan(user_id, user_query, plan_dict)
+                    log_plan(user_id, planning_query, plan_dict)
                 except Exception:
                     pass
                 return {
@@ -185,13 +192,14 @@ def planner_node(state: Any) -> dict:
                         "model": _client_model_name(client),
                     },
                     **_domain_update(plan_dict, previous_domain),
+                    **_context_update(plan_dict, state, planning_query),
                 }
             except Exception:
                 pass
 
-    fallback_plan = _heuristic_decompose(user_query, schema_prompt)
+    fallback_plan = _heuristic_decompose(planning_query, schema_prompt)
     try:
-        log_plan(user_id, user_query, fallback_plan)
+        log_plan(user_id, planning_query, fallback_plan)
     except Exception:
         pass
 
@@ -202,6 +210,7 @@ def planner_node(state: Any) -> dict:
             "reason": "llm_unavailable_or_failed",
         },
         **_domain_update(fallback_plan, previous_domain),
+        **_context_update(fallback_plan, state, planning_query),
     }
 
 
@@ -217,6 +226,78 @@ def _domain_update(plan_dict: dict, previous_domain: str) -> dict:
         "active_domain": current_domain,
         "domain_switch_detected": domain_switch,
     }
+
+
+def _enrich_followup_query(
+    query: str,
+    *,
+    last_domain_table: str = "",
+    last_primary_entity: str = "",
+    last_query_type: str = "",
+) -> str:
+    """Carry previous table/entity context into short follow-up questions."""
+    query_lower = query.lower()
+    followup_terms = ("compare", "same", "that", "those", "their", "also", "too", "previous")
+    if not last_domain_table or not any(term in query_lower for term in followup_terms):
+        return query
+
+    context_parts = [f"previous table was {last_domain_table}"]
+    if last_primary_entity:
+        context_parts.append(f"previous entity was {last_primary_entity}")
+    if last_query_type:
+        context_parts.append(f"previous query type was {last_query_type}")
+    return f"[Context: {'; '.join(context_parts)}] {query}"
+
+
+def _context_update(plan_dict: dict, state: Any, planning_query: str) -> dict:
+    tables = plan_dict.get("schema_tables", [])
+    previous_table = _state_get(state, "last_domain_table", "")
+    last_domain_table = tables[0] if tables else previous_table
+
+    primary_entity = (
+        _extract_primary_entity(_state_get(state, "user_query", ""))
+        or _state_get(state, "last_primary_entity", "")
+        or _extract_primary_entity(planning_query)
+    )
+    query_type = _infer_query_type(planning_query) or _state_get(state, "last_query_type", "")
+    return {
+        "last_domain_table": last_domain_table,
+        "last_primary_entity": primary_entity,
+        "last_query_type": query_type,
+    }
+
+
+def _extract_primary_entity(query: str) -> str:
+    query_lower = query.lower()
+    entity_map = {
+        "iit bombay": "IIT Bombay",
+        "iit delhi": "IIT Delhi",
+        "iit madras": "IIT Madras",
+        "iit kanpur": "IIT Kanpur",
+        "iit gandhinagar": "IIT Gandhinagar",
+        "iisc": "IISc",
+    }
+    for marker, entity in entity_map.items():
+        if marker in query_lower:
+            return entity
+    return ""
+
+
+def _infer_query_type(query: str) -> str:
+    query_lower = query.lower()
+    if "phd" in query_lower and any(term in query_lower for term in ("ug", "undergraduate")):
+        return "phd_ug_comparison"
+    if "phd" in query_lower:
+        return "phd_course_count"
+    if "patent" in query_lower and "grant" in query_lower:
+        return "grant_patent_efficiency"
+    if "trl" in query_lower or "technology readiness" in query_lower:
+        return "trl_progression"
+    if any(term in query_lower for term in ("funding", "grant")):
+        return "funding_aggregate"
+    if any(term in query_lower for term in ("startup", "incubation")):
+        return "startup_output"
+    return ""
 
 
 def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:

@@ -8,6 +8,7 @@ from src.orchestration.nodes.planner import (
     _state_get,
     _client_model_name,
     _SchemaAllowlistingClient,
+    _enrich_followup_query,
 )
 
 
@@ -119,3 +120,40 @@ class TestPlannerNode:
         del client.model
         del client.settings
         assert _client_model_name(client) == "unknown"
+
+    def test_followup_query_is_enriched_with_previous_table_and_entity(self):
+        enriched = _enrich_followup_query(
+            "How does that compare to their UG numbers?",
+            last_domain_table="academic_courses_details",
+            last_primary_entity="IIT Bombay",
+            last_query_type="phd_course_count",
+        )
+
+        assert "academic_courses_details" in enriched
+        assert "IIT Bombay" in enriched
+        assert "phd_course_count" in enriched
+        assert "How does that compare to their UG numbers?" in enriched
+
+    def test_planner_uses_enriched_followup_for_schema_selection(self):
+        captured_queries = []
+
+        def fake_schema_prompt(query):
+            captured_queries.append(query)
+            return "Table: academic_courses_details\n"
+
+        with patch("src.orchestration.nodes.planner._get_planner_client", return_value=None):
+            with patch("src.orchestration.nodes.planner._build_schema_prompt", side_effect=fake_schema_prompt):
+                result = planner_node(
+                    {
+                        "user_query": "How does that compare to their UG numbers?",
+                        "conversation_history": [],
+                        "last_domain_table": "academic_courses_details",
+                        "last_primary_entity": "IIT Bombay",
+                        "last_query_type": "phd_course_count",
+                    }
+                )
+
+        assert captured_queries
+        assert "academic_courses_details" in captured_queries[0]
+        assert result["last_domain_table"] == "academic_courses_details"
+        assert result["last_primary_entity"] == "IIT Bombay"
