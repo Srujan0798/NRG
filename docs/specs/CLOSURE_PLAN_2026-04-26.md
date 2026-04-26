@@ -32,6 +32,8 @@ The latest synthesis prompt repeats useful launch discipline, but it also contai
 | Composite primary key claim | Corrected: `db_struct.sql` has no composite primary keys; it has composite unique constraints on Django bridge tables | `db_struct.sql`, `docs/audits/NRG_FINAL_ETERNAL_AUDIT_2026-04-27.md` |
 | Live red-team replay | Still open as live evidence | `scripts/red_team_live_replay.py`; requires running API |
 | Qdrant/vector baseline | Still open as runtime evidence | `evidence/2026-04-27/local_release_gates_2026-04-27.md` reports local Qdrant vectors = 0 |
+| Product acceptance cache prewarm | Closed locally with a production-named utility and tests | `scripts/prewarm_release_cache.py`, `tests/scripts/test_prewarm_release_cache.py` |
+| Production-path Hall of Shame | Closed locally with all seven Dhairya patterns in the validator ledger | `src/data/schema/failed_queries/HALL_OF_SHAME.md`, `tests/data/test_failed_queries_hall_of_shame.py` |
 
 ## Gap Matrix
 
