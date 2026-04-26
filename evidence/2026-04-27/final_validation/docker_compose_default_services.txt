@@ -1,0 +1,6 @@
+postgres
+pgbouncer
+qdrant
+redis
+api
+frontend

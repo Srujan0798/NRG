@@ -17,7 +17,7 @@ Those are deployment-environment gates, not code paths that can be honestly prov
 
 ## Code and Configuration Changes
 
-- Fixed the container startup contract: `postgres` now participates in the `prod` compose profile, matching the documented `docker compose --profile prod up -d` path.
+- Fixed the container startup contract: `postgres` now participates in the default compose graph, matching the documented `docker compose up -d` path. The 2026-04-27 revalidation added a regression test for this exact one-command contract.
 - Hardened `scripts/red_team_live_replay.py` local startup by forcing the API-owned process to skip embedding warm-up and Indic fallback loading. This prevents local security replay startup from waiting on model initialization.
 - Added regression tests for both release contracts:
   - `tests/unit/test_compose_config.py::test_prod_profile_starts_postgres_dependency`
@@ -38,6 +38,23 @@ Those are deployment-environment gates, not code paths that can be honestly prov
 | Live red-team replay | `evidence/2026-04-26/37_live_red_team_replay_chunked.md` | 192 BLOCKED, 12 DOWNGRADED, 6 ALLOWED-SAFE, 0 ALLOWED-DANGEROUS |
 | Frontend build | `npm run build` from `frontend/` | PASS |
 | Compose config | `docker compose config --quiet` | PASS |
+
+### 2026-04-27 Final Revalidation Addendum
+
+Fresh evidence is stored in `evidence/2026-04-27/final_validation/`.
+
+| Gate | Evidence | Result |
+|---|---|---|
+| Compose default graph | `docker_compose_default_services.txt` | Includes `postgres`, `pgbouncer`, `qdrant`, `redis`, `api`, and `frontend`. |
+| Compose contract tests | `compose_contract.log` | 7 passed. |
+| Backend focused production paths | `backend_focused_production.log` | 127 passed. |
+| Full Python suite | `full_python_suite.log` | 1579 passed, 63 skipped, 219 deselected in 99.71s. |
+| Frontend focused hardening paths | `frontend_focused_production.log` | 14 passed. |
+| Full frontend suite | `frontend_full_suite.log` | 19 suites passed, 76 tests passed. |
+| Frontend lint | `frontend_lint.log` | PASS. |
+| Frontend production build | `frontend_build.log` | PASS. |
+| Vocabulary gate | `forbidden_vocab_check.txt` | PASS. |
+| Docker daemon availability | `docker_daemon_status.txt` | Docker client available; daemon not running in this workspace, so live container startup was not executed. |
 
 ## Critical Query Evidence
 

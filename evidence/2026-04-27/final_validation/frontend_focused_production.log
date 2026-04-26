@@ -1,0 +1,12 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand src/__tests__/ProductionWorkspace.test.tsx tests/components/SearchBar.test.tsx
+
+PASS src/__tests__/ProductionWorkspace.test.tsx
+PASS tests/components/SearchBar.test.tsx
+
+Test Suites: 2 passed, 2 total
+Tests:       14 passed, 14 total
+Snapshots:   0 total
+Time:        1.293 s
+Ran all test suites matching /src\/__tests__\/ProductionWorkspace.test.tsx|tests\/components\/SearchBar.test.tsx/i.

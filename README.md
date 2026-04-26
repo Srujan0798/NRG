@@ -22,7 +22,7 @@ Current local status is documented in `docs/PRODUCTION_READINESS_SUMMARY.md`. So
 ```bash
 git clone <repository-url>
 cd nrg
-docker compose --profile prod up -d
+docker compose up -d
 
 # Wait for services to become healthy.
 docker compose ps
@@ -289,7 +289,7 @@ DATABASE_URL=sqlite:///$PWD/data/nrg_research.db \
 
 ```bash
 # Full local container stack
-docker compose --profile prod up -d
+docker compose up -d
 
 # Check status
 docker compose ps

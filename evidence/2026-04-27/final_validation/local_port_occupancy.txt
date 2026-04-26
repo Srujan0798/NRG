@@ -1,0 +1,5 @@
+COMMAND   PID      USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME
+ssh     25407 srujansai   14u  IPv4 0xfb35b1d02893d457      0t0  TCP *:6333 (LISTEN)
+ssh     25407 srujansai   16u  IPv4 0x8535c151b142790a      0t0  TCP *:5432 (LISTEN)
+ssh     25407 srujansai   17u  IPv4 0x3b7dbc383b9f5bee      0t0  TCP *:6379 (LISTEN)
+ssh     25407 srujansai   19u  IPv4 0x733058d11e0418ca      0t0  TCP *:8000 (LISTEN)
