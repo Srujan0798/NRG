@@ -235,6 +235,44 @@ class TestVerifyDbCosign:
                     DBCoSignStore.verify_cosign = original
 
 
+class TestAuditCosignScheduling:
+    """Tests for request-path DB co-sign scheduling decisions."""
+
+    def test_append_skips_db_cosign_worker_when_database_is_not_postgres(self, tmp_path, monkeypatch):
+        """SQLite/local runs must not spawn background DB co-sign work per audit event."""
+        import src.audit as audit_module
+        from src.audit import AuditEvent, ImmutableAuditLog
+
+        ImmutableAuditLog._reset()
+        monkeypatch.setenv("DATABASE_URL", "sqlite:///local.db")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+
+        def fail_if_called():
+            raise AssertionError("DB co-sign executor should not be created for SQLite")
+
+        monkeypatch.setattr(audit_module, "_get_cosign_executor", fail_if_called)
+
+        log = ImmutableAuditLog(storage_path=str(tmp_path))
+        log.append(AuditEvent(event_type="query", user_id="u1", query="test"))
+
+        valid, errors, count = log.verify_chain()
+        assert valid is True, errors
+        assert count == 1
+
+    def test_should_db_cosign_requires_postgres_and_secret(self, monkeypatch):
+        """DB co-signing is enabled only when both PostgreSQL and secret are configured."""
+        import src.audit as audit_module
+
+        monkeypatch.setenv("DATABASE_URL", "sqlite:///local.db")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        assert audit_module.should_db_cosign() is False
+
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.delenv("AUDIT_DB_COSIGN_KEY", raising=False)
+        assert audit_module.should_db_cosign() is False
+
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        assert audit_module.should_db_cosign() is True
 
 
 

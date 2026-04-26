@@ -35,4 +35,7 @@ def test_c4_locustfile_uses_current_credentials_and_response_keys():
     assert "gov-pass" not in source
     assert "sql_query" in source
     assert "sql_results" in source
+    assert "StopUser" in source
+    assert "with user.client.post(" in source
+    assert 'name="/auth/login"' in source
     assert "_handle_query_response(resp)" in source
