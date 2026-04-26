@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { SearchIcon, LoaderIcon } from './Icons'
+import { SearchIcon } from './Icons'
 import { heroCopy, heroLabels } from '../i18n/hero-copy'
 import { SuggestionChips } from './SuggestionChips/SuggestionChips'
 
@@ -31,6 +31,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [isFocused, setIsFocused] = useState(false)
   const [hint, setHint] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const lastSubmittedAtRef = useRef(0)
   const query = value ?? internalValue
 
   const setQuery = (nextValue: string) => {
@@ -50,7 +51,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setHint(heroCopy.emptyHint)
       return
     }
-    if (!disabled) onSubmit(trimmed)
+    if (disabled) return
+
+    const now = Date.now()
+    if (now - lastSubmittedAtRef.current < 650) return
+    lastSubmittedAtRef.current = now
+    onSubmit(trimmed)
   }
 
   useEffect(() => {
@@ -129,8 +135,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
             disabled={disabled}
             className="min-h-11 rounded-xl bg-[var(--nrg-navy)] px-4 py-2 text-sm font-semibold text-white transition hover:translate-y-[-0.0625rem] disabled:cursor-not-allowed disabled:opacity-60"
             aria-label={disabled ? 'Stop query' : 'Submit query'}
+            aria-busy={disabled}
           >
-            {disabled ? <LoaderIcon className="h-5 w-5 animate-spin" /> : 'Enter'}
+            {disabled ? (
+              <span className="inline-flex h-5 items-center gap-1" aria-hidden="true">
+                <span className="h-1.5 w-1.5 rounded-full bg-white/90 motion-safe:animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/70 motion-safe:animate-pulse [animation-delay:120ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-white/50 motion-safe:animate-pulse [animation-delay:240ms]" />
+              </span>
+            ) : 'Enter'}
           </button>
         </div>
       </form>

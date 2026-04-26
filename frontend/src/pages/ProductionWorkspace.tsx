@@ -3,7 +3,9 @@ import {
   BarChart3,
   BookOpen,
   Building2,
+  ChevronDown,
   Download,
+  FileText,
   Lock,
   RefreshCw,
   ShieldCheck,
@@ -112,11 +114,38 @@ function downloadCsv(filename: string, rows: Array<Record<string, unknown>>): vo
   URL.revokeObjectURL(url)
 }
 
+function downloadTableCsv(filename: string, headers: string[], rows: string[][]): void {
+  const records = rows.map((row) => (
+    headers.reduce<Record<string, string>>((record, header, index) => {
+      record[header] = row[index] || ''
+      return record
+    }, {})
+  ))
+  downloadCsv(filename, records)
+}
+
+function exportWorkspacePdf(): void {
+  window.print()
+}
+
 const WorkspaceTable: React.FC<{
   caption: string
   headers: string[]
   rows: string[][]
-}> = ({ caption, headers, rows }) => {
+  exportFilename?: string
+}> = ({ caption, headers, rows, exportFilename = 'nrg-workspace-table.csv' }) => {
+  const [sortIndex, setSortIndex] = useState(0)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+
+  const sortedRows = useMemo(() => (
+    [...rows].sort((leftRow, rightRow) => {
+      const left = leftRow[sortIndex] || ''
+      const right = rightRow[sortIndex] || ''
+      const comparison = left.localeCompare(right, 'en-IN', { numeric: true, sensitivity: 'base' })
+      return sortDirection === 'asc' ? comparison : -comparison
+    })
+  ), [rows, sortDirection, sortIndex])
+
   if (!rows.length) {
     return (
       <div className="rounded-2xl border border-dashed border-nrg-border bg-[var(--glass-bg)] p-6 text-sm text-nrg-muted">
@@ -127,20 +156,86 @@ const WorkspaceTable: React.FC<{
 
   return (
     <div className="overflow-hidden rounded-2xl border border-nrg-border bg-[var(--nrg-surface)] shadow-sm">
-      <div className="max-w-full overflow-x-auto">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">
+          {caption}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => downloadTableCsv(exportFilename, headers, sortedRows)}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-nrg-border bg-[var(--nrg-surface)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
+          >
+            <Download size={14} aria-hidden="true" />
+            {t('productionWorkspace.common.exportCsv')}
+          </button>
+          <button
+            type="button"
+            onClick={exportWorkspacePdf}
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-nrg-border bg-[var(--nrg-surface)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
+          >
+            <FileText size={14} aria-hidden="true" />
+            {t('productionWorkspace.common.exportPdf')}
+          </button>
+        </div>
+      </div>
+      <div className="space-y-3 border-t border-nrg-border/60 p-4 md:hidden" data-testid="workspace-table-cards">
+        {sortedRows.map((row, rowIndex) => (
+          <article
+            key={`${row.join('|')}-card-${rowIndex}`}
+            className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-4"
+          >
+            {headers.map((header, cellIndex) => (
+              <div key={`${header}-${cellIndex}`} className="grid grid-cols-[minmax(6rem,0.8fr)_1fr] gap-3 border-b border-nrg-border/40 py-2 last:border-b-0">
+                <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">{header}</dt>
+                <dd className="min-w-0 break-words text-sm font-medium text-nrg-text">
+                  {row[cellIndex] || t('productionWorkspace.common.notAvailable')}
+                </dd>
+              </div>
+            ))}
+          </article>
+        ))}
+      </div>
+      <div className="hidden max-w-full overflow-x-auto md:block">
         <table className="min-w-full text-left text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead className="bg-[var(--glass-bg)] text-xs uppercase tracking-[0.12em] text-nrg-muted">
             <tr>
-              {headers.map((header) => (
-                <th key={header} scope="col" className="border-b border-nrg-border px-4 py-3 font-semibold">
-                  {header}
+              {headers.map((header, index) => (
+                <th
+                  key={header}
+                  scope="col"
+                  className="border-b border-nrg-border px-4 py-3 font-semibold"
+                  aria-sort={sortIndex === index ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (sortIndex === index) {
+                        setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')
+                      } else {
+                        setSortIndex(index)
+                        setSortDirection('asc')
+                      }
+                    }}
+                    className="inline-flex min-h-8 items-center gap-1 rounded-md text-left transition hover:text-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
+                    aria-label={t('productionWorkspace.common.sortBy', { header })}
+                  >
+                    {header}
+                    {sortIndex === index && (
+                      <ChevronDown
+                        size={12}
+                        className={`transition-transform ${sortDirection === 'asc' ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, rowIndex) => (
+            {sortedRows.map((row, rowIndex) => (
               <tr key={`${row.join('|')}-${rowIndex}`} className="hover:bg-saffron-500/5">
                 {row.map((cell, cellIndex) => (
                   <td key={`${cell}-${cellIndex}`} className="border-b border-nrg-border/40 px-4 py-3 text-nrg-text">
@@ -164,15 +259,35 @@ const StatePanel: React.FC<{
   if (status === 'loaded') return null
 
   const isLoading = status === 'loading' || status === 'idle'
+  if (isLoading) {
+    return (
+      <div
+        className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-6"
+        role="status"
+        aria-busy="true"
+      >
+        <p className="text-sm font-semibold text-nrg-text">{t('productionWorkspace.common.loading')}</p>
+        <p className="mt-1 text-sm text-nrg-muted">{t('productionWorkspace.common.loadingBody')}</p>
+        <div className="mt-5 space-y-3" aria-hidden="true">
+          <div className="h-3 w-4/5 rounded-full bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-[length:200%_100%] motion-safe:animate-pulse" />
+          <div className="h-3 w-2/3 rounded-full bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-[length:200%_100%] motion-safe:animate-pulse" />
+          <div className="grid gap-3 md:grid-cols-3">
+            {[1, 2, 3].map((item) => (
+              <div key={item} className="h-16 rounded-xl border border-nrg-border bg-[var(--nrg-surface)]" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold text-nrg-text">
-            {isLoading ? t('productionWorkspace.common.loading') : t('productionWorkspace.common.errorTitle')}
-          </p>
+          <p className="text-sm font-semibold text-nrg-text">{t('productionWorkspace.common.errorTitle')}</p>
           <p className="mt-1 text-sm text-nrg-muted">
-            {message || (isLoading ? t('productionWorkspace.common.loadingBody') : t('productionWorkspace.common.errorBody'))}
+            {message || t('productionWorkspace.common.errorBody')}
           </p>
         </div>
         <button
@@ -257,17 +372,10 @@ const PublicationsScreen: React.FC<{
       <StatePanel status={data.publications.status} message={data.publications.message} onRetry={onRetry} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-nrg-muted">{t('productionWorkspace.publications.count', { count: rows.length })}</p>
-        <button
-          type="button"
-          onClick={() => downloadCsv('nrg-publications.csv', rows.map((row) => ({ ...row })))}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
-        >
-          <Download size={16} aria-hidden="true" />
-          {t('productionWorkspace.common.exportCsv')}
-        </button>
       </div>
       <WorkspaceTable
         caption={t('productionWorkspace.publications.tableCaption')}
+        exportFilename="nrg-publications.csv"
         headers={[
           t('productionWorkspace.publications.title'),
           t('productionWorkspace.publications.area'),
@@ -300,6 +408,7 @@ const ResearchersScreen: React.FC<{
       <StatePanel status={data.researchers.status} message={data.researchers.message} onRetry={onRetry} />
       <WorkspaceTable
         caption={t('productionWorkspace.researchers.tableCaption')}
+        exportFilename="nrg-researchers.csv"
         headers={[
           t('productionWorkspace.researchers.name'),
           t('productionWorkspace.researchers.area'),
@@ -353,11 +462,13 @@ const ReportsScreen: React.FC<{
       <div className="grid gap-6 lg:grid-cols-2">
         <WorkspaceTable
           caption={t('productionWorkspace.reports.areaCaption')}
+          exportFilename="nrg-government-research-areas.csv"
           headers={[t('productionWorkspace.reports.area'), t('productionWorkspace.reports.count')]}
           rows={areaRows.slice(0, 8).map((row) => [row.area, formatNumber(row.count)])}
         />
         <WorkspaceTable
           caption={t('productionWorkspace.reports.stateCaption')}
+          exportFilename="nrg-government-state-distribution.csv"
           headers={[t('productionWorkspace.reports.state'), t('productionWorkspace.reports.count')]}
           rows={stateRows.slice(0, 8).map((row) => [row.state, formatNumber(row.count)])}
         />
@@ -381,6 +492,7 @@ const IndustryScreen: React.FC<{
       </div>
       <WorkspaceTable
         caption={t('productionWorkspace.industry.tableCaption')}
+        exportFilename="nrg-industry-capability.csv"
         headers={[
           t('productionWorkspace.industry.institution'),
           t('productionWorkspace.industry.area'),
@@ -457,6 +569,7 @@ const SettingsScreen: React.FC<{
           <StatePanel status={data.audit.status} message={data.audit.message} onRetry={onRetry} />
           <WorkspaceTable
             caption={t('productionWorkspace.settings.auditCaption')}
+            exportFilename="nrg-audit-events.csv"
             headers={[
               t('productionWorkspace.settings.event'),
               t('productionWorkspace.settings.action'),
@@ -500,6 +613,21 @@ export const ProductionWorkspaceView: React.FC<{
               <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">{t('productionWorkspace.header.subtitle')}</p>
             </div>
           </a>
+          <div className="flex flex-wrap gap-2 text-xs font-semibold text-nrg-muted">
+            {[
+              t('productionWorkspace.common.staysInIndia'),
+              t('productionWorkspace.common.auditActive'),
+              t('productionWorkspace.common.sourceBound'),
+            ].map((label) => (
+              <span
+                key={label}
+                className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 text-emerald-800"
+              >
+                <ShieldCheck size={13} aria-hidden="true" />
+                {label}
+              </span>
+            ))}
+          </div>
           <nav aria-label={t('productionWorkspace.header.navLabel')} className="flex gap-2 overflow-x-auto">
             {visibleRoutes.map((route) => {
               const Icon = routeIcons[route.screen]

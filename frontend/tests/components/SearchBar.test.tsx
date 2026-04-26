@@ -67,4 +67,30 @@ describe('SearchBar', () => {
     })
     expect(document.activeElement).toBe(input)
   })
+
+  it('throttles rapid duplicate submissions', () => {
+    jest.useFakeTimers()
+    const onSubmit = jest.fn()
+    const container = render(<SearchBar onSubmit={onSubmit} placeholderRotation={['Ask about funding']} />)
+    const input = container.querySelector('[data-testid="hero-search-input"]') as HTMLTextAreaElement
+    const form = container.querySelector('form') as HTMLFormElement
+
+    act(() => {
+      Simulate.change(input, { target: { value: 'Top agencies' } } as any)
+    })
+    act(() => {
+      Simulate.submit(form)
+      Simulate.submit(form)
+      Simulate.submit(form)
+    })
+
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+
+    act(() => {
+      jest.advanceTimersByTime(700)
+      Simulate.submit(form)
+    })
+
+    expect(onSubmit).toHaveBeenCalledTimes(2)
+  })
 })

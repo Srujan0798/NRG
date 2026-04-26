@@ -1,0 +1,4 @@
+console_errors=0
+page_errors=0
+request_failures=0
+http_4xx_5xx=0
