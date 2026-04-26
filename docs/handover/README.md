@@ -41,6 +41,7 @@ Supporting documents outside this directory:
 | [../SCHEMA.md](../SCHEMA.md) | 58-table schema reference generated from `db_struct.sql` |
 | [../PRODUCTION_WALKTHROUGH.md](../PRODUCTION_WALKTHROUGH.md) | Presenter workflow and critical query sequence |
 | [../PRODUCTION_READINESS_SUMMARY.md](../PRODUCTION_READINESS_SUMMARY.md) | Engineering summary of fixes, evidence, and remaining external gates |
+| [../../FRONTEND_PRODUCTION_READINESS_REPORT.md](../../FRONTEND_PRODUCTION_READINESS_REPORT.md) | Frontend hardening report, screen coverage, evidence, and remaining physical-device gates |
 
 ## Evidence Index
 
@@ -73,6 +74,14 @@ Additional 2026-04-27 evidence:
 | `docs/audits/frontend_production_app_2026-04-27/frontend-lint.log` | ESLint completed with no warnings. |
 | `docs/audits/frontend_production_app_2026-04-27/screenshots/` | Desktop and mobile captures for login, publications, researchers, reports, industry, and settings. |
 | `docs/audits/frontend_production_app_2026-04-27/videos/` | Production walkthrough recordings captured from the local running stack. |
+| `FRONTEND_PRODUCTION_READINESS_REPORT.md` | Final frontend hardening report covering issues found, fixes shipped, evidence, and physical-device items not locally proven. |
+| `docs/audits/frontend_hardening_2026-04-27/frontend-tests.log` | Hardened frontend Jest suite completed: 19 suites passed, 76 tests passed. |
+| `docs/audits/frontend_hardening_2026-04-27/frontend-build.log` | Hardened Vite production build completed successfully. |
+| `docs/audits/frontend_hardening_2026-04-27/frontend-lint.log` | Hardened ESLint run completed with no warnings. |
+| `docs/audits/frontend_hardening_2026-04-27/console-summary.txt` | Automated browser pass recorded zero console errors, page errors, request failures, and HTTP 4xx/5xx responses. |
+| `docs/audits/frontend_hardening_2026-04-27/before/` | Before screenshots for login and all authenticated support screens on desktop and mobile. |
+| `docs/audits/frontend_hardening_2026-04-27/after/` | After screenshots for login and all authenticated support screens on desktop and mobile. |
+| `docs/audits/frontend_hardening_2026-04-27/videos/` | Production walkthrough recording captured from the local hardened running stack. |
 
 ## Local Operator Quick Start
 

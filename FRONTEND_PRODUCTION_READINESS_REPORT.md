@@ -1,93 +1,95 @@
-# NRG Frontend Production Readiness Report
+# Frontend Production Readiness Report — 2026-04-27
 
-Date: 2026-04-26
-Auditor: Codex, Frontend Production Lead pass
-Scope: React/Vite frontend, local API-backed browser verification, mobile viewport verification, Lighthouse, and production static-serving behavior.
+## Scope
 
-## Result
+This report covers the NRG web application frontend hardening pass completed on 2026-04-27. The pass focused on the authenticated production application, not the front page only:
 
-Production-readiness score for audited browser paths: 9.1 / 10
+- Login and role selection
+- Role dashboards
+- Natural-language search component behavior
+- Publications explorer
+- Researcher profiles
+- Government reports
+- Industry capability view
+- Settings and audit view
+- Result tables, trust indicators, mobile behavior, loading states, and browser-console cleanliness
 
-The core user paths are verified clean in automated Chromium browser runs: login, validation, incorrect credentials, Tier 1 dashboard, query results with citations, follow-up query, sensitive-data block, audit trail, graph view, logout, Tier 3 dashboard, Tier 3 restricted result, and 375px mobile query flow.
+## Issues Found And Fixed
 
-This report does not claim exhaustive absence of every possible bug on every physical device. Physical Android, physical iPhone, and institutional SSO were not available in this local environment.
-
-## Issues Fixed
-
-| Issue | Fix | Files |
+| Area | Issue Found | Fix Implemented |
 |---|---|---|
-| Direct `/app` route could render outside required providers | Removed standalone route boot path and added authenticated route protection | `frontend/src/main.tsx`, `frontend/src/App.tsx`, `frontend/src/views/Hero.tsx` |
-| Offline/network loss had no global visible state | Added global network status banner | `frontend/src/components/NetworkStatusBanner.tsx` |
-| Malformed API responses could crash result rendering | Added response, citation, and graph normalization before UI rendering | `frontend/src/services/queryService.ts`, `frontend/src/utils/emptyResults.ts` |
-| Result tables were not fully sortable/exportable | Added sortable parsed tables, CSV export, robust empty table state, and safer cell rendering | `frontend/src/components/AnswerPanel/AnswerPanel.tsx` |
-| Government tables had a visible inactive export icon | Added working CSV export, disabled empty export, and empty-row copy | `frontend/src/components/Government/DataTables.tsx` |
-| Error boundaries wrote raw errors to console | Replaced console output with structured telemetry | `frontend/src/components/ErrorBoundary/ErrorBoundary.tsx`, `frontend/src/lib/telemetry.ts` |
-| DPDP export/erasure failures could write console errors | Replaced console output with user-visible alerts and telemetry | `frontend/src/components/DPDPPanel.tsx`, `frontend/src/lib/telemetry.ts` |
-| Role cards used decorative glyphs and lacked explicit pressed state | Added accessible persona labels, pressed state, disabled state, and production icons | `frontend/src/components/Login.tsx` |
-| Graph controls lacked accessible names and D3 simulations could continue after rerender | Added labels and simulation cleanup | `frontend/src/components/GraphView/GraphView.tsx`, `frontend/src/components/ForceGraph.tsx` |
-| Local production static server served JS/CSS uncompressed | Added gzip, cache headers, and font MIME support | `frontend/e2e-server.js` |
-| Browser audit script was hardcoded to one local port and output folder | Added environment-configurable base URL and evidence folder | `scripts/audit/ui_ux_browser_audit.py` |
+| Trust signals | Authenticated workspace screens did not show a persistent sovereign trust signal. | Added visible chips: `Data stays in India`, `Audit chain active`, and `Source-bound results`. |
+| Workspace tables | Support-screen tables were static and did not support sorting or PDF export. | Added sortable table headers, CSV export, and browser print/PDF export controls. |
+| Mobile tables | Mobile views relied on horizontal table scroll and clipped columns on narrow screens. | Added stacked mobile card rows for all workspace tables while preserving desktop tables. |
+| Loading states | Workspace loading used a plain message panel without busy semantics. | Added stable skeleton loading blocks with `aria-busy="true"` and status text. |
+| Rapid search submits | Fast duplicate submits could call `onSubmit` multiple times before parent disabled state propagated. | Added a 650ms duplicate-submit throttle inside `SearchBar`. |
+| Browser console | Initial browser pass found HTTP 500 console errors when pointed at an unhealthy forwarded API. | Revalidated against a local API on port `8001` and frontend proxy on `5177`; final browser pass recorded zero console errors, page errors, request failures, or HTTP 4xx/5xx responses. |
 
-## Verification Evidence
+## Code Changed
 
-Browser acceptance report: `docs/audits/frontend_production_2026-04-26/browser_audit_results.json`
+- `frontend/src/components/SearchBar.tsx`
+  - Added duplicate-submit throttling.
+  - Replaced disabled-state spinner with non-janky pulse dots.
+  - Added `aria-busy` on the submit button when disabled.
 
-Cross-browser smoke report: `docs/audits/frontend_production_2026-04-26/cross_browser_results.json`
+- `frontend/src/pages/ProductionWorkspace.tsx`
+  - Added persistent trust chips.
+  - Added sortable/exportable `WorkspaceTable`.
+  - Added mobile card rendering for table rows.
+  - Added skeleton loading state with busy semantics.
+  - Added PDF export via browser print.
 
-Screenshots:
-- `docs/audits/frontend_production_2026-04-26/screenshots/01_login.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/04_tier1_dashboard.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/05_query_result_with_citations.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/07_pii_block.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/08_audit_trail.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/09_knowledge_graph.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/11_tier3_dashboard.png`
-- `docs/audits/frontend_production_2026-04-26/screenshots/15_mobile_query_result.png`
+- `frontend/src/i18n/en-IN.ts`
+  - Added localized strings for trust signals, sorting, and export controls.
 
-Production walkthrough recording: `docs/audits/frontend_production_2026-04-26/videos/5e367246b1a50433fc1e0170472329a0.webm`
+- `frontend/src/__tests__/ProductionWorkspace.test.tsx`
+  - Added coverage for trust signals, sortable/exportable tables, skeleton loading semantics, and mobile card rows.
 
-Lighthouse reports:
-- Desktop: `docs/audits/frontend_production_2026-04-26/lighthouse/login-page-desktop.report.html`
-- Mobile: `docs/audits/frontend_production_2026-04-26/lighthouse/login-page-mobile.report.html`
+- `frontend/tests/components/SearchBar.test.tsx`
+  - Added coverage for duplicate-submit throttling.
 
-## Measured Results
+## Evidence
 
-| Check | Result |
-|---|---:|
-| Browser console errors in accepted path | 0 |
-| Browser console warnings in accepted path | 0 |
-| Failed network requests in accepted path | 0 |
-| Visible `undefined` / `NaN` matches | 0 |
-| Login page load | 0.86s |
-| Tier 1 key query | 1.05s |
-| Tier 1 follow-up query | 2.96s |
-| Tier 3 restricted query | 0.63s |
-| Lighthouse desktop performance/accessibility | 100 / 95 |
-| Lighthouse mobile performance/accessibility | 88 / 95 |
-| Lighthouse desktop FCP / LCP / CLS | 407ms / 577ms / 0.0013 |
-| Lighthouse mobile FCP / LCP / CLS | 1083ms / 2488ms / 0.0063 |
-| Chromium / Firefox / WebKit login-to-dashboard smoke | PASS / PASS / PASS |
+All evidence is under `docs/audits/frontend_hardening_2026-04-27/`.
 
-Expected negative-path HTTP statuses were observed and handled with user-facing copy:
-- Incorrect credentials: 401, rendered as "Invalid username or password"
-- Sensitive-data query: 400, rendered as sensitive-information block copy
+| Evidence | Result |
+|---|---|
+| `frontend-tests.log` | 19 test suites passed, 76 tests passed. |
+| `frontend-lint.log` | ESLint passed with no warnings. |
+| `frontend-build.log` | Vite production build passed. |
+| `console-summary.txt` | `console_errors=0`, `page_errors=0`, `request_failures=0`, `http_4xx_5xx=0`. |
+| `before/` | 12 before screenshots from the previous committed app state. |
+| `after/` | 12 after screenshots covering desktop and mobile screens. |
+| `videos/page@06f8e77465febd36f6c397e2182a5b9d.webm` | Production walkthrough recording from the local running stack. |
 
-## Commands Run
+## Screen Coverage
 
-```bash
-npm run build
-npm test -- --runInBand
-NRG_UI_AUDIT_BASE_URL=http://127.0.0.1:3100 NRG_UI_AUDIT_OUT_DIR=docs/audits/frontend_production_2026-04-26 .venv/bin/python scripts/audit/ui_ux_browser_audit.py
-npm_config_cache=/Users/srujansai/Desktop/NRG/frontend/.npm-cache npx --yes lighthouse http://127.0.0.1:3100/ --output=json --output=html --output-path=docs/audits/frontend_production_2026-04-26/lighthouse/login-page-desktop --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility --preset=desktop
-npm_config_cache=/Users/srujansai/Desktop/NRG/frontend/.npm-cache npx --yes lighthouse http://127.0.0.1:3100/ --output=json --output=html --output-path=docs/audits/frontend_production_2026-04-26/lighthouse/login-page-mobile --chrome-flags="--headless --no-sandbox" --only-categories=performance,accessibility --form-factor=mobile --screenEmulation.mobile=true
-```
+After screenshots were captured for:
 
-## Remaining Risks
+- Login desktop and mobile
+- Publications desktop and mobile
+- Researcher profiles desktop and mobile
+- Government reports desktop and mobile
+- Industry capability desktop and mobile
+- Settings and audit desktop and mobile
 
-- Physical mobile devices were not available, so 375px browser emulation is the mobile evidence for this pass.
-- Institutional SSO is not covered by this local credential flow.
-- The local API used SQLite-backed production seed data; final launch evidence should be repeated against staging PostgreSQL.
+## Accessibility And Stability Notes
 
-## Sign-Off
+- Existing accessibility gate `tests/a11y/contrast.test.ts` passed in the full frontend suite.
+- Table sort controls use button elements and `aria-label="Sort by ..."` labels.
+- Loading blocks expose `aria-busy="true"`.
+- The mobile table view no longer depends on horizontal scrolling for core row comprehension.
+- The final browser pass recorded no console errors, page errors, failed requests, or HTTP error responses.
 
-I personally walked the audited production flows in a real browser automation session, captured screenshots, generated a recording, and kept the report grounded in observed behavior. The audited paths show no console errors, no failed accepted-path network requests, no visible `undefined`/`NaN`, and no provider-route crash.
+## Not Locally Proven
+
+These items require devices or infrastructure that were not available in this workspace:
+
+- Real iOS physical-device validation.
+- Real Android physical-device validation.
+- Browser matrix beyond local Chromium automation.
+- 4G carrier-network timing on a physical phone.
+
+## Local Status
+
+Frontend hardening is complete for the local running stack. The current frontend has green tests, green lint, green production build, before/after screenshots, one production walkthrough video, and a clean automated browser-console pass.

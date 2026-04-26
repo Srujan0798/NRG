@@ -208,4 +208,69 @@ describe('ProductionWorkspaceView', () => {
 
     expect(rows[0]?.publications).toBe(10000)
   })
+
+  it('shows trust signals on authenticated workspace screens', () => {
+    const container = render(
+      <ProductionWorkspaceView
+        screen="publications"
+        user={researcher}
+        data={loadedData}
+        onRetry={() => undefined}
+        onLogout={() => undefined}
+      />
+    )
+
+    expect(container.textContent).toContain('Data stays in India')
+    expect(container.textContent).toContain('Audit chain active')
+  })
+
+  it('makes production workspace tables sortable and exportable', () => {
+    const container = render(
+      <ProductionWorkspaceView
+        screen="publications"
+        user={researcher}
+        data={loadedData}
+        onRetry={() => undefined}
+        onLogout={() => undefined}
+      />
+    )
+
+    expect(container.querySelector('[aria-label="Sort by Year"]')).not.toBeNull()
+    expect(container.textContent).toContain('Export CSV')
+    expect(container.textContent).toContain('Export PDF')
+  })
+
+  it('uses a skeleton loading state with busy semantics', () => {
+    const loadingData: ProductionWorkspaceData = {
+      ...loadedData,
+      publications: { status: 'loading', rows: [] },
+    }
+    const container = render(
+      <ProductionWorkspaceView
+        screen="publications"
+        user={researcher}
+        data={loadingData}
+        onRetry={() => undefined}
+        onLogout={() => undefined}
+      />
+    )
+
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull()
+    expect(container.textContent).toContain('Loading workspace data')
+  })
+
+  it('renders mobile card rows for tables instead of relying only on horizontal scroll', () => {
+    const container = render(
+      <ProductionWorkspaceView
+        screen="industry"
+        user={industry}
+        data={loadedData}
+        onRetry={() => undefined}
+        onLogout={() => undefined}
+      />
+    )
+
+    expect(container.querySelector('[data-testid="workspace-table-cards"]')).not.toBeNull()
+    expect(container.textContent).toContain('Robotics')
+  })
 })
