@@ -271,3 +271,15 @@ v11_killer_queries:
     insight_for_user: "Reveals which institutes are transforming into innovation hubs versus remaining consulting shops. Direct hiring + partnership + national-rankings input."
     notes: "Four-table join. Three independent LAG() window functions. Boolean compound condition on growth deltas. Hardest LB-8 semantic-layer test in the corpus."
 
+  # KILLER-16 sourced from sixth external review (MiniMax 2026-04-26).
+  # Tests inter-institute TRL-progression comparison — the "which IIT moves
+  # faster from lab to market?" question. Forces stage-ordinal CASE mapping
+  # (Levels don't sort lexicographically) + paired-CTE comparison across
+  # the 62-char table, again validating LB-6 + LB-8.
+
+  - id: KILLER-16
+    nl: "Compare technology-readiness-level progression at IIT Madras vs IIT Bombay over the last 3 years — which institute moves innovations from Lab Validation (Level 4) to Market Ready (Level 9) faster?"
+    must_contain: ["WITH", "tech_readiness_stage", "IIT Madras", "IIT Bombay", "LEFT JOIN", "CASE", "Level 4", "Level 9", "advancement_rate"]
+    insight_for_user: "Exposes which IIT's tech-transfer office is actually translating lab research into commercial products. Direct ANRF input for industry-collaboration funding allocation."
+    notes: "Stage ordinality requires explicit CASE mapping — lexicographic ORDER BY on 'Level 1' / 'Level 10' / 'Level 2' is wrong. Two paired CTEs (per institute), then a stage-anchored LEFT JOIN with advancement-rate subquery. Stresses semantic layer for stage ordering + LB-6 column rename."
+
