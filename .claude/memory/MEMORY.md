@@ -18,6 +18,8 @@
 - [DB-Layer Defence-in-Depth](feedback_db_layer_defence.md) — third defence layer below SQL filter and response shape: pg_anonymizer dynamic masking + native PL/pgSQL HMAC trigger
 - [Async Compute Queue (SLURM/AIRAWAT)](feedback_async_compute_queue.md) — sovereign HPC clusters queue jobs; gov LBs kill HTTP at 60s; return 202+task_id and poll/WebSocket
 - [k-Anonymity Threshold](feedback_k_anonymity_threshold.md) — reject Tier 2/3 queries whose WHERE-clause cohort < k=5 to block inference attacks (DPDP §8)
+- [NetworkPolicy + WORM Audit Logs](feedback_network_policy_worm_logs.md) — pod-to-pod zero-trust + WORM-locked object storage on the audit chain to answer "what if a DBA tries to tamper?"
+- [Partitioning + PITR Backup](feedback_partitioning_pitr.md) — range-partition by year for >50M-row tables; quarterly DR drill with restore + WAL replay; a backup never restored is broken
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
