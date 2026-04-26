@@ -45,10 +45,18 @@ def _first_env(names: tuple[str, ...], default: str) -> str:
     return default
 
 
+LEGACY_PASSWORD_ENV_ALIASES = {
+    "RESEARCHER_PASSWORD": ("DEMO_RESEARCHER_PASSWORD",),
+    "GOV_PASSWORD": ("DEMO_GOV_PASSWORD", "DEMO_GOVERNMENT_PASSWORD"),
+    "INDUSTRY_PASSWORD": ("DEMO_INDUSTRY_PASSWORD",),
+}
+
+
 def _require_env(name: str) -> str:
     value = os.getenv(name)
-    if not value:
-        legacy_name = "DE" + "MO_" + name
+    for legacy_name in LEGACY_PASSWORD_ENV_ALIASES.get(name, ()):
+        if value:
+            break
         value = os.getenv(legacy_name)
     if not value:
         raise RuntimeError(f"Production requires {name} to be set in environment")
@@ -133,7 +141,7 @@ class JWTHandler:
         
         self.access_token_ttl_seconds = access_token_ttl_seconds
         self.refresh_token_ttl_seconds = refresh_token_ttl_seconds
-        self.users = users or get_default_users()
+        self.users = get_default_users() if users is None else users
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
         self.refresh_store = RefreshStore()
