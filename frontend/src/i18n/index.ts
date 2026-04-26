@@ -4,7 +4,7 @@ type CopyTree = string | string[] | { [key: string]: CopyTree } | Record<string,
 
 function lookup(tree: CopyTree, key: string): string | undefined {
   if (typeof tree === 'string' || Array.isArray(tree)) return undefined
-  if (Object.prototype.hasOwnProperty.call(tree, key)) {
+  if (Object.keys(tree).includes(key)) {
     const exact = tree[key]
     return typeof exact === 'string' ? exact : undefined
   }

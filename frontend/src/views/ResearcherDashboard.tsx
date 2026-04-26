@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { TierBadge } from '../components/TierBadge'
 import { SkeletonLoader } from '../components/Skeleton/SkeletonLoader'
@@ -91,6 +91,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
   const [isSlowQuery, setIsSlowQuery] = useState(false)
   const [conversationTurns, setConversationTurns] = useState<Array<{ query: string; result: QueryResponse }>>([])
   const [graphTopic, setGraphTopic] = useState('machine learning')
+  const searchInFlightRef = useRef(false)
+  const lastCompletedQueryRef = useRef<{ query: string; at: number } | null>(null)
 
   const { data: publicationsData, isLoading: pubsLoading } = useQuery({
     queryKey: ['publications', user?.id],
@@ -136,6 +138,8 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
       setQueryValidation('Enter a research question before searching.')
       return
     }
+    const recentQuery = lastCompletedQueryRef.current
+    if (recentQuery?.query === submittedQuery && Date.now() - recentQuery.at < 3000) return
     setQueryValidation(null)
     if (/research network|knowledge graph|graph around|network around/i.test(submittedQuery)) {
       setGraphTopic(submittedQuery.replace(/show me|research network around|knowledge graph around/gi, '').trim() || submittedQuery)
@@ -144,12 +148,15 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
       addAuditEntry({ action: 'data_accessed', persona: 'researcher', details: `Graph query: ${submittedQuery}` })
       return
     }
+    if (searchInFlightRef.current) return
+    searchInFlightRef.current = true
     setIsSearching(true)
     setQueryError(null)
     setIsSlowQuery(false)
     const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
     try {
       const result = await queryService.query({ query: submittedQuery })
+      lastCompletedQueryRef.current = { query: submittedQuery, at: Date.now() }
       setConversationTurns((turns) => [...turns, { query: submittedQuery, result }])
       setLastResult(result)
       addToHistory({ query: submittedQuery, persona: 'researcher', resultsCount: result.verification_status ? 10 : 0 })
@@ -159,6 +166,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
       setQueryError(message)
       addToHistory({ query: submittedQuery, persona: 'researcher', resultsCount: 0, error: message })
     } finally {
+      searchInFlightRef.current = false
       window.clearTimeout(slowTimer)
       setIsSearching(false)
       setIsSlowQuery(false)
@@ -225,7 +233,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto pb-1">
+        <div className="max-w-7xl mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto pb-1">
           {TABS.map((tab) => {
             if ('tier' in tab && tab.tier !== undefined && (user?.tier ?? 0) < tab.tier) return null
             return (

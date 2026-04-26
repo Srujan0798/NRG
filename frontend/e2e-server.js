@@ -7,6 +7,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { pipeline } = require('stream');
+const zlib = require('zlib');
 
 const PORT = process.env.PORT || 3000;
 const API_TARGET = process.env.API_TARGET || 'localhost:8000';
@@ -22,7 +23,24 @@ const MIME_TYPES = {
   '.jpg': 'image/jpeg',
   '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
 };
+
+const COMPRESSIBLE_TYPES = new Set([
+  '.html',
+  '.js',
+  '.css',
+  '.json',
+  '.svg',
+]);
+
+function writeLog(message) {
+  process.stdout.write(`${message}\n`);
+}
+
+function writeDiagnostic(message) {
+  process.stderr.write(`${message}\n`);
+}
 
 const API_PATHS = [
   '/login', '/refresh', '/logout', '/query', '/researchers',
@@ -59,7 +77,28 @@ function serveStatic(req, res) {
       }
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType });
+    const acceptsGzip = /\bgzip\b/.test(req.headers['accept-encoding'] || '');
+    if (acceptsGzip && COMPRESSIBLE_TYPES.has(ext)) {
+      zlib.gzip(data, (gzipErr, compressed) => {
+        if (gzipErr) {
+          res.writeHead(200, { 'Content-Type': contentType });
+          res.end(data);
+          return;
+        }
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Content-Encoding': 'gzip',
+          'Vary': 'Accept-Encoding',
+          'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
+        });
+        res.end(compressed);
+      });
+      return;
+    }
+    res.writeHead(200, {
+      'Content-Type': contentType,
+      'Cache-Control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable',
+    });
     res.end(data);
   });
 }
@@ -98,19 +137,19 @@ function proxyRequest(req, res) {
     try {
       pipeline(proxyRes, res, (err) => {
         if (err && !clientClosed && !res.destroyed) {
-          console.error('Proxy response stream error:', err.message);
+          writeDiagnostic(`Proxy response stream error: ${err.message}`);
         }
       });
     } catch (err) {
       if (!clientClosed && !res.destroyed) {
-        console.error('Proxy response stream error:', err.message);
+        writeDiagnostic(`Proxy response stream error: ${err.message}`);
         res.destroy(err);
       }
     }
   });
 
   proxyReq.on('error', (err) => {
-    console.error('Proxy error:', err.message);
+    writeDiagnostic(`Proxy error: ${err.message}`);
     if (!clientClosed && !res.destroyed) {
       res.writeHead(502);
       res.end(JSON.stringify({ error: 'Bad Gateway' }));
@@ -144,6 +183,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`E2E test server running on http://localhost:${PORT}`);
-  console.log(`Proxying API requests to ${API_TARGET}`);
+  writeLog(`E2E test server running on http://localhost:${PORT}`);
+  writeLog(`Proxying API requests to ${API_TARGET}`);
 });

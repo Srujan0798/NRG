@@ -150,7 +150,7 @@ const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ header
   }
 
   return (
-    <div className="rounded-xl border border-nrg-border">
+    <div className="max-w-full overflow-hidden rounded-xl border border-nrg-border">
       <div className="flex items-center justify-between gap-3 border-b border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">
           {rows.length.toLocaleString('en-IN')} {t("auto.components.AnswerPanel.AnswerPanel.9")}
@@ -165,7 +165,7 @@ const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ header
           CSV
         </button>
       </div>
-      <div className="overflow-x-auto">
+      <div className="w-full max-w-full overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-[var(--glass-bg)]">
             <tr>

@@ -1,209 +1,65 @@
 # NRG Production Readiness Summary
 
-## What Changed - 2026-04-26
+Date: 2026-04-26
+Scope: local release validation on the founder laptop plus evidence captured in `evidence/2026-04-26/`
 
-This document summarizes all major changes made to bring NRG to production-ready status.
+## Executive Status
 
----
+NRG is locally handoff-ready for professor-assistant evaluation. The core application, SQL generation path, tier response boundary, schema bridge, red-team replay, frontend build, and handoff documentation now have reproducible evidence.
 
-## Phase 1: Project Structure & Cleanup
+NRG is not yet fully signed off for sovereign-cluster operation because three external gates require infrastructure and data that are not present on this laptop:
 
-### Changes Made
+- C4: 1000-user P99 SLO on the sovereign Kubernetes target.
+- C5: Qdrant vector-drift baseline after the target collection is populated.
+- Data intake: real 600GB PostgreSQL load and validation.
 
-1. **Removed Junk Files**
-   - Deleted zero-byte log files: `complex_queries_test.log`, `multi_hop.log`, `postgresql_rbac.log`, `qdrant_rbac.log`, `rbac_middleware.log`, `rbac_test.log`, `reflector.log`, `retry_handler.log`, `vector_pipeline_test.log`
-   - Removed empty `benchmark_nrg.db` database file
-   - Moved database files to `data/` directory for proper organization
+Those are deployment-environment gates, not code paths that can be honestly proven from this workspace.
 
-2. **Configuration Standardization**
-   - Created `.editorconfig` for consistent code formatting across editors
-   - Updated `README.md` with production-ready documentation
+## Code and Configuration Changes
 
-3. **Test Suite Cleanup**
-   - Removed broken `tests/data/test_demo_seed.py` (imported non-existent module)
+- Fixed the container startup contract: `postgres` now participates in the `prod` compose profile, matching the documented `docker compose --profile prod up -d` path.
+- Hardened `scripts/red_team_live_replay.py` local startup by forcing the API-owned process to skip embedding warm-up and Indic fallback loading. This prevents local security replay startup from waiting on model initialization.
+- Added regression tests for both release contracts:
+  - `tests/unit/test_compose_config.py::test_prod_profile_starts_postgres_dependency`
+  - `tests/scripts/test_red_team_live_replay.py::test_local_api_startup_skips_embedder_warmup`
+- Generated `docs/SCHEMA.md` from `db_struct.sql`; it now lists all 58 parsed tables and every parsed column.
 
-### Files Affected
+## Verified Gates
 
-- `.editorconfig` (new)
-- `README.md` (updated)
-- `tests/data/test_demo_seed.py` (removed)
+| Gate | Evidence | Result |
+|---|---|---|
+| Dhairya SQL and adversarial suite | `tests/benchmarks/test_dhairya_regression.py`, `tests/benchmarks/test_dhairya_adversarial.py` | PASS |
+| Tier response boundary | `tests/api/test_tier_isolation_live.py`, `tests/api/test_tier_response_filtering.py`, `tests/api/test_k_anonymity_response_boundary.py` | PASS |
+| Schema parity, indexes, RLS | `tests/data/test_schema_parity.py`, `tests/data/test_schema_indexes.py`, `tests/data/test_rls_policies.py` | PASS |
+| Silent wrong-answer controls | `tests/skills/test_result_anomaly_detector.py`, `tests/orchestration/test_silent_wrong_answer.py` | PASS |
+| Schema-RAG and join graph | `tests/orchestration/test_join_graph_blindness.py`, `tests/skills/test_schema_retriever.py` | PASS |
+| Full fast suite | `evidence/2026-04-26/test_suite_full.log` | 1572 passed, 63 skipped, 219 deselected in 250.34s |
+| Critical query health | `evidence/2026-04-26/killer_query_health.json` | healthy, all P95 values under 4s |
+| Live red-team replay | `evidence/2026-04-26/37_live_red_team_replay_chunked.md` | 192 BLOCKED, 12 DOWNGRADED, 6 ALLOWED-SAFE, 0 ALLOWED-DANGEROUS |
+| Frontend build | `npm run build` from `frontend/` | PASS |
+| Compose config | `docker compose config --quiet` | PASS |
 
----
+## Critical Query Evidence
 
-## Phase 2: Backend Verification
+The local volumetric reference database contains enough data for meaningful query validation:
 
-### Verified Components
+- `academic_courses_details`: 50,000 rows
+- `innovations_at_various_stages_of_technology_readiness_level`: 10,000 rows
+- `innovation_grant_from_govt`: 30,000 rows
+- `combined_ipo_patent_data`: 20,000 rows
+- `publications`: 100,000 rows
+- `researchers`: 5,615 rows
 
-1. **API Authentication** ✅
-   - JWT RS256 authentication working across all three tiers
-   - Tokens include proper claims (tier, user_id, jti)
+Critical query P95 timings from `killer_query_health.json`:
 
-2. **Query Endpoint** ✅
-   - Returns all required fields: `audit_event_id`, `sql_query`, `sql_results`
-   - Tier filtering applied at SQL layer (TierAwareSqlRewriter)
-   - Additional tier shaping at API response layer
+- KILLER-01: 25.04ms, 8 rows, citation present.
+- KILLER-02: 52.95ms, 4 rows, citation present.
+- KILLER-03: 22.8ms, 3 rows, citation present.
 
-3. **Tier Isolation** ✅
-   - Tier 1: Full researcher details including contact info
-   - Tier 2: Aggregated statistics without personal identifiers
-   - Tier 3: Anonymized institutional data only
+## Handoff Position
 
-4. **Credit Score Parsing** ✅
-   - `total_credit_score` parsing with `SPLIT_PART` is in production prompt (line 407)
-   - Both PostgreSQL and SQLite dialects covered
-   - Schema-aware guidance dynamically added based on query context
+The project can be handed to the professor’s assistant for local evaluation with this constraint statement:
 
-5. **Audit Chain** ✅
-   - HMAC-SHA256 chained logging
-   - Per-user binding with derived keys
-   - Database co-signing for non-repudiation
+> The local release path is green and evidence-backed. Final sovereign operation requires running the same gates on the target Kubernetes/PostgreSQL/Qdrant environment after the real data load.
 
-### Test Results
-
-- **Dhairya Regression**: 43/43 PASS ✅
-- **API Tests**: PASS ✅
-- **Security Tests**: PASS ✅
-
----
-
-## Phase 3: Database & Performance
-
-### Verified Components
-
-1. **Text-to-SQL Generation**
-   - Production prompt includes all critical patterns:
-     - Credit parsing: `SPLIT_PART(total_credit_score, ':', 1)`
-     - TRL mapping: Level 4 = Lab Validation, Level 9 = Market Ready
-     - Anti-patterns blocked (DISTINCT ORDER BY, missing GROUP BY)
-
-2. **Query Optimization**
-   - LIMIT enforcement (max 200 rows)
-   - Tier-based access_tier filtering injected automatically
-   - READ ONLY sandbox execution
-
-3. **Schema Coverage**
-   - 58-table PostgreSQL schema supported
-   - Alembic migrations available
-   - Composite indexes for hot JOINs
-
----
-
-## Phase 4: Frontend Production Quality
-
-### Verified Components
-
-1. **Three Role-Specific Dashboards**
-   - `ResearcherDashboard.tsx` - Full data access
-   - `GovernmentDashboard.tsx` - Aggregated analytics
-   - `IndustryDashboard.tsx` - Anonymized partnership view
-
-2. **UI/UX Elements**
-   - Natural language search bar
-   - Loading skeletons
-   - Error states with helpful messages
-   - Mobile responsive design
-   - Trust signals (audit badges, verification indicators)
-
-3. **Tier Differentiation**
-   - UI elements adapt based on logged-in tier
-   - Different data visibility per dashboard
-
----
-
-## Phase 5: Documentation & Handover
-
-### Deliverables Created
-
-1. **`README.md`** - Production-ready documentation with:
-   - Quick start instructions
-   - Architecture overview
-   - API reference
-   - Configuration guide
-
-2. **`docs/PRODUCTION_WALKTHROUGH.md`** - Step-by-step guide for:
-   - System startup
-   - Authentication
-   - Making queries
-   - Understanding results
-   - Security verification
-
-3. **Evidence Files** in `evidence/2026-04-26/`
-   - API validation results
-   - Test evidence
-   - Audit chain verification
-
----
-
-## Production Readiness Checklist
-
-| Component | Status | Evidence |
-|-----------|--------|----------|
-| API Authentication | ✅ PASS | Login returns JWT |
-| Query Endpoint | ✅ PASS | Returns all required fields |
-| Tier Isolation | ✅ PASS | No PII in Tier 3 |
-| Credit Parsing | ✅ PASS | SPLIT_PART in prompt |
-| Audit Chain | ✅ PASS | Chain verified |
-| Text-to-SQL | ✅ PASS | 43/43 tests pass |
-| Frontend | ✅ PASS | All 3 dashboards exist |
-| Documentation | ✅ PASS | README + walkthrough |
-
----
-
-## Known Limitations (Cluster-Only)
-
-These features require sovereign cluster deployment and are NOT blockers for local production:
-
-1. **C4: Load Testing (1000 users)**
-   - Requires deployed K8s cluster
-   - Not testable locally
-
-2. **C5: Vector Drift Baseline**
-   - Requires populated Qdrant
-   - One-time baseline establishment
-
-3. **C6: 600GB Real Data Ingest**
-   - Requires IIT-GN data access
-   - Future phase
-
----
-
-## Verification Commands
-
-```bash
-# Run Dhairya benchmark
-pytest tests/benchmarks/test_dhairya_regression.py -v
-
-# Run API tests
-pytest tests/api/test_langgraph_api.py -v
-
-# Run security tests
-pytest tests/security/test_pii_compliance.py -v
-
-# Verify audit chain
-python scripts/audit_investigate.py
-
-# Health check
-curl http://localhost:8000/health/all
-```
-
----
-
-## Commit History
-
-Key commits on this path:
-- `88afab0` - governance: merge minimax readiness addendum
-- `98c4063` - governance: merge kimi readiness addendum
-- `681a6d1` - governance: merge product auditor funding-readiness addendum
-- `8abcc0a` - docs: mark M5a.2-M5a.15 complete in closure roadmap
-
----
-
-**Overall Production Readiness: 7.5/10**
-
-The system is production-ready for local deployment and demonstration. The remaining gaps (C4, C5, C6) are cluster-only features that do not block local production use.
-
-**BIGGEST SINGLE RISK**: None identified - core functionality is working.
-
-**WHAT WILL IMPRESS USERS**: Clean API responses with visible SQL and audit trail.
-
-**WHAT WILL EMBARRASS THE TEAM**: None - all visible functionality is production-quality.
+Do not represent cluster SLO, Qdrant baseline, or 600GB ingest as complete until the corresponding evidence exists.

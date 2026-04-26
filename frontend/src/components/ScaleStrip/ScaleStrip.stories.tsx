@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { ScaleStrip } from './ScaleStrip'
 
 const meta = {
-  title: 'Demo/ScaleStrip',
+  title: 'Production/ScaleStrip',
   component: ScaleStrip,
 } satisfies Meta<typeof ScaleStrip>
 

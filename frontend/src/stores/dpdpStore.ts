@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { dpdpService, CONSENT_SCOPES } from '../services/dpdpService';
+import { emitTelemetry } from '../lib/telemetry';
 
 export interface DPDPAuditEntry {
   id: string;
@@ -39,6 +40,14 @@ interface DPDPState {
   eraseUserData: () => Promise<void>;
 }
 
+const trackSyncFailure = (action: string, purpose: string | null, err: unknown) => {
+  emitTelemetry('dpdp.sync_failed', {
+    action,
+    purpose,
+    error_name: err instanceof Error ? err.name : typeof err,
+  });
+};
+
 export const useDPDPStore = create<DPDPState>()(
   persist(
     (set, get) => ({
@@ -62,7 +71,7 @@ export const useDPDPStore = create<DPDPState>()(
         try {
           await dpdpService.grantConsent(purpose);
         } catch (err) {
-          console.warn(`Failed to sync grant_consent to backend for scope "${purpose}":`, err);
+          trackSyncFailure('grant_consent', purpose, err);
         }
 
         set((state) => ({
@@ -94,7 +103,7 @@ export const useDPDPStore = create<DPDPState>()(
         try {
           await dpdpService.revokeConsent(purpose);
         } catch (err) {
-          console.warn(`Failed to sync revoke_consent to backend for scope "${purpose}":`, err);
+          trackSyncFailure('revoke_consent', purpose, err);
         }
 
         set((state) => ({
@@ -146,7 +155,7 @@ export const useDPDPStore = create<DPDPState>()(
 
           set({ consents: merged, lastSyncedAt: now, isSyncing: false });
         } catch (err) {
-          console.warn('Failed to sync consents with backend:', err);
+          trackSyncFailure('list_consents', null, err);
           set({ isSyncing: false });
         }
       },

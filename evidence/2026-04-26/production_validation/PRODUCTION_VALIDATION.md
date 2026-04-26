@@ -1,39 +1,37 @@
-# NRG Production Validation Evidence
+# NRG Local Production Validation Evidence
 
-**Date**: 2026-04-26
-**Validated By**: Principal Engineer Audit
-**Status**: PRODUCTION-READY
-
----
+**Date:** 2026-04-26
+**Validated By:** Principal engineering pass
+**Status:** Local handoff-ready, external sovereign-cluster gates pending
 
 ## Executive Summary
 
-All critical production validations have passed. The system is ready for live operation and demonstration.
+The local NRG release is ready for professor-assistant technical evaluation. The API contract, tier response filtering, critical query paths, schema parity, audit evidence, frontend build, and live red-team replay have reproducible local evidence.
 
----
+This file is intentionally precise: the system is not yet signed off for sovereign-cluster production operation because three external gates still require the target infrastructure and official dataset.
 
-## 1. Authentication Tests
+## External Gates Not Closed Locally
 
-| Tier | Username | Password | Status |
-|------|----------|----------|--------|
-| Tier 1 - Researcher | `researcher_user` | `researcher-pass` | PASS |
-| Tier 2 - Government | `gov_user` | `government-pass` | PASS |
-| Tier 3 - Industry | `industry_user` | `industry-pass` | PASS |
+| Gate | Current State | Required Evidence |
+|---|---|---|
+| C4 1000-user SLO | Pending | Load run on sovereign Kubernetes with representative data and P99 evidence. |
+| C5 vector-drift baseline | Pending | Qdrant baseline on production corpus and scheduled drift check. |
+| Official 600GB ingest | Pending | Signed intake run, row-count reconciliation, and query validation on the real dataset. |
 
----
+## Evidence Files
 
-## 2. Query Response Validation
+| Evidence | Result |
+|---|---|
+| `../test_suite_full.log` | 1572 passed, 63 skipped, 219 deselected in 250.34s. |
+| `../37_live_red_team_replay_chunked.md` | 0 dangerous allowed responses in chunked live API replay. |
+| `../killer_query_health.json` | Three critical queries healthy with P95 under 60ms locally. |
+| `../schema_parity_58_58.txt` | 58/58 schema parity and active Alembic head recorded. |
+| `../explain_index_usage.txt` | Local query-plan and index-path evidence captured. |
+| `tier_differentiation_live.json` | Tier response filtering evidence captured. |
 
-Every `/query` response includes all 4 required fields:
+## API Contract
 
-| Field | Description | Status |
-|-------|-------------|--------|
-| `audit_event_id` | Unique identifier for audit trail | PRESENT |
-| `sql_query` | The generated SQL query | PRESENT |
-| `sql_queries` | Array of SQL queries (for multi-hop) | PRESENT |
-| `sql_results` | Query results (tier-filtered) | PRESENT |
-
-### Sample Response
+The production `/query` response must expose enough transparency for review and enough filtering for privacy:
 
 ```json
 {
@@ -47,139 +45,62 @@ Every `/query` response includes all 4 required fields:
 }
 ```
 
----
+## Tier Isolation
 
-## 3. Tier Isolation Verification
+Tier 3 responses were checked at the API boundary. The acceptance condition is that restricted users do not receive raw PII keys or values in the JSON payload, regardless of what the frontend renders.
 
-### Test: Tier 3 Never Sees PII
+| PII Type | Tier 3 Exposure |
+|---|---:|
+| Email | No |
+| Phone | No |
+| Aadhaar | No |
+| PAN | No |
 
-**Query**: "Show me researchers working on AI"
-**Result**: 0 rows returned (correct - Tier 3 sees anonymized data only)
+## Critical Query Health
 
-| PII Type | Exposed in Tier 3? |
-|----------|-------------------|
-| Email | NO |
-| Phone | NO |
-| Aadhaar | NO |
-| PAN | NO |
+Local critical query health is recorded in `../killer_query_health.json`:
 
----
+| Query | Local P95 | Rows |
+|---|---:|---:|
+| KILLER-01 | 25.04 ms | 8 |
+| KILLER-02 | 52.95 ms | 4 |
+| KILLER-03 | 22.80 ms | 3 |
 
-## 4. Killer Queries - Live API Results
+These timings are local-reference timings. They are not a substitute for the C4 sovereign-cluster SLO run.
 
-### Query 1: Top 5 Funding Agencies
+## Audit Chain
 
-**Question**: "Top 5 funding agencies by total grant amount"
+Audit-chain verification evidence is recorded in the 2026-04-26 evidence directory. The acceptance condition is that `verify_chain()` returns a valid chain with zero hash mismatches before handoff.
 
-| Result | Value |
-|---------|-------|
-| Status | 200 |
-| SQL | `SELECT gov_organisation_name, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt...` |
-| Rows Returned | 5 |
-| Audit ID | `35bd7ca99371ca7eb31b...` |
+## Security Replay
 
-### Query 2: TRL Progression
+The chunked live API security replay completed with no dangerous allowed responses:
 
-**Question**: "Show me the technology readiness level progression for IIT Madras"
+| Classification | Count |
+|---|---:|
+| BLOCKED | 192 |
+| DOWNGRADED | 12 |
+| ALLOWED-SAFE | 6 |
+| ALLOWED-DANGEROUS | 0 |
 
-| Result | Value |
-|---------|-------|
-| Status | 200 |
-| SQL | `SELECT * FROM innovations_at_various_stages_of_technology_readiness_level WHERE...` |
-| Audit ID | `7d65a16b4a71703246e7...` |
+## Acceptance Position
 
-### Query 3: Institution Comparison
-
-**Question**: "Compare AI research output between IIT Bombay and IIT Madras over last 5 years"
-
-| Result | Value |
-|--------|-------|
-| Status | 200 |
-| SQL | Fast path (cached comparison) |
-| Audit ID | `fast_path_ui_audit` |
-
----
-
-## 5. Audit Chain Verification
-
-| Check | Result |
-|-------|--------|
-| Chain Valid | TRUE |
-| Events Verified | 455,807 |
-| Errors | 0 |
-
-The HMAC-SHA256 audit chain is intact and verifiable.
-
----
-
-## 6. Test Suite Results
-
-### Dhairya SQL Regression Suite
-
-| Metric | Value |
-|--------|-------|
-| Tests Passed | 43/43 |
-| Execution Time | 3.63 seconds |
-| Coverage | 27% (focused on critical paths) |
-
-All 17 Dhairya SQL patterns generate correct SQL queries.
-
----
-
-## 7. Security Validations
-
-### PII Detection
-
-- Aadhaar: Detected and blocked
-- PAN: Detected and blocked
-- Phone: Detected and blocked
-- Email: Detected and blocked
-
-### Prompt Injection
-
-- SQL injection patterns: Blocked
-- Prompt override attempts: Blocked
-
----
-
-## 8. Production Readiness Checklist
-
-| Component | Status | Notes |
-|-----------|--------|-------|
-| Authentication | ✅ PASS | JWT RS256 working |
-| Query Endpoint | ✅ PASS | All 4 fields present |
-| Tier Isolation | ✅ PASS | No PII in Tier 3 |
-| Audit Chain | ✅ PASS | 455,807 events valid |
-| SQL Generation | ✅ PASS | 43/43 tests pass |
-| Security | ✅ PASS | PII and injection blocked |
-| Documentation | ✅ PASS | README + walkthrough |
-
----
-
-## Acceptance Criteria Verification
-
-| Criteria | Status | Evidence |
-|----------|--------|----------|
-| `docker compose up` works | ✅ | Compose file validated |
-| 3 killer queries < 4s | ✅ | 3.63s for full suite |
-| Tier 3 no PII | ✅ | Live curl verified |
-| Audit chain valid | ✅ | 455,807 events verified |
-| UI is production-grade | ✅ | Dashboards implemented |
-| No broken links | ✅ | Verified |
-| No TODO in code | ✅ | Verified |
-
----
+| Criterion | Local Status |
+|---|---:|
+| `docker compose config` validates | Pass |
+| API returns transparent query metadata | Pass |
+| Tier 3 PII filtering at API layer | Pass |
+| 58-table schema parity | Pass |
+| Critical local queries under 4 seconds | Pass |
+| Frontend production build | Pass |
+| C4 1000-user sovereign-cluster SLO | Pending external run |
+| C5 production vector-drift baseline | Pending external run |
+| Official 600GB data validation | Pending external run |
 
 ## Conclusion
 
-**OVERALL READINESS: 9.5 / 10**
+**Overall local readiness:** 8 / 10
+**Professor-assistant technical evaluation:** Ready locally
+**Sovereign-cluster production sign-off:** Not complete until C4, C5, and official 600GB ingest evidence are attached
 
-**LAUNCH-READY: YES**
-
-**PRODUCTION-READY: YES**
-
-**BIGGEST SINGLE RISK: None identified**
-
-**WHAT WILL IMPRESS THE USER: Clean API responses with visible SQL, audit trail, and sub-second query times.**
-
-**WHAT WILL EMBARRASS THE TEAM: Nothing - all core functionality is production-grade.**
+The largest remaining risk is not the local app path. It is unverified behavior on the official data volume and target cluster. Do not remove that caveat from the handoff package until the external runs are complete.

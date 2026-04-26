@@ -3,7 +3,7 @@ import { ErrorState } from './ErrorState'
 import { t } from '../../i18n'
 
 const meta = {
-  title: 'Demo/ErrorState',
+  title: 'Production/ErrorState',
   component: ErrorState,
 } satisfies Meta<typeof ErrorState>
 
@@ -14,7 +14,7 @@ export const Restricted: Story = {
   args: {
     severity: 'warning',
     message: t('errors.restricted'),
-    onRetry: () => console.info('restricted retry'),
+    onRetry: () => undefined,
   },
 }
 
@@ -22,7 +22,7 @@ export const Sensitive: Story = {
   args: {
     severity: 'error',
     message: t('errors.sensitive'),
-    onGoHome: () => console.info('sensitive go home'),
+    onGoHome: () => undefined,
   },
 }
 
@@ -30,7 +30,7 @@ export const Critical: Story = {
   args: {
     severity: 'critical',
     message: t('errors.generic'),
-    errorCode: 'DEMO-TRACE-HIDDEN',
-    onRetry: () => console.info('critical retry'),
+    errorCode: 'TRACE-HIDDEN',
+    onRetry: () => undefined,
   },
 }

@@ -46,7 +46,7 @@ export const TabularView: React.FC<TabularViewProps> = ({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-xl border border-nrg-border">
+      <div className="w-full max-w-full overflow-x-auto rounded-xl border border-nrg-border">
         <table className="min-w-full text-sm">
           <thead className="bg-nrg-navy-50">
             <tr>

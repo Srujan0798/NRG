@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide provides a step-by-step walkthrough of the NRG system for production verification and demonstration purposes.
+This guide provides a step-by-step walkthrough of the NRG system for production verification and evaluator handoff.
 
 ---
 
@@ -69,7 +69,7 @@ TOKEN="your_jwt_token_here"
 curl -X POST http://localhost:8000/query \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question": "How many publications are there?"}'
+  -d '{"query": "How many publications are there?"}'
 ```
 
 Response includes:
@@ -192,7 +192,7 @@ LIMIT 5
 curl -X POST http://localhost:8000/query \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question": "Find researcher with Aadhaar 1234-5678-9012"}'
+  -d '{"query": "Find researcher with Aadhaar 1234-5678-9012"}'
 ```
 
 **Expected**: `400 Bad Request` with "PII detected" error
@@ -206,7 +206,7 @@ curl -X POST http://localhost:8000/query \
 curl -X POST http://localhost:8000/query \
   -H "Authorization: Bearer $TIER3_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question": "Show me contact details for researchers working on AI"}'
+  -d '{"query": "Show me contact details for researchers working on AI"}'
 ```
 
 **Expected**: Anonymized results without email/phone/personal identifiers
@@ -221,7 +221,7 @@ curl -X POST http://localhost:8000/query \
 time curl -X POST http://localhost:8000/query \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question": "How many institutions are there?"}'
+  -d '{"query": "How many institutions are there?"}'
 ```
 
 **Expected**: Response in < 2 seconds for simple queries

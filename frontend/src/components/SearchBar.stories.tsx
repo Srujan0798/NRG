@@ -3,11 +3,11 @@ import SearchBar from './SearchBar'
 import { heroCopy } from '../i18n/hero-copy'
 
 const meta = {
-  title: 'Demo/SearchBar',
+  title: 'Production/SearchBar',
   component: SearchBar,
   args: {
     placeholderRotation: heroCopy.placeholders,
-    onSubmit: (query: string) => console.info('search submitted', query.length),
+    onSubmit: (_query: string) => undefined,
   },
 } satisfies Meta<typeof SearchBar>
 
