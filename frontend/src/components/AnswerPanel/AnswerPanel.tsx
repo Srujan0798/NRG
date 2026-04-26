@@ -17,6 +17,7 @@ interface AnswerPanelProps {
   verification_status?: boolean
   answer_confidence?: 'high' | 'partial' | 'low_clarify'
   sqlQuery?: string | null
+  sqlResults?: Array<Record<string, unknown>>
   rowsReturned?: number | null
   auditEventId?: string | null
   onNodeClick?: (node: GraphNode) => void
@@ -119,7 +120,11 @@ const downloadTextFile = (filename: string, content: string, type: string) => {
 
 const csvEscape = (value: string) => `"${String(value ?? '').replace(/"/g, '""')}"`
 
-const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ headers, rows }) => {
+const TabularView: React.FC<{
+  headers: string[]
+  rows: string[][]
+  testId?: string
+}> = ({ headers, rows, testId }) => {
   const [sortIndex, setSortIndex] = useState(0)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
 
@@ -150,7 +155,7 @@ const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ header
   }
 
   return (
-    <div className="max-w-full overflow-hidden rounded-xl border border-nrg-border">
+    <div className="max-w-full overflow-hidden rounded-xl border border-nrg-border" data-testid={testId}>
       <div className="flex items-center justify-between gap-3 border-b border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">
           {rows.length.toLocaleString('en-IN')} {t("auto.components.AnswerPanel.AnswerPanel.9")}
@@ -284,6 +289,39 @@ const extractTabularData = (response: string): { headers: string[]; rows: string
   return { headers: headers.slice(0, 8), rows: rows.slice(0, 20) }
 }
 
+const formatCellValue = (value: unknown): string => {
+  if (value === null || value === undefined || value === '') return '—'
+  if (typeof value === 'number') return new Intl.NumberFormat('en-IN').format(value)
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+  if (Array.isArray(value)) return value.map(formatCellValue).join(', ')
+  if (typeof value === 'object') return JSON.stringify(value)
+  return String(value)
+}
+
+const humanizeHeader = (key: string): string => (
+  key
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+)
+
+const buildSqlResultTable = (
+  sqlResults?: Array<Record<string, unknown>>
+): { headers: string[]; rows: string[][] } | null => {
+  if (!sqlResults?.length) return null
+
+  const headers = Array.from(
+    sqlResults.reduce((keys, row) => {
+      Object.keys(row).forEach((key) => keys.add(key))
+      return keys
+    }, new Set<string>())
+  ).slice(0, 12)
+
+  return {
+    headers: headers.map(humanizeHeader),
+    rows: sqlResults.slice(0, 500).map((row) => headers.map((key) => formatCellValue(row[key]))),
+  }
+}
+
 const generatePDF = async (response: string, citations: Citation[]) => {
   const content = `<!DOCTYPE html><html><head><title>NRG Intelligence Brief</title><style>
     ${printDesignTokenCss}
@@ -314,6 +352,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   verification_status,
   answer_confidence,
   sqlQuery,
+  sqlResults,
   rowsReturned,
   auditEventId,
 }) => {
@@ -334,6 +373,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
     () => responseType === 'tabular' ? extractTabularData(response) : null,
     [response, responseType]
   )
+  const sqlResultTable = useMemo(() => buildSqlResultTable(sqlResults), [sqlResults])
 
   const summary = useMemo(() => {
     const firstPara = response.split('\n')[0]
@@ -409,7 +449,13 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             </span>
             {t("auto.components.AnswerPanel.AnswerPanel.4")}</h3>
 
-          {responseType === 'tabular' && tabularData?.headers.length ? (
+          {sqlResultTable?.headers.length ? (
+            <TabularView
+              headers={sqlResultTable.headers}
+              rows={sqlResultTable.rows}
+              testId="sql-results-table"
+            />
+          ) : responseType === 'tabular' && tabularData?.headers.length ? (
             <TabularView headers={tabularData.headers} rows={tabularData.rows} />
           ) : responseType === 'statistical' ? (
             <StatisticalChart response={response} />

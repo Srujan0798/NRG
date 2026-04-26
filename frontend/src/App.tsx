@@ -131,44 +131,36 @@ const App: React.FC = () => {
     )
   } else if (pathname.startsWith('/app/audit/event/')) {
     content = (
-      <AuthProvider>
-        <AuthenticatedRoute>
-          <Suspense fallback={<DashboardLoading />}>
-            <AuditEvent />
-          </Suspense>
-        </AuthenticatedRoute>
-      </AuthProvider>
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <AuditEvent />
+        </Suspense>
+      </AuthenticatedRoute>
     )
   } else if (pathname === '/app/audit') {
     content = (
-      <AuthProvider>
-        <AuthenticatedRoute>
-          <Suspense fallback={<DashboardLoading />}>
-            <DPDPAudit />
-          </Suspense>
-        </AuthenticatedRoute>
-      </AuthProvider>
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <DPDPAudit />
+        </Suspense>
+      </AuthenticatedRoute>
     )
   } else if (pathname === '/app') {
     content = (
-      <AuthProvider>
-        <AuthenticatedRoute>
-          <Suspense fallback={<DashboardLoading />}>
-            <Hero />
-          </Suspense>
-        </AuthenticatedRoute>
-      </AuthProvider>
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <Hero />
+        </Suspense>
+      </AuthenticatedRoute>
     )
   } else {
     content = (
-      <AuthProvider>
-        <AppShell />
-      </AuthProvider>
+      <AppShell />
     )
   }
 
   return (
-    <>
+    <AuthProvider>
       <SkipLink />
       <NetworkStatusBanner />
       <div data-reduced-motion={reducedMotion ? 'true' : 'false'}>
@@ -176,7 +168,7 @@ const App: React.FC = () => {
           {content}
         </ErrorBoundary>
       </div>
-    </>
+    </AuthProvider>
   )
 }
 

@@ -18,7 +18,7 @@ export function PersonaToggle() {
   const [switchError, setSwitchError] = useState<string | null>(null)
   const tabListRef = useRef<HTMLDivElement>(null)
 
-  const switchPersona = async (role: PersonaRole) => {
+  const switchPersona = useCallback(async (role: PersonaRole) => {
     if (role === user?.role || switchingRole) return
     const persona = PERSONAS.find((item) => item.role === role)
     if (!persona) return
@@ -48,7 +48,7 @@ export function PersonaToggle() {
     } finally {
       setSwitchingRole(null)
     }
-  }
+  }, [login, switchingRole, user?.role])
 
   const handleTabKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     const currentIndex = PERSONAS.findIndex(p => p.role === user?.role)
@@ -73,7 +73,7 @@ export function PersonaToggle() {
       buttons?.[nextIndex]?.focus()
       void switchPersona(nextRole)
     }
-  }, [user?.role])
+  }, [switchPersona, user?.role])
 
   return (
     <div className="flex flex-col items-end gap-1">
