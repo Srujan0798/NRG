@@ -22,6 +22,9 @@
 - [Partitioning + PITR Backup](feedback_partitioning_pitr.md) — range-partition by year for >50M-row tables; quarterly DR drill with restore + WAL replay; a backup never restored is broken
 - [Intent-Aware PII Detection](feedback_intent_aware_pii.md) — PII regex misses schema-aware extraction intent ("show emails of researchers" passes regex); add intent classifier above sanitiser
 - [User-Acceptance Path Discipline](feedback_acceptance_path_discipline.md) — feature-flag every UI surface that depends on an unmet Quality Bar constraint; never expose unproven features in a live session
+- [Audit Reliability Check](feedback_audit_reliability_check.md) — when two same-day self-audits disagree by ≥3 points, the disagreement is itself the bug; reconcile before any external session
+- [Dashboard Decoupled Metadata](feedback_dashboard_decoupled_metadata.md) — hero counters render published ARIIA/NIRF national totals from `display_metadata.yaml`, not `COUNT(*)` on seeded rows; query engine uses real rows
+- [Broken venv Pytest Blocker](bugs_venv_pytest_blocker.md) — broken `.venv` symlink + router-eval stall + PG-dependent fixtures prevent full pytest from completing; LB-4 acceptance gates on rebuild + slow-marker + skip-on-no-DB
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)

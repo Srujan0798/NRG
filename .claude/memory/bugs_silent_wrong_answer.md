@@ -26,3 +26,24 @@ Two independent external audits (Grok 2026-04-25, Claude-as-Principal-Engineer 2
 - New external audits will likely name this risk again. Point them at LB-7 evidence first; if the audit still names it as open, the implementation is incomplete regardless of test counts.
 
 **Source:** Two external audits 2026-04-25 / 2026-04-26 — promoted to permanent rule 2026-04-26.
+
+---
+
+### 2026-04-26 extension: "too good to be true" inverse-failure mode
+
+MiniMax (6th external review) flagged a related class: a metric whose value is *suspiciously perfect* should also trip the anomaly detector, not just a missing value. Specific case observed:
+
+- **Vector drift score reported as `0.015`** against an SLO of `0.85`. Naïvely this looks "57× better than required". In reality, a drift score that low almost certainly means the baseline embeddings and the live embeddings are identical — the drift check was run against the same corpus that produced the baseline, or the baseline was never properly established.
+
+The same inverse-failure shape appears across the system:
+- Latency = 0 ms on a complex query → cache poisoning or short-circuited path.
+- 100% test pass rate on a brand new test file → the assertions are tautological (`assert True`).
+- 0 PII detections across thousands of queries → the regex never matched anything because the input was already pre-redacted upstream.
+- Audit chain `verify_chain() = (True, [], 0)` → empty file misread as valid.
+
+**How to apply (extension):**
+- Anomaly detector signal set in LB-7 includes `metric_too_perfect`: any health metric within 1% of its theoretical optimum across ≥3 consecutive measurements is logged as `anomaly:metric_too_perfect:<metric>` and halts auto-promotion to `green` on the Quality Bar scorecard.
+- Operator runbook at T-60 includes a **"sanity-check the green numbers"** step: any constraint reported as PASS with a metric near the theoretical limit is manually re-verified against an independent measurement before the session.
+- For the specific vector drift case: LB-7 wires `vector_drift_check.py` to require the baseline corpus and the live corpus be drawn from disjoint time windows; if they overlap by >50%, the run is rejected with `BASELINE_INVALID` rather than reporting a fake-perfect score.
+
+This closes the symmetric failure to silent-wrong-answer: silent-too-good answer.
