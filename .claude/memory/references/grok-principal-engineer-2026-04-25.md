@@ -87,3 +87,35 @@ If any same-day Principal Engineer, Product Auditor, Kimi/Moonshot, or MiniMax r
 2. #57 for LB-4 full-suite seal.
 3. #58, #59, and #60 for schema parity, confidence defense, and semantic retrieval.
 4. #61 and #62 for local seal and sovereign activation.
+
+## Final Ultimate Synthesis Addendum - 2026-04-27
+
+The later "final ultimate synthesis" paste is merged here as a reconciliation update, not as a new parallel protocol. Its durable content is the same rule already enforced by the active workflow: no claim is complete without current-head evidence from the right environment.
+
+| Synthesis claim | Durable home | Current repo truth |
+|---|---|---|
+| API-layer tier filtering is mandatory; visual-only hiding is a launch blocker | LB-1; `.claude/memory/patterns/tier-shape-boundary.md`; `src/api/main.py`; `src/api/response_filter.py` | Code is present and committed; live Tier 1/2/3 curl evidence still needs a running stack |
+| Red-team replay must run against live `/query`, not only unit tests | LB-5; `scripts/red_team_live_replay.py`; closure protocol #56 | Still open until the API is running and replay output is committed |
+| Credit-score parsing must be in the production prompt and validator | LB-2; `src/skills/text_to_sql/skill.py`; `src/skills/text_to_sql/schema_aware_prompt.py`; `src/skills/text_to_sql/validator.py` | Closed in code and tests; staging PostgreSQL evidence still required for final seal |
+| PgBouncer is required in the default path | Compose one-command memory; `docker-compose.yml`; `tests/config/test_docker_compose_pgbouncer.py` | Closed for compose; live startup blocked locally by Docker daemon availability |
+| Load evidence must include request count > 0 | C4 gate; `tests/load/`; `evidence/2026-04-27/local_load_suite*.log` | Local harness fixed; sovereign-cluster SLO still open |
+| Audit chain restart proof is required | `.claude/memory/bugs/audit-singleton.md`; audit tests; closure protocol #61 | Local singleton/reset tests pass; live process-restart proof still required |
+| Vector drift cannot be claimed while Qdrant has zero vectors | C5 gate; `scripts/vector_drift_check.py`; closure protocol #62 | Still open; local evidence reports empty Qdrant collection |
+| HALL_OF_SHAME and Dhairya failure patterns must remain visible | `HALL_OF_SHAME.md`; `src/data/schema/failed_queries/HALL_OF_SHAME.md` | Present |
+| Copy Answer and View Source Data are required user trust controls | Frontend production workspace; `frontend/src/i18n/en-IN.ts`; frontend tests | Present in UI strings; browser evidence should be refreshed after any UI change |
+| DB co-sign and runtime evidence are part of the final seal | Audit DB co-sign tests; local release gates; cluster activation | Local tests pass; production Postgres runtime proof still required |
+
+### Corrections To The Synthesis Prompt
+
+Two claims in the pasted synthesis are not true for `db_struct.sql` and must not be repeated as facts:
+
+1. `innovations_at_various_stages_of_technology_readiness_level` is 59 characters, not 62. PostgreSQL identifier risk still exists through generated aliases and 63-character schema objects, so safe-view discipline remains valid.
+2. The schema has no composite primary keys. It has composite unique constraints on support tables such as `auth_group_permissions(group_id, permission_id)` and `auth_user_groups(user_id, group_id)`.
+
+### Execution Rule
+
+If the final synthesis prompt is pasted again, do not reprocess it. Continue from `docs/specs/CLOSURE_PLAN_2026-04-26.md` and the 2026-04-27 reconciliation snapshot:
+
+1. Start a live stack and regenerate LB-1/LB-5 evidence.
+2. Run the three critical production queries with SQL, citations, audit IDs, and timing evidence.
+3. Close cluster-only C4/C5/600GB gates only on the sovereign environment.
