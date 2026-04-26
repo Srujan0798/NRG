@@ -1,6 +1,6 @@
 ---
 name: Principal Engineer audit merge - 2026-04-25
-description: Maps same-day Grok and Claude Principal Engineer readiness audits into existing launch blockers, risk register entries, Text-to-SQL hardening tests, and query corpus.
+description: Maps same-day Grok, Claude, Product Auditor, Kimi/Moonshot, and MiniMax readiness audits into existing launch blockers, risk register entries, Text-to-SQL hardening tests, and query corpus.
 type: reference
 ---
 
@@ -58,16 +58,30 @@ The Kimi/Moonshot review and its self-audit cross-check repeated the same produc
 | Credit parsing, TRL synonyms, patent-cost join key, query-plan indexes, and follow-up context remain the hard Text-to-SQL correctness spine | LB-2, LB-6, LB-7, LB-8; `tests/benchmarks/killer_queries.yaml`; `tests/benchmarks/test_text_to_sql_prompt_hardening.py` | Covered by existing tests and schema work; live execution still required |
 | Kimi's three strategic analytics questions | `tests/benchmarks/killer_queries.yaml` `KILLER-13..15` | Already in canonical corpus |
 
+## MiniMax Addendum
+
+The MiniMax review converged on the same hard blockers and added two new strategic analytics queries. Its user-session workarounds are classified as feature-flag discipline only; they do not replace the required LB evidence.
+
+| Added emphasis | Durable home | Status |
+|---|---|---|
+| Follow-up context loss is the most natural user-session failure mode; Q10/Q12 must be treated as live-flow blockers, not only regression fixtures | LB-2, LB-7; `.claude/memory/bugs/silent-wrong-answer.md`; `tests/benchmarks/killer_queries.yaml` ADV follow-up cases | Covered; current-head live proof still required |
+| Audit-chain singleton repair must survive process restart and runtime append, not only one rebuild script | `.claude/memory/bugs/audit-singleton.md`; `.claude/memory/patterns/audit-reliability-check.md`; closure protocol #61 | Covered; final seal requires fresh verify output |
+| The 47-to-58 table bridge must either create the support tables or explicitly document separate ownership; ambiguity blocks schema parity | LB-6; `tests/data/test_schema_parity.py`; closure protocol #58 | Covered; open until schema parity is live |
+| Full-suite stalls and slow PII tests are CI confidence blockers even when focused suites pass | LB-4; `.claude/memory/bugs/venv-pytest-blocker.md`; closure protocol #57 | Open until canonical suite evidence is current |
+| 6-node pipeline checks must include routing metadata, provider fallback, verifier citation checks, and graceful degradation on node failure | LB-7; orchestration tests; `src/orchestration/` | Covered by existing gates; live and full-suite evidence still required |
+| MiniMax strategic analytics questions on TRL progression, cost-per-patent versus TRL diversity, and PhD-course-to-incubation gap | `tests/benchmarks/killer_queries.yaml` `KILLER-16..18` | KILLER-16 already existed; KILLER-17..18 added during this merge |
+
 ## Verification Performed During Merge
 
 - `tests/benchmarks/test_text_to_sql_prompt_hardening.py` passed on 2026-04-26.
 - `schema_aware_prompt.py` was restored to read `db_struct.sql` from the repository root.
 - Kimi/Moonshot strategic questions are already present as `KILLER-13..15`.
+- MiniMax strategic questions are present as `KILLER-16..18`.
 - No new blocker rows were created because the reviews map cleanly to LB-1 through LB-8 plus existing cluster gates.
 
 ## Execution Rule
 
-If any same-day Principal Engineer, Product Auditor, or Kimi/Moonshot review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
+If any same-day Principal Engineer, Product Auditor, Kimi/Moonshot, or MiniMax review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
 
 1. #56 for LB-1, LB-2, LB-3, and LB-5 live evidence.
 2. #57 for LB-4 full-suite seal.

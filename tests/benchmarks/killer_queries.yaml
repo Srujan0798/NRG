@@ -283,3 +283,14 @@ v11_killer_queries:
     insight_for_user: "Exposes which IIT's tech-transfer office is actually translating lab research into commercial products. Direct ANRF input for industry-collaboration funding allocation."
     notes: "Stage ordinality requires explicit CASE mapping — lexicographic ORDER BY on 'Level 1' / 'Level 10' / 'Level 2' is wrong. Two paired CTEs (per institute), then a stage-anchored LEFT JOIN with advancement-rate subquery. Stresses semantic layer for stage ordering + LB-6 column rename."
 
+  - id: KILLER-17
+    nl: "For every institute, calculate government grant received per granted patent, then compare that cost efficiency with TRL stage diversity across Level 1 to Level 9."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "status = 'Granted'", "COUNT(DISTINCT", "tech_readiness_stage", "cost_per_patent", "trl_stage_count", "NULLIF", "ORDER BY"]
+    insight_for_user: "Shows whether broad technology-readiness portfolios correlate with lower patent conversion cost. Direct input for choosing broad-portfolio funding versus concentrated-bet funding."
+    notes: "MiniMax strategic query. Three-table correlation: grants, granted patents, and TRL diversity. Forces correct patent join key plus semantic TRL-stage handling."
+
+  - id: KILLER-18
+    nl: "Find institutes with strong PhD-level innovation course offerings but low startup incubation output: high PhD courses and credits, low incubated or funded startups."
+    must_contain: ["WITH", "academic_courses_details", "SPLIT_PART", "level_of_course = 'PhD'", "incubation_details", "startup_recognition", "LEFT JOIN", "startup_per_phd_course", "startup_per_phd_credit"]
+    insight_for_user: "Identifies the research-to-enterprise missing middle: institutes with strong advanced training but weak incubation conversion. Points funding toward incubation centers, technology transfer, and industry partnerships."
+    notes: "MiniMax strategic query. Crosses course depth, incubation output, and startup recognition. Stresses credit parsing plus left-join zero-output handling."
