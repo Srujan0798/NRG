@@ -44,15 +44,30 @@ The later Product Auditor review emphasized funding-readiness, data-sovereignty 
 | Scale roadmap requires composite indexes, partitioning, materialized views, load evidence, Helm, and disaster-recovery proof | LB-6; C4/C5 cluster gates; `.claude/memory/patterns/partitioning-pitr.md`; `infrastructure/helm/nrg/`; `infrastructure/sovereign/disaster_recovery.sh` | Covered; cluster-bound proof still required |
 | Three strategic Product Auditor queries on TRL conversion by state, academic-origin patent growth, and three-party collaboration | `tests/benchmarks/killer_queries.yaml` `KILLER-10..12` | Already in canonical corpus |
 
+## Kimi/Moonshot Addendum
+
+The Kimi/Moonshot review and its self-audit cross-check repeated the same production blockers with sharper severity language. The durable signal is already captured in existing gates; the operator suggestions to bypass weak surfaces are treated only as feature-flag discipline, never as completion evidence.
+
+| Added emphasis | Durable home | Status |
+|---|---|---|
+| Tier payloads must differ structurally, not just visually; identical Tier 1/2/3 JSON is a compliance failure | LB-1; `.claude/memory/patterns/tier-shape-boundary.md`; `scripts/regen_evidence.sh`; `tests/api/test_tier_isolation_live.py` | Open until 09/10/11 evidence is regenerated against current HEAD |
+| Live red-team evidence must supersede contradictory old reports; unit-level security passes cannot close the live-gateway question | LB-5; `scripts/red_team_live_replay.py`; closure protocol #56 | Open until replay output is timestamped and audit-bound |
+| Zero-request load output is a failed C4 run, not partial evidence | C4 cluster gate; `tests/load/locustfile.py`; `scripts/load_test_run.py`; `docs/ops/LOAD_TEST_REPORT_TEMPLATE.md` | Cluster-bound until request count, p95, p99, and failure rate are recorded |
+| Vector drift quality below SLO means the RAG path cannot be part of a user-facing flow until the Qdrant baseline is established | C5 cluster gate; `scripts/vector_drift_check.py`; `.claude/memory/patterns/acceptance-path-discipline.md` | Cluster-bound; feature flag required while C5 is below PASS |
+| Audit-chain mismatch must be treated as a C2 blocker until runtime append and rebuild paths verify with the same key discipline | `.claude/memory/bugs/audit-singleton.md`; `.claude/memory/patterns/audit-reliability-check.md`; closure protocol #61 | Covered; final seal requires fresh verify output |
+| Credit parsing, TRL synonyms, patent-cost join key, query-plan indexes, and follow-up context remain the hard Text-to-SQL correctness spine | LB-2, LB-6, LB-7, LB-8; `tests/benchmarks/killer_queries.yaml`; `tests/benchmarks/test_text_to_sql_prompt_hardening.py` | Covered by existing tests and schema work; live execution still required |
+| Kimi's three strategic analytics questions | `tests/benchmarks/killer_queries.yaml` `KILLER-13..15` | Already in canonical corpus |
+
 ## Verification Performed During Merge
 
 - `tests/benchmarks/test_text_to_sql_prompt_hardening.py` passed on 2026-04-26.
 - `schema_aware_prompt.py` was restored to read `db_struct.sql` from the repository root.
+- Kimi/Moonshot strategic questions are already present as `KILLER-13..15`.
 - No new blocker rows were created because the reviews map cleanly to LB-1 through LB-8 plus existing cluster gates.
 
 ## Execution Rule
 
-If any same-day Principal Engineer or Product Auditor review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
+If any same-day Principal Engineer, Product Auditor, or Kimi/Moonshot review is pasted again, do not reprocess it. Point to this file, then continue the closure sequence:
 
 1. #56 for LB-1, LB-2, LB-3, and LB-5 live evidence.
 2. #57 for LB-4 full-suite seal.
