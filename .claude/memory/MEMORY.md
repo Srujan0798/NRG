@@ -14,6 +14,10 @@
 - [External-Prompt-Merge Skill](reference_external_prompt_merge.md) — canonical pattern for absorbing external review prompts (Grok/Cowrk/etc) into workflow files
 - [SKILL.md Mass-Deletion Guard](bugs_skill_md_deletions.md) — restore unstaged SKILL.md deletions immediately; floor is 50 files in .agents/skills
 - [Silent Wrong-Answer Risk](bugs_silent_wrong_answer.md) — biggest failure mode is a confident wrong answer on ambiguous queries; engine must detect anomaly + refuse to ship low-confidence (LB-7)
+- [PostgreSQL 63-byte Identifier Limit](bugs_postgres_identifier_limit.md) — the 62-char `innovations_at_various_stages_of_technology_readiness_level` column will crash on any LLM-emitted alias; rename or VIEW-alias before LLM exposure
+- [DB-Layer Defence-in-Depth](feedback_db_layer_defence.md) — third defence layer below SQL filter and response shape: pg_anonymizer dynamic masking + native PL/pgSQL HMAC trigger
+- [Async Compute Queue (SLURM/AIRAWAT)](feedback_async_compute_queue.md) — sovereign HPC clusters queue jobs; gov LBs kill HTTP at 60s; return 202+task_id and poll/WebSocket
+- [k-Anonymity Threshold](feedback_k_anonymity_threshold.md) — reject Tier 2/3 queries whose WHERE-clause cohort < k=5 to block inference attacks (DPDP §8)
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)

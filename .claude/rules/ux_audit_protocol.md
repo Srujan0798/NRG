@@ -636,3 +636,68 @@ Sessions cannot leak across browser instances or expire mid-flow without warning
 ---
 
 *Confidence is built one citation drawer at a time. Insight is what makes the user lean forward. Logout safety is what keeps them coming back.*
+
+---
+
+## 12. INDIAN-CONTEXT UX (added 2026-04-26 from third external review)
+
+NRG runs on Indian government / academic infrastructure. Five UX checks are specific to that context — they cover Bhashini, government-network latency, mid-computation transparency, null-result handling, and mobile data degradation for ministry officials.
+
+### 12.1 — Cold-start within 800 ms
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| I1 | Initial dashboard render completes within 800 ms on the first authenticated login over a typical government network | | |
+| I2 | Aggregate metrics (total researchers, publications, active grants) are served from materialized views, not live `COUNT(*)` over 600 GB | | |
+| I3 | `EXPLAIN ANALYZE` on the dashboard query confirms materialized-view hit, not table scan | | |
+
+**Proof:** Lighthouse + materialized-view DDL committed under `evidence/<date>/dashboard_cold_start.json`.
+
+### 12.2 — Bhashini regional-language + typo resilience
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| I4 | Query in Hindi or Hinglish ("शोध at IIT Madras", "researcher ka funding kitna hai") routes through Bhashini NLP, returns the same data as the English equivalent | | |
+| I5 | If Bhashini API exceeds 1000 ms timeout, system falls back to English-only path with a one-line user-visible note; never silently mistranslates | | |
+| I6 | Misspelled academic terms ("hydrgen catalisis") produce a "Did you mean hydrogen catalysis?" prompt before any SQL is generated | | |
+
+**Proof:** Three-language acceptance recording (`evidence/<date>/bhashini_acceptance.webm`); fallback path tested by killing Bhashini container.
+
+### 12.3 — Mid-computation transparency loop
+
+For any query taking > 2 s, the user must see what the engine is doing. A frozen hourglass triggers refresh-and-cancel behaviour.
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| I7 | UI displays a live agent-state timeline: "Translating intent…" → "Mapping to schema…" → "Optimising query…" → "Refining results." | | |
+| I8 | Timeline updates from a /ws/tasks/{id} stream — no polling, no static spinners | | |
+| I9 | If any node takes > 5 s, an explicit "Still working — large dataset, expected duration ~10 s" message appears | | |
+| I10 | Cancelling the timeline aborts the underlying SLURM/inference job (via `/api/tasks/{id}/cancel`) — does not orphan the worker | | |
+
+**Proof:** Playwright recording of a 12-second query showing every transition; SLURM worker logs show clean cancellation.
+
+### 12.4 — Null-result de-escalation
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| I11 | A query returning zero rows renders an explicit empty state explaining the constraints that caused it | | |
+| I12 | The empty state proactively suggests one or two adjacent queries that would return data (e.g., "removing 'Phase 3' reveals 2 active startups") | | |
+| I13 | The empty state never shows a raw `[]` JSON, blank pane, or generic "Error" toast | | |
+| I14 | The engine NEVER hallucinates fabricated rows to satisfy the prompt — the empty state is the truth | | |
+
+**Proof:** Screenshot suite covering 5 deliberately-narrow queries.
+
+### 12.5 — Executive mobile data degradation
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| I15 | A 15-column analytical table opened on a 6-inch screen renders as a stacked summary card layout, not a horizontally-scrolling table | | |
+| I16 | Key metrics are surfaced first; secondary columns collapse behind a "Show all fields" disclosure | | |
+| I17 | CSS containment is strict — no row can break the viewport width | | |
+| I18 | Charts re-flow to single-column on viewports < 768 px | | |
+
+**Proof:** Browserstack screenshots across iPhone SE (375 px), iPhone 12 (390 px), Galaxy S10 (360 px), and a 7-inch tablet (768 px).
+
+---
+
+*The Indian context is not a localisation layer on top of an English product. It is the product. Cold-start, language, transparency, null-results, and mobile are the five surfaces a ministry official touches first.*

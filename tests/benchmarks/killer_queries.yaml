@@ -178,6 +178,18 @@ adversarial_breakers:
     correct_pattern: "Acknowledge limit, ask for clarifying constraint (institute? exact name match?), OR return partial network with confidence flag"
     wrong_pattern: "Generates a monstrous 4-table JOIN that returns nothing OR times out OR returns hallucinated network"
 
+  - id: ADV-21
+    nl: "Count projects by their innovation stage (TRL level), grouped per institute."
+    breaks: "PostgreSQL 63-byte identifier limit on `innovations_at_various_stages_of_technology_readiness_level` (62 chars) — any LLM-emitted alias triggers truncation crash"
+    correct_pattern: "Query routes through view `vw_innovations_trl` OR semantic-layer rename to `tech_readiness_stage`; LLM never sees the 62-char column"
+    wrong_pattern: "LLM emits `SELECT innovations_at_various_stages_of_technology_readiness_level AS x_count` → PG error 42602 identifier truncation; query crashes"
+
+  - id: ADV-22
+    nl: "Show grant funding details for the only female researcher aged 55 specialising in Deep Learning at IIT Manipur."
+    breaks: "k-anonymity inference attack: WHERE-clause narrows to single individual; tier filter sees no PII columns but cohort size = 1"
+    correct_pattern: "Engine rejects with `cohort below k=5 threshold` message; audit-logs k_anonymity_block; offers broader query"
+    wrong_pattern: "Returns the row because no PII column requested; effectively de-anonymises target via inference"
+
 # v1.1 KILLER queries — reserved, validate against LB-6 (58-table parity) before activating.
 v11_killer_queries:
   - id: KILLER-04
@@ -194,4 +206,25 @@ v11_killer_queries:
     nl: "International collaboration citation impact by domain; AI specifically — did cross-border co-authorship spike post-2020?"
     must_contain: ["advance_search_data", "collaboration", "ILIKE '%international%'", "year >= 2018", "AVG(CAST(total_citations"]
     insight_for_user: "Policy-driven shift in international AI collaboration patterns."
+
+  # KILLER-07..09 sourced from third external review (Principal Auditor 2026-04-26).
+  # Each maps to a sovereign-AI policy lever (ANRF / AIRAWAT / Bhashini).
+
+  - id: KILLER-07
+    nl: "Top 5 advanced-materials projects at IIT Gandhinagar with TRL >= 7, principal investigator in top-quartile credit score, but zero active industry funding."
+    must_contain: ["LEFT JOIN", "industry_funding_grants", "IS NULL", "split_part", "total_credit_score", "tech_readiness_stage"]
+    insight_for_user: "Stranded deep-tech IP — exact ANRF-actionable list of TRL-mature projects starved of commercialisation capital. Aligns with Anusandhan National Research Foundation mandate."
+    notes: "Forces the semantic-layer rename of the 62-char column (LB-6/LB-8). LEFT JOIN ... IS NULL is the canonical anti-join the LLM must emit correctly."
+
+  - id: KILLER-08
+    nl: "Correlation between C-DAC AIRAWAT GPU-hour allocations and resulting peer-reviewed publication output for AI startups, segmented by state."
+    must_contain: ["airawat_allocations", "SUM(gpu_hours_allocated)", "COUNT(DISTINCT", "state_name", "compute_efficiency_ratio", "NULLIF"]
+    insight_for_user: "Quantifies ROI on the government's democratisation of sovereign compute. Shows which states are converting subsidised GPU credits into citable AI research; exposes inefficiencies."
+    notes: "Cross-domain join: HPC infrastructure (AIRAWAT SLURM logs) × intellectual output × geographic jurisdiction. Impossible without a unified ontology."
+
+  - id: KILLER-09
+    nl: "Indigenous Bhashini language models actively integrated into civic-tech grants targeting rural populations; estimated demographic reach per model."
+    must_contain: ["bhashini_models", "project_model_utilization", "g.sector = 'Civic-Tech'", "d.region_classification = 'Rural'", "SUM(d.population_reach)"]
+    insight_for_user: "Empirical validation of National Language Translation Mission impact. Ministry sees which sovereign NLP models reach how many rural citizens through which civic schemes."
+    notes: "Fusion of Bhashini API metadata + grant ledger + demographic tracking. Highest-leverage MeitY/Bhashini policy query."
 
