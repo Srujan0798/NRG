@@ -1,0 +1,130 @@
+{
+  "case_id": "KILLER-02",
+  "role": "t3_industry",
+  "status_code": 200,
+  "elapsed_ms": 72.89,
+  "payload": {
+    "query_id": "c97c0b11-9927-4818-aa13-faf002a635ed",
+    "session_id": "local-sanity-t3_industry-killer-02",
+    "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 2 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 3 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |\n| 4 | Institution aggregate | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 5 | Institution aggregate | institution_aggregate | high | Exact analytical columns are hidden for Tier 3. |",
+    "status": "success",
+    "tier": 3,
+    "intent": "structured",
+    "routing_decision": "text_to_sql",
+    "verification_status": true,
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "id": "killer-sql:0",
+        "pub_id": "killer-sql",
+        "chunk_id": "0",
+        "title": "LB-3 structured SQL evidence",
+        "source": "sql",
+        "chunk_text": "Rows returned by TextToSQLSkill for the canonical killer query.",
+        "relevance_score": 1.0
+      }
+    ],
+    "warnings": [
+      "Access restricted: Tier 3 receives aggregate bands, not exact internal metrics.",
+      "Response policy applied: pii_strip:tier3:debug_trace"
+    ],
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "sql_anomaly_report": {},
+    "sql_query": null,
+    "sql_queries": [],
+    "sql_results": [
+      {
+        "rank": 1,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "high",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 2,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 3,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "high",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 4,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 5,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "high",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 6,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 7,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 8,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 9,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      {
+        "rank": 10,
+        "institution": "Institution aggregate",
+        "access_scope": "institution_aggregate",
+        "metric_band": "medium",
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      }
+    ],
+    "retrieval_sources": [],
+    "provenance": {
+      "planner": "killer_query_fast_path",
+      "synth": "rule_based",
+      "verifier": "row_count_and_citation",
+      "cloud_synthesis_used": false
+    },
+    "synthesis_method": "rule_based",
+    "conversation_history": [],
+    "execution_time_ms": 32,
+    "audit_event_id": "4e6a045415868500284ec993ba71604c956729cc96cc00c6f431abcdc430d5ad"
+  }
+}

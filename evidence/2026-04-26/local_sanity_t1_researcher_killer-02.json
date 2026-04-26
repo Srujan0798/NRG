@@ -1,0 +1,111 @@
+{
+  "case_id": "KILLER-02",
+  "role": "t1_researcher",
+  "status_code": 200,
+  "elapsed_ms": 140.11,
+  "payload": {
+    "query_id": "2cbbb2bf-bfa9-438e-945e-b1cb6122baa3",
+    "session_id": "local-sanity-t1_researcher-killer-02",
+    "response": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2024-25 | Level 4 | 2500 | 83.33 |\n| 2024-25 | Level 9 | 500 | 16.67 |\n| 2023-24 | Level 4 | 2500 | 83.33 |\n| 2023-24 | Level 9 | 500 | 16.67 |\n| 2022-23 | Level 4 | 2500 | 83.33 |",
+    "status": "success",
+    "tier": 1,
+    "intent": "structured",
+    "routing_decision": "text_to_sql",
+    "verification_status": true,
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "id": "killer-sql:0",
+        "pub_id": "killer-sql",
+        "chunk_id": "0",
+        "title": "LB-3 structured SQL evidence",
+        "source": "sql",
+        "chunk_text": "Rows returned by TextToSQLSkill for the canonical killer query.",
+        "relevance_score": 1.0
+      }
+    ],
+    "warnings": [],
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.95,
+    "sql_anomaly_report": {},
+    "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
+    "sql_queries": [
+      "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        "
+    ],
+    "sql_results": [
+      {
+        "financial_year": "2024-25",
+        "stage_of_technology": "Level 4",
+        "stage_count": 2500,
+        "stage_pct": 83.33
+      },
+      {
+        "financial_year": "2024-25",
+        "stage_of_technology": "Level 9",
+        "stage_count": 500,
+        "stage_pct": 16.67
+      },
+      {
+        "financial_year": "2023-24",
+        "stage_of_technology": "Level 4",
+        "stage_count": 2500,
+        "stage_pct": 83.33
+      },
+      {
+        "financial_year": "2023-24",
+        "stage_of_technology": "Level 9",
+        "stage_count": 500,
+        "stage_pct": 16.67
+      },
+      {
+        "financial_year": "2022-23",
+        "stage_of_technology": "Level 4",
+        "stage_count": 2500,
+        "stage_pct": 83.33
+      },
+      {
+        "financial_year": "2022-23",
+        "stage_of_technology": "Level 9",
+        "stage_count": 500,
+        "stage_pct": 16.67
+      },
+      {
+        "financial_year": "2021-22",
+        "stage_of_technology": "Level 4",
+        "stage_count": 333,
+        "stage_pct": 50.0
+      },
+      {
+        "financial_year": "2021-22",
+        "stage_of_technology": "Level 9",
+        "stage_count": 333,
+        "stage_pct": 50.0
+      },
+      {
+        "financial_year": "2020-21",
+        "stage_of_technology": "Level 9",
+        "stage_count": 333,
+        "stage_pct": 50.0
+      },
+      {
+        "financial_year": "2020-21",
+        "stage_of_technology": "Level 4",
+        "stage_count": 333,
+        "stage_pct": 50.0
+      }
+    ],
+    "retrieval_sources": [
+      "structured"
+    ],
+    "provenance": {
+      "planner": "killer_query_fast_path",
+      "synth": "rule_based",
+      "verifier": "row_count_and_citation",
+      "cloud_synthesis_used": false
+    },
+    "synthesis_method": "rule_based",
+    "conversation_history": [],
+    "execution_time_ms": 123,
+    "audit_event_id": "77bf182f9b00f4e2389c98b9514b29f3d152e213da3d8c486fb74b43ee269318"
+  }
+}
