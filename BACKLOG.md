@@ -317,12 +317,12 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 ## HANDOVER PREPARATION — LOCAL ARTIFACTS COMPLETE ✅
 
-> Completed locally 2026-04-25. These artifacts prepare handover execution. They do not claim live UAT, C4 SLO, or final demo-video evidence until those are run on the sovereign staging environment.
+> Completed locally 2026-04-25. These artifacts prepare handover execution. They do not claim live UAT, C4 SLO, or final acceptance-recording evidence until those are run on the sovereign staging environment.
 
 | # | Task | Status | Protocol | Evidence / Files |
 |---|---|---|---|---|
 | A | UAT Test Scripts (T1/T2/T3) | DONE — scripts + runner | `PROTOCOL_UAT_TEST_SCRIPTS.md` | `docs/uat/UAT_SCRIPT_T1_RESEARCHER.md`, `docs/uat/UAT_SCRIPT_T2_GOVERNMENT.md`, `docs/uat/UAT_SCRIPT_T3_INDUSTRY.md`, `docs/uat/UAT_ORCHESTRATION_GUIDE.md`, `scripts/uat_run_session.py`, `evidence/03_uat_t*.md` |
-| B | Demo Video Storyboard | DONE — storyboard + demo mode + capture helper | `PROTOCOL_DEMO_VIDEO_STORYBOARD.md` | `docs/demo/DEMO_STORYBOARD.md`, `docs/demo/DEMO_SCRIPT.md`, `frontend/src/demo/DemoMode.tsx`, `scripts/record_demo.py`, `evidence/04_demo.sha256` |
+| B | Acceptance Recording Storyboard | DONE — storyboard + capture helper | `PROTOCOL_ACCEPTANCE_RECORDING_STORYBOARD.md` | `docs/acceptance/RECORDING_STORYBOARD.md`, `docs/acceptance/RECORDING_SCRIPT.md`, `frontend/src/acceptance/AcceptanceMode.tsx`, `scripts/record_acceptance.py`, `evidence/04_acceptance_recording.sha256` |
 | C | C4 Load Test Config | DONE — harness ready; live gate pending | `PROTOCOL_C4_LOAD_TEST.md` | `tests/load/locustfile.py`, `scripts/load_test_run.py`, `tests/load/test_slo_compliance.py`, `infrastructure/monitoring/dashboards/10_load_test.json`, `docs/ops/LOAD_TEST_REPORT_TEMPLATE.md`, `evidence/02_load_report.md` |
 | D | Full System Audit | DONE — audit automation ready | `PROTOCOL_SYSTEM_AUDIT.md` | `scripts/security_audit_full.py`, `scripts/test_suite_full.py`, `scripts/docs_sync_check.py`, `docs/ops/AUDIT_REPORT_2026-04-25.md`, `.claude/memory/audit_findings.md` |
 | E | Sprint Plan Endgame #29–34 | DONE — roadmap package | `PROTOCOL_SPRINT_PLAN_ENDGAME.md` | `docs/roadmap/ENDGAME_SPRINT_PLAN.md`, `docs/roadmap/PHASE_6_LIVE_COLLECTION.md`, `docs/roadmap/PHASE_7_BASE_MODEL.md`, `docs/roadmap/PHASE_8_RL_LOOP.md`, `docs/roadmap/PHASE_9_TWO_BRAIN.md`, `docs/roadmap/PHASE_10_SERVING.md`, `docs/roadmap/PHASE_11_RETRAINING.md` |
@@ -346,7 +346,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 | Gap ID | Issue | Severity | Owner | Action | Evidence File |
 |---|---|---|---|---|---|
-| GAP-D | Demo video `pitch/NRG_DEMO.mp4` not filmed | 🟡 P1 | DevOps Agent | Film on sovereign staging ≤3min | `evidence/04_demo.sha256` |
+| GAP-D | Acceptance recording not captured on sovereign staging | 🟡 P1 | DevOps Agent | Capture on sovereign staging ≤3min | `evidence/04_acceptance_recording.sha256` |
 | GAP-E | C4 P99 SLO load test not executed | 🟡 P1 | Backend Agent | `locust --users 1000 --run-time 5m` | `evidence/02_load_report.md` |
 | GAP-F | 600GB real dataset not loaded into PostgreSQL | 🟡 P1 | Database Agent | Follow `DATA_INTAKE_PROTOCOL.md` | `evidence/01_stage_up.json` |
 | GAP-G | UAT sessions not done (Professor/Ministry/Industry) | 🟡 P1 | Product Agent | Follow `UAT_RESULTS.md` template | `evidence/03_uat_*.md` |
@@ -379,7 +379,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 
 | # | Item | Status | Action | Evidence File |
 |---|------|--------|--------|---------------|
-| 1 | Demo video (NRG_DEMO.mp4) | ⏸️ Pending | Film ≤3min on sovereign staging, add subtitles | `evidence/04_demo.sha256` |
+| 1 | Acceptance recording | ⏸️ Pending | Capture ≤3min on sovereign staging, add subtitles | `evidence/04_acceptance_recording.sha256` |
 | 2 | UAT session — T1 Professor | ⏸️ Pending | 1hr session, 10 queries, professor | `evidence/03_uat_t1.md` |
 | 3 | UAT session — T2 Ministry | ⏸️ Pending | 1hr session, 10 queries, liaison | `evidence/03_uat_t2.md` |
 | 4 | UAT session — T3 Industry | ⏸️ Pending | 1hr session, 10 queries, partner | `evidence/03_uat_t3.md` |
