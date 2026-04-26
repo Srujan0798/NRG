@@ -20,6 +20,7 @@ dependencies = [
     "pytest==8.2.2",
     "faker==22.6.0",
     "fastapi==0.115.0",
+    "python-multipart>=0.0.9",
     "uvicorn==0.34.0",
     "httpx==0.28.1",
     "requests==2.32.3",
