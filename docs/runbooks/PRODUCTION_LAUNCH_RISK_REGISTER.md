@@ -57,6 +57,8 @@ The operator running the session keeps a printed copy of the three backup querie
 | 26 | HMAC audit chain desynchronises after a manual `psql` UPDATE that bypassed the application-layer ORM | Low | Serious (zero-leakage proof breaks) | `feedback_db_layer_defence.md` + LB-6: native PL/pgSQL `BEFORE INSERT OR UPDATE` trigger function recomputes HMAC server-side using `current_setting('nrg.chain_secret')`; trigger is `SECURITY DEFINER` | Skip live audit-chain proof in the session; rebuild via `scripts/audit_rebuild.py` afterwards (see `bugs_audit_singleton.md`) |
 | 27 | Bhashini NLP API timeout / unavailable when a user submits a Hindi/Hinglish query | Medium | Minor | 1000 ms timeout on the translation node; on timeout, fall back to English-only path with a one-line user-visible note ("translation gateway slow — proceeding in English") | Inform the audience the external NLP gateway is lagging; demonstrate the platform's resilience by toggling to English-only bypass; never silently mistranslate |
 | 28 | k-anonymity inference attack: Tier 2/3 user narrows WHERE clause until cohort = 1 individual, extracts financial/personal data via aggregated columns | Medium | Catastrophic (DPDP §8) | `feedback_k_anonymity_threshold.md`: verifier-node check rejects queries whose filtered cohort < k=5; audit-logs every block; Tier 1 override path with explicit consent + reason | Show the rejection message live: "Query result cohort below privacy-preserving threshold (k=5)"; this is itself a credibility win — the system refuses to leak |
+| 29 | Sequential scan on `LIKE '%IIT Madras%'` text-filter against 100M-row publications table — query never returns | High at scale | Catastrophic | LB-6 + `feedback_partitioning_pitr.md`: GIN trigram indexes (`pg_trgm` extension) on every text column the planner is allowed to filter; semantic layer (LB-8) prefers institute-master JOIN over substring match | Acknowledge the scale; switch to materialized-view-backed answer; queue the long-running query as an async report (`feedback_async_compute_queue.md`) |
+| 30 | User asks "How is this different from Google?" mid-walk-through; operator improvises and undersells | High | Serious | Operator runbook gives the canonical one-sentence answer + canonical follow-up KILLER query that demonstrates the difference (multi-table cited answer Google cannot produce); rehearsed at T-60 | Read the canonical line verbatim: "Google returns 10 links; NRG returns one verified, cited, structured answer from 600 GB of confidential national data with zero leakage" — then run KILLER-13 |
 
 ---
 
@@ -74,16 +76,18 @@ Each numbered risk traces back to one or more of the 6 Hard Constraints (`.claud
 
 - C1 (PII): #2, #15, #23, #28
 - C2 (per-user audit binding): #2, #6, #15, #18, #26
-- C3 (multi-hop / domain): #1, #7, #17, #22
-- C4 (P99 / concurrency): #1, #9, #11, #14, #16, #24, #25
+- C3 (multi-hop / domain): #1, #7, #17, #22, #29
+- C4 (P99 / concurrency): #1, #9, #11, #14, #16, #24, #25, #29
 - C5 (vector drift): #8
 - C6 (egress / schema allowlist): #2, #10, #13, #27
 - LB-7 (silent wrong answer): #17
-- LB-6 (schema parity + 62-char column): #21, #22, #26
-- LB-8 (semantic layer + schema RAG): #1, #17, #22
+- LB-6 (schema parity + 62-char column): #21, #22, #26, #29
+- LB-8 (semantic layer + schema RAG): #1, #17, #22, #29
 - DB-layer defence-in-depth (`feedback_db_layer_defence.md`): #23, #26
 - Async compute queue (`feedback_async_compute_queue.md`): #24
 - k-anonymity threshold (`feedback_k_anonymity_threshold.md`): #28
+- Acceptance-path discipline (`feedback_acceptance_path_discipline.md`): #30 + every "feature exposed before its constraint is green"
+- Intent-aware PII (`feedback_intent_aware_pii.md`): all PII rows when query carries no literal PII but extracts PII columns
 
 A regression in any C# automatically promotes its bound rows to **Pre-launch P0 — must close before next session**.
 

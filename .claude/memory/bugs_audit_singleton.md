@@ -20,3 +20,18 @@ Root cause: `src/audit/__init__.py` has **two** singletons — class-level `Immu
   before the next `get_audit_log()` call. Fixed in `scripts/audit_rebuild.py` step 6 (commit `1562d694`).
 - If you ever consolidate the two singletons into one, also update `_reset()` to clear the module-level reference, and audit every call site that holds a long-lived `audit_log = get_audit_log()` reference (they will still hold the stale instance).
 - Long-running test suites and the FastAPI app hold `_audit_log_instance` for the process lifetime — concurrent rebuild while those are running will always leave a 1-event tail mismatch. Quiesce writers (kill pytest, stop uvicorn) before rebuilding for a truly clean chain.
+
+---
+
+### 2026-04-26 extension: AUDIT_CHAIN_KEY drift detection
+
+Kimi/Moonshot (5th external review) flagged a related failure mode: `AUDIT_CHAIN_KEY` rotation between processes. If process A appends with key K1 and process B (or a later restart) verifies with key K2, every event after the rotation point fails — and the system has no signal that the *cause* was a key rotation, not corruption. Operators waste time investigating a non-corruption.
+
+Required addition (does not lower the bar):
+
+- The first line of `.audit/chain.jsonl` is a header: `{"_v": 1, "key_id": "<sha256(AUDIT_CHAIN_KEY)[:16]>", "created_at": "..."}`. Metadata only — not part of the chain hash sequence.
+- On `verify_chain()` start, compute current `key_id` and compare to header. Mismatch returns a distinct error class (`KeyDriftError`) — operator knows the chain isn't corrupt; the key changed and the correct ops response is "rotate forward via documented procedure", not "rebuild from raw events".
+- `scripts/audit_rebuild.py` refuses to overwrite the header on rebuild — it preserves the original `key_id` and adds a `rotated_at_event_n` field if the operator confirms a rotation. This makes rotation auditable.
+- Test: `tests/audit/test_key_drift.py` writes a header with K1, verifies with K2, asserts `KeyDriftError` raised with both `key_id`s in the message.
+
+This closes the operator-blame failure mode where a hash mismatch caused by an env-var change looks identical to corruption.

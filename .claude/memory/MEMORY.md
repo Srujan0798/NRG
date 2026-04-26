@@ -20,6 +20,8 @@
 - [k-Anonymity Threshold](feedback_k_anonymity_threshold.md) — reject Tier 2/3 queries whose WHERE-clause cohort < k=5 to block inference attacks (DPDP §8)
 - [NetworkPolicy + WORM Audit Logs](feedback_network_policy_worm_logs.md) — pod-to-pod zero-trust + WORM-locked object storage on the audit chain to answer "what if a DBA tries to tamper?"
 - [Partitioning + PITR Backup](feedback_partitioning_pitr.md) — range-partition by year for >50M-row tables; quarterly DR drill with restore + WAL replay; a backup never restored is broken
+- [Intent-Aware PII Detection](feedback_intent_aware_pii.md) — PII regex misses schema-aware extraction intent ("show emails of researchers" passes regex); add intent classifier above sanitiser
+- [User-Acceptance Path Discipline](feedback_acceptance_path_discipline.md) — feature-flag every UI surface that depends on an unmet Quality Bar constraint; never expose unproven features in a live session
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
