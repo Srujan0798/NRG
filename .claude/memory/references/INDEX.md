@@ -7,7 +7,7 @@ External benchmarks, protocol definitions, and system overviews. Read-once, refe
 | [agent-warfare](agent-warfare.md) | Role hierarchy + evolution loop design | When assigning or evolving agent roles |
 | [dhairya-benchmark](dhairya-benchmark.md) | External engineer's SQL accuracy report (17 queries, 41% pass) | Before any Text-to-SQL pipeline change |
 | [external-prompt-merge](external-prompt-merge.md) | Pattern for absorbing external review prompts | When integrating Grok/Cowrk/etc feedback |
-| [grok-principal-engineer-2026-04-25](grok-principal-engineer-2026-04-25.md) | Maps the Grok Principal Engineer readiness audit to existing LB-1..LB-5, Text-to-SQL hardening tests, cluster gates, and query corpus | When reviewing 2026-04-25 Grok audit findings |
+| [grok-principal-engineer-2026-04-25](grok-principal-engineer-2026-04-25.md) | Maps same-day Principal Engineer readiness audits to existing LB rows, Text-to-SQL hardening tests, cluster gates, and query corpus | When reviewing 2026-04-25 Principal Engineer audit findings |
 | [guru-protocol](guru-protocol.md) | 5-section Guru + 6-section Shishya framework | Every session — defines task format |
 | [guru-shishya](guru-shishya.md) | Universal prompts governing all NRG work | When onboarding new agents |
 | [installed-skills](installed-skills.md) | Full inventory of all 66 skills | When assigning tasks |
