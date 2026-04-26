@@ -333,7 +333,7 @@ def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tupl
     query_lower = query.lower()
     import re
     aggregate_terms = re.compile(
-        r"\b(aggregate|aggregated|capacity|funding|grant|grants|crore|institution|institutions|top\s+\d+|highest|compare)\b"
+        r"\b(aggregate|aggregated|capacity|funding|grant|grants|crore|institution|institutions|top\s+\d+|highest|compare|publications?|citations?)\b"
     )
     if not aggregate_terms.search(query_lower):
         if previous_topic and any(term in query_lower for term in ["same", "compare", "last year", "previous"]):
@@ -1171,20 +1171,21 @@ async def query_with_langgraph(
         validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
-            try:
-                from src.audit import log_anomaly
-                log_anomaly(
-                    user_id=user_id,
-                    anomaly_type=validation["reason"],
-                    details={
-                        "query": request.query[:200],
-                        "details": validation.get("details", ""),
-                        "rate_limit_triggered": validation.get("rate_limit_triggered", False),
-                    },
-                    identifier=client_ip,
-                )
-            except Exception:
-                logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
+            if validation["reason"] != "RATE_LIMITED":
+                try:
+                    from src.audit import log_anomaly
+                    log_anomaly(
+                        user_id=user_id,
+                        anomaly_type=validation["reason"],
+                        details={
+                            "query": request.query[:200],
+                            "details": validation.get("details", ""),
+                            "rate_limit_triggered": validation.get("rate_limit_triggered", False),
+                        },
+                        identifier=client_ip,
+                    )
+                except Exception:
+                    logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
             raise HTTPException(
                 status_code=400,
                 detail=f"Security violation: {validation['reason']}"
