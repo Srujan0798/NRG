@@ -6,6 +6,7 @@ Defines markers, fixtures, and test categorization for CI blocking gates.
 import os
 os.environ["NRG_ENV"] = "dev"
 os.environ["NRG_QUOTA_DISABLED"] = "1"
+os.environ.setdefault("DATABASE_URL", "sqlite:///nrg_research.db")
 
 import pytest
 

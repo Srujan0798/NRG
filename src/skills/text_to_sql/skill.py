@@ -14,6 +14,10 @@ from src.security.query_allowlist import validate_sql_query
 from src.skills.text_to_sql.validator import QueryCompletenessValidator
 from src.skills.text_to_sql.sql_examples import get_top_k_examples, format_examples_for_prompt
 from src.skills.text_to_sql.schema_aware_prompt import build_schema_aware_prompt
+from src.skills.text_to_sql.schema_retriever import (
+    get_default_retriever,
+    build_relevant_ddl_prompt_section,
+)
 from src.observability.langfuse_tracer import _init_langfuse
 
 
@@ -573,7 +577,21 @@ FOLLOW-UP QUERIES:
 
         schema_guidance = build_schema_aware_prompt(user_query, dialect=self._db_type)
         user_content = f"{schema_prompt}\n\nUser Query: {user_query}"
-        if schema_guidance:
+
+        retriever_ddl = ""
+        try:
+            retriever_ddl = build_relevant_ddl_prompt_section(
+                question=user_query,
+                planner_output=None,
+                schema_retriever=get_default_retriever(),
+                top_k=5,
+            )
+        except Exception as e:
+            logger.debug("Schema retriever unavailable: %s", e)
+
+        if retriever_ddl:
+            user_content = f"{retriever_ddl}\n\n{user_content}"
+        elif schema_guidance:
             user_content = f"{schema_guidance}\n\n{user_content}"
         if conversation_context:
             user_content += f"\n\n{conversation_context}"

@@ -1,0 +1,565 @@
+# NRG Semantic Layer — Join Graph Definitions
+# dbt-style canonical join paths for the 58-table research graph
+# Built from: db_struct.sql (Source #3) + killer_queries.yaml corpus
+# Covers: KILLER-01..03, ADV-01..22, KILLER-04..09
+# Updated: 2026-04-26
+
+version: "1.0"
+description: |
+  Canonical join graphs for NRG Text-to-SQL semantic layer.
+  Each graph encodes the correct FK traversal path.
+  LLM must NEVER emit direct joins that skip junction tables.
+
+# ─────────────────────────────────────────────────────────────────
+# CORE INSTITUTE JOIN GRAPH
+# All tables that reference institutes join via institute name (text).
+# Central anchor: tb_institute_mstr (id, institute_name, state, city, etc.)
+# ─────────────────────────────────────────────────────────────────
+graphs:
+
+  # ── GRAPH-01: Institute Master → Any Institute-Referencing Table ──────────
+  institute_master:
+    description: "Central institute anchor. All tables that mention 'institute' join to this."
+    anchor: tb_institute_mstr
+    join_key: institute_name
+    tables:
+      - alias: institutions
+        table: tb_institute_mstr
+        columns: [id, institute_name, short_name, institute_type, state, city, address, established_year]
+        primary_key: id
+        semantic_name: "Institute"
+        description: "Master registry of all 1000+ institutions"
+
+      - alias: grants
+        table: innovation_grant_from_govt
+        join_on: institute
+        columns: [id, institute, gov_organisation_name, grant_received, year_of_receiving, as_on_year]
+        semantic_name: "Government Grants"
+        description: "Government grants by institute"
+
+      - alias: patents
+        table: patents_details
+        join_on: institute
+        columns: [id, institute, financial_year, patents_published, patents_granted, patents_commercialized]
+        semantic_name: "Patents"
+        description: "Patent counts by institute"
+
+      - alias: courses
+        table: academic_courses_details
+        join_on: institute
+        columns: [id, institute, financial_year, title_of_course, course_code, type_of_course, level_of_course, total_credit_score]
+        semantic_name: "Academic Courses"
+        description: "Academic courses and credit scores"
+
+      - alias: nirf
+        table: nirf_extracted_table
+        join_on: institute_name  # Note: different column name
+        columns: [id, pdf_record_id, institute_name, nirf_rank, total_score]
+        semantic_name: "NIRF Rankings"
+        description: "National Institutional Ranking Framework scores"
+
+      - alias: faculty
+        table: faculty_strength
+        join_on: institute
+        columns: [id, institute, sanctioned, actual, year]
+        semantic_name: "Faculty Strength"
+        description: "Faculty count by institute"
+
+      - alias: fdi
+        table: fdi_investment
+        join_on: institute
+        columns: [id, institute, state, sector, amount_received, year]
+        semantic_name: "FDI Investment"
+        description: "Foreign direct investment by institute"
+
+      - alias: seed_funding
+        table: seed_funding
+        join_on: institute
+        columns: [id, institute, startup_name, sector, amount, year, round]
+        semantic_name: "Seed Funding"
+        description: "Seed funding received by startups at institutes"
+
+  # ── GRAPH-02: Credit Score Parsing (KILLER-01, ADV-01) ─────────────────────
+  credit_score_analysis:
+    description: "Parse TEXT total_credit_score field via SPLIT_PART. Example: '3:45' → 3 credits."
+    anchor: academic_courses_details
+    join_key: institute
+    tables:
+      - alias: acd
+        table: academic_courses_details
+        columns: [id, institute, financial_year, title_of_course, total_credit_score, level_of_course]
+        critical_columns:
+          - name: total_credit_score
+            type: TEXT
+            format: "integer:integer (e.g., '3:45' means 3 credits)"
+            parse: "SPLIT_PART(total_credit_score, ':', 1)::double precision"
+            aggregation: SUM()
+            required_filter: financial_year
+        join_explicit: |
+          -- No junction needed — join directly on institute name
+          FROM academic_courses_details acd
+          JOIN tb_institute_mstr i ON i.institute_name = acd.institute
+          WHERE acd.financial_year = :fy
+
+  # ── GRAPH-03: TRL Stage Progression (KILLER-02, ADV-02, ADV-12) ───────────
+  trl_stage_progression:
+    description: "Track Technology Readiness Level (1-9) progression across years. Uses 62-char table."
+    anchor: innovations_at_various_stages_of_technology_readiness_level
+    # NOTE: table name is 62 chars — LLM must use semantic alias, NOT this name
+    table_alias: tech_trl_stages
+    safe_name: "tech_trl_stages"
+    join_key: institute
+    tables:
+      - alias: trl
+        table: innovations_at_various_stages_of_technology_readiness_level
+        # 62-char table — DO NOT use directly in SQL alias
+        # Use: SELECT * FROM vw_innovations_trl
+        columns: [id, institute, financial_year, stage_of_technology, project_count, grant_amount]
+        critical_columns:
+          - name: stage_of_technology
+            type: TEXT
+            values: ["Level 1", "Level 2", ..., "Level 9"]
+            # lexicographic sort is WRONG — use CASE to map to integers
+            correct_order: |
+              CASE stage_of_technology
+                WHEN 'Level 1' THEN 1 WHEN 'Level 2' THEN 2 WHEN 'Level 3' THEN 3
+                WHEN 'Level 4' THEN 4 WHEN 'Level 5' THEN 5 WHEN 'Level 6' THEN 6
+                WHEN 'Level 7' THEN 7 WHEN 'Level 8' THEN 8 WHEN 'Level 9' THEN 9
+                ELSE NULL
+              END
+        join_explicit: |
+          -- Direct join on institute + year
+          FROM vw_innovations_trl trl  -- SEMANTIC LAYER: maps to actual 62-char table
+          JOIN tb_institute_mstr i ON i.institute_name = trl.institute
+          WHERE trl.financial_year BETWEEN :start_year AND :end_year
+
+  # ── GRAPH-04: Grant vs Patent Efficiency (KILLER-03, ADV-03) ────────────────
+  grant_patent_efficiency:
+    description: "Compare YoY grant drops against patent growth. Requires CTE + HAVING."
+    anchor: innovation_grant_from_govt
+    join_key: institute
+    via:
+      - table: combined_ipo_patent_data
+        on: institute
+    tables:
+      - alias: grants
+        table: innovation_grant_from_govt
+        columns: [id, institute, year_of_receiving, grant_received, gov_organisation_name]
+        join_explicit: |
+          WITH grants AS (
+            SELECT institute, year_of_receiving, SUM(grant_received) AS total_grant
+            FROM innovation_grant_from_govt
+            GROUP BY institute, year_of_receiving
+          ),
+          patents AS (
+            SELECT institute, financial_year, SUM(patents_granted) AS total_patents
+            FROM patents_details
+            GROUP BY institute, financial_year
+          )
+          SELECT
+            g.institute,
+            g.year_of_receiving,
+            g.total_grant,
+            p.total_patents,
+            (p.total_patents::float / NULLIF(g.total_grant, 0)) AS efficiency_ratio
+          FROM grants g
+          JOIN patents p ON p.institute = g.institute
+            AND p.financial_year = g.year_of_receiving
+          WHERE ...
+      - alias: patents
+        table: combined_ipo_patent_data
+        # Note: combined_ipo_patent_data uses different column names
+        # Check: applicants, institute_name, status, application_filing_date
+        columns: [id, institute_name, applicants, status, patents_granted, financial_year]
+        join_explicit: |
+          -- Applicant institute must be matched via institute_name
+          -- Some rows have institute in 'applicants' column as free text
+          JOIN combined_ipo_patent_data p ON p.institute_name = g.institute
+            OR UPPER(TRIM(SPLIT_PART(p.applicants, ',', 1))) LIKE '%' || UPPER(g.institute) || '%'
+
+  # ── GRAPH-05: TRL Stage → Market Ready (KILLER-02 core) ───────────────────
+  trl_bottleneck_analysis:
+    description: "Find which TRL stage is the biggest bottleneck from Level 4 to Level 9."
+    tables:
+      - alias: trl
+        table: innovations_at_various_stages_of_technology_readiness_level
+        table_alias: vw_innovations_trl  # Safe view name
+        join_explicit: |
+          WITH stage_counts AS (
+            SELECT
+              institute,
+              financial_year,
+              stage_of_technology,
+              COUNT(*) AS count_at_stage,
+              CASE stage_of_technology
+                WHEN 'Level 4' THEN 4 WHEN 'Level 5' THEN 5
+                WHEN 'Level 6' THEN 6 WHEN 'Level 7' THEN 7
+                WHEN 'Level 8' THEN 8 WHEN 'Level 9' THEN 9
+                ELSE NULL
+              END AS trl_level
+            FROM vw_innovations_trl
+            WHERE stage_of_technology BETWEEN 'Level 4' AND 'Level 9'
+            GROUP BY institute, financial_year, stage_of_technology
+          )
+          SELECT
+            sc.financial_year,
+            sc.stage_of_technology,
+            SUM(sc.count_at_stage) AS total_count,
+            LAG(SUM(sc.count_at_stage)) OVER (
+              PARTITION BY sc.institute ORDER BY MIN(sc.trl_level)
+            ) AS prev_stage_count,
+            -- bottleneck = stage where drop is largest
+          FROM stage_counts sc
+          GROUP BY sc.financial_year, sc.stage_of_technology
+          ORDER BY sc.financial_year, MIN(sc.trl_level)
+
+  # ── GRAPH-06: Patent Cost Analysis (ADV-08) ─────────────────────────────────
+  patent_cost_analysis:
+    description: "Calculate cost per patent granted — grant / patents_granted for institutes with >₹10Cr grants."
+    tables:
+      - alias: grants
+        table: innovation_grant_from_govt
+        required_filter: grant_received > 10000000  # >₹10Cr
+        join_explicit: |
+          WITH institute_grants AS (
+            SELECT institute, SUM(grant_received) AS total_grant
+            FROM innovation_grant_from_govt
+            WHERE grant_received > 10000000
+            GROUP BY institute
+            HAVING SUM(grant_received) > 10000000
+          ),
+          institute_patents AS (
+            SELECT institute, SUM(patents_granted) AS total_patents
+            FROM patents_details
+            WHERE patents_granted > 0
+            GROUP BY institute
+          )
+          SELECT
+            g.institute,
+            g.total_grant,
+            COALESCE(p.total_patents, 0) AS total_patents,
+            g.total_grant::float / NULLIF(p.total_patents, 0) AS cost_per_patent
+          FROM institute_grants g
+          LEFT JOIN institute_patents p ON p.institute = g.institute
+          ORDER BY cost_per_patent DESC
+      - alias: patents
+        table: patents_details
+        required_filter: status = 'Granted'  # Only granted patents
+
+  # ── GRAPH-07: FDI + State Mapping (ADV-16) ────────────────────────────────
+  fdi_state_analysis:
+    description: "Total faculty salary vs research consultancy income per state."
+    tables:
+      - alias: fdi
+        table: fdi_investment
+        join_on: institute
+        join_explicit: |
+          -- fdi_investment has 'state' column directly
+          -- But to get institute→state, join via tb_institute_mstr
+          SELECT i.state, SUM(f.amount_received) AS total_fdi
+          FROM fdi_investment f
+          JOIN tb_institute_mstr i ON i.institute_name = f.institute
+          GROUP BY i.state
+      - alias: consultancy
+        table: research_consultancy_details_consultancy
+        join_on: institute
+        join_explicit: |
+          SELECT i.state, SUM(rc.total_amount) AS total_consultancy
+          FROM research_consultancy_details_consultancy rc
+          JOIN tb_institute_mstr i ON i.institute_name = rc.institute
+          GROUP BY i.state
+
+  # ── GRAPH-08: Student Intake vs Actual (ADV-14) ────────────────────────────
+  intake_utilization:
+    description: "Sanctioned intake vs actual student strength per program/year."
+    tables:
+      - alias: sanctioned
+        table: sanctioned_intake
+        join_on: institute
+        join_key_columns: [institute, program, year]
+      - alias: actual
+        table: actual_student_strength
+        join_on: institute
+        join_key_columns: [institute, program, year]
+        join_explicit: |
+          -- Normalize year names (financial_year vs academic_year)
+          -- Use tb_academic_year_mstr as lookup
+          WITH norm_year AS (
+            SELECT institute, program,
+              COALESCE(
+                NULLIF(REGEXP_REPLACE(sanctioned_year, '[^0-9/-]', '', 'g'), ''),
+                academic_year
+              ) AS norm_year
+            FROM sanctioned_intake
+          )
+          SELECT
+            s.institute,
+            n.norm_year,
+            s.sanctioned_intake,
+            a.actual_student,
+            (s.sanctioned_intake - a.actual_student) AS vacancy
+          FROM sanctioned_intake s
+          JOIN actual_student_strength a ON a.institute = s.institute
+            AND a.program = s.program
+            AND a.academic_year = s.sanctioned_year
+
+  # ── GRAPH-09: NIRF Ranking → Research Output (KILLER-05) ───────────────────
+  nirf_research_output:
+    description: "NIRF innovation rank vs industry-sponsored research income per faculty."
+    tables:
+      - alias: nirf
+        table: nirf_extracted_table
+        join_on: institute_name
+        join_key: institute_name  # in nirf_extracted_table
+      - alias: consultancy
+        table: research_consultancy_details_sponsered
+        join_on: institute
+        join_key_columns: [institute]
+      - alias: faculty
+        table: faculty_strength
+        join_on: institute
+        join_key_columns: [institute]
+
+  # ── GRAPH-10: Publication Domain Analysis (ADV-19, ADV-20) ─────────────────
+  publication_citation_analysis:
+    description: "Average citation count of open-access vs non-open-access publications."
+    tables:
+      - alias: publications
+        table: advance_search_data
+        join_on: institute
+        critical_columns:
+          - name: total_citations
+            type: TEXT
+            # Contains 'N/A' and non-numeric values
+            parse: |
+              CASE
+                WHEN total_citations ~ '^[0-9]+$' THEN total_citations::int
+                ELSE NULL
+              END
+            # Drops non-numeric rows; note if >5% excluded
+        join_explicit: |
+          SELECT
+            institute,
+            AVG(
+              CASE
+                WHEN total_citations ~ '^[0-9]+$'
+                THEN total_citations::int
+                ELSE NULL
+              END
+            ) AS avg_citations,
+            COUNT(*) FILTER (WHERE total_citations !~ '^[0-9]+$') AS invalid_citation_count
+          FROM advance_search_data
+          GROUP BY institute
+          HAVING COUNT(*) FILTER (WHERE total_citations !~ '^[0-9]+$') < COUNT(*) * 0.05
+
+  # ── GRAPH-11: Research Collaboration Network (ADV-07, ADV-20) ───────────────
+  collaboration_network:
+    description: "Depth-3 researcher collaboration network. rCTE with max_depth cap."
+    tables:
+      - alias: publications
+        table: advance_search_data
+        join_on: institute
+        # For collaboration: extract authors + co-authors
+        join_explicit: |
+          WITH RECURSIVE collab_network AS (
+            -- Base case: seed researcher
+            SELECT
+              institute,
+              authors,
+              1 AS depth,
+              ARRAY[institute] AS path
+            FROM advance_search_data
+            WHERE authors ILIKE '%' || :seed_researcher || '%'
+
+            UNION ALL
+
+            -- Recursive: co-authors from same publication
+            SELECT
+              p.institute,
+              p.authors,
+              cn.depth + 1,
+              cn.path || p.institute
+            FROM advance_search_data p
+            JOIN collab_network cn ON
+              -- Match on shared authors
+              p.authors && cn.authors  -- array overlap
+              OR p.authors <@ cn.path  -- subset of existing path (prevent cycles)
+            WHERE cn.depth < 3
+              AND NOT p.institute = ANY(cn.path)  -- prevent same-institute loops
+          )
+          SELECT DISTINCT institute, depth, path
+          FROM collab_network
+          WHERE depth <= 3
+
+  # ── GRAPH-12: Grant → Patent Pipeline (KILLER-04, KILLER-07) ──────────────
+  grant_patent_pipeline:
+    description: "Grant-to-patent efficiency with TRL filter for deep-tech projects."
+    tables:
+      - alias: grants
+        table: innovation_grant_from_govt
+        join_on: institute
+        join_key_columns: [institute, year_of_receiving]
+        required_join: |
+          -- Join grants to patents via institute + year
+          LEFT JOIN patents_details pd ON pd.institute = grants.institute
+            AND pd.financial_year = grants.year_of_receiving
+      - alias: trl
+        table: innovations_at_various_stages_of_technology_readiness_level
+        table_alias: vw_innovations_trl
+        join_on: institute
+        required_filter: |
+          -- LEFT JOIN ... IS NULL for KILLER-07 (no active industry funding)
+          WHERE trl.grant_amount IS NULL  -- No industry funding
+
+  # ── GRAPH-13: GPU Allocation → Publication Output (KILLER-08) ────────────────
+  airawat_gpu_publication:
+    description: "C-DAC AIRAWAT GPU allocation vs peer-reviewed publication output by state."
+    tables:
+      - alias: gpu_alloc
+        table: package_data  # Assumed: contains AIRAWAT allocation data
+        join_on: institute
+        # Note: may need specialized GPU hours table — check schema
+      - alias: publications
+        table: advance_search_data
+        join_on: institute
+        join_key_columns: [institute]
+
+  # ── GRAPH-14: Bhashini Model → Civic-Tech Reach (KILLER-09) ─────────────
+  bhashini_civic_tech:
+    description: "Indigenous language models integrated into civic-tech grants targeting rural populations."
+    tables:
+      - alias: bhashini
+        table: package_data  # Assumed: Bhashini model data
+        join_on: institute
+      - alias: projects
+        table: innovation_grant_from_govt
+        join_on: institute
+        required_filter: g.sector ILIKE '%Civic-Tech%'
+      - alias: utilization
+        table: project_model_utilization  # Junction: project → model utilization
+        join_on: project_id
+
+  # ── GRAPH-15: IPR → Commercialization (ADV-17) ──────────────────────────────
+  ipr_commercialization:
+    description: "Startups with FDI + seed funding + turnover > 50 lakh."
+    tables:
+      - alias: fdi
+        table: fdi_investment
+        join_on: startup_name
+        # Name-based join with UPPER(TRIM()) normalization
+        join_explicit: |
+          UPPER(TRIM(f.startup_name)) = UPPER(TRIM(s.startup_name))
+      - alias: seed
+        table: seed_funding
+        join_on: startup_name
+        join_explicit: |
+          -- seed_funding has startup_name
+          -- Join with UPPER(TRIM()) on both sides
+          UPPER(TRIM(sf.startup_name)) = UPPER(TRIM(s.startup_name))
+      - alias: turnover
+        table: startups_turnover_50_lacs
+        join_on: startup_name
+        required_filter: turnover > 5000000  # > 50 lakh
+        join_explicit: |
+          -- UNION FDI + seed, then join turnover
+          WITH startup_investment AS (
+            SELECT UPPER(TRIM(startup_name)) AS startup_key, SUM(amount) AS total_investment
+            FROM fdi_investment GROUP BY UPPER(TRIM(startup_name))
+            UNION ALL
+            SELECT UPPER(TRIM(startup_name)) AS startup_key, SUM(amount) AS total_investment
+            FROM seed_funding GROUP BY UPPER(TRIM(startup_name))
+          )
+          SELECT si.startup_key, SUM(si.total_investment) AS combined_investment
+          FROM startup_investment si
+          JOIN startups_turnover_50_lacs st ON UPPER(TRIM(st.startup_name)) = si.startup_key
+          WHERE st.turnover > 5000000
+          GROUP BY si.startup_key
+
+  # ── GRAPH-16: PhD Output Analysis ────────────────────────────────────────────
+  phd_output_analysis:
+    description: "PhD students graduated vs research output by institute."
+    tables:
+      - alias: phd
+        table: phd_students
+        join_on: institute
+        join_key_columns: [institute, year]
+      - alias: publications
+        table: advance_search_data
+        join_on: institute
+        join_key_columns: [institute]
+
+# ─────────────────────────────────────────────────────────────────
+# SAFE VIEW ALIASES
+# LLM must use these aliases, never the raw 62-char names
+# ─────────────────────────────────────────────────────────────────
+safe_views:
+  vw_innovations_trl:
+    actual_table: innovations_at_various_stages_of_technology_readiness_level
+    description: "TRL stage data with safe column aliases"
+    columns:
+      - alias: institute
+        actual: institute
+        description: "Institute name"
+      - alias: financial_year
+        actual: financial_year
+        description: "Financial year"
+      - alias: stage_of_technology
+        actual: stage_of_technology
+        description: "TRL stage (Level 1-9)"
+      - alias: project_count
+        actual: project_count
+        description: "Number of projects at this stage"
+      - alias: grant_amount
+        actual: grant_amount
+        description: "Grant amount for projects at this stage"
+
+# ─────────────────────────────────────────────────────────────────
+# JUNCTION TABLE REGISTRY
+# Tables that serve as many-to-many bridges
+# ─────────────────────────────────────────────────────────────────
+junction_tables:
+  - table: nirf_table_row
+    bridges: [nirf_extracted_table, nirf_pdf_record]
+    description: "NIRF rank rows belong to a NIRF extraction"
+
+  - table: package_data
+    bridges: [innovation_grant_from_govt, advance_search_data]
+    description: "Package/institution data cross-reference"
+
+  - table: project_model_utilization
+    bridges: [innovation_grant_from_govt, package_data]
+    description: "Links projects to Bhashini model utilization"
+
+# ─────────────────────────────────────────────────────────────────
+# JOIN KEY NORMALIZATION RULES
+# Text columns used for joining must be normalized
+# ─────────────────────────────────────────────────────────────────
+normalization:
+  institute_name:
+    rules:
+      - action: trim
+      - action: upper
+    applies_to:
+      - innovation_grant_from_govt.institute
+      - patents_details.institute
+      - academic_courses_details.institute
+      - faculty_strength.institute
+      - seed_funding.institute
+      - fdi_investment.institute
+      - nirf_extracted_table.institute_name
+      - research_consultancy_details_consultancy.institute
+      - research_consultancy_details_sponsered.institute
+      - phd_students.institute
+      - actual_student_strength.institute
+      - sanctioned_intake.institute
+
+  startup_name:
+    rules:
+      - action: trim
+      - action: upper
+    applies_to:
+      - fdi_investment.startup_name
+      - seed_funding.startup_name
+      - startups_turnover_50_lacs.startup_name
+      - startup_receiving_vc_investment.startup_name
+      - incubation_details.startup_name
