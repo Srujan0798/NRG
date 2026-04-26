@@ -115,3 +115,36 @@ def test_query_endpoint_accepts_question_alias(monkeypatch):
         assert stub_workflow.calls[0]["query"] == "Top 5 funding agencies by total grant amount"
     finally:
         ConsentService.has_consent = original_has_consent
+
+
+def test_fast_topic_matches_renewable_publication_control_query():
+    topic = api_main._fast_topic_for_query("List recent publications about renewable energy with citations.")
+
+    assert topic is not None
+    assert topic[0] == "Renewable Energy"
+
+
+def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
+    def rate_limited_validation(payload, identifier=None):
+        return {
+            "valid": False,
+            "reason": "RATE_LIMITED",
+            "details": "replay burst contained",
+            "rate_limit_triggered": True,
+        }
+
+    def fail_log_anomaly(*args, **kwargs):
+        raise AssertionError("rate-limited validation should not append anomaly events")
+
+    monkeypatch.setattr(api_main.prompt_sanitiser, "validate_query", rate_limited_validation)
+    monkeypatch.setattr("src.audit.log_anomaly", fail_log_anomaly)
+
+    client = TestClient(api_main.app)
+    response = client.post(
+        "/query",
+        json={"query": "blocked by sanitizer rate control"},
+        headers=_auth_headers(client),
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Security violation: RATE_LIMITED"
