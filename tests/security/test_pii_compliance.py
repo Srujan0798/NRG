@@ -59,6 +59,15 @@ class TestPIICompliance(unittest.TestCase):
         self.assertIn("aadhaar", types)
         self.assertIn("pan", types)
 
+    def test_fpe_detokenization_requires_token_vault(self):
+        """Format-preserving tokens cannot be reversed without the token vault."""
+        with self.assertRaisesRegex(NotImplementedError, "Token vault lookup is required"):
+            self.tokenizer.detokenize_pii("1234-5678-9012", "aadhaar")
+        with self.assertRaisesRegex(NotImplementedError, "Token vault lookup is required"):
+            self.tokenizer.detokenize_pii("ABCDE1234F", "pan")
+        with self.assertRaisesRegex(NotImplementedError, "Token vault lookup is required"):
+            self.tokenizer.detokenize_pii("9876543210", "phone")
+
     def test_fpe_encryption(self):
         """Test format-preserving encryption."""
         # Test Aadhaar FPE
@@ -75,6 +84,19 @@ class TestPIICompliance(unittest.TestCase):
         encrypted_phone = self.fpe_engine.encrypt_phone("9876543210")
         self.assertIsInstance(encrypted_phone, str)
         self.assertEqual(len(encrypted_phone), 10)  # 10-digit format
+
+    def test_fpe_decryption_disabled_by_policy(self):
+        """Raw PII recovery must fail closed in the application runtime."""
+        encrypted_aadhaar = self.fpe_engine.encrypt_aadhaar("123456789012")
+        encrypted_pan = self.fpe_engine.encrypt_pan("ABCDE1234F")
+        encrypted_phone = self.fpe_engine.encrypt_phone("9876543210")
+
+        with self.assertRaisesRegex(NotImplementedError, "Raw PII recovery is disabled"):
+            self.fpe_engine.decrypt_aadhaar(encrypted_aadhaar)
+        with self.assertRaisesRegex(NotImplementedError, "Raw PII recovery is disabled"):
+            self.fpe_engine.decrypt_pan(encrypted_pan)
+        with self.assertRaisesRegex(NotImplementedError, "Raw PII recovery is disabled"):
+            self.fpe_engine.decrypt_phone(encrypted_phone)
 
     def test_dpdp_compliance(self):
         """Test DPDP 2023 compliance validation."""
