@@ -124,6 +124,57 @@ def test_fast_topic_matches_renewable_publication_control_query():
     assert topic[0] == "Renewable Energy"
 
 
+def test_fast_topic_explicit_follow_up_overrides_previous_context():
+    topic = api_main._fast_topic_for_query(
+        "Now show the same for computer science",
+        previous_topic="Renewable Energy",
+    )
+
+    assert topic is not None
+    assert topic[0] == "Computer Science"
+
+
+def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
+    api_main._fast_query_context.clear()
+
+    first = api_main._fast_query_response(
+        "Which institutes in India have the highest grant amount in renewable energy?",
+        user_tier=1,
+        user_id="audit-user",
+        session_id="audit-session",
+    )
+    follow_up = api_main._fast_query_response(
+        "Now show the same for computer science",
+        user_tier=1,
+        user_id="audit-user",
+        session_id="audit-session",
+    )
+    restricted = api_main._fast_query_response(
+        "Which institutes in India have the highest grant amount in renewable energy?",
+        user_tier=3,
+        user_id="industry-user",
+        session_id="industry-session",
+    )
+
+    assert first is not None
+    assert "IIT Gandhinagar" in first["response"]
+    assert first["citations"]
+    assert follow_up is not None
+    assert "Computer Science" in follow_up["response"]
+    assert follow_up["citations"]
+    assert restricted is not None
+    assert "Access restricted" in restricted["response"]
+
+
+def test_release_seed_graph_covers_hydrogen_visualization():
+    graph = api_main._release_seed_graph("the hydrogen fuel cells", tier=1)
+
+    assert graph["nodes"]
+    assert graph["edges"]
+    assert any(node["label"] == "IIT Gandhinagar" for node in graph["nodes"])
+    assert all(node["type"] in {"paper", "author", "institution", "topic"} for node in graph["nodes"])
+
+
 def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
     def rate_limited_validation(payload, identifier=None):
         return {

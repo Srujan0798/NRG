@@ -35,11 +35,9 @@ Audit chain: ok, 442137 events checked, 0 broken indices
 |---|---|---:|---|
 | M5a.1 | Duplicate component cleanup | Complete locally | `GraphView.tsx.old` removed — no duplicate basenames under `frontend/src/components/` |
 | M5a.2 | Design token audit | Complete locally | Hardcoded RGBA replaced with CSS variables in 5 components |
+| M5a.3 | Self-hosted fonts | Complete locally | SohneDisplay and JetBrainsMono self-hosted in `frontend/public/fonts/` |
 | M5a.4 | Query entry surface | Complete locally | QueryPhaseProgress with 5s slow-network indicator added to Hero |
 | M5a.5 | Streaming response states | Complete locally | Five phases (planning→verified) with skeleton bridging — no blank wait |
-| M5a.3 | Self-hosted fonts | Complete locally | SohneDisplay and JetBrainsMono self-hosted in `frontend/public/fonts/` |
-| M5a.4 | Query entry surface | Pending | First input ready, templates available, slow-network timing captured |
-| M5a.5 | Streaming response states | Pending | Four response phases visible with no blank wait |
 | M5a.6 | Persona switcher | Complete locally | Arrow key nav (Home/End/Arrow keys) with roving tabIndex in PersonaToggle |
 | M5a.7 | Citation drawer with HMAC proof | Complete locally | Drawer opens quickly and verification returns proof state |
 | M5a.8 | Audit panel | Complete locally | Virtualized AuditEventList (react-window) fetching 2000 events; scroll-based loading needed for 400k+ |

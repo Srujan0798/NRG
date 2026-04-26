@@ -34,9 +34,31 @@ ROW_FLOOR_TABLES = [
 ]
 
 
+def resolve_local_database_url() -> str:
+    configured_test = os.getenv("NRG_TEST_DATABASE_URL")
+    if configured_test:
+        return configured_test
+
+    configured = os.getenv("DATABASE_URL")
+    populated = ROOT / "data/nrg_research.db"
+    if populated.exists():
+        if not configured:
+            return f"sqlite:///{populated}"
+        if configured in {
+            "sqlite:///nrg_research.db",
+            f"sqlite:///{ROOT / 'nrg_research.db'}",
+        }:
+            return f"sqlite:///{populated}"
+
+    if configured:
+        return configured
+
+    return f"sqlite:///{ROOT / 'nrg_research.db'}"
+
+
 class LocalClient:
     def __init__(self) -> None:
-        os.environ["DATABASE_URL"] = f"sqlite:///{ROOT / 'nrg_research.db'}"
+        os.environ["DATABASE_URL"] = resolve_local_database_url()
         os.environ["TESTING"] = "true"
         from src.config.database import DatabaseManager
 
@@ -102,7 +124,7 @@ def p95(values: list[float]) -> float:
 
 
 def sqlite_path() -> Path:
-    raw = os.getenv("DATABASE_URL", f"sqlite:///{ROOT / 'nrg_research.db'}")
+    raw = resolve_local_database_url()
     if raw.startswith("sqlite:///"):
         path = Path(raw.removeprefix("sqlite:///"))
         return path if path.is_absolute() else ROOT / path
@@ -137,7 +159,10 @@ def write_explain(sql: str, path: Path, case_id: str) -> None:
             body = f"EXPLAIN ANALYZE unavailable: {exc}"
             engine = "PostgreSQL"
     else:
+        from src.config.database import register_sqlite_compat_functions
+
         with sqlite3.connect(sqlite_path()) as conn:
+            register_sqlite_compat_functions(conn)
             rows = conn.execute(f"EXPLAIN QUERY PLAN {sql}").fetchall()
         body = "\n".join(str(tuple(row)) for row in rows)
         engine = "local SQLite volumetric proxy"

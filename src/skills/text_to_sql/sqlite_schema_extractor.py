@@ -1,9 +1,14 @@
 """SQLite Schema Extractor - Extract schema metadata only, NO data."""
 
+import os
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
 from src.config.database import get_database_manager, DatabaseManager
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+POPULATED_LOCAL_DB = REPO_ROOT / "data" / "nrg_research.db"
+ROOT_LOCAL_DB = REPO_ROOT / "nrg_research.db"
 
 
 POSTGRESQL_ONLY_TABLES = {
@@ -134,6 +139,29 @@ SQLITE_ONLY_TABLES = {
 }
 
 
+def _resolve_default_schema_database_url() -> Optional[str]:
+    configured_test = os.getenv("NRG_TEST_DATABASE_URL")
+    if configured_test:
+        return configured_test
+
+    raw_url = os.getenv("DATABASE_URL")
+    if raw_url and raw_url.startswith("postgresql://"):
+        return None
+
+    default_local_urls = {
+        None,
+        "",
+        "sqlite:///nrg_research.db",
+        f"sqlite:///{ROOT_LOCAL_DB}",
+    }
+    if POPULATED_LOCAL_DB.exists() and raw_url in default_local_urls:
+        return f"sqlite:///{POPULATED_LOCAL_DB}"
+
+    if raw_url and raw_url.startswith("sqlite:///"):
+        return raw_url
+    return f"sqlite:///{ROOT_LOCAL_DB}"
+
+
 class SQLiteSchemaExtractor:
     """Extract schema metadata from SQLite without exposing data."""
 
@@ -141,7 +169,12 @@ class SQLiteSchemaExtractor:
         if db_path:
             self.db_manager = DatabaseManager(f"sqlite:///{db_path}")
         else:
-            self.db_manager = get_database_manager()
+            database_url = _resolve_default_schema_database_url()
+            self.db_manager = (
+                DatabaseManager(database_url)
+                if database_url
+                else get_database_manager()
+            )
 
     def get_table_names(self) -> List[str]:
         """Get all table names from database (excludes PostgreSQL-only tables)."""

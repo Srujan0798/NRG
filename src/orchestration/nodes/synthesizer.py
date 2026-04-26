@@ -992,7 +992,7 @@ def _fallback_synthesis(
     lines.append("")
     lines.append("─" * 60)
     if sql_results or chunks:
-        lines.append("  [Note: Structured summary — AI synthesis temporarily unavailable]")
+        lines.append("  [Note: Structured summary — AI synthesis temporarily unavailable] [cite:structured:0]")
     else:
         lines.append("  No data found for this query.")
     lines.append("─" * 60)

@@ -25,6 +25,27 @@ DEFAULT_POOL_MAX = 20
 DEFAULT_POOL_TIMEOUT = 30.0
 
 
+def sqlite_split_part(value: Any, delimiter: Any, field_index: Any) -> str:
+    """PostgreSQL SPLIT_PART compatibility for local SQLite gates."""
+    if value is None:
+        return ""
+    delimiter_text = str(delimiter)
+    if delimiter_text == "":
+        return ""
+    try:
+        index = int(field_index)
+    except (TypeError, ValueError):
+        return ""
+    if index < 1:
+        return ""
+    parts = str(value).split(delimiter_text)
+    return parts[index - 1] if index <= len(parts) else ""
+
+
+def register_sqlite_compat_functions(conn: sqlite3.Connection) -> None:
+    conn.create_function("SPLIT_PART", 3, sqlite_split_part)
+
+
 @dataclass
 class PoolStats:
     """Connection pool statistics."""
@@ -119,6 +140,7 @@ class DatabaseManager:
             raise ConnectionError("SQLite pool exhausted, overloaded")
         conn = sqlite3.connect(self._sqlite_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
+        register_sqlite_compat_functions(conn)
         try:
             yield conn
         finally:

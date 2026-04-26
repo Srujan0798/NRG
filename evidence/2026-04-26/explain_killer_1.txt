@@ -1,15 +1,39 @@
 Killer query: KILLER-01
-Captured: 2026-04-25T21:00:42.668614+00:00
+Captured: 2026-04-26T17:34:36.988697+00:00
 Engine: local SQLite volumetric proxy
 
 SQL:
-WITH parsed AS (SELECT institute, SUM(CAST(SUBSTRING(total_credit_score, 1, INSTR(total_credit_score, ':') - 1) AS REAL) + COALESCE(CAST(NULLIF(SUBSTRING(total_credit_score, INSTR(total_credit_score, ':') + 1), '') AS REAL), 0)) AS total_credits FROM academic_courses_details WHERE 1 = 1 AND financial_year = '2022-23' GROUP BY institute), national AS (SELECT AVG(total_credits) AS avg_credits FROM parsed) SELECT p.institute, p.total_credits, n.avg_credits, (p.total_credits - n.avg_credits) AS above_national_average, 'SPLIT_PART' AS _key FROM parsed AS p CROSS JOIN national AS n ORDER BY p.total_credits DESC LIMIT 10
+
+        WITH parsed AS (
+            SELECT
+                institute,
+                SUM(
+                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)
+                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)
+                ) AS total_credits
+            FROM academic_courses_details
+            WHERE financial_year = '2022-23'
+            GROUP BY institute
+        ),
+        national AS (
+            SELECT AVG(total_credits) AS avg_credits FROM parsed
+        )
+        SELECT
+            p.institute,
+            p.total_credits,
+            n.avg_credits,
+            (p.total_credits - n.avg_credits) AS above_national_average
+        FROM parsed AS p
+        CROSS JOIN national AS n
+        ORDER BY p.total_credits DESC
+        LIMIT 10
+        
 
 Plan:
 (3, 0, 0, 'MATERIALIZE parsed')
-(12, 3, 0, 'SEARCH academic_courses_details USING INDEX idx_lb3_academic_year_institute (financial_year=?)')
-(65, 0, 0, 'MATERIALIZE national')
-(70, 65, 0, 'SCAN parsed')
-(85, 0, 0, 'SCAN p')
-(89, 0, 0, 'SCAN n')
-(107, 0, 0, 'USE TEMP B-TREE FOR ORDER BY')
+(11, 3, 0, 'SEARCH academic_courses_details USING INDEX idx_lb3_academic_year_institute (financial_year=?)')
+(58, 0, 0, 'MATERIALIZE national')
+(63, 58, 0, 'SCAN parsed')
+(78, 0, 0, 'SCAN p')
+(82, 0, 0, 'SCAN n')
+(99, 0, 0, 'USE TEMP B-TREE FOR ORDER BY')
