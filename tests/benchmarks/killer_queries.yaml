@@ -228,3 +228,24 @@ v11_killer_queries:
     insight_for_user: "Empirical validation of National Language Translation Mission impact. Ministry sees which sovereign NLP models reach how many rural citizens through which civic schemes."
     notes: "Fusion of Bhashini API metadata + grant ledger + demographic tracking. Highest-leverage MeitY/Bhashini policy query."
 
+  # KILLER-10..12 sourced from fourth external review (Principal Engineer & Product
+  # Auditor 2026-04-26, Section 3). Each is policy-actionable for the ANRF / DST / DPIIT.
+
+  - id: KILLER-10
+    nl: "Top 3 states where government-funded research institutes have the highest ratio of TRL-4 to TRL-7 innovations."
+    must_contain: ["tech_readiness_stage", "GROUP BY state", "Level 4", "Level 7", "ROUND", "ratio"]
+    insight_for_user: "Identifies states excelling at moving research from early-stage concepts to mature prototypes — a key indicator of healthy innovation ecosystem health."
+    notes: "Cross-table: institutions × projects × tech_readiness_stage. Forces semantic-layer rename of the 62-char column (LB-6/LB-8)."
+
+  - id: KILLER-11
+    nl: "Industry sector with the most growth in patent filings over the last 3 years, specifically projects that started as academic research."
+    must_contain: ["combined_ipo_patent_data", "GROUP BY industry_sector", "academic_origin", "year >=", "growth_rate"]
+    insight_for_user: "Tracks the academia-to-industry commercialisation pipeline. Direct policy input for ANRF on which industries best convert academic IP to filed patents."
+    notes: "Year-over-year growth requires CTE; academic-origin filter requires JOIN through projects.origin_type. Stresses Dhairya Q3/Q16 YoY pattern."
+
+  - id: KILLER-12
+    nl: "Researcher who collaborated with both a Government-tier institution AND an Industry-tier institution on a project that reached TRL-8."
+    must_contain: ["users", "project_institution_links", "tech_readiness_stage", "Level 8", "INTERSECT", "researcher_id"]
+    insight_for_user: "Surfaces individuals who bridge public, private, and academic sectors — the human nodes of the innovation graph that policy can reinforce or replicate."
+    notes: "Multi-tier traversal (Tier 2 + Tier 3 institution types via institution_master). Junction-table heavy (LB-8 semantic-layer test)."
+

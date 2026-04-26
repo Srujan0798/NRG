@@ -13,6 +13,16 @@
 3. **After the session**, log every fired risk in `evidence/<YYYY-MM-DD>/launch_risk_log.md` with timestamp + recovery taken + outcome. Append to audit chain.
 4. **After 3 sessions without a fired risk in a row**, retire the row to `archive/` only after `/self-evolve` confirms it is no longer relevant.
 
+### Recovery scripts (mandatory pre-flight)
+
+For every live session involving the 3 KILLER queries, prepare three pre-rehearsed backup queries and commit them to `evidence/<date>/recovery_scripts.sql` BEFORE T-60:
+
+- **Backup-1** — a guaranteed-safe sanity query (e.g. `SELECT COUNT(*) FROM publications;`). Used when any KILLER returns empty/wrong rows. Pivot the conversation: "let me first show you the system is alive — here is the live row count."
+- **Backup-2** — a categorical-filter query that does NOT depend on numerical aggregation (e.g. "list institutes in Gujarat by name"). Used when string-parsing or aggregation logic stumbles. Falls back from "average" or "ratio" framing to "list" framing without losing audience momentum.
+- **Backup-3** — a single-row-result query against pre-cached materialized-view data. Used when the live engine is too slow or the cluster is in a bad state. Must look indistinguishable from a live answer; cite the materialized view in the audit drawer for honesty.
+
+The operator running the session keeps a printed copy of the three backup queries in their hand. If any KILLER fails, they read Backup-N out loud as if it were the next planned step. No improvisation — improvisation is what audiences notice.
+
 ---
 
 ## The 15 Risks
