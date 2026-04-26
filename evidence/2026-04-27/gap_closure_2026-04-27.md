@@ -30,6 +30,8 @@
 - `src/audit/__init__.py`: high-volume audit append logs were lowered from `INFO` to `DEBUG`.
 - `tests/load/locustfile_c4.py`: C4 profile now uses current credentials, validates real response keys, and stops unauthenticated users with `StopUser`.
 - `tests/load/test_slo_under_load.py`: load tests now force local mocked LLMs and patch verifier LLM access, preventing real provider calls during load tests.
+- `src/api/main.py`: cost-per-granted-patent is now part of the bounded critical query path and preserves the `>₹10Cr` grant threshold.
+- `src/skills/text_to_sql/skill.py`: Text-to-SQL fallback for cost-per-granted-patent now joins patents through `combined_ipo_patent_data.applicants`, filters `status = 'Granted'`, preserves the `>₹10Cr` threshold, and sorts null ratios after valid ratios.
 
 ## Test Suite Status (2026-04-27)
 
@@ -46,6 +48,7 @@
 |------|---------|--------|
 | Audit, Locust contract, vector drift tests | `PYTEST_ADDOPTS=--no-cov .venv/bin/pytest tests/audit/test_db_cosign.py tests/config/test_locustfile_contract.py tests/observability/test_vector_drift.py tests/observability/test_vector_drift_scheduler.py -q` | **40 passed in 0.71s** |
 | Explicit local load suite | `PYTEST_ADDOPTS=--no-cov SLO_ENV=prod .venv/bin/pytest tests/load -m load -q --tb=short` | **17 passed in 32.51s** |
+| Critical query regression | `.venv/bin/pytest tests/benchmarks/test_dhairya_adversarial.py tests/api/test_langgraph_api.py::test_fast_topic_matches_renewable_publication_control_query tests/api/test_langgraph_api.py::test_fast_query_release_seed_fallback_covers_audit_walkthrough tests/api/test_langgraph_api.py::test_cost_per_patent_critical_query_uses_bounded_sql_path tests/api/test_langgraph_api.py::test_release_seed_graph_covers_hydrogen_visualization -q` | **78 passed in 4.84s** |
 | C4 Locust profile syntax | `.venv/bin/python -m py_compile tests/load/locustfile_c4.py` | **PASS** |
 | Vector drift local runtime health | `.venv/bin/python scripts/vector_drift_check.py --json --check-only` | **UNHEALTHY locally: Qdrant collection missing, 0/0 vectors** |
 

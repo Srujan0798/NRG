@@ -190,6 +190,15 @@ def test_cost_per_patent_queries_use_applicant_match(skill, query):
     _assert_complete(sql)
 
 
+def test_cost_per_patent_high_grant_threshold_is_preserved(skill):
+    sql = skill._fallback_sql("Calculate cost per patent granted for institutes with >₹10Cr grants.")
+    sql_upper = sql.upper()
+    assert "HAVING SUM(GRANT_RECEIVED) > 100000000" in sql_upper
+    assert "COST_PER_PATENT" in sql_upper
+    assert "ORDER BY COST_PER_PATENT IS NULL" in sql_upper
+    _assert_complete(sql)
+
+
 @pytest.mark.parametrize("query", RISING_STAR_QUERIES)
 def test_rising_star_queries_compare_institute_and_average_trends(skill, query):
     sql = skill._fallback_sql(query)

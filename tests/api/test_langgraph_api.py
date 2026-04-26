@@ -166,6 +166,42 @@ def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
     assert "Access restricted" in restricted["response"]
 
 
+def test_cost_per_patent_critical_query_uses_bounded_sql_path(monkeypatch):
+    captured_sql: dict[str, str] = {}
+
+    def fake_execute_sql(sql: str, user_tier: int = 1):
+        captured_sql["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {
+                    "institute": "IIT Madras",
+                    "total_grant": 150000000,
+                    "granted_patents": 12,
+                    "cost_per_patent": 12500000,
+                }
+            ],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+
+    payload = api_main._killer_query_response(
+        "Calculate the cost per patent granted for institutes with >₹10Cr grants.",
+        user_tier=1,
+        session_id="critical-cost-per-patent",
+    )
+
+    assert payload is not None
+    sql = captured_sql["sql"].lower()
+    assert "innovation_grant_from_govt" in sql
+    assert "combined_ipo_patent_data" in sql
+    assert "status = 'granted'" in sql
+    assert "applicants" in sql
+    assert "cost_per_patent" in sql
+    assert "100000000" in sql
+    assert payload["sql_results"][0]["cost_per_patent"] == 12500000
+
+
 def test_release_seed_graph_covers_hydrogen_visualization():
     graph = api_main._release_seed_graph("the hydrogen fuel cells", tier=1)
 

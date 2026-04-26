@@ -703,6 +703,9 @@ def _killer_query_response(
             "highest total innovation credits",
             "lab validation",
             "market ready",
+            "cost per patent",
+            "cost per granted patent",
+            "grant money per patent",
             "cut grants",
             "increased granted patents",
             "doing more with less",
@@ -846,6 +849,36 @@ def _fixed_structured_acceptance_sql(query_lower: str) -> str | None:
         FROM stage_counts AS s
         JOIN yearly_totals AS y ON y.financial_year = s.financial_year
         ORDER BY s.financial_year DESC, s.stage_count DESC
+        LIMIT 20
+        """
+    if "cost per patent" in query_lower or "cost per granted patent" in query_lower or "grant money per patent" in query_lower:
+        return """
+        WITH grants AS (
+            SELECT
+                institute,
+                SUM(grant_received) AS total_grant
+            FROM innovation_grant_from_govt
+            GROUP BY institute
+            HAVING SUM(grant_received) > 100000000
+        ),
+        patents AS (
+            SELECT
+                g.institute,
+                COUNT(*) AS granted_patents
+            FROM grants AS g
+            JOIN combined_ipo_patent_data AS p
+              ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%'
+            WHERE p.status = 'Granted'
+            GROUP BY g.institute
+        )
+        SELECT
+            g.institute,
+            g.total_grant,
+            COALESCE(p.granted_patents, 0) AS granted_patents,
+            ROUND(g.total_grant * 1.0 / NULLIF(p.granted_patents, 0), 2) AS cost_per_patent
+        FROM grants AS g
+        LEFT JOIN patents AS p ON p.institute = g.institute
+        ORDER BY cost_per_patent IS NULL, cost_per_patent ASC
         LIMIT 20
         """
     if "cut grants" in query_lower and "increased granted patents" in query_lower:
