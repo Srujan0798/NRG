@@ -35,6 +35,7 @@ services:
           memory: 256M
     profiles:
       - dev
+      - prod
       - postgres
       - data
 
