@@ -16,6 +16,7 @@ const FounderDashboard = lazy(() => import('./views/FounderDashboard'))
 const Hero = lazy(() => import('./views/Hero'))
 const DPDPAudit = lazy(() => import('./pages/DPDP-Audit'))
 const AuditEvent = lazy(() => import('./pages/AuditEvent'))
+const ProductionWorkspace = lazy(() => import('./pages/ProductionWorkspace'))
 
 const DashboardLoading = () => (
   <div className="nrg-app-canvas min-h-screen">
@@ -116,6 +117,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (pathname === '/app') document.title = 'NRG · Ask National Research Graph'
+    if (pathname === '/app/publications') document.title = 'NRG · Publications Explorer'
+    if (pathname === '/app/researchers') document.title = 'NRG · Researcher Profiles'
+    if (pathname === '/app/reports') document.title = 'NRG · Government Reports'
+    if (pathname === '/app/industry') document.title = 'NRG · Industry Capability'
+    if (pathname === '/app/settings') document.title = 'NRG · Settings and Audit'
     if (pathname === '/founder') document.title = 'NRG · Founder Readiness'
     if (pathname === '/app/audit') document.title = 'NRG · Audit Trail'
     if (pathname.startsWith('/app/audit/event/')) document.title = 'NRG · Audit Event'
@@ -150,6 +156,46 @@ const App: React.FC = () => {
       <AuthenticatedRoute>
         <Suspense fallback={<DashboardLoading />}>
           <Hero />
+        </Suspense>
+      </AuthenticatedRoute>
+    )
+  } else if (pathname === '/app/publications') {
+    content = (
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <ProductionWorkspace screen="publications" />
+        </Suspense>
+      </AuthenticatedRoute>
+    )
+  } else if (pathname === '/app/researchers') {
+    content = (
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <ProductionWorkspace screen="researchers" />
+        </Suspense>
+      </AuthenticatedRoute>
+    )
+  } else if (pathname === '/app/reports') {
+    content = (
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <ProductionWorkspace screen="reports" />
+        </Suspense>
+      </AuthenticatedRoute>
+    )
+  } else if (pathname === '/app/industry') {
+    content = (
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <ProductionWorkspace screen="industry" />
+        </Suspense>
+      </AuthenticatedRoute>
+    )
+  } else if (pathname === '/app/settings') {
+    content = (
+      <AuthenticatedRoute>
+        <Suspense fallback={<DashboardLoading />}>
+          <ProductionWorkspace screen="settings" />
         </Suspense>
       </AuthenticatedRoute>
     )
