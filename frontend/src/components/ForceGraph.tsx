@@ -83,6 +83,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
   const renderGraph = useCallback(() => {
     if (!svgRef.current) return
 
+    simulationRef.current?.stop()
     const svg = select(svgRef.current)
     svg.selectAll('*').remove()
 
@@ -250,6 +251,9 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
 
   useEffect(() => {
     renderGraph()
+    return () => {
+      simulationRef.current?.stop()
+    }
   }, [renderGraph])
 
   const zoomIn = useCallback(() => {
@@ -290,6 +294,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
             <button
               key={opt.key}
               onClick={() => setActiveFilter(opt.key)}
+              aria-pressed={activeFilter === opt.key}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
                 activeFilter === opt.key
                   ? 'bg-white text-nrg-text shadow-sm'
@@ -304,6 +309,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
         <div className="flex items-center gap-2">
           <span className="text-xs text-nrg-muted">{t("auto.components.ForceGraph.1")}</span>
           <input
+            aria-label={t("auto.components.ForceGraph.5")}
             type="number"
             value={yearRange[0]}
             onChange={(e) => setYearRange([+e.target.value, yearRange[1]])}
@@ -313,6 +319,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
           />
           <span className="text-xs text-nrg-muted">-</span>
           <input
+            aria-label={t("auto.components.ForceGraph.6")}
             type="number"
             value={yearRange[1]}
             onChange={(e) => setYearRange([yearRange[0], +e.target.value])}
@@ -324,6 +331,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
 
         <button
           onClick={resetZoom}
+          aria-label={t("auto.components.ForceGraph.7")}
           className="ml-auto px-3 py-1.5 rounded-lg text-xs font-medium border border-nrg-border text-nrg-muted hover:text-nrg-text hover:bg-nrg-navy-50 transition-all duration-200"
         >
           {t("auto.components.ForceGraph.2")}</button>

@@ -1,5 +1,5 @@
-export function isEmptyResultResponse(response: string): boolean {
-  const normalized = response.trim().toLowerCase()
+export function isEmptyResultResponse(response: string | null | undefined): boolean {
+  const normalized = String(response ?? '').trim().toLowerCase()
   if (!normalized) return true
 
   return [

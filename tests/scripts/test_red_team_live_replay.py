@@ -112,3 +112,39 @@ def test_summary_flags_uncontained_baseline_decisions():
 
     assert summary["baseline_uncontained_total"] == 1
     assert summary["baseline_uncontained"] == [payload.payload_id]
+
+
+def test_local_api_startup_skips_embedder_warmup(monkeypatch):
+    module = load_replay_module()
+    captured_env = {}
+    availability_checks = iter([False, True])
+
+    monkeypatch.delenv("NRG_SKIP_EMBEDDER_WARMUP", raising=False)
+    monkeypatch.delenv("EMBEDDING_DISABLE_INDIC", raising=False)
+
+    class FakeProcess:
+        stdout = None
+
+        def poll(self):
+            return None
+
+    def fake_available(*_args, **_kwargs):
+        return next(availability_checks)
+
+    def fake_popen(*_args, **kwargs):
+        captured_env.update(kwargs["env"])
+        return FakeProcess()
+
+    monkeypatch.setattr(module, "is_api_available", fake_available)
+    monkeypatch.setattr(module.subprocess, "Popen", fake_popen)
+
+    process = module.maybe_start_api(
+        "http://127.0.0.1:8041",
+        timeout=2,
+        enabled=True,
+        startup_timeout=5,
+    )
+
+    assert process is not None
+    assert captured_env["NRG_SKIP_EMBEDDER_WARMUP"] in {"1", "true"}
+    assert captured_env["EMBEDDING_DISABLE_INDIC"] == "1"

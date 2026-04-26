@@ -4,7 +4,7 @@ import { CitationDrawer } from '../CitationDrawer/CitationDrawer'
 import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../../services/queryService'
 import { parseCitations } from '../../utils/parseCitations'
 import { toStringArray } from '../../types/api'
-import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download } from 'lucide-react'
+import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download, ClipboardList, BarChart3, BookOpen } from 'lucide-react'
 import { printDesignTokenCss } from '../../design-system/theme'
 import { t } from '../../i18n'
 import AnswerTrustActions from '../AnswerTrustActions/AnswerTrustActions'
@@ -107,38 +107,120 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
   )
 }
 
-const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ headers, rows }) => (
-  <div className="overflow-x-auto rounded-xl border border-nrg-border">
-    <table className="min-w-full text-sm">
-      <thead className="bg-[var(--glass-bg)]">
-        <tr>
-          {headers.map((h, i) => (
-            <th key={i} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-nrg-muted border-b border-nrg-border">
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, ri) => (
-          <motion.tr
-            key={ri}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: ri * 0.03 }}
-            className="hover:bg-saffron-500/5 transition-colors"
-          >
-            {row.map((cell, ci) => (
-              <td key={ci} className="px-4 py-3 text-sm text-nrg-text border-b border-nrg-border/40">
-                {cell}
-              </td>
+const downloadTextFile = (filename: string, content: string, type: string) => {
+  const blob = new Blob([content], { type })
+  const url = URL.createObjectURL(blob)
+  const anchor = window.document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
+const csvEscape = (value: string) => `"${String(value ?? '').replace(/"/g, '""')}"`
+
+const TabularView: React.FC<{ headers: string[]; rows: string[][] }> = ({ headers, rows }) => {
+  const [sortIndex, setSortIndex] = useState(0)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+
+  const sortedRows = useMemo(() => {
+    return [...rows].sort((a, b) => {
+      const left = a[sortIndex] ?? ''
+      const right = b[sortIndex] ?? ''
+      const comparison = left.localeCompare(right, 'en-IN', { numeric: true, sensitivity: 'base' })
+      return sortDir === 'asc' ? comparison : -comparison
+    })
+  }, [rows, sortDir, sortIndex])
+
+  const exportCsv = () => {
+    const csv = [
+      headers.map(csvEscape).join(','),
+      ...sortedRows.map((row) => headers.map((_, index) => csvEscape(row[index] ?? '')).join(',')),
+    ].join('\n')
+    downloadTextFile(`NRG-table-${Date.now()}.csv`, csv, 'text/csv;charset=utf-8')
+  }
+
+  if (rows.length === 0) {
+    return (
+      <div className="rounded-xl border border-dashed border-nrg-border bg-[var(--glass-bg)] px-4 py-8 text-center">
+        <p className="text-sm font-medium text-nrg-text">{t("auto.components.AnswerPanel.AnswerPanel.7")}</p>
+        <p className="mt-1 text-xs text-nrg-muted">{t("auto.components.AnswerPanel.AnswerPanel.8")}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl border border-nrg-border">
+      <div className="flex items-center justify-between gap-3 border-b border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">
+          {rows.length.toLocaleString('en-IN')} {t("auto.components.AnswerPanel.AnswerPanel.9")}
+        </p>
+        <button
+          type="button"
+          onClick={exportCsv}
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
+          aria-label={t("auto.components.AnswerPanel.AnswerPanel.10")}
+        >
+          <Download size={14} aria-hidden="true" />
+          CSV
+        </button>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-[var(--glass-bg)]">
+            <tr>
+              {headers.map((header, index) => (
+                <th
+                  key={header}
+                  className="border-b border-nrg-border px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-nrg-muted"
+                  aria-sort={sortIndex === index ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (sortIndex === index) setSortDir((current) => current === 'asc' ? 'desc' : 'asc')
+                      else {
+                        setSortIndex(index)
+                        setSortDir('asc')
+                      }
+                    }}
+                    className="inline-flex min-h-8 items-center gap-1 rounded-md px-1 text-left transition hover:text-[var(--nrg-focus)]"
+                  >
+                    {header}
+                    {sortIndex === index && (
+                      <ChevronDown
+                        size={12}
+                        className={`transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {sortedRows.map((row, rowIndex) => (
+              <motion.tr
+                key={`${row.join('|')}-${rowIndex}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: Math.min(rowIndex * 0.02, 0.16) }}
+                className="transition-colors hover:bg-saffron-500/5"
+              >
+                {headers.map((_, cellIndex) => (
+                  <td key={cellIndex} className="max-w-[18rem] break-words border-b border-nrg-border/40 px-4 py-3 text-sm text-nrg-text">
+                    {row[cellIndex] || '—'}
+                  </td>
+                ))}
+              </motion.tr>
             ))}
-          </motion.tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 const StatisticalChart: React.FC<{ response: string }> = ({ response }) => {
   const data = useMemo(() => {
@@ -221,13 +303,7 @@ const generatePDF = async (response: string, citations: Citation[]) => {
   <div class="footer">Generated: ${new Date().toLocaleString()} | NRG Platform — Sovereign Research Intelligence</div>
   </body></html>`
 
-  const blob = new Blob([content], { type: 'text/html' })
-  const url = URL.createObjectURL(blob)
-  const a = window.document.createElement('a')
-  a.href = url
-  a.download = `NRG-Intel-Brief-${Date.now()}.html`
-  a.click()
-  URL.revokeObjectURL(url)
+  downloadTextFile(`NRG-Intelligence-Brief-${Date.now()}.html`, content, 'text/html;charset=utf-8')
 }
 
 export const AnswerPanel: React.FC<AnswerPanelProps> = ({
@@ -272,7 +348,8 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
           <ConfidenceMeter status={verification_status} answerConfidence={answer_confidence} />
           <motion.button
             onClick={() => generatePDF(response, citations)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--glass-bg)] border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 transition-all duration-200"
+            className="flex min-h-10 items-center gap-1.5 rounded-xl border border-nrg-border bg-[var(--glass-bg)] px-3 py-1.5 text-xs font-medium text-nrg-muted transition-all duration-200 hover:bg-saffron-500/10"
+            aria-label={t("auto.components.AnswerPanel.AnswerPanel.11")}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -294,7 +371,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
           >
             <span className="font-semibold text-nrg-text text-sm flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
-                📋
+                <ClipboardList size={14} aria-hidden="true" />
               </span>
               {t("auto.components.AnswerPanel.AnswerPanel.3")}</span>
             <motion.span
@@ -328,7 +405,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         <div className="p-6">
           <h3 className="text-sm font-semibold text-nrg-text mb-4 flex items-center gap-2">
             <span className="w-6 h-6 rounded-md bg-saffron-100 dark:bg-saffron-900/30 text-saffron-600 dark:text-saffron-400 flex items-center justify-center text-xs">
-              📊
+              <BarChart3 size={14} aria-hidden="true" />
             </span>
             {t("auto.components.AnswerPanel.AnswerPanel.4")}</h3>
 
@@ -364,7 +441,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
           <div className="border-t border-nrg-border px-6 py-4 bg-[var(--glass-bg)]">
             <h4 className="text-sm font-semibold text-nrg-text mb-3 flex items-center gap-2">
               <span className="w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs">
-                📚
+                <BookOpen size={14} aria-hidden="true" />
               </span>
               {t("auto.components.AnswerPanel.AnswerPanel.5")}{orderedCitations.length})
             </h4>

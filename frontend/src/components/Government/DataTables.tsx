@@ -11,6 +11,25 @@ interface DataTableProps {
   pageSize?: number
 }
 
+const exportRowsAsCsv = (
+  filename: string,
+  columns: { key: string; label: string }[],
+  rows: Record<string, any>[],
+) => {
+  const escape = (value: unknown) => `"${String(value ?? '').replace(/"/g, '""')}"`
+  const csv = [
+    columns.map((column) => escape(column.label)).join(','),
+    ...rows.map((row) => columns.map((column) => escape(row[column.key])).join(',')),
+  ].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = window.document.createElement('a')
+  anchor.href = url
+  anchor.download = filename
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 export const DataTable: React.FC<DataTableProps> = ({
   title,
   titleHi,
@@ -61,8 +80,14 @@ export const DataTable: React.FC<DataTableProps> = ({
           <span className="text-xs text-nrg-muted">
             {t("auto.components.Government.DataTables.1")}{paginatedData.length} of {data.length}
           </span>
-          <button className="p-1.5 rounded-lg hover:bg-saffron-500/10 text-nrg-muted">
-            <Download size={14} />
+          <button
+            type="button"
+            onClick={() => exportRowsAsCsv(`${title.replace(/\s+/g, '-')}-${Date.now()}.csv`, columns, sortedData)}
+            disabled={data.length === 0}
+            className="min-h-10 rounded-lg p-2 text-nrg-muted transition hover:bg-saffron-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+            aria-label={`Export ${title} as CSV`}
+          >
+            <Download size={14} aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -95,7 +120,13 @@ export const DataTable: React.FC<DataTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((row, i) => (
+            {paginatedData.length === 0 ? (
+              <tr>
+                <td colSpan={columns.length} className="px-5 py-10 text-center text-sm text-nrg-muted">
+                  {t("auto.components.Government.DataTables.10")}
+                </td>
+              </tr>
+            ) : paginatedData.map((row, i) => (
               <motion.tr
                 key={i}
                 initial={{ opacity: 0 }}
@@ -113,8 +144,8 @@ export const DataTable: React.FC<DataTableProps> = ({
                     {col.align === 'right'
                       ? typeof row[col.key] === 'number'
                         ? row[col.key].toLocaleString('en-IN')
-                        : row[col.key]
-                      : row[col.key]}
+                        : row[col.key] ?? '—'
+                      : row[col.key] ?? '—'}
                   </td>
                 ))}
               </motion.tr>

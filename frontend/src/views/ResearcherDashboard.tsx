@@ -46,7 +46,7 @@ const TABS = [
   { key: 'admin', label: 'Admin', labelHi: 'एडमिन', icon: '📈', tier: 1 },
 ] as const
 
-const DEMO_QUERY_SUGGESTIONS = [
+const PRODUCTION_QUERY_SUGGESTIONS = [
   'Which institutes in India have the highest grant amount in renewable energy?',
   'Compare AI research output between Gujarat and Karnataka over the last 5 years',
   'Show me the research network around hydrogen fuel cells',
@@ -279,7 +279,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                   </div>
                 </div>
                 <div className="flex flex-wrap gap-2" aria-label={t("auto.views.ResearcherDashboard.8")}>
-                  {DEMO_QUERY_SUGGESTIONS.map((suggestion) => (
+                  {PRODUCTION_QUERY_SUGGESTIONS.map((suggestion) => (
                     <button
                       key={suggestion}
                       type="button"

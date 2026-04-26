@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from pathlib import Path
@@ -8,8 +9,8 @@ from pathlib import Path
 from playwright.sync_api import Page, TimeoutError, expect, sync_playwright
 
 
-BASE_URL = "http://127.0.0.1:3000"
-OUT_DIR = Path("docs/audits/ui_ux_2026-04-24")
+BASE_URL = os.environ.get("NRG_UI_AUDIT_BASE_URL", "http://127.0.0.1:3000")
+OUT_DIR = Path(os.environ.get("NRG_UI_AUDIT_OUT_DIR", "docs/audits/ui_ux_2026-04-24"))
 SCREEN_DIR = OUT_DIR / "screenshots"
 VIDEO_DIR = OUT_DIR / "videos"
 REPORT_JSON = OUT_DIR / "browser_audit_results.json"
