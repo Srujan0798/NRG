@@ -13,9 +13,9 @@
 
 ---
 
-## 2026-04-26 PRODUCTION LAUNCH BLOCKERS (merged from external audit)
+## 2026-04-26 PRODUCTION LAUNCH BLOCKERS (merged from external audits)
 
-These 5 gaps must close before the IIT-GN user acceptance session. Each is bound to a Quality Bar constraint and the new live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`.
+These 7 gaps must close before the IIT-GN user-acceptance session and follow-up production deployment. Each is bound to a Quality Bar constraint and the live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`. New rows LB-6 + LB-7 added 2026-04-26 from second external review (Claude-as-Principal-Engineer audit).
 
 | # | Gap | Bound to | Live evidence required | Owner |
 |---|-----|----------|------------------------|-------|
@@ -24,6 +24,10 @@ These 5 gaps must close before the IIT-GN user acceptance session. Each is bound
 | LB-3 | Three KILLER queries pass end-to-end against running stack with ≥50k rows, p95<4s, citations attached | C3 + C4 (local proxy) | `tests/e2e/test_three_killer_queries.py` + evidence JSONs per tier | testing + data |
 | LB-4 | Full `pytest` finishes <15 min, all green, parallelised | quality gate | `scripts/run_test_suite.sh` + junit XML in evidence/ | testing + devops |
 | LB-5 | Red-team live replay against running API (≥30 baseline + ≥50 extended payloads) — all BLOCKED or DOWNGRADED | C6 | `scripts/red_team_live_replay.py` + evidence/2026-04-26/17_red_team_results.md (timestamped, audit-bound) | security |
+| LB-6 | Schema parity 47→58 tables (incl. 11 Django/auth) + composite indexes for hot JOINs + RLS policies T1/T2/T3 | C3 + Source #3 (db_struct.sql) | `tests/data/test_schema_parity.py` 58/58 PASS + `evidence/2026-04-26/explain_index_usage.txt` (zero seq scans on FK) + `tests/data/test_rls_policies.py` (T1/T2/T3 row-count differs) | backend + database + devops |
+| LB-7 | Semantic SQL self-correction — anomaly detector on result rows + corrective re-prompt OR clarification fallback; engine refuses to ship low-confidence answers | C3 + Source #2 | `tests/skills/test_result_anomaly_detector.py` (12+ signals) + `tests/orchestration/test_silent_wrong_answer.py` (17 Dhairya + 10 ADV-1x patterns → corrected or clarified, never wrong-and-shipped) + `answer_confidence` field rendered on frontend | backend + ml + testing |
+
+Protocol files: `protocols/46..52_*`. Dependency chain: LB-1 gates LB-3 + LB-5; LB-2 gates LB-3 + LB-7; LB-4 + LB-6 parallel-safe.
 
 Cluster-only (post-launch, not session blockers): C4 1000-user locust, C5 vector-drift baseline against populated Qdrant, real 600 GB ingest.
 

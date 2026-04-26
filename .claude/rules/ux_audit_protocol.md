@@ -576,3 +576,63 @@ immediately distrust all other numbers in the system.
 ---
 
 *The professor remembers one thing from the evaluation: the killer query that made him lean forward. Make sure it works.*
+
+---
+
+## 11. CONFIDENCE & INSIGHT (added 2026-04-26 from second external review)
+
+These four checks are net-new to the protocol; they cover what the user perceives between getting the answer and trusting the answer.
+
+### 11.1 — First-paint skeleton state (<3s)
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| C1 | First page (login or dashboard) shows a skeleton scaffold within 1s, full content within 3s on a 10 Mbps link | | |
+| C2 | No blank white screen at any point — even cold cache renders the skeleton immediately | | |
+| C3 | Lighthouse mobile Performance score ≥ 70 | | |
+
+**Proof:** Lighthouse JSON committed under `evidence/<date>/lighthouse_mobile.json`.
+
+### 11.2 — Citation provenance UX
+
+Every numeric or factual claim in the answer must be inspectable by the user without leaving the page.
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| C4 | Each fact has a small superscript [1] / [2] / [n] that opens a panel with: source table, source row id, audit_event_id, retrieval timestamp | | |
+| C5 | Clicking a superscript does not navigate away — it slides open an audit drawer | | |
+| C6 | Audit drawer shows the exact `sql_query` that produced the cited row (read-only, scrollable for long SQL) | | |
+| C7 | Tier 3 sees the same provenance UX, but with PII columns masked (`Researcher_<id>` instead of names, `***@institute` instead of emails) | | |
+
+**Proof:** Screenshot of the audit drawer for a Tier 1 and Tier 3 query against the same fact.
+
+### 11.3 — Plain-language insight after the table
+
+Numbers without interpretation are noise. After every successful tabular answer, the synthesizer must produce one or two sentences of plain-language insight.
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| C8 | Below every result table, a callout box renders one sentence of interpretation (e.g. "IISc attracts 2.3× more industry funding per faculty than IIT Delhi despite similar publication count.") | | |
+| C9 | The callout is grounded — every claim in it traces to a row in the same table; no synthesizer hallucination | | |
+| C10 | If `answer_confidence == low_clarify` (LB-7), the callout becomes a clarification prompt instead of an interpretation | | |
+| C11 | Insight is rendered in the user's tier language: T2 sees policy framing, T3 sees market framing, T1 sees research framing | | |
+
+**Proof:** Three screenshots — same query, same data, different tier framing.
+
+### 11.4 — Logout safety + token lifecycle
+
+Sessions cannot leak across browser instances or expire mid-flow without warning.
+
+| # | Test | Status | Evidence |
+|---|------|--------|----------|
+| C12 | Closing the browser tab (without explicit logout) ends the session — reopening requires re-authentication | | |
+| C13 | A second browser tab opened to the same domain shares the session correctly (no double-login required) | | |
+| C14 | JWT access token nearing expiry (T-2 min) triggers silent refresh; user sees no interruption | | |
+| C15 | Refresh-token revocation propagates within 30s — `/api/internal/revoke <user>` immediately invalidates the user's tokens across all open tabs | | |
+| C16 | Explicit logout clears the audit-event reference from the front-end state — refresh after logout shows the login screen, not a stale dashboard | | |
+
+**Proof:** Playwright e2e test capturing all five flows; commit recording to `evidence/<date>/session_lifecycle.webm`.
+
+---
+
+*Confidence is built one citation drawer at a time. Insight is what makes the user lean forward. Logout safety is what keeps them coming back.*

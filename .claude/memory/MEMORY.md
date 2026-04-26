@@ -13,6 +13,7 @@
 - [Real Audience for v1.0 Showing](feedback_real_audience.md) — first audience is the professor's assistant clicking on a laptop, not formal UAT/ministry/DPDP processes
 - [External-Prompt-Merge Skill](reference_external_prompt_merge.md) — canonical pattern for absorbing external review prompts (Grok/Cowrk/etc) into workflow files
 - [SKILL.md Mass-Deletion Guard](bugs_skill_md_deletions.md) — restore unstaged SKILL.md deletions immediately; floor is 50 files in .agents/skills
+- [Silent Wrong-Answer Risk](bugs_silent_wrong_answer.md) — biggest failure mode is a confident wrong answer on ambiguous queries; engine must detect anomaly + refuse to ship low-confidence (LB-7)
 - [Dhairya SQL Audit](project_sql_audit_dhairya.md) — 17-query eval: 41% accuracy, agent fixes applied, remaining work tracked
 - [Dhairya Benchmark Ref](reference_dhairya_benchmark.md) — External engineer's report is gold-standard SQL benchmark, NOT our team member
 - [Three Data Sources](reference_three_data_sources.md) — Core Idea + Dhairya Audit + Official PostgreSQL Schema (58 tables vs our 18)
