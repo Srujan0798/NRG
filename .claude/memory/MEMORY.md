@@ -29,4 +29,4 @@ NRG is a production web application for IIT Gandhinagar and Government of India 
 
 ## 2026-04-26 Grok Principal Engineer Merge
 
-36 - [Grok Principal Engineer Audit Merge](references/grok-principal-engineer-2026-04-25.md) - mapped the 2026-04-25 Grok findings into LB-1 through LB-5, Text-to-SQL prompt hardening, vector-drift and cluster-bound gates, and the canonical query corpus; no duplicate protocols created.
+36 - [Principal Engineer Audit Merge](references/grok-principal-engineer-2026-04-25.md) - mapped the 2026-04-25 Grok and Claude findings into existing LB rows, Text-to-SQL prompt hardening, vector-drift and cluster-bound gates, and the canonical query corpus; no duplicate protocols created.
