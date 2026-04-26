@@ -34,6 +34,8 @@ const NODE_COLORS: Record<string, string> = {
   topic: 'var(--nrg-chart-1)',
 }
 
+const SHADOW_SOFT = 'rgba(0, 0, 0, 0.15)'
+
 const TYPE_LABELS: Record<string, string> = {
   paper: 'Publication',
   author: 'Researcher',
@@ -173,7 +175,7 @@ export const ForceGraph = forwardRef<ForceGraphHandle, ForceGraphProps>(function
       .attr('fill', (d) => NODE_COLORS[d.type] || 'var(--nrg-chart-5)')
       .attr('stroke', 'var(--nrg-white)')
       .attr('stroke-width', 2)
-      .style('filter', 'drop-shadow(0 var(--nrg-space-half) var(--nrg-space-1) rgba(0,0,0,0.15))')
+      .style('filter', `drop-shadow(0 var(--nrg-space-half) var(--nrg-space-1) ${SHADOW_SOFT})`)
       .on('mouseover', (event, d) => {
         select(event.currentTarget)
           .transition().duration(150)

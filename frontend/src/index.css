@@ -71,6 +71,11 @@
     --nrg-grade-bronze: #CD7F32;
     --nrg-founder-paper: #F5F1E8;
     --nrg-founder-ink: #08111F;
+    --nrg-saffron-intensity-low: rgba(255, 107, 53, 0.3);
+    --nrg-saffron-intensity-mid: rgba(255, 107, 53, 0.6);
+    --nrg-saffron-intensity-high: rgba(255, 107, 53, 0.8);
+    --nrg-white-10: rgba(255, 255, 255, 0.1);
+    --nrg-shadow-soft: rgba(0, 0, 0, 0.15);
 
     --nrg-space-0: 0;
     --nrg-space-1: 4px;
@@ -241,9 +246,14 @@
     width: 36px;
     height: 36px;
     border: 3px solid rgba(255,107,53,0.15);
-    border-top-color: #ff6b35;
+    border-top-color: var(--nrg-saffron-500);
     border-radius: 50%;
     animation: spin 0.9s linear infinite;
+  }
+  .nrg-ashoka-spinner--sm {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
   }
 
   /* Skeleton shimmer with NRG palette */

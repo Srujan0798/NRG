@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { authService, PersonaRole } from '../services/authService'
 import { useAuth } from '../hooks/useAuth'
 import { t } from '../i18n'
@@ -16,6 +16,7 @@ export function PersonaToggle() {
   const { user, login } = useAuth()
   const [switchingRole, setSwitchingRole] = useState<PersonaRole | null>(null)
   const [switchError, setSwitchError] = useState<string | null>(null)
+  const tabListRef = useRef<HTMLDivElement>(null)
 
   const switchPersona = async (role: PersonaRole) => {
     if (role === user?.role || switchingRole) return
@@ -49,6 +50,31 @@ export function PersonaToggle() {
     }
   }
 
+  const handleTabKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+    const currentIndex = PERSONAS.findIndex(p => p.role === user?.role)
+    if (currentIndex === -1) return
+    let nextIndex = currentIndex
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      nextIndex = (currentIndex + 1) % PERSONAS.length
+      e.preventDefault()
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      nextIndex = (currentIndex - 1 + PERSONAS.length) % PERSONAS.length
+      e.preventDefault()
+    } else if (e.key === 'Home') {
+      nextIndex = 0
+      e.preventDefault()
+    } else if (e.key === 'End') {
+      nextIndex = PERSONAS.length - 1
+      e.preventDefault()
+    }
+    if (nextIndex !== currentIndex) {
+      const nextRole = PERSONAS[nextIndex].role
+      const buttons = tabListRef.current?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+      buttons?.[nextIndex]?.focus()
+      void switchPersona(nextRole)
+    }
+  }, [user?.role])
+
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="w-full sm:hidden">
@@ -61,9 +87,11 @@ export function PersonaToggle() {
         />
       </div>
       <div
+        ref={tabListRef}
         role="tablist"
         aria-label={t("auto.components.PersonaToggle.1")}
         className="hidden min-h-10 grid-cols-3 overflow-hidden rounded-full border border-nrg-border bg-[var(--nrg-surface)] p-1 shadow-sm sm:grid"
+        onKeyDown={handleTabKeyDown}
       >
         {PERSONAS.map((persona) => {
           const active = user?.role === persona.role
@@ -74,6 +102,7 @@ export function PersonaToggle() {
               type="button"
               role="tab"
               aria-selected={active}
+              tabIndex={active ? 0 : -1}
               onClick={() => void switchPersona(persona.role)}
               disabled={Boolean(switchingRole)}
               className={`min-h-8 min-w-11 rounded-full px-3 text-[0.6875rem] font-semibold uppercase tracking-[0.08em] transition sm:min-w-28 ${

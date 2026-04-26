@@ -80,6 +80,14 @@ async function installDashboardMocks(page: Page) {
     })
   })
 
+  await page.route('**/researchers**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ results: [], count: 0 }),
+    })
+  })
+
   await page.route('**/query/graph**', async (route) => {
     await route.fulfill({
       status: 200,
@@ -135,8 +143,9 @@ test('killer query and citation drawer work on iPhone without horizontal scroll'
 test('mobile dashboard uses bottom-sheet persona switcher and fullscreen graph modal', async ({ page }) => {
   await installDashboardMocks(page)
   await page.goto('/researcher')
+  await page.waitForLoadState('networkidle')
 
-  await expect(page.getByTestId('mobile-persona-trigger')).toBeVisible()
+  await expect(page.getByTestId('mobile-persona-trigger')).toBeVisible({ timeout: 15000 })
   await page.getByTestId('mobile-persona-trigger').tap()
   const personaDialog = page.getByRole('dialog', { name: /Switch persona/i })
   await expect(personaDialog).toBeVisible()

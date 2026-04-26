@@ -12,6 +12,8 @@ interface ResearchAreasBarChartProps {
   height?: number
 }
 
+const SAFFRON_CURSOR_FILL = 'rgba(255, 107, 53, 0.08)'
+
 const CustomTooltip: React.FC<any> = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
@@ -64,7 +66,7 @@ export const ResearchAreasBarChart: React.FC<ResearchAreasBarChartProps> = ({
             tickLine={false}
             tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}
           />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,107,53,0.08)' }} />
+          <Tooltip content={<CustomTooltip />} cursor={{ fill: SAFFRON_CURSOR_FILL }} />
           <Bar
             dataKey="count"
             radius={[4, 4, 0, 0]}
