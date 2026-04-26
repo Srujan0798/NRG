@@ -1,22 +1,22 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { TierBadge } from '../components/TierBadge'
-import { SkeletonLoader } from '../components/Skeleton'
+import { SkeletonLoader } from '../components/Skeleton/SkeletonLoader'
 import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { DPDPAuditLog } from '../components/DPDPAuditLog'
 import { SecurityMonitor } from '../components/SecurityMonitor'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
 import { GlassCard } from '../components/GlassCard'
-import { AnswerPanel } from '../components/AnswerPanel'
-import { EmptyState } from '../components/EmptyState'
-import { GraphView } from '../components/GraphView'
+import { AnswerPanel } from '../components/AnswerPanel/AnswerPanel'
+import { EmptyState } from '../components/EmptyState/EmptyState'
+import { GraphView } from '../components/GraphView/GraphView'
 import { PersonaToggle } from '../components/PersonaToggle'
 import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
-import { StatsCard } from '../components/StatsCard'
-import { ErrorState } from '../components/ErrorState'
-import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary'
-import { ResearchAreasBarChart } from '../components/DataViz'
+import { StatsCard } from '../components/StatsCard/StatsCard'
+import { ErrorState } from '../components/ErrorState/ErrorState'
+import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
+import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { useAuth } from '../hooks/useAuth'
 import MetricsDashboard from './MetricsDashboard'
 import { useQueryStore } from '../stores/queryStore'
@@ -380,6 +380,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                             provenance={turn.result.provenance}
                             warnings={turn.result.warnings}
                             verification_status={turn.result.verification_status}
+                            answer_confidence={turn.result.answer_confidence}
                           />
                         )}
                       </div>

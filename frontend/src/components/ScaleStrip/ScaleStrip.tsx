@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAnimatedCounter } from '../../hooks/useAnimatedCounter'
-import { t } from '../../i18n'
+import { heroLabels } from '../../i18n/hero-copy'
 
 interface ScaleMetric {
   label: string
@@ -23,7 +23,7 @@ function formatMetric(value: number, metric: ScaleMetric) {
 }
 
 const Counter: React.FC<{ metric: ScaleMetric; delay: number }> = ({ metric, delay }) => {
-  const value = useAnimatedCounter(metric.value, 1200, delay)
+  const value = useAnimatedCounter(metric.value, 4800, delay)
 
   return (
     <div className="rounded-xl border border-nrg-border bg-[var(--nrg-surface-1)] px-4 py-3 shadow-sm">
@@ -38,7 +38,7 @@ const Counter: React.FC<{ metric: ScaleMetric; delay: number }> = ({ metric, del
 }
 
 export const ScaleStrip: React.FC = () => (
-  <section aria-label={t("auto.components.ScaleStrip.ScaleStrip.1")} className="grid gap-3 sm:grid-cols-4">
+  <section aria-label={heroLabels.scale} className="grid gap-3 sm:grid-cols-4">
     {metrics.map((metric, index) => (
       <Counter key={metric.label} metric={metric} delay={index * 80} />
     ))}

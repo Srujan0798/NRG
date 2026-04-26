@@ -30,4 +30,4 @@ The professor sees UI, not tests. Every frontend deliverable must pass these bef
 - **Browser tab titles meaningful** — dynamic `<title>` per route, not "React App"
 - **Tier differentiation visible** — Tier 1 and Tier 3 dashboards must LOOK different
 - **No `alert()` anywhere** — use custom toast/modal components
-- **Before claiming DONE**: run the 10-step acceptance test script from `.claude/rules/ux_audit_protocol.md` Section 10
+- **Before claiming DONE**: run the 10-step acceptance test script from `.claude/rules/ux_audit/protocol.md` Section 10

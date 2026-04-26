@@ -65,7 +65,7 @@ NRG today: 5,615 researchers, 19,322 vectors, 3 personas, 1 LLM provider active.
 Ask for each architectural decision made this sprint:
 
 **QUALITY BAR CHECK — Are we compliant with the 6 Hard Constraints?**
-Read `.claude/QUALITY_BAR.md`. Score each of the 6 constraints on a 1–10 scale:
+Read `.claude/quality-bar.md`. Score each of the 6 constraints on a 1–10 scale:
 1. DPDP Indian PII detection
 2. Per-user audit binding (non-repudiation)
 3. Multi-hop intent decomposition

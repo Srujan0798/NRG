@@ -30,13 +30,13 @@ Walk the prompt top to bottom. For every claim, recommendation, or finding, clas
 | Category | Where it goes | Example |
 |---|---|---|
 | **Permanent rule** | new memory in `.claude/memory/feedback_*.md` + indexed in MEMORY.md (both repo + auto-memory) | "Tests on 10-row seed = deferred bug" → `feedback_live_evidence_requirement.md` |
-| **Quality Bar addition** | `.claude/QUALITY_BAR.md` new section + scorecard wiring | "RBAC must be enforced at API response shape, not only SQL" → `Tier-Shape Boundary` section |
+| **Quality Bar addition** | `.claude/quality-bar.md` new section + scorecard wiring | "RBAC must be enforced at API response shape, not only SQL" → `Tier-Shape Boundary` section |
 | **Operational runbook** | `docs/runbooks/<NAME>.md` (T-60 walk for every session) | "15 launch risks with prevention/recovery" → `PRODUCTION_LAUNCH_RISK_REGISTER.md` |
 | **Test corpus** | `tests/benchmarks/<corpus>.yaml` + new test file | "10 break-it questions" → `killer_queries.yaml` `adversarial_breakers` |
 | **Sprint blocker** | `BACKLOG.md` new LB-N row in "PRODUCTION LAUNCH BLOCKERS" + protocol file at `protocols/<num>_LB<n>_*.md` | "Tier filter at API boundary" → LB-1, protocol #46 |
 | **Bug pattern** | new memory in `.claude/memory/bugs_*.md` | "audit chain singleton self-break" → `bugs_audit_singleton.md` |
 | **Reference / pointer** | new memory in `.claude/memory/reference_*.md` | "Linear project INGEST holds pipeline tickets" → `reference_pipeline_tracker.md` |
-| **Verdict template / framework** | append to existing rule, do NOT create a parallel one | "Overall / Launch-ready / Biggest risk" template → `.claude/QUALITY_BAR.md` `Verdict Template` |
+| **Verdict template / framework** | append to existing rule, do NOT create a parallel one | "Overall / Launch-ready / Biggest risk" template → `.claude/quality-bar.md` `Verdict Template` |
 | **Already covered** | annotate the prompt as "already in <file>", drop. | most generic OWASP advice |
 | **Out of scope** | drop with one-sentence note | "you should also do marketing" |
 
@@ -61,7 +61,7 @@ For each classified chunk, write the file. Conventions that are non-negotiable:
 - Memory files: include `name`, `description`, `type` (user / feedback / project / reference) frontmatter. Body has the rule, then `**Why:**`, then `**How to apply:**`. End with `**Source:** <reviewer name> <date>`.
 - New runbooks: lead with a one-line scope, then a "How to use" section, then the table/list, then "Bound to Quality Bar" cross-reference at the bottom.
 - New test corpora: machine-readable YAML so future protocols can iterate on it.
-- Protocol files: full ═══ format from `.claude/GURU_PROTOCOL.md` §3. Include verbatim AGENT INSTRUCTIONS block.
+- Protocol files: full ═══ format from `.claude/protocol.md` §3. Include verbatim AGENT INSTRUCTIONS block.
 - BACKLOG additions: dated section header (`## YYYY-MM-DD <SUBJECT>`), table not free-form prose, every row bound to a Quality Bar constraint.
 
 **Always sync memory files to BOTH locations**: `.claude/memory/` (repo, source of truth) AND `~/.claude/projects/-Users-srujansai-Desktop-NRG/memory/` (auto-memory, recalled on session start). Update **both** MEMORY.md indexes.

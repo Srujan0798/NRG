@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
-import { StatsCard } from '../components/StatsCard'
-import { ErrorBoundary } from '../components/ErrorBoundary'
+import { StatsCard } from '../components/StatsCard/StatsCard'
+import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { useAuth } from '../hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { t } from '../i18n'

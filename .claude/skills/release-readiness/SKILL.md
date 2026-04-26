@@ -2,7 +2,7 @@
 
 > **Trigger:** Before any launch, UI sprint completion, or frontend release.  
 > **Purpose:** Ensure the product looks and feels like a ₹50L sovereign platform, not a hackathon production module.  
-> **Source:** `.claude/rules/ux_audit_protocol.md`
+> **Source:** `.claude/rules/ux_audit/protocol.md`
 
 ---
 
@@ -44,7 +44,7 @@ Run these in order. Any FAIL = stop and fix before launch.
 
 ## Full Audit (30 Minutes)
 
-Follow `.claude/rules/ux_audit_protocol.md` Section 1–12:
+Follow `.claude/rules/ux_audit/protocol.md` Section 1–12:
 
 1. **First Impressions** — Login screen + Dashboard (L1-L10, D1-D10)
 2. **Search / Query** — Input behavior, results, multi-turn (S1-S10, R1-R10, FU1-FU5)
@@ -56,7 +56,7 @@ Follow `.claude/rules/ux_audit_protocol.md` Section 1–12:
 8. **Performance** — Lighthouse, console, network (P1-P10)
 9. **Content & Copy** — No placeholders, consistent formatting (C1-C10)
 10. **Acceptance Test Script** — Walk through the exact 10-step professor sequence
-11. **Embarrassment Check** — Review Section 11 of ux_audit_protocol.md
+11. **Embarrassment Check** — Review Section 11 of ux_audit/protocol.md
 12. **Report** — Fill the UI/UX Audit Report template
 
 ---
@@ -82,7 +82,7 @@ Follow `.claude/rules/ux_audit_protocol.md` Section 1–12:
 
 Before claiming production-ready, produce:
 
-1. **Screen recording** of the 10-step launch script (Section 10 of ux_audit_protocol.md)
+1. **Screen recording** of the 10-step launch script (Section 10 of ux_audit/protocol.md)
 2. **Lighthouse report** screenshot (Performance + Accessibility scores)
 3. **Clean Console** screenshot (0 errors during normal use)
 4. **Clean Network** screenshot (0 failed requests during a query)

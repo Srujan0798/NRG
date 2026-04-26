@@ -77,7 +77,14 @@ function proxyRequest(req, res) {
   };
 
   const proxyReq = http.request(options, (proxyRes) => {
-    res.writeHead(proxyRes.statusCode, proxyRes.headers);
+    // Merge CORS headers into proxy response so browser can read the response
+    const headers = {
+      ...proxyRes.headers,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    };
+    res.writeHead(proxyRes.statusCode, headers);
     pipeline(proxyRes, res, () => {});
   });
 

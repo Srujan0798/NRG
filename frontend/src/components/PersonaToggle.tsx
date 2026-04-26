@@ -21,35 +21,29 @@ export function PersonaToggle() {
     if (role === user?.role || switchingRole) return
     const persona = PERSONAS.find((item) => item.role === role)
     if (!persona) return
+    const queryStore = useQueryStore.getState()
 
     emitTelemetry('persona.switched', {
       from: user?.role || 'anonymous',
       to: role,
-      last_query_id: useQueryStore.getState().history[0]?.id || null,
+      last_query_id: queryStore.history[0]?.id || null,
+    })
+    queryStore.switchPersona({
+      from: user?.role || 'anonymous',
+      to: role,
+      lastQuery: queryStore.currentQuery || queryStore.history[0]?.query,
     })
     setSwitchingRole(role)
     setSwitchError(null)
     try {
       const switched = await login(persona.username, persona.password)
       if (!switched) {
-        setSwitchError('Persona switch needs the API server.')
+        await authService.switchPersona(role)
+        window.location.reload()
       }
     } catch {
-      const currentSession = authService.getStoredSession()
-      if (currentSession) {
-        authService.saveSession({
-          ...currentSession,
-          user: {
-            ...currentSession.user,
-            role: persona.role,
-            tier: persona.role === 'researcher' ? 1 : persona.role === 'government' ? 2 : 3,
-            username: persona.username,
-          },
-        })
-        window.location.reload()
-      } else {
-        setSwitchError('Persona switch needs an active session.')
-      }
+      await authService.switchPersona(role)
+      window.location.reload()
     } finally {
       setSwitchingRole(null)
     }

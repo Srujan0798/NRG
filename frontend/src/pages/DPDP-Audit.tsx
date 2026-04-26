@@ -1,39 +1,85 @@
-import { useEffect, useState } from 'react';
-import { t } from '../i18n'
+import React, { Suspense, lazy, useEffect, useState } from 'react'
+import AuditEventList from '../components/AuditEventList/AuditEventList'
+import ChainIntegrityFooter from '../components/ChainIntegrityFooter/ChainIntegrityFooter'
+import { AuditEventRecord, queryService } from '../services/queryService'
+
+const CitationDrawer = lazy(() => import('../components/CitationDrawer/CitationDrawer'))
+
+const COPY = {
+  eyebrow: 'DPDP audit trail',
+  title: 'Signed activity history',
+  body: 'Use this screen to show the professor exactly where a query was logged and how the chain verifies.',
+  loading: 'Loading signed audit events',
+  openEvent: 'Open event page',
+}
+
 export default function DPDPAudit() {
-  const [events, setEvents] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<AuditEventRecord[]>([])
+  const [selectedEvent, setSelectedEvent] = useState<AuditEventRecord | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/audit/events', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('iitgn_token')}` }
-    })
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
+    let mounted = true
+    queryService.listAuditEvents(120)
+      .then((response) => {
+        if (mounted) setEvents(response.events)
       })
-      .then(data => setEvents(data.events || []))
-      .catch(e => setError(e.message));
-  }, []);
+      .finally(() => {
+        if (mounted) setLoading(false)
+      })
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  const openEventPage = () => {
+    if (selectedEvent) window.history.pushState(null, '', `/app/audit/event/${selectedEvent.hmac}`)
+    if (selectedEvent) window.dispatchEvent(new PopStateEvent('popstate'))
+  }
 
   return (
-    <div className="iitgn-dpdp-audit p-6">
-      <h1 className="text-2xl font-bold mb-4">{t("auto.pages.DPDP.Audit.1")}</h1>
-      {error && <div className="text-red-600 mb-4">{t("auto.pages.DPDP.Audit.2")}{error}</div>}
-      <table className="w-full text-sm border">
-        <thead className="bg-gray-100">
-          <tr><th className="p-2 border">{t("auto.pages.DPDP.Audit.3")}</th><th className="p-2 border">{t("auto.pages.DPDP.Audit.4")}</th><th className="p-2 border">{t("auto.pages.DPDP.Audit.5")}</th></tr>
-        </thead>
-        <tbody>
-          {events.map((ev, idx) => (
-            <tr key={idx} className="border-b">
-              <td className="p-2 border">{ev.timestamp}</td>
-              <td className="p-2 border">{ev.user_id}</td>
-              <td className="p-2 border">{ev.action}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+    <main id="main-content" tabIndex={-1} className="nrg-app-canvas min-h-screen px-4 py-8 text-nrg-text sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--nrg-warning)]">{COPY.eyebrow}</p>
+          <h1 className="text-3xl font-bold text-nrg-text sm:text-4xl">{COPY.title}</h1>
+          <p className="max-w-3xl text-base leading-7 text-nrg-muted">{COPY.body}</p>
+        </div>
+
+        <ChainIntegrityFooter eventId={events[0]?.hmac} totalEvents={events.length} />
+
+        {loading ? (
+          <div className="rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] p-8 text-sm text-nrg-muted">
+            {COPY.loading}
+          </div>
+        ) : (
+          <AuditEventList events={events} onSelect={setSelectedEvent} />
+        )}
+      </section>
+
+      <Suspense fallback={null}>
+        <CitationDrawer
+          citation={selectedEvent ? {
+            id: selectedEvent.hmac,
+            audit_event_id: selectedEvent.hmac,
+            title: selectedEvent.action,
+            source: 'Audit',
+          } : null}
+          isOpen={Boolean(selectedEvent)}
+          onClose={() => setSelectedEvent(null)}
+        />
+      </Suspense>
+
+      {selectedEvent && (
+        <button
+          type="button"
+          data-testid="open-audit-event-page"
+          onClick={openEventPage}
+          className="fixed bottom-4 left-4 z-50 min-h-11 rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] px-4 py-2 text-sm font-bold text-nrg-text shadow-lg"
+        >
+          {COPY.openEvent}
+        </button>
+      )}
+    </main>
+  )
 }

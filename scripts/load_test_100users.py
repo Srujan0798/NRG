@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""NRG Load Test — 100 concurrent users via asyncio + httpx."""
+"""NRG Load Test — 100 concurrent users via asyncio + httpx.
+
+Staggered login to respect the 10 req/min per-user rate limit on /query.
+Users are divided into waves of 10, each wave starting 6 seconds apart
+(allowing ~60 seconds for all 100 users while staying within rate limits).
+"""
 import asyncio
 import json
 import os
@@ -19,16 +24,19 @@ if env_path.exists():
                 k, v = line.strip().split("=", 1)
                 os.environ.setdefault(k, v)
 
-API_BASE = "http://localhost:8000"
+API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 CONCURRENCY = 100
 REQUESTS_PER_USER = 3
 TIMEOUT = 30.0
+WAVE_SIZE = 10
+WAVE_DELAY_SECS = 6.0
 
 PERSONAS = [
     ("researcher_user", os.getenv("RESEARCHER_PASSWORD", "researcher-pass"), "machine learning researchers in Gujarat"),
     ("gov_user", os.getenv("GOV_PASSWORD", "government-pass"), "total funding by state"),
     ("industry_user", os.getenv("INDUSTRY_PASSWORD", "industry-pass"), "top research areas"),
 ]
+
 
 async def login(client, username, password):
     r = await client.post(
@@ -38,6 +46,7 @@ async def login(client, username, password):
     )
     r.raise_for_status()
     return r.json()["access_token"]
+
 
 async def query(client, token, q):
     r = await client.post(
@@ -49,7 +58,10 @@ async def query(client, token, q):
     r.raise_for_status()
     return r.json()
 
-async def user_session(user_id: int):
+
+async def user_session(user_id: int, wave_delay: float = 0.0):
+    if wave_delay > 0:
+        await asyncio.sleep(wave_delay)
     username, password, query_text = PERSONAS[user_id % len(PERSONAS)]
     times = []
     async with httpx.AsyncClient() as client:
@@ -73,20 +85,38 @@ async def user_session(user_id: int):
                 times.append((f"query_{i}_error", str(e)))
     return times
 
+
+async def run_wave(wave_id: int, start_idx: int, count: int):
+    wave_tasks = []
+    for i in range(count):
+        user_id = start_idx + i
+        wave_delay = wave_id * WAVE_DELAY_SECS
+        wave_tasks.append(asyncio.create_task(user_session(user_id, wave_delay)))
+    return await asyncio.gather(*wave_tasks, return_exceptions=True)
+
+
 async def main():
-    print(f"Starting load test: {CONCURRENCY} concurrent users x {REQUESTS_PER_USER} queries each")
+    print(f"Starting staggered load test: {CONCURRENCY} concurrent users x {REQUESTS_PER_USER} queries")
+    print(f"Waves of {WAVE_SIZE} users, {WAVE_DELAY_SECS}s apart (respects 10 req/min rate limit)")
     print(f"Total requests: ~{CONCURRENCY * (1 + REQUESTS_PER_USER)}")
+    print(f"API base: {API_BASE}")
     start = time.perf_counter()
 
-    tasks = [asyncio.create_task(user_session(i)) for i in range(CONCURRENCY)]
-    results = await asyncio.gather(*tasks, return_exceptions=True)
+    all_results = []
+    num_waves = (CONCURRENCY + WAVE_SIZE - 1) // WAVE_SIZE
+    for wave_id in range(num_waves):
+        wave_start = wave_id * WAVE_SIZE
+        wave_count = min(WAVE_SIZE, CONCURRENCY - wave_start)
+        print(f"  Launching wave {wave_id + 1}/{num_waves} ({wave_count} users)...")
+        wave_results = await run_wave(wave_id, wave_start, wave_count)
+        all_results.extend(wave_results)
 
     total_time = time.perf_counter() - start
 
     all_query_latencies = []
     login_errors = 0
     query_errors = 0
-    for r in results:
+    for r in all_results:
         if isinstance(r, Exception):
             login_errors += 1
             continue
@@ -138,6 +168,10 @@ async def main():
         "p95_latency_s": round(p95, 3),
         "p99_latency_s": round(p99, 3),
         "throughput_qps": round(n / total_time, 1),
+        "staggered": True,
+        "wave_size": WAVE_SIZE,
+        "wave_delay_s": WAVE_DELAY_SECS,
+        "num_waves": num_waves,
     }
     Path("evidence").mkdir(exist_ok=True)
     today = time.strftime("%Y-%m-%d")
@@ -145,6 +179,7 @@ async def main():
     with open(f"evidence/{today}/load_test_100users.json", "w") as f:
         json.dump(out, f, indent=2)
     print(f"Results saved to evidence/{today}/load_test_100users.json")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

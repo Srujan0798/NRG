@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CitationDrawer } from '../CitationDrawer'
+import { CitationDrawer } from '../CitationDrawer/CitationDrawer'
 import { Citation, GraphNode, QueryProvenance, QueryWarning } from '../../services/queryService'
 import { parseCitations } from '../../utils/parseCitations'
 import { toStringArray } from '../../types/api'
@@ -14,6 +14,7 @@ interface AnswerPanelProps {
   provenance?: QueryProvenance
   warnings?: QueryWarning[]
   verification_status?: boolean
+  answer_confidence?: 'high' | 'partial' | 'low_clarify'
   onNodeClick?: (node: GraphNode) => void
 }
 
@@ -25,9 +26,18 @@ const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
   return <GitMerge size={14} className="text-saffron-500" />
 }
 
-const ConfidenceMeter: React.FC<{ status: boolean | undefined }> = ({ status }) => {
-  const isVerified = status === true
-  const bars = isVerified ? 3 : 2
+const ConfidenceMeter: React.FC<{
+  status: boolean | undefined
+  answerConfidence?: 'high' | 'partial' | 'low_clarify'
+}> = ({ status, answerConfidence }) => {
+  const resolved = answerConfidence || (status === true ? 'high' : 'partial')
+  const isVerified = resolved === 'high'
+  const bars = resolved === 'high' ? 3 : resolved === 'partial' ? 2 : 1
+  const label = resolved === 'high'
+    ? 'High Confidence'
+    : resolved === 'partial'
+      ? 'Partial Confidence'
+      : 'Needs Clarification'
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-nrg-border">
@@ -48,7 +58,7 @@ const ConfidenceMeter: React.FC<{ status: boolean | undefined }> = ({ status }) 
         ))}
       </div>
       <span className={`text-xs font-medium ${isVerified ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}`}>
-        {isVerified ? 'High Confidence' : 'Medium Confidence'}
+        {label}
       </span>
     </div>
   )
@@ -222,6 +232,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   provenance,
   warnings,
   verification_status,
+  answer_confidence,
 }) => {
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -251,7 +262,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <ProvenanceBadge provenance={provenance} />
         <div className="flex items-center gap-3">
-          <ConfidenceMeter status={verification_status} />
+          <ConfidenceMeter status={verification_status} answerConfidence={answer_confidence} />
           <motion.button
             onClick={() => generatePDF(response, citations)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-[var(--glass-bg)] border border-nrg-border text-nrg-muted hover:bg-saffron-500/10 transition-all duration-200"

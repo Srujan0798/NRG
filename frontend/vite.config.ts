@@ -3,8 +3,25 @@ import react from '@vitejs/plugin-react'
 
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000'
 
+const deferredAppEntryPlugin = () => ({
+  name: 'nrg-deferred-app-entry',
+  transformIndexHtml: {
+    order: 'post' as const,
+    handler(html: string, context: { bundle?: Record<string, unknown> }) {
+      const bundle = context.bundle ?? {}
+      const appChunk = Object.values(bundle).find((item) => {
+        if (!item || typeof item !== 'object' || !('type' in item)) return false
+        const chunk = item as { type?: string; facadeModuleId?: string | null; fileName?: string }
+        return chunk.type === 'chunk' && chunk.facadeModuleId?.replace(/\\/g, '/').endsWith('/src/main.tsx')
+      }) as { fileName?: string } | undefined
+      const entry = appChunk?.fileName ? `/${appChunk.fileName}` : '/src/main.tsx'
+      return html.replace(/__NRG_APP_ENTRY__/g, entry)
+    }
+  }
+})
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), deferredAppEntryPlugin()],
   server: {
     port: 3000,
     proxy: {
@@ -104,9 +121,13 @@ export default defineConfig({
     sourcemap: true,
     minify: 'terser',
     rollupOptions: {
+      input: {
+        index: 'index.html',
+        app: 'src/main.tsx',
+      },
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
+          'vendor-react': ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
           'vendor-d3': ['d3-force', 'd3-zoom', 'd3-drag', 'd3-selection'],
           'vendor-recharts': ['recharts'],
           'vendor-motion': ['framer-motion'],

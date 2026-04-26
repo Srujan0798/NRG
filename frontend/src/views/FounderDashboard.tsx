@@ -36,7 +36,7 @@ interface EvidenceGate {
 
 const statusStyles: Record<Status, { text: string; bg: string; border: string; bar: string; label: string }> = {
   pass: {
-    text: 'text-emerald-700',
+    text: 'text-emerald-900',
     bg: 'bg-emerald-50',
     border: 'border-emerald-200',
     bar: 'bg-emerald-500',
@@ -188,12 +188,12 @@ const MetricTile = React.memo(function MetricTile({ metric, index }: { metric: M
         <StatusPill status={metric.status} />
       </div>
       <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-600">{metric.label}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-stone-700">{metric.label}</p>
         <div className="mt-1 flex items-baseline gap-1">
           <span className="font-mono text-3xl font-bold text-stone-950">{metric.value}</span>
-          {metric.unit && <span className="font-mono text-sm font-semibold text-stone-600">{metric.unit}</span>}
+          {metric.unit && <span className="font-mono text-sm font-semibold text-stone-700">{metric.unit}</span>}
         </div>
-        <p className="mt-2 text-sm text-stone-600">{metric.delta}</p>
+        <p className="mt-2 text-sm text-stone-700">{metric.delta}</p>
       </div>
     </article>
   )
@@ -203,7 +203,7 @@ const ProgressRow = ({ label, width, status }: { label: string; width: string; s
   <div>
     <div className="mb-2 flex items-center justify-between gap-3">
       <span className="text-sm font-semibold text-stone-800">{label}</span>
-      <span className="font-mono text-xs text-stone-600">{width}</span>
+      <span className="font-mono text-xs text-stone-700">{width}</span>
     </div>
     <div className="h-2.5 overflow-hidden rounded-full bg-stone-200">
       <div className={`h-full rounded-full ${statusStyles[status].bar}`} style={{ width }} />
@@ -222,12 +222,12 @@ export default function FounderDashboard() {
             </div>
             <div>
               <h1 className="font-display text-xl font-bold leading-tight text-stone-950">{t("auto.views.FounderDashboard.1")}</h1>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-600">{t("auto.views.FounderDashboard.2")}</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-700">{t("auto.views.FounderDashboard.2")}</p>
             </div>
           </div>
           <div className="hidden items-center gap-2 sm:flex">
             <span className="rounded-full border border-rose-300 bg-rose-50 px-3 py-1 text-xs font-bold text-rose-700">{t("auto.views.FounderDashboard.3")}</span>
-            <span className="rounded-full border border-stone-300 bg-white px-3 py-1 font-mono text-xs text-stone-600">{t("auto.views.FounderDashboard.4")}</span>
+            <span className="rounded-full border border-stone-300 bg-white px-3 py-1 font-mono text-xs text-stone-700">{t("auto.views.FounderDashboard.4")}</span>
           </div>
         </div>
       </div>
@@ -237,7 +237,7 @@ export default function FounderDashboard() {
           <div className="rounded-lg border border-stone-300 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-600">{t("auto.views.FounderDashboard.5")}</p>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-stone-700">{t("auto.views.FounderDashboard.5")}</p>
                 <h2 className="mt-2 max-w-3xl font-display text-4xl font-bold leading-tight text-stone-950 md:text-5xl">
                   {t("auto.views.FounderDashboard.6")}</h2>
               </div>
@@ -291,9 +291,9 @@ export default function FounderDashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.18")}</h2>
-                <p className="text-sm text-stone-600">{t("auto.views.FounderDashboard.19")}</p>
+                <p className="text-sm text-stone-700">{t("auto.views.FounderDashboard.19")}</p>
               </div>
-              <FileCheck2 className="text-stone-600" size={22} />
+              <FileCheck2 className="text-stone-700" size={22} />
             </div>
             <div className="space-y-2">
               {evidenceGates.map((gate) => {
@@ -301,7 +301,7 @@ export default function FounderDashboard() {
                 return (
                   <div key={gate.gate} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-stone-100 py-2 last:border-b-0">
                     <span className="text-sm font-semibold text-stone-800">{gate.gate}</span>
-                    <span className="font-mono text-xs text-stone-600">{gate.value}</span>
+                    <span className="font-mono text-xs text-stone-700">{gate.value}</span>
                     <span className={`rounded-full px-2 py-1 text-[0.625rem] font-bold ${style.bg} ${style.text}`}>{gate.target}</span>
                   </div>
                 )
@@ -313,9 +313,9 @@ export default function FounderDashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.20")}</h2>
-                <p className="text-sm text-stone-600">{t("auto.views.FounderDashboard.21")}</p>
+                <p className="text-sm text-stone-700">{t("auto.views.FounderDashboard.21")}</p>
               </div>
-              <CircleDot className="text-stone-600" size={22} />
+              <CircleDot className="text-stone-700" size={22} />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               {goNoGo.map((item) => {
@@ -324,9 +324,9 @@ export default function FounderDashboard() {
                   <div key={item.label} className={`rounded-md border p-3 ${isGo ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}`}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-sm font-bold text-stone-900">{item.label}</span>
-                      <span className={`font-mono text-xs font-bold ${isGo ? 'text-emerald-700' : 'text-rose-700'}`}>{item.state}</span>
+                      <span className={`font-mono text-xs font-bold ${isGo ? 'text-emerald-900' : 'text-rose-700'}`}>{item.state}</span>
                     </div>
-                    <p className="mt-2 text-sm text-stone-600">{item.reason}</p>
+                    <p className="mt-2 text-sm text-stone-700">{item.reason}</p>
                   </div>
                 )
               })}
@@ -339,9 +339,9 @@ export default function FounderDashboard() {
             <div className="mb-5 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.22")}</h2>
-                <p className="text-sm text-stone-600">{t("auto.views.FounderDashboard.23")}</p>
+                <p className="text-sm text-stone-700">{t("auto.views.FounderDashboard.23")}</p>
               </div>
-              <TrendingUp className="text-stone-600" size={22} />
+              <TrendingUp className="text-stone-700" size={22} />
             </div>
             <div className="flex h-10 overflow-hidden rounded-md bg-stone-200">
               {trainingRows.map((row) => (
@@ -354,7 +354,7 @@ export default function FounderDashboard() {
                   <span className={`h-3 w-3 rounded-sm ${row.color}`} />
                   <div>
                     <p className="font-mono text-sm font-bold text-stone-900">{row.count.toLocaleString()}</p>
-                    <p className="text-xs text-stone-600">{row.grade}</p>
+                    <p className="text-xs text-stone-700">{row.grade}</p>
                   </div>
                 </div>
               ))}
@@ -365,9 +365,9 @@ export default function FounderDashboard() {
             <div className="mb-4 flex items-center justify-between">
               <div>
                 <h2 className="text-lg font-bold text-stone-950">{t("auto.views.FounderDashboard.24")}</h2>
-                <p className="text-sm text-stone-600">{t("auto.views.FounderDashboard.25")}</p>
+                <p className="text-sm text-stone-700">{t("auto.views.FounderDashboard.25")}</p>
               </div>
-              <GitCommit className="text-stone-600" size={22} />
+              <GitCommit className="text-stone-700" size={22} />
             </div>
             <div className="space-y-3">
               {commits.map((commit) => (
@@ -375,7 +375,7 @@ export default function FounderDashboard() {
                   <span className="mt-1 h-2 w-2 rounded-full bg-stone-900" />
                   <div>
                     <p className="font-mono text-xs font-bold text-stone-900">{commit.hash}</p>
-                    <p className="text-sm text-stone-600">{commit.label}</p>
+                    <p className="text-sm text-stone-700">{commit.label}</p>
                   </div>
                 </div>
               ))}
@@ -398,7 +398,7 @@ export default function FounderDashboard() {
           </div>
         </section>
 
-        <footer className="flex flex-col gap-3 py-6 text-xs text-stone-600 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="flex flex-col gap-3 py-6 text-xs text-stone-700 sm:flex-row sm:items-center sm:justify-between">
           <span>{t("auto.views.FounderDashboard.27")}</span>
           <span className="inline-flex items-center gap-1 font-semibold text-stone-700">
             {t("auto.views.FounderDashboard.28")}<ArrowUpRight size={13} />

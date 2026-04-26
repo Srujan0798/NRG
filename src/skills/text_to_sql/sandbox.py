@@ -2,6 +2,7 @@
 
 import os
 import logging
+import re
 from typing import List, Dict, Any, Optional
 from datetime import datetime, UTC
 from pathlib import Path
@@ -15,6 +16,12 @@ from src.audit import log_sql as audit_log_sql
 
 
 logger = logging.getLogger(__name__)
+
+
+_MUTATING_SQL_PATTERN = re.compile(
+    r"\b(ALTER|CALL|COPY|CREATE|DELETE|DROP|GRANT|INSERT|MERGE|REVOKE|TRUNCATE|UPDATE)\b",
+    re.IGNORECASE,
+)
 
 
 class Sandbox:
@@ -42,14 +49,16 @@ class Sandbox:
         """
         Execute SELECT query in read-only sandbox.
 
-        Only SELECT allowed - INSERT/UPDATE/DELETE blocked.
-        Raises PermissionError for non-SELECT statements.
+        Only read-only SELECT/CTE statements are allowed.
+        Raises PermissionError for mutating statements.
         """
-        sql_stripped = sql.strip().upper()
+        sql_compact = re.sub(r"\s+", " ", sql.strip())
+        sql_upper = sql_compact.upper()
 
-        if not sql_stripped.startswith("SELECT"):
+        starts_readonly = sql_upper.startswith("SELECT") or sql_upper.startswith("WITH")
+        if not starts_readonly or _MUTATING_SQL_PATTERN.search(sql_compact):
             raise PermissionError(
-                f"Only SELECT queries allowed in sandbox. Got: {sql_stripped[:50]}..."
+                f"Only read-only SELECT queries allowed in sandbox. Got: {sql_upper[:50]}..."
             )
 
         query_id = str(uuid.uuid4())

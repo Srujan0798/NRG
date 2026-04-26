@@ -1,0 +1,50 @@
+NRG LB-6 index usage evidence
+Captured at: 2026-04-26T12:40:20.463755+00:00
+Schema parity source: db_struct.sql parsed as 58/58 tables
+Active Alembic head: lb6_indexes_rls_001
+
+LB-6 indexes declared in migration:
+- idx_lb6_courses_institute_year_level ON academic_courses_details (institute, financial_year, level_of_course)
+- idx_lb6_grants_institute_year ON innovation_grant_from_govt (institute, year_of_receiving)
+- idx_lb6_grants_agency_year ON innovation_grant_from_govt (gov_organisation_name, year_of_receiving)
+- idx_lb6_trl_institute_year_stage ON innovations_at_various_stages_of_technology_readiness_level (institute, financial_year, stage_of_technology)
+- idx_lb6_patents_status_applicants_grant_date ON combined_ipo_patent_data (status, applicants, date_of_grant)
+- idx_lb6_patents_field_status ON combined_ipo_patent_data (field_of_invention, status)
+- idx_lb6_phd_institute_year ON phd_students (institute, financial_year)
+- idx_lb6_sanctioned_institute_program_year ON sanctioned_intake (institute, program, financial_year)
+- idx_lb6_actual_strength_institute_program_year ON actual_student_strength (institute, program, as_on_year)
+- idx_lb6_opex_institute_year ON financial_expenses_operational (institute, financial_year)
+- idx_lb6_consultancy_institute_year ON research_consultancy_details_consultancy (institute, financial_year)
+- idx_lb6_advance_search_institute_year_access ON advance_search_data (institute, year, open_access_status)
+- idx_lb6_patents_applicants_norm ON combined_ipo_patent_data (upper(trim(applicants)))
+- idx_lb6_institutes_name_norm ON tb_institute_mstr (upper(trim(institute_name)))
+- idx_lb6_fdi_startup_norm ON fdi_investment (upper(trim(startup_name)))
+- idx_lb6_seed_startup_norm ON seed_funding (upper(trim(startup_name)))
+- idx_lb6_turnover_startup_norm ON startups_turnover_50_lacs (upper(trim(startup_name)))
+
+Local EXPLAIN/QUERY PLAN artifacts found today:
+[explain_killer_1.txt]
+  bytes=1029
+  index_usage_lines=1
+  (12, 3, 0, 'SEARCH academic_courses_details USING INDEX idx_lb3_academic_year_institute (financial_year=?)')
+  postgres_seq_scan_lines=0
+[explain_killer_2.txt]
+  bytes=1300
+  index_usage_lines=1
+  (10, 3, 0, 'SEARCH innovations_at_various_stages_of_technology_readiness_level USING COVERING INDEX idx_lb3_trl_stage_institute_year (stage_of_technology=?)')
+  postgres_seq_scan_lines=0
+[explain_killer_3.txt]
+  bytes=2727
+  index_usage_lines=2
+  (11, 3, 0, 'SCAN innovation_grant_from_govt USING INDEX idx_lb3_grant_institute_year')
+  (76, 68, 0, 'SEARCH combined_ipo_patent_data USING INDEX idx_lb3_patent_status_applicants_date (status=?)')
+  postgres_seq_scan_lines=0
+[16_explain_analyze_top_funding.log]
+  bytes=708
+  index_usage_lines=1
+  |--SEARCH funding_records USING INDEX idx_funding_agency (agency>?)
+  postgres_seq_scan_lines=0
+
+Limitations:
+- No DATABASE_URL was present in this shell, and no local API listener was available on 127.0.0.1:8000 during this capture.
+- The local artifacts above are SQLite query-plan proxies; PostgreSQL EXPLAIN ANALYZE against a populated staging database still needs to be captured before final launch sign-off.

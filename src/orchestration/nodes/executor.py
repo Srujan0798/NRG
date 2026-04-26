@@ -94,6 +94,15 @@ def _execute_sql(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         sql_response = sql_skill.execute(user_query, user_tier=user_tier)
         result["sql_query"] = sql_response.get("query")
         result["sql_results"] = sql_response.get("results", [])
+        for key in (
+            "answer_confidence",
+            "answer_confidence_score",
+            "sql_anomaly_report",
+            "needs_clarification",
+            "clarification_question",
+        ):
+            if key in sql_response:
+                result[key] = sql_response[key]
         try:
             log_sql("executor", sql_response.get("query", ""), {"row_count": sql_response.get("row_count", 0)})
         except Exception:
@@ -157,6 +166,21 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
     return result, execution_time
 
 
+SQL_CONFIDENCE_KEYS = (
+    "answer_confidence",
+    "answer_confidence_score",
+    "sql_anomaly_report",
+    "needs_clarification",
+    "clarification_question",
+)
+
+
+def _copy_sql_confidence(target: dict[str, Any], source: dict[str, Any]) -> None:
+    for key in SQL_CONFIDENCE_KEYS:
+        if key in source:
+            target[key] = source[key]
+
+
 @trace_llm_call("executor")
 def executor_node(state) -> dict:
     """Execute skills based on routing decision with parallel hybrid and DAG execution."""
@@ -211,6 +235,7 @@ def _execute_parallel(user_query: str, user_tier: int) -> dict:
         "warnings": sql_result.get("warnings", []) + rag_result.get("warnings", []),
         "retrieval_sources": [],
     }
+    _copy_sql_confidence(results, sql_result)
 
     if results["sql_results"]:
         results["retrieval_sources"].append("structured")
@@ -249,6 +274,7 @@ def _execute_sql_only(user_query: str, user_tier: int) -> dict:
         "retrieval_sources": [],
         "execution_time_ms": {"sql": exec_time, "total": exec_time},
     }
+    _copy_sql_confidence(results, result)
 
     if results["sql_results"]:
         results["retrieval_sources"].append("structured")
@@ -321,6 +347,7 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
     all_sql_queries: list[str] = []
     all_chunks: list = []
     dag_execution_times: dict[str, float] = {}
+    sql_confidence: dict[str, Any] = {}
 
     for node_id in exec_order:
         node = node_map[node_id]
@@ -364,6 +391,7 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         if result.get("sql_query"):
             all_sql_queries.append(result["sql_query"])
         all_chunks.extend(result.get("retrieved_chunks", []))
+        _copy_sql_confidence(sql_confidence, result)
 
     total_time = sum(dag_execution_times.values())
 
@@ -372,7 +400,7 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         len(exec_order), total_time, len(all_errors)
     )
 
-    return {
+    response = {
         "sql_results": all_sql_results,
         "sql_query": all_sql_queries[0] if len(all_sql_queries) == 1 else None,
         "sql_queries": all_sql_queries,
@@ -387,3 +415,5 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         "dag_node_count": len(exec_order),
         "dag_root_id": root_id,
     }
+    response.update(sql_confidence)
+    return response

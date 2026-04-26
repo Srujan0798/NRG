@@ -26,7 +26,7 @@ Before answering a single question or writing a single line of code, read every 
 | `db_struct.sql` | All 58 table names, exact column types (especially `total_credit_score text` format "X:Y"), every FK, composite PKs |
 | `BACKLOG.md` | Phase status, Quality Bar, remaining items, which need sovereign cluster |
 | `SQL_AUDIT_REPORT_DHAIRYA.md` | 41% baseline (7/17), all failure patterns, every wrong query and why it failed |
-| `NRG_CONSTITUTION.md` | Sovereign rules, Zero Vibe-Coding, DPDP compliance, the Contract |
+| `constitution.md` | Sovereign rules, Zero Vibe-Coding, DPDP compliance, the Contract |
 
 You must be able to answer cold:
 1. All 58 table names from `db_struct.sql`

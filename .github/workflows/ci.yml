@@ -230,7 +230,11 @@ jobs:
             --start-api \
             --api-base http://127.0.0.1:8010 \
             --payloads tests/security/red_team_payloads.yaml \
-            --evidence evidence/2026-04-26/17_red_team_results.md
+            --evidence evidence/2026-04-26/17_red_team_results.md \
+            --workers 1 \
+            --timeout 10 \
+            --startup-timeout 90 \
+            --chunk-size 10
       - name: Upload red-team evidence
         uses: actions/upload-artifact@v4
         if: always()
@@ -294,6 +298,26 @@ jobs:
         run: ruff check src tests
       - name: Run mypy type check
         run: mypy src
+
+  # ===========================================================================
+  # PRODUCTION VOCABULARY GATE
+  # ===========================================================================
+
+  forbidden-vocab:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run forbidden-vocab check on entire repo
+        run: |
+          FORBIDDEN_PATTERN='\b(demo|demo-ready|demo-day|demo-video|demo-dataset|demo-rehearsal|pitch-deck|MVP|prototype)\b'
+          ALLOWLIST='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN|scripts/forbidden_vocab_check\.sh|protocols/|BACKLOG\.md$'
+          VIOLATIONS=$(grep -rInE "$FORBIDDEN_PATTERN" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build . 2>/dev/null | grep -v -E "$ALLOWLIST" | grep -v '.github/workflows/ci.yml' || true)
+          if [[ -n "$VIOLATIONS" ]]; then
+            echo "FORBIDDEN VOCABULARY DETECTED:"
+            echo "$VIOLATIONS"
+            exit 1
+          fi
+          echo "Forbidden-vocab check passed"
 
   # ===========================================================================
   # SECRET SCANNING

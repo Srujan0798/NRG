@@ -22,10 +22,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install Python build tools
 RUN pip install --upgrade pip wheel setuptools
 
+# Create virtualenv and install dependencies into it
+RUN python -m venv /app/venv
+ENV PATH=/app/venv/bin:$PATH
+
 # Copy project files
 COPY pyproject.toml .
 
-# Install Python dependencies
+# Install CPU-only torch FIRST — prevents sentence-transformers from pulling ~2GB CUDA packages
+# which causes build timeout on Colima (aarch64 linux). CPU torch is sufficient for
+# sentence-transformers inference in production.
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
+# Install Python dependencies into venv
 RUN pip install --no-cache-dir -e .
 
 # Copy source code
@@ -47,9 +56,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-# Copy installed packages from builder
-COPY --from=builder /root/.local /root/.local
-COPY --from=builder /root/.cache /root/.cache
+# Copy virtualenv from builder
+COPY --from=builder /app/venv /app/venv
 
 # Copy application code
 COPY --from=builder /app/src/ ./src/
@@ -62,7 +70,7 @@ RUN chown -R app:app /app
 USER app
 
 # Environment variables for production
-ENV PATH=/root/.local/bin:$PATH \
+ENV PATH=/app/venv/bin:$PATH \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -78,5 +86,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 --start-
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Graceful shutdown with SIGTERM handling
-# uvicorn --timeout-keep-alive is set for in-flight request draining
-CMD ["sh", "-c", "uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-4} --timeout-keep-alive ${UVICORN_TIMEOUT_KEEP_ALIVE:-5} --graceful-timeout ${UVICORN_GRACEFUL_TIMEOUT:-30}"]
+CMD ["sh", "-c", "uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-4} --timeout-keep-alive ${UVICORN_TIMEOUT_KEEP_ALIVE:-5}"]

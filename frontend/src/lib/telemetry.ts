@@ -9,6 +9,8 @@ export const telemetryEventNames = [
   'query.aborted',
   'citation.opened',
   'audit.verified',
+  'proof.verify_clicked',
+  'proof.verified',
   'persona.switched',
   'error.shown',
   'empty.shown',

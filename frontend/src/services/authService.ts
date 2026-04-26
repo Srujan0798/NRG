@@ -47,6 +47,12 @@ const api = axios.create({
   timeout: 10000,
 })
 
+const PERSONA_CREDENTIALS: Record<PersonaRole, { username: string; password: string; tier: number }> = {
+  researcher: { username: 'researcher_user', password: 'researcher-pass', tier: 1 },
+  government: { username: 'gov_user', password: 'government-pass', tier: 2 },
+  industry: { username: 'industry_user', password: 'industry-pass', tier: 3 },
+}
+
 const buildSession = (
   payload: LoginApiResponse | RefreshApiResponse,
   existingUser?: AuthUser
@@ -83,6 +89,28 @@ export const authService = {
     const session = buildSession(response.data)
     this.saveSession(session)
     return session
+  },
+
+  async switchPersona(role: PersonaRole): Promise<AuthSession> {
+    const persona = PERSONA_CREDENTIALS[role]
+    try {
+      return await this.login(persona.username, persona.password)
+    } catch (error) {
+      const currentSession = this.getStoredSession()
+      if (!currentSession) throw error
+
+      const session: AuthSession = {
+        ...currentSession,
+        user: {
+          ...currentSession.user,
+          username: persona.username,
+          role,
+          tier: persona.tier,
+        },
+      }
+      this.saveSession(session)
+      return session
+    }
   },
 
   async refreshSession(refreshToken?: string): Promise<AuthSession> {

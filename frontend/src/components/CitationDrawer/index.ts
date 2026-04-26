@@ -1,1 +1,0 @@
-export { CitationDrawer } from './CitationDrawer'
