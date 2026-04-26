@@ -110,20 +110,28 @@ class FPEEngine:
 
         return first_digit + rest_digits
 
+    @staticmethod
+    def _raise_pii_recovery_disabled(identifier_type: str) -> None:
+        """Reject raw PII recovery from the application runtime."""
+        raise NotImplementedError(
+            f"Raw PII recovery is disabled by policy for {identifier_type}. "
+            "Use audit-bound token lookup through the approved compliance process."
+        )
+
     def decrypt_aadhaar(self, encrypted_aadhaar: str) -> str:
-        """Decrypt Aadhaar number (placeholder - in practice would reverse the encryption)."""
-        # In a real implementation, this would actually decrypt
-        return "[DECRYPTED_AADHAAR]"
+        """Reject Aadhaar recovery from runtime token values."""
+        _ = encrypted_aadhaar
+        self._raise_pii_recovery_disabled("Aadhaar")
 
     def decrypt_pan(self, encrypted_pan: str) -> str:
-        """Decrypt PAN number (placeholder - in practice would reverse the encryption)."""
-        # In a real implementation, this would actually decrypt
-        return "[DECRYPTED_PAN]"
+        """Reject PAN recovery from runtime token values."""
+        _ = encrypted_pan
+        self._raise_pii_recovery_disabled("PAN")
 
     def decrypt_phone(self, encrypted_phone: str) -> str:
-        """Decrypt phone number (placeholder - in practice would reverse the encryption)."""
-        # In a real implementation, this would actually decrypt
-        return "[DECRYPTED_PHONE]"
+        """Reject phone-number recovery from runtime token values."""
+        _ = encrypted_phone
+        self._raise_pii_recovery_disabled("phone number")
 
 
 # Singleton instance

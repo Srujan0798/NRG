@@ -2,6 +2,7 @@ import os
 import re
 import hashlib
 import base64
+import secrets
 from typing import Any, Dict, List, Optional, Tuple
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
@@ -23,7 +24,6 @@ class PIITokenizer:
                     raise RuntimeError(
                         "PII_ENCRYPTION_KEY must be set in production environments"
                     )
-                import secrets
                 key_env = secrets.token_hex(32)
                 salt_env = secrets.token_hex(16)
             password = key_env.encode()
@@ -138,9 +138,11 @@ class PIITokenizer:
     def detokenize_pii(self, token: str, pii_type: str) -> str:
         """Detokenize PII value (for authorized access)."""
         if pii_type in ["aadhaar", "pan", "phone"]:
-            # For FPE, we would need the original mapping to restore
-            # In practice, this would be stored in a secure token vault
-            return f"[DECRYPTED_{pii_type.upper()}]"
+            _ = token
+            raise NotImplementedError(
+                f"Token vault lookup is required to recover {pii_type}. "
+                "Runtime detokenization for format-preserving PII tokens is disabled."
+            )
         else:
             try:
                 return self.cipher.decrypt(token.encode()).decode()

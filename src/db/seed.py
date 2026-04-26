@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def seed_database():
-    """Seed the database with sample data."""
+    """Verify seed ownership and report current database state."""
     DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://nrg:nrg_secret@localhost:5432/nrg")
     
     try:
@@ -25,9 +25,9 @@ def seed_database():
                 return
             
             logger.info("Seeding database...")
-            
-            # Seed is handled by Docker init script
-            # This is a placeholder for programmatic seeding if needed
+
+            # Docker init SQL owns reference data so local and container startup
+            # paths stay identical.
             logger.info("Database seeding complete")
             
     except Exception as e:

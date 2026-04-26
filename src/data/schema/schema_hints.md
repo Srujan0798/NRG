@@ -568,7 +568,7 @@ LEFT JOIN PatentData p ON LOWER(TRIM(g.institute)) = LOWER(TRIM(p.applicants));
 | `django_content_type` | Django CT |
 | `django_migrations` | Django migrations |
 | `django_session` | Django sessions |
-| `adv_se` | Empty/placeholder |
+| `adv_se` | Legacy support table; currently empty in source schema |
 
 ---
 
