@@ -17,6 +17,7 @@ import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { FundingTrendsLineChart } from '../components/DataViz/FundingTrendsLineChart'
 import { IndiaMapChoropleth } from '../components/DataViz/IndiaMapChoropleth'
+import { TierDataNotice } from '../components/TierDataNotice'
 import { useAuth } from '../hooks/useAuth'
 import { useDPDPStore } from '../stores/dpdpStore'
 import { queryService, GraphNode, QueryResponse } from '../services/queryService'
@@ -212,6 +213,10 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
           role="government"
           expiringCount={consentExpiringCount}
         />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <TierDataNotice />
+        </div>
 
         <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
           {activeTab === 'overview' && (

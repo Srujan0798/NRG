@@ -195,7 +195,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   <div className="flex items-center gap-2 mb-2">
                     <div
                       className="w-6 h-6 rounded-full flex items-center justify-center"
-                      style={{ background: isActive ? creds.accent : 'rgba(255,255,255,0.1)' }}
+                      style={{ background: isActive ? creds.accent : 'var(--nrg-white-10)' }}
                     >
                       <span className="text-white text-xs">
                         {key === 'researcher' ? '🔬' : key === 'government' ? '🏛️' : '🏢'}
@@ -346,7 +346,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <span className="nrg-ashoka-spinner" style={{ width: 18, height: 18, borderWidth: 2 }} />
+                  <span className="nrg-ashoka-spinner nrg-ashoka-spinner--sm" />
                   {t("auto.components.Login.15")}</span>
               ) : (
                 `Continue as ${PERSONA_LABELS[selectedPersona].en}`

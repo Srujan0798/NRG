@@ -17,6 +17,7 @@ import { StatsCard } from '../components/StatsCard/StatsCard'
 import { ErrorState } from '../components/ErrorState/ErrorState'
 import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
+import { TierDataNotice } from '../components/TierDataNotice'
 import { useAuth } from '../hooks/useAuth'
 import MetricsDashboard from './MetricsDashboard'
 import { useQueryStore } from '../stores/queryStore'
@@ -256,6 +257,10 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
         onManageConsent={() => setActiveTab('dpdp')}
         expiringCount={consentExpiringCount}
       />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <TierDataNotice />
+      </div>
 
       <main id="main-content" tabIndex={-1} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
         {activeTab === 'dashboard' && (

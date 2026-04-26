@@ -1,8 +1,10 @@
-import React, { Suspense, lazy, useState } from 'react'
+import React, { Suspense, lazy, useState, useEffect } from 'react'
 import SearchBar from '../components/SearchBar'
 import { ScaleStrip } from '../components/ScaleStrip/ScaleStrip'
+import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { Citation } from '../services/queryService'
 import { heroCopy, heroLabels } from '../i18n/hero-copy'
+import { useAuth } from '../hooks/useAuth'
 
 const StreamingAnswerPanel = lazy(() => import('../components/StreamingAnswerPanel'))
 const CitationDrawer = lazy(() => import('../components/CitationDrawer/CitationDrawer'))
@@ -21,6 +23,14 @@ const AnswerPanelFallback = () => (
   </section>
 )
 
+type QueryDomain = 'research' | 'policy' | 'industry'
+
+const roleToDomain = (role?: string): QueryDomain => {
+  if (role === 'government') return 'policy'
+  if (role === 'industry') return 'industry'
+  return 'research'
+}
+
 export const Hero: React.FC = () => {
   const bootQuery = typeof window === 'undefined' ? '' : window.__nrgBootQuery || ''
   const shouldSubmitBootQuery = typeof window !== 'undefined' && window.__nrgBootSubmit === true && bootQuery.trim().length > 0
@@ -28,6 +38,8 @@ export const Hero: React.FC = () => {
   const [lastQuery, setLastQuery] = useState(shouldSubmitBootQuery ? bootQuery.trim() : '')
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
   const [isCitationOpen, setIsCitationOpen] = useState(false)
+  const [isSlowQuery, setIsSlowQuery] = useState(false)
+  const { user } = useAuth()
 
   const handleSubmit = (query: string) => {
     setSearchValue(query)
@@ -36,7 +48,14 @@ export const Hero: React.FC = () => {
       window.__nrgBootSubmit = false
     }
     setLastQuery(query)
+    setIsSlowQuery(false)
   }
+
+  useEffect(() => {
+    if (!lastQuery) return
+    const timer = window.setTimeout(() => setIsSlowQuery(true), 5000)
+    return () => window.clearTimeout(timer)
+  }, [lastQuery])
 
   const handleCitationClick = (citation: Citation) => {
     setSelectedCitation(citation)
@@ -80,6 +99,9 @@ export const Hero: React.FC = () => {
 
         {lastQuery && (
           <Suspense fallback={<AnswerPanelFallback />}>
+            {isSlowQuery && (
+              <QueryPhaseProgress domain={roleToDomain(user?.role)} isSlowQuery={isSlowQuery} />
+            )}
             <StreamingAnswerPanel query={lastQuery} onCitationClick={handleCitationClick} onProofOpen={handleProofOpen} />
             <SideBySidePanel />
           </Suspense>

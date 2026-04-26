@@ -20,7 +20,7 @@ export default function DPDPAudit() {
 
   useEffect(() => {
     let mounted = true
-    queryService.listAuditEvents(120)
+    queryService.listAuditEvents(2000)
       .then((response) => {
         if (mounted) setEvents(response.events)
       })
