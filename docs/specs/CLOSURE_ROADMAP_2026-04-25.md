@@ -33,9 +33,9 @@ Audit chain: ok, 442137 events checked, 0 broken indices
 
 | ID | Task | Status | Next Gate |
 |---|---|---:|---|
-| M5a.1 | Duplicate component cleanup | Pending | No duplicate basenames under `frontend/src/components/` |
+| M5a.1 | Duplicate component cleanup | Complete locally | `GraphView.tsx.old` removed — no duplicate basenames under `frontend/src/components/` |
 | M5a.2 | Design token audit | Pending | Build gate blocks raw visual constants in components |
-| M5a.3 | Self-hosted fonts | Pending | No external font requests in release build |
+| M5a.3 | Self-hosted fonts | Complete locally | SohneDisplay and JetBrainsMono self-hosted in `frontend/public/fonts/` |
 | M5a.4 | Query entry surface | Pending | First input ready, templates available, slow-network timing captured |
 | M5a.5 | Streaming response states | Pending | Four response phases visible with no blank wait |
 | M5a.6 | Persona switcher | Pending | Keyboard-accessible role switch with tier-correct requery |
