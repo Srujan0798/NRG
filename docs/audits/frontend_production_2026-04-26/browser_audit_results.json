@@ -42,12 +42,12 @@
     "mobile_query_result": "docs/audits/frontend_production_2026-04-26/screenshots/15_mobile_query_result.png"
   },
   "timings": {
-    "login_page_load_seconds": 0.74,
-    "researcher_login_seconds": 2.74,
-    "key_query_seconds": 0.44,
-    "followup_query_seconds": 0.73,
-    "industry_login_seconds": 0.42,
-    "tier3_query_seconds": 0.36
+    "login_page_load_seconds": 0.75,
+    "researcher_login_seconds": 1.62,
+    "key_query_seconds": 0.47,
+    "followup_query_seconds": 1.03,
+    "industry_login_seconds": 1.67,
+    "tier3_query_seconds": 2.83
   },
   "checks": {
     "login_placeholders": {

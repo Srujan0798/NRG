@@ -14,6 +14,7 @@ export const telemetryEventNames = [
   'persona.switched',
   'error.shown',
   'ui.error_boundary',
+  'dpdp.sync_failed',
   'dpdp.export_failed',
   'dpdp.erasure_failed',
   'empty.shown',

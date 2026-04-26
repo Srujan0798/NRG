@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { GovernmentHeader } from '../components/Government/GovernmentHeader'
 import { MinistrySummaryCard } from '../components/Government/SummaryCards'
@@ -64,6 +64,8 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
   const [graphData, setGraphData] = useState(queryService.emptyGraphData())
   const [graphTopic, setGraphTopic] = useState('AI')
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
+  const searchInFlightRef = useRef(false)
+  const lastCompletedQueryRef = useRef<{ query: string; at: number } | null>(null)
 
   const { data: statsData, isLoading: statsLoading } = useQuery({
     queryKey: ['stats', user?.id],
@@ -102,6 +104,10 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
       setQueryValidation('Enter a policy question before searching.')
       return
     }
+    const recentQuery = lastCompletedQueryRef.current
+    if (recentQuery?.query === submittedQuery && Date.now() - recentQuery.at < 3000) return
+    if (searchInFlightRef.current) return
+    searchInFlightRef.current = true
     setQueryValidation(null)
     setIsSearching(true)
     setQueryError(null)
@@ -109,6 +115,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
     const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
     try {
       const result = await queryService.query({ query: submittedQuery })
+      lastCompletedQueryRef.current = { query: submittedQuery, at: Date.now() }
       setQueryResult(result)
       addAuditEntry({ action: 'data_accessed', persona: 'government', details: `Query: ${submittedQuery}` })
     } catch (err: any) {
@@ -116,6 +123,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
         ? 'Access restricted for this workspace. Aggregated policy data only is available.'
         : err?.message || 'Search failed. Please try again.')
     } finally {
+      searchInFlightRef.current = false
       window.clearTimeout(slowTimer)
       setIsSearching(false)
       setIsSlowQuery(false)
@@ -187,7 +195,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
       <div className="nrg-app-canvas min-h-screen">
         <GovernmentHeader onThemeToggle={onThemeToggle} theme={theme} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto border-b border-nrg-border">
+        <div className="max-w-7xl mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto border-b border-nrg-border">
           {TABS.map((tab) => (
             <motion.button
               key={tab.key}

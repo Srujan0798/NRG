@@ -1,130 +1,86 @@
-# NRG Handover Package — Master Index
+# NRG Handoff Package - Master Index
 
-> **Protocol #44 — THE HANDOVER PACKAGE**
-> **Version:** 1.0  
-> **Date:** 2026-04-24  
-> **Classification:** IIT-GN Internal → Ministry Handoff  
-> **Owner:** NRG Development Team  
+**Version:** 2026-04-26 local validation refresh
+**Classification:** IIT-GN internal handoff
+**Owner:** NRG engineering team
 
----
+This directory is the operator-facing handoff package for National Research Graph. It is written for the professor's assistant, IIT-GN operators, security reviewers, and developers who need to run, audit, and extend the system without relying on the original builders.
 
-## Purpose
+## Current Status
 
-A product that only its builders can operate is NOT a product — it's a liability.  
-On the day we hand NRG to IIT-GN, they must be able to:
+NRG is locally handoff-ready for professor-assistant technical evaluation. The local release has reproducible evidence for schema parity, tier response filtering, critical query execution, audit-chain verification, frontend build, and live red-team replay.
 
-- ✅ Boot it
-- ✅ Query it  
-- ✅ Operate it
-- ✅ Audit it
-- ✅ Scale it
-- ✅ Recover from disaster
-- ✅ Pitch it to the ministry
+Three gates still require external infrastructure before a sovereign-cluster production sign-off:
 
-**All WITHOUT calling us.**
+| Gate | Status | Reason |
+|---|---:|---|
+| C4 load SLO at 1000 concurrent users | External gate | Requires the target sovereign Kubernetes cluster and representative data volume. |
+| C5 vector-drift baseline | External gate | Requires the production Qdrant corpus and scheduled drift baseline. |
+| 600GB real dataset ingest | External gate | Requires official dataset access and the signed intake window. |
 
----
+Do not claim sovereign-cluster production sign-off until those three items are executed and recorded.
 
-## The 8 Handover Artifacts
+## Handoff Artifacts
 
-| # | Document | Purpose | Audience |
-|---|----------|---------|----------|
-| 1 | **SYSTEM_OVERVIEW.md** | 10-page narrative for non-engineers | Ministry, IIT-GN leadership |
-| 2 | **ARCHITECTURE.md** | Technical architecture with diagrams | IIT-GN ops team, NIC engineers |
-| 3 | **API_REFERENCE.md** | Human-edited API docs with examples | Developers integrating with NRG |
-| 4 | **OPERATIONS_RUNBOOK.md** | Day-2 ops: boot, backup, rotation, incidents | Ops team, on-call engineers |
-| 5 | **SECURITY_COMPLIANCE_ATTESTATION.md** | QB 6/6 evidence, DPDP mapping, data flow | Security auditors, MeitY |
-| 6 | **DATA_INTAKE_PROTOCOL.md** | SFTP + GPG + HMAC intake handshake | Data team, NIC intake operators |
-| 7 | **UAT_RESULTS.md** | Test template for UAT session | UAT participants (professor, ministry, industry) |
-| 8 | **README.md** | This file — master index | All readers |
+| # | Document | Purpose | Primary Audience |
+|---|---|---|---|
+| 1 | [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md) | Plain-English system overview and value model | IIT-GN leadership, ministry reviewers |
+| 2 | [ARCHITECTURE.md](ARCHITECTURE.md) | 5-layer system architecture and runtime flow | Engineers, NIC reviewers |
+| 3 | [API_REFERENCE.md](API_REFERENCE.md) | Endpoint contracts, request examples, response shapes | Developers and integrators |
+| 4 | [OPERATIONS_RUNBOOK.md](OPERATIONS_RUNBOOK.md) | Boot, health checks, backup, incidents, recovery | Operators and on-call engineers |
+| 5 | [SECURITY_COMPLIANCE_ATTESTATION.md](SECURITY_COMPLIANCE_ATTESTATION.md) | DPDP, RBAC, egress, audit evidence map | Security and compliance reviewers |
+| 6 | [DATA_INTAKE_PROTOCOL.md](DATA_INTAKE_PROTOCOL.md) | SFTP, GPG, HMAC intake workflow | Data and infrastructure teams |
+| 7 | [UAT_RESULTS.md](UAT_RESULTS.md) | User acceptance test plan and sign-off template | Professor, ministry, industry evaluators |
+| 8 | [PITCH_DECK_GUIDE.md](PITCH_DECK_GUIDE.md) | Capability narrative guide for executive review | Presenter and leadership team |
 
----
+Supporting documents outside this directory:
 
-## Phase 1: Fortify (Artifacts 1–8)
+| Document | Purpose |
+|---|---|
+| [../../README.md](../../README.md) | Developer setup and local run instructions |
+| [../SCHEMA.md](../SCHEMA.md) | 58-table schema reference generated from `db_struct.sql` |
+| [../PRODUCTION_WALKTHROUGH.md](../PRODUCTION_WALKTHROUGH.md) | Presenter workflow and critical query sequence |
+| [../PRODUCTION_READINESS_SUMMARY.md](../PRODUCTION_READINESS_SUMMARY.md) | Engineering summary of fixes, evidence, and remaining external gates |
 
-```
-docs/handover/
-├── README.md                          ← You are here
-├── SYSTEM_OVERVIEW.md                 ← Artifact 1
-├── ARCHITECTURE.md                    ← Artifact 2
-├── API_REFERENCE.md                   ← Artifact 3
-├── OPERATIONS_RUNBOOK.md             ← Artifact 4
-├── SECURITY_COMPLIANCE_ATTESTATION.md ← Artifact 5
-├── DATA_INTAKE_PROTOCOL.md            ← Artifact 6
-└── UAT_RESULTS.md                    ← Artifact 7
-```
+## Evidence Index
 
----
+Fresh evidence from 2026-04-26 is stored under `evidence/2026-04-26/`.
 
-## Phase 2: Elevate
+| Evidence | What It Proves |
+|---|---|
+| `test_suite_full.log` | Full fast test suite completed: 1572 passed, 63 skipped, 219 deselected in 250.34s. |
+| `37_live_red_team_replay_chunked.md` | Live API replay completed with 0 dangerous allowed responses. |
+| `killer_query_health.json` | Three critical production queries returned rows with P95 under 60ms on the local reference dataset. |
+| `schema_parity_58_58.txt` | Alembic/schema parity reached 58/58 tables with expected skips only. |
+| `explain_index_usage.txt` | Local query-plan evidence for critical indexes and query paths. |
+| `production_validation/tier_differentiation_live.json` | Tier-filtering evidence for API responses. |
 
-| Deliverable | Status | Location |
-|-------------|--------|----------|
-| Pitch Deck (20 slides) | Pending | `pitch/NRG_PITCH_DECK.pdf` |
-| Demo Video (3 min) | Pending | `pitch/NRG_DEMO.mp4` |
-| UAT Session (1 hour) | Pending | Scheduled separately |
-
----
-
-## Phase 3: Immortalize — Shadowing Timeline
-
-| Phase | Duration | Ownership | NRG Team Role |
-|-------|----------|-----------|---------------|
-| **30-day shadowing** | Days 1–30 | NRG + IIT-GN ops together | Train, observe, refine |
-| **60-day handover** | Days 31–90 | IIT-GN ops runs solo | On-call for P0 only |
-| **90-day independence** | Day 91+ | IIT-GN owns completely | Retired |
-
----
-
-## Quick Reference for IIT-GN Ops
+## Local Operator Quick Start
 
 ```bash
-# Boot the system
-cd /opt/nrg && docker-compose up -d
-
-# Check health
+docker compose up -d
 curl http://localhost:8000/health/all
-
-# View audit chain
 curl http://localhost:8000/audit/verify
-
-# Rotate secrets (see OPERATIONS_RUNBOOK.md)
-./scripts/rotate_secrets.sh
-
-# Emergency contacts
-#   Tech Lead:  +91-XXXXX-XXXXX
-#   Security:   security@iitgn.ac.in
-#   MeitY LIaison: meity@iitgn.ac.in
 ```
 
----
-
-## Dependencies (Must Be Resolved Before Handover)
-
-| Ticket | Description | Status |
-|--------|-------------|--------|
-| #41 | Quality Bar 6/6 score | Must pass |
-| #42 | Frontend complete | Must pass |
-| #43 | Sovereign deploy ready | Must pass |
-| #19 | All tests green | Must pass |
-| #20 | Dhairya benchmark ≥85% | Must pass |
-
----
+For detailed setup, seed, test, and troubleshooting instructions, start with [../../README.md](../../README.md).
 
 ## Sign-Off Checklist
 
-| Document | Founder Sign-Off | Review Date |
-|----------|-----------------|-------------|
-| SYSTEM_OVERVIEW.md | ☐ | |
-| ARCHITECTURE.md | ☐ | |
-| API_REFERENCE.md | ☐ | |
-| OPERATIONS_RUNBOOK.md | ☐ | |
-| SECURITY_COMPLIANCE_ATTESTATION.md | ☐ | |
-| DATA_INTAKE_PROTOCOL.md | ☐ | |
-| UAT_RESULTS.md | ☐ | |
+| Area | Local Evidence Status | External Sign-Off Needed |
+|---|---:|---:|
+| API response contract | Complete | No |
+| Tier response filtering | Complete | No |
+| 58-table schema parity | Complete | No |
+| Audit chain verification | Complete | No |
+| Live red-team replay | Complete | No |
+| Frontend build | Complete | No |
+| 1000-user C4 SLO | Pending cluster run | Yes |
+| Qdrant C5 drift baseline | Pending corpus baseline | Yes |
+| Official 600GB ingest | Pending data access | Yes |
 
----
+## Ownership Notes
 
-*Last updated: 2026-04-24*  
-*Protocol #44 — THE HANDOVER PACKAGE*  
-*NRG Development Team — signing off*
+NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, vector baseline, and official dataset ingestion have all been run and attached as evidence.
+
+*Last updated: 2026-04-26*

@@ -2,7 +2,9 @@
 
 **Sovereign AI-powered research intelligence platform for India's national research database.**
 
-A production-grade system that enables natural language queries against structured research data (researchers, publications, institutions, labs, funding) with full DPDP-2023 compliance, tiered access control, and tamper-proof audit trails.
+NRG lets authenticated users ask natural-language questions over structured research data and receive SQL-visible, tier-filtered, audit-bound answers. The local release path is validated with the 58-table schema bridge, Dhairya SQL regression coverage, role-based response shaping, and HMAC audit-chain verification.
+
+Current local status is documented in `docs/PRODUCTION_READINESS_SUMMARY.md`. Sovereign-cluster load testing, populated Qdrant baseline establishment, and real 600GB intake require the target environment and are tracked separately instead of being claimed from a laptop run.
 
 ---
 
@@ -15,14 +17,14 @@ A production-grade system that enables natural language queries against structur
 - **Node.js 18+** (for frontend development)
 - **4GB RAM minimum** (8GB recommended)
 
-### Production Setup (Single Command)
+### Container Setup
 
 ```bash
-git clone https://github.com/your-org/nrg.git
+git clone <repository-url>
 cd nrg
 docker compose --profile prod up -d
 
-# Wait for services to be healthy (~30 seconds)
+# Wait for services to become healthy.
 docker compose ps
 
 # Access the system:
@@ -35,7 +37,7 @@ docker compose ps
 
 ```bash
 # 1. Clone and enter directory
-git clone https://github.com/your-org/nrg.git
+git clone <repository-url>
 cd nrg
 
 # 2. Set up Python virtual environment
@@ -58,7 +60,7 @@ docker compose --profile dev up -d postgres redis qdrant
 # 7. Run database migrations
 alembic upgrade head
 
-# 8. Seed with sample data
+# 8. Seed the local reference dataset
 python scripts/seed_release_data.py
 
 # 9. Start the API server
@@ -140,14 +142,14 @@ cd frontend && npm install && npm run dev
 
 ## Database Schema
 
-The system uses a comprehensive 58-table PostgreSQL schema covering:
+The system uses a 58-table PostgreSQL schema parsed from `db_struct.sql`. The local volumetric reference database used by the 2026-04-26 evidence contains at least:
 
-- **Researchers**: Profiles, contact info, affiliations (200+ records in seed data)
-- **Publications**: Titles, abstracts, authors, citations (12,000+ records)
-- **Institutions**: Universities, research labs, government bodies (24+ records)
-- **Funding**: Grants, agencies, disbursements (1,000+ records)
-- **Academic Courses**: Innovation courses, TRL levels, outcomes (5,000+ records)
-- **And 50+ additional tables** for complete research metadata
+- `academic_courses_details`: 50,000 rows
+- `innovations_at_various_stages_of_technology_readiness_level`: 10,000 rows
+- `innovation_grant_from_govt`: 30,000 rows
+- `combined_ipo_patent_data`: 20,000 rows
+- `publications`: 100,000 rows
+- `researchers`: 5,615 rows
 
 See `docs/SCHEMA.md` for complete documentation.
 
@@ -173,13 +175,13 @@ curl -X POST http://localhost:8000/auth/login \
 curl -X POST http://localhost:8000/query \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"question": "How many publications are there?"}'
+  -d '{"query": "How many publications are there?"}'
 
 # Response includes:
 # - audit_event_id: For audit trail verification
 # - sql_query: The generated SQL
 # - sql_results: Query results (tier-filtered)
-# - synthesized_answer: Natural language response
+# - response: Natural language response
 # - citations: Source references
 ```
 
@@ -242,16 +244,13 @@ CLOUD_SYNTHESIS_ALLOWED=false  # Set true to enable cloud LLM
 ### Run All Tests
 
 ```bash
-# Full test suite (requires running services)
-pytest tests/ -v
-
-# With coverage
-pytest tests/ --cov=src --cov-report=html
+# Fast local gate used for handoff evidence
+MAX_FAST_SECONDS=900 PYTEST_WORKERS=auto scripts/run_test_suite.sh --fast
 
 # Specific test categories
-pytest tests/security/ -v
-pytest tests/benchmarks/ -v
-pytest tests/api/ -v
+.venv/bin/pytest tests/security/ -q
+.venv/bin/pytest tests/benchmarks/ -q
+.venv/bin/pytest tests/api/ -q
 ```
 
 ### Critical Query Benchmarks
@@ -260,8 +259,8 @@ pytest tests/api/ -v
 # Run Dhairya SQL benchmark (17 queries)
 pytest tests/benchmarks/test_dhairya_regression.py -v
 
-# Run killer queries against live API
-python scripts/capture_killer_query_evidence.py
+# Capture the three critical query evidence artifacts
+.venv/bin/python scripts/capture_killer_query_evidence.py
 ```
 
 ### Security Testing
@@ -270,8 +269,16 @@ python scripts/capture_killer_query_evidence.py
 # Run PII compliance tests
 pytest tests/security/test_pii_compliance.py -v
 
-# Run red-team suite
-python scripts/red_team_live_replay.py
+# Run the full local red-team replay with bounded startup
+DATABASE_URL=sqlite:///$PWD/data/nrg_research.db \
+  .venv/bin/python scripts/red_team_live_replay.py \
+  --start-api \
+  --api-base http://127.0.0.1:8045 \
+  --startup-timeout 60 \
+  --timeout 30 \
+  --workers 1 \
+  --chunk-size 5 \
+  --evidence evidence/$(date +%F)/red_team_replay.md
 ```
 
 ---
@@ -281,7 +288,7 @@ python scripts/red_team_live_replay.py
 ### Docker Compose (Recommended)
 
 ```bash
-# Full production stack
+# Full local container stack
 docker compose --profile prod up -d
 
 # Check status
@@ -354,12 +361,16 @@ nrg/
 
 ---
 
-## Performance
+## Verified Local Performance
 
-- **Query Latency**: P99 < 500ms for analytical queries
-- **Frontend Load Time**: < 2 seconds on 4G
-- **Concurrent Users**: 1000+ supported
-- **Database**: Optimized with proper indexes, no N+1 queries
+The 2026-04-26 local evidence uses the volumetric SQLite proxy, not the sovereign PostgreSQL cluster:
+
+- Critical query P95: 25.04ms, 52.95ms, and 22.8ms
+- Fast test-suite gate: 1572 passed, 63 skipped, 219 deselected in 250.34s
+- Frontend production build: passes with Vite/TypeScript
+- Compose configuration: `docker compose config --quiet` passes
+
+The 1000-user P99 SLO must be executed on the sovereign Kubernetes target with PostgreSQL and Qdrant populated.
 
 ---
 
@@ -368,7 +379,7 @@ nrg/
 | Document | Description |
 |----------|-------------|
 | `Core_Idea_Clean.md` | Product specification and vision |
-| `docs/SCHEMA.md` | Complete database schema reference |
+| `docs/SCHEMA.md` | Complete parsed table and column reference |
 | `docs/handover/` | Production handover artifacts |
 | `evidence/` | Test evidence and audit reports |
 
@@ -389,4 +400,4 @@ Confidential — Government of India / IIT Gandhinagar
 
 ---
 
-**Built with production-grade engineering practices for sovereign AI infrastructure.**
+**Built for sovereign AI infrastructure with reproducible local evidence and explicit external-gate tracking.**

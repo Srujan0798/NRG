@@ -1,0 +1,23 @@
+[
+  {
+    "browser": "chromium",
+    "login_dashboard": true,
+    "console_errors": [],
+    "failed_requests": [],
+    "title": "NRG \u00b7 Researcher Dashboard"
+  },
+  {
+    "browser": "firefox",
+    "login_dashboard": true,
+    "console_errors": [],
+    "failed_requests": [],
+    "title": "NRG \u00b7 Researcher Dashboard"
+  },
+  {
+    "browser": "webkit",
+    "login_dashboard": true,
+    "console_errors": [],
+    "failed_requests": [],
+    "title": "NRG \u00b7 Researcher Dashboard"
+  }
+]

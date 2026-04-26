@@ -3,7 +3,7 @@ import { EmptyState } from './EmptyState'
 import { t } from '../../i18n'
 
 const meta = {
-  title: 'Demo/EmptyState',
+  title: 'Production/EmptyState',
   component: EmptyState,
 } satisfies Meta<typeof EmptyState>
 
@@ -15,7 +15,7 @@ export const NoData: Story = {
     title: t('empty.noData.headline'),
     body: t('empty.noData.body'),
     primaryLabel: t('empty.noData.cta'),
-    onPrimary: () => console.info('empty primary action'),
+    onPrimary: () => undefined,
   },
 }
 
@@ -24,6 +24,6 @@ export const NoAuditEvents: Story = {
     title: t('empty.noAuditEvents.headline'),
     body: t('empty.noAuditEvents.body'),
     primaryLabel: t('empty.noAuditEvents.cta'),
-    onPrimary: () => console.info('empty audit action'),
+    onPrimary: () => undefined,
   },
 }

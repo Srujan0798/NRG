@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+import pytest
 from hypothesis import HealthCheck, given, settings, strategies as st
 
 from src.api.response_filter import (
@@ -76,6 +77,7 @@ def test_policy_declares_required_response_boundary_fields():
         assert field in fields
 
 
+@pytest.mark.slow
 @settings(max_examples=1000, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(payload=payload_strategy, tier=st.sampled_from([1, 2, 3]))
 def test_random_response_payloads_never_expose_disallowed_tier_columns(payload, tier):

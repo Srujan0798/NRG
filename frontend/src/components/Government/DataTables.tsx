@@ -92,7 +92,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="w-full max-w-full overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[var(--glass-bg)]">
             <tr>
