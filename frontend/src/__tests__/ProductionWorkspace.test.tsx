@@ -1,6 +1,7 @@
 import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import {
+  buildIndustryCapabilityRowsFromStats,
   ProductionWorkspaceView,
   type ProductionWorkspaceData,
 } from '../pages/ProductionWorkspace'
@@ -148,5 +149,40 @@ describe('ProductionWorkspaceView', () => {
     expect(container.textContent).toContain('Restricted profile access')
     expect(container.textContent).not.toContain('ananya@example.edu')
     expect(container.textContent).not.toContain('Dr. Ananya Rao')
+  })
+
+  it('does not advertise restricted workspaces in lower-tier navigation', () => {
+    const container = render(
+      <ProductionWorkspaceView
+        screen="industry"
+        user={industry}
+        data={loadedData}
+        onRetry={() => undefined}
+        onLogout={() => undefined}
+      />
+    )
+
+    expect(container.textContent).toContain('Industry capability')
+    expect(container.textContent).not.toContain('Researcher profiles')
+    expect(container.textContent).not.toContain('Government reports')
+  })
+
+  it('builds industry capability rows from aggregate stats without personal fields', () => {
+    const rows = buildIndustryCapabilityRowsFromStats({
+      total_researchers: 2,
+      total_publications: 20,
+      research_area_distribution: [{ area: 'Robotics', count: 20 }],
+      state_distribution: [{ state: 'Gujarat', count: 2 }],
+    })
+
+    expect(rows).toEqual([
+      {
+        institution: 'Gujarat capability cluster',
+        research_area: 'Robotics',
+        publications: 20,
+      },
+    ])
+    expect(JSON.stringify(rows)).not.toContain('email')
+    expect(JSON.stringify(rows)).not.toContain('phone')
   })
 })

@@ -15,13 +15,13 @@ import { AuthUser } from '../services/authService'
 import {
   AuditEventRecord,
   PublicationRow,
-  QueryResponse,
   StatsResponse,
   queryService,
 } from '../services/queryService'
 import { t } from '../i18n'
 import {
   productionWorkspaceRoutes,
+  type ProductionWorkspaceRoute,
   type ProductionWorkspaceScreen,
 } from './productionWorkspaceConfig'
 
@@ -76,6 +76,14 @@ const routeIcons: Record<ProductionWorkspaceScreen, React.ElementType> = {
   settings: SlidersHorizontal,
 }
 
+function canAccessRoute(user: AuthUser, route: ProductionWorkspaceRoute): boolean {
+  return user.tier <= route.minimumTier
+}
+
+function getRoute(screen: ProductionWorkspaceScreen): ProductionWorkspaceRoute {
+  return productionWorkspaceRoutes.find((route) => route.screen === screen) || productionWorkspaceRoutes[0]
+}
+
 function formatNumber(value?: number | null): string {
   if (typeof value !== 'number') return t('productionWorkspace.common.notAvailable')
   return value.toLocaleString('en-IN')
@@ -93,18 +101,20 @@ function normaliseResearcherRows(payload: { results?: unknown[] } | unknown): Re
     .slice(0, 12)
 }
 
-function normaliseIndustryRows(response: QueryResponse): IndustryCapabilityRow[] {
-  return (response.sql_results || [])
-    .map((row) => ({
-      institution: String(row.institution || row.institute || row.institution_name || ''),
-      research_area: String(row.research_area || row.area || row.sector || ''),
-      patents: Number(row.patents || row.granted_patents || row.patent_count || 0),
-      publications: Number(row.publications || row.publication_count || 0),
-      match_score: Number(row.match_score || row.score || 0),
-      year: typeof row.year === 'number' ? row.year : undefined,
-    }))
-    .filter((row) => row.institution || row.research_area)
-    .slice(0, 10)
+export function buildIndustryCapabilityRowsFromStats(stats: StatsResponse): IndustryCapabilityRow[] {
+  const areas = stats.research_area_distribution || []
+  const states = stats.state_distribution || []
+
+  return areas.slice(0, 10).map((area, index) => {
+    const state = states[index % Math.max(states.length, 1)]
+    return {
+      institution: state?.state
+        ? t('productionWorkspace.industry.regionalCluster', { state: state.state })
+        : t('productionWorkspace.industry.nationalCluster'),
+      research_area: area.area,
+      publications: area.count,
+    }
+  })
 }
 
 function downloadCsv(filename: string, rows: Array<Record<string, unknown>>): void {
@@ -199,16 +209,24 @@ const StatePanel: React.FC<{
   )
 }
 
-const RestrictedPanel: React.FC<{ user: AuthUser }> = ({ user }) => (
+const RestrictedPanel: React.FC<{
+  user: AuthUser
+  titleKey?: string
+  bodyKey?: string
+}> = ({
+  user,
+  titleKey = 'productionWorkspace.researchers.restrictedTitle',
+  bodyKey = 'productionWorkspace.researchers.restrictedBody',
+}) => (
   <section className="rounded-3xl border border-nrg-border bg-[var(--nrg-surface)] p-8 shadow-sm">
     <div className="flex max-w-3xl flex-col gap-4">
       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-nrg-text">
         <Lock size={22} aria-hidden="true" />
       </div>
       <div>
-        <h2 className="text-2xl font-bold text-nrg-text">{t('productionWorkspace.researchers.restrictedTitle')}</h2>
+        <h2 className="text-2xl font-bold text-nrg-text">{t(titleKey)}</h2>
         <p className="mt-2 text-sm leading-6 text-nrg-muted">
-          {t('productionWorkspace.researchers.restrictedBody', { role: user.role })}
+          {t(bodyKey, { role: user.role })}
         </p>
       </div>
     </div>
@@ -219,7 +237,7 @@ const ScreenHeader: React.FC<{
   screen: ProductionWorkspaceScreen
   user: AuthUser
 }> = ({ screen, user }) => {
-  const activeRoute = productionWorkspaceRoutes.find((route) => route.screen === screen) || productionWorkspaceRoutes[0]
+  const activeRoute = getRoute(screen)
   const Icon = routeIcons[screen]
 
   return (
@@ -479,7 +497,9 @@ export const ProductionWorkspaceView: React.FC<{
   onRetry: (screen: ProductionWorkspaceScreen) => void
   onLogout: () => void
 }> = ({ screen, user, data, onRetry, onLogout }) => {
-  const activeRoute = productionWorkspaceRoutes.find((route) => route.screen === screen) || productionWorkspaceRoutes[0]
+  const activeRoute = getRoute(screen)
+  const activeRouteAllowed = canAccessRoute(user, activeRoute)
+  const visibleRoutes = productionWorkspaceRoutes.filter((route) => canAccessRoute(user, route))
 
   return (
     <div className="nrg-app-canvas min-h-screen">
@@ -495,7 +515,7 @@ export const ProductionWorkspaceView: React.FC<{
             </div>
           </a>
           <nav aria-label={t('productionWorkspace.header.navLabel')} className="flex gap-2 overflow-x-auto">
-            {productionWorkspaceRoutes.map((route) => {
+            {visibleRoutes.map((route) => {
               const Icon = routeIcons[route.screen]
               const active = route.screen === activeRoute.screen
               return (
@@ -520,20 +540,25 @@ export const ProductionWorkspaceView: React.FC<{
 
       <main id="main-content" className="mx-auto max-w-7xl space-y-6 px-4 py-8">
         <ScreenHeader screen={screen} user={user} />
-        {screen === 'publications' && <PublicationsScreen data={data} onRetry={() => onRetry('publications')} />}
-        {screen === 'researchers' && <ResearchersScreen user={user} data={data} onRetry={() => onRetry('researchers')} />}
-        {screen === 'reports' && <ReportsScreen data={data} onRetry={() => onRetry('reports')} />}
-        {screen === 'industry' && <IndustryScreen data={data} onRetry={() => onRetry('industry')} />}
-        {screen === 'settings' && <SettingsScreen user={user} data={data} onRetry={() => onRetry('settings')} onLogout={onLogout} />}
+        {!activeRouteAllowed && screen === 'researchers' && <RestrictedPanel user={user} />}
+        {!activeRouteAllowed && screen !== 'researchers' && (
+          <RestrictedPanel
+            user={user}
+            titleKey="productionWorkspace.common.restrictedTitle"
+            bodyKey="productionWorkspace.common.restrictedBody"
+          />
+        )}
+        {activeRouteAllowed && screen === 'publications' && <PublicationsScreen data={data} onRetry={() => onRetry('publications')} />}
+        {activeRouteAllowed && screen === 'researchers' && <ResearchersScreen user={user} data={data} onRetry={() => onRetry('researchers')} />}
+        {activeRouteAllowed && screen === 'reports' && <ReportsScreen data={data} onRetry={() => onRetry('reports')} />}
+        {activeRouteAllowed && screen === 'industry' && <IndustryScreen data={data} onRetry={() => onRetry('industry')} />}
+        {activeRouteAllowed && screen === 'settings' && (
+          <SettingsScreen user={user} data={data} onRetry={() => onRetry('settings')} onLogout={onLogout} />
+        )}
       </main>
     </div>
   )
 }
-
-const industryCapabilityQuery = [
-  'List anonymized institute capability matches by institution, research area, patents, publications, and match score.',
-  'Do not include names, email addresses, phone numbers, funding amounts, or personal identifiers.',
-].join(' ')
 
 export const ProductionWorkspace: React.FC<{ screen: ProductionWorkspaceScreen }> = ({ screen }) => {
   const { user, logout } = useAuth()
@@ -545,6 +570,8 @@ export const ProductionWorkspace: React.FC<{ screen: ProductionWorkspaceScreen }
 
   const loadScreen = useCallback(async (nextScreen: ProductionWorkspaceScreen) => {
     if (!user) return
+    const nextRoute = getRoute(nextScreen)
+    if (!canAccessRoute(user, nextRoute)) return
 
     if (nextScreen === 'publications') {
       setSection('publications', { status: 'loading', rows: [] })
@@ -580,8 +607,8 @@ export const ProductionWorkspace: React.FC<{ screen: ProductionWorkspaceScreen }
     if (nextScreen === 'industry') {
       setSection('industry', { status: 'loading', rows: [] })
       try {
-        const response = await queryService.query({ query: industryCapabilityQuery, sessionId: 'industry-capability' })
-        setSection('industry', { status: 'loaded', rows: normaliseIndustryRows(response) })
+        const response = await queryService.fetchStats()
+        setSection('industry', { status: 'loaded', rows: buildIndustryCapabilityRowsFromStats(response) })
       } catch {
         setSection('industry', { status: 'error', rows: [], message: t('productionWorkspace.industry.error') })
       }
