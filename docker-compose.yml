@@ -39,6 +39,39 @@ services:
       - data
 
   # ---------------------------------------------------------------------------
+  # PgBouncer Connection Pool
+  # ---------------------------------------------------------------------------
+  pgbouncer:
+    image: edoburu/pgbouncer:latest
+    container_name: nrg-pgbouncer
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-nrg_default_password}@postgres:5432/${POSTGRES_DB:-nrg}
+      - LISTEN_PORT=6432
+      - POOL_MODE=transaction
+      - MAX_CLIENT_CONN=200
+      - DEFAULT_POOL_SIZE=20
+      - RESERVE_POOL_SIZE=5
+    ports:
+      - "${PGBOUNCER_PORT:-6432}:6432"
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -p 6432 -U ${POSTGRES_USER:-nrg} -d ${POSTGRES_DB:-nrg}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  # ---------------------------------------------------------------------------
   # Qdrant Vector Database
   # ---------------------------------------------------------------------------
   qdrant:
@@ -105,7 +138,7 @@ services:
       - .env.${APP_ENV:-dev}
     environment:
       - APP_ENV=${APP_ENV:-dev}
-      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-nrg}}
+      - DATABASE_URL=${DATABASE_URL:-postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-nrg_default_password}@pgbouncer:6432/${POSTGRES_DB:-nrg}}
       - QDRANT_HOST=${QDRANT_HOST:-qdrant}
       - QDRANT_PORT=${QDRANT_PORT:-6333}
       - QDRANT_COLLECTION=${QDRANT_COLLECTION:-nrg_research}
@@ -122,6 +155,8 @@ services:
       qdrant:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      pgbouncer:
         condition: service_healthy
       postgres:
         condition: service_healthy

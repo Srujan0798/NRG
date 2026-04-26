@@ -386,6 +386,9 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                             warnings={queryResult.warnings}
                             verification_status={queryResult.verification_status}
                             answer_confidence={queryResult.answer_confidence}
+                            sqlQuery={queryResult.sql_query}
+                            rowsReturned={queryResult.sql_results?.length}
+                            auditEventId={queryResult.audit_event_id || queryResult.query_id}
                           />
                         )}
                       </div>
@@ -510,6 +513,9 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                           warnings={queryResult.warnings}
                           verification_status={queryResult.verification_status}
                           answer_confidence={queryResult.answer_confidence}
+                          sqlQuery={queryResult.sql_query}
+                          rowsReturned={queryResult.sql_results?.length}
+                          auditEventId={queryResult.audit_event_id || queryResult.query_id}
                         />
                       )}
                     </div>

@@ -7,6 +7,7 @@ import { toStringArray } from '../../types/api'
 import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Download } from 'lucide-react'
 import { printDesignTokenCss } from '../../design-system/theme'
 import { t } from '../../i18n'
+import AnswerTrustActions from '../AnswerTrustActions/AnswerTrustActions'
 
 interface AnswerPanelProps {
   response: string
@@ -15,6 +16,9 @@ interface AnswerPanelProps {
   warnings?: QueryWarning[]
   verification_status?: boolean
   answer_confidence?: 'high' | 'partial' | 'low_clarify'
+  sqlQuery?: string | null
+  rowsReturned?: number | null
+  auditEventId?: string | null
   onNodeClick?: (node: GraphNode) => void
 }
 
@@ -233,6 +237,9 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   warnings,
   verification_status,
   answer_confidence,
+  sqlQuery,
+  rowsReturned,
+  auditEventId,
 }) => {
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -392,6 +399,15 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             </div>
           </div>
         )}
+
+        <div className="border-t border-nrg-border px-6 py-4 bg-[var(--glass-bg)]">
+          <AnswerTrustActions
+            answer={response}
+            sqlQuery={sqlQuery}
+            rowsReturned={rowsReturned}
+            auditEventId={auditEventId}
+          />
+        </div>
       </motion.div>
 
       {warnings && warnings.length > 0 && (

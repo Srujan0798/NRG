@@ -5,6 +5,7 @@ import PhaseHeader from './PhaseHeader/PhaseHeader'
 import SqlBlock from './SqlBlock/SqlBlock'
 import TokenStream from './TokenStream/TokenStream'
 import VerifiedBadge from './VerifiedBadge/VerifiedBadge'
+import AnswerTrustActions from './AnswerTrustActions/AnswerTrustActions'
 import { t } from '../i18n'
 
 interface StreamingAnswerPanelProps {
@@ -130,6 +131,13 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
                   ))}
                 </div>
               )}
+
+              <AnswerTrustActions
+                answer={fullText}
+                sqlQuery={sql}
+                rowsReturned={retrievedCount}
+                auditEventId={auditEventId}
+              />
             </div>
           )}
 

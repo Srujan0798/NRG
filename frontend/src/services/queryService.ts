@@ -44,6 +44,7 @@ export interface QueryProvenance {
 
 export interface QueryResponse {
   query_id: string;
+  audit_event_id?: string;
   session_id?: string;
   response: string;
   status: string;
@@ -54,6 +55,9 @@ export interface QueryResponse {
   answer_confidence?: 'high' | 'partial' | 'low_clarify';
   answer_confidence_score?: number;
   sql_anomaly_report?: Record<string, unknown>;
+  sql_query?: string | null;
+  sql_queries?: string[];
+  sql_results?: Array<Record<string, unknown>>;
   citation_validity?: number;
   citations?: Citation[];
   warnings?: QueryWarning[];

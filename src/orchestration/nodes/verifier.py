@@ -226,6 +226,86 @@ def _deduplicate_citations(citations: list[dict]) -> list[dict]:
     return deduped
 
 
+_NUMERIC_CLAIM_RE = re.compile(
+    r"(?P<raw>₹?\s*\d+(?:,\d{2,3})*(?:\.\d+)?\s*(?:crore|cr|lakhs|lakh)?)",
+    re.IGNORECASE,
+)
+
+
+def _unsupported_numeric_claims(answer: str, sql_results: list[dict]) -> list[str]:
+    """Return numeric answer claims not supported by SQL row values."""
+    if not answer or not sql_results:
+        return []
+
+    source_numbers = _extract_source_numbers(sql_results)
+    unsupported: list[str] = []
+    for match in _NUMERIC_CLAIM_RE.finditer(answer):
+        raw = " ".join(match.group("raw").split())
+        target = _normalise_numeric_claim(raw)
+        if target is None:
+            continue
+        if not _number_supported(target, source_numbers):
+            unsupported.append(f"Unsupported numeric claim: {raw}")
+    return unsupported
+
+
+def _extract_source_numbers(sql_results: list[dict]) -> list[float]:
+    values: list[float] = [float(len(sql_results))]
+
+    def visit(value: Any) -> None:
+        if isinstance(value, bool) or value is None:
+            return
+        if isinstance(value, (int, float)):
+            values.append(float(value))
+            return
+        if isinstance(value, dict):
+            for child in value.values():
+                visit(child)
+            return
+        if isinstance(value, list):
+            for child in value:
+                visit(child)
+            return
+        if isinstance(value, str):
+            for number in re.findall(r"\d+(?:,\d{2,3})*(?:\.\d+)?", value):
+                parsed = _parse_number(number)
+                if parsed is not None:
+                    values.append(parsed)
+
+    visit(sql_results)
+    return values
+
+
+def _normalise_numeric_claim(raw: str) -> float | None:
+    number_match = re.search(r"\d+(?:,\d{2,3})*(?:\.\d+)?", raw)
+    if not number_match:
+        return None
+    value = _parse_number(number_match.group(0))
+    if value is None:
+        return None
+    unit = raw[number_match.end():].strip().lower()
+    if unit in {"crore", "cr"}:
+        return value * 10_000_000
+    if unit in {"lakh", "lakhs"}:
+        return value * 100_000
+    return value
+
+
+def _parse_number(raw: str) -> float | None:
+    try:
+        return float(raw.replace(",", ""))
+    except ValueError:
+        return None
+
+
+def _number_supported(target: float, source_numbers: list[float]) -> bool:
+    for source in source_numbers:
+        tolerance = max(1.0, abs(source) * 0.01)
+        if abs(source - target) <= tolerance:
+            return True
+    return False
+
+
 @trace_llm_call("verifier")
 def verifier_node(state: Any) -> dict:
     """Verify cited claims against available evidence with numerical faithfulness score.
@@ -295,6 +375,25 @@ def verifier_node(state: Any) -> dict:
 
     if not citations:
         if sql_results:
+            unsupported_numbers = _unsupported_numeric_claims(response, sql_results)
+            if unsupported_numbers:
+                score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"] * 0.25
+                score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+                total_score = sum(score_breakdown.values())
+                return {
+                    "verification_status": "fail",
+                    "faithfulness_score": total_score,
+                    "score_breakdown": score_breakdown,
+                    "unsupported_claims": unsupported_numbers,
+                    "verification_retries": retries,
+                    "synthesis_method": synth_method,
+                    "citation_validity": 1.0,
+                    "citation_coverage": 0.0,
+                    "invalid_citations": [],
+                    "citations": [],
+                    "synthesized_response": response,
+                }
+
             score_breakdown["citation_present"] = FAITHFULNESS_WEIGHTS["citation_present"]
             score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"]
             score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
@@ -406,6 +505,26 @@ def verifier_node(state: Any) -> dict:
     score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"]
 
     if unique_citations == {"structured:0"} and sql_results:
+        unsupported_numbers = _unsupported_numeric_claims(stripped_response, sql_results)
+        if unsupported_numbers:
+            score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"] * 0.25
+            score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
+            total_score = sum(score_breakdown.values())
+            result = _failure_result(
+                retries,
+                unsupported_numbers,
+                stripped_response,
+                total_score,
+                score_breakdown,
+            )
+            result["synthesis_method"] = synth_method
+            result["citation_validity"] = citation_validity
+            result["citation_coverage"] = citation_coverage
+            result["invalid_citations"] = invalid_citations_out
+            result["citations"] = enriched_citations
+            result["synthesized_response"] = stripped_response
+            return result
+
         score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
         score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
         total_score = sum(score_breakdown.values())
