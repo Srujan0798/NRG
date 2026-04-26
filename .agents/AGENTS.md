@@ -2,11 +2,13 @@
 
 > **You are an execution agent.** Read this, then read your assigned skill(s), then execute.
 
-## Start Here (3 Steps, 30 Seconds)
+## Start Here (5 Steps, 60 Seconds)
 
-1. **Read [prompts/shishya.md](prompts/shishya.md)** — your dharma (operating mindset)
-2. **Read [.claude/CLAUDE.md](../../.claude/CLAUDE.md)** — project context + current state
-3. **Read the SKILL.md for every skill in your task** — then begin
+1. **Read [.claude/rules/production_only.md](../../.claude/rules/production_only.md)** - production framing rule
+2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth
+3. **Read [prompts/shishya.md](prompts/shishya.md)** - operating mindset
+4. **Read [.claude/CLAUDE.md](../../.claude/CLAUDE.md)** - project context + current state
+5. **Read the SKILL.md for every skill in your task** - then begin
 
 ---
 

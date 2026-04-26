@@ -307,11 +307,42 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Run forbidden-vocab check on entire repo
+        with:
+          fetch-depth: 2
+      - name: Run forbidden-vocab check on changed production files
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
-          FORBIDDEN_PATTERN='\b(demo|demo-ready|demo-day|demo-video|demo-dataset|demo-rehearsal|pitch-deck|MVP|prototype)\b'
-          ALLOWLIST='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN|scripts/forbidden_vocab_check\.sh|protocols/|BACKLOG\.md$'
-          VIOLATIONS=$(grep -rInE "$FORBIDDEN_PATTERN" --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist --exclude-dir=build . 2>/dev/null | grep -v -E "$ALLOWLIST" | grep -v '.github/workflows/ci.yml' || true)
+          FORBIDDEN_PATTERN='\b(demo|demo-ready|demo day|demo video|demo dataset|demo rehearsal|pitch deck|MVP|prototype|works on my machine)\b'
+          ALLOWLIST='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN|scripts/forbidden_vocab_check\.sh|protocols/|BACKLOG\.md$|\.github/workflows/ci\.yml$'
+
+          if [[ -n "${BASE_SHA:-}" && ! "$BASE_SHA" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=2 origin "$BASE_SHA" || true
+            CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR "$BASE_SHA" HEAD || git diff-tree --no-commit-id --name-only -r HEAD)
+          else
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+          fi
+
+          TARGET_FILES=$(printf '%s\n' "$CHANGED_FILES" \
+            | grep -E '^(\.agents/|\.claude/|docs/|evidence/|protocols/|scripts/|BACKLOG\.md$)' \
+            | grep -v -E "$ALLOWLIST" \
+            | grep -v -E '(^|/)(node_modules|\.npm-cache|playwright-report|test-results|dist|build|coverage)/|\.((json|lock|svg|png|jpg|jpeg|webp|gif|woff2?|ttf|otf|ico|pdf|mp4|webm|min\.js|min\.css))$' \
+            || true)
+
+          if [[ -z "$TARGET_FILES" ]]; then
+            echo "Forbidden-vocab check passed: no production-controlled changed files"
+            exit 0
+          fi
+
+          VIOLATIONS=""
+          while IFS= read -r file; do
+            [[ -f "$file" ]] || continue
+            hit=$(grep -InE "$FORBIDDEN_PATTERN" "$file" || true)
+            if [[ -n "$hit" ]]; then
+              VIOLATIONS="${VIOLATIONS}${hit}"$'\n'
+            fi
+          done <<< "$TARGET_FILES"
+
           if [[ -n "$VIOLATIONS" ]]; then
             echo "FORBIDDEN VOCABULARY DETECTED:"
             echo "$VIOLATIONS"

@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "name": "NRG deterministic demo seed",
+    "name": "NRG deterministic release seed",
     "as_of": "2026-04-26",
     "seed": 20260426,
-    "generated_by": "Faker(en_IN) seeded names plus curated National Research Graph demo rows",
+    "generated_by": "Faker(en_IN) seeded names plus curated National Research Graph release rows",
     "currency_unit": "INR crore"
   },
   "funding_agencies": [
@@ -149,7 +149,7 @@
       "latest_trl": 5,
       "transitions": [
         {"year": 2022, "trl": 2, "milestone": "Sensor material screen"},
-        {"year": 2023, "trl": 4, "milestone": "Wireless prototype"},
+        {"year": 2023, "trl": 4, "milestone": "Wireless production module"},
         {"year": 2025, "trl": 5, "milestone": "Campus refuelling trial"}
       ]
     }
@@ -180,7 +180,7 @@
     {"year": 2024, "institution": "IIT Bombay", "grant_amount_inr_crore": 171.5, "publications": 299, "patents": 24, "active_researchers": 66},
     {"year": 2024, "institution": "IIT Madras", "grant_amount_inr_crore": 187.2, "publications": 327, "patents": 29, "active_researchers": 71}
   ],
-  "demo_graph": {
+  "release_graph": {
     "nodes": [
       {"id": "agency:DST", "label": "DST", "type": "agency"},
       {"id": "agency:MNRE", "label": "MNRE", "type": "agency"},

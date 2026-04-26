@@ -6,15 +6,16 @@
 
 ---
 
-## ⚡ Session Start (5 Steps, 60 Seconds)
+## Session Start
 
-1. **Read [rules/production-only.md](rules/production-only.md)** — forbidden vocabulary + production framing
-2. **Read [memory/INDEX.md](memory/INDEX.md)** — current project state + known issues
-3. **Check git + system health** — `git status`, `git log --oneline -5`, API health
-4. **Read the Founder's request**
-5. **Respond with a ═══ Guru Assignment Protocol** (format: [protocol.md](protocol.md))
+1. **Read [rules/production_only.md](rules/production_only.md)** - production framing rule.
+2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth.
+3. **Read [memory/INDEX.md](memory/INDEX.md)** and [memory/MEMORY.md](memory/MEMORY.md) - current state and durable founder directives.
+4. **Check git + system health** - `git status`, `git log --oneline -5`, API health.
+5. **Read the Founder's request.**
+6. **Execute only against the master plan, active protocols, and explicit founder instructions.**
 
-> **Skip steps 1–2 only if you read them in the last hour.** These are short indexes — 30 seconds each.
+Do not use older framed planning documents as standalone execution authority. Their remaining engineering content is valid only where the master execution plan maps it into production milestones.
 
 ---
 
@@ -53,6 +54,7 @@
 | SQL benchmark (17 queries, 41%) | [memory/projects/sql-audit-dhairya.md](memory/projects/sql-audit-dhairya.md) |
 | All 66 skills inventory | [memory/references/installed-skills.md](memory/references/installed-skills.md) |
 | Production roadmap | `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` |
+| Closure wave | `docs/specs/CLOSURE_PLAN_2026-04-26.md` |
 | Full system inventory | [MANIFEST.md](MANIFEST.md) |
 
 ---
@@ -106,5 +108,5 @@ debug · deploy-checklist · explore-data · sql-queries · statistical-analysis
 ## ✅ Session End (3 Steps)
 
 1. **Update BACKLOG.md** — mark completed, add new discoveries
-2. **Update memory** if new learnings — add to [memory/patterns/](memory/patterns/) or [memory/bugs/](memory/bugs/)
+2. **Update memory** if new learnings — add to [memory/MEMORY.md](memory/MEMORY.md), [memory/patterns/](memory/patterns/), or [memory/bugs/](memory/bugs/)
 3. **Report session summary** to Founder

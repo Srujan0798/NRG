@@ -4,7 +4,7 @@
 
 | Rule Set | Purpose | When to Read |
 |----------|---------|-------------|
-| [production-only.md](production-only.md) | Forbidden vocabulary + production framing | **Every session — FIRST** |
+| [production_only.md](production_only.md) | Forbidden vocabulary + production framing | **Every session — FIRST** |
 | [security.md](security.md) | Security coding rules | Before auth/security changes |
 | [backend.md](backend.md) | Backend coding standards | Before API/database changes |
 | [frontend.md](frontend.md) | Frontend coding standards | Before React/TS changes |
