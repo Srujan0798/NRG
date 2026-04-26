@@ -10,7 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-DB_STRUCT_PATH = Path(__file__).resolve().parents[1] / ".." / ".." / "db_struct.sql"
+_NRG_ROOT = Path(__file__).resolve().parents[3]
+DB_STRUCT_PATH = _NRG_ROOT / "db_struct.sql"
 
 
 @dataclass
