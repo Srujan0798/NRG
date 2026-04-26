@@ -18,6 +18,12 @@ def test_dev_profile_starts_all_dev_dependencies():
     assert "profiles" in services["kong"]
 
 
+def test_prod_profile_starts_postgres_dependency():
+    services = _compose()["services"]
+
+    assert "prod" in services["postgres"]["profiles"]
+
+
 def test_api_container_uses_service_hostnames_for_dependencies():
     api = _compose()["services"]["api"]
     environment = api["environment"]
