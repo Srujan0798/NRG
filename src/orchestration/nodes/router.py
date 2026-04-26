@@ -20,6 +20,7 @@ Phase 3 - Immortalize:
 from __future__ import annotations
 
 from typing import TypedDict, Optional, NamedTuple
+import json
 import re
 import logging
 import os
@@ -446,7 +447,7 @@ def _classify_intent_via_llm(
     cached = _get_cached_routing(query)
     if cached:
         logger.info("Routing cache hit for: %s", query[:50])
-        return cached[0], cached[2]
+        return cached[0], cached[1]
 
     def _call_llm() -> tuple[Optional[str], float]:
         try:
@@ -473,8 +474,6 @@ def _classify_intent_via_llm(
                 user_prompt=prompt,
                 conversation_history=[],
             )
-
-            import json
 
             data = json.loads(response)
             route = data.get("route", "")
@@ -543,8 +542,6 @@ def _decompose_intent_via_llm(query: str) -> list[str]:
             user_prompt=prompt,
             conversation_history=[],
         )
-
-        import json
 
         try:
             subqueries = json.loads(response)
