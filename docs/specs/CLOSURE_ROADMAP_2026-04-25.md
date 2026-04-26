@@ -39,11 +39,11 @@ Audit chain: ok, 442137 events checked, 0 broken indices
 | M5a.4 | Query entry surface | Pending | First input ready, templates available, slow-network timing captured |
 | M5a.5 | Streaming response states | Pending | Four response phases visible with no blank wait |
 | M5a.6 | Persona switcher | Pending | Keyboard-accessible role switch with tier-correct requery |
-| M5a.7 | Citation drawer with HMAC proof | Pending | Drawer opens quickly and verification returns proof state |
+| M5a.7 | Citation drawer with HMAC proof | Complete locally | Drawer opens quickly and verification returns proof state |
 | M5a.8 | Audit panel | Pending | 400k+ events remain navigable through virtualization |
 | M5a.9 | Three tier dashboards | Pending | Researcher, government, and industry views render tier-correct data |
-| M5a.10 | Empty and error states | Pending | No stack traces or raw exception text reach users |
-| M5a.11 | Microcopy library and language gate | In progress | Production-only language enforced in build and pre-commit |
+| M5a.10 | Empty and error states | Complete locally | No stack traces or raw exception text reach users |
+| M5a.11 | Microcopy library and language gate | Complete locally | Production-only language enforced in build and pre-commit |
 | M5a.12 | Accessibility AA | Pending | axe-core returns zero route violations |
 | M5a.13 | Mobile end-to-end | Pending | 393px route checks pass without horizontal overflow |
 | M5a.14 | Frontend telemetry | Pending | Ten event types reach `/api/telemetry` without PII |

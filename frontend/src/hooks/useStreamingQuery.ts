@@ -17,6 +17,7 @@ export interface StreamCitation {
   pub_id: string
   chunk_id: string
   title?: string
+  audit_event_id?: string
 }
 
 export interface StreamMeta {
@@ -63,6 +64,7 @@ const toStreamCitation = (citation: Citation | StreamCitation): StreamCitation =
   pub_id: citation.pub_id || ('source' in citation ? citation.source : undefined) || citation.id,
   chunk_id: citation.chunk_id || '0',
   title: citation.title,
+  audit_event_id: citation.audit_event_id,
 })
 
 type StreamEventPayload = Partial<StreamQueryEvent> & Record<string, any>

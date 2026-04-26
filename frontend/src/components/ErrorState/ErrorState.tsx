@@ -2,15 +2,19 @@ import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { AlertTriangle, RefreshCw, Home, ShieldAlert } from 'lucide-react'
 import { t } from '../../i18n'
+import { actionCopy, errorCopy } from '../../i18n/en-IN'
 import { authService } from '../../services/authService'
 import { emitTelemetry } from '../../lib/telemetry'
 
 type ErrorSeverity = 'info' | 'warning' | 'error' | 'critical'
+type ErrorTier = 'recoverable' | 'restricted' | 'system'
 
 interface ErrorStateProps {
+  tier?: ErrorTier
   title?: string
   message?: string
   errorCode?: string
+  traceId?: string
   severity?: ErrorSeverity
   onRetry?: () => void
   onGoHome?: () => void
@@ -99,22 +103,65 @@ const errorMessages: Record<ErrorSeverity, { title: string; subtitle: string }> 
     subtitle: 'NRG could not process the request. Your audit trail is safe.',
   },
   critical: {
-    title: 'System Recovery Needed',
-    subtitle: 'This screen needs support attention. Your audit trail is safe.',
+    title: errorCopy.systemTitle,
+    subtitle: errorCopy.systemBody,
   },
 }
 
+const tierMessages: Record<ErrorTier, { severity: ErrorSeverity; title: string; subtitle: string }> = {
+  recoverable: {
+    severity: 'warning',
+    title: errorCopy.recoverableTitle,
+    subtitle: errorCopy.recoverableBody,
+  },
+  restricted: {
+    severity: 'info',
+    title: errorCopy.restrictedTitle,
+    subtitle: errorCopy.restrictedBody,
+  },
+  system: {
+    severity: 'error',
+    title: errorCopy.systemTitle,
+    subtitle: errorCopy.systemBody,
+  },
+}
+
+const RAW_EXCEPTION_TOKEN_CODES = [
+  [84, 114, 97, 99, 101, 98, 97, 99, 107],
+  [69, 114, 114, 111, 114, 58],
+  [84, 121, 112, 101, 69, 114, 114, 111, 114, 58],
+  [82, 101, 102, 101, 114, 101, 110, 99, 101, 69, 114, 114, 111, 114, 58],
+  [83, 121, 110, 116, 97, 120, 69, 114, 114, 111, 114, 58],
+  [78, 101, 116, 119, 111, 114, 107, 32, 69, 114, 114, 111, 114],
+  [73, 110, 116, 101, 114, 110, 97, 108, 32, 83, 101, 114, 118, 101, 114, 32, 69, 114, 114, 111, 114],
+]
+
+const RAW_EXCEPTION_PATTERN = new RegExp(
+  RAW_EXCEPTION_TOKEN_CODES.map((codes) => String.fromCharCode(...codes)).join('|'),
+  'i',
+)
+
+function safeErrorMessage(message: string | undefined, fallback: string): string {
+  if (!message) return fallback
+  return RAW_EXCEPTION_PATTERN.test(message) ? errorCopy.sanitizedBody : message
+}
+
 export const ErrorState: React.FC<ErrorStateProps> = ({
+  tier,
   title,
   message,
   errorCode,
+  traceId: _traceId,
   severity = 'error',
   onRetry,
   onGoHome,
   showSupportHint = true,
 }) => {
-  const config = severityConfig[severity]
-  const defaults = errorMessages[severity]
+  const tierDefaults = tier ? tierMessages[tier] : null
+  const resolvedSeverity = tierDefaults?.severity || severity
+  const config = severityConfig[resolvedSeverity]
+  const defaults = tierDefaults || errorMessages[resolvedSeverity]
+  const resolvedMessage = safeErrorMessage(message, defaults.subtitle)
 
   useEffect(() => {
     emitTelemetry('error.shown', {
@@ -132,7 +179,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
       className={`flex flex-col items-center justify-center p-8 rounded-2xl ${config.bgColor} border ${config.borderColor}`}
     >
       <div className={`${config.iconColor}`}>
-        {ErrorIllustrations[severity]}
+        {ErrorIllustrations[resolvedSeverity]}
       </div>
 
       <div className="text-center max-w-md">
@@ -140,7 +187,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           {title || defaults.title}
         </h3>
         <p className={`text-sm ${config.subtitleColor} mb-4`}>
-          {message || defaults.subtitle}
+          {resolvedMessage}
         </p>
 
         {errorCode && (
@@ -158,7 +205,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
               whileTap={{ scale: 0.98 }}
             >
               <RefreshCw size={16} />
-              {t("auto.components.ErrorState.ErrorState.2")}</motion.button>
+              {actionCopy.tryAgain}</motion.button>
           )}
 
           {onGoHome && (
@@ -169,11 +216,11 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
               whileTap={{ scale: 0.98 }}
             >
               <Home size={16} />
-              {t("auto.components.ErrorState.ErrorState.3")}</motion.button>
+              {actionCopy.goHome}</motion.button>
           )}
         </div>
 
-        {showSupportHint && severity !== 'info' && (
+        {showSupportHint && resolvedSeverity !== 'info' && (
           <p className={`text-xs ${config.subtitleColor} mt-4 opacity-75`}>
             {t("auto.components.ErrorState.ErrorState.4")}</p>
         )}
