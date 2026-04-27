@@ -394,6 +394,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                             warnings={turn.result.warnings}
                             verification_status={turn.result.verification_status}
                             answer_confidence={turn.result.answer_confidence}
+                            answer_confidence_score={turn.result.answer_confidence_score}
                             sqlQuery={turn.result.sql_query}
                             sqlResults={turn.result.sql_results}
                             rowsReturned={turn.result.sql_results?.length}

@@ -13,7 +13,7 @@ FILES:
   - src/skills/text_to_sql/validator.py — reject patterns
   - src/skills/text_to_sql/schema_aware_prompt.py (NEW)
   - src/data/schema/schema_value_synonyms.md
-  - src/data/schema/failed_queries/HALL_OF_SHAME.md
+  - src/data/schema/failed_queries/docs/compliance/hall-of-shame.md
   - tests/benchmarks/test_dhairya_regression.py (extend, do not reduce)
   - tests/benchmarks/test_dhairya_adversarial.py (NEW)
   - tests/benchmarks/killer_queries.yaml (canonical corpus — read this)
@@ -51,7 +51,7 @@ ACTION:
         tests/benchmarks/killer_queries.yaml `adversarial_breakers`.
 
   Phase 3 — IMMORTALIZE:
-    3a. Auto-extend HALL_OF_SHAME.md from any production rejection: every
+    3a. Auto-extend docs/compliance/hall-of-shame.md from any production rejection: every
         time validator rejects an LLM output, append rejected SQL +
         accepted SQL, then trigger a nightly few-shot regeneration so the
         prompt grows stronger with every miss.

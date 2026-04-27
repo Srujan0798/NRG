@@ -88,6 +88,10 @@ def detect_result_anomalies(
     _detect_text_cast_silent_failure(signals, question_lower, sql_lower, rows)
     _detect_entity_resolution_join_risk(signals, sql_lower)
     _detect_metric_too_perfect(signals, question_lower, rows)
+    _detect_aggregation_mismatch(signals, sql_lower, rows)
+    _detect_temporal_anomaly(signals, question_lower, rows)
+    _detect_empty_string_prevalence(signals, rows)
+    _detect_type_mismatch(signals, rows)
 
     score = _score(signals)
     confidence = _confidence_label(score, signals)
@@ -345,6 +349,138 @@ def _detect_metric_too_perfect(
         )
 
 
+def _detect_aggregation_mismatch(
+    signals: list[ResultAnomalySignal],
+    sql_lower: str,
+    rows: list[dict[str, Any]],
+) -> None:
+    """Flag SUM/AVG/MIN/MAX applied to text or identifier columns."""
+    if not rows:
+        return
+    agg_funcs = ("sum", "avg", "min", "max")
+    text_id_keywords = ("name", "title", "email", "address", "id", "status", "type")
+    for func in agg_funcs:
+        pattern = rf"\b{func}\s*\(\s*(?:[\w]+\.)?(\w+)\s*\)"
+        for match in re.finditer(pattern, sql_lower):
+            col = match.group(1).lower()
+            if any(kw in col for kw in text_id_keywords):
+                signals.append(
+                    ResultAnomalySignal(
+                        name="aggregation_mismatch",
+                        severity="high",
+                        message=f"{func.upper()}() applied to text/identifier column '{col}'.",
+                        evidence={"function": func, "column": col, "sql_fragment": match.group(0)},
+                    )
+                )
+                return
+
+
+def _detect_temporal_anomaly(
+    signals: list[ResultAnomalySignal],
+    question_lower: str,
+    rows: list[dict[str, Any]],
+) -> None:
+    """Flag result rows with dates outside the question's implied time window."""
+    if not rows:
+        return
+    # Extract year range from question (e.g., "2020 to 2025", "last 5 years")
+    year_matches = re.findall(r"\b(19\d{2}|20\d{2})\b", question_lower)
+    if len(year_matches) >= 2:
+        min_year, max_year = int(year_matches[0]), int(year_matches[-1])
+    elif "last" in question_lower and (m := re.search(r"last\s+(\d+)\s+years?", question_lower)):
+        current_year = 2026  # Approximate current year
+        min_year = current_year - int(m.group(1))
+        max_year = current_year
+    else:
+        return
+
+    date_cols = [c for c in rows[0].keys() if any(d in c.lower() for d in ("year", "date", "dt", "time"))]
+    for col in date_cols:
+        for row in rows:
+            val = row.get(col)
+            if val is None:
+                continue
+            try:
+                year = int(str(val)[:4])
+                if year < min_year or year > max_year:
+                    signals.append(
+                        ResultAnomalySignal(
+                            name="temporal_anomaly",
+                            severity="medium",
+                            message=f"Row has {col}={year} outside query window {min_year}-{max_year}.",
+                            evidence={"column": col, "value": year, "min_year": min_year, "max_year": max_year},
+                        )
+                    )
+                    return
+            except (ValueError, TypeError):
+                continue
+
+
+def _detect_empty_string_prevalence(
+    signals: list[ResultAnomalySignal],
+    rows: list[dict[str, Any]],
+) -> None:
+    """Flag when >30% of string values are empty strings."""
+    if not rows:
+        return
+    threshold = 0.30
+    for col in rows[0].keys():
+        values = [row.get(col) for row in rows if row.get(col) is not None]
+        if not values:
+            continue
+        string_values = [v for v in values if isinstance(v, str)]
+        if not string_values:
+            continue
+        empty_ratio = string_values.count("") / len(string_values)
+        if empty_ratio > threshold:
+            signals.append(
+                ResultAnomalySignal(
+                    name="empty_string_prevalence",
+                    severity="low",
+                    message=f"{empty_ratio:.0%} of '{col}' values are empty strings.",
+                    evidence={"column": col, "empty_ratio": round(empty_ratio, 2), "row_count": len(rows)},
+                )
+            )
+            return
+
+
+def _detect_type_mismatch(
+    signals: list[ResultAnomalySignal],
+    rows: list[dict[str, Any]],
+) -> None:
+    """Flag numeric columns that contain non-numeric text values."""
+    if not rows:
+        return
+    # Heuristic: columns with numeric-looking names that contain non-numeric strings
+    numeric_name_hints = ("count", "sum", "avg", "total", "amount", "score", "index", "h_index", "citations")
+    for col in rows[0].keys():
+        col_lower = col.lower()
+        if not any(hint in col_lower for hint in numeric_name_hints):
+            continue
+        non_numeric = 0
+        total = 0
+        for row in rows:
+            val = row.get(col)
+            if val is None:
+                continue
+            total += 1
+            if isinstance(val, str) and val.strip() != "":
+                try:
+                    float(val)
+                except (ValueError, TypeError):
+                    non_numeric += 1
+        if total > 0 and non_numeric / total > 0.2:
+            signals.append(
+                ResultAnomalySignal(
+                    name="type_mismatch",
+                    severity="high",
+                    message=f"Numeric column '{col}' has {non_numeric}/{total} non-numeric values.",
+                    evidence={"column": col, "non_numeric": non_numeric, "total": total},
+                )
+            )
+            return
+
+
 def _score(signals: Iterable[ResultAnomalySignal]) -> float:
     score = 0.95
     for signal in signals:
@@ -400,6 +536,14 @@ def _corrective_hints(signals: list[ResultAnomalySignal]) -> list[str]:
         hints.append("Parse text metrics with regex/SPLIT_PART/NULLIF before numeric aggregation.")
     if "metric_too_perfect" in names:
         hints.append("Re-check boundary-valued percentages before presenting the result as final.")
+    if "aggregation_mismatch" in names:
+        hints.append("Apply aggregates only to numeric columns; use COUNT/DISTINCT for identifiers.")
+    if "temporal_anomaly" in names:
+        hints.append("Add explicit date filters to the WHERE clause to match the question's time window.")
+    if "empty_string_prevalence" in names:
+        hints.append("Investigate missing data or use COALESCE to surface NULL-vs-empty distinctions.")
+    if "type_mismatch" in names:
+        hints.append("Cast or clean the column before aggregation, or exclude non-numeric rows.")
     return hints
 
 
