@@ -43,7 +43,7 @@ Source of truth: `docs/specs/CLOSURE_PLAN_2026-04-26.md`. This section tracks th
 | #54 | Vocabulary purge and production acceptance artifact cleanup | IN PROGRESS | `scripts/forbidden_vocab_check.sh`, `.github/workflows/ci.yml`, `docs/operations/PRODUCTION_ACCEPTANCE_RUN.md`, `scripts/seed_release_data.py` |
 | #55 | Working-tree sealing by LB owner slice | PENDING | commit hashes required for LB-1..LB-8 |
 | #56 | LB-1..LB-5 live evidence reproduction | PENDING | `evidence/2026-04-26/{09,10,11}_tier*_query_response.json`, `16_killer_queries_e2e_proof.md`, `17_red_team_results.md` |
-| #57 | LB-4 full test suite under 15 minutes | PENDING | `evidence/2026-04-26/test_suite_full_final.xml` |
+| #57 | LB-4 full test suite under 15 minutes | DONE | evidence/2026-04-27/PHASE2_TEST_SUITE_REPORT.md `evidence/2026-04-26/test_suite_full_final.xml` |
 | #58 | LB-6 schema parity, hot indexes, RLS | PENDING | `tests/data/test_schema_parity.py`, `tests/data/test_rls_policies.py`, `evidence/2026-04-26/explain_index_usage.txt` |
 | #59 | LB-7 anomaly detector and confidence UI | PENDING | `tests/skills/test_result_anomaly_detector.py`, `tests/orchestration/test_silent_wrong_answer.py`, frontend confidence render |
 | #60 | LB-8 semantic layer and schema-RAG | PENDING | `tests/orchestration/test_join_graph_blindness.py`, `evidence/2026-04-26/schema_rag_token_payload_proof.txt` |

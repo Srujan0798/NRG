@@ -1,0 +1,109 @@
+EXPLAIN 1: highest total innovation credits
+                                                                          QUERY PLAN                                                                           
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=2127.28..2127.31 rows=10 width=56) (actual time=366.479..366.487 rows=10 loops=1)
+   Buffers: shared hit=834
+   CTE parsed
+     ->  HashAggregate  (cost=2126.45..2126.55 rows=10 width=20) (actual time=366.278..366.283 rows=10 loops=1)
+           Group Key: academic_courses_details.institute
+           Batches: 1  Memory Usage: 24kB
+           Buffers: shared hit=831
+           ->  Bitmap Heap Scan on academic_courses_details  (cost=116.71..1879.95 rows=9860 width=16) (actual time=2.183..336.020 rows=10000 loops=1)
+                 Recheck Cond: (financial_year = '2022-23'::text)
+                 Heap Blocks: exact=820
+                 Buffers: shared hit=831
+                 ->  Bitmap Index Scan on idx_lb3_academic_year_institute  (cost=0.00..114.24 rows=9860 width=0) (actual time=1.624..1.625 rows=10000 loops=1)
+                       Index Cond: (financial_year = '2022-23'::text)
+                       Buffers: shared hit=11
+   ->  Sort  (cost=0.73..0.75 rows=10 width=56) (actual time=366.477..366.479 rows=10 loops=1)
+         Sort Key: p.total_credits DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=834
+         ->  Nested Loop  (cost=0.23..0.56 rows=10 width=56) (actual time=366.311..366.319 rows=10 loops=1)
+               Buffers: shared hit=831
+               ->  Aggregate  (cost=0.23..0.24 rows=1 width=8) (actual time=366.304..366.304 rows=1 loops=1)
+                     Buffers: shared hit=831
+                     ->  CTE Scan on parsed  (cost=0.00..0.20 rows=10 width=8) (actual time=366.283..366.293 rows=10 loops=1)
+                           Buffers: shared hit=831
+               ->  CTE Scan on parsed p  (cost=0.00..0.20 rows=10 width=40) (actual time=0.001..0.004 rows=10 loops=1)
+ Planning:
+   Buffers: shared hit=144
+ Planning Time: 8.990 ms
+ Execution Time: 367.024 ms
+(29 rows)
+
+EXPLAIN 2: TRL lab validation vs market ready
+                                                                                                        QUERY PLAN                                                                                                         
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=471.43..471.48 rows=20 width=104) (actual time=14.569..14.575 rows=10 loops=1)
+   Buffers: shared hit=30
+   CTE stage_counts
+     ->  HashAggregate  (cost=465.49..465.94 rows=45 width=24) (actual time=14.301..14.305 rows=10 loops=1)
+           Group Key: innovations_at_various_stages_of_technology_readiness_level.financial_year, innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+           Batches: 1  Memory Usage: 24kB
+           Buffers: shared hit=24
+           ->  Index Only Scan using idx_lb3_trl_stage_institute_year on innovations_at_various_stages_of_technology_readiness_level  (cost=0.29..425.02 rows=5396 width=16) (actual time=0.932..9.500 rows=10332 loops=1)
+                 Index Cond: (stage_of_technology = ANY ('{"Level 4","Level 9"}'::text[]))
+                 Filter: (institute ~~ '%IIT Madras%'::text)
+                 Rows Removed by Filter: 7778
+                 Heap Fetches: 0
+                 Buffers: shared hit=24
+   ->  Sort  (cost=5.49..5.60 rows=45 width=104) (actual time=14.567..14.570 rows=10 loops=1)
+         Sort Key: s.financial_year DESC, s.stage_count DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=30
+         ->  Hash Join  (cost=2.70..4.29 rows=45 width=104) (actual time=14.440..14.452 rows=10 loops=1)
+               Hash Cond: (s.financial_year = y.financial_year)
+               Buffers: shared hit=24
+               ->  CTE Scan on stage_counts s  (cost=0.00..0.90 rows=45 width=72) (actual time=14.305..14.307 rows=10 loops=1)
+                     Buffers: shared hit=24
+               ->  Hash  (cost=2.14..2.14 rows=45 width=64) (actual time=0.083..0.084 rows=5 loops=1)
+                     Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                     ->  Subquery Scan on y  (cost=1.12..2.14 rows=45 width=64) (actual time=0.041..0.045 rows=5 loops=1)
+                           ->  HashAggregate  (cost=1.12..1.69 rows=45 width=64) (actual time=0.040..0.043 rows=5 loops=1)
+                                 Group Key: stage_counts.financial_year
+                                 Batches: 1  Memory Usage: 24kB
+                                 ->  CTE Scan on stage_counts  (cost=0.00..0.90 rows=45 width=40) (actual time=0.001..0.008 rows=10 loops=1)
+ Planning:
+   Buffers: shared hit=132
+ Planning Time: 5.263 ms
+ Execution Time: 14.803 ms
+(33 rows)
+
+EXPLAIN 3: cost per granted patent
+                                                                                                      QUERY PLAN                                                                                                      
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=3026.38..3026.39 rows=3 width=84) (actual time=205.755..205.760 rows=10 loops=1)
+   Buffers: shared hit=1012
+   ->  Sort  (cost=3026.38..3026.39 rows=3 width=84) (actual time=205.753..205.757 rows=10 loops=1)
+         Sort Key: (round(((sum(innovation_grant_from_govt.grant_received)) / (NULLIF(p.granted_patents, 0))::numeric), 2)) DESC
+         Sort Method: quicksort  Memory: 25kB
+         Buffers: shared hit=1012
+         ->  Nested Loop  (cost=1712.29..3026.36 rows=3 width=84) (actual time=188.142..205.691 rows=10 loops=1)
+               Join Filter: (upper(TRIM(BOTH FROM innovation_grant_from_govt.institute)) = upper(TRIM(BOTH FROM p.institute)))
+               Rows Removed by Join Filter: 90
+               Buffers: shared hit=1009
+               ->  HashAggregate  (cost=1712.00..1712.12 rows=10 width=44) (actual time=169.204..169.214 rows=10 loops=1)
+                     Group Key: innovation_grant_from_govt.institute
+                     Batches: 1  Memory Usage: 24kB
+                     Buffers: shared hit=962
+                     ->  Seq Scan on innovation_grant_from_govt  (cost=0.00..1462.00 rows=50000 width=20) (actual time=64.589..102.272 rows=50000 loops=1)
+                           Buffers: shared hit=962
+               ->  Materialize  (cost=0.29..1313.46 rows=3 width=20) (actual time=0.346..3.566 rows=10 loops=10)
+                     Buffers: shared hit=47
+                     ->  Subquery Scan on p  (cost=0.29..1313.44 rows=3 width=20) (actual time=3.438..35.572 rows=10 loops=1)
+                           Buffers: shared hit=47
+                           ->  GroupAggregate  (cost=0.29..1313.41 rows=3 width=20) (actual time=3.436..35.564 rows=10 loops=1)
+                                 Group Key: combined_ipo_patent_data.applicants
+                                 Filter: (count(*) > 0)
+                                 Buffers: shared hit=47
+                                 ->  Index Only Scan using idx_lb3_patent_status_applicants_date on combined_ipo_patent_data  (cost=0.29..1063.29 rows=50000 width=12) (actual time=0.978..11.541 rows=50000 loops=1)
+                                       Index Cond: (status = 'Granted'::text)
+                                       Heap Fetches: 0
+                                       Buffers: shared hit=47
+ Planning:
+   Buffers: shared hit=170
+ Planning Time: 3.788 ms
+ Execution Time: 205.873 ms
+(32 rows)
+
