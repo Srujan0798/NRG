@@ -40,25 +40,36 @@ def _login(username: str, password: str) -> str:
     return resp.json()["access_token"]
 
 
-def _generate_sql(query_nl: str, persona: str = "researcher") -> str:
+def _generate_sql(query_nl: str, persona: str = "researcher", *, _retries: int = 2) -> str:
     """Hit /query and extract the generated SQL from response metadata."""
+    import time
     api_url = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
     token = _login("researcher_user", os.getenv("RESEARCHER_PASSWORD", "researcher-pass"))
-    resp = requests.post(
-        f"{api_url}/query",
-        headers={"Authorization": f"Bearer {token}"},
-        json={"query": query_nl, "persona": persona},
-        timeout=45,
-    )
-    if resp.status_code != 200:
-        pytest.skip(f"Query failed: {resp.status_code} — {resp.text[:200]}")
-    data = resp.json()
-    sql = data.get("sql_query") or ""
-    if not sql:
-        # Fallback: extract from sql_queries list
-        sqls = data.get("sql_queries", [])
-        sql = sqls[0] if sqls else ""
-    return sql.lower()
+    last_err = ""
+    for attempt in range(_retries + 1):
+        resp = requests.post(
+            f"{api_url}/query",
+            headers={"Authorization": f"Bearer {token}"},
+            json={"query": query_nl, "persona": persona},
+            timeout=45,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            sql = data.get("sql_query") or ""
+            if not sql:
+                sqls = data.get("sql_queries", [])
+                sql = sqls[0] if sqls else ""
+            return sql.lower()
+        last_err = f"{resp.status_code} — {resp.text[:200]}"
+        if resp.status_code == 429 or (
+            resp.status_code == 400
+            and "RATE_LIMITED" in resp.text
+        ):
+            if attempt < _retries:
+                time.sleep(2 ** attempt)
+                continue
+        break
+    pytest.skip(f"Query failed after {_retries + 1} attempts: {last_err}")
 
 
 class TestDhairyaFailurePatterns:
@@ -162,14 +173,27 @@ class TestAdversarialBreakers:
 
     def test_adv_05_pii_blocked(self, corpus):
         """ADV-05: PII query blocked at gateway."""
-        resp = requests.post(
-            f"{os.getenv('API_URL', 'http://localhost:8000').rstrip('/')}/query",
-            headers={"Authorization": f"Bearer {_login('researcher_user', os.getenv('RESEARCHER_PASSWORD', 'researcher-pass'))}"},
-            json={"query": corpus["adversarial_breakers"][4]["nl"], "persona": "researcher"},
-            timeout=30,
-        )
-        # Must be blocked (400/403/422) or return 0 results with warning
-        assert resp.status_code in (200, 400, 403, 422)
+        import time
+        api_url = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
+        token = _login("researcher_user", os.getenv("RESEARCHER_PASSWORD", "researcher-pass"))
+        last_resp = None
+        for attempt in range(3):
+            resp = requests.post(
+                f"{api_url}/query",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"query": corpus["adversarial_breakers"][4]["nl"], "persona": "researcher"},
+                timeout=30,
+            )
+            if resp.status_code != 429 and not (
+                resp.status_code == 400 and "RATE_LIMITED" in resp.text
+            ):
+                last_resp = resp
+                break
+            time.sleep(2 ** attempt)
+        if last_resp is None:
+            last_resp = resp
+        resp = last_resp
+        assert resp.status_code in (200, 400, 403, 422), f"Unexpected status: {resp.status_code} — {resp.text[:200]}"
         if resp.status_code == 200:
             data = resp.json()
             assert data.get("status") != "success" or len(data.get("response", "")) < 100
@@ -195,13 +219,28 @@ class TestAdversarialBreakers:
     @pytest.mark.e2e
     def test_adv_10_audit_transparency(self, corpus):
         """ADV-10: Response includes audit_event_id, sql_query, sql_results."""
-        resp = requests.post(
-            f"{os.getenv('API_URL', 'http://localhost:8000').rstrip('/')}/query",
-            headers={"Authorization": f"Bearer {_login('researcher_user', os.getenv('RESEARCHER_PASSWORD', 'researcher-pass'))}"},
-            json={"question": "Show me researchers in Gujarat", "persona": "researcher"},
-            timeout=30,
-        )
-        assert resp.status_code == 200
+        import time
+        api_url = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
+        token = _login("researcher_user", os.getenv("RESEARCHER_PASSWORD", "researcher-pass"))
+        resp = None
+        for attempt in range(3):
+            r = requests.post(
+                f"{api_url}/query",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"query": "Show me researchers in Gujarat", "persona": "researcher"},
+                timeout=30,
+            )
+            if r.status_code == 200:
+                resp = r
+                break
+            if r.status_code == 429 or (r.status_code == 400 and "RATE_LIMITED" in r.text):
+                time.sleep(2 ** attempt)
+                continue
+            resp = r
+            break
+        if resp is None:
+            pytest.skip("Could not get 200 response after rate-limit retries")
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text[:200]}"
         data = resp.json()
         assert "audit_event_id" in data, "Missing audit_event_id"
         assert "sql_query" in data or "sql_queries" in data, "Missing SQL query metadata"
