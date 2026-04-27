@@ -189,10 +189,6 @@
       "source": ".claude/skills",
       "sourceType": "local"
     },
-    "kubernetes-specialist": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
     "metrics-review": {
       "source": ".claude/skills",
       "sourceType": "local"
@@ -206,10 +202,6 @@
       "sourceType": "local"
     },
     "pre-commit": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
-    "prompt-engineering-patterns": {
       "source": ".claude/skills",
       "sourceType": "local"
     },
@@ -262,10 +254,6 @@
       "sourceType": "local"
     },
     "testing-strategy": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
-    "typescript-advanced-types": {
       "source": ".claude/skills",
       "sourceType": "local"
     },

@@ -83,3 +83,37 @@ claude_docs_backup/
 .protocol/
 .claude/settings.local.json
 .env.local
+
+# --- AI Tool Skill Directories (auto-installed by various AI IDEs) ---
+# These are generic marketplace skills NOT specific to NRG.
+# NRG canonical skills live in .agents/skills/ and .claude/skills/ only.
+.adal/
+.augment/
+.bob/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+
+# Root skills symlink farm (skills.sh artifact)
+/skills/
