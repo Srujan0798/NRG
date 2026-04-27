@@ -38,6 +38,8 @@ Supporting documents outside this directory:
 | Document | Purpose |
 |---|---|
 | [../../README.md](../../README.md) | Developer setup and local run instructions |
+| [../operations/PHASE7_SOVEREIGN_ACTIVATION_RUNBOOK.md](../operations/PHASE7_SOVEREIGN_ACTIVATION_RUNBOOK.md) | Sovereign cluster activation commands and evidence gates |
+| [HANDOVER_PACKET_MANIFEST.md](HANDOVER_PACKET_MANIFEST.md) | Final zip contents and packaging gate |
 | [../SCHEMA.md](../SCHEMA.md) | 58-table schema reference generated from `db_struct.sql` |
 | [../PRODUCTION_WALKTHROUGH.md](../PRODUCTION_WALKTHROUGH.md) | Presenter workflow and critical query sequence |
 | [../PRODUCTION_READINESS_SUMMARY.md](../PRODUCTION_READINESS_SUMMARY.md) | Engineering summary of fixes, evidence, and remaining external gates |

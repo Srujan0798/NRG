@@ -13,6 +13,30 @@
 
 ---
 
+## 2026-04-27 Phase 7-10 Execution Prep
+
+Local repo work completed for the user's Phase 7-10 request:
+
+| Item | Status | Evidence |
+|---|---|---|
+| IMM-1 push/tag | DONE ✅ | `main` and `v1.0.0-launch-ready` pushed to `nrg` |
+| P7-A cluster commands | REPO-READY / LIVE-BLOCKED | `docs/operations/PHASE7_SOVEREIGN_ACTIVATION_RUNBOOK.md`; chart validator passes locally |
+| P7-B GPG/HMAC intake gate | REPO-READY / DATA-BLOCKED | `scripts/verify_intake_bundle.py`; `tests/scripts/test_verify_intake_bundle.py` |
+| P7-C vector baseline + cron | REPO-READY / QDRANT-BLOCKED | `scripts/vector_drift_check.py --establish-baseline`; Helm drift cronjobs; `/health.vector_drift` |
+| P7-D C4 Locust | REPO-READY / CLUSTER-BLOCKED | `tests/performance/locustfile_c4.py`; 60/30/10 traffic mix |
+| P7-E UAT | TEMPLATE-READY / PEOPLE-BLOCKED | `docs/uat/*`; evidence paths in runbook |
+| P7-F sovereign red team | SCRIPT-READY / CLUSTER-BLOCKED | `scripts/red_team_live_replay.py` |
+| P7-G DR dry run | RUNBOOK-READY / CLUSTER-BLOCKED | `infrastructure/sovereign/disaster_recovery.sh` |
+| P7-H eternal seal | BLOCKED | existing `v1.0.0-eternal` is unsigned lightweight tag on old commit; do not retag before live evidence |
+| P8-A retrospective | DONE ✅ | `.claude/memory/sprint_retrospective.md` updated |
+| P8-B final tag review | BLOCKED | live evidence and signed tag missing |
+| P9 handover zip | MANIFEST-READY / BLOCKED | `docs/handover/HANDOVER_PACKET_MANIFEST.md` |
+| P10 commercial sprint | DRAFTS-READY / EXTERNAL-BLOCKED | docs under `docs/business/*_2026-04-27.md` |
+
+Do not mark BACKLOG as SEALED until P7-A through P7-H are executed on the sovereign cluster and all required GPG signatures verify.
+
+---
+
 ## 2026-04-26 PRODUCTION LAUNCH BLOCKERS (merged from external audits)
 
 These 7 gaps must close before the IIT-GN user-acceptance session and follow-up production deployment. Each is bound to a Quality Bar constraint and the live-evidence requirement (`.claude/QUALITY_BAR.md` "Live Evidence Requirement"). Source corpus: `tests/benchmarks/killer_queries.yaml`. Risk recovery playbook: `docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md`. New rows LB-6 + LB-7 added 2026-04-26 from second external review (Claude-as-Principal-Engineer audit). Principal Auditor review 2026-04-26 is merged as a reference map in `.claude/memory/references/principal-auditor-2026-04-26.md`; it reinforces LB-6/LB-7/LB-8 instead of adding duplicate rows. Same-day Principal Engineer reviews from 2026-04-25 are merged as `.claude/memory/references/grok-principal-engineer-2026-04-25.md`; they reinforce LB-1 through LB-5, the v1.1 corpus, and the cluster-bound C4/C5 gates.

@@ -47,9 +47,14 @@ gpg --verify docs/handover/evidence/01_stage_up.json.asc docs/handover/evidence/
 
 ## Terminal Step: Git Tag
 
-After all 8 signatures collected:
+After all 8 signatures are collected and P7-A through P7-G evidence is present:
 
 ```bash
+git tag -v v1.0.0-eternal || true
+# Current local note, 2026-04-27:
+# v1.0.0-eternal exists as an unsigned lightweight tag on an older commit.
+# Replace or supersede only after founder approval.
+
 git tag -s v1.0.0-eternal \
   -m "NRG eternal completion — QB 6/6, 33/33 protocols, sovereign live.
 

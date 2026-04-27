@@ -86,6 +86,9 @@ The 600GB dataset may arrive in the following formats:
 □ Source system credentials verified
 □ VPN/private link tested
 □ Receiving directory created: /data/intake/YYYY-MM-DD/
+□ Manifest received: manifest.json
+□ GPG detached signatures received for every file (.asc or .sig)
+□ Row HMAC shared through DATA_INTAKE_HMAC_SECRET
 □ Checksums received (SHA-256)
 □ File count matches manifest
 □ Total bytes match manifest
@@ -120,10 +123,35 @@ Before loading into PostgreSQL, validate:
 | Check | Pass Criteria | Fail Action |
 |-------|--------------|-------------|
 | File completeness | All files present per manifest | Halt, notify source |
+| GPG signature | Every file verifies against source public key | Halt, notify source |
 | Checksum verification | SHA-256 matches provided | Halt, re-download |
+| Row HMAC | Every CSV row has valid `row_hmac` | Quarantine file, do not load |
 | Format validation | CSV/JSON/XML parses correctly | Log, skip malformed |
 | Schema mapping | All required fields present | Halt, clarify with source |
 | PII scan | No Aadhaar/PAN in public fields | Quarantine, review |
+
+### 4.1.1 Bundle Verification Command
+
+Before any `COPY` or `pg_restore`, run the intake verifier:
+
+```bash
+export DATA_INTAKE_HMAC_SECRET="$(vault kv get -field=row_hmac secret/nrg/intake)"
+
+python scripts/verify_intake_bundle.py \
+  --bundle-dir /data/intake/2026-05-xx \
+  --manifest /data/intake/2026-05-xx/manifest.json
+```
+
+For local dry runs without source signatures only:
+
+```bash
+python scripts/verify_intake_bundle.py \
+  --bundle-dir ./fixtures/intake \
+  --manifest ./fixtures/intake/manifest.json \
+  --skip-gpg
+```
+
+Expected result before load: `"status": "pass"`, `files_verified` equals manifest file count, and `hmac.invalid_rows` is `0`.
 
 ### 4.2 PII Detection
 

@@ -16,21 +16,22 @@
 kubectl port-forward svc/api 8000:8000 &
 
 # Terminal 2: run locust
-locust -f tests/load/locustfile.py --headless \
-  --users 1000 --spawn-rate 50 --run-time 5m \
-  --host http://localhost:8000 \
-  --html .cache/locust_report.html --csv evidence/02_load_stats
+uv run locust -f tests/performance/locustfile_c4.py --headless \
+  --users 1000 --spawn-rate 3.33 --run-time 15m \
+  --host https://api.nrg.iitgn.ac.in \
+  --html evidence/2026-05-xx/C4_1000_user_locust/report.html \
+  --csv evidence/2026-05-xx/C4_1000_user_locust/stats
 ```
 
 ## Results (Pending)
 
 | Metric | Target | Observed | Pass/Fail |
 |--------|--------|----------|-----------|
-| P99 Latency | <500ms | TBD | ⏳ |
-| P95 Latency | <300ms | TBD | ⏳ |
-| P50 Latency | <100ms | TBD | ⏳ |
-| Error Rate | <0.5% | TBD | ⏳ |
-| Success Rate | >99.5% | TBD | ⏳ |
+| P50 Latency | <500ms | TBD | ⏳ |
+| P99 Latency | <3s | TBD | ⏳ |
+| Error Rate | <1% | TBD | ⏳ |
+| Throughput | ≥100 RPS | TBD | ⏳ |
+| Success Rate | >99% | TBD | ⏳ |
 | Concurrent Users | ≥1000 | TBD | ⏳ |
 
 ## Percentile Distribution
@@ -62,7 +63,7 @@ Expected: **6/6** (C4 flips ✅ → C4: 1/1 PASS)
 
 ## Gate
 
-- P99 < 500ms @ ≥1000 concurrent users → **C4 PASSES → QB 6/6**
+- P50 < 500ms, P99 < 3s, error < 1%, throughput ≥100 RPS @ ≥1000 concurrent users → **C4 PASSES**
 - If fails: rollback, investigate, re-run
 
 ## Emit

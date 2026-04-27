@@ -3,9 +3,9 @@
   "step": "01_stage_up",
   "status": "PENDING_EXECUTION",
   "timestamp": "2026-04-24T00:00:00Z",
-  "command": "helm upgrade --install nrg infrastructure/helm/nrg -f values-prod.yaml --wait --atomic",
+  "command": "helm upgrade --install nrg infrastructure/helm/nrg -n nrg-production -f infrastructure/helm/nrg/values.prod.yaml --wait --atomic --timeout 15m",
   "prerequisites": [
-    "values-prod.yaml exists and validated",
+    "infrastructure/helm/nrg/values.prod.yaml exists and validates",
     "kubectl context points to sovereign cluster",
     "namespace nrg does not exist or is clean"
   ],
@@ -16,10 +16,12 @@
   },
   "emit": "docs/handover/evidence/01_stage_up.json",
   "commands": [
-    "helm upgrade --install nrg infrastructure/helm/nrg -f values-prod.yaml --wait --atomic",
-    "kubectl -n nrg exec deploy/api -- alembic upgrade head",
-    "kubectl -n nrg exec deploy/api -- python scripts/seed_production_tables.py --rows 10",
-    "kubectl -n nrg exec deploy/api -- python scripts/quality_bar_scorecard.py --emit-json"
+    "python infrastructure/helm/nrg/scripts/validate_chart.py --skip-helm",
+    "helm lint infrastructure/helm/nrg",
+    "kubectl create namespace nrg-production --dry-run=client -o yaml | kubectl apply -f -",
+    "helm upgrade --install nrg infrastructure/helm/nrg -n nrg-production -f infrastructure/helm/nrg/values.prod.yaml --wait --atomic --timeout 15m",
+    "kubectl -n nrg-production exec deploy/nrg-api -- alembic upgrade head",
+    "curl -fsS https://api.nrg.iitgn.ac.in/health"
   ],
   "pending_results": {
     "pod_status": null,
