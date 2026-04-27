@@ -308,6 +308,26 @@
     "write-query": {
       "source": ".claude/skills",
       "sourceType": "local"
+    },
+    "competitive-brief": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "product-brainstorming": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "sprint-planning": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "synthesize-research": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "brainstorm": {
+      "source": ".claude/skills",
+      "sourceType": "local"
     }
   }
 }

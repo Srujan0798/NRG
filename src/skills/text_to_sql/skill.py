@@ -411,7 +411,7 @@ TABLE MAPPING (choose the right table for each query type):
 - "grant", "funding", "budget", "sanctioned" → innovation_grant_from_govt
 - "startup", "incubated", "incubation" → incubation_details
 - "patent", "IP", "inventor" → patents_details OR combined_ipo_patent_data
-- "TRL", "technology readiness", "Lab Validation", "Market Ready" → innovations_at_various_stages_of_technology_readiness_level
+- "TRL", "technology readiness", "Lab Validation", "Market Ready" → trl_stages
 - "capex", "capital expense", "capital assets", "equipment" → financial_expenses_capital
 - "salaries", "operational expense", "maintenance" → financial_expenses_operational
 - "student", "intake", "seats" → phd_students, sanctioned_intake (AVOID unless user explicitly asks about students)
@@ -495,7 +495,7 @@ TABLE MAPPING (choose the right table for each query type):
 - "courses", "curriculum", "credits", "PG", "PhD", "UG" → academic_courses_details
 - "grant", "funding", "budget" → innovation_grant_from_govt
 - "startup", "incubated", "incubation" → incubation_details
-- "TRL", "technology readiness", "Lab Validation" → innovations_at_various_stages_of_technology_readiness_level
+- "TRL", "technology readiness", "Lab Validation" → trl_stages
 - "capex", "capital expense", "capital assets" → financial_expenses_capital
 - "salaries", "operational expense" → financial_expenses_operational
 - NEVER use phd_students or sanctioned_intake when user asks about courses
@@ -1021,7 +1021,7 @@ FOLLOW-UP QUERIES:
         )
 
     def _fallback_trl(self, query: str, query_lower: str) -> str:
-        """Generate SQL for innovations_at_various_stages_of_technology_readiness_level queries."""
+        """Generate SQL for trl_stages queries."""
         conditions = []
 
         if "iit" in query_lower:
@@ -1043,7 +1043,7 @@ FOLLOW-UP QUERIES:
             return (
                 "WITH stage_counts AS ("
                 "SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count "
-                "FROM innovations_at_various_stages_of_technology_readiness_level "
+                "FROM trl_stages "
                 f"WHERE {inst_filter} AND stage_of_technology IN ('Level 4', 'Level 9') "
                 "GROUP BY financial_year, stage_of_technology"
                 "), yearly_totals AS ("
@@ -1071,30 +1071,30 @@ FOLLOW-UP QUERIES:
                 where_clause = " AND ".join(conditions)
                 return (
                     f"WITH StageCount AS (SELECT stage_of_technology, COUNT(*) as cnt "
-                    f"FROM innovations_at_various_stages_of_technology_readiness_level "
+                    f"FROM trl_stages "
                     f"WHERE {where_clause} GROUP BY stage_of_technology), "
-                    f"TotalCount AS (SELECT COUNT(*) as total FROM innovations_at_various_stages_of_technology_readiness_level WHERE {where_clause}) "
+                    f"TotalCount AS (SELECT COUNT(*) as total FROM trl_stages WHERE {where_clause}) "
                     f"SELECT s.stage_of_technology, s.cnt, ROUND(s.cnt * 100.0 / NULLIF(t.total, 0), 2) as percentage "
                     f"FROM StageCount s, TotalCount t ORDER BY s.cnt DESC;"
                 )
             return (
                 "SELECT stage_of_technology, COUNT(*) as cnt, "
-                "ROUND(COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM innovations_at_various_stages_of_technology_readiness_level), 0), 2) as percentage "
-                "FROM innovations_at_various_stages_of_technology_readiness_level "
+                "ROUND(COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM trl_stages), 0), 2) as percentage "
+                "FROM trl_stages "
                 "GROUP BY stage_of_technology ORDER BY cnt DESC;"
             )
 
         if "pipeline progression" in query_lower or "moving from low trl" in query_lower or "moving to high trl" in query_lower:
             return (
                 "SELECT financial_year, stage_of_technology, COUNT(*) as count "
-                "FROM innovations_at_various_stages_of_technology_readiness_level "
+                "FROM trl_stages "
                 "GROUP BY financial_year, stage_of_technology ORDER BY financial_year DESC, stage_of_technology;"
             )
 
         if conditions:
             where_clause = " AND ".join(conditions)
-            return f"SELECT * FROM innovations_at_various_stages_of_technology_readiness_level WHERE {where_clause} LIMIT 100;"
-        return "SELECT * FROM innovations_at_various_stages_of_technology_readiness_level LIMIT 100;"
+            return f"SELECT * FROM trl_stages WHERE {where_clause} LIMIT 100;"
+        return "SELECT * FROM trl_stages LIMIT 100;"
 
     def _fallback_patents(self, query: str, query_lower: str) -> str:
         """Generate SQL for combined_ipo_patent_data queries."""

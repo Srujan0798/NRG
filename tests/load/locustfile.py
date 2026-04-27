@@ -38,7 +38,7 @@ class AuthenticatedNRGUser(HttpUser):
 
         username = os.environ.get(self.username_env, self.default_username)
         password = os.environ.get(self.password_env, self.default_password)
-        response = self.client.post("/auth/login", json={
+        response = self.client.post("/login", json={
             "username": username,
             "password": password,
         })
