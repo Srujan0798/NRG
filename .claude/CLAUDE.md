@@ -52,7 +52,7 @@ Do not use older framed planning documents as standalone execution authority. Th
 |---------|------|
 | Project vision + 3 data sources | [memory/references/three-data-sources.md](memory/references/three-data-sources.md) |
 | SQL benchmark (17 queries, 41%) | [memory/projects/sql-audit-dhairya.md](memory/projects/sql-audit-dhairya.md) |
-| All 66 skills inventory | [memory/references/installed-skills.md](memory/references/installed-skills.md) |
+| All 61 skills inventory | [memory/references/installed-skills.md](memory/references/installed-skills.md) |
 | Production roadmap | `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` |
 | Closure wave | `docs/specs/CLOSURE_PLAN_2026-04-26.md` |
 | Full system inventory | [MANIFEST.md](MANIFEST.md) |
@@ -98,10 +98,10 @@ docker compose up
 [architecture-adr](skills/architecture-adr) · [testing-strategy](skills/testing-strategy) · [tech-debt](skills/tech-debt) · [system-design](skills/system-design) · [standup](skills/standup) · [write-spec](skills/write-spec) · [stakeholder-update](skills/stakeholder-update) · [metrics-review](skills/metrics-review) · [roadmap-update](skills/roadmap-update) · [compliance-check](skills/compliance-check) · [incident-response](skills/incident-response) · [doc-coauthoring](skills/doc-coauthoring) · [external-audit](skills/external-audit)
 
 ### Engineering (14 skills)
-[python-backend](skills/python-backend) · [code-review-and-quality](skills/code-review-and-quality) · [security-auditor](skills/security-auditor) · [frontend-react-best-practices](skills/frontend-react-best-practices) · [webapp-testing](skills/webapp-testing) · [prompt-engineering-patterns](skills/prompt-engineering-patterns) · [dockerfile-validator](skills/dockerfile-validator) · [database-migrations-sql-migrations](skills/database-migrations-sql-migrations) · [typescript-advanced-types](skills/typescript-advanced-types) · [nodejs-backend-patterns](skills/nodejs-backend-patterns) · [changelog-generator](skills/changelog-generator) · [claude-api](skills/claude-api) · [external-prompt-merge](skills/external-prompt-merge) · [find-skills](skills/find-skills)
+[python-backend](skills/python-backend) · [code-review-and-quality](skills/code-review-and-quality) · [security-auditor](skills/security-auditor) · [frontend-react-best-practices](skills/frontend-react-best-practices) · [webapp-testing](skills/webapp-testing) · [prompt-engineering-patterns](skills/prompt-engineering-patterns) · [dockerfile-validator](skills/dockerfile-validator) · [database-migrations-sql-migrations](skills/database-migrations-sql-migrations) · [typescript-advanced-types](skills/typescript-advanced-types) · [changelog-generator](skills/changelog-generator) · [claude-api](skills/claude-api) · [external-prompt-merge](skills/external-prompt-merge) · [find-skills](skills/find-skills)
 
 ### Agent-Only Execution (in `.agents/skills/`)
-debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · neon-postgres · secure-linux-web-hosting · deployment-pipeline-design · startup-financial-modeling · startup-metrics-framework · better-auth-security-best-practices
+debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · secure-linux-web-hosting · deployment-pipeline-design · better-auth-security-best-practices
 
 ---
 

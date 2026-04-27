@@ -57,6 +57,29 @@ configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.json"
+DEFAULT_VECTOR_DRIFT_STATUS_FILE = REPO_ROOT / ".cache" / "vector_drift_status.json"
+
+
+def _get_vector_drift_health() -> dict[str, Any]:
+    """Read the latest drift-cron status without running a deep Qdrant check."""
+    import json
+
+    path = Path(os.getenv("NRG_VECTOR_DRIFT_STATUS_FILE", str(DEFAULT_VECTOR_DRIFT_STATUS_FILE)))
+    if not path.exists():
+        return {
+            "status": "unknown",
+            "message": "No vector drift status file has been emitted yet.",
+            "path": str(path),
+        }
+    try:
+        payload = json.loads(path.read_text())
+    except Exception as exc:
+        return {"status": "error", "message": str(exc), "path": str(path)}
+
+    alert_level = str(payload.get("alert_level", "")).upper()
+    if "status" not in payload:
+        payload["status"] = "healthy" if alert_level in {"GREEN", "AMBER"} else "unhealthy"
+    return payload
 
 
 def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
@@ -2324,11 +2347,14 @@ async def health_check():
     if drift_score is not None:
         slo_tracker.set_drift_score(drift_score)
 
+    vector_drift_health = _get_vector_drift_health()
+
     return {
         "status": overall,
         "timestamp": datetime.now(UTC).isoformat(),
         "consent_service": "operational",
         "retriever": retriever_health,
+        "vector_drift": vector_drift_health,
         "database": db_health,
         "audit": audit_health,
     }

@@ -12,18 +12,18 @@
 
 ---
 
-## Your 25 Skills
+## Your 21 Skills
 
 | Category | Skills |
 |----------|--------|
 | **Data** | explore-data · validate-data · statistical-analysis · sql-queries · build-dashboard · create-viz · data-visualization |
 | **Design** | frontend-design · design-critique · ux-copy · accessibility-review · react-composition-patterns |
-| **Backend** | debug · test-driven-development · database-schema-designer · database-migration · neon-postgres · secure-linux-web-hosting |
+| **Backend** | debug · test-driven-development · database-schema-designer · database-migration · secure-linux-web-hosting |
 | **DevOps** | deploy-checklist · deployment-pipeline-design |
-| **Business** | startup-financial-modeling · startup-metrics-framework · better-auth-security-best-practices |
+| **Security** | better-auth-security-best-practices |
 | **Docs** | documentation |
 
-**Canonical skills** (in `.claude/skills/`, use when assigned): external-prompt-merge · pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
+**Canonical skills** (in `.agents/skills/`, use when assigned): pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
 
 ---
 

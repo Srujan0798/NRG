@@ -55,6 +55,11 @@ observability:
   metrics:
     enabled: true
 
+vectorDrift:
+  enabled: true
+  lightweightSchedule: "*/5 * * * *"
+  deepSchedule: "30 2 * * *"
+
 # Production node selectors
 nodeSelector:
   nrg-node: "true"

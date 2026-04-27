@@ -90,8 +90,27 @@ DRIFT_SCORE_SLO = 0.85
 DRIFT_SCORE_WARNING = 0.60
 DRIFT_SCORE_CRITICAL = 0.40
 COSINE_SHIFT_THRESHOLD = 0.05
-BENCHMARK_CACHE_FILE = Path(__file__).parent.parent / ".cache" / "drift_benchmark.json"
-REFERENCE_CENTROIDS_FILE = Path(__file__).parent.parent / ".cache" / "reference_centroids.json"
+DRIFT_CACHE_DIR = Path(os.getenv("NRG_DRIFT_CACHE_DIR", str(Path(__file__).parent.parent / ".cache")))
+BENCHMARK_CACHE_FILE = DRIFT_CACHE_DIR / "drift_benchmark.json"
+REFERENCE_CENTROIDS_FILE = DRIFT_CACHE_DIR / "reference_centroids.json"
+DEFAULT_STATUS_FILE = DRIFT_CACHE_DIR / "vector_drift_status.json"
+
+
+def _status_file() -> Path:
+    return Path(os.getenv("NRG_VECTOR_DRIFT_STATUS_FILE", str(DEFAULT_STATUS_FILE)))
+
+
+def _write_status_file(payload: dict) -> None:
+    """Persist the latest vector drift status for the API /health endpoint."""
+    status_payload = dict(payload)
+    alert_level = str(status_payload.get("alert_level", "")).upper()
+    if "status" not in status_payload:
+        status_payload["status"] = "healthy" if alert_level in {"GREEN", "AMBER"} else "unhealthy"
+    status_payload.setdefault("timestamp", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
+
+    path = _status_file()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(status_payload, indent=2, default=str))
 
 
 def _load_reference_centroids() -> dict[str, list[float]]:
@@ -378,6 +397,56 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
             embedder.close()
 
 
+def establish_baseline(retriever: Retriever, verbose: bool = False) -> dict:
+    """Persist a fresh vector drift benchmark and reference centroid baseline."""
+    from src.skills.rag.embedder import Embedder
+
+    embedder = Embedder()
+    benchmark_results = {}
+    try:
+        for bench in BENCHMARK_QUERIES:
+            query = bench["query"]
+            try:
+                query_vector = embedder.embed_single(query)
+                retrieval_result = retriever.retrieve(
+                    query_vector=query_vector,
+                    user_tier=1,
+                    top_k=5,
+                )
+                metadata = retrieval_result.get("metadata", [])
+                sources = []
+                topics = []
+                for item in metadata:
+                    source = item.get("institution", "") or item.get("source", "")
+                    if source:
+                        sources.append(source.lower())
+                    for topic in item.get("topics", []) or item.get("research_area_tags", []):
+                        topics.append(topic.lower())
+
+                benchmark_results[query] = {
+                    "sources": sorted(set(sources)),
+                    "topics": sorted(set(topics)),
+                    "timestamp": time.time(),
+                }
+            except Exception as exc:
+                benchmark_results[query] = {"error": str(exc), "timestamp": time.time()}
+                if verbose:
+                    logger.warning("Baseline query failed for '%s': %s", query, exc)
+
+        centroids = _compute_centroids(retriever, embedder)
+        _save_reference_centroids(centroids)
+        _save_benchmark_cache(benchmark_results)
+
+        return {
+            "status": "baseline_established",
+            "queries_saved": len(benchmark_results),
+            "centroids_saved": len(centroids),
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+    finally:
+        embedder.close()
+
+
 def run_health_check(retriever: Retriever) -> dict:
     """Get Qdrant health for the drift report."""
     health = retriever.health_check()
@@ -408,6 +477,8 @@ def main():
                         help="Output results as JSON")
     parser.add_argument("--check-only", action="store_true",
                         help="Skip benchmark comparison, just show current health")
+    parser.add_argument("--establish-baseline", action="store_true",
+                        help="Persist current Qdrant retrieval state as the drift baseline")
     args = parser.parse_args()
 
     logger.info("Starting NRG Vector Drift Detection")
@@ -428,8 +499,33 @@ def main():
     )
 
     if args.check_only:
+        status = {
+            "status": "healthy" if _qdrant_ready_for_benchmark(qdrant_health) else "unhealthy",
+            "alert_level": "GREEN" if _qdrant_ready_for_benchmark(qdrant_health) else "UNKNOWN",
+            "qdrant": qdrant_health,
+        }
+        _write_status_file(status)
         print(json.dumps({"qdrant": qdrant_health}, indent=2, default=str))
         return
+
+    if args.establish_baseline:
+        if not _qdrant_ready_for_benchmark(qdrant_health):
+            result = {
+                "status": "baseline_skipped",
+                "message": "Qdrant is unhealthy or empty; baseline was not changed.",
+                "qdrant": qdrant_health,
+            }
+            print(json.dumps(result, indent=2, default=str))
+            sys.exit(2)
+        baseline = establish_baseline(retriever, verbose=args.verbose)
+        _write_status_file({
+            "status": "healthy",
+            "alert_level": "GREEN",
+            "baseline": baseline,
+            "qdrant": qdrant_health,
+        })
+        print(json.dumps({"baseline": baseline, "qdrant": qdrant_health}, indent=2, default=str))
+        sys.exit(0)
 
     if not _qdrant_ready_for_benchmark(qdrant_health):
         result = {
@@ -454,6 +550,7 @@ def main():
         sys.exit(2)
 
     drift_result = run_drift_check(retriever, verbose=args.verbose)
+    _write_status_file({**drift_result, "qdrant": qdrant_health})
 
     print("\n" + "=" * 60)
     print("VECTOR DRIFT REPORT")

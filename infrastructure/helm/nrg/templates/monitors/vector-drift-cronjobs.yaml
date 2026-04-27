@@ -1,0 +1,117 @@
+{{- if .Values.vectorDrift.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-vector-drift-lightweight
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    app.kubernetes.io/component: vector-drift
+spec:
+  # Default: */5 * * * *
+  schedule: {{ .Values.vectorDrift.lightweightSchedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.vectorDrift.successfulJobsHistoryLimit | default 12 }}
+  failedJobsHistoryLimit: {{ .Values.vectorDrift.failedJobsHistoryLimit | default 3 }}
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: nrg-vector-drift-lightweight
+        spec:
+          serviceAccountName: nrg-sa
+          {{- include "nrg.podSecurityContext" . | nindent 10 }}
+          restartPolicy: OnFailure
+          containers:
+            - name: vector-drift-lightweight
+              image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+              imagePullPolicy: {{ .Values.api.image.pullPolicy | default "IfNotPresent" }}
+              {{- include "nrg.containerSecurityContext" . | nindent 14 }}
+              env:
+                - name: NRG_DRIFT_CACHE_DIR
+                  value: {{ .Values.vectorDrift.cacheMountPath | quote }}
+                - name: NRG_VECTOR_DRIFT_STATUS_FILE
+                  value: "{{ .Values.vectorDrift.cacheMountPath }}/vector_drift_status.json"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  cd /app
+                  python scripts/vector_drift_check.py --check-only --json
+              volumeMounts:
+                - name: vector-drift-cache
+                  mountPath: {{ .Values.vectorDrift.cacheMountPath | quote }}
+          volumes:
+            - name: vector-drift-cache
+              persistentVolumeClaim:
+                claimName: nrg-vector-drift-cache
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-vector-drift-deep
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    app.kubernetes.io/component: vector-drift
+spec:
+  # Default: 30 2 * * *
+  schedule: {{ .Values.vectorDrift.deepSchedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: {{ .Values.vectorDrift.successfulJobsHistoryLimit | default 12 }}
+  failedJobsHistoryLimit: {{ .Values.vectorDrift.failedJobsHistoryLimit | default 3 }}
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app: nrg-vector-drift-deep
+        spec:
+          serviceAccountName: nrg-sa
+          {{- include "nrg.podSecurityContext" . | nindent 10 }}
+          restartPolicy: OnFailure
+          containers:
+            - name: vector-drift-deep
+              image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+              imagePullPolicy: {{ .Values.api.image.pullPolicy | default "IfNotPresent" }}
+              {{- include "nrg.containerSecurityContext" . | nindent 14 }}
+              env:
+                - name: NRG_DRIFT_CACHE_DIR
+                  value: {{ .Values.vectorDrift.cacheMountPath | quote }}
+                - name: NRG_VECTOR_DRIFT_STATUS_FILE
+                  value: "{{ .Values.vectorDrift.cacheMountPath }}/vector_drift_status.json"
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  cd /app
+                  python scripts/vector_drift_check.py --json
+              volumeMounts:
+                - name: vector-drift-cache
+                  mountPath: {{ .Values.vectorDrift.cacheMountPath | quote }}
+          volumes:
+            - name: vector-drift-cache
+              persistentVolumeClaim:
+                claimName: nrg-vector-drift-cache
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nrg-vector-drift-cache
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg
+    app.kubernetes.io/component: vector-drift
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.vectorDrift.cachePvcSize | default "2Gi" }}
+  storageClassName: {{ .Values.persistence.defaultStorageClass | default "nrg-standard-storage" }}
+{{- end }}

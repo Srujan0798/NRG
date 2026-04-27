@@ -1,5 +1,6 @@
 """Tests for Vector Drift Monitor — C5: Auto-Retrain Trigger."""
 
+import json
 from unittest.mock import patch, MagicMock
 import importlib.util
 import sys
@@ -22,6 +23,8 @@ DRIFT_SCORE_CRITICAL = _vdc.DRIFT_SCORE_CRITICAL
 COSINE_SHIFT_THRESHOLD = _vdc.COSINE_SHIFT_THRESHOLD
 run_drift_check = _vdc.run_drift_check
 _qdrant_ready_for_benchmark = _vdc._qdrant_ready_for_benchmark
+establish_baseline = _vdc.establish_baseline
+write_status_file = _vdc._write_status_file
 
 
 class TestCosineShift:
@@ -141,6 +144,58 @@ class TestCheckCosineShift:
 
         assert result["status"] == "stable"
         assert result["reindex_triggered"] is False
+
+
+class TestEstablishBaseline:
+    """Tests for explicit C5 baseline establishment."""
+
+    @patch("vector_drift_check._save_benchmark_cache")
+    @patch("vector_drift_check._save_reference_centroids")
+    @patch("vector_drift_check._compute_centroids")
+    @patch("src.skills.rag.embedder.Embedder")
+    def test_establish_baseline_persists_reference_data(
+        self,
+        mock_embedder_class,
+        mock_compute,
+        mock_save_centroids,
+        mock_save_benchmark,
+    ):
+        class FakeRetriever:
+            def retrieve(self, query_vector, user_tier=1, top_k=5, **kwargs):
+                return {
+                    "metadata": [
+                        {
+                            "institution": "IIT Gandhinagar",
+                            "topics": ["machine learning"],
+                        }
+                    ]
+                }
+
+        fake_embedder = MagicMock()
+        mock_embedder_class.return_value = fake_embedder
+        mock_compute.return_value = {"machine learning": [0.1, 0.2, 0.3]}
+
+        result = establish_baseline(FakeRetriever())
+
+        assert result["status"] == "baseline_established"
+        assert result["centroids_saved"] == 1
+        assert result["queries_saved"] == len(BENCHMARK_QUERIES)
+        mock_save_centroids.assert_called_once_with({"machine learning": [0.1, 0.2, 0.3]})
+        mock_save_benchmark.assert_called_once()
+        fake_embedder.close.assert_called_once()
+
+
+class TestStatusFile:
+    def test_write_status_file_persists_vector_drift_health(self, monkeypatch, tmp_path):
+        status_file = tmp_path / "vector_drift_status.json"
+        monkeypatch.setenv("NRG_VECTOR_DRIFT_STATUS_FILE", str(status_file))
+
+        write_status_file({"alert_level": "GREEN", "drift_score": 0.9})
+
+        payload = json.loads(status_file.read_text())
+        assert payload["status"] == "healthy"
+        assert payload["alert_level"] == "GREEN"
+        assert payload["drift_score"] == 0.9
 
 
 class TestSLOThresholds:

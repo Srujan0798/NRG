@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import json
 
 import src.api.main as api_main
 
@@ -89,6 +90,44 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
     assert payload["database"]["tables"] == 75
     assert payload["audit"]["chain_valid"] is True
     assert payload["audit"]["chain_length"] == 7
+
+
+def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
+    class FakeDB:
+        dialect = "postgresql"
+
+        def get_stats(self):
+            return {"researchers": 50_000, "publications": 50_000}
+
+        def execute(self, query: str):
+            return [{"table_count": 75}]
+
+    status_file = tmp_path / "vector_drift_status.json"
+    status_file.write_text(
+        json.dumps(
+            {
+                "status": "healthy",
+                "alert_level": "GREEN",
+                "drift_score": 0.91,
+                "timestamp": "2026-04-27T00:00:00Z",
+            }
+        )
+    )
+
+    monkeypatch.setenv("NRG_VECTOR_DRIFT_STATUS_FILE", str(status_file))
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["vector_drift"]["status"] == "healthy"
+    assert payload["vector_drift"]["drift_score"] == 0.91
 
 
 def test_qdrant_health_endpoint_reports_readiness(monkeypatch):

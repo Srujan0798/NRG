@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 LOCUSTFILE = ROOT / "tests/load/locustfile.py"
 C4_LOCUSTFILE = ROOT / "tests/load/locustfile_c4.py"
+C4_PERFORMANCE_LOCUSTFILE = ROOT / "tests/performance/locustfile_c4.py"
 
 
 def test_locustfile_authenticates_from_environment_before_tasks():
@@ -45,3 +46,27 @@ def test_c4_locustfile_uses_current_credentials_and_response_keys():
     assert "with user.client.post(" in source
     assert 'name="/auth/login"' in source
     assert "_handle_query_response(resp)" in source
+
+
+def test_c4_locustfile_declares_60_30_10_traffic_mix():
+    source = C4_LOCUSTFILE.read_text()
+
+    assert "C4FastPathUser" in source
+    assert "C4FullPathUser" in source
+    assert "C4AdversarialUser" in source
+    assert "weight = 60" in source
+    assert "weight = 30" in source
+    assert "weight = 10" in source
+    assert "DROP TABLE" in source
+
+
+def test_c4_performance_path_matches_phase7_runbook():
+    source = C4_PERFORMANCE_LOCUSTFILE.read_text()
+
+    assert "tests.load.locustfile_c4" in source
+    assert "C4FastPathUser" in source
+    assert "C4FullPathUser" in source
+    assert "C4AdversarialUser" in source
+    assert "C4ResearcherUser" in source
+    assert "C4GovernmentUser" in source
+    assert "C4IndustryUser" in source

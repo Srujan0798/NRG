@@ -627,6 +627,18 @@ observability:
     output: "stdout"
 
 # ==============================================================================
+# VECTOR DRIFT MONITORING
+# ==============================================================================
+vectorDrift:
+  enabled: true
+  lightweightSchedule: "*/5 * * * *"
+  deepSchedule: "30 2 * * *"
+  cachePvcSize: 2Gi
+  cacheMountPath: /var/lib/nrg-drift
+  successfulJobsHistoryLimit: 12
+  failedJobsHistoryLimit: 3
+
+# ==============================================================================
 # NODE SELECTORS & AFFINITY
 # ==============================================================================
 nodeSelector:

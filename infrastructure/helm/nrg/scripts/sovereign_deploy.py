@@ -1,19 +1,3 @@
-{{/*
-NRG Sovereign Landing - Blue-Green Deployment Script
-
-This script handles blue-green deployments for zero-downtime updates.
-It deploys the new version to the "green" environment, runs smoke tests,
-and then switches traffic if all checks pass.
-
-Usage:
-  ./sovereign_deploy.py --env production --version v1.2.3 --rollback-on-failure
-
-Requirements:
-  - kubectl configured with cluster access
-  - helm 3.x
-  - jq for JSON parsing
-*/}}
-
 #!/usr/bin/env python3
 """
 NRG Sovereign Landing - Blue-Green Deployment Orchestrator
@@ -41,12 +25,14 @@ from enum import Enum
 from pathlib import Path
 from typing import Optional
 
+LOG_PATH = Path(os.getenv("NRG_DEPLOY_LOG", "/tmp/nrg-deploy.log"))
+
 logging.basicConfig(
     level=logging.INFO,
     format='[%(asctime)s] %(levelname)s %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler('/var/log/nrg-deploy.log')
+        logging.FileHandler(LOG_PATH)
     ]
 )
 logger = logging.getLogger(__name__)
@@ -98,7 +84,7 @@ class NrgDeployer:
         self.start_time = time.time()
         self.audit_log = []
 
-    def run_cmd(self, cmd: list, check=True, capture=True):
+    def run_cmd(self, cmd: list, check=True, capture=True, input_text: str | None = None):
         """Run kubectl/helm command with error handling"""
         logger.info(f"Running: {' '.join(cmd)}")
         try:
@@ -106,7 +92,8 @@ class NrgDeployer:
                 cmd,
                 check=check,
                 capture_output=capture,
-                text=True
+                text=True,
+                input=input_text,
             )
             if capture:
                 logger.debug(result.stdout)
@@ -170,7 +157,8 @@ class NrgDeployer:
 
             # Snapshot PVCs
             self.run_cmd([
-                "kubectl", "create", "-f", "-", stdin=f"""
+                "kubectl", "create", "-f", "-",
+            ], input_text=f"""
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -188,8 +176,7 @@ spec:
   resources:
     requests:
       storage: 100Gi
-"""
-            ], check=False)
+""", check=False)
 
             self.log_audit("backup_created", {
                 "backup_name": backup_name,
@@ -508,7 +495,7 @@ spec:
         })
 
         # Write audit log
-        audit_path = Path(f"/var/log/nrg-deploy-{datetime.utcnow().strftime('%Y%m%d')}.json")
+        audit_path = LOG_PATH.parent / f"nrg-deploy-{datetime.utcnow().strftime('%Y%m%d')}.json"
         audit_path.write_text(json.dumps(self.audit_log, indent=2))
         logger.info(f"Audit log written to: {audit_path}")
 
