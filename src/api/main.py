@@ -2240,16 +2240,42 @@ async def health_check():
     import asyncio
 
     retriever_health = {"status": "skipped", "message": "Deep retriever health disabled for fast readiness checks"}
-    audit_health = {"status": "skipped", "chain_valid": None, "message": "Deep audit-chain health disabled for fast readiness checks"}
+    try:
+        from src.audit import get_chain_health
+
+        audit_health = get_chain_health()
+        audit_health["status"] = "healthy" if audit_health.get("chain_valid") else "unhealthy"
+    except Exception as exc:
+        audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
 
     try:
         db = _get_db()
         stats = db.get_stats()
+        if getattr(db, "dialect", "") == "postgresql":
+            table_count_query = (
+                "SELECT COUNT(*) AS table_count "
+                "FROM information_schema.tables "
+                "WHERE table_schema='public' AND table_type='BASE TABLE'"
+            )
+        else:
+            table_count_query = (
+                "SELECT COUNT(*) AS table_count "
+                "FROM sqlite_master "
+                "WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            )
+        table_count_rows = db.execute(table_count_query) if hasattr(db, "execute") else []
+        table_count = (
+            int(table_count_rows[0].get("table_count", 0))
+            if table_count_rows
+            else None
+        )
         db_health = {
             "status": "healthy",
             "dialect": getattr(db, "dialect", "unknown"),
             "researchers": stats.get("researchers", 0),
             "publications": stats.get("publications", 0),
+            "table_count": table_count,
+            "tables": table_count,
         }
     except Exception as exc:
         db_health = {"status": "error", "message": str(exc)}
