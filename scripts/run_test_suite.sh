@@ -6,7 +6,12 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-EVIDENCE_DIR="${1:-$REPO_ROOT/evidence/$(date +%Y-%m-%d)}"
+if [[ $# -gt 0 ]]; then
+    EVIDENCE_DIR="$1"
+    shift
+else
+    EVIDENCE_DIR="$REPO_ROOT/evidence/$(date +%Y-%m-%d)"
+fi
 mkdir -p "$EVIDENCE_DIR"
 
 JUNIT_XML="$EVIDENCE_DIR/test_suite_full_final.xml"
@@ -21,16 +26,22 @@ echo "════════════════════════�
 TIMEFORMAT='Suite completed in %R seconds'
 time {
     cd "$REPO_ROOT"
-    .venv/bin/python -m pytest tests/ \
-        -n auto \
-        --dist=loadgroup \
-        --timeout=300 \
-        --junitxml="$JUNIT_XML" \
-        --cov=src \
-        --cov-report=xml:"$COVERAGE_XML" \
-        --cov-report=term-missing:skip-covered \
-        --cov-fail-under=60 \
-        "$@"
+    PYTEST_ARGS=(
+        tests/
+        -n auto
+        --dist=loadgroup
+        --junitxml="$JUNIT_XML"
+        --cov=src
+        --cov-report=xml:"$COVERAGE_XML"
+        --cov-report=term-missing:skip-covered
+        --cov-fail-under=60
+    )
+
+    if .venv/bin/python -m pytest --help | grep -q -- "--timeout"; then
+        PYTEST_ARGS+=(--timeout=300)
+    fi
+
+    .venv/bin/python -m pytest "${PYTEST_ARGS[@]}" "$@"
 }
 
 echo ""

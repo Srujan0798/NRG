@@ -43,6 +43,7 @@ services:
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-nrg_default_password}@postgres:5432/${POSTGRES_DB:-nrg}
       - LISTEN_PORT=6432
+      - AUTH_TYPE=plain
       - POOL_MODE=transaction
       - MAX_CLIENT_CONN=200
       - DEFAULT_POOL_SIZE=20
@@ -135,6 +136,8 @@ services:
       - APP_ENV=${APP_ENV:-dev}
       - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-nrg_default_password}@pgbouncer:6432/${POSTGRES_DB:-nrg}
       - NRG_AUTH_DB_PATH=sqlite:////var/lib/nrg/nrg_auth.db
+      - NRG_AUDIT_DIR=/var/lib/nrg/audit
+      - NRG_PROTOCOL_DIR=/var/lib/nrg/protocol
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=${QDRANT_COLLECTION:-nrg_research}

@@ -1,0 +1,68 @@
+{
+  "date": "2026-04-27",
+  "test_file": "tests/benchmarks/test_dhairya_adversarial.py",
+  "total_tests": 31,
+  "passed": 28,
+  "skipped_api_dependency": 3,
+  "target": "70/70",
+  "note": "3 KILLER tests require live API (uvicorn not running); all 28 non-API tests pass",
+  "breakdown": {
+    "pattern_tests": {
+      "total": 7,
+      "passed": 7,
+      "skipped": 0,
+      "tests": [
+        "test_pattern_1_incorrect_aggregation_uses_group_by",
+        "test_pattern_2_having_completeness",
+        "test_pattern_3_domain_persistence",
+        "test_pattern_4_synonym_mapping",
+        "test_pattern_5_order_by_aggregate",
+        "test_pattern_6_join_key_correctness",
+        "test_pattern_7_complex_decomposition"
+      ]
+    },
+    "adversarial_tests": {
+      "total": 21,
+      "passed": 21,
+      "skipped": 0,
+      "adv_01_through_10_individual": [
+        "test_adv_01_credit_score_parsing",
+        "test_adv_02_trl_stage_grouping",
+        "test_adv_03_yoy_having_complete",
+        "test_adv_04_domain_persistence_followup",
+        "test_adv_05_pii_blocked",
+        "test_adv_06_order_by_not_distinct",
+        "test_adv_08_patent_join_keys",
+        "test_adv_09_scalar_subquery_average",
+        "test_adv_10_audit_transparency"
+      ],
+      "adv_11_through_22_parametrized": [
+        "test_adv_11_through_22_patterns[ADV-11]",
+        "test_adv_11_through_22_patterns[ADV-12]",
+        "test_adv_11_through_22_patterns[ADV-13]",
+        "test_adv_11_through_22_patterns[ADV-14]",
+        "test_adv_11_through_22_patterns[ADV-15]",
+        "test_adv_11_through_22_patterns[ADV-16]",
+        "test_adv_11_through_22_patterns[ADV-17]",
+        "test_adv_11_through_22_patterns[ADV-18]",
+        "test_adv_11_through_22_patterns[ADV-19]",
+        "test_adv_11_through_22_patterns[ADV-20]",
+        "test_adv_11_through_22_patterns[ADV-21]",
+        "test_adv_11_through_22_patterns[ADV-22]"
+      ],
+      "note": "ADV-07 missing from test file (gap in coverage)"
+    },
+    "killer_query_tests": {
+      "total": 3,
+      "passed": 0,
+      "skipped_api_dependency": 3,
+      "tests": [
+        "test_killer_query_executes[KILLER-01]",
+        "test_killer_query_executes[KILLER-02]",
+        "test_killer_query_executes[KILLER-03]"
+      ]
+    }
+  },
+  "LB-2_verdict": "PARTIAL PASS — 28/31 tests pass (all non-API). API-dependent KILLER tests require live uvicorn.",
+  "gap_identified": "ADV-07 exists in killer_queries.yaml but has no dedicated test in test_dhairya_adversarial.py"
+}

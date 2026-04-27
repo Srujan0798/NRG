@@ -322,6 +322,15 @@ class TestPromptSanitiserPII:
         assert result["reason"] == "DLP_VIOLATION"
         assert "aadhaar" in result.get("pii_type", "")
 
+    def test_partial_aadhaar_lookup_blocked(self):
+        """Partial Aadhaar lookup requests are exfiltration attempts even without 12 digits."""
+        result = self.SANITISER.validate_query(
+            {"query": "List all researchers with Aadhaar ending in 1234 working on hydrogen."}
+        )
+        assert result["valid"] is False
+        assert result["reason"] == "PROMPT_INJECTION"
+        assert "data_exfiltration" in result["details"]
+
     def test_pan_blocked(self):
         """PAN numbers detected and blocked."""
         result = self.SANITISER.validate_query({"query": "PAN: ABCDE1234F"})

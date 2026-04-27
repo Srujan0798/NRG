@@ -24,9 +24,9 @@ Everything below is real, runnable, and evidence-bound. Zero vibe-coding. Zero s
 
 | Area | State | Source |
 |---|---|---|
-| HEAD commit | `f579050` (frontend empty-error gates closed) | `git log` |
+| HEAD commit | `d6d9be2` (Phase 0 + Phase 2 complete) | `git log` |
 | Latest tag | `v1.0.0-client-handover` at `1562d694` | `git tag -l` |
-| Working tree | dirty: ~50 modified + ~20 untracked across LB-1, LB-2, LB-6, LB-7, LB-8 | `git status` |
+| Working tree | clean | `git status` |
 | Quality Bar | C1 ✅ C2 ✅ C3 ✅ C4 ⏸ (cluster) C5 ⏸ (cluster baseline) C6 ✅ — **5/6 local** | `BACKLOG.md` |
 | Audit chain | 350 748+ events, valid, 0 errors | `verify_chain()` |
 | Stack running locally | NO (API, frontend, Docker all down on this host) | `curl /health` |
@@ -37,14 +37,14 @@ Everything below is real, runnable, and evidence-bound. Zero vibe-coding. Zero s
 
 | # | Gap | State today | Phase |
 |---|---|---|---|
-| LB-1 | Tier-shape filter at API response boundary | code present, uncommitted, no live curl evidence | 1 + 4 |
-| LB-2 | Text-to-SQL prompt + 70-mutation adversarial | pytest log exists, prompt diff uncommitted | 1 + 4 |
-| LB-3 | 3 KILLER queries E2E ≥50k rows, p95<4s, citations | JSONs present, no load proof | 1 + 4 |
-| LB-4 | Full pytest <15 min, parallelised, all green | XML present, not re-run on HEAD | 2 |
-| LB-5 | Red-team live replay ≥60 payloads | logs exist, need re-run after LB-1 | 1 + 4 |
-| LB-6 | 47→58 schema parity + indexes + RLS T1/T2/T3 | migration `lb6_schema_parity_indexes_rls_001.py` uncommitted | 1 + 5 |
-| LB-7 | Result-anomaly detector + `answer_confidence` UI | `result_anomaly_detector.py` + tests untracked | 1 + 4 |
-| LB-8 | Semantic layer + schema-RAG | token-payload proof written, integration uncommitted | 1 + 4 |
+| LB-1 | Tier-shape filter at API response boundary | code committed, test scaffolded, live evidence pending | 4 |
+| LB-2 | Text-to-SQL prompt + 70-mutation adversarial | code committed, test scaffolded, live verify pending | 4 |
+| LB-3 | 3 KILLER queries E2E ≥50k rows, p95<4s, citations | killer_queries.yaml committed, live run pending | 4 |
+| LB-4 | Full pytest <15 min, parallelised, all green | **DONE** — 1,535 passed in 2:09 | 2 ✅ |
+| LB-5 | Red-team live replay ≥60 payloads | script committed, live execution pending | 4 |
+| LB-6 | 47→58 schema parity + indexes + RLS T1/T2/T3 | migration committed, alembic apply + verify pending | 5 |
+| LB-7 | Result-anomaly detector + `answer_confidence` UI | **DONE** — 22/22 tests, ConfidenceBadge merged | 4 ✅ |
+| LB-8 | Semantic layer + schema-RAG | module committed, integration into /query pending | 4 |
 
 ### Cluster-only items (Phase 7)
 

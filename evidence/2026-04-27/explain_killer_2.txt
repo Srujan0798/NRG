@@ -1,0 +1,55 @@
+Killer query: KILLER-02
+Captured: 2026-04-27T11:44:41.659899+00:00
+Engine: PostgreSQL
+
+SQL:
+
+        WITH stage_counts AS (
+            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count
+            FROM innovations_at_various_stages_of_technology_readiness_level
+            WHERE institute LIKE '%IIT Madras%'
+              AND stage_of_technology IN ('Level 4', 'Level 9')
+            GROUP BY financial_year, stage_of_technology
+        ),
+        yearly_totals AS (
+            SELECT financial_year, SUM(stage_count) AS total_count
+            FROM stage_counts
+            GROUP BY financial_year
+        )
+        SELECT
+            s.financial_year,
+            s.stage_of_technology,
+            s.stage_count,
+            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct
+        FROM stage_counts AS s
+        JOIN yearly_totals AS y ON y.financial_year = s.financial_year
+        ORDER BY s.financial_year DESC, s.stage_count DESC
+        LIMIT 20
+        
+
+Plan:
+Limit  (cost=471.43..471.48 rows=20 width=104) (actual time=2.652..2.654 rows=10 loops=1)
+  CTE stage_counts
+    ->  HashAggregate  (cost=465.49..465.94 rows=45 width=24) (actual time=2.597..2.598 rows=10 loops=1)
+          Group Key: innovations_at_various_stages_of_technology_readiness_level.financial_year, innovations_at_various_stages_of_technology_readiness_level.stage_of_technology
+          Batches: 1  Memory Usage: 24kB
+          ->  Index Only Scan using idx_lb3_trl_stage_institute_year on innovations_at_various_stages_of_technology_readiness_level  (cost=0.29..425.02 rows=5396 width=16) (actual time=0.201..1.367 rows=10332 loops=1)
+                Index Cond: (stage_of_technology = ANY ('{"Level 4","Level 9"}'::text[]))
+                Filter: (institute ~~ '%IIT Madras%'::text)
+                Rows Removed by Filter: 7778
+                Heap Fetches: 0
+  ->  Sort  (cost=5.49..5.60 rows=45 width=104) (actual time=2.651..2.652 rows=10 loops=1)
+        Sort Key: s.financial_year DESC, s.stage_count DESC
+        Sort Method: quicksort  Memory: 25kB
+        ->  Hash Join  (cost=2.70..4.29 rows=45 width=104) (actual time=2.620..2.625 rows=10 loops=1)
+              Hash Cond: (s.financial_year = y.financial_year)
+              ->  CTE Scan on stage_counts s  (cost=0.00..0.90 rows=45 width=72) (actual time=2.598..2.599 rows=10 loops=1)
+              ->  Hash  (cost=2.14..2.14 rows=45 width=64) (actual time=0.011..0.012 rows=5 loops=1)
+                    Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                    ->  Subquery Scan on y  (cost=1.12..2.14 rows=45 width=64) (actual time=0.007..0.009 rows=5 loops=1)
+                          ->  HashAggregate  (cost=1.12..1.69 rows=45 width=64) (actual time=0.007..0.008 rows=5 loops=1)
+                                Group Key: stage_counts.financial_year
+                                Batches: 1  Memory Usage: 24kB
+                                ->  CTE Scan on stage_counts  (cost=0.00..0.90 rows=45 width=40) (actual time=0.000..0.003 rows=10 loops=1)
+Planning Time: 0.573 ms
+Execution Time: 2.720 ms

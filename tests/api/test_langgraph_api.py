@@ -1,3 +1,5 @@
+import sqlite3
+
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
@@ -166,6 +168,49 @@ def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
     assert "Access restricted" in restricted["response"]
 
 
+def test_institution_funding_query_handles_live_schema_without_legacy_researcher_columns(monkeypatch):
+    conn = sqlite3.connect(":memory:")
+    conn.row_factory = sqlite3.Row
+    conn.executescript(
+        """
+        CREATE TABLE researchers (
+            researcher_id TEXT PRIMARY KEY,
+            research_area TEXT
+        );
+        CREATE TABLE institutions (
+            institution_id TEXT PRIMARY KEY,
+            name TEXT,
+            state TEXT
+        );
+        CREATE TABLE funding (
+            funding_id TEXT PRIMARY KEY,
+            researcher_id TEXT,
+            institution_id TEXT,
+            agency TEXT,
+            amount REAL,
+            title TEXT
+        );
+        CREATE TABLE labs (
+            lab_id TEXT PRIMARY KEY,
+            institution_id TEXT,
+            research_area TEXT
+        );
+        """
+    )
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            rows = conn.execute(query, params or {}).fetchall()
+            return [dict(row) for row in rows]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+
+    rows = api_main._query_institution_funding("Computer Science", ["%AI%"])
+
+    assert rows
+    assert any(row["institution"] in {"IIT Bombay", "IIT Madras"} for row in rows)
+
+
 def test_cost_per_patent_critical_query_uses_bounded_sql_path(monkeypatch):
     captured_sql: dict[str, str] = {}
 
@@ -198,8 +243,62 @@ def test_cost_per_patent_critical_query_uses_bounded_sql_path(monkeypatch):
     assert "status = 'granted'" in sql
     assert "applicants" in sql
     assert "cost_per_patent" in sql
+    assert "from (\n            select" in sql
     assert "100000000" in sql
     assert payload["sql_results"][0]["cost_per_patent"] == 12500000
+
+
+def test_academic_follow_up_uses_carried_sql_domain(monkeypatch):
+    captured_sql: dict[str, str] = {}
+
+    def fake_execute_sql(sql: str, user_tier: int = 1):
+        captured_sql["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {"institute": "IIT Bombay", "financial_year": "2022-23", "course_count": 12},
+                {"institute": "IIT Bombay", "financial_year": "2021-22", "course_count": 9},
+            ],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+    context_key = "researcher-researcher_user"
+    api_main._sql_domain_context[context_key] = {
+        "domain": "academic_courses_details",
+        "institute": "IIT Bombay",
+        "financial_year": "2022-23",
+        "last_query": "How many academic courses did IIT Bombay offer in 2022?",
+    }
+
+    payload = api_main._academic_follow_up_response(
+        "Follow-up: now compare that to last year for the same institute.",
+        user_tier=1,
+        session_id=None,
+        context_key=context_key,
+    )
+
+    assert payload is not None
+    assert "academic_courses_details" in captured_sql["sql"].lower()
+    assert payload["sql_query"] == captured_sql["sql"]
+    assert payload["sql_results"][0]["course_count"] == 12
+
+
+def test_advanced_adversarial_patterns_return_sql_metadata():
+    cases = [
+        "For top 5 research areas by total grants, median time between patent filing date and grant date, plus correlation with grant amount.",
+        "Institutes with highest disparity between sanctioned_intake and actual_student_strength for UG programs in last 3 years; trend?",
+        "Total faculty salary expenditure per state (Maharashtra) vs research consultancy income in the same state.",
+        "Startups with both FDI investment AND seed_funding from government, turnover > 50 lakh, sorted by investment.",
+        "Top 3 institutes by patents_granted/phd_students_graduated ratio per academic year, with HAVING granted >= 5.",
+        "Average citation count of open-access vs non-open-access publications, broken down by IIT/NIT/Other.",
+        "Count projects by their innovation stage (TRL level), grouped per institute.",
+    ]
+
+    for query in cases:
+        payload = api_main._advanced_adversarial_response(query, user_tier=1, session_id=None)
+        assert payload is not None
+        assert len(payload["sql_query"]) > 20
+        assert payload["routing_decision"] == "text_to_sql"
 
 
 def test_release_seed_graph_covers_hydrogen_visualization():

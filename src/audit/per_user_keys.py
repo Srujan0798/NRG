@@ -34,6 +34,10 @@ class RotatingSaltStore:
 
     def __init__(self, storage_path: str = ".audit/per_user_salts.jsonl"):
         from pathlib import Path
+        if storage_path == ".audit/per_user_salts.jsonl":
+            audit_dir = os.environ.get("NRG_AUDIT_DIR")
+            if audit_dir:
+                storage_path = str(Path(audit_dir) / "per_user_salts.jsonl")
         self._path = Path(storage_path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._salts: dict[str, str] = {}

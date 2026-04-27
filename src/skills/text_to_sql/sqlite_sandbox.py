@@ -1,6 +1,7 @@
 """SQLite Sandbox for Text-to-SQL - Read-only execution."""
 
 import logging
+import os
 from typing import Dict, Any, Optional
 from pathlib import Path
 import uuid
@@ -23,7 +24,8 @@ class SQLiteSandbox:
             self.db_manager = DatabaseManager(f"sqlite:///{db_path}")
         else:
             self.db_manager = get_database_manager()
-        self.audit_log_path = Path(".protocol/audit_log.jsonl")
+        protocol_dir = Path(os.environ.get("NRG_PROTOCOL_DIR", ".protocol"))
+        self.audit_log_path = protocol_dir / "audit_log.jsonl"
         self._ensure_audit_log()
 
     def _ensure_audit_log(self):

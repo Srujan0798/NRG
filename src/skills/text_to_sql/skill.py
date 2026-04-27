@@ -1124,10 +1124,11 @@ FOLLOW-UP QUERIES:
                 "PatentData AS (SELECT g.institute, COUNT(*) as patent_count "
                 "FROM GrantData g JOIN combined_ipo_patent_data p "
                 "ON lower(trim(p.applicants)) LIKE '%' || lower(trim(g.institute)) || '%' "
-                "WHERE status = 'Granted' GROUP BY g.institute) "
-                "SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
+                "WHERE status = 'Granted' GROUP BY g.institute), "
+                "Scored AS (SELECT g.institute, g.total_grant, COALESCE(p.patent_count, 0) as patent_count, "
                 "ROUND(g.total_grant * 1.0 / NULLIF(p.patent_count, 0), 2) as cost_per_patent "
-                "FROM GrantData g LEFT JOIN PatentData p ON p.institute = g.institute "
+                "FROM GrantData g LEFT JOIN PatentData p ON p.institute = g.institute) "
+                "SELECT * FROM Scored "
                 "ORDER BY cost_per_patent IS NULL, cost_per_patent ASC LIMIT 20;"
             )
 
