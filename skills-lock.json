@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "skills": {
+    "accessibility-review": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "better-auth-security-best-practices": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "build-dashboard": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "create-viz": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "data-visualization": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "database-migration": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "database-schema-designer": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "debug": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "deploy-checklist": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "deployment-pipeline-design": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "design-critique": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "documentation": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "explore-data": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "fastapi-python": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "frontend-design": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "helm-chart-scaffolding": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "langchain-rag": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "langgraph-fundamentals": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "postgresql-table-design": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "prometheus-configuration": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "react-composition-patterns": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "secure-linux-web-hosting": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "sql-queries": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "statistical-analysis": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "test-driven-development": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "ux-copy": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "validate-data": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "vector-index-tuning": {
+      "source": ".agents/skills",
+      "sourceType": "local"
+    },
+    "architect": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "architecture-adr": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "audit-check": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "bug-hunt": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "changelog-generator": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "claude-api": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "code-review": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "code-review-and-quality": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "compliance-check": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "database-migrations-sql-migrations": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "deploy-local": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "doc-coauthoring": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "dockerfile-validator": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "docs-sync": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "external-audit": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "external-prompt-merge": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "find-skills": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "frontend-react-best-practices": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "incident-response": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "kubernetes-specialist": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "metrics-review": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "performance": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "post-deploy": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "pre-commit": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "prompt-engineering-patterns": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "python-backend": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "release-readiness": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "roadmap-update": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "security-audit": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "security-auditor": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "self-evolve": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "sprint-plan": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "stakeholder-update": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "standup": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "system-design": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "tech-debt": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "test-suite": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "testing-strategy": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "typescript-advanced-types": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "webapp-testing": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "write-spec": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    }
+  }
+}
