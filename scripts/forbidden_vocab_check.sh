@@ -17,7 +17,7 @@ if [[ -z "$CHANGED_FILES" ]]; then
 fi
 
 # Skip binary, vendor, and lockfile noise.
-TARGET_FILES=$(printf '%s\n' $CHANGED_FILES | grep -v -E '\.(json|lock|svg|png|jpg|jpeg|woff2?|ttf|otf|ico|pdf|min\.js|min\.css)$|node_modules/|\.git/|dist/|build/|coverage/|docs/archive/|docs/specs/_superseded/' || true)
+TARGET_FILES=$(printf '%s\n' $CHANGED_FILES | grep -v -E '\.(json|lock|svg|png|jpg|jpeg|woff2?|ttf|otf|ico|pdf|min\.js|min\.css)$|node_modules/|\.git/|dist/|build/|coverage/|docs/archive/|docs/specs/_superseded/|docs/audits/' || true)
 
 if [[ -z "$TARGET_FILES" ]]; then
   exit 0
