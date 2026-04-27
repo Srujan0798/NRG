@@ -145,7 +145,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 - **Summary**: Self-correction loop (generate → validate → execute → retry ONCE on zero-rowcount/error), 42-test Dhairya regression suite, Hall of Shame (5 worst queries as adversarial fixtures), confidence scoring (schema_match × fewshot_similarity × validator_pass).
 - **Key fixes**: Q4 DISTINCT ORDER BY → GROUP BY+ORDER BY, Q6 TRL synonym mapping, Q15 CTE+scalar subquery
 - **Depends on**: #21 (schema bridge), #19 (tests green)
-- **Files**: src/skills/text_to_sql/skill.py, tests/benchmarks/test_dhairya_regression.py, src/data/schema/failed_queries/HALL_OF_SHAME.md
+- **Files**: src/skills/text_to_sql/skill.py, tests/benchmarks/test_dhairya_regression.py, src/data/schema/failed_queries/docs/compliance/hall-of-shame.md
 
 ### 11. THE RESILIENT MESH — LLM Provider Hardening ✅
 - **Agent**: backend
@@ -379,7 +379,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | **AUDIT-CHAIN** | Hash mismatch at line 381369 — chain actively corrupting | 🔴 P0 | DevOps Agent | **ASSIGNED** — `FIX-AUDIT-CHAIN-001` | `evidence/2026-04-25/14_audit_chain_verify.log` |
 | GAP-B | Vector drift 60-second scheduler not deployed | 🔴 P0 | Backend Agent | **ASSIGNED** — `FIX-GAP-B-001` | `evidence/2026-04-25/19_gap_fixes.md` |
 | GAP-A | DB co-sign module exists but acceptance untested | 🟡 P1 | DevOps Agent | **ASSIGNED** — `VERIFY-GAP-A-001` | `evidence/2026-04-25/05_audit_binding.log` |
-| GAP-C | `HALL_OF_SHAME.md` exists (195 lines) but needs verification | 🟡 P1 | Backend Agent | **ASSIGNED** — `VERIFY-GAP-C-001` | `evidence/2026-04-25/19_gap_fixes.md` |
+| GAP-C | `docs/compliance/hall-of-shame.md` exists (195 lines) but needs verification | 🟡 P1 | Backend Agent | **ASSIGNED** — `VERIFY-GAP-C-001` | `evidence/2026-04-25/19_gap_fixes.md` |
 
 ### Cluster-Dependent GAPS (After A/B/C Are DONE)
 
@@ -398,7 +398,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | FIX-AUDIT-CHAIN-001 | DevOps | Fix hash mismatch in `src/audit/__init__.py` | `evidence/2026-04-25/14_audit_chain_verify.log` (valid=True) | ⏳ ASSIGNED |
 | FIX-GAP-B-001 | Backend | Create `scripts/vector_drift_scheduler.py` + test | `evidence/2026-04-25/19_gap_fixes.md` | ⏳ ASSIGNED |
 | VERIFY-GAP-A-001 | DevOps | Verify `src/audit/db_cosign.py` works end-to-end | `evidence/2026-04-25/05_audit_binding.log` | ⏳ ASSIGNED |
-| VERIFY-GAP-C-001 | Backend | Verify `HALL_OF_SHAME.md` has all 7 patterns | `evidence/2026-04-25/19_gap_fixes.md` | ⏳ ASSIGNED |
+| VERIFY-GAP-C-001 | Backend | Verify `docs/compliance/hall-of-shame.md` has all 7 patterns | `evidence/2026-04-25/19_gap_fixes.md` | ⏳ ASSIGNED |
 
 ### Performance Debt (Wave 3)
 

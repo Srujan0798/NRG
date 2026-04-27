@@ -12,7 +12,7 @@ from typing import Set, Optional
 
 HALL_OF_SHAME_PATH = (
     Path(__file__).resolve().parents[3]
-    / "src/data/schema/failed_queries/HALL_OF_SHAME.md"
+    / "src/data/schema/failed_queries/docs/compliance/hall-of-shame.md"
 )
 
 

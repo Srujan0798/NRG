@@ -8,6 +8,7 @@ import { CheckCircle, AlertCircle, Cloud, Database, GitMerge, ChevronDown, Downl
 import { printDesignTokenCss } from '../../design-system/theme'
 import { t } from '../../i18n'
 import AnswerTrustActions from '../AnswerTrustActions/AnswerTrustActions'
+import { ConfidenceBadge } from '../ConfidenceBadge'
 
 interface AnswerPanelProps {
   response: string
@@ -16,6 +17,7 @@ interface AnswerPanelProps {
   warnings?: QueryWarning[]
   verification_status?: boolean
   answer_confidence?: 'high' | 'partial' | 'low_clarify'
+  answer_confidence_score?: number
   sqlQuery?: string | null
   sqlResults?: Array<Record<string, unknown>>
   rowsReturned?: number | null
@@ -34,38 +36,21 @@ const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
 const ConfidenceMeter: React.FC<{
   status: boolean | undefined
   answerConfidence?: 'high' | 'partial' | 'low_clarify'
-}> = ({ status, answerConfidence }) => {
+  answerConfidenceScore?: number
+  warnings?: QueryWarning[]
+}> = ({ status, answerConfidence, answerConfidenceScore, warnings }) => {
   const resolved = answerConfidence || (status === true ? 'high' : 'partial')
-  const isVerified = resolved === 'high'
-  const bars = resolved === 'high' ? 3 : resolved === 'partial' ? 2 : 1
-  const label = resolved === 'high'
-    ? 'High Confidence'
-    : resolved === 'partial'
-      ? 'Partial Confidence'
-      : 'Needs Clarification'
-
+  const signalNames = warnings
+    ? warnings
+        .filter((w) => typeof w === 'object' && w.message && w.message.toLowerCase().includes('anomaly'))
+        .map((w) => (typeof w === 'object' ? w.message : String(w)))
+    : []
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--glass-bg)] border border-nrg-border">
-      <div className="flex gap-0.5">
-        {[1, 2, 3].map((level) => (
-          <motion.div
-            key={level}
-            className={`w-1.5 h-5 rounded-sm ${
-              level <= bars
-                ? isVerified ? 'bg-green-500' : 'bg-amber-400'
-                : 'bg-slate-300 dark:bg-navy-600'
-            }`}
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ delay: level * 0.1, duration: 0.3 }}
-            style={{ transformOrigin: 'bottom' }}
-          />
-        ))}
-      </div>
-      <span className={`text-xs font-medium ${isVerified ? 'text-green-700 dark:text-green-400' : 'text-amber-700 dark:text-amber-400'}`}>
-        {label}
-      </span>
-    </div>
+    <ConfidenceBadge
+      level={resolved}
+      score={answerConfidenceScore}
+      signals={signalNames}
+    />
   )
 }
 
@@ -351,6 +336,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   warnings,
   verification_status,
   answer_confidence,
+  answer_confidence_score,
   sqlQuery,
   sqlResults,
   rowsReturned,
@@ -385,7 +371,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <ProvenanceBadge provenance={provenance} />
         <div className="flex items-center gap-3">
-          <ConfidenceMeter status={verification_status} answerConfidence={answer_confidence} />
+          <ConfidenceMeter status={verification_status} answerConfidence={answer_confidence} answerConfidenceScore={answer_confidence_score} warnings={warnings} />
           <motion.button
             onClick={() => generatePDF(response, citations)}
             className="flex min-h-10 items-center gap-1.5 rounded-xl border border-nrg-border bg-[var(--glass-bg)] px-3 py-1.5 text-xs font-medium text-nrg-muted transition-all duration-200 hover:bg-saffron-500/10"

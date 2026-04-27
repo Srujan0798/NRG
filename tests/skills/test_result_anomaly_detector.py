@@ -11,6 +11,136 @@ def _signal_names(report):
     return {signal.name for signal in report.signals}
 
 
+def test_aggregation_mismatch_positive():
+    report = detect_result_anomalies(
+        "Sum of researcher names by institute.",
+        "SELECT institute, SUM(researcher_name) AS total FROM researchers GROUP BY institute",
+        {
+            "row_count": 3,
+            "results": [
+                {"institute": "IIT Bombay", "total": 42},
+                {"institute": "IIT Delhi", "total": 38},
+                {"institute": "IIT Madras", "total": 29},
+            ],
+        },
+    )
+    assert "aggregation_mismatch" in _signal_names(report)
+    assert report.answer_confidence == "low_clarify"
+
+
+def test_aggregation_mismatch_negative():
+    report = detect_result_anomalies(
+        "Sum of grants by institute.",
+        "SELECT institute, SUM(grant_amount) AS total FROM funding GROUP BY institute",
+        {
+            "row_count": 3,
+            "results": [
+                {"institute": "IIT Bombay", "total": 4200000},
+                {"institute": "IIT Delhi", "total": 3800000},
+            ],
+        },
+    )
+    assert "aggregation_mismatch" not in _signal_names(report)
+
+
+def test_temporal_anomaly_positive():
+    report = detect_result_anomalies(
+        "Publications from 2020 to 2023.",
+        "SELECT title, year FROM publications",
+        {
+            "row_count": 3,
+            "results": [
+                {"title": "Paper A", "year": 2019},
+                {"title": "Paper B", "year": 2021},
+                {"title": "Paper C", "year": 2024},
+            ],
+        },
+    )
+    assert "temporal_anomaly" in _signal_names(report)
+
+
+def test_temporal_anomaly_negative():
+    report = detect_result_anomalies(
+        "Publications from 2020 to 2023.",
+        "SELECT title, year FROM publications",
+        {
+            "row_count": 3,
+            "results": [
+                {"title": "Paper A", "year": 2021},
+                {"title": "Paper B", "year": 2022},
+                {"title": "Paper C", "year": 2023},
+            ],
+        },
+    )
+    assert "temporal_anomaly" not in _signal_names(report)
+
+
+def test_empty_string_prevalence_positive():
+    report = detect_result_anomalies(
+        "List researchers.",
+        "SELECT * FROM researchers",
+        {
+            "row_count": 5,
+            "results": [
+                {"name": "Dr. A", "email": ""},
+                {"name": "Dr. B", "email": ""},
+                {"name": "Dr. C", "email": "a@b.com"},
+                {"name": "Dr. D", "email": ""},
+                {"name": "Dr. E", "email": ""},
+            ],
+        },
+    )
+    assert "empty_string_prevalence" in _signal_names(report)
+
+
+def test_empty_string_prevalence_negative():
+    report = detect_result_anomalies(
+        "List researchers.",
+        "SELECT * FROM researchers",
+        {
+            "row_count": 3,
+            "results": [
+                {"name": "Dr. A", "email": "a@b.com"},
+                {"name": "Dr. B", "email": "b@c.com"},
+                {"name": "Dr. C", "email": "c@d.com"},
+            ],
+        },
+    )
+    assert "empty_string_prevalence" not in _signal_names(report)
+
+
+def test_type_mismatch_positive():
+    report = detect_result_anomalies(
+        "Average h-index by institute.",
+        "SELECT institute, AVG(h_index) FROM researchers GROUP BY institute",
+        {
+            "row_count": 3,
+            "results": [
+                {"institute": "IITB", "avg": "N/A"},
+                {"institute": "IITD", "avg": 45.2},
+                {"institute": "IITM", "avg": 38.0},
+            ],
+        },
+    )
+    assert "type_mismatch" in _signal_names(report)
+
+
+def test_type_mismatch_negative():
+    report = detect_result_anomalies(
+        "Average h-index by institute.",
+        "SELECT institute, AVG(h_index) FROM researchers GROUP BY institute",
+        {
+            "row_count": 3,
+            "results": [
+                {"institute": "IITB", "avg": 45.2},
+                {"institute": "IITD", "avg": 38.0},
+                {"institute": "IITM", "avg": 52.1},
+            ],
+        },
+    )
+    assert "type_mismatch" not in _signal_names(report)
+
+
 def test_row_count_zero_positive_for_joined_analytical_query():
     report = detect_result_anomalies(
         "List institutes with grant funding and patent output.",
