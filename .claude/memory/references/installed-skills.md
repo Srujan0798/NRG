@@ -1,10 +1,10 @@
 ---
 name: Installed Skills Inventory
-description: All 61 skills available to NRG — 21 Agent (Shishya) skills + 40 Guru (Claude) skills
+description: All skills available to NRG — Agent (Shishya) + Guru (Claude)
 type: reference
 ---
 
-## Agent Skills (`.agents/skills/`) — 21 total
+## Agent Skills (`.agents/skills/`) — 31 total
 
 Execution skills for Shishya (agent) work.
 
@@ -31,19 +31,32 @@ Execution skills for Shishya (agent) work.
 - `/database-migration` — Zero-downtime migrations
 - `/secure-linux-web-hosting` — Server hardening, Nginx, HTTPS
 
-### DevOps — 2 skills
+### DevOps — 3 skills
 - `/deploy-checklist` — Pre-deployment verification
 - `/deployment-pipeline-design` — CI/CD with approval gates
+- `/helm-chart-scaffolding` — Kubernetes Helm chart creation
 
 ### Security — 1 skill
 - `/better-auth-security-best-practices` — Rate limiting, CSRF, session hardening
+
+### AI/ML — 4 skills
+- `/langgraph-fundamentals` — LangGraph orchestration patterns
+- `/langchain-rag` — Retrieval-augmented generation
+- `/fastapi-python` — FastAPI backend patterns
+- `/vector-index-tuning` — Vector DB optimization (Qdrant)
+
+### Database — 1 skill
+- `/postgresql-table-design` — PostgreSQL schema design
+
+### Monitoring — 1 skill
+- `/prometheus-configuration` — Prometheus monitoring setup
 
 ### Docs — 1 skill
 - `/documentation` — Technical docs, runbooks, READMEs
 
 ---
 
-## Guru Skills (`.claude/skills/`) — 40 total
+## Guru Skills (`.claude/skills/`) — 46 total
 
 Strategy, review, and architecture skills for Guru (Claude) work.
 
@@ -63,7 +76,7 @@ Strategy, review, and architecture skills for Guru (Claude) work.
 - `/docs-sync` — Documentation drift detection
 - `/release-readiness` — Pre-release verification
 
-### Strategy + Review — 13 skills
+### Strategy + Review — 14 skills
 - `/architecture-adr` — Architecture decision records
 - `/testing-strategy` — Test strategy design
 - `/tech-debt` — Technical debt identification
@@ -77,8 +90,9 @@ Strategy, review, and architecture skills for Guru (Claude) work.
 - `/incident-response` — Incident triage and postmortem
 - `/doc-coauthoring` — Structured documentation workflow
 - `/external-audit` — External review coordination
+- `/kubernetes-specialist` — Kubernetes architecture and deployment
 
-### Engineering — 13 skills
+### Engineering — 18 skills
 - `/python-backend` — FastAPI, SQLAlchemy, Upstash patterns
 - `/code-review-and-quality` — Quality standards
 - `/security-auditor` — Vulnerability scanning
@@ -92,12 +106,17 @@ Strategy, review, and architecture skills for Guru (Claude) work.
 - `/claude-api` — Anthropic SDK optimization
 - `/external-prompt-merge` — External prompt integration
 - `/find-skills` — Skill discovery and installation
+- `/nodejs-backend-patterns` — Node.js backend patterns
+- `/incident-response` — Incident triage and postmortem
+- `/metrics-review` — Product metrics analysis
+- `/performance` — Benchmark + regression detection
+- `/tech-debt` — Technical debt identification
 
 ---
 
-## Total: 61 skills
+## Total: 77 skills
 
-- **Agent (Shishya)**: 21 skills in `.agents/skills/`
-- **Guru (Claude)**: 40 skills in `.claude/skills/`
+- **Agent (Shishya)**: 31 skills in `.agents/skills/`
+- **Guru (Claude)**: 46 skills in `.claude/skills/`
 
 Last updated: 2026-04-27
