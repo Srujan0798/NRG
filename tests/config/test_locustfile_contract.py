@@ -11,10 +11,13 @@ def test_locustfile_authenticates_from_environment_before_tasks():
 
     assert "LOAD_TEST_RESEARCHER_USER" in source
     assert "LOAD_TEST_RESEARCHER_PASS" in source
+    assert "LOAD_TEST_RESEARCHER_TOKEN" in source
     assert "LOAD_TEST_GOV_USER" in source
     assert "LOAD_TEST_GOV_PASS" in source
+    assert "LOAD_TEST_GOV_TOKEN" in source
     assert "LOAD_TEST_INDUSTRY_USER" in source
     assert "LOAD_TEST_INDUSTRY_PASS" in source
+    assert "LOAD_TEST_INDUSTRY_TOKEN" in source
     assert "self.environment.runner.quit()" in source
 
 
@@ -22,6 +25,9 @@ def test_locustfile_posts_real_query_requests_with_bearer_header():
     source = LOCUSTFILE.read_text()
 
     assert '"/query"' in source
+    assert '"question": query_text' in source
+    assert "time.perf_counter()" in source
+    assert ".duration" not in source
     assert "Authorization" in source
     assert "Bearer" in source
 
