@@ -2,7 +2,7 @@
   "tier": 3,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "bebf0ae0-5392-4ef2-9be8-935a99f346b7",
+    "query_id": "de81c299-37a8-4752-8762-87d263bdb8e9",
     "session_id": null,
     "response": "The highest aggregate grant capacity for Computer Science is concentrated in a small set of national institutions. [cite:nrg-researchers:0] [cite:nrg-institutions:0]\n\n| Rank | Institution | State | Researchers | Aggregate funding |\n| --- | --- | --- | ---: | ---: |\n| 1 | IIT Madras | Tamil Nadu | 71 | \u20b9187.20 Cr |\n| 2 | IIT Bombay | Maharashtra | 66 | \u20b9171.50 Cr |\n\n- Top institution: IIT Madras with \u20b9187.20 Cr across 71 matching researchers.\n- The top five institutions together represent \u20b9358.70 Cr in aggregate researcher-reported funding.\n- Figures are derived from NRG researcher funding fields and institution metadata, not from individual personal records.\n\n\nAccess restricted: Tier 3 shows institution-level aggregates only. Individual researcher names, contacts, and personal identifiers are hidden.",
     "status": "success",
