@@ -375,7 +375,16 @@ def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tupl
         r"\b(aggregate|aggregated|capacity|funding|grant|grants|crore|institution|institutions|top\s+\d+|highest|compare|publications?|citations?)\b"
     )
     if not aggregate_terms.search(query_lower):
-        if previous_topic and any(term in query_lower for term in ["same", "compare", "last year", "previous"]):
+        follow_up_terms = [
+            "same for",
+            "same as",
+            "compare that",
+            "compare it",
+            "compare to previous",
+            "last year",
+            "previous",
+        ]
+        if previous_topic and any(term in query_lower for term in follow_up_terms):
             return (previous_topic, ["%" + previous_topic.lower() + "%"])
         return None
     return None
@@ -417,7 +426,10 @@ def _query_institution_funding(topic: str, patterns: list[str]) -> list[dict[str
         if db_rows:
             return db_rows
     except Exception as exc:
-        logger.warning("Institution funding fast-path query failed; using release seed fallback: %s", exc)
+        logger.warning(
+            "Institution funding fast-path query failed; using release seed fallback",
+            error=str(exc),
+        )
     return _seeded_institution_funding(topic)
 
 

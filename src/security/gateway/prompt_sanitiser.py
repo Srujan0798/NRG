@@ -602,7 +602,25 @@ class PromptSanitiser:
                 "rate_limit_triggered": rate_limited,
             }
 
+        injection_verdict = self.classify_injection(query)
         pii_type = self.detect_pii(query)
+        has_non_dlp_injection = any(
+            rule_name != "data_exfiltration"
+            for rule_name in injection_verdict["blocked"]
+        )
+
+        if injection_verdict["blocked"] and has_non_dlp_injection:
+            if identifier:
+                rate_limited = self._record_rejected_query(identifier)
+            else:
+                rate_limited = False
+            return {
+                "valid": False,
+                "reason": "PROMPT_INJECTION",
+                "details": f"Blocked patterns: {', '.join(injection_verdict['blocked'])}",
+                "rate_limit_triggered": rate_limited,
+            }
+
         if pii_type:
             if identifier:
                 rate_limited = self._record_rejected_query(identifier)
@@ -615,8 +633,6 @@ class PromptSanitiser:
                 "pii_type": pii_type,
                 "rate_limit_triggered": rate_limited,
             }
-
-        injection_verdict = self.classify_injection(query)
 
         if injection_verdict["blocked"]:
             if identifier:
