@@ -43,10 +43,11 @@ REQUESTS_PER_MINUTE = 60
 
 def _is_test_mode() -> bool:
     """Check if we're running in test mode."""
+    quota_disabled = os.environ.get("NRG_QUOTA_DISABLED", "").lower()
     return (
         os.environ.get("PYTEST_CURRENT_TEST") is not None
         or os.environ.get("TESTING") == "true"
-        or os.environ.get("NRG_QUOTA_DISABLED") == "1"
+        or quota_disabled in {"1", "true", "yes"}
     )
 
 

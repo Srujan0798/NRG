@@ -186,7 +186,10 @@ class ImmutableAuditLog:
         return cls._instance
 
     def __init__(self, storage_path: str = ".audit"):
-        new_path = Path(storage_path)
+        configured_path = storage_path
+        if storage_path == ".audit":
+            configured_path = os.environ.get("NRG_AUDIT_DIR", storage_path)
+        new_path = Path(configured_path)
         if "_initialized" in self.__dict__ and self.__dict__.get("_initialized") is True and self.__dict__.get("storage_path") == new_path:
             return
         self.__dict__["_initialized"] = True

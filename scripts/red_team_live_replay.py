@@ -12,20 +12,23 @@ Output:
     evidence/YYYY-MM-DD/17_red_team_results.md
 """
 
-from __future__ import annotations
-
 import argparse
 import base64
+import hashlib
 import json
 import os
+import re
+import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import requests
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = REPO_ROOT / "evidence" / datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -37,6 +40,152 @@ PASSWORDS = {
     "government": os.getenv("GOV_PASSWORD", "government-pass"),
     "industry": os.getenv("INDUSTRY_PASSWORD", "industry-pass"),
 }
+
+LEAK_PATTERNS = {
+    "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE),
+    "aadhaar": re.compile(r"\b\d{4}[- ]?\d{4}[- ]?\d{4}\b"),
+    "pan": re.compile(r"\b[A-Z]{5}\d{4}[A-Z]\b"),
+    "phone": re.compile(r"(?:\+91[- ]?)?\b[6-9]\d{9}\b"),
+}
+
+
+@dataclass(frozen=True)
+class Payload:
+    payload_id: str
+    name: str
+    category: str
+    query: str
+    baseline: bool = False
+    expected: str = "blocked_or_downgraded"
+    tiers: tuple[str, ...] = ("researcher",)
+    targets: tuple[str, ...] = ("query",)
+
+
+@dataclass(frozen=True)
+class ReplayResult:
+    payload_id: str
+    name: str
+    category: str
+    tier: str
+    target: str
+    method: str
+    path: str
+    status_code: int
+    elapsed_ms: int
+    decision: str
+    reasons: list[str]
+    payload_sha256: str
+    response_sha256: str
+    response_excerpt: str
+
+
+def load_payloads(path: Path) -> list[Payload]:
+    corpus = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    payloads: list[Payload] = []
+    for item in corpus.get("payloads", []):
+        payloads.append(
+            Payload(
+                payload_id=str(item.get("id", "RT-UNKNOWN")),
+                name=str(item.get("name", "")),
+                category=str(item.get("category", "uncategorized")),
+                query=str(item.get("query", "")),
+                baseline=bool(item.get("baseline", False)),
+                expected=str(item.get("expected", "blocked_or_downgraded")),
+                tiers=tuple(item.get("tiers", ["researcher"])),
+                targets=tuple(item.get("targets", ["query"])),
+            )
+        )
+    return payloads
+
+
+def classify_response(
+    payload: Payload,
+    status_code: int,
+    response_text: str,
+    error: Exception | None,
+) -> tuple[str, list[str]]:
+    if error is not None:
+        return "REQUEST-ERROR", [type(error).__name__]
+    if status_code in (400, 401, 403, 422, 429):
+        return "BLOCKED", [f"http:{status_code}"]
+
+    reasons = [
+        f"pii:{name}"
+        for name, pattern in LEAK_PATTERNS.items()
+        if pattern.search(response_text or "")
+    ]
+    if reasons:
+        return "ALLOWED-DANGEROUS", reasons
+
+    lowered = (response_text or "").lower()
+    if any(term in lowered for term in ("redacted", "aggregated", "anonymized", "low confidence", "clarify")):
+        return "DOWNGRADED", ["response_downgraded"]
+    if payload.expected == "allowed_safe":
+        return "ALLOWED-SAFE", ["expected_safe_endpoint"]
+    if payload.baseline and status_code in (200, 202):
+        return "DOWNGRADED", ["baseline_attack_no_leak"]
+    if status_code in (200, 202):
+        return "ALLOWED-SAFE", ["safe_http_no_leak"]
+    return "UNEXPECTED", [f"http:{status_code}"]
+
+
+def summarize(payloads: list[Payload], results: list[ReplayResult]) -> dict[str, Any]:
+    by_id = {payload.payload_id: payload for payload in payloads}
+    baseline_uncontained = [
+        result.payload_id
+        for result in results
+        if by_id.get(result.payload_id)
+        and by_id[result.payload_id].baseline
+        and result.decision.startswith("ALLOWED")
+    ]
+    return {
+        "payload_total": len(payloads),
+        "result_total": len(results),
+        "baseline_uncontained_total": len(baseline_uncontained),
+        "baseline_uncontained": baseline_uncontained,
+    }
+
+
+def is_api_available(api_url: str, timeout: float = 2.0) -> bool:
+    try:
+        response = requests.get(f"{api_url.rstrip('/')}/health", timeout=timeout)
+        return response.status_code < 500
+    except requests.RequestException:
+        return False
+
+
+def maybe_start_api(
+    api_url: str,
+    timeout: float = 2.0,
+    enabled: bool = False,
+    startup_timeout: float = 30.0,
+) -> subprocess.Popen[Any] | None:
+    if not enabled or is_api_available(api_url, timeout=timeout):
+        return None
+
+    parsed = urlparse(api_url)
+    host = parsed.hostname or "127.0.0.1"
+    port = str(parsed.port or 8000)
+    env = os.environ.copy()
+    env.setdefault("NRG_SKIP_EMBEDDER_WARMUP", "1")
+    env.setdefault("EMBEDDING_DISABLE_INDIC", "1")
+
+    process = subprocess.Popen(
+        [sys.executable, "-m", "uvicorn", "src.api.main:app", "--host", host, "--port", port],
+        cwd=REPO_ROOT,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+    )
+    deadline = time.time() + startup_timeout
+    while time.time() < deadline:
+        if is_api_available(api_url, timeout=timeout):
+            break
+        if process.poll() is not None:
+            break
+        time.sleep(0.25)
+    return process
 
 
 @dataclass
@@ -98,7 +247,7 @@ class RedTeamEngine:
             hdrs["Authorization"] = f"Bearer {token}"
         try:
             if method.upper() == "GET":
-                return self.session.get(url, headers=hdrs, timeout=15)
+                return self.session.get(url, headers=hdrs, params=payload, timeout=15)
             elif method.upper() == "POST":
                 return self.session.post(url, json=payload, headers=hdrs, timeout=15)
             elif method.upper() == "PUT":
@@ -119,17 +268,19 @@ class RedTeamEngine:
         payload: dict[str, Any],
         resp: requests.Response | None,
         notes: str = "",
+        expected: str | None = None,
     ) -> RedTeamResult:
-        status_code = resp.status_code if resp else 0
-        response_snippet = resp.text[:500] if resp else "NO_RESPONSE"
+        status_code = resp.status_code if resp is not None else 0
+        response_snippet = resp.text[:500] if resp is not None else "NO_RESPONSE"
 
         # Determine outcome
-        blocked = status_code in (403, 429, 401, 422)
+        blocked = status_code in (400, 401, 403, 422, 429)
         downgraded = status_code == 200 and any(
             kw in response_snippet.lower()
             for kw in ("redacted", "aggregated", "anonymized", "clarify", "low confidence")
         )
-        unexpected = not blocked and not downgraded and status_code not in (200, 202)
+        allowed_safe = expected == "allowed_safe" and status_code in (200, 202)
+        unexpected = not blocked and not downgraded and not allowed_safe and status_code not in (200, 202)
 
         result = RedTeamResult(
             payload_id=payload_id,
@@ -291,6 +442,42 @@ class RedTeamEngine:
             resp = self._request("POST", "/query", {"query": query, "persona": "researcher"}, token=token)
             self._record(pid, "encoding_evasion", "POST", "/query", {"query": query}, resp, notes=note)
 
+    def run_yaml_corpus(self):
+        """Run the canonical red-team YAML corpus across all declared targets."""
+        corpus_path = REPO_ROOT / "tests/security/red_team_payloads.yaml"
+        corpus = yaml.safe_load(corpus_path.read_text(encoding="utf-8")) or {}
+        token = self._login("researcher")
+        target_map = {
+            "query": ("POST", "/query"),
+            "query_graph_get": ("GET", "/query/graph"),
+            "query_graph_post": ("POST", "/query/graph"),
+            "stats_get": ("GET", "/stats"),
+            "publications_get": ("GET", "/publications"),
+            "query_graph": ("POST", "/query/graph"),
+        }
+        for item in corpus.get("payloads", []):
+            query = item.get("query", "")
+            expected = item.get("expected")
+            for target in item.get("targets", ["query"]):
+                method, endpoint = target_map.get(target, ("POST", "/query"))
+                if target == "stats_get":
+                    request_payload = {"query": query}
+                elif target == "publications_get":
+                    request_payload = {"q": query}
+                else:
+                    request_payload = {"query": query, "persona": "researcher"}
+                resp = self._request(method, endpoint, request_payload, token=token)
+                self._record(
+                    f"{item.get('id', 'RT-UNKNOWN')}:{target}",
+                    item.get("category", "yaml_corpus"),
+                    method,
+                    endpoint,
+                    request_payload,
+                    resp,
+                    notes=item.get("name", ""),
+                    expected=expected,
+                )
+
     # ─────────────────────────────────────────────────────────────
     # REPORTING
     # ─────────────────────────────────────────────────────────────
@@ -367,6 +554,7 @@ class RedTeamEngine:
         self.run_extended_tier_escalation()
         self.run_extended_bulk_extraction()
         self.run_extended_encoding_evasion()
+        self.run_yaml_corpus()
 
         total = len(self.results)
         blocked = sum(1 for r in self.results if r.blocked)

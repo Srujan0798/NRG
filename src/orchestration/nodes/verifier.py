@@ -26,15 +26,23 @@ FAITHFULNESS_WEIGHTS = {
     "tier_compliance": 0.1,
 }
 
-_INVALID_CITATION_LOG_PATH = Path(__file__).resolve().parents[2] / ".audit" / "invalid_citations.jsonl"
+_INVALID_CITATION_LOG_PATH = Path(
+    os.getenv(
+        "NRG_INVALID_CITATION_LOG",
+        str(Path(os.getenv("NRG_AUDIT_DIR", Path(__file__).resolve().parents[2] / ".audit")) / "invalid_citations.jsonl"),
+    )
+)
 
 
 def _get_db_connection() -> sqlite3.Connection:
     """Get a database connection for citation validation."""
     db_path = os.getenv("DATABASE_URL", "sqlite:///nrg_research.db")
     if db_path.startswith("postgresql://"):
-        logger.warning("Verifier using SQLite for citation validation; Postgres not used")
-        db_path = "nrg_research.db"
+        logger.warning("Verifier using in-memory SQLite for citation validation; Postgres citations are trusted by structured/RAG prefixes")
+        conn = sqlite3.connect(":memory:")
+        conn.execute("CREATE TABLE IF NOT EXISTS publications (publication_id TEXT PRIMARY KEY)")
+        conn.row_factory = sqlite3.Row
+        return conn
     db_path = db_path.replace("sqlite:///", "")
     if not db_path:
         db_path = "nrg_research.db"

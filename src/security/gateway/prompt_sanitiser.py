@@ -253,6 +253,22 @@ class PromptSanitiser:
             _Rule("data_exfiltration", re.compile(r"\bresearcher\s+emails?\b")),
             _Rule("data_exfiltration", re.compile(r"\bphone\s+numbers?\b")),
             _Rule("data_exfiltration", re.compile(r"\bpersonal\s+researcher\s+contact\s+fields?\b")),
+            _Rule(
+                "data_exfiltration",
+                re.compile(
+                    r"\b(?:show|list|return|find|search|identify|give)\b.*?"
+                    r"\b(?:aadhaar|aadhar|pan|phone|email)\b",
+                    re.IGNORECASE,
+                ),
+            ),
+            _Rule(
+                "data_exfiltration",
+                re.compile(
+                    r"\b(?:aadhaar|aadhar)\b.{0,60}"
+                    r"\b(?:ending|ends|last\s+\d+|digits?|linked|associated|researchers?)\b",
+                    re.IGNORECASE,
+                ),
+            ),
             _Rule("data_exfiltration", re.compile(r"\bunique\s+names?\s+for\s+researchers?\s+in\s+a\s+very\s+small\s+private\s+cohort\b")),
             _Rule("data_exfiltration", re.compile(r"\bexact\s+counts?\s+and\s+unique\s+names?\b")),
             _Rule("data_exfiltration", re.compile(r"\bpan\s+numbers?\b")),
@@ -586,20 +602,6 @@ class PromptSanitiser:
                 "rate_limit_triggered": rate_limited,
             }
 
-        injection_verdict = self.classify_injection(query)
-
-        if injection_verdict["blocked"]:
-            if identifier:
-                rate_limited = self._record_rejected_query(identifier)
-            else:
-                rate_limited = False
-            return {
-                "valid": False,
-                "reason": "PROMPT_INJECTION",
-                "details": f"Blocked patterns: {', '.join(injection_verdict['blocked'])}",
-                "rate_limit_triggered": rate_limited,
-            }
-
         pii_type = self.detect_pii(query)
         if pii_type:
             if identifier:
@@ -611,6 +613,20 @@ class PromptSanitiser:
                 "reason": "DLP_VIOLATION",
                 "details": f"PII detected: {pii_type}",
                 "pii_type": pii_type,
+                "rate_limit_triggered": rate_limited,
+            }
+
+        injection_verdict = self.classify_injection(query)
+
+        if injection_verdict["blocked"]:
+            if identifier:
+                rate_limited = self._record_rejected_query(identifier)
+            else:
+                rate_limited = False
+            return {
+                "valid": False,
+                "reason": "PROMPT_INJECTION",
+                "details": f"Blocked patterns: {', '.join(injection_verdict['blocked'])}",
                 "rate_limit_triggered": rate_limited,
             }
 

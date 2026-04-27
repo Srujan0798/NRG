@@ -209,7 +209,9 @@ class NRGWorkflow:
         return dict(result)
 
     def _save_state(self, state: dict) -> None:
-        protocol_dir = Path(".protocol")
+        import os
+
+        protocol_dir = Path(os.environ.get("NRG_PROTOCOL_DIR", ".protocol"))
         protocol_dir.mkdir(exist_ok=True)
         state_file = protocol_dir / f"state_{state.get('query_id', 'unknown')}.json"
         state_file.write_text(json.dumps(state, indent=2, default=str))

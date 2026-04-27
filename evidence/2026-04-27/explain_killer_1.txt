@@ -1,0 +1,51 @@
+Killer query: KILLER-01
+Captured: 2026-04-27T11:44:41.427427+00:00
+Engine: PostgreSQL
+
+SQL:
+
+        WITH parsed AS (
+            SELECT
+                institute,
+                SUM(
+                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)
+                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)
+                ) AS total_credits
+            FROM academic_courses_details
+            WHERE financial_year = '2022-23'
+            GROUP BY institute
+        ),
+        national AS (
+            SELECT AVG(total_credits) AS avg_credits FROM parsed
+        )
+        SELECT
+            p.institute,
+            p.total_credits,
+            n.avg_credits,
+            (p.total_credits - n.avg_credits) AS above_national_average
+        FROM parsed AS p
+        CROSS JOIN national AS n
+        ORDER BY p.total_credits DESC
+        LIMIT 10
+        
+
+Plan:
+Limit  (cost=2127.28..2127.31 rows=10 width=56) (actual time=5.608..5.610 rows=10 loops=1)
+  CTE parsed
+    ->  HashAggregate  (cost=2126.45..2126.55 rows=10 width=20) (actual time=5.577..5.578 rows=10 loops=1)
+          Group Key: academic_courses_details.institute
+          Batches: 1  Memory Usage: 24kB
+          ->  Bitmap Heap Scan on academic_courses_details  (cost=116.71..1879.95 rows=9860 width=16) (actual time=0.346..2.096 rows=10000 loops=1)
+                Recheck Cond: (financial_year = '2022-23'::text)
+                Heap Blocks: exact=820
+                ->  Bitmap Index Scan on idx_lb3_academic_year_institute  (cost=0.00..114.24 rows=9860 width=0) (actual time=0.276..0.276 rows=10000 loops=1)
+                      Index Cond: (financial_year = '2022-23'::text)
+  ->  Sort  (cost=0.73..0.75 rows=10 width=56) (actual time=5.607..5.608 rows=10 loops=1)
+        Sort Key: p.total_credits DESC
+        Sort Method: quicksort  Memory: 25kB
+        ->  Nested Loop  (cost=0.23..0.56 rows=10 width=56) (actual time=5.585..5.587 rows=10 loops=1)
+              ->  Aggregate  (cost=0.23..0.24 rows=1 width=8) (actual time=5.584..5.584 rows=1 loops=1)
+                    ->  CTE Scan on parsed  (cost=0.00..0.20 rows=10 width=8) (actual time=5.578..5.581 rows=10 loops=1)
+              ->  CTE Scan on parsed p  (cost=0.00..0.20 rows=10 width=40) (actual time=0.000..0.001 rows=10 loops=1)
+Planning Time: 0.594 ms
+Execution Time: 5.683 ms

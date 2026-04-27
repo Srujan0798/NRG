@@ -1,0 +1,102 @@
+{
+  "tier": 2,
+  "query": "List researchers in Gujarat by research area",
+  "result": {
+    "query_id": "dfc5739a-958e-4286-a101-8572bb5cf3f4",
+    "audit_event_id": "96e7fbc313e3934c3f366b92aad3c7fd0aab8a07789dcd7b0f75e5b6e3f9436c",
+    "session_id": "ae7ba377-51a5-4fda-9fce-ac7d9165fcbb",
+    "response": "The SQL result is low confidence because applicant, institute, or other entity matching may be too strict. Should I broaden matching with normalized institute names, or ask for a narrower filter?",
+    "status": "success",
+    "tier": 2,
+    "intent": "structured",
+    "routing_decision": "text_to_sql",
+    "verification_status": "fail",
+    "citation_validity": 1.0,
+    "plan": {
+      "subqueries": [
+        "list researchers in gujarat by research area"
+      ],
+      "schema_tables": [
+        "researchers"
+      ],
+      "desired_skills": [
+        "sql"
+      ],
+      "expected_output_shape": "list_table",
+      "dag_nodes": [
+        {
+          "id": "node_b1d30e",
+          "subquery": "list researchers in gujarat by research area",
+          "skill": "sql",
+          "depends_on": [],
+          "tables": [
+            "researchers"
+          ],
+          "output_shape": "list_table",
+          "optional": false
+        }
+      ],
+      "dag_root_id": "node_b1d30e",
+      "is_dag": true
+    },
+    "planner_metadata": {
+      "mode": "heuristic_fallback",
+      "reason": "llm_unavailable_or_failed"
+    },
+    "citations": [],
+    "warnings": [],
+    "answer_confidence": "low_clarify",
+    "answer_confidence_score": 0.4,
+    "sql_anomaly_report": {
+      "detected": true,
+      "signals": [
+        {
+          "name": "row_count_zero",
+          "severity": "high",
+          "message": "Query returned zero rows for an analytical or joined question.",
+          "evidence": {
+            "row_count": 0,
+            "expectation_reason": "plural_question_intent"
+          }
+        },
+        {
+          "name": "aggregate_collapse",
+          "severity": "medium",
+          "message": "Grouped or comparative query collapsed to a single bucket.",
+          "evidence": {
+            "row_count": 0,
+            "grouped_sql": false,
+            "comparative_question": true
+          }
+        }
+      ],
+      "answer_confidence": "low_clarify",
+      "confidence_score": 0.4,
+      "needs_clarification": true,
+      "clarification_question": "The SQL result is low confidence because applicant, institute, or other entity matching may be too strict. Should I broaden matching with normalized institute names, or ask for a narrower filter?",
+      "corrective_hints": [
+        "Normalize entity joins with upper(trim(...)) or curated institute mappings.",
+        "Preserve the requested grouping dimensions and avoid accidental global aggregation."
+      ],
+      "signal_names": [
+        "row_count_zero",
+        "aggregate_collapse"
+      ]
+    },
+    "sql_query": "SELECT * FROM researchers WHERE (LOWER(state) = 'gujarat' OR UPPER(state) = 'GJ') AND researchers.access_tier >= 2 LIMIT 100",
+    "sql_queries": [],
+    "sql_results": [],
+    "retrieval_sources": [],
+    "provenance": {
+      "synth": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    "synthesis_method": "rule_based",
+    "conversation_history": [
+      {
+        "query": "List researchers in Gujarat by research area",
+        "response": "The SQL result is low confidence because applicant, institute, or other entity matching may be too strict. Should I broaden matching with normalized institute names, or ask for a narrower filter?"
+      }
+    ]
+  }
+}

@@ -546,6 +546,78 @@ class SchemaRetriever:
         )
         return {"recall_at_k": overall_recall, "details": details}
 
+    def retrieve_ddl(self, query: str, top_k: int = _SCHEMA_RETRIEVER_TOP_K) -> List[str]:
+        """Return relevant DDL chunks for orchestration callers."""
+        if not self._loaded:
+            self.load()
+
+        tables, _ = self.get_relevant_tables(query, top_k=top_k)
+        return [table.ddl_text for table in tables]
+
+    def get_join_graph_for_query(self, query: str) -> Dict[str, Any]:
+        """Return semantic-layer graphs that overlap the query's retrieved tables."""
+        if not self._loaded:
+            self.load()
+
+        tables, junction_tables = self.get_relevant_tables(query, top_k=self.top_k)
+        retrieved = {table.name for table in tables}
+        retrieved.update(junction_tables)
+
+        matches: List[Dict[str, Any]] = []
+        for graph_name, graph_data in self._semantic_layer.get("graphs", {}).items():
+            graph_tables = [
+                table.get("table")
+                for table in graph_data.get("tables", [])
+                if table.get("table")
+            ]
+            overlap = sorted(retrieved & set(graph_tables))
+            if not overlap:
+                continue
+            matches.append({
+                "name": graph_name,
+                "description": graph_data.get("description", ""),
+                "anchor": graph_data.get("anchor"),
+                "tables": graph_tables,
+                "matched_tables": overlap,
+                "safe_name": graph_data.get("safe_name") or graph_data.get("table_alias"),
+            })
+
+        return {
+            "query": query,
+            "retrieved_tables": sorted(retrieved),
+            "graphs": matches,
+        }
+
+    def get_glossary_hint(self, term: str) -> Optional[str]:
+        """Return a compact disambiguation hint for an ambiguous glossary term."""
+        if not self._loaded:
+            self.load()
+
+        for entry in self._glossary.get("glossary", []):
+            if entry.get("term", "").lower() != term.lower():
+                continue
+            meanings = entry.get("meanings", [])
+            if not meanings:
+                return entry.get("description")
+            hint_parts = []
+            for meaning in meanings:
+                label = meaning.get("meaning") or meaning.get("schema_path")
+                schema_path = meaning.get("schema_path")
+                hint = meaning.get("hint")
+                detail = schema_path or hint
+                if label and detail:
+                    hint_parts.append(f"{label}: {detail}")
+                elif label:
+                    hint_parts.append(str(label))
+            return "; ".join(hint_parts) if hint_parts else None
+        return None
+
+    def get_full_schema_ddl(self) -> str:
+        """Return the parsed research-schema DDL as a single string."""
+        if not self._loaded:
+            self.load()
+        return "\n\n".join(table.ddl_text for table in self._tables.values())
+
 
 def _table_to_alias(table_name: str) -> str:
     """Convert a table name to a short semantic alias."""

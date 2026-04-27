@@ -35,7 +35,8 @@ class Sandbox:
         )
         if getattr(getattr(self.engine, "dialect", None), "name", None) == "sqlite":
             event.listen(self.engine, "connect", self._register_sqlite_functions)
-        self.audit_log_path = Path(".protocol/audit_log.jsonl")
+        protocol_dir = Path(os.environ.get("NRG_PROTOCOL_DIR", ".protocol"))
+        self.audit_log_path = protocol_dir / "audit_log.jsonl"
         self._ensure_audit_log()
 
     @staticmethod

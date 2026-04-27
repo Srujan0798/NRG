@@ -1,0 +1,103 @@
+Killer query: KILLER-03
+Captured: 2026-04-27T11:44:41.933127+00:00
+Engine: PostgreSQL
+
+SQL:
+
+        WITH grants AS (
+            SELECT
+                institute,
+                CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num,
+                SUM(grant_received) AS total_grant
+            FROM innovation_grant_from_govt
+            WHERE year_of_receiving IS NOT NULL
+            GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT)
+        ),
+        grant_yoy AS (
+            SELECT
+                curr.institute,
+                curr.year_num,
+                curr.total_grant,
+                prev.total_grant AS prev_grant,
+                ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct
+            FROM grants AS curr
+            JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1
+        ),
+        patents AS (
+            SELECT
+                applicants,
+                CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num,
+                COUNT(*) AS granted_patents
+            FROM combined_ipo_patent_data
+            WHERE status = 'Granted'
+              AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL
+            GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT)
+        ),
+        patent_yoy AS (
+            SELECT
+                curr.applicants,
+                curr.year_num,
+                curr.granted_patents,
+                prev.granted_patents AS prev_patents,
+                ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct
+            FROM patents AS curr
+            JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1
+        )
+        SELECT
+            g.institute,
+            g.year_num,
+            g.grant_drop_pct,
+            p.patent_growth_pct,
+            p.granted_patents
+        FROM grant_yoy AS g
+        JOIN patent_yoy AS p
+          ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%'
+         AND p.year_num = g.year_num
+        GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents
+        HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0
+        ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC
+        LIMIT 3
+        
+
+Plan:
+Limit  (cost=8700.24..8700.28 rows=1 width=108) (actual time=36.569..36.573 rows=3 loops=1)
+  CTE grants
+    ->  HashAggregate  (cost=2212.00..2213.00 rows=50 width=48) (actual time=13.146..13.153 rows=50 loops=1)
+          Group Key: innovation_grant_from_govt.institute, (substr(innovation_grant_from_govt.year_of_receiving, 1, 4))::integer
+          Batches: 1  Memory Usage: 24kB
+          ->  Seq Scan on innovation_grant_from_govt  (cost=0.00..1837.00 rows=50000 width=24) (actual time=0.186..6.512 rows=50000 loops=1)
+                Filter: (year_of_receiving IS NOT NULL)
+  CTE patents
+    ->  HashAggregate  (cost=6133.25..6220.75 rows=5000 width=24) (actual time=23.193..23.222 rows=13 loops=1)
+          Group Key: combined_ipo_patent_data.applicants, (substr(COALESCE(combined_ipo_patent_data.date_of_grant, combined_ipo_patent_data.certificate_issue_date, combined_ipo_patent_data.publication_date, combined_ipo_patent_data.application_filing_date), 1, 4))::integer
+          Batches: 1  Memory Usage: 217kB
+          ->  Seq Scan on combined_ipo_patent_data  (cost=0.00..5760.12 rows=49750 width=16) (actual time=4.317..16.862 rows=50000 loops=1)
+                Filter: ((COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL) AND (status = 'Granted'::text))
+  ->  Group  (cost=266.49..266.53 rows=1 width=108) (actual time=36.568..36.571 rows=3 loops=1)
+        Group Key: (((((curr_1.granted_patents - prev_1.granted_patents))::numeric * 100.0) / (NULLIF(prev_1.granted_patents, 0))::numeric)), ((((curr.total_grant - prev.total_grant) * 100.0) / NULLIF(prev.total_grant, '0'::numeric))), curr.institute, curr.year_num, curr_1.granted_patents
+        ->  Sort  (cost=266.49..266.49 rows=1 width=108) (actual time=36.567..36.568 rows=3 loops=1)
+              Sort Key: (((((curr_1.granted_patents - prev_1.granted_patents))::numeric * 100.0) / (NULLIF(prev_1.granted_patents, 0))::numeric)) DESC, ((((curr.total_grant - prev.total_grant) * 100.0) / NULLIF(prev.total_grant, '0'::numeric))), curr.institute, curr.year_num, curr_1.granted_patents
+              Sort Method: quicksort  Memory: 25kB
+              ->  Hash Join  (cost=122.67..266.48 rows=1 width=108) (actual time=36.528..36.533 rows=3 loops=1)
+                    Hash Cond: ((prev_1.applicants = curr_1.applicants) AND ((prev_1.year_num + 1) = curr_1.year_num))
+                    Join Filter: (((((curr_1.granted_patents - prev_1.granted_patents))::numeric * 100.0) / (NULLIF(prev_1.granted_patents, 0))::numeric) > '0'::numeric)
+                    ->  CTE Scan on patents prev_1  (cost=0.00..100.00 rows=5000 width=44) (actual time=23.196..23.197 rows=13 loops=1)
+                    ->  Hash  (cost=122.66..122.66 rows=1 width=148) (actual time=13.286..13.287 rows=3 loops=1)
+                          Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                          ->  Hash Join  (cost=3.22..122.66 rows=1 width=148) (actual time=13.242..13.280 rows=3 loops=1)
+                                Hash Cond: (curr_1.year_num = curr.year_num)
+                                Join Filter: (lower(TRIM(BOTH FROM curr_1.applicants)) ~~ (('%'::text || lower(TRIM(BOTH FROM curr.institute))) || '%'::text))
+                                Rows Removed by Join Filter: 9
+                                ->  CTE Scan on patents curr_1  (cost=0.00..100.00 rows=5000 width=44) (actual time=0.001..0.031 rows=13 loops=1)
+                                ->  Hash  (cost=3.21..3.21 rows=1 width=104) (actual time=13.211..13.212 rows=3 loops=1)
+                                      Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                                      ->  Hash Join  (cost=1.75..3.21 rows=1 width=104) (actual time=13.190..13.209 rows=3 loops=1)
+                                            Hash Cond: ((curr.institute = prev.institute) AND (curr.year_num = (prev.year_num + 1)))
+                                            Join Filter: ((((curr.total_grant - prev.total_grant) * 100.0) / NULLIF(prev.total_grant, '0'::numeric)) < '-40'::numeric)
+                                            Rows Removed by Join Filter: 37
+                                            ->  CTE Scan on grants curr  (cost=0.00..1.00 rows=50 width=68) (actual time=13.147..13.149 rows=50 loops=1)
+                                            ->  Hash  (cost=1.00..1.00 rows=50 width=68) (actual time=0.029..0.029 rows=50 loops=1)
+                                                  Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                                                  ->  CTE Scan on grants prev  (cost=0.00..1.00 rows=50 width=68) (actual time=0.000..0.016 rows=50 loops=1)
+Planning Time: 1.237 ms
+Execution Time: 36.776 ms

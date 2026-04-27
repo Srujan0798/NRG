@@ -16,7 +16,7 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-EVIDENCE_DIR = ROOT / "evidence/2026-04-26"
+EVIDENCE_DIR = ROOT / os.getenv("NRG_EVIDENCE_DIR", "evidence/2026-04-27")
 CORPUS = ROOT / "tests/benchmarks/killer_queries.yaml"
 RUNS = int(os.getenv("NRG_KILLER_QUERY_RUNS", "20"))
 ROLES = {
@@ -132,6 +132,21 @@ def sqlite_path() -> Path:
 
 
 def row_floor() -> dict[str, int]:
+    database_url = os.getenv("DATABASE_URL", "")
+    if database_url.startswith("postgres"):
+        try:
+            import psycopg2
+
+            with psycopg2.connect(database_url) as conn:
+                with conn.cursor() as cur:
+                    counts = {}
+                    for table in ROW_FLOOR_TABLES:
+                        cur.execute(f"SELECT COUNT(*) FROM {table}")
+                        counts[table] = int(cur.fetchone()[0])
+                    return counts
+        except Exception:
+            return {}
+
     db_path = sqlite_path()
     if not db_path.exists():
         return {}
