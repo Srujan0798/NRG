@@ -297,15 +297,15 @@
       "source": ".claude/skills",
       "sourceType": "local"
     },
-    "cowork-data-context-extractor": {
+    "data-context-extractor": {
       "source": ".claude/skills",
       "sourceType": "local"
     },
-    "cowork-data-analyze": {
+    "analyze": {
       "source": ".claude/skills",
       "sourceType": "local"
     },
-    "cowork-write-query": {
+    "write-query": {
       "source": ".claude/skills",
       "sourceType": "local"
     }
