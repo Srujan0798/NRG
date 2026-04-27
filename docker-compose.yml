@@ -142,8 +142,9 @@ services:
       - EMBEDDING_FALLBACK_MODEL=${EMBEDDING_FALLBACK_MODEL:-sentence-transformers/all-MiniLM-L6-v2}
       - REDIS_URL=redis://redis:6379/0
       - PYTHONUNBUFFERED=1
-      - UVICORN_WORKERS=4
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-1}
       - UVICORN_GRACEFUL_TIMEOUT=30
+      - NRG_QUOTA_DISABLED=${NRG_QUOTA_DISABLED:-1}
       - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - ./infrastructure/kong/ssl:/app/infrastructure/kong/ssl:ro
@@ -190,7 +191,7 @@ services:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 10s
       retries: 3
