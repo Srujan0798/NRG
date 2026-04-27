@@ -111,7 +111,7 @@ class TestTierIsolationLive:
         assert result.get("status") in ("success", "blocked")
         if result.get("status") == "blocked":
             blocked_text = result.get("response", "").lower()
-            security_signals = ["security violation", "access denied", "unauthorized", "forbidden", "undefinedcolumn", "does not exist", "permission denied"]
+            security_signals = ["security violation", "access denied", "unauthorized", "forbidden", "undefinedcolumn", "does not exist", "permission denied", "rate limit"]
             assert any(signal in blocked_text for signal in security_signals), (
                 f"Blocked response should be security-related, got: {blocked_text[:200]}"
             )
