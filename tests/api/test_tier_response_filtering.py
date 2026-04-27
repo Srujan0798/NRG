@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
+from src.api.response_filter import filter_response_payload_for_tier
 
 
 class PIIWorkflow:
@@ -100,3 +101,29 @@ def test_query_industry_response_strips_pii_and_debug_fields(monkeypatch):
     assert payload["provenance"].get("cloud_synthesis_used") is False
     assert payload["conversation_history"] == []
     assert payload["retrieval_sources"] == []
+
+
+def test_industry_response_strips_government_grant_amount_fields():
+    payload = {
+        "status": "success",
+        "response": "Funding agencies ranked by government grant totals.",
+        "sql_results": [
+            {
+                "gov_organisation_name": "DST",
+                "total_grant": 125000000,
+                "grant_received": 125000000,
+                "sum_grant_received": 125000000,
+                "research_area": "Renewable Energy",
+            }
+        ],
+    }
+
+    filtered, report = filter_response_payload_for_tier(payload, tier=3)
+
+    row = filtered["sql_results"][0]
+    assert "gov_organisation_name" in row
+    assert "research_area" in row
+    assert "total_grant" not in row
+    assert "grant_received" not in row
+    assert "sum_grant_received" not in row
+    assert any(event["field"] == "government_grant_value" for event in report.strip_events)

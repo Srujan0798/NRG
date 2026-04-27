@@ -13,6 +13,7 @@ P99 assertion (run after):
 from locust import HttpUser, task, between, events
 import os
 import random
+import time
 
 P99_THRESHOLD_MS = 500
 SUCCESS_RATE_THRESHOLD = 0.95
@@ -23,10 +24,18 @@ class AuthenticatedNRGUser(HttpUser):
     abstract = True
     username_env = ""
     password_env = ""
+    token_env = ""
     default_username = ""
     default_password = ""
 
     def on_start(self):
+        preissued_token = os.environ.get(self.token_env) if self.token_env else None
+        if preissued_token:
+            self.token = preissued_token
+            self.headers = {"Authorization": f"Bearer {self.token}"}
+            self.client.headers.update(self.headers)
+            return
+
         username = os.environ.get(self.username_env, self.default_username)
         password = os.environ.get(self.password_env, self.default_password)
         response = self.client.post("/auth/login", json={
@@ -44,15 +53,17 @@ class AuthenticatedNRGUser(HttpUser):
                 self.environment.runner.quit()
 
     def _do_query(self, query_text: str):
+        started_at = time.perf_counter()
         with self.client.post(
             "/query",
             headers=self.headers,
-            json={"query": query_text, "session_id": "load-test"},
+            json={"query": query_text, "question": query_text, "session_id": "load-test"},
             catch_response=True,
             name="/query",
         ) as resp:
-            if resp.duration and resp.duration > 0:
-                _query_durations_ms.append(resp.duration * 1000)
+            response_time_ms = (time.perf_counter() - started_at) * 1000
+            if response_time_ms > 0:
+                _query_durations_ms.append(float(response_time_ms))
             if resp.status_code in (200, 429):
                 resp.success()
             else:
@@ -65,6 +76,7 @@ class ResearcherUser(AuthenticatedNRGUser):
     weight = 6
     username_env = "LOAD_TEST_RESEARCHER_USER"
     password_env = "LOAD_TEST_RESEARCHER_PASS"
+    token_env = "LOAD_TEST_RESEARCHER_TOKEN"
     default_username = "researcher_user"
     default_password = "researcher-pass"
 
@@ -115,6 +127,7 @@ class GovernmentUser(AuthenticatedNRGUser):
     weight = 2
     username_env = "LOAD_TEST_GOV_USER"
     password_env = "LOAD_TEST_GOV_PASS"
+    token_env = "LOAD_TEST_GOV_TOKEN"
     default_username = "gov_user"
     default_password = "government-pass"
 
@@ -151,6 +164,7 @@ class IndustryUser(AuthenticatedNRGUser):
     weight = 1
     username_env = "LOAD_TEST_INDUSTRY_USER"
     password_env = "LOAD_TEST_INDUSTRY_PASS"
+    token_env = "LOAD_TEST_INDUSTRY_TOKEN"
     default_username = "industry_user"
     default_password = "industry-pass"
 

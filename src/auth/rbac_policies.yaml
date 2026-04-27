@@ -83,6 +83,19 @@ tier_response_columns:
         - "inventor_name"
         - "principal_investigator_name"
         - "pi_name"
+    government_grant_value:
+      allowed_tiers: [1, 2]
+      match: "contains"
+      aliases:
+        - "grant_received"
+        - "total_grant"
+        - "total_grants"
+        - "grant_amount"
+        - "grant_value"
+        - "sum_grant"
+        - "sum_grant_received"
+        - "avg_grant"
+        - "avg_grant_received"
     debug_trace:
       allowed_tiers: [1, 2]
       match: "exact"
