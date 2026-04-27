@@ -138,6 +138,7 @@ def _drop_indexes(concurrent: bool) -> None:
 
 
 def _create_trl_view() -> None:
+    op.execute("DROP VIEW IF EXISTS vw_innovations_trl")
     op.execute(
         """
         CREATE OR REPLACE VIEW vw_innovations_trl AS
