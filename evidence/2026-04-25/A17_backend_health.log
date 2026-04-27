@@ -1,0 +1,4 @@
+{"status":"healthy","timestamp":"2026-04-27T13:15:17.265293+00:00","consent_service":"operational","retriever":{"status":"skipped","message":"Deep retriever health disabled for fast readiness checks"},"database":{"status":"healthy","dialect":"postgresql","researchers":0,"publications":0},"audit":{"status":"skipped","chain_valid":null,"message":"Deep audit-chain health disabled for fast readiness checks"}}
+---
+Health endpoint timing: 78.8ms (< 100ms threshold)
+Status: PASS

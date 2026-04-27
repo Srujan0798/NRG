@@ -1,7 +1,7 @@
 # NRG Text-to-SQL Hall of Shame
 
 This ledger records the seven Dhairya benchmark failure patterns that must never regress.
-It is the production-path companion to the root `HALL_OF_SHAME.md` and is read by the
+It is the production-path companion to the root `docs/compliance/hall-of-shame.md` and is read by the
 Text-to-SQL validator when rejected SQL shapes are recorded.
 
 ### P1: SPLIT_PART Format Blind (Q1)

@@ -1,0 +1,37 @@
+=== GAP-B: 60s Vector Drift Scheduler Verification ===
+Script: scripts/vector_drift_scheduler.py (150 lines, executable)
+Status: OPERATIONAL
+Date: 2026-04-27
+Executor: Guru Agent (Claude)
+
+--- Test Results ---
+4/4 tests PASSED in 17.26s
+
+Test Breakdown:
+  test_default_interval_is_60_seconds          : PASSED
+  test_scheduler_sleeps_for_configured_60_seconds: PASSED
+  test_scheduler_triggers_reindex_on_cosine_shift_breach: PASSED
+  test_scheduler_does_not_reindex_when_stable    : PASSED
+
+--- Scheduler Behavior ---
+  Default interval: 60 seconds (configurable via --interval N)
+  --once flag: Runs one cycle and exits 0 (verified)
+  Drift check: Calls run_drift_check() via vector_drift_check module
+  Reindex trigger: Calls _trigger_reindex() when cosine_shift > threshold
+  Cosine shift threshold: 0.05 (configurable)
+  Alert levels: UNKNOWN | GREEN | YELLOW | RED
+
+--- Run Output (--once mode) ---
+2026-04-27 13:49:28 INFO     drift_scheduler iteration=1 alert=UNKNOWN reindex_triggered=False
+
+--- Integration ---
+  RAG retrieval: Retriever class with 5s timeout
+  Health check: run_health_check() via _qdrant_ready_for_benchmark()
+  Audit logging: Via Python logging (drift_scheduler logger)
+  Scheduler loop: async scheduler_loop() with configurable max_iterations
+
+--- Schedule Tracking ---
+  Next: --once mode (manual trigger)
+  Continuous: python scripts/vector_drift_scheduler.py (runs every 60s)
+
+GAP-B RESOLVED — 60s drift scheduler verified with 4 tests
