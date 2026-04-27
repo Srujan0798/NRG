@@ -292,6 +292,10 @@
     "nrg-redis-caching": {
       "source": ".claude/skills",
       "sourceType": "local"
+    },
+    "nrg-data-analyst": {
+      "source": ".claude/skills",
+      "sourceType": "local"
     }
   }
 }

@@ -103,8 +103,8 @@ docker compose up
 ### Engineering (14 skills)
 [python-backend](skills/python-backend) · [code-review-and-quality](skills/code-review-and-quality) · [security-auditor](skills/security-auditor) · [frontend-react-best-practices](skills/frontend-react-best-practices) · [webapp-testing](skills/webapp-testing) · [prompt-engineering-patterns](skills/prompt-engineering-patterns) · [dockerfile-validator](skills/dockerfile-validator) · [database-migrations-sql-migrations](skills/database-migrations-sql-migrations) · [typescript-advanced-types](skills/typescript-advanced-types) · [changelog-generator](skills/changelog-generator) · [claude-api](skills/claude-api) · [external-prompt-merge](skills/external-prompt-merge) · [find-skills](skills/find-skills)
 
-### NRG Sovereign (7 skills)
-[nrg-audit-chain](skills/nrg-audit-chain) · [nrg-dpdp-compliance](skills/nrg-dpdp-compliance) · [nrg-embedding-models](skills/nrg-embedding-models) · [nrg-grafana-monitoring](skills/nrg-grafana-monitoring) · [nrg-kong-gateway](skills/nrg-kong-gateway) · [nrg-nginx-sovereign](skills/nrg-nginx-sovereign) · [nrg-redis-caching](skills/nrg-redis-caching)
+### NRG Sovereign (8 skills)
+[nrg-audit-chain](skills/nrg-audit-chain) · [nrg-data-analyst](skills/nrg-data-analyst) · [nrg-dpdp-compliance](skills/nrg-dpdp-compliance) · [nrg-embedding-models](skills/nrg-embedding-models) · [nrg-grafana-monitoring](skills/nrg-grafana-monitoring) · [nrg-kong-gateway](skills/nrg-kong-gateway) · [nrg-nginx-sovereign](skills/nrg-nginx-sovereign) · [nrg-redis-caching](skills/nrg-redis-caching)
 
 ### Agent-Only Execution (in `.agents/skills/`)
 debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · secure-linux-web-hosting · deployment-pipeline-design · better-auth-security-best-practices
