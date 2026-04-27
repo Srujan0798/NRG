@@ -136,6 +136,15 @@ def test_fast_topic_explicit_follow_up_overrides_previous_context():
     assert topic[0] == "Computer Science"
 
 
+def test_fast_topic_does_not_treat_same_state_as_follow_up():
+    topic = api_main._fast_topic_for_query(
+        "Total faculty salary expenditure per state vs research consultancy income in same state.",
+        previous_topic="Computer Science",
+    )
+
+    assert topic is None
+
+
 def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
     api_main._fast_query_context.clear()
 
