@@ -81,3 +81,4 @@ claude_docs_backup/
 .pytest_cache/
 .ruff_cache/
 .protocol/
+.claude/settings.local.json

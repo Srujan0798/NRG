@@ -48,6 +48,7 @@ FROM builder AS runner
 
 # Security: non-root user setup
 RUN groupadd -r app && useradd -r -g app app
+RUN mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
 
 USER app
 

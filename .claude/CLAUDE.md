@@ -10,7 +10,7 @@
 
 1. **Read [rules/production_only.md](rules/production_only.md)** - production framing rule.
 2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth.
-3. **Read [memory/INDEX.md](memory/INDEX.md)** and [memory/MEMORY.md](memory/MEMORY.md) - current state and durable founder directives.
+3. **Read [memory/INDEX.md](memory/INDEX.md)** and [memory/INDEX.md](memory/INDEX.md) - current state and durable founder directives.
 4. **Check git + system health** - `git status`, `git log --oneline -5`, API health.
 5. **Read the Founder's request.**
 6. **Execute only against the master plan, active protocols, and explicit founder instructions.**
@@ -108,5 +108,5 @@ debug · deploy-checklist · explore-data · sql-queries · statistical-analysis
 ## ✅ Session End (3 Steps)
 
 1. **Update BACKLOG.md** — mark completed, add new discoveries
-2. **Update memory** if new learnings — add to [memory/MEMORY.md](memory/MEMORY.md), [memory/patterns/](memory/patterns/), or [memory/bugs/](memory/bugs/)
+2. **Update memory** if new learnings — add to [memory/INDEX.md](memory/INDEX.md), [memory/patterns/](memory/patterns/), or [memory/bugs/](memory/bugs/)
 3. **Report session summary** to Founder

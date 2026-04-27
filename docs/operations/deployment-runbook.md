@@ -227,3 +227,51 @@ The API is still loading models. Wait for the "Application startup complete" log
 
 ### "Endpoint rate limit exceeded" on `/query`
 Expected behavior. Gov/Industry tiers are limited to 10 requests/minute. Researcher tier is 60/minute. Stagger concurrent requests or temporarily set `NRG_QUOTA_DISABLED=1` for load testing.
+
+### Colima local stack cannot reach published ports
+Use this when Docker containers are healthy but host-local tools cannot reach `localhost:5432`, `localhost:6379`, `localhost:6333`, `localhost:6432`, `localhost:8000`, or `localhost:3000`.
+
+1. Confirm Docker is using the Colima context:
+   ```bash
+   colima status
+   docker context ls
+   docker context use colima
+   ```
+
+2. Start the VM without deleting volumes:
+   ```bash
+   colima start --cpu 4 --memory 8 --disk 100 --runtime docker
+   ```
+
+3. Recreate containers after compose or Dockerfile changes:
+   ```bash
+   docker compose up -d --build postgres redis qdrant pgbouncer api frontend
+   ```
+
+4. Verify host port forwarding:
+   ```bash
+   for port in 5432 6379 6333 6432 8000 3000; do
+     nc -zv 127.0.0.1 "$port"
+   done
+   ```
+
+5. Verify container-to-container networking:
+   ```bash
+   docker exec nrg-api sh -lc 'python - <<'"'"'PY'"'"'
+   import socket
+   for host, port in [("postgres", 5432), ("pgbouncer", 6432), ("qdrant", 6333), ("redis", 6379)]:
+       sock = socket.socket()
+       sock.settimeout(3)
+       sock.connect((host, port))
+       sock.close()
+       print(f"{host}:{port} ok")
+   PY'
+   ```
+
+6. Check application health:
+   ```bash
+   curl -fsS http://localhost:8000/health
+   curl -fsS http://localhost:8000/health/all
+   ```
+
+The API container must use Docker service names for internal dependencies (`pgbouncer`, `qdrant`, `redis`). Host-local tools should use the values in `.env.local`.

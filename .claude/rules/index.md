@@ -8,6 +8,6 @@
 | [security.md](security.md) | Security coding rules | Before auth/security changes |
 | [backend.md](backend.md) | Backend coding standards | Before API/database changes |
 | [frontend.md](frontend.md) | Frontend coding standards | Before React/TS changes |
-| [cost-budget.yaml](cost-budget.yaml) | LLM cost controls | Before LLM-related work |
+| [cost_budget.yaml](cost_budget.yaml) | LLM cost controls | Before LLM-related work |
 | [audit/](audit/index.md) | Evidence + verification standards | Before claiming DONE |
 | [ux/](ux/index.md) | UI/UX quality standards | Before any UI change |

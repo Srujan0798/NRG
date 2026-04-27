@@ -22,7 +22,7 @@ def resolve_database_path(db_path: Optional[str] = None) -> Path:
         raw_path = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
         # If main DB is PostgreSQL, use a dedicated SQLite sidecar
         if raw_path and raw_path.startswith("postgresql://"):
-            raw_path = "sqlite:///nrg_auth.db"
+            raw_path = os.getenv("NRG_AUTH_DB_PATH", "sqlite:///nrg_auth.db")
 
     if raw_path is None:
         raw_path = DEFAULT_DATABASE_URL
@@ -40,7 +40,9 @@ def resolve_database_path(db_path: Optional[str] = None) -> Path:
 
 def get_sqlite_connection(db_path: Optional[str] = None) -> sqlite3.Connection:
     """Open a SQLite connection using the canonical project DB resolver."""
-    conn = sqlite3.connect(resolve_database_path(db_path))
+    path = resolve_database_path(db_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     return conn
 
