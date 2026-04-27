@@ -1,0 +1,133 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nrg-c4-load-test
+  namespace: nrg-loadtest
+  labels:
+    app: nrg-c4-load-test
+    nrg.gov.in/test-type: performance
+    nrg.gov.in/test-id: c4-1000-user
+spec:
+  ttlSecondsAfterFinished: 86400  # Clean up after 24h
+  backoffLimit: 0  # Don't retry — one shot, success or fail
+  template:
+    metadata:
+      labels:
+        app: nrg-c4-load-test
+    spec:
+      restartPolicy: Never
+      serviceAccountName: nrg-loadtest-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      initContainers:
+        # Wait for API to be ready before starting load test
+        - name: wait-for-api
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until wget -qO- http://nrg-api.nrg-production.svc:8000/health > /dev/null 2>&1; do
+                echo "Waiting for API..."
+                sleep 5
+              done
+              echo "API is ready"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+      containers:
+        - name: locust-master
+          image: ghcr.io/nrg-india/nrg/locust:c4
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOCUST_HOST
+              value: "http://nrg-api.nrg-production.svc:8000"
+            - name: LOCUST_HEADLESS
+              value: "true"
+            - name: LOCUST_USERS
+              value: "1000"
+            - name: LOCUST_SPAWN_RATE
+              value: "200"
+            - name: LOCUST_RUN_TIME
+              value: "17m"
+            - name: LOCUST_HTML_FILE
+              value: "/mnt/locust/report.html"
+            - name: LOCUST_CSV
+              value: "/mnt/locust/nrg-c4"
+            - name: LOAD_TEST_RESEARCHER_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-loadtest-credentials
+                  key: researcher-user
+            - name: LOAD_TEST_RESEARCHER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-loadtest-credentials
+                  key: researcher-pass
+            - name: LOAD_TEST_GOV_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-loadtest-credentials
+                  key: gov-user
+            - name: LOAD_TEST_GOV_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: nrg-loadtest-credentials
+                  key: gov-pass
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi
+          volumeMounts:
+            - name: results
+              mountPath: /mnt/locust
+      volumes:
+        - name: results
+          emptyDir:
+            sizeLimit: 1Gi
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nrg-loadtest
+  labels:
+    nrg.gov.in/environment: loadtest
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nrg-loadtest-sa
+  namespace: nrg-loadtest
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: nrg-loadtest-role
+  namespace: nrg-production
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: nrg-loadtest-binding
+  namespace: nrg-production
+subjects:
+  - kind: ServiceAccount
+    name: nrg-loadtest-sa
+    namespace: nrg-loadtest
+roleRef:
+  kind: Role
+  name: nrg-loadtest-role
+  apiGroup: rbac.authorization.k8s.io

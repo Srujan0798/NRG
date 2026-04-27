@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-pgbouncer
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-pgbouncer
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/deployment-strategy: rolling-update
+    nrg.gov.in/data-classification: confidential
+spec:
+  replicas: {{ .Values.pgbouncer.replicaCount | default 2 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-pgbouncer
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nrg-pgbouncer
+        version: {{ .Values.pgbouncer.image.tag | default "1.22" }}
+        {{ include "nrg.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: pgbouncer
+          image: "{{ .Values.pgbouncer.image.repository }}:{{ .Values.pgbouncer.image.tag | default "1.22" }}"
+          imagePullPolicy: {{ .Values.pgbouncer.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: pgpool
+              containerPort: 6432
+              protocol: TCP
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          resources:
+            requests:
+              cpu: {{ .Values.pgbouncer.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.pgbouncer.resources.requests.memory | default "128Mi" }}
+            limits:
+              cpu: {{ .Values.pgbouncer.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.pgbouncer.resources.limits.memory | default "256Mi" }}
+          env:
+            - name: POOL_MODE
+              value: "transaction"
+            - name: MAX_CLIENT_CONN
+              value: "{{ .Values.pgbouncer.config.maxClientConn | default 1000 }}"
+            - name: DEFAULT_POOL_SIZE
+              value: "{{ .Values.pgbouncer.config.defaultPoolSize | default 25 }}"
+            - name: MIN_POOL_SIZE
+              value: "{{ .Values.pgbouncer.config.minPoolSize | default 5 }}"
+            - name: RESERVE_POOL_SIZE
+              value: "{{ .Values.pgbouncer.config.reservePoolSize | default 5 }}"
+            - name: RESERVE_POOL_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.reservePoolTimeout | default 3 }}"
+            - name: SERVER_IDLE_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.serverIdleTimeout | default 600 }}"
+            - name: SERVER_LIFETIME
+              value: "{{ .Values.pgbouncer.config.serverLifetime | default 3600 }}"
+            - name: SERVER_CONNECT_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.serverConnectTimeout | default 15 }}"
+            - name: QUERY_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.queryTimeout | default 0 }}"
+            - name: QUERY_WAIT_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.queryWaitTimeout | default 120 }}"
+            - name: CLIENT_IDLE_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.clientIdleTimeout | default 0 }}"
+            - name: CLIENT_LOGIN_TIMEOUT
+              value: "{{ .Values.pgbouncer.config.clientLoginTimeout | default 60 }}"
+            - name: ADMIN_USERS
+              value: "{{ .Values.pgbouncer.config.adminUsers | default "postgres" }}"
+            - name: STATS_USERS
+              value: "{{ .Values.pgbouncer.config.statsUsers | default "postgres" }}"
+            - name: IGNORE_startup_parameters
+              value: "extra_float_digits"
+          livenessProbe:
+            tcpSocket:
+              port: pgpool
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            tcpSocket:
+              port: pgpool
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: pgbouncer-ini
+              mountPath: /etc/pgbouncer
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: pgbouncer-ini
+          configMap:
+            name: nrg-pgbouncer-config
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nrg-pgbouncer
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-pgbouncer
+spec:
+  type: ClusterIP
+  ports:
+    - port: 6432
+      targetPort: pgpool
+      protocol: TCP
+      name: pgpool
+  selector:
+    app: nrg-pgbouncer

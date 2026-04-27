@@ -697,3 +697,124 @@ persistence:
   grafanaData:
     size: 10Gi
     mountPath: /var/lib/grafana
+
+# ==============================================================================
+# FRONTEND — React + Vite Static SPA
+# ==============================================================================
+frontend:
+  enabled: true
+
+  replicaCount: 2
+
+  image:
+    repository: ghcr.io/nrg-india/nrg/frontend
+    pullPolicy: IfNotPresent
+    tag: ""
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""
+
+# ==============================================================================
+# NGINX — Edge Reverse Proxy + SSL Termination
+# ==============================================================================
+nginx:
+  enabled: true
+
+  replicaCount: 2
+
+  image:
+    repository: nginx
+    pullPolicy: IfNotPresent
+    tag: "1.25-alpine"
+
+  service:
+    type: LoadBalancer
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  # Sovereign TLS — Indian CA certificates (NOT Let's Encrypt)
+  tls:
+    enabled: true
+    certSecret: nrg-tls-certs
+    keySecret: nrg-tls-private
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""
+
+  # Rate limiting at edge
+  rateLimit:
+    enabled: true
+    zone: api
+    burst: 20
+    rps: 10
+
+# ==============================================================================
+# PGBOUNCER — PostgreSQL Connection Pool
+# ==============================================================================
+pgbouncer:
+  enabled: true
+
+  replicaCount: 2
+
+  image:
+    repository: pgbouncer/pgbouncer
+    pullPolicy: IfNotPresent
+    tag: "1.22"
+
+  service:
+    type: ClusterIP
+    port: 6432
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  config:
+    maxClientConn: 1000
+    defaultPoolSize: 25
+    minPoolSize: 5
+    reservePoolSize: 5
+    reservePoolTimeout: 3
+    serverIdleTimeout: 600
+    serverLifetime: 3600
+    serverConnectTimeout: 15
+    queryTimeout: 0
+    queryWaitTimeout: 120
+    clientIdleTimeout: 0
+    clientLoginTimeout: 60
+    adminUsers: postgres
+    statsUsers: postgres
+
+  # Pod Disruption Budget — stateless: minAvailable=N-1
+  pdb:
+    enabled: true
+    minAvailable: "1"
+    maxUnavailable: ""

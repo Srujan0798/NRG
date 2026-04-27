@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-frontend
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-frontend
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/deployment-strategy: rolling-update
+spec:
+  replicas: {{ .Values.frontend.replicaCount | default 2 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-frontend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nrg-frontend
+        version: {{ .Values.frontend.image.tag | default .Values.image.tag }}
+        {{ include "nrg.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: frontend
+          image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag | default .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.frontend.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          resources:
+            requests:
+              cpu: {{ .Values.frontend.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.frontend.resources.requests.memory | default "128Mi" }}
+            limits:
+              cpu: {{ .Values.frontend.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.frontend.resources.limits.memory | default "512Mi" }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nrg-frontend
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-frontend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: nrg-frontend

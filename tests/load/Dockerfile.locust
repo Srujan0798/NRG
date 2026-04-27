@@ -1,0 +1,57 @@
+# NRG C4 Load Test — Locust Container
+# Build: docker build -f tests/load/Dockerfile.locust -t nrg-locust:c4 tests/load/
+# Run:  docker run --rm -e HOST=http://localhost:8000 nrg-locust:c4
+
+FROM locustio/locust:2.24.0
+
+LABEL maintainer="NRG Platform Team <platform@nrg.gov.in>"
+LABEL description="C4 1000-User Load Test for NRG Sovereign AI"
+
+# Install Python dependencies
+USER root
+RUN pip install --no-cache-dir \
+    requests>=2.31.0 \
+    statistics
+
+# Copy locustfiles
+COPY locustfile_c4.py /mnt/locust/locustfile.py
+COPY locustfile.py /mnt/locust/locustfile_legacy.py
+
+# Copy helper scripts
+COPY k8s-locust-job.yaml /mnt/locust/k8s-locust-job.yaml
+
+# Default to C4 locustfile
+ENV LOCUSTFILE=/mnt/locust/locustfile.py
+
+# Default settings (override at runtime)
+ENV LOCUST_HOST=http://nrg-api:8000
+ENV LOCUST_HEADLESS=true
+ENV LOCUST_USERS=1000
+ENV LOCUST_SPAWN_RATE=200
+ENV LOCUST_RUN_TIME=17m
+ENV LOCUST_HTML_FILE=/mnt/locust/report.html
+ENV LOCUST_CSV=nrg-c4
+
+# Load test credentials (override in production)
+ENV LOAD_TEST_RESEARCHER_USER=researcher_user
+ENV LOAD_TEST_RESEARCHER_PASS=researcher-pass
+ENV LOAD_TEST_GOV_USER=gov_user
+ENV LOAD_TEST_GOV_PASS=government-pass
+ENV LOAD_TEST_INDUSTRY_USER=industry_user
+ENV LOAD_TEST_INDUSTRY_PASS=industry-pass
+
+# Working directory
+WORKDIR /mnt/locust
+
+# Run as non-root
+USER locust
+
+# Default command
+CMD ["sh", "-c", "locust -f $LOCUSTFILE \
+  --host $LOCUST_HOST \
+  --headless $LOCUST_HEADLESS \
+  --users $LOCUST_USERS \
+  --spawn-rate $LOCUST_SPAWN_RATE \
+  --run-time $LOCUST_RUN_TIME \
+  --html $LOCUST_HTML_FILE \
+  --csv $LOCUST_CSV"]

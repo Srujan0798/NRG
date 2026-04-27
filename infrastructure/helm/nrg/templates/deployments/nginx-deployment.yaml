@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nrg-nginx
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-nginx
+    {{ include "nrg.labels" . | nindent 4 }}
+  annotations:
+    nrg.gov.in/deployment-strategy: rolling-update
+    nrg.gov.in/edge-proxy: "true"
+spec:
+  replicas: {{ .Values.nginx.replicaCount | default 2 }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      app: nrg-nginx
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: nrg-nginx
+        version: {{ .Values.nginx.image.tag | default "1.25" }}
+        {{ include "nrg.labels" . | nindent 8 }}
+    spec:
+      serviceAccountName: nrg-sa
+      {{- include "nrg.podSecurityContext" . | nindent 6 }}
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: nginx
+          image: "{{ .Values.nginx.image.repository }}:{{ .Values.nginx.image.tag | default "1.25-alpine" }}"
+          imagePullPolicy: {{ .Values.nginx.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          {{- include "nrg.containerSecurityContext" . | nindent 10 }}
+          resources:
+            requests:
+              cpu: {{ .Values.nginx.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.nginx.resources.requests.memory | default "128Mi" }}
+            limits:
+              cpu: {{ .Values.nginx.resources.limits.cpu | default "500m" }}
+              memory: {{ .Values.nginx.resources.limits.memory | default "256Mi" }}
+          livenessProbe:
+            httpGet:
+              path: /nginx-health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /nginx-health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+              readOnly: true
+            - name: nginx-main
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            {{- if .Values.nginx.tls.enabled }}
+            - name: tls-certs
+              mountPath: /etc/ssl/certs
+              readOnly: true
+            - name: tls-private
+              mountPath: /etc/ssl/private
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: nrg-nginx-conf
+        - name: nginx-main
+          configMap:
+            name: nrg-nginx-main
+        - name: tmp
+          emptyDir: {}
+        {{- if .Values.nginx.tls.enabled }}
+        - name: tls-certs
+          secret:
+            secretName: {{ .Values.nginx.tls.certSecret | default "nrg-tls-certs" }}
+        - name: tls-private
+          secret:
+            secretName: {{ .Values.nginx.tls.keySecret | default "nrg-tls-private" }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nrg-nginx
+  namespace: {{ .Values.namespace | default "nrg-production" }}
+  labels:
+    app: nrg-nginx
+spec:
+  type: {{ .Values.nginx.service.type | default "LoadBalancer" }}
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    app: nrg-nginx
