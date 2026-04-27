@@ -1,15 +1,15 @@
 # NRG — Task Backlog
 
-> **Updated**: 2026-04-25 (V4 eternal wrap sealed at 1562d694; v1.0.0-client-handover re-pushed)
-> **Sprint**: V4 closed. Next: Phase 6 (fine-tuning pipeline / Protocol #29 training data collection)
-> **Test Status**: Targeted suites PASS: Dhairya 43/43, Security 72/72, Egress 35/35, Vector Drift 8/8, Live API smoke (audit_event_id + sql_query + sql_results returned by /query)
-> **Quality Bar**: 4/6 in-process (C1✅ C2✅ C3✅ C6✅); C4⏳ needs sovereign cluster, C5⏳ needs Qdrant baseline (not code gaps)
-> **Audit Chain**: ✅ valid, 0 errors, 350,748+ events. Root cause closed 2026-04-25 — `scripts/audit_rebuild.py` now resets BOTH AuditLog singletons (class + module level). See `.claude/memory/bugs_audit_singleton.md`.
+> **Updated**: 2026-04-27 (Guru session sealed at `ab0635b`; 9 agent assignments ACTIVE)
+> **Sprint**: LB closure wave (LB-1..LB-8) + C4/C5 spec draft. V4 eternal sealed. Next: v1.0.0-launch-ready tag.
+> **Test Status**: LB-7 22/22 PASS (anomaly detector, 14s). LB-8 join-graph 20+ cases scaffolded. LB-2/5/1 tests exist, awaiting live verification. Full suite pending <15min target.
+> **Quality Bar**: 5/8 LB items have code merged (LB-7✅, LB-8 module✅, LB-1 scaffold✅, LB-2 scaffold✅, LB-5 scaffold✅, LB-4 config✅); LB-3/LB-6 in agent execution. C4/C5 specs in draft.
+> **Audit Chain**: ✅ valid, 0 errors, 350,748+ events.
 > **Data Sources**: 5 mandatory reads (Core Idea, db_struct.sql, BACKLOG.md, Dhairya Audit, NRG_SELF_AUDIT_REPORT)
-> **Schema**: `db_struct.sql` has 58 tables; `add_production_tables_001.py` creates 47 tables and omits 11 Django/support tables
-> **Protocols**: Prompt 5 v4.1 FINAL ETERNAL integrated into `master_audit_protocol.md`. Supersedes all previous versions.
-> **Current Baseline**: 7.5/10 — 16 components verified working, 8 gaps identified (3 local P0, 5 cluster-dependent)
-> **Assignments**: `ASSIGNMENTS_2026-04-25.md` created with 8 tasks across 4 waves
+> **Schema**: Actual PG has 73 tables (core NRG + Django/auth). `db_struct.sql` has 58 tables (missing core NRG tables). Reconciliation in progress (P1-B).
+> **Protocols**: 9 Guru-format assignments active (`ASSIGNMENTS_2026-04-27-ACTIVE.md`). Dependency chain: P0-A → all live evidence.
+> **Current Baseline**: 8.0/10 — 21 components verified working, 5 gaps (1 local P0 Colima, 4 cluster-dependent)
+> **Assignments**: `ASSIGNMENTS_2026-04-27-ACTIVE.md` with 9 tasks (P0 + LB-1..LB-8). Agents executing in parallel.
 
 ---
 
