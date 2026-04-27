@@ -19,7 +19,7 @@
 - **Production rule**: See [.claude/rules/production_only.md](../rules/production_only.md)
 - **Closure wave**: See [docs/specs/CLOSURE_PLAN_2026-04-26.md](../../docs/specs/CLOSURE_PLAN_2026-04-26.md)
 - **Commercial sprint**: See [docs/business/COMMERCIAL_SPRINT_2026-04-26.md](../../docs/business/COMMERCIAL_SPRINT_2026-04-26.md)
-- **Durable directives**: See [MEMORY.md](MEMORY.md)
+- **Durable directives**: See [INDEX.md](INDEX.md)
 
 ## Per-Session Checklist
 
@@ -32,7 +32,7 @@
 
 | File | Purpose |
 |------|---------|
-| [MEMORY.md](MEMORY.md) | Founder directives that must survive handoff |
+| [INDEX.md](INDEX.md) | Founder directives that must survive handoff |
 | [user_profile.md](user_profile.md) | Founder profile and preferences |
 | [sprint_retrospective.md](sprint_retrospective.md) | Last sprint summary |
 | [feedback_compose_one_command.md](feedback_compose_one_command.md) | Plain Compose startup must include core data services |

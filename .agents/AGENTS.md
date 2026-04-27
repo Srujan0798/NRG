@@ -4,10 +4,10 @@
 
 ## Start Here (5 Steps, 60 Seconds)
 
-1. **Read [.claude/rules/production_only.md](../../.claude/rules/production_only.md)** - production framing rule
+1. **Read [.claude/rules/production_only.md](../.claude/rules/production_only.md)** - production framing rule
 2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth
-3. **Read [prompts/shishya.md](prompts/shishya.md)** - operating mindset
-4. **Read [.claude/CLAUDE.md](../../.claude/CLAUDE.md)** - project context + current state
+3. **Read [prompts/shishya_universal.md](prompts/shishya_universal.md)** - operating mindset
+4. **Read [.claude/CLAUDE.md](../.claude/CLAUDE.md)** - project context + current state
 5. **Read the SKILL.md for every skill in your task** - then begin
 
 ---

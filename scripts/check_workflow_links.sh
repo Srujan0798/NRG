@@ -17,6 +17,11 @@ for dir in "${SCAN_DIRS[@]}"; do
       # strip anchor
       target_path="${target%%#*}"
       [ -z "$target_path" ] && continue
+      # Skip imported/cosmetic references in Anthropic/Vercel shipped skills
+      [[ "$target_path" == *"CONNECTORS.md" ]] && continue
+      [[ "$target_path" == *"shared/error-codes.md" ]] && continue
+      [[ "$target_path" == *"shared/tool-use-concepts.md" ]] && continue
+      [[ "$f" == *"vercel-react-best-practices"* ]] && continue
       if [ ! -e "$base/$target_path" ] && [ ! -e "$target_path" ]; then
         echo "BROKEN  $f -> $target_path"
         BAD=1

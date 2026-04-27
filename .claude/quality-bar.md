@@ -52,7 +52,7 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 
 ---
 
-## Current Compliance Snapshot (2026-04-24)
+## Current Compliance Snapshot (2026-04-26)
 
 | Constraint | Status | Owning Protocol | Notes |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 | 5. Vector drift + auto-retrain | ⚠ Script runs; Qdrant required for full validation | #12 (tail) | `scripts/vector_drift_check.py` — requires Qdrant on 6333 |
 | 6. Schema allowlist before cloud | ✓ 35/35 tests passing | #39 | All 20+ egress leak attempts blocked |
 
-**Score: 4/6 fully passing in dev. 2/6 require infrastructure (C4: API+Qdrant, C5: Qdrant).**
+**Score: 5/6 fully passing in dev. 2/6 require infrastructure (C4: API+Qdrant, C5: Qdrant).**
 
 **Scorecard script**: `python scripts/quality_bar_scorecard.py` — runs all 6 test groups, emits markdown + JSON.
 **CI enforcement**: `.github/workflows/cd.yml` — `quality-bar` job blocks all deployments unless scorecard is 6/6.

@@ -1,26 +1,31 @@
 repos:
-  - repo: local
-    hooks:
-      - id: gitleaks
-        name: Detect hardcoded secrets
-        entry: gitleaks git --pre-commit --staged --redact .
-        language: system
-        pass_filenames: false
-      - id: check-cloud-synthesis-env
-        name: Validate CLOUD_SYNTHESIS_ALLOWED boolean in .env
-        entry: python scripts/check-env.py
-        language: system
-        pass_filenames: false
-        always_run: true
-      - id: forbidden-vocab-check
-        name: Production-only vocabulary gate
-        entry: bash scripts/forbidden_vocab_check.sh
-        language: system
-        pass_filenames: false
-        always_run: true
-        # See .claude/rules/production_only.md — NRG is production software.
-      - id: slow-test-marker-check
-        name: Require slow marker for long tests
-        entry: python scripts/check_slow_test_markers.py
-        language: system
-        files: ^tests/.*\.py$
+- repo: local
+  hooks:
+  - id: gitleaks
+    name: Detect hardcoded secrets
+    entry: gitleaks git --pre-commit --staged --redact .
+    language: system
+    pass_filenames: false
+  - id: check-cloud-synthesis-env
+    name: Validate CLOUD_SYNTHESIS_ALLOWED boolean in .env
+    entry: python scripts/check-env.py
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: forbidden-vocab-check
+    name: Production-only vocabulary gate
+    entry: bash scripts/forbidden_vocab_check.sh
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: slow-test-marker-check
+    name: Require slow marker for long tests
+    entry: python scripts/check_slow_test_markers.py
+    language: system
+    files: ^tests/.*\.py$
+  - id: workflow-links
+    name: Workflow link integrity
+    entry: bash scripts/check_workflow_links.sh
+    language: system
+    pass_filenames: false
+    always_run: true
