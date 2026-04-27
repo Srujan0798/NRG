@@ -180,8 +180,11 @@ class TestTierIsolationLive:
         if g_response == i_response and g_result.get("status") == "blocked":
             blocked_text = g_response.lower()
             schema_error_signals = ["undefinedcolumn", "does not exist", "syntax error"]
+            rate_limit_signals = ["rate_limit", "too many requests"]
             if any(signal in blocked_text for signal in schema_error_signals):
                 pytest.skip(f"API has schema mismatch bug causing identical errors for all tiers: {blocked_text[:100]}")
+            if any(signal in blocked_text for signal in rate_limit_signals):
+                pytest.skip(f"Both tiers got rate-limited — cannot test tier differentiation: {blocked_text[:100]}")
             assert g_response != i_response, (
                 "Tier 2 and Tier 3 returned identical responses — filter not applied"
             )
