@@ -82,3 +82,4 @@ claude_docs_backup/
 .ruff_cache/
 .protocol/
 .claude/settings.local.json
+.env.local
