@@ -276,6 +276,34 @@
     "write-spec": {
       "source": ".claude/skills",
       "sourceType": "local"
+    },
+    "nrg-audit-chain": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-dpdp-compliance": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-embedding-models": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-grafana-monitoring": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-kong-gateway": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-nginx-sovereign": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "nrg-redis-caching": {
+      "source": ".claude/skills",
+      "sourceType": "local"
     }
   }
 }

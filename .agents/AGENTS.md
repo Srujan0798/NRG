@@ -22,6 +22,7 @@
 | **DevOps** | deploy-checklist · deployment-pipeline-design |
 | **Security** | better-auth-security-best-practices |
 | **Docs** | documentation |
+| **NRG Ops** | nrg-redis-caching · nrg-kong-gateway · nrg-nginx-sovereign · nrg-embedding-models |
 
 **Canonical skills** (in `.agents/skills/`, use when assigned): pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
 
