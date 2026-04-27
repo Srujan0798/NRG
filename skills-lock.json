@@ -296,6 +296,18 @@
     "nrg-data-analyst": {
       "source": ".claude/skills",
       "sourceType": "local"
+    },
+    "cowork-data-context-extractor": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "cowork-data-analyze": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "cowork-write-query": {
+      "source": ".claude/skills",
+      "sourceType": "local"
     }
   }
 }
