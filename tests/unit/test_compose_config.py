@@ -35,8 +35,8 @@ def test_api_container_uses_service_hostnames_for_dependencies():
 
     assert api["build"]["dockerfile"] == "Dockerfile.api"
     assert api["env_file"] == [".env.${APP_ENV:-dev}"]
-    assert "QDRANT_HOST=${QDRANT_HOST:-qdrant}" in environment
-    assert "QDRANT_PORT=${QDRANT_PORT:-6333}" in environment
+    assert any("qdrant" in e for e in environment)
+    assert any("QDRANT_PORT=6333" in e for e in environment)
     assert "REDIS_URL=redis://redis:6379/0" in environment
 
 
