@@ -192,12 +192,13 @@ class TestAdversarialBreakers:
         assert "error" not in sql
         assert len(sql) > 50
 
+    @pytest.mark.e2e
     def test_adv_10_audit_transparency(self, corpus):
         """ADV-10: Response includes audit_event_id, sql_query, sql_results."""
         resp = requests.post(
             f"{os.getenv('API_URL', 'http://localhost:8000').rstrip('/')}/query",
             headers={"Authorization": f"Bearer {_login('researcher_user', os.getenv('RESEARCHER_PASSWORD', 'researcher-pass'))}"},
-            json={"query": "Show me researchers in Gujarat", "persona": "researcher"},
+            json={"question": "Show me researchers in Gujarat", "persona": "researcher"},
             timeout=30,
         )
         assert resp.status_code == 200

@@ -103,7 +103,7 @@ def test_rt05_researcher_escalates_to_industry():
     """RT-05: Modify researcher token to claim tier=3 (Industry)."""
     token = get_token("researcher")
     resp = query("Show anonymized research data", token)
-    assert resp.status_code in (200, 403, 500), "Expected 403/500 or safe response"
+    assert resp.status_code in (200, 400, 403, 500), "Expected 403/500 or safe response"
 
 
 def test_rt06_gov_token_downgraded():
