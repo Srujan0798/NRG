@@ -106,8 +106,14 @@ docker compose up
 ### NRG Sovereign (8 skills)
 [nrg-audit-chain](skills/nrg-audit-chain) · [nrg-data-analyst](skills/nrg-data-analyst) · [nrg-dpdp-compliance](skills/nrg-dpdp-compliance) · [nrg-embedding-models](skills/nrg-embedding-models) · [nrg-grafana-monitoring](skills/nrg-grafana-monitoring) · [nrg-kong-gateway](skills/nrg-kong-gateway) · [nrg-nginx-sovereign](skills/nrg-nginx-sovereign) · [nrg-redis-caching](skills/nrg-redis-caching)
 
-### Operations (4 skills)
-[change-request](skills/change-request) · [compliance-tracking](skills/compliance-tracking) · [risk-assessment](skills/risk-assessment) · [runbook](skills/runbook)
+### Operations (9 skills)
+[capacity-plan](skills/capacity-plan) · [change-request](skills/change-request) · [compliance-tracking](skills/compliance-tracking) · [process-doc](skills/process-doc) · [process-optimization](skills/process-optimization) · [risk-assessment](skills/risk-assessment) · [runbook](skills/runbook) · [status-report](skills/status-report) · [vendor-review](skills/vendor-review)
+
+### Legal (9 skills)
+[brief](skills/brief) · [compliance-check](skills/compliance-check) · [legal-response](skills/legal-response) · [legal-risk-assessment](skills/legal-risk-assessment) · [meeting-briefing](skills/meeting-briefing) · [review-contract](skills/review-contract) · [signature-request](skills/signature-request) · [triage-nda](skills/triage-nda) · [vendor-check](skills/vendor-check)
+
+### Design (3 skills)
+[design-handoff](skills/design-handoff) · [design-system](skills/design-system) · [user-research](skills/user-research)
 
 ### Agent-Only Execution (in `.agents/skills/`)
 debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · secure-linux-web-hosting · deployment-pipeline-design · better-auth-security-best-practices

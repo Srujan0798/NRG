@@ -344,8 +344,72 @@
     "runbook": {
       "source": ".claude/skills",
       "sourceType": "local"
+    },
+    "brief": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "legal-response": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "legal-risk-assessment": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "meeting-briefing": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "review-contract": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "signature-request": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "triage-nda": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "vendor-check": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "capacity-plan": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "process-doc": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "process-optimization": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "status-report": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "vendor-review": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "user-research": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "design-system": {
+      "source": ".claude/skills",
+      "sourceType": "local"
+    },
+    "design-handoff": {
+      "source": ".claude/skills",
+      "sourceType": "local"
     }
   },
-  "updated_at": "2026-04-25T00:35:00+05:30",
-  "count": 86
+  "updated_at": "2026-04-25T01:00:00+05:30",
+  "count": 102
 }
