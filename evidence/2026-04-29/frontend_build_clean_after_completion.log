@@ -1,0 +1,53 @@
+
+> nrg-frontend@1.0.0 build
+> tsc && vite build --emptyOutDir
+
+vite v4.5.14 building for production...
+transforming...
+✓ 2644 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/frontend/index.html                                 7.87 kB │ gzip:   2.52 kB
+../dist/frontend/assets/index-e3a0d023.css                 71.48 kB │ gzip:  13.44 kB
+../dist/frontend/assets/chevron-down-7d7b82d2.js            0.17 kB │ gzip:   0.17 kB │ map:     0.62 kB
+../dist/frontend/assets/x-6d4f3055.js                       0.19 kB │ gzip:   0.18 kB │ map:     0.64 kB
+../dist/frontend/assets/shield-check-799a8df4.js            0.25 kB │ gzip:   0.22 kB │ map:     0.75 kB
+../dist/frontend/assets/trending-up-4dec2c06.js             0.25 kB │ gzip:   0.21 kB │ map:     0.75 kB
+../dist/frontend/assets/queryClient-6bff7a87.js             0.26 kB │ gzip:   0.22 kB │ map:     0.67 kB
+../dist/frontend/assets/check-circle-2-367ce78b.js          0.28 kB │ gzip:   0.23 kB │ map:     0.82 kB
+../dist/frontend/assets/database-60c5834b.js                0.28 kB │ gzip:   0.23 kB │ map:     0.89 kB
+../dist/frontend/assets/git-commit-c99f4611.js              0.29 kB │ gzip:   0.22 kB │ map:     0.98 kB
+../dist/frontend/assets/file-text-61cc0e5d.js               0.44 kB │ gzip:   0.29 kB │ map:     1.29 kB
+../dist/frontend/assets/x-circle-2bf93795.js                0.45 kB │ gzip:   0.31 kB │ map:     1.58 kB
+../dist/frontend/assets/building-2-24c3eb76.js              0.48 kB │ gzip:   0.28 kB │ map:     1.25 kB
+../dist/frontend/assets/users-0e18b3f9.js                   0.89 kB │ gzip:   0.48 kB │ map:     3.05 kB
+../dist/frontend/assets/ChainIntegrityFooter-648f2388.js    1.83 kB │ gzip:   0.90 kB │ map:     3.75 kB
+../dist/frontend/assets/app-4ce41412.js                     2.01 kB │ gzip:   0.96 kB │ map:     2.55 kB
+../dist/frontend/assets/AuditEvent-c5726111.js              2.61 kB │ gzip:   1.12 kB │ map:     5.37 kB
+../dist/frontend/assets/SideBySidePanel-df6fe08c.js         2.99 kB │ gzip:   1.18 kB │ map:     5.58 kB
+../dist/frontend/assets/HmacProof-f3d40d8d.js               4.13 kB │ gzip:   1.45 kB │ map:     9.47 kB
+../dist/frontend/assets/ThemeProvider-984d2c31.js           4.28 kB │ gzip:   1.70 kB │ map:    13.61 kB
+../dist/frontend/assets/AnswerTrustActions-1a60d506.js      5.65 kB │ gzip:   1.66 kB │ map:    13.29 kB
+../dist/frontend/assets/queryService-d03c167e.js            7.83 kB │ gzip:   2.67 kB │ map:    25.43 kB
+../dist/frontend/assets/useQuery-bc5c65f4.js               11.35 kB │ gzip:   4.03 kB │ map:    44.46 kB
+../dist/frontend/assets/Hero-04bcf877.js                   11.40 kB │ gzip:   4.17 kB │ map:    27.63 kB
+../dist/frontend/assets/CitationDrawer-0082cbb2.js         11.68 kB │ gzip:   3.57 kB │ map:    37.37 kB
+../dist/frontend/assets/DPDP-Audit-b68ae858.js             13.07 kB │ gzip:   4.90 kB │ map:    42.63 kB
+../dist/frontend/assets/QueryPhaseProgress-e3630478.js     13.20 kB │ gzip:   4.93 kB │ map:    52.41 kB
+../dist/frontend/assets/queryClient-d7046b66.js            13.64 kB │ gzip:   4.21 kB │ map:    48.02 kB
+../dist/frontend/assets/index-ab090b07.js                  15.15 kB │ gzip:   5.04 kB │ map:    57.55 kB
+../dist/frontend/assets/FounderDashboard-70c86090.js       15.32 kB │ gzip:   4.06 kB │ map:    31.92 kB
+../dist/frontend/assets/GraphView-a0a850b0.js              15.52 kB │ gzip:   4.69 kB │ map:    42.79 kB
+../dist/frontend/assets/query-a1226f2d.js                  15.77 kB │ gzip:   5.31 kB │ map:    60.21 kB
+../dist/frontend/assets/StreamingAnswerPanel-658053de.js   16.49 kB │ gzip:   5.08 kB │ map:    46.36 kB
+../dist/frontend/assets/IndustryDashboard-6003dcfd.js      24.23 kB │ gzip:   7.50 kB │ map:    56.09 kB
+../dist/frontend/assets/ProductionWorkspace-5e449eb6.js    24.33 kB │ gzip:   5.82 kB │ map:    60.35 kB
+../dist/frontend/assets/GovernmentDashboard-5b12b8b8.js    32.31 kB │ gzip:   9.07 kB │ map:    90.73 kB
+../dist/frontend/assets/ResearcherDashboard-ecf08e66.js    41.79 kB │ gzip:  11.49 kB │ map:   100.82 kB
+../dist/frontend/assets/emptyResults-9daf7015.js           55.74 kB │ gzip:  15.81 kB │ map:   144.32 kB
+../dist/frontend/assets/vendor-d3-4a9f30b6.js              64.63 kB │ gzip:  21.13 kB │ map:   267.54 kB
+../dist/frontend/assets/vendor-motion-0cec850f.js         114.50 kB │ gzip:  36.73 kB │ map:   634.83 kB
+../dist/frontend/assets/App-0df041b0.js                   116.30 kB │ gzip:  35.96 kB │ map:   334.24 kB
+../dist/frontend/assets/vendor-react-601f19e2.js          141.18 kB │ gzip:  45.21 kB │ map:   351.03 kB
+../dist/frontend/assets/vendor-recharts-9f20f374.js       369.30 kB │ gzip: 103.09 kB │ map: 1,906.49 kB
+✓ built in 3m 41s

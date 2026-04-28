@@ -35,6 +35,11 @@ class RAGSkill:
             return os.getenv("EMBEDDING_FALLBACK_MODEL", FALLBACK_MODEL)
         return None
 
+    def warmup(self):
+        """Pre-warm embedder so first real retrieval is not blocked by lazy loading."""
+        self.embedder.warmup()
+        return self
+
     def retrieve(
         self, query: str, user_tier: int = 1, top_k: int = 5
     ) -> Dict[str, Any]:

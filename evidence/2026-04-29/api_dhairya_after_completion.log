@@ -1,0 +1,79 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts ==============================
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 63 items
+
+tests/api/test_health_endpoints.py::test_db_health_endpoint_uses_canonical_database PASSED [  1%]
+tests/api/test_health_endpoints.py::test_root_health_uses_canonical_database PASSED [  3%]
+tests/api/test_health_endpoints.py::test_root_health_reports_table_count_and_fast_audit_status PASSED [  4%]
+tests/api/test_health_endpoints.py::test_root_health_reports_audit_lineage_repair_required_as_unhealthy PASSED [  6%]
+tests/api/test_health_endpoints.py::test_root_health_reports_broken_audit_lineage_as_critical PASSED [  7%]
+tests/api/test_health_endpoints.py::test_health_fails_when_qdrant_empty PASSED [  9%]
+tests/api/test_health_endpoints.py::test_root_health_reports_zero_vector_qdrant_as_critical PASSED [ 11%]
+tests/api/test_health_endpoints.py::test_qdrant_zero_vectors PASSED      [ 12%]
+tests/api/test_health_endpoints.py::test_root_health_reports_zero_vectors_from_collection_metadata_as_critical PASSED [ 14%]
+tests/api/test_health_endpoints.py::test_query_result_cache_ttl_is_long_enough_for_load_review PASSED [ 15%]
+tests/api/test_health_endpoints.py::test_root_health_reports_vector_drift_status_file PASSED [ 17%]
+tests/api/test_health_endpoints.py::test_qdrant_health_endpoint_reports_readiness PASSED [ 19%]
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_get_set PASSED [ 20%]
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_expires PASSED [ 22%]
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_invalidate_prefix PASSED [ 23%]
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_invalidate_all PASSED [ 25%]
+tests/api/test_tier_response_filtering.py::test_query_industry_response_strips_pii_and_debug_fields PASSED [ 26%]
+tests/api/test_tier_response_filtering.py::test_industry_response_strips_government_grant_amount_fields PASSED [ 28%]
+tests/api/test_k4_publication_count_fast_path.py::test_publication_count_fast_path_counts_iit_papers_from_local_sqlite PASSED [ 30%]
+tests/api/test_k4_publication_count_fast_path.py::test_common_c4_query_shapes_use_bounded_fast_path PASSED [ 31%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q01_credits_intensive_curriculum PASSED [ 33%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q02_phd_ug_ratio_iit_bombay PASSED [ 34%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q03_grant_drop_yoy PASSED [ 36%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q03_grant_drop_yoy_coincidence_case PASSED [ 38%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q04_top_5_funding_agencies PASSED [ 39%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q05_lab_validation_bottleneck PASSED [ 41%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q06_trl9_market_ready PASSED [ 42%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q07_cost_per_patent PASSED [ 44%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q08_pg_courses_iit_madras PASSED [ 46%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q09_most_phd_courses PASSED [ 47%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q10_phd_vs_ug_followup PASSED [ 49%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q11_yoy_pg_growth PASSED [ 50%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q12_strategy_shift PASSED [ 52%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q13_courses_vs_startups PASSED [ 53%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q14_gap_analysis PASSED [ 55%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q15_rising_stars PASSED [ 57%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q16_utilization_audit PASSED [ 58%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q17_pipeline_progression PASSED [ 60%]
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_incomplete_having_without_group PASSED [ 61%]
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_trailing_incomplete_marker PASSED [ 63%]
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_unbalanced_parens PASSED [ 65%]
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_valid_query_passes PASSED [ 66%]
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_trl9_maps_to_level9 PASSED [ 68%]
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_credit_parsing_in_prompt PASSED [ 69%]
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_no_distinct_for_ranked_results PASSED [ 71%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[1-Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not just course count?-expected_patterns0] PASSED [ 73%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[2-Show me the ratio of PhD level innovation courses to Undergraduate ones for IIT Bombay.-expected_patterns1] PASSED [ 74%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[3-Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-21 to 2021-22.-expected_patterns2] PASSED [ 76%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[4-Who are the top 5 unique funding agencies providing grants to us?-expected_patterns3] PASSED [ 77%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[5-Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?-expected_patterns4] PASSED [ 79%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[6-List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.-expected_patterns5] PASSED [ 80%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[7-Calculate the 'Cost of Innovation': How much government grant money do we spend for every 1 Patent granted?-expected_patterns6] PASSED [ 82%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[8-Show me all PG innovation courses at IIT Madras for the last 3 years starting from FY 2021-22.-expected_patterns7] PASSED [ 84%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[9-Which institute has the most PhD courses?-expected_patterns8] PASSED [ 85%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[10-How does that compare to their UG numbers?-expected_patterns9] PASSED [ 87%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[11-Identify growth trends: Calculate Year-Over-Year growth for PG courses in IIT Madras.-expected_patterns10] PASSED [ 88%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[12-Detect Strategy Shift: Institute stops UG but spikes in PhD in IIT Madras.-expected_patterns11] PASSED [ 90%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[13-Correlation: Innovation Courses vs. Startups Incubated (Cross-Module).-expected_patterns12] PASSED [ 92%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[14-Gap Analysis: High Capital Expenses but Low Innovation Courses in FY 2023-24.-expected_patterns13] PASSED [ 93%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[15-Rising Stars: Institutes growing funding while the average declines.-expected_patterns14] PASSED [ 95%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[16-Utilization Audit: High Grants vs Low Expenditure.-expected_patterns15] PASSED [ 96%]
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[17-Pipeline Progression: Are we moving from Low TRL to High TRL?-expected_patterns16] PASSED [ 98%]
+tests/benchmarks/test_dhairya_regression.py::test_dhairya_accuracy_target PASSED [100%]
+
+======================== 63 passed in 102.75s (0:01:42) ========================

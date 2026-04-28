@@ -39,6 +39,74 @@ def test_login_returns_access_and_refresh_tokens(monkeypatch):
     assert payload["user"]["tier"] == 1
 
 
+def test_acceptance_persona_login_sets_http_only_cookies(monkeypatch):
+    monkeypatch.setattr(api_main, "workflow", StubWorkflow())
+    client = TestClient(api_main.app)
+
+    response = client.post(
+        "/auth/login",
+        json={"username": "researcher@iitgn.ac.in", "password": "Researcher@2026"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["persona"] == "researcher"
+    assert payload["tier"] == 1
+    assert payload["user_id"].startswith("researcher-")
+    assert "access_token" in payload
+    assert "refresh_token" in payload
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "nrg_access_token=" in set_cookie
+    assert "nrg_refresh_token=" in set_cookie
+    assert "HttpOnly" in set_cookie
+
+
+def test_cookie_session_authorizes_requests_after_refresh(monkeypatch):
+    monkeypatch.setattr(api_main, "workflow", StubWorkflow())
+    api_main._api_cache.invalidate("researchers:")
+
+    class FakeDB:
+        def query_researchers(self, state=None, research_area=None, limit=50, offset=0):
+            return [
+                {
+                    "researcher_id": "researcher-1",
+                    "name": "Dr. Owner",
+                    "institution_id": "iitgn",
+                    "state": "GJ",
+                    "research_area": "Robotics",
+                    "year_joined": 2020,
+                    "email": "owner@example.com",
+                    "phone": "9876543210",
+                    "orcid": "0000-0001",
+                }
+            ]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    client = TestClient(api_main.app)
+
+    login_response = client.post(
+        "/auth/login",
+        json={"username": "researcher@iitgn.ac.in", "password": "Researcher@2026"},
+    )
+    assert login_response.status_code == 200, login_response.text
+
+    researchers_response = client.get("/researchers")
+    assert researchers_response.status_code == 200, researchers_response.text
+    assert researchers_response.json()["results"][0]["name"] == "Dr. Owner"
+
+    refresh_response = client.post("/auth/refresh", json={})
+    assert refresh_response.status_code == 200, refresh_response.text
+    assert "nrg_access_token=" in refresh_response.headers.get("set-cookie", "")
+
+    logout_response = client.post("/auth/logout", json={})
+    assert logout_response.status_code == 200, logout_response.text
+    assert "nrg_access_token=" in logout_response.headers.get("set-cookie", "")
+    assert "Max-Age=0" in logout_response.headers.get("set-cookie", "")
+
+    denied_response = client.get("/researchers")
+    assert denied_response.status_code == 401
+
+
 def test_health_reports_auth_secret_status(monkeypatch):
     class FakeDB:
         dialect = "sqlite"

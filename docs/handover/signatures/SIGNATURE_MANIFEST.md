@@ -1,99 +1,60 @@
-# NRG Handover — Signature Manifest
+# NRG Handover Signature Manifest
 
-**Protocol**: #45 Eternal Seal — Step 6
-**Status**: PENDING — Waiting for all 5 steps above to complete
+**Protocol:** FOUNDER-SPRINT-2026-04-28
+**Status:** BLOCKED - no local founder private signing key is configured
+**Last checked:** 2026-04-29
 
----
+## Required Signatures
 
-## Required Signatures (8 files)
+| # | Document | Expected signature file | Status |
+|---|---|---|---|
+| 1 | `docs/handover/README.md` | `docs/handover/signatures/README.md.asc` | Pending |
+| 2 | `docs/handover/SYSTEM_OVERVIEW.md` | `docs/handover/signatures/SYSTEM_OVERVIEW.md.asc` | Pending |
+| 3 | `docs/handover/ARCHITECTURE.md` | `docs/handover/signatures/ARCHITECTURE.md.asc` | Pending |
+| 4 | `docs/handover/API_REFERENCE.md` | `docs/handover/signatures/API_REFERENCE.md.asc` | Pending |
+| 5 | `docs/handover/OPERATIONS_RUNBOOK.md` | `docs/handover/signatures/OPERATIONS_RUNBOOK.md.asc` | Pending |
+| 6 | `docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md` | `docs/handover/signatures/SECURITY_COMPLIANCE_ATTESTATION.md.asc` | Pending |
+| 7 | `docs/handover/DATA_INTAKE_PROTOCOL.md` | `docs/handover/signatures/DATA_INTAKE_PROTOCOL.md.asc` | Pending |
+| 8 | `docs/handover/UAT_RESULTS.md` | `docs/handover/signatures/UAT_RESULTS.md.asc` | Pending |
 
-| # | File | Signer | Status |
-|---|------|--------|--------|
-| 1 | docs/handover/evidence/01_stage_up.json | DevOps | ⏳ Pending |
-| 2 | docs/handover/evidence/02_load_report.md | DevOps | ⏳ Pending |
-| 3 | docs/handover/evidence/03_uat_t1.md | Professor | ⏳ Pending |
-| 4 | docs/handover/evidence/03_uat_t2.md | Ministry Rep | ⏳ Pending |
-| 5 | docs/handover/evidence/03_uat_t3.md | Industry Partner | ⏳ Pending |
-| 6 | docs/handover/evidence/04_demo.sha256 | Founder | ⏳ Pending |
-| 7 | docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md | Founder | ⏳ Pending |
-| 8 | docs/handover/UAT_RESULTS.md | Professor | ⏳ Pending |
+## Local Key Check
 
----
+`gpg --list-secret-keys --keyid-format LONG` completed successfully after keyring access approval, but returned no secret keys.
 
-## Signing Commands
+Result: signatures cannot be generated on this machine until the founder key is generated or imported.
 
-```bash
-cd /Users/srujansai/Desktop/NRG
+## Signing Command
 
-# Each signer runs (example for 01_stage_up.json):
-gpg --detach-sign docs/handover/evidence/01_stage_up.json
-# → produces: docs/handover/evidence/01_stage_up.json.asc
-
-# Repeat for each file above
-```
-
-## Verification
+Run on the founder-controlled machine with the founder private key available:
 
 ```bash
-# Check all .asc files exist
-ls docs/handover/signatures/*.asc | wc -l
-# Expected: 8
-
-# Verify each signature
-gpg --verify docs/handover/evidence/01_stage_up.json.asc docs/handover/evidence/01_stage_up.json
+cd /Users/srujansai/Desktop/NRG/docs/handover/signatures
+for doc in ../README.md ../SYSTEM_OVERVIEW.md ../ARCHITECTURE.md \
+           ../API_REFERENCE.md ../OPERATIONS_RUNBOOK.md \
+           ../SECURITY_COMPLIANCE_ATTESTATION.md ../DATA_INTAKE_PROTOCOL.md \
+           ../UAT_RESULTS.md; do
+  gpg --armor --detach-sign --output "$(basename "$doc").asc" "$doc"
+done
+find . -maxdepth 1 -name "*.asc" | wc -l
 ```
 
----
+Expected count: `8`.
 
-## Terminal Step: Git Tag
-
-After all 8 signatures are collected and P7-A through P7-G evidence is present:
+## Verification Command
 
 ```bash
-git tag -v v1.0.0-eternal || true
-# Current local note, 2026-04-27:
-# v1.0.0-eternal exists as an unsigned lightweight tag on an older commit.
-# Replace or supersede only after founder approval.
-
-git tag -s v1.0.0-eternal \
-  -m "NRG eternal completion — QB 6/6, 33/33 protocols, sovereign live.
-
-Quality Bar: 6/6
-- C1: DPDP Indian PII ✅
-- C2: Per-user audit binding ✅
-- C3: Multi-hop DAG planner ✅
-- C4: P99<500ms @ 1000 concurrent ✅
-- C5: Vector drift auto-retrain ✅
-- C6: Schema allowlist egress ✅
-
-Handover: 8/8 signatures present.
-7 tail-items: ALL CLOSED.
-Protocols: 33/33 COMPLETE."
-
-git push nrg v1.0.0-eternal
+cd /Users/srujansai/Desktop/NRG/docs/handover/signatures
+for sig in *.asc; do
+  doc="../${sig%.asc}"
+  gpg --verify "$sig" "$doc"
+done
 ```
 
-## SHADOWING_LOG Creation
+## Terminal Step
 
-```bash
-# Create day-0 entry
-cat > docs/handover/SHADOWING_LOG.md << 'EOF'
-# NRG Shadowing Log
+Do not create or move the final `v1.0.0-eternal` tag until:
 
-## Day 0 — v1.0.0-eternal
-**Date**: [TBD]
-**Tag**: v1.0.0-eternal
-**Chain Head**: [from 05_chain_seal.json]
-**Signed By**: [Founder Name]
-
-## 30/60/90 Day Cadence
-
-| Checkpoint | Target Date | Status |
-|-----------|-------------|--------|
-| Day 30 | [Date+30] | ⏳ |
-| Day 60 | [Date+60] | ⏳ |
-| Day 90 | [Date+90] | ⏳ |
-
----
-EOF
-```
+- all eight signatures above are present and verified;
+- K-2/C4 evidence is passing on the target stack;
+- live UAT sessions are attached;
+- founder approves the final tag ceremony.

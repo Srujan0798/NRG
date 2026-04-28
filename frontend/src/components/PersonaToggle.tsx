@@ -7,9 +7,9 @@ import { emitTelemetry } from '../lib/telemetry'
 import { useQueryStore } from '../stores/queryStore'
 
 const PERSONAS: Array<{ role: PersonaRole; label: string; shortLabel: string; username: string; password: string; color: string }> = [
-  { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher_user', password: 'researcher-pass', color: 'var(--nrg-tier-1)' },
-  { role: 'government', label: 'Government', shortLabel: 'G', username: 'gov_user', password: 'government-pass', color: 'var(--nrg-tier-2)' },
-  { role: 'industry', label: 'Industry', shortLabel: 'I', username: 'industry_user', password: 'industry-pass', color: 'var(--nrg-tier-3)' },
+  { role: 'researcher', label: 'Researcher', shortLabel: 'R', username: 'researcher@iitgn.ac.in', password: 'Researcher@2026', color: 'var(--nrg-tier-1)' },
+  { role: 'government', label: 'Government', shortLabel: 'G', username: 'ministry@nrg.gov.in', password: 'Ministry@2026', color: 'var(--nrg-tier-2)' },
+  { role: 'industry', label: 'Industry', shortLabel: 'I', username: 'partner@industry.in', password: 'Industry@2026', color: 'var(--nrg-tier-3)' },
 ]
 
 export function PersonaToggle() {

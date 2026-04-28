@@ -1,0 +1,67 @@
+{
+  "roles": {
+    "researcher_user": {
+      "http": 200,
+      "role": "researcher",
+      "tier": 1,
+      "token_len": 581
+    },
+    "gov_user": {
+      "http": 200,
+      "role": "government",
+      "tier": 2,
+      "token_len": 536
+    },
+    "industry_user": {
+      "http": 200,
+      "role": "industry",
+      "tier": 3,
+      "token_len": 529
+    }
+  },
+  "query": {
+    "http": 200,
+    "status": "success",
+    "tier": 1,
+    "audit_event_id": "d204b4056c898fb06898c7b6c22e9da949aa0b3889e10eaced2df2df0d1f7301",
+    "verified": true,
+    "route": "deterministic_sql_fast_path",
+    "row_count": 5,
+    "first_row": {
+      "rank": 1,
+      "gov_organisation_name": "MeitY",
+      "grant_count": 4997,
+      "total_grant": 47338100000,
+      "total_grant_crore": 4733.81
+    }
+  },
+  "tier3": {
+    "http": 200,
+    "tier": 3,
+    "verified": true,
+    "first_row_keys": [
+      "gov_organisation_name",
+      "grant_count",
+      "rank"
+    ],
+    "pii_terms_present": false
+  },
+  "injection": {
+    "http": 400,
+    "blocked": true,
+    "detail": "Security violation: PROMPT_INJECTION"
+  },
+  "health": {
+    "http": 200,
+    "status": "healthy",
+    "redis": "healthy",
+    "qdrant": "healthy",
+    "local_llm": "optional_unavailable"
+  },
+  "stats": {
+    "http": 200,
+    "total_researchers": 50000,
+    "total_publications": 50000,
+    "total_institutions": 181
+  }
+}

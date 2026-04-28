@@ -11,7 +11,7 @@ export interface QueryHistoryEntry {
 }
 
 export interface StreamingQuerySnapshot {
-  phase: 'idle' | 'planning' | 'planned' | 'executing' | 'synthesizing' | 'verified' | 'error';
+  phase: 'idle' | 'parsing' | 'planning' | 'planned' | 'querying' | 'executing' | 'synthesizing' | 'verifying' | 'verified' | 'error';
   answer: string;
   auditEventId?: string;
   error?: string;

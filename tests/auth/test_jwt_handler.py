@@ -34,7 +34,7 @@ def test_generates_and_verifies_access_and_refresh_tokens(jwt_handler):
     assert access_claims["role"] == "researcher"
     assert access_claims["tier"] == 1
     assert access_claims["token_type"] == "access"
-    assert access_claims["iss"] == "researcher"
+    assert access_claims["iss"] == jwt_handler.issuer
     assert refresh_claims["token_type"] == "refresh"
 
 

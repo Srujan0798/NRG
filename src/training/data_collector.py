@@ -373,3 +373,8 @@ def get_training_collector() -> TrainingDataCollector:
     if _collector_instance is None:
         _collector_instance = TrainingDataCollector()
     return _collector_instance
+
+
+def capture_training_async(state: "NRGState | dict", user_id: str = None) -> None:
+    """Submit training capture without initializing the collector on the request path."""
+    _EXECUTOR.submit(lambda: get_training_collector().capture(state, user_id))

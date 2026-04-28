@@ -8,7 +8,7 @@ interface PhaseHeaderProps {
   isStreaming: boolean
 }
 
-const phaseOrder = ['planning', 'planned', 'executing', 'synthesizing', 'verified']
+const phaseOrder = ['parsing', 'planning', 'querying', 'synthesizing', 'verifying', 'verified']
 
 export const PhaseHeader: React.FC<PhaseHeaderProps> = ({ phase, isStreaming }) => {
   const currentIndex = Math.max(phaseOrder.indexOf(phase?.phase || 'planning'), 0)
@@ -26,11 +26,15 @@ export const PhaseHeader: React.FC<PhaseHeaderProps> = ({ phase, isStreaming }) 
         </span>
         <div>
           <p className="text-sm font-semibold text-nrg-text">{phase?.label || 'Planning evidence path'}</p>
-          <p className="text-xs font-medium uppercase tracking-wider text-nrg-muted">{t("auto.components.PhaseHeader.PhaseHeader.1")}</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-nrg-muted">
+            {typeof phase?.elapsed_ms === 'number'
+              ? `${phase.elapsed_ms} ms`
+              : t("auto.components.PhaseHeader.PhaseHeader.1")}
+          </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2" aria-hidden="true">
+      <div className="grid grid-cols-6 gap-2" aria-hidden="true">
         {phaseOrder.map((item, index) => (
           <span
             key={item}

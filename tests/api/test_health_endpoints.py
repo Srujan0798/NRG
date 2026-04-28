@@ -72,7 +72,7 @@ def test_root_health_uses_canonical_database(monkeypatch):
     monkeypatch.setattr(api_main, "QdrantClient", FakeQdrantClient)
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 1, "valid_events": 1, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 1, "valid_events": 1, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -110,7 +110,7 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -144,7 +144,7 @@ def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypa
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {
+        lambda **_: {
             "chain_valid": False,
             "chain_length": 2,
             "valid_events": 0,
@@ -176,7 +176,7 @@ def test_root_health_reports_broken_audit_lineage_as_critical(monkeypatch):
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {
+        lambda **_: {
             "chain_valid": True,
             "chain_length": 2,
             "valid_events": 2,
@@ -226,7 +226,7 @@ def test_health_fails_when_qdrant_empty(monkeypatch):
     monkeypatch.setattr("src.skills.rag.retriever.Retriever", EmptyRetriever)
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -254,7 +254,7 @@ def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
     monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCountClient)
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -286,7 +286,7 @@ def test_qdrant_zero_vectors(monkeypatch):
     monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCountClient)
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -313,7 +313,7 @@ def test_root_health_reports_zero_vectors_from_collection_metadata_as_critical(m
     monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCollectionClient)
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 
@@ -356,7 +356,7 @@ def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     monkeypatch.setattr(
         "src.audit.get_chain_health",
-        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
     )
     client = TestClient(api_main.app)
 

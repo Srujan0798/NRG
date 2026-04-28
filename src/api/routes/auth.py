@@ -12,7 +12,7 @@ from src.api.deps import (
     get_current_user, jwt_handler, brute_force_protection,
 )
 from src.auth.jwt_handler import AuthError
-from src.services.consent import ConsentService
+from src.services.consent import get_consent_service
 from src.audit import AuditEvent, get_audit_log
 from src.security.rate_limiter import check_tier_rate_limit
 
@@ -47,7 +47,7 @@ async def login(request: LoginRequest, raw_request: Request = None):
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 
     tokens = jwt_handler.issue_token_pair(user)
-    consent_service = ConsentService()
+    consent_service = get_consent_service()
     if not consent_service.has_consent(user["user_id"], "research_access"):
         consent_service.grant_consent(user["user_id"], "research_access")
 
@@ -133,7 +133,7 @@ async def logout(request: LogoutRequest, raw_request: Request, claims: dict = De
 # Consent
 @router.post("/consent")
 async def grant_consent(scope: str, retention_days: int = 365, token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.grant_consent(user_id, scope, retention_days)
     if result["success"]:
@@ -143,7 +143,7 @@ async def grant_consent(scope: str, retention_days: int = 365, token_payload: di
 
 @router.delete("/consent/{scope}")
 async def revoke_consent(scope: str, token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.revoke_consent(user_id, scope)
     if result["success"]:
@@ -156,38 +156,38 @@ async def revoke_consent(scope: str, token_payload: dict = Depends(get_current_u
 async def dpdp_erase(body: EraseRequest, token_payload: dict = Depends(get_current_user)):
     if not body.confirm:
         raise HTTPException(status_code=400, detail="Erasure requires confirm=true")
-    service = ConsentService()
+    service = get_consent_service()
     return service.erase_user_data(token_payload.get("sub", "anonymous"))
 
 
 @router.get("/dpdp/consents")
 async def dpdp_consents(token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     return {"consents": service.list_consents(token_payload.get("sub", "anonymous"))}
 
 
 @router.get("/dpdp/export")
 async def dpdp_export(token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     return service.export_user_data(token_payload.get("sub", "anonymous"))
 
 
 # Me
 @router.get("/me/consents")
 async def list_consents(token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     return {"consents": service.list_consents(token_payload.get("sub", "anonymous"))}
 
 
 @router.get("/me/data")
 async def export_user_data(token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     return service.export_user_data(token_payload.get("sub", "anonymous"))
 
 
 @router.delete("/me/data")
 async def erase_user_data(token_payload: dict = Depends(get_current_user)):
-    service = ConsentService()
+    service = get_consent_service()
     return service.erase_user_data(token_payload.get("sub", "anonymous"))
 
 
@@ -196,4 +196,4 @@ async def get_dpdp_admin_stats(token_payload: dict = Depends(get_current_user)):
     role = token_payload.get("role", "")
     if role not in ("admin", "government"):
         raise HTTPException(status_code=403, detail="Admin access required")
-    return ConsentService().get_admin_stats()
+    return get_consent_service().get_admin_stats()

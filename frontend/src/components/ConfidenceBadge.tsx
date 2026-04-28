@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-import { t } from '../i18n'
-
 export type ConfidenceLevel = 'high' | 'partial' | 'low_clarify'
 
 interface ConfidenceBadgeProps {
@@ -19,28 +17,28 @@ const CONFIG: Record<ConfidenceLevel, {
   tooltipTitle: string
 }> = {
   high: {
-    label: t('auto.components.ConfidenceBadge.high'),
+    label: 'Verified',
     bg: 'bg-emerald-50',
     text: 'text-emerald-800',
     border: 'border-emerald-200',
     dot: 'bg-emerald-500',
-    tooltipTitle: t('auto.components.ConfidenceBadge.highTitle'),
+    tooltipTitle: 'Verified against returned evidence',
   },
   partial: {
-    label: t('auto.components.ConfidenceBadge.partial'),
+    label: 'Partially verified',
     bg: 'bg-amber-50',
     text: 'text-amber-800',
     border: 'border-amber-200',
     dot: 'bg-amber-500',
-    tooltipTitle: t('auto.components.ConfidenceBadge.partialTitle'),
+    tooltipTitle: 'Some claims need review',
   },
   low_clarify: {
-    label: t('auto.components.ConfidenceBadge.low'),
+    label: 'Needs clarification',
     bg: 'bg-rose-50',
     text: 'text-rose-800',
     border: 'border-rose-200',
     dot: 'bg-rose-500',
-    tooltipTitle: t('auto.components.ConfidenceBadge.lowTitle'),
+    tooltipTitle: 'More detail is needed',
   },
 }
 
@@ -55,10 +53,10 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({
 
   const tooltipLines: string[] = []
   if (score !== undefined) {
-    tooltipLines.push(`${t('auto.components.ConfidenceBadge.score')}: ${Math.round(score * 100)}%`)
+    tooltipLines.push(`Score: ${Math.round(score * 100)}%`)
   }
   if (signals.length > 0) {
-    tooltipLines.push(`${t('auto.components.ConfidenceBadge.signals')}: ${signals.join(', ')}`)
+    tooltipLines.push(`Signals: ${signals.join(', ')}`)
   }
 
   return (
@@ -99,7 +97,7 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">{t('auto.components.ConfidenceBadge.noDetails')}</p>
+            <p className="text-gray-500">No additional verification signals.</p>
           )}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-white border-r border-b border-gray-200" />
         </div>

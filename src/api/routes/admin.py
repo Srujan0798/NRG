@@ -26,9 +26,9 @@ logger = get_logger(__name__)
 async def export_user_data(
     token_payload: dict = Depends(get_current_user),
 ):
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return service.export_user_data(user_id)
 
@@ -37,9 +37,9 @@ async def export_user_data(
 async def erase_user_data(
     token_payload: dict = Depends(get_current_user),
 ):
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return service.erase_user_data(user_id)
 
@@ -48,9 +48,9 @@ async def erase_user_data(
 async def list_consents(
     token_payload: dict = Depends(get_current_user),
 ):
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return {"consents": service.list_consents(user_id)}
 
@@ -85,9 +85,9 @@ async def grant_consent(
     retention_days: int = 365,
     token_payload: dict = Depends(get_current_user),
 ):
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.grant_consent(user_id, scope, retention_days)
     if result["success"]:
@@ -100,9 +100,9 @@ async def revoke_consent(
     scope: str,
     token_payload: dict = Depends(get_current_user),
 ):
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.revoke_consent(user_id, scope)
     if result["success"]:
@@ -117,9 +117,9 @@ async def get_dpdp_admin_stats(
     role = token_payload.get("role", "")
     if role not in ("admin", "government"):
         raise HTTPException(status_code=403, detail="Admin access required")
-    from src.services.consent import ConsentService
+    from src.services.consent import get_consent_service
 
-    service = ConsentService()
+    service = get_consent_service()
     return service.get_admin_stats()
 
 

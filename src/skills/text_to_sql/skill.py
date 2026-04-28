@@ -6,6 +6,8 @@ import logging
 import time
 import hashlib
 import threading
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from contextlib import contextmanager
 from collections import OrderedDict
 from functools import lru_cache
 from typing import Dict, Any, Optional, List, Tuple
@@ -29,14 +31,20 @@ from src.observability.langfuse_tracer import _init_langfuse
 
 logger = logging.getLogger(__name__)
 
-QUERY_PLAN_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_PLAN_CACHE_TTL_SECONDS", "600"))
+QUERY_PLAN_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_PLAN_CACHE_TTL_SECONDS", "3600"))
 QUERY_PLAN_CACHE_MAX_SIZE = int(os.getenv("TEXT_TO_SQL_PLAN_CACHE_MAX_SIZE", "256"))
-SQL_GENERATION_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_SQL_CACHE_TTL_SECONDS", "600"))
+SQL_GENERATION_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_SQL_CACHE_TTL_SECONDS", "3600"))
 SQL_GENERATION_CACHE_MAX_SIZE = int(os.getenv("TEXT_TO_SQL_SQL_CACHE_MAX_SIZE", "256"))
+LLM_TIMEOUT_MS = int(os.getenv("LLM_TIMEOUT_MS", "3000"))
+RETRIEVER_DDL_TIMEOUT_MS = int(os.getenv("TEXT_TO_SQL_RETRIEVER_DDL_TIMEOUT_MS", "250"))
 
 _query_plan_cache: OrderedDict[str, tuple[float, dict[str, Any]]] = OrderedDict()
 _sql_generation_cache: OrderedDict[str, tuple[float, str]] = OrderedDict()
 _cache_lock = threading.Lock()
+_llm_timeout_executor = ThreadPoolExecutor(
+    max_workers=max(1, int(os.getenv("TEXT_TO_SQL_LLM_TIMEOUT_WORKERS", "4"))),
+    thread_name_prefix="text-to-sql-llm",
+)
 
 TIER_AWARE_TABLES = {
     "researchers",
@@ -103,7 +111,7 @@ def _bounded_cache_set(
 
 def _query_plan_cache_key(db_type: str, db_url: str, user_query: str) -> str:
     raw = f"{db_type}|{db_url}|{_normalise_cache_text(user_query)}"
-    return hashlib.sha256(raw.encode()).hexdigest()
+    return f"query_plan:{hashlib.sha256(raw.encode()).hexdigest()}"
 
 
 def _sql_generation_cache_key(
@@ -122,7 +130,7 @@ def _sql_generation_cache_key(
             hashlib.sha256((conversation_context or "").encode()).hexdigest(),
         )
     )
-    return hashlib.sha256(raw.encode()).hexdigest()
+    return f"sql_generation:{hashlib.sha256(raw.encode()).hexdigest()}"
 
 
 def clear_query_plan_cache() -> None:
@@ -131,6 +139,93 @@ def clear_query_plan_cache() -> None:
         _query_plan_cache.clear()
         _sql_generation_cache.clear()
     _cached_retriever_ddl.cache_clear()
+    _redis_delete_patterns("query_plan:*", "sql_generation:*")
+
+
+def _redis_delete_patterns(*patterns: str) -> None:
+    try:
+        from src.caching.redis_layer import _get_redis
+
+        client = _get_redis()
+        if client is None:
+            return
+        for pattern in patterns:
+            keys = list(client.scan_iter(match=pattern, count=100))
+            if keys:
+                client.delete(*keys)
+    except Exception:
+        return
+
+
+def _redis_get_json(key: str) -> Any | None:
+    try:
+        from src.caching.redis_layer import _get_redis
+
+        client = _get_redis()
+        if client is None:
+            return None
+        cached = client.get(key)
+        if not cached:
+            return None
+        return json.loads(cached)
+    except Exception:
+        return None
+
+
+def _redis_set_json(key: str, value: Any, ttl_seconds: int) -> None:
+    try:
+        from src.caching.redis_layer import _get_redis
+
+        client = _get_redis()
+        if client is None:
+            return
+        client.setex(key, ttl_seconds, json.dumps(value, default=str))
+    except Exception:
+        return
+
+
+@contextmanager
+def _text_to_sql_span(name: str):
+    try:
+        from opentelemetry import trace as otel_trace
+    except Exception:
+        yield None
+        return
+
+    start = time.monotonic()
+    tracer = otel_trace.get_tracer("nrg.text_to_sql")
+    with tracer.start_as_current_span(name) as active_span:
+        try:
+            yield active_span
+        finally:
+            active_span.set_attribute("duration_ms", round((time.monotonic() - start) * 1000, 3))
+
+
+def _chat_with_timeout(llm_provider: Any, messages: list[dict[str, str]]):
+    timeout_ms = int(os.getenv("LLM_TIMEOUT_MS", str(LLM_TIMEOUT_MS)))
+    if timeout_ms <= 0:
+        return llm_provider.chat(messages)
+
+    future = _llm_timeout_executor.submit(llm_provider.chat, messages)
+    try:
+        return future.result(timeout=timeout_ms / 1000)
+    except FuturesTimeoutError as exc:
+        future.cancel()
+        raise TimeoutError(f"Text-to-SQL LLM generation exceeded {timeout_ms}ms") from exc
+
+
+def _retriever_ddl_with_timeout(question: str, db_type: str, top_k: int) -> str:
+    timeout_ms = int(os.getenv("TEXT_TO_SQL_RETRIEVER_DDL_TIMEOUT_MS", str(RETRIEVER_DDL_TIMEOUT_MS)))
+    if timeout_ms <= 0:
+        return _cached_retriever_ddl(question, db_type, top_k)
+
+    future = _llm_timeout_executor.submit(_cached_retriever_ddl, question, db_type, top_k)
+    try:
+        return future.result(timeout=timeout_ms / 1000)
+    except FuturesTimeoutError:
+        future.cancel()
+        logger.debug("Schema retriever DDL timed out after %sms; using extractor schema prompt", timeout_ms)
+        return ""
 
 
 @lru_cache(maxsize=256)
@@ -481,29 +576,41 @@ class TextToSQLSkill:
     def _get_query_plan(self, user_query: str) -> dict[str, Any]:
         """Return cached schema plan for repeated natural-language questions."""
         cache_key = _query_plan_cache_key(self._db_type, self._db_url, user_query)
-        cached = _bounded_cache_get(
-            _query_plan_cache,
-            cache_key,
-            QUERY_PLAN_CACHE_TTL_SECONDS,
-        )
-        if cached is not None:
-            return cached
+        cache_hit = False
+        with _text_to_sql_span("schema_retrieval") as span:
+            cached = _redis_get_json(cache_key)
+            if cached is None:
+                cached = _bounded_cache_get(
+                    _query_plan_cache,
+                    cache_key,
+                    QUERY_PLAN_CACHE_TTL_SECONDS,
+                )
+            if cached is not None:
+                cache_hit = True
+                if span is not None:
+                    span.set_attribute("cache_hit", True)
+                    span.set_attribute("row_count", 0)
+                return cached
 
-        relevant_tables = self.extractor.get_relevant_tables(user_query)
-        schema = self.extractor.get_schema_metadata(relevant_tables)
-        schema_prompt = self.extractor.generate_llm_prompt(schema)
-        plan = {
-            "relevant_tables": list(relevant_tables),
-            "schema": schema,
-            "schema_prompt": schema_prompt,
-        }
-        _bounded_cache_set(
-            _query_plan_cache,
-            cache_key,
-            plan,
-            QUERY_PLAN_CACHE_MAX_SIZE,
-        )
-        return plan
+            relevant_tables = self.extractor.get_relevant_tables(user_query)
+            schema = self.extractor.get_schema_metadata(relevant_tables)
+            schema_prompt = self.extractor.generate_llm_prompt(schema)
+            plan = {
+                "relevant_tables": list(relevant_tables),
+                "schema": schema,
+                "schema_prompt": schema_prompt,
+            }
+            _bounded_cache_set(
+                _query_plan_cache,
+                cache_key,
+                plan,
+                QUERY_PLAN_CACHE_MAX_SIZE,
+            )
+            _redis_set_json(cache_key, plan, QUERY_PLAN_CACHE_TTL_SECONDS)
+            if span is not None:
+                span.set_attribute("cache_hit", cache_hit)
+                span.set_attribute("row_count", len(relevant_tables))
+            return plan
 
     def _get_dialect_system_prompt(self) -> str:
         """Return dialect-correct system prompt based on DB type."""
@@ -661,10 +768,11 @@ FOLLOW-UP QUERIES:
         user_content = f"{schema_prompt}\n\nUser Query: {user_query}"
 
         retriever_ddl = ""
-        try:
-            retriever_ddl = _cached_retriever_ddl(user_query, self._db_type, 5)
-        except Exception as e:
-            logger.debug("Schema retriever unavailable: %s", e)
+        if int(os.getenv("LLM_TIMEOUT_MS", str(LLM_TIMEOUT_MS))) > 100:
+            try:
+                retriever_ddl = _retriever_ddl_with_timeout(user_query, self._db_type, 5)
+            except Exception as e:
+                logger.debug("Schema retriever unavailable: %s", e)
 
         if retriever_ddl:
             user_content = f"{retriever_ddl}\n\n{user_content}"
@@ -695,6 +803,10 @@ FOLLOW-UP QUERIES:
             SQL_GENERATION_CACHE_TTL_SECONDS,
         )
         if cached_sql is not None:
+            with _text_to_sql_span("sql_generation") as otel_span:
+                if otel_span is not None:
+                    otel_span.set_attribute("cache_hit", True)
+                    otel_span.set_attribute("row_count", 0)
             return cached_sql
 
         client = _init_langfuse()
@@ -708,7 +820,13 @@ FOLLOW-UP QUERIES:
                 client = None
 
         try:
-            response = self.llm_provider.chat(messages)
+            sql_generation_start = time.monotonic()
+            with _text_to_sql_span("sql_generation") as otel_span:
+                if otel_span is not None:
+                    otel_span.set_attribute("cache_hit", False)
+                    otel_span.set_attribute("row_count", 0)
+                    otel_span.set_attribute("timeout_ms", int(os.getenv("LLM_TIMEOUT_MS", str(LLM_TIMEOUT_MS))))
+                response = _chat_with_timeout(self.llm_provider, messages)
             sql: str = response.content.strip()
             sql = sql.strip("`").strip("sql").strip()
             _bounded_cache_set(
@@ -727,8 +845,9 @@ FOLLOW-UP QUERIES:
             except Exception:
                 logger.warning("Audit log_llm_call failed for SQL generation", exc_info=True)
 
+            latency_ms = round((time.monotonic() - sql_generation_start) * 1000, 3)
             if span:
-                span.update(metadata={"latency_ms": 0, "sql_preview": sql[:200], "node": "text_to_sql"})
+                span.update(metadata={"latency_ms": latency_ms, "sql_preview": sql[:200], "node": "text_to_sql"})
             if trace:
                 trace.update(metadata={"node": "text_to_sql", "sql_preview": sql[:200]})
 
@@ -1429,7 +1548,12 @@ FOLLOW-UP QUERIES:
 
                 sql = self.generate_sql(user_query, schema_prompt, retry_context)
 
-                is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                with _text_to_sql_span("validation") as validation_span:
+                    is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                    if validation_span is not None:
+                        validation_span.set_attribute("cache_hit", False)
+                        validation_span.set_attribute("row_count", 0)
+                        validation_span.set_attribute("valid", bool(is_complete))
                 if not is_complete:
                     logger.warning(f"Query completeness issues detected: {issues}")
                     if self.llm_provider:
@@ -1439,7 +1563,12 @@ FOLLOW-UP QUERIES:
                             f"Previous query: {sql}"
                         )
                         sql = self.generate_sql(user_query, schema_prompt, retry_context)
-                        is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                        with _text_to_sql_span("validation") as validation_span:
+                            is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                            if validation_span is not None:
+                                validation_span.set_attribute("cache_hit", False)
+                                validation_span.set_attribute("row_count", 0)
+                                validation_span.set_attribute("valid", bool(is_complete))
                         if not is_complete:
                             self._completeness_validator.record_rejection(
                                 sql,
@@ -1462,7 +1591,11 @@ FOLLOW-UP QUERIES:
 
                 sql = self._apply_tier_filter(sql, user_tier)
 
-                result = self.sandbox.execute_readonly(sql, user_tier)
+                with _text_to_sql_span("execution") as execution_span:
+                    result = self.sandbox.execute_readonly(sql, user_tier)
+                    if execution_span is not None:
+                        execution_span.set_attribute("cache_hit", False)
+                        execution_span.set_attribute("row_count", int(result.get("row_count", 0) or 0))
                 semantic_anomaly = detect_semantic_anomaly(user_query, sql, result)
                 if semantic_anomaly["detected"]:
                     warnings = list(result.get("warnings") or [])

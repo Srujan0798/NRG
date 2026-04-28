@@ -339,9 +339,10 @@ async def health_all():
     try:
         r = httpx.get("http://localhost:8080/health", timeout=2.0)
         checks["local_llm"] = r.json()
-        checks["local_llm"]["status"] = "healthy" if r.json().get("model_loaded") else "degraded"
+        checks["local_llm"]["status"] = "healthy" if r.json().get("model_loaded") else "optional_unavailable"
+        checks["local_llm"]["required"] = False
     except Exception as e:
-        checks["local_llm"] = {"status": "unhealthy", "error": str(e)}
+        checks["local_llm"] = {"status": "optional_unavailable", "required": False, "error": str(e)}
 
     try:
         from qdrant_client import QdrantClient
@@ -366,13 +367,15 @@ async def health_all():
         checks["redis"] = {"status": "unhealthy", "error": str(e)}
 
     try:
-        from src.services.consent import ConsentService
+        from src.services.consent import get_consent_service
 
-        cs = ConsentService()
+        cs = get_consent_service()
         cs.list_consents("__health_check__")
         checks["consent_service"] = {"status": "operational", "scopes": list(cs.SCOPES.keys())}
     except Exception as e:
         checks["consent_service"] = {"status": "unhealthy", "error": str(e)}
 
-    overall = all(c.get("status") == "healthy" for c in checks.values())
+    required_services = ("api", "qdrant", "redis")
+    overall = all(checks[name].get("status") == "healthy" for name in required_services)
+    overall = overall and checks["consent_service"].get("status") in {"healthy", "operational"}
     return {"status": "healthy" if overall else "degraded", "services": checks}

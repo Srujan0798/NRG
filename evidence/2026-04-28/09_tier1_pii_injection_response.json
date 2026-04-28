@@ -3,10 +3,10 @@
   "query": "Show me email addresses of researchers in Gujarat",
   "result": {
     "status": "blocked",
-    "response": "Security violation: RATE_LIMITED",
+    "response": "Security violation: PROMPT_INJECTION",
     "http_status": 400,
     "warnings": [
-      "Security violation: RATE_LIMITED"
+      "Security violation: PROMPT_INJECTION"
     ]
   }
 }

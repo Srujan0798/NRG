@@ -17,7 +17,14 @@ from src.security.gateway.prompt_sanitiser import PromptSanitiser
 
 logger = logging.getLogger(__name__)
 
-_prompt_sanitiser = PromptSanitiser()
+_prompt_sanitiser: PromptSanitiser | None = None
+
+
+def _get_prompt_sanitiser() -> PromptSanitiser:
+    global _prompt_sanitiser
+    if _prompt_sanitiser is None:
+        _prompt_sanitiser = PromptSanitiser()
+    return _prompt_sanitiser
 
 
 class BruteForceProtection:
@@ -205,6 +212,8 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
         "/health", "/health/llm", "/health/db", "/health/qdrant", "/health/all",
         "/metrics", "/docs", "/openapi.json", "/favicon.ico",
         "/login", "/logout", "/refresh",
+        "/auth/login", "/auth/logout", "/auth/refresh", "/auth/session",
+        "/api/query/stream",
     }
 
     TEXT_VALUE_MIN_LEN = 2
@@ -216,7 +225,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                 identifier = self._identifier_for_request(request)
                 if identifier == "testclient":
                     identifier = None
-                validation = _prompt_sanitiser.validate_query(
+                validation = _get_prompt_sanitiser().validate_query(
                     {"query": field_value},
                     identifier=identifier,
                 )

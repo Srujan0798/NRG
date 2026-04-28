@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -33,14 +34,27 @@ def _get_redis():
     try:
         from redis import Redis
 
-        client = Redis(
-            host="localhost",
-            port=6379,
-            db=0,
-            decode_responses=True,
-            socket_connect_timeout=2,
-            socket_timeout=2,
-        )
+        redis_url = os.getenv("REDIS_URL")
+        if redis_url:
+            client = Redis.from_url(
+                redis_url,
+                decode_responses=True,
+                socket_connect_timeout=2,
+                socket_timeout=2,
+            )
+        else:
+            cache_enabled = os.getenv("ENABLE_REDIS_CACHE", "false").lower() == "true"
+            explicit_host = os.getenv("REDIS_HOST") or os.getenv("REDIS_PORT") or os.getenv("REDIS_DB")
+            if not cache_enabled and not explicit_host:
+                return None
+            client = Redis(
+                host=os.getenv("REDIS_HOST", "localhost"),
+                port=int(os.getenv("REDIS_PORT", "6379")),
+                db=int(os.getenv("REDIS_DB", "0")),
+                decode_responses=True,
+                socket_connect_timeout=2,
+                socket_timeout=2,
+            )
         client.ping()
         _redis_client = client
         global REDIS_AVAILABLE

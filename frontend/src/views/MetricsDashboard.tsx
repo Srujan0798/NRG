@@ -66,9 +66,9 @@ export default function MetricsDashboard() {
     queryKey: ['admin-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/metrics', {
+        credentials: 'include',
         headers: {
           'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('nrg.auth.session') ? JSON.parse(localStorage.getItem('nrg.auth.session')!).accessToken : ''}`,
         },
       })
       if (!response.ok) throw new Error(`Failed to load metrics: ${response.status}`)

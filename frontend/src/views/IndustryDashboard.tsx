@@ -10,6 +10,7 @@ import { DPDPConsentDialog } from '../components/DPDPConsentDialog'
 import { ConsentBanner } from '../components/ConsentBanner'
 import { DPDPPanel } from '../components/DPDPPanel'
 import { EmptyState } from '../components/EmptyState/EmptyState'
+import PromptBlocked from '../components/PromptBlocked/PromptBlocked'
 import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { TierDataNotice } from '../components/TierDataNotice'
@@ -417,12 +418,16 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                   )}
                   {queryError && (
                     <div className="mt-4">
-                      <ErrorState
-                        title={t("auto.views.IndustryDashboard.20")}
-                        message={queryError}
-                        severity="error"
-                        onRetry={handleSearch}
-                      />
+                      {queryError.toLowerCase().includes('sensitive information') ? (
+                        <PromptBlocked reason={`${queryError} Ask for anonymized opportunities or aggregate capability trends instead.`} />
+                      ) : (
+                        <ErrorState
+                          title={t("auto.views.IndustryDashboard.20")}
+                          message={queryError}
+                          severity="error"
+                          onRetry={handleSearch}
+                        />
+                      )}
                     </div>
                   )}
                 </div>

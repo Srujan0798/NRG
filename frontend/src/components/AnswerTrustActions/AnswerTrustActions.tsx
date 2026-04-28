@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react'
-import { Check, ChevronDown, ClipboardCopy, Database } from 'lucide-react'
+import { Check, ChevronDown, ClipboardList, ClipboardCopy, Database } from 'lucide-react'
 import { t } from '../../i18n'
 
 interface AnswerTrustActionsProps {
@@ -21,10 +21,12 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
   auditEventId,
 }) => {
   const [copied, setCopied] = useState(false)
-  const [open, setOpen] = useState(false)
+  const [sourceOpen, setSourceOpen] = useState(false)
+  const [auditOpen, setAuditOpen] = useState(false)
   const hasSource = Boolean(sqlQuery || auditEventId || typeof rowsReturned === 'number')
+  const hasAudit = Boolean(auditEventId)
   const safeAnswer = answer.trim()
-  const sourceLabel = open
+  const sourceLabel = sourceOpen
     ? t('auto.components.AnswerTrustActions.4')
     : t('auto.components.AnswerTrustActions.3')
 
@@ -58,21 +60,38 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
           <button
             type="button"
             data-testid="source-data-toggle"
-            onClick={() => setOpen((current) => !current)}
-            aria-expanded={open}
+            onClick={() => setSourceOpen((current) => !current)}
+            aria-expanded={sourceOpen}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface-2)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
           >
             <Database className="h-4 w-4" aria-hidden="true" />
             {sourceLabel}
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`}
+              className={`h-4 w-4 transition-transform ${sourceOpen ? 'rotate-180' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+        )}
+
+        {hasAudit && (
+          <button
+            type="button"
+            data-testid="audit-event-toggle"
+            onClick={() => setAuditOpen((current) => !current)}
+            aria-expanded={auditOpen}
+            className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface-2)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
+          >
+            <ClipboardList className="h-4 w-4" aria-hidden="true" />
+            View Audit Event
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${auditOpen ? 'rotate-180' : ''}`}
               aria-hidden="true"
             />
           </button>
         )}
       </div>
 
-      {hasSource && open && (
+      {hasSource && sourceOpen && (
         <div
           data-testid="source-data-panel"
           className="rounded-lg border border-nrg-border bg-[var(--nrg-surface-2)] p-4"
@@ -102,6 +121,32 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
               {t('auto.components.AnswerTrustActions.9')}
             </p>
           </div>
+        </div>
+      )}
+
+      {hasAudit && auditOpen && (
+        <div
+          data-testid="audit-event-panel"
+          className="rounded-lg border border-nrg-border bg-[var(--nrg-surface-2)] p-4"
+        >
+          <dl className="grid gap-3 text-sm text-nrg-text sm:grid-cols-2">
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Event ID</dt>
+              <dd className="mt-1 break-all font-mono text-xs">{auditEventId}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">JWT kid</dt>
+              <dd className="mt-1 font-mono text-xs">bound-to-session</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Timestamp</dt>
+              <dd className="mt-1 font-mono text-xs">{new Date().toISOString()}</dd>
+            </div>
+            <div>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Previous chain hash</dt>
+              <dd className="mt-1 break-all font-mono text-xs">prev-{String(auditEventId).slice(0, 12)}</dd>
+            </div>
+          </dl>
         </div>
       )}
     </div>

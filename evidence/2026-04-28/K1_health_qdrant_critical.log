@@ -14,4 +14,4 @@ asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, a
 
 tests/api/test_health_endpoints.py::test_qdrant_zero_vectors [32mPASSED[0m[32m      [100%][0m
 
-[32m============================== [32m[1m1 passed[0m[32m in 1.45s[0m[32m ===============================[0m
+[32m============================== [32m[1m1 passed[0m[32m in 8.14s[0m[32m ===============================[0m

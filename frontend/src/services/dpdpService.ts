@@ -6,6 +6,7 @@ const API_BASE = '';
 const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
 });
 
 export const CONSENT_SCOPES = {
@@ -33,7 +34,7 @@ export const dpdpService = {
       const response = await api.post(
         `/consent?scope=${encodeURIComponent(scope)}`,
         {},
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: authService.getAuthHeaders(accessToken) }
       );
       return response.data;
     });
@@ -43,7 +44,7 @@ export const dpdpService = {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.delete(
         `/consent/${encodeURIComponent(scope)}`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: authService.getAuthHeaders(accessToken) }
       );
       return response.data;
     });
@@ -52,7 +53,7 @@ export const dpdpService = {
   async listConsents(): Promise<{ consents: ConsentRecord[] }> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get('/me/consents', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return response.data;
     });
@@ -61,7 +62,7 @@ export const dpdpService = {
   async exportUserData(): Promise<Blob> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get('/me/data', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
         responseType: 'blob',
       });
       return response.data;
@@ -71,7 +72,7 @@ export const dpdpService = {
   async eraseUserData(): Promise<{ success: boolean; consents_deleted?: number; events_anonymized?: number }> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.delete('/me/data', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return response.data;
     });

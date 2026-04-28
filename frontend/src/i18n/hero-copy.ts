@@ -1,18 +1,18 @@
 export const heroCopy = {
-  welcome: 'Hello Professor - ask anything about Indian research.',
+  welcome: "National Research Graph - sovereign intelligence over India's research database",
   productName: 'National Research Graph',
-  trustLine: 'Every answer cited. Every byte signed.',
+  trustLine: 'Ask one question and inspect the citations, source rows, audit event, and tier-shaped answer.',
   placeholders: [
-    'Top 5 funding agencies by total grant amount this year',
-    'Which institutes moved the most innovations to TRL-9?',
-    'Compare AI/ML output of IITs over the last 3 years',
-    'Researchers in solar energy who filed patents after seed funding',
+    'Ask about Indian research...',
+    'Top funding agencies by grant amount',
+    'TRL-9 innovations in clean energy',
+    'Who collaborates with IIT-GN on hydrogen?',
   ],
   suggestions: [
-    'Top 5 funding agencies by total grant amount',
-    'Which institutes moved the most innovations from TRL Level 4 to Level 9 in the last 5 years?',
-    'Researchers in solar energy who received seed funding 2020-2023 - what % filed patents?',
-    'Compare publication output of IIT Bombay vs IIT Madras in AI/ML, last 3 years',
+    'Top funding agencies by grant amount',
+    'TRL-9 innovations in clean energy',
+    'Compare Gujarat and Karnataka AI output 5y',
+    'Who collaborates with IIT-GN on hydrogen?',
   ],
   emptyHint: 'Try asking about funding, researchers, patents, or innovation',
 }

@@ -83,6 +83,31 @@ def test_text_to_sql_query_plan_cache_reuses_schema_prompt() -> None:
     assert extractor.prompt_calls == 1
 
 
+def test_text_to_sql_llm_timeout_falls_back_quickly(monkeypatch) -> None:
+    class SlowProvider:
+        model = "slow-provider"
+
+        def chat(self, messages):
+            time.sleep(1.0)
+
+            class Response:
+                content = "SELECT name FROM researchers LIMIT 10"
+
+            return Response()
+
+    monkeypatch.setenv("LLM_TIMEOUT_MS", "10")
+    extractor = CountingExtractor()
+    skill = _build_fast_sql_skill(extractor)
+    skill.llm_provider = SlowProvider()
+
+    start = time.perf_counter()
+    sql = skill.generate_sql("List researchers in Gujarat", "schema prompt")
+    elapsed_ms = (time.perf_counter() - start) * 1000
+
+    assert elapsed_ms < 800
+    assert sql.startswith("SELECT")
+
+
 def test_structured_sql_only_synthesis_bypasses_cloud_llm(monkeypatch) -> None:
     calls = {"mesh": 0}
 

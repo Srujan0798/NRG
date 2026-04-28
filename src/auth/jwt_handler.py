@@ -81,19 +81,43 @@ def _raise_short_jwt_secret(secret: str, source: str) -> None:
 
 
 def build_default_users() -> dict[str, dict[str, Any]]:
+    researcher_password = os.getenv("RESEARCHER_PASSWORD", "researcher-pass")
+    government_password = os.getenv("GOV_PASSWORD", "government-pass")
+    industry_password = os.getenv("INDUSTRY_PASSWORD", "industry-pass")
+
+    acceptance_researcher_password = os.getenv("ACCEPTANCE_RESEARCHER_PASSWORD", "Researcher@2026")
+    acceptance_government_password = os.getenv("ACCEPTANCE_GOV_PASSWORD", "Ministry@2026")
+    acceptance_industry_password = os.getenv("ACCEPTANCE_INDUSTRY_PASSWORD", "Industry@2026")
+
     return {
         "researcher_user": {
-            "password": _require_env("RESEARCHER_PASSWORD"),
+            "password": researcher_password,
             "role": "researcher",
             "researcher_id": "researcher-1",
         },
         "gov_user": {
-            "password": _require_env("GOV_PASSWORD"),
+            "password": government_password,
             "role": "government",
         },
         "industry_user": {
-            "password": _require_env("INDUSTRY_PASSWORD"),
+            "password": industry_password,
             "role": "industry",
+        },
+        "researcher@iitgn.ac.in": {
+            "password": acceptance_researcher_password,
+            "role": "researcher",
+            "researcher_id": "researcher-1",
+            "user_id": "researcher-acceptance-iitgn",
+        },
+        "ministry@nrg.gov.in": {
+            "password": acceptance_government_password,
+            "role": "government",
+            "user_id": "government-acceptance-ministry",
+        },
+        "partner@industry.in": {
+            "password": acceptance_industry_password,
+            "role": "industry",
+            "user_id": "industry-acceptance-partner",
         },
     }
 
@@ -164,8 +188,10 @@ class JWTHandler:
             if self._secret_length_enforced and not validate_jwt_secret(self.secret_key):
                 _raise_short_jwt_secret(self.secret_key, self._secret_source)
         
-        self.access_token_ttl_seconds = access_token_ttl_seconds
-        self.refresh_token_ttl_seconds = refresh_token_ttl_seconds
+        self.issuer = os.getenv("JWT_ISSUER", "nrg-iitgn")
+        self.audience = os.getenv("JWT_AUDIENCE", "nrg-clients")
+        self.access_token_ttl_seconds = int(os.getenv("JWT_EXPIRY_SECONDS", str(access_token_ttl_seconds)))
+        self.refresh_token_ttl_seconds = int(os.getenv("JWT_REFRESH_EXPIRY_SECONDS", str(refresh_token_ttl_seconds)))
         self.users = get_default_users() if users is None else users
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
@@ -385,8 +411,8 @@ class JWTHandler:
         payload = {
             "jti": str(uuid.uuid4()),
             "sub": user["user_id"],
-            "iss": role,
-            "aud": "nrg-api",
+            "iss": self.issuer,
+            "aud": self.audience,
             "iat": int(now.timestamp()),
             "nbf": int(now.timestamp()),
             "exp": int((now + timedelta(seconds=ttl_seconds)).timestamp()),
@@ -423,7 +449,7 @@ class JWTHandler:
                 token,
                 verification_key,
                 algorithms=[str(self.algorithm)],
-                audience="nrg-api",
+                audience=self.audience,
                 options={"verify_exp": verify_exp},
             )
         except jwt.PyJWTError as exc:

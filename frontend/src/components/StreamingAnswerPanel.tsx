@@ -6,6 +6,7 @@ import SqlBlock from './SqlBlock/SqlBlock'
 import TokenStream from './TokenStream/TokenStream'
 import VerifiedBadge from './VerifiedBadge/VerifiedBadge'
 import AnswerTrustActions from './AnswerTrustActions/AnswerTrustActions'
+import PromptBlocked from './PromptBlocked/PromptBlocked'
 import { t } from '../i18n'
 
 interface StreamingAnswerPanelProps {
@@ -70,9 +71,15 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
       </div>
 
       {error ? (
-        <div className="mt-5 rounded-lg border border-[var(--nrg-warning)] bg-[var(--nrg-warning-soft)] p-4 text-sm font-medium text-[var(--nrg-warning)]">
-          {error}
-        </div>
+        error.toLowerCase().includes('sensitive information') ? (
+          <div className="mt-5">
+            <PromptBlocked reason={`${error} Try a privacy-safe aggregate question instead.`} />
+          </div>
+        ) : (
+          <div className="mt-5 rounded-lg border border-[var(--nrg-warning)] bg-[var(--nrg-warning-soft)] p-4 text-sm font-medium text-[var(--nrg-warning)]">
+            {error}
+          </div>
+        )
       ) : (
         <div className="mt-6 space-y-5">
           <div data-testid="phase-planning" className="rounded-lg border border-nrg-border bg-[var(--nrg-surface-2)] p-4">

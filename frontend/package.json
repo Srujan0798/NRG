@@ -11,6 +11,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
+    "test:critical-path": "playwright test -c tests/playwright.config.ts tests/e2e",
     "test:a11y": "playwright test -c tests/playwright.config.ts tests/a11y/axe.test.ts",
     "test:contrast": "jest --runInBand tests/a11y/contrast.test.ts",
     "test:keyboard": "playwright test -c tests/playwright.config.ts tests/a11y/keyboard.test.ts",

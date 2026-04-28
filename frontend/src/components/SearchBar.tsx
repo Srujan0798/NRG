@@ -69,6 +69,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
         event.preventDefault()
         inputRef.current?.focus()
       }
+      if (
+        event.key === '/' &&
+        !event.metaKey &&
+        !event.ctrlKey &&
+        !event.altKey &&
+        !['INPUT', 'TEXTAREA', 'SELECT'].includes((event.target as HTMLElement | null)?.tagName || '')
+      ) {
+        event.preventDefault()
+        inputRef.current?.focus()
+      }
     }
     document.addEventListener('keydown', handleShortcut)
     return () => document.removeEventListener('keydown', handleShortcut)

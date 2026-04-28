@@ -5,10 +5,13 @@
 
 ## Required Release Gates
 
-- [ ] Quality Bar 5/6 verified (C4 pending K-4 optimization)
-- [ ] K-1, K-3, K-5A closed
-- [ ] Forbidden vocab clean
-- [ ] All UAT queries written
+- [ ] Quality Bar 6/6 verified (C4 remains blocked by K-2 latency evidence)
+- [ ] All K items closed (K-2 remains open for backend profiling and target-stack validation)
+- [x] Forbidden vocab 0 hits
+- [x] Chain seal valid
+- [ ] 3 UAT sessions passed
+- [x] K-1, K-3, K-5A closed locally
+- [x] All UAT queries written
 - [ ] Sovereign cluster health endpoint returns healthy over TLS
 - [ ] PostgreSQL staging migration and seed verified
 - [ ] Qdrant populated and vector-drift baseline healthy
@@ -44,8 +47,8 @@
 | Schema parity | `evidence/2026-04-28/schema_parity_check.log` |
 | Local performance baseline | `evidence/2026-04-28/perf_baseline_local.txt` |
 | Final vocabulary sweep | `evidence/2026-04-28/vocab_final_sweep.log` |
-| Docs/code sync | `evidence/2026-04-28/docs_sync_report.md` |
-| Handover completeness review | `evidence/2026-04-28/handover_packet_complete.md` |
+| Docs/code sync | `evidence/2026-04-28/docs_sync_report.txt` |
+| Handover completeness review | `evidence/2026-04-28/handover_packet_complete.log` |
 
 ## Open Blockers
 

@@ -1,48 +1,41 @@
-# Changelog
+# v1.0.0 - Sovereign Launch
 
-## v1.0.0 Local Handover Packet - 2026-04-28
+This changelog summarizes the local handover state through `6085c3b`. Cluster-gated validation, founder signatures, and commercial gates remain outside this local engineering packet.
 
-This changelog summarizes the release state represented by the latest local commits through `b0f6dba`. Cluster-gated validation remains open until the sovereign environment is available.
+## Features
 
-### Features
+- Split the FastAPI surface into modular route slices for auth, data, graph, health, ingest, query, and admin flows (`7fe47b3`).
+- Added SQL-only fast-path synthesis, query plan caching, and latency hot-path coverage (`bccc061`).
+- Added the `trl_stages` database view and canonical schema alias coverage for the long TRL source table (`964c2bb`, `0463f39`, `4bf6bd6`).
+- Added SSO endpoints, DPDP consent/export/erase flows, and production schema guardrails (`0dc388d`, `454f332`).
+- Added Tier 1, Tier 2, and Tier 3 UAT query sets for handover sessions (`95f4199`).
+- Added governance monitor, quality-gate artifacts, and Phase 2 sprint planning docs (`32398c3`).
 
-- Added modular FastAPI route slices for auth, data, graph, health, ingest, query, and admin flows (`7fe47b3`).
-- Added SQL-only fast-path synthesis, query plan cache, and latency hot-path tests (`bccc061`).
-- Added TRL-safe `trl_stages` database view and canonical schema alias coverage (`c1d82b8`, `4bf6bd6`, `964c2bb`).
-- Added SSO endpoints, audit fixes, and production schema guardrails (`0dc388d`).
-- Added phase 7 sovereign activation packet, Kubernetes/Helm readiness assets, C4 load-test assets, and data intake helpers (`7f3f5b2`, `75a59c6`).
-- Added C1-C8 commercial sprint artifacts and K-6 signing status (`5fb4ec0`).
-- Added Tier 1, Tier 2, and Tier 3 UAT query sets for live acceptance sessions.
+## Security
 
-### Security
+- Added Qdrant zero-vector CRITICAL health behavior and regression coverage (`e03b081`, `6100a25`, `f2208f9`).
+- Added ADR-006 genesis hash pinning, `lineage_intact`, and audit-chain health behavior (`e727d54`).
+- Purged production-forbidden vocabulary from active paths and recorded full-repo vocabulary evidence (`0fa298a`, `0a3d602`, `c11bc15`).
+- Fixed consent banner behavior, tier response filtering, PII injection handling, and citation-presence tests (`454f332`, `6085c3b`).
+- Added final local code-review blockers and security evidence mapping for handover review (`622217b`, `b0f6dba`).
 
-- Added Qdrant zero-vector CRITICAL health behavior (`f2208f9`, `6100a25`, `52c7a67`).
-- Added ADR-006 genesis hash pinning and `lineage_intact` audit-chain health field (`e727d54`).
-- Added DPDP UI, consent flows, and audit binding improvements (`0dc388d`, `454f332`).
-- Added live red-team replay evidence and rate-limit handling updates (`8ee6bfc`, `30dfb18`, `f76c28e`).
-- Purged production-forbidden vocabulary from active paths and added full-repo vocabulary evidence (`cabc4be`, `0a3d602`, `c11bc15`, `b0f6dba`).
-- Recorded final local code-review blockers in `BACKLOG.md` and `evidence/2026-04-28/code_review_final.md`.
-
-### Performance
+## Performance
 
 - Added K-4 cold-query latency evidence and publication-count cache warm path (`26f4e77`, `c38421a`).
-- Added K-2 100-user load-test evidence and follow-up local baseline report (`14d23db`, `b0f6dba`).
-- Added vector-drift scheduler evidence and quality-bar scorecard updates (`1f0be5f`, `40c986a`).
-- Added local performance baseline evidence showing Docker/Colima and local service blockers for this workstation.
+- Added 100-user K-2 load-test evidence and incident follow-up for the remaining C4 latency blocker (`14d23db`).
+- Added vector-drift scheduler evidence and quality-bar scorecard updates (`1f0be5f`).
+- Added query plan cache reuse coverage and LLM timeout fallback coverage for the Text-to-SQL hot path (`bccc061`).
 
-### Fixes
+## Fixes
 
-- Fixed ConsentBanner, ResearcherDashboard, LangGraph API tests, and PII injection handling (`454f332`).
-- Fixed 15 code-review issues across security, performance, and duplicated logic (`622217b`).
-- Fixed schema parity and RLS-related tests, including rate-limit handling in tier-isolation tests (`692c2ed`, `30dfb18`, `d28f276`, `62a127f`).
-- Fixed health endpoint table counts, prompt sanitiser encoding, and query response evidence generation (`da6c967`, `92d3bb3`, `2743379`).
-- Fixed API route split coverage and evidence traceability for K-1, K-3, K-4, and K-5A.
+- Fixed schema parity and RLS-related tests, including rate-limit handling in tier-isolation tests (`692c2ed`).
+- Fixed health endpoint table counts, prompt sanitiser encoding, and query response evidence generation (`2743379`, `6085c3b`).
+- Fixed citation presence test patching and workflow dependency mocking (`6085c3b`).
+- Fixed active-path production naming and acceptance-script references (`cabc4be`, `c11bc15`).
 
-### Operations
+## Operations
 
-- Pushed local release verification evidence to `main` (`b0f6dba`).
-- Added handover manifest, final checklist, and evidence cross-references for local handover review.
-- Added schema parity evidence: `tests/data/test_schema_parity.py` passed 16 tests.
-- Coverage run remains inconclusive locally because the full suite ended abnormally after collection and live API-dependent tests; evidence is recorded.
-- C4 remains pending for target-stack optimization and fresh load validation.
-- Final `v1.0.0-eternal` signing remains blocked on founder GPG key and live cluster evidence.
+- Added handover manifest, final checklist, and evidence cross-references for local handover review (`95f4199`, `b0f6dba`).
+- Added local release verification evidence and sprint artifacts for the 2026-04-28 packet (`b0f6dba`, `5fb4ec0`).
+- Added C1-C8 commercial sprint artifacts and K-6 signing status (`5fb4ec0`).
+- Documented remaining blockers: K-2/C4 latency under load, live UAT sessions, founder GPG signatures, sovereign-cluster validation, and commercial sign-off.

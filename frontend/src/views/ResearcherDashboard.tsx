@@ -15,6 +15,7 @@ import { PersonaToggle } from '../components/PersonaToggle'
 import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { StatsCard } from '../components/StatsCard/StatsCard'
 import { ErrorState } from '../components/ErrorState/ErrorState'
+import PromptBlocked from '../components/PromptBlocked/PromptBlocked'
 import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { TierDataNotice } from '../components/TierDataNotice'
@@ -212,7 +213,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-950"
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-950 sm:flex"
               aria-label={t("auto.views.ResearcherDashboard.3")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -347,12 +348,16 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
               {queryError && (
                 <div className="mt-4">
-                  <ErrorState
-                    title={t("auto.views.ResearcherDashboard.13")}
-                    message={queryError}
-                    severity="error"
-                    onRetry={handleRetry}
-                  />
+                  {queryError.toLowerCase().includes('sensitive information') ? (
+                    <PromptBlocked reason={`${queryError} Try aggregate counts, research areas, or institutional trends instead.`} />
+                  ) : (
+                    <ErrorState
+                      title={t("auto.views.ResearcherDashboard.13")}
+                      message={queryError}
+                      severity="error"
+                      onRetry={handleRetry}
+                    />
+                  )}
                 </div>
               )}
 

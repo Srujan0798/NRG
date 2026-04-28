@@ -1,0 +1,34 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+============================= test session starts ==============================
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 18 items
+
+tests/api/test_auth_api.py::test_login_returns_access_and_refresh_tokens PASSED [  5%]
+tests/api/test_auth_api.py::test_acceptance_persona_login_sets_http_only_cookies PASSED [ 11%]
+tests/api/test_auth_api.py::test_cookie_session_authorizes_requests_after_refresh PASSED [ 16%]
+tests/api/test_auth_api.py::test_health_reports_auth_secret_status PASSED [ 22%]
+tests/api/test_auth_api.py::test_refresh_and_logout_revoke_tokens PASSED [ 27%]
+tests/api/test_auth_api.py::test_researchers_endpoint_applies_role_based_filtering PASSED [ 33%]
+tests/api/test_auth_api.py::test_researchers_endpoint_pagination PASSED  [ 38%]
+tests/api/test_auth_api.py::test_publications_endpoint_pagination PASSED [ 44%]
+tests/auth/test_jwt_handler.py::test_generates_and_verifies_access_and_refresh_tokens PASSED [ 50%]
+tests/auth/test_jwt_handler.py::test_jwt_secret_length_returns_unhealthy_status PASSED [ 55%]
+tests/auth/test_jwt_handler.py::test_short_explicit_test_fixture_secret_is_allowed PASSED [ 61%]
+tests/auth/test_jwt_handler.py::test_rotation_script_generates_32_byte_secret PASSED [ 66%]
+tests/auth/test_jwt_handler.py::test_refresh_rotates_refresh_token_and_revokes_old_one PASSED [ 72%]
+tests/auth/test_jwt_handler.py::test_revoked_access_token_is_rejected PASSED [ 77%]
+tests/auth/test_jwt_handler.py::test_production_password_environment_names_are_supported PASSED [ 83%]
+tests/auth/test_jwt_handler.py::test_auth_code_does_not_support_forbidden_password_aliases PASSED [ 88%]
+tests/auth/test_jwt_handler.py::test_refresh_token_survives_handler_restart_with_store PASSED [ 94%]
+tests/auth/test_jwt_handler.py::test_logout_revokes_refresh_token_in_store PASSED [100%]
+
+======================== 18 passed in 86.43s (0:01:26) =========================

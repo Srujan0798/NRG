@@ -220,10 +220,13 @@ export interface PlanDAG {
 }
 
 export type StreamPhaseName =
+  | 'parsing'
   | 'planning'
   | 'planned'
+  | 'querying'
   | 'executing'
   | 'synthesizing'
+  | 'verifying'
   | 'verified'
   | 'error'
 

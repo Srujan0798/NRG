@@ -21,7 +21,6 @@ from src.orchestration.nodes.receiver import create_initial_state, receiver_node
 from src.orchestration.nodes.router import router_node
 from src.orchestration.nodes.synthesizer import synthesizer_node
 from src.orchestration.state import NRGState
-from src.training.data_collector import get_training_collector
 
 try:
     from src.orchestration.nodes.planner import planner_node
@@ -236,8 +235,9 @@ class NRGWorkflow:
         )
 
         try:
-            collector = get_training_collector()
-            collector.capture_async(result, user_id=user_id)
+            from src.training.data_collector import capture_training_async
+
+            capture_training_async(result, user_id=user_id)
         except Exception:
             pass
 

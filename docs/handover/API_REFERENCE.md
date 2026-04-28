@@ -2,15 +2,17 @@
 
 ## Human-Edited API Documentation with Persona Examples
 
-**Version:** 1.0  
-**Base URL:** `http://localhost:8000` (production: `https://nrg.iitgn.ac.in`)  
-**Authentication:** Bearer JWT (RS256) — tokens expire in 1 hour  
+**Version:** 1.0
+**Base URL:** `http://localhost:8000` (production: `https://nrg.iitgn.ac.in`)
+**Authentication:** Bearer JWT (RS256) — tokens expire in 1 hour
 
 ---
 
 ## 1. Authentication
 
 ### 1.1 Login — Researcher (Tier 1)
+
+Runtime paths: `POST /login` and `POST /auth/login`.
 
 ```bash
 curl -X POST http://localhost:8000/login \
@@ -51,6 +53,8 @@ curl -X POST http://localhost:8000/login \
 
 ### 1.4 Refresh Token
 
+Runtime paths: `POST /refresh` and `POST /auth/refresh`.
+
 ```bash
 curl -X POST http://localhost:8000/refresh \
   -H "Content-Type: application/json" \
@@ -59,12 +63,23 @@ curl -X POST http://localhost:8000/refresh \
 
 ### 1.5 Logout
 
+Runtime paths: `POST /logout` and `POST /auth/logout`.
+
 ```bash
 curl -X POST http://localhost:8000/logout \
   -H "Authorization: Bearer <access_token>" \
   -H "Content-Type: application/json" \
   -d '{"refresh_token":"<refresh_token>"}'
 ```
+
+### 1.6 Current Session
+
+```bash
+curl http://localhost:8000/auth/session \
+  -H "Authorization: Bearer <access_token>"
+```
+
+Returns the active authenticated session claims without exposing signing material.
 
 ---
 
@@ -410,6 +425,16 @@ curl -X DELETE "http://localhost:8000/me/data" \
 }
 ```
 
+### 5.5 Admin and Data Principal Aliases
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/dpdp/export` | Required | Alternate data-export path for authenticated principals. |
+| POST | `/dpdp/erase` | Required | Alternate erasure request path for authenticated principals. |
+| GET | `/dpdp/consents` | Required | Lists consent state through the DPDP path. |
+| DELETE | `/consent/{scope}` | Required | Revokes one consent scope. |
+| GET | `/admin/dpdp/stats` | Admin | Reports DPDP request and consent statistics. |
+
 ---
 
 ## 6. Audit Endpoints
@@ -501,7 +526,86 @@ curl http://localhost:8000/health/all
 
 ---
 
-## 8. Error Responses
+## 8. Additional Production Endpoints
+
+These endpoints are active in `src/api/main.py` and `src/api/routes/`.
+
+### 8.1 SSO
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/auth/sso/login` | No | Returns authorization URL and state for the configured SSO provider. |
+| POST | `/auth/sso/callback` | No | Exchanges provider callback data for an NRG session. |
+| GET | `/auth/sso/status` | No | Reports whether SSO is configured and enabled. |
+
+### 8.2 Streaming Query
+
+`POST /api/query/stream` emits server-sent events for long-running queries.
+
+```bash
+curl -N -X POST http://localhost:8000/api/query/stream \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"Compare AI research output between Gujarat and Karnataka over the last 5 years"}'
+```
+
+Events include phase updates such as `intent_detection`, `retrieval`, `synthesis`, and final answer payloads.
+
+### 8.3 Telemetry, Feedback, and Ingest
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| POST | `/api/telemetry` | Optional session | Accepts frontend telemetry payloads. |
+| POST | `/api/feedback` | Required | Records answer feedback for later review. |
+| POST | `/api/ingest` | Admin | Starts a document/data ingest job. |
+| GET | `/api/ingest/{job_id}` | Admin | Reads ingest job status. |
+
+### 8.4 Detailed Health and Operations
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/health/killer_queries` | No | Runs or reports critical query health checks. |
+| GET | `/health/llm` | No | Reports configured LLM provider readiness. |
+| GET | `/api/providers/health` | No | Reports provider mesh health. |
+| GET | `/health/db` | No | Reports database connectivity and table state. |
+| GET | `/health/qdrant` | No | Reports Qdrant readiness. |
+| GET | `/api/vectors/health` | No | Reports vector collection health. |
+| GET | `/admin/slo` | Admin | Reports SLO status and current budget state. |
+| GET | `/metrics` | No | Prometheus metrics endpoint. |
+| GET | `/api/metrics` | No | JSON metrics endpoint. |
+| POST | `/api/reindex` | Admin | Starts vector reindexing. |
+
+### 8.5 Remaining Data Endpoints
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/projects` | Required | Returns tier-filtered project rows. |
+| GET | `/patents` | Required | Returns tier-filtered patent rows. |
+| GET | `/collaborations` | Required | Returns tier-filtered collaboration rows. |
+| GET | `/research-documents` | Required | Returns accessible research-document metadata. |
+| POST | `/query/graph` | Required | Builds a graph response for a supplied query. |
+| GET | `/query/graph` | Required | Reads graph data for a supplied topic. |
+| GET | `/api/internal/tier_diff` | Internal | Compares tier-filtered response shapes for audits. |
+
+### 8.6 Admin RBAC
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/api/admin/rbac` | Admin | Lists persona and role rules. |
+| POST | `/api/admin/rbac` | Admin | Creates a persona rule. |
+| GET | `/api/admin/rbac/{persona_name}` | Admin | Reads one persona rule. |
+| PUT | `/api/admin/rbac/{persona_name}` | Admin | Updates one persona rule. |
+| DELETE | `/api/admin/rbac/{persona_name}` | Admin | Deletes one persona rule. |
+
+### 8.7 Frontend Fallback
+
+| Method | Path | Auth | Purpose |
+|---|---|---|---|
+| GET | `/{full_path:path}` | No | Serves the frontend application for non-API paths. |
+
+---
+
+## 9. Error Responses
 
 | Code | Meaning | Common Cause |
 |------|---------|--------------|
@@ -547,7 +651,7 @@ curl http://localhost:8000/health/all
 
 ---
 
-## 9. Rate Limits by Tier
+## 10. Rate Limits by Tier
 
 | Tier | Requests/minute | Queries/hour |
 |------|----------------|--------------|
@@ -557,7 +661,7 @@ curl http://localhost:8000/health/all
 
 ---
 
-## 10. Common Workflows
+## 11. Common Workflows
 
 ### 10.1 Complete Query Flow (Researcher)
 
@@ -616,40 +720,22 @@ curl -X POST http://localhost:8000/query \
 
 ---
 
-## 11. WebSocket (Real-time Streaming)
+## 12. Real-time Streaming
 
-For streaming responses (long queries):
+NRG uses server-sent events at `POST /api/query/stream` for streaming responses.
 
 ```bash
-# Connect to WebSocket
-wss://nrg.iitgn.ac.in/ws/query
-
-# Send query
-{
-  "type": "query",
-  "query": "list all AI researchers in India with their publication counts",
-  "token": "<access_token>"
-}
-
-# Receive streaming response
-{
-  "type": "chunk",
-  "content": "There are 1,2..."
-}
-{
-  "type": "chunk",
-  "content": "3,4..."
-}
-{
-  "type": "done",
-  "query_id": "uuid",
-  "citations": [...]
-}
+curl -N -X POST http://localhost:8000/api/query/stream \
+  -H "Authorization: Bearer <access_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"query":"list all AI researchers in India with their publication counts"}'
 ```
+
+Expected event types: `phase`, `chunk`, `final`, and `error`.
 
 ---
 
-*Document version: 1.0*  
-*Last updated: 2026-04-24*  
-*API version: 1.0*  
+*Document version: 1.0*
+*Last updated: 2026-04-29*
+*API version: 1.0*
 *For questions: api@nrg.iitgn.ac.in*

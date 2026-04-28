@@ -11,6 +11,8 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from src.auth.jwt_handler import AuthError, JWTHandler
 from src.auth.rbac import RBACPolicyEngine, get_policy_engine
 
+ACCESS_COOKIE_NAME = "nrg_access_token"
+
 
 def get_user_tier(claims: dict) -> int:
     """Extract tier from JWT claims, defaulting to most restrictive (tier 1)."""
@@ -177,8 +179,15 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
         client_ip = request.client.host if request.client else None
         user_agent = request.headers.get("User-Agent")
 
+        token = None
         if authorization and authorization.startswith("Bearer "):
-            token = authorization.replace("Bearer ", "", 1)
+            header_token = authorization.replace("Bearer ", "", 1).strip()
+            if header_token:
+                token = header_token
+        if token is None:
+            token = request.cookies.get(ACCESS_COOKIE_NAME) or request.cookies.get("access_token")
+
+        if token:
             try:
                 claims = self.jwt_handler.verify_access_token(token, client_ip=client_ip)
                 request.state.auth_claims = claims
