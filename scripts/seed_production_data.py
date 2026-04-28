@@ -110,10 +110,10 @@ def generate_publications(researchers, count=2000):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", choices=["reference", "test"], required=True)
+    parser.add_argument("--env", choices=["acceptance", "test"], required=True)
     args = parser.parse_args()
 
-    if args.env not in ["reference", "test"]:
+    if args.env not in ["acceptance", "test"]:
         print("ERROR: Never run this against production.")
         exit(1)
 
