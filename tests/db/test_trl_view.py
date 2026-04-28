@@ -4,6 +4,8 @@ import sqlalchemy as sa
 from alembic.migration import MigrationContext
 from alembic.operations import Operations
 
+from src.db.validators import validate_identifier
+
 
 LONG_TRL_TABLE = "innovations_at_various_stages_of_technology_readiness_level"
 
@@ -77,3 +79,16 @@ def test_trl_stages_view_exists_and_is_queryable_from_active_migration():
             assert remaining == 0
         finally:
             migration.op = original_op
+
+
+def test_validate_identifier_rejects_64_byte_postgres_identifier():
+    valid = "a" * 63
+    too_long = "a" * 64
+
+    assert validate_identifier(valid) == valid
+    try:
+        validate_identifier(too_long)
+    except ValueError as exc:
+        assert "exceeds 63 bytes" in str(exc)
+    else:
+        raise AssertionError("validate_identifier accepted a 64-byte identifier")

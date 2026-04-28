@@ -10,8 +10,9 @@ rootdir: /Users/srujansai/Desktop/NRG
 configfile: pytest.ini
 plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
 asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-[1mcollecting ... [0mcollected 1 item
+[1mcollecting ... [0mcollected 2 items
 
-tests/db/test_trl_view.py::test_trl_stages_view_exists_and_is_queryable_from_active_migration [32mPASSED[0m[32m [100%][0m
+tests/db/test_trl_view.py::test_trl_stages_view_exists_and_is_queryable_from_active_migration [32mPASSED[0m[32m [ 50%][0m
+tests/db/test_trl_view.py::test_validate_identifier_rejects_64_byte_postgres_identifier [32mPASSED[0m[32m [100%][0m
 
-[32m============================== [32m[1m1 passed[0m[32m in 5.76s[0m[32m ===============================[0m
+[32m============================== [32m[1m2 passed[0m[32m in 1.60s[0m[32m ===============================[0m
