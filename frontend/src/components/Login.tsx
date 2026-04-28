@@ -27,18 +27,18 @@ const PERSONA_LABELS: Record<PersonaKey, { en: string; hi: string; tier: string;
 
 const PERSONA_CREDENTIALS: Record<PersonaKey, { username: string; password: string; accent: string }> = {
   researcher: {
-    username: 'researcher_user',
-    password: 'researcher-pass',
+    username: 'researcher@iitgn.ac.in',
+    password: 'Researcher@2026',
     accent: 'var(--nrg-chart-5)',
   },
   government: {
-    username: 'gov_user',
-    password: 'government-pass',
+    username: 'ministry@nrg.gov.in',
+    password: 'Ministry@2026',
     accent: 'var(--nrg-chart-2)',
   },
   industry: {
-    username: 'industry_user',
-    password: 'industry-pass',
+    username: 'partner@industry.in',
+    password: 'Industry@2026',
     accent: 'var(--nrg-chart-3)',
   },
 }
@@ -94,8 +94,9 @@ const AshokaLogo: React.FC<{ className?: string }> = ({ className }) => (
 
 const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }) => {
   const [selectedPersona, setSelectedPersona] = useState<PersonaKey>('researcher')
-  const [username, setUsername] = useState('researcher_user')
-  const [password, setPassword] = useState('researcher-pass')
+  const [username, setUsername] = useState('researcher@iitgn.ac.in')
+  const [password, setPassword] = useState('Researcher@2026')
+  const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null)
   const [fieldErrors, setFieldErrors] = useState<{ username?: string; password?: string }>({})
@@ -116,7 +117,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const nextErrors: { username?: string; password?: string } = {}
-    if (!username.trim()) nextErrors.username = 'Enter your username'
+    if (!username.trim()) nextErrors.username = 'Enter your email'
     if (!password.trim()) nextErrors.password = 'Enter your password'
     setFieldErrors(nextErrors)
     setLocalMessage(null)
@@ -263,7 +264,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="block text-sm font-medium text-slate-900 mb-2">{t("auto.components.Login.11")}</span>
+              <span className="block text-sm font-medium text-slate-900 mb-2">Email</span>
               <div className="relative">
                 <div
                   className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
@@ -272,7 +273,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   <UserIcon className="w-4 h-4" />
                 </div>
                 <input
-                  type="text"
+                  type="email"
                   data-testid="login-username"
                   value={username}
                   onChange={(e) => {
@@ -283,7 +284,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="username"
-                  placeholder={t("auto.components.Login.12")}
+                  placeholder="you@institution.ac.in"
                   aria-invalid={Boolean(fieldErrors.username)}
                   aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                   style={{ borderColor: focusedField === 'username' ? accentColor : undefined }}
@@ -307,7 +308,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   </svg>
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   data-testid="login-password"
                   value={password}
                   onChange={(e) => {
@@ -316,13 +317,21 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   }}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField(null)}
-                  className="nrg-input pl-11"
+                  className="nrg-input pl-11 pr-20"
                   autoComplete="current-password"
                   placeholder={t("auto.components.Login.14")}
                   aria-invalid={Boolean(fieldErrors.password)}
                   aria-describedby={fieldErrors.password ? 'password-error' : undefined}
                   style={{ borderColor: focusedField === 'password' ? accentColor : undefined }}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  className="absolute right-3 top-1/2 min-h-9 -translate-y-1/2 rounded-md px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? 'Hide' : 'Show'}
+                </button>
               </div>
               {fieldErrors.password && (
                 <p id="password-error" className="mt-1 text-xs text-rose-600">{fieldErrors.password}</p>
@@ -348,11 +357,11 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               className="nrg-btn-primary w-full text-base py-3"
             >
               {isLoading ? (
-                <span className="flex items-center gap-2">
+                  <span className="flex items-center gap-2">
                   <span className="nrg-ashoka-spinner nrg-ashoka-spinner--sm" />
-                  {t("auto.components.Login.15")}</span>
+                  Signing you in...</span>
               ) : (
-                `Continue as ${PERSONA_LABELS[selectedPersona].en}`
+                'Sign in'
               )}
             </button>
           </form>

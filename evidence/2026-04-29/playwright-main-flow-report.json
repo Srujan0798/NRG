@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-04-28T20:23:15.684Z",
+  "baseUrl": "http://127.0.0.1:3000",
+  "desktop": {
+    "viewport": {
+      "width": 1440,
+      "height": 1100
+    },
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": [],
+    "badResponses": [],
+    "checks": {
+      "hasFundingLeader": true,
+      "hasAuditOrProof": true,
+      "hasVerified": true,
+      "hasTable": true,
+      "hasExport": true,
+      "hasCitation": true,
+      "hasSourceProof": true,
+      "hasCopyAction": true,
+      "tableShowsMeitYBeforeAnrf": true,
+      "noVisibleTranslationKeys": true
+    },
+    "queryResponse": {
+      "http": 200,
+      "status": "success",
+      "tier": 1,
+      "audit_event_id": "d204b4056c898fb06898c7b6c22e9da949aa0b3889e10eaced2df2df0d1f7301",
+      "route": "deterministic_sql_fast_path",
+      "verified": true,
+      "sql_results": 5,
+      "citations": 1
+    }
+  },
+  "mobile": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": [],
+    "badResponses": [],
+    "checks": {
+      "hasFundingLeader": true,
+      "hasAuditOrProof": true,
+      "hasVerified": true,
+      "hasTable": true,
+      "hasExport": true,
+      "hasCitation": true,
+      "hasSourceProof": true,
+      "hasCopyAction": true,
+      "tableShowsMeitYBeforeAnrf": true,
+      "noVisibleTranslationKeys": true
+    },
+    "queryResponse": {
+      "http": 200,
+      "status": "success",
+      "tier": 1,
+      "audit_event_id": "d204b4056c898fb06898c7b6c22e9da949aa0b3889e10eaced2df2df0d1f7301",
+      "route": "deterministic_sql_fast_path",
+      "verified": true,
+      "sql_results": 5,
+      "citations": 1
+    }
+  },
+  "passed": true
+}

@@ -80,7 +80,7 @@ def test_query_industry_response_strips_pii_and_debug_fields(monkeypatch):
     response = client.post(
         "/query",
         headers={"Authorization": f"Bearer {token}"},
-        json={"query": "Show research areas and funding amounts across institutions"},
+        json={"query": "Summarize sensitive individual research profiles for review"},
     )
 
     assert response.status_code == 200, response.text

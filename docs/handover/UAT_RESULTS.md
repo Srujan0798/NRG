@@ -57,6 +57,53 @@ Each persona receives **10 pre-seeded queries** to execute. These queries should
 
 ---
 
+## [T1 Queries]
+
+```text
+How many IIT Gandhinagar publications were published in 2023, grouped by research area?
+Which researchers at IIT Gandhinagar published on hydrogen catalysis between 2020 and 2024, and what are their email contacts?
+Show the top 10 Computer Science researchers by publication count since 2021, including institution, h-index, and recent paper titles.
+Find researchers in Gujarat working on robotics who also have patents or funded projects.
+Which labs collaborate most often with researchers publishing in machine learning?
+Compare publication growth for IIT Gandhinagar, IIT Bombay, and IIT Madras from 2019 to 2024.
+List researchers whose funding increased after they started publishing in renewable energy topics.
+Show co-author networks for quantum computing researchers and identify the most connected collaborator.
+Which institutions have researchers working at TRL 6 or above in semiconductor or chip design?
+For hydrogen research, show publications, active researchers, grants, patents, and likely collaboration opportunities.
+```
+
+## [T2 Queries]
+
+```text
+Which institutions produced the most AI research each year from 2020 to 2025?
+Show a five-year rollup of AI, biotech, renewable energy, and semiconductor publication trends by state.
+Compare government innovation grant allocation by research domain and institution type.
+Which ministries or agencies appear together most often in funded research collaborations?
+Which states have high publication output but low patent commercialization in clean energy?
+Rank institutions by publications per crore of government innovation grant funding.
+Show aggregate TRL distribution for market-ready technologies by institution type.
+Which research domains have rising output but declining funding over the last five years?
+Identify national collaboration clusters between IITs, NITs, and state universities in healthcare AI.
+Generate a policy summary of underfunded high-output research areas without showing individual researcher details.
+```
+
+## [T3 Queries]
+
+```text
+Which public papers cite technologies related to precision agriculture sensors?
+Which public datasets are available for agriculture, biotech, or clean-energy research?
+Which institutions publicly publish the most work on electric vehicle battery technology?
+Find public collaboration opportunities in semiconductor design based on published papers and patents only.
+Which IITs have published work in robotics, and what topics do they focus on?
+Show institutions with public patents or publications related to graphene applications.
+Find published papers since 2021 on hydrogen fuel cells and their affiliated institutions.
+Which institutions appear strongest in AI safety using public publication evidence?
+Show public research roadmaps by institution for quantum computing and advanced materials.
+Summarize potential public-domain partners for biotech collaboration without grant or personal-contact data.
+```
+
+---
+
 ## Persona 1: Professor (Tier 1 Researcher)
 
 ### Profile

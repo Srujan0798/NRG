@@ -128,11 +128,17 @@ class Embedder:
         self._primary_model = None
         self._indic_model = None
         self._chunker = SemanticChunker()
-        # Lazy load: models loaded on first embed() call, not in __init__
         self._models_loaded = False
         if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("EMBEDDER_DETERMINISTIC"):
             self._load_models()
             self._models_loaded = True
+
+    def warmup(self):
+        """Eagerly load models so first real request is not blocked."""
+        if not self._models_loaded:
+            self._load_models()
+            self._models_loaded = True
+        return self
 
     def _load_models(self):
         """Load embedding models (cached for reuse)."""

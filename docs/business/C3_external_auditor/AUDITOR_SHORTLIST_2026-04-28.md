@@ -1,7 +1,7 @@
 # C3 CERT-In Auditor Shortlist
 
 **Status:** Shortlist prepared; outreach pending  
-**Source checked:** 2026-04-28  
+**Source checked:** 2026-04-29
 **Primary source:** CERT-In empanelment page and official PDF list.
 
 ## Source
@@ -10,8 +10,8 @@
 - CERT-In PDF list: `https://www.cert-in.org.in/PDF/Empanel_org.pdf`
 
 The CERT-In page links to the list of empanelled Information Security Auditing
-Organisations. The PDF states it is the up-to-date valid list and is updated by
-CERT-In when there is a change.
+Organisations. The page was last updated on 2026-04-28. The PDF states it is the
+up-to-date valid list and is updated by CERT-In when there is a change.
 
 ## Outreach Shortlist
 
@@ -40,4 +40,3 @@ C3 is not complete until this folder contains:
 - Auditor acknowledgement email.
 - Findings register.
 - Final letter covering DPDP 2023, ISO 27001 mapping, and penetration test scope.
-

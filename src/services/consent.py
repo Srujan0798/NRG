@@ -2,6 +2,7 @@
 
 import uuid
 import logging
+from functools import lru_cache
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
@@ -361,3 +362,13 @@ class ConsentService:
 
         conn.close()
         return stats
+
+
+@lru_cache(maxsize=8)
+def _get_consent_service_for_path(resolved_db_path: str) -> ConsentService:
+    return ConsentService(resolved_db_path)
+
+
+def get_consent_service(db_path: Optional[str] = None) -> ConsentService:
+    """Return a cached consent service so request handlers do not rerun DDL."""
+    return _get_consent_service_for_path(str(resolve_database_path(db_path)))

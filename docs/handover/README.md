@@ -86,6 +86,21 @@ Additional 2026-04-27 evidence:
 | `docs/audits/frontend_hardening_2026-04-27/videos/` | Production walkthrough recording captured from the local hardened running stack. |
 | `evidence/2026-04-27/final_validation/FINAL_PRODUCTION_REVALIDATION.md` | Final local revalidation summary, one-command compose fix, test evidence, and honest Docker-daemon limitation. |
 
+Additional 2026-04-28 / 2026-04-29 evidence:
+
+| Evidence | What It Proves |
+|---|---|
+| `evidence/2026-04-28/UAT_T1_queries.md` | Tier 1 researcher UAT query set and expected filtering behavior. |
+| `evidence/2026-04-28/UAT_T2_queries.md` | Tier 2 ministry UAT query set and aggregate-only filtering behavior. |
+| `evidence/2026-04-28/UAT_T3_queries.md` | Tier 3 industry UAT query set and public-data-only filtering behavior. |
+| `evidence/2026-04-28/K1_health_qdrant_critical.log` | Qdrant zero-vector health behavior returns CRITICAL. |
+| `evidence/2026-04-28/K3_trl_view_test.log` | TRL view and 63-byte identifier guard tests pass. |
+| `evidence/2026-04-28/K5A_vocab_check_pass.log` | Full-repo production vocabulary gate exits cleanly. |
+| `evidence/2026-04-28/locust_100u_v2.json` | K-2 100-user load evidence; C4 remains failed by latency. |
+| `evidence/2026-04-28/docs_sync_report.txt` | Docs-sync findings and open documentation drift. |
+| `evidence/2026-04-28/handover_packet_complete.log` | Handover packet structural completeness check. |
+| `evidence/2026-04-28/sprint_review.md` | Sprint review, quality-bar status, and next-sprint questions. |
+
 ## Local Operator Quick Start
 
 ```bash
@@ -114,4 +129,4 @@ For detailed setup, seed, test, and troubleshooting instructions, start with [..
 
 NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, vector baseline, and official dataset ingestion have all been run and attached as evidence.
 
-*Last updated: 2026-04-27*
+*Last updated: 2026-04-29*

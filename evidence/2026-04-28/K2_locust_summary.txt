@@ -1,63 +1,91 @@
 K-2 LOCUST LOAD TEST EVIDENCE — 2026-04-28
-=============================================
+==========================================
 
 TEST CONFIGURATION
 ==================
   Tool:       locust (headless)
   Users:      100 concurrent
-  Spawn rate: 20/s
-  Duration:   90s
-  Host:       http://localhost:8000
-  Weight:     60% fast-path (researcher), 30% full-path (gov), 10% adversarial
-  Pre-warm:   5 Locust queries pre-cached before test
+  Spawn rate: 10/s
+  Duration:   2m
+  Host:       http://localhost:8010
+  Workers:    uvicorn --workers 4
+  Env:        LOG_LEVEL=ERROR
+              TRUST_PROXY_HEADERS=1
+              NRG_SKIP_EMBEDDER_WARMUP=1
+              NRG_QUOTA_DISABLED=1
+              DB_POOL_SIZE=20
+              DB_MAX_OVERFLOW=40
+  Traffic:    60% fast-path, 30% full-path, 10% adversarial
+
+PORT NOTE
+=========
+  The requested port 8000 was not isolated during this run: another local agent was actively killing/restarting uvicorn on port 8000.
+  The final K-2 run used port 8010 to isolate this agent's API process while keeping the same app, worker count, and Locust workload.
 
 RESULTS SUMMARY
-==============
-  Total requests:      143 (24 in pilot run at 50 users)
-  Failures:            0
-  Error rate:          0%
-  /auth/login P99:    58,000ms (JWT RS256 signing under contention)
-  /query P50:          23,000ms
-  /query P99:          59,000ms  ← C4 SLO: <500ms ❌ FAIL
+===============
+  Total requests:       1,125
+  Failures:             0
+  Error rate:           0.00%
+  Throughput:           10.07 requests/s aggregated
 
-PILOT RUN (50 users, 60s)
-==========================
-  Total requests: 24
-  /query P99:      7,681ms  ❌ FAIL
-  /auth/login:     10,674ms  ❌ (not in SLO but notable)
+  /auth/login:
+    requests:           100
+    p50:                26,000ms
+    p95:                46,000ms
+    p99:                46,000ms
+
+  /query:
+    requests:           987
+    min:                45.412ms
+    p50:                3,900ms
+    p95:                31,000ms
+    p99:                38,000ms
+
+  /stats:
+    requests:           38
+    p50:                5,300ms
+    p99:                31,000ms
+
+  Aggregated:
+    requests:           1,125
+    p50:                5,000ms
+    p95:                31,000ms
+    p99:                46,000ms
+
+Custom C4 listener:
+  Total samples:        1,058
+  Mean:                 6,632.9ms
+  P50:                  4,271.1ms
+  P90:                  15,038.9ms
+  P95:                  20,861.2ms
+  P99:                  27,772.6ms
+  Max:                  29,119.6ms
+
+PASS CRITERIA
+=============
+  Error rate < 1%:      PASS (0.00%)
+  P99 latency < 500ms:  FAIL (/query P99 38,000ms; custom C4 P99 27,772.6ms)
 
 BOTTLENECK ANALYSIS
-==================
-  Root cause: LLM synthesis (Anthropic Claude) under concurrent load
-  - 100 users all requesting synthesis simultaneously
-  - Anthropic API rate limits → requests queue
-  - JWT signing (RS256) also adds ~3s under load
-  - Cached queries hit in-memory TTL cache at 72-255ms (PASSING SLO)
-  - Uncached queries queue behind LLM calls → 23s median
+===================
+  K-4 single-query fast path is fixed: the same publication-count query completes in 347.114ms cold and 96.003ms warm.
+  K-2 still fails under 100-user concurrency because the local API queues heavily under load.
 
-KEY INSIGHT
-===========
-  The SLO (<500ms P99) is achievable for CACHED queries (72-255ms).
-  Under concurrent load, LLM synthesis becomes the bottleneck.
-  Recommendation: Pre-warm ALL critical queries in cache before load test.
-
-LOCUST CSV FILES
-================
-  evidence/2026-04-28/K2_locust_100users_stats.csv         — aggregated stats
-  evidence/2026-04-28/K2_locust_100users_stats_history.csv   — per-second history
-  evidence/2026-04-28/K2_locust_100users_failures.csv       — failure details (0 failures)
-  evidence/2026-04-28/K2_locust_100users_exceptions.csv    — exceptions (none)
+  Evidence:
+    - /query minimum response was 45.412ms, proving the fast path can execute quickly.
+    - /query median rose to 3.9s and P99 rose to 38s under concurrency.
+    - /auth/login P99 was 46s, so login/JWT/auth middleware also saturates the local process during ramp-up.
+    - Rate limiting and prompt-sanitiser cross-user poisoning were reduced by TRUST_PROXY_HEADERS=1 and NRG_QUOTA_DISABLED=1.
+    - Per-request INFO logging was reduced with LOG_LEVEL=ERROR, so stdout flooding is not the remaining primary cause.
 
 ONE-LINE SUMMARY
 ================
-  P99=59,000ms @ 100 users, error_rate=0% — C4 FAIL (LLM contention, not DB/cache)
+  P99=38,000ms for /query @ 100 users, error_rate=0.00% — K-2/C4 remains FAIL due local API queueing under 100-user concurrency.
 
-C4 SLO GATE
-============
-  SLO: P99 < 500ms @ 1000 concurrent users
-  RESULT: P99 59,000ms @ 100 users — UNACHIEVED without LLM optimization
-  PATH TO CLOSURE:
-    1. Add Redis-backed cache for LLM synthesis results (TTL 1 hour)
-    2. Pre-warm cache with 50+ critical queries at startup
-    3. Implement LLM request batching for concurrent users
-    4. Consider async streaming responses
+LOCUST CSV FILES
+================
+  evidence/2026-04-28/K2_locust_stats.csv
+  evidence/2026-04-28/K2_locust_stats_history.csv
+  evidence/2026-04-28/K2_locust_failures.csv
+  evidence/2026-04-28/K2_locust_exceptions.csv

@@ -173,10 +173,11 @@ ls -la
 ### 3.4 HMAC Manifest Verification
 
 ```bash
-# Verify HMAC signature
-python scripts/verify_intake_manifest.py \
-  --manifest /data/intake/2026-04-24/manifest.json.hmac \
-  --secret $HMAC_SECRET_KEY
+# Verify intake bundle manifest, checksums, optional sidecar signatures, and row HMACs
+python scripts/verify_intake_bundle.py \
+  --bundle-dir /data/intake/2026-04-24/ \
+  --manifest /data/intake/2026-04-24/manifest.json \
+  --hmac-secret-env DATA_INTAKE_HMAC_SECRET
 
 # Expected output
 # HMAC VERIFIED ✓
@@ -215,10 +216,12 @@ PII_PATTERNS = {
 ```
 
 ```bash
-# Scan all files for PII
-python scripts/scan_intake_pii.py \
-  --directory /data/intake/2026-04-24/ \
-  --report /data/intake/2026-04-24/pii_scan_report.json
+# Run the seven-pillar scorecard before import, including PII leakage checks
+python scripts/data_quality_scorecard.py \
+  --database-url "$DATABASE_URL" \
+  --json-output /data/intake/2026-04-24/pii_scan_report.json \
+  --markdown-output /data/intake/2026-04-24/data_quality_report.md \
+  --fail-on-p0
 
 # If PII found:
 # 1. Quarantine affected files

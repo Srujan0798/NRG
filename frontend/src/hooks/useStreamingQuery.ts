@@ -10,6 +10,7 @@ export interface StreamPhase {
   phase: StreamPhaseName
   label: string
   progress: number
+  elapsed_ms?: number
 }
 
 export interface StreamCitation {
@@ -48,10 +49,13 @@ export interface UseStreamingQueryOptions {
 }
 
 const PHASES: Record<StreamPhaseName, StreamPhase> = {
-  planning: { phase: 'planning', label: 'Planning evidence path', progress: 0.1 },
+  parsing: { phase: 'parsing', label: 'Parsing your question...', progress: 0.08 },
+  planning: { phase: 'planning', label: 'Planning a multi-hop strategy...', progress: 0.1 },
   planned: { phase: 'planned', label: 'Evidence plan ready', progress: 0.25 },
+  querying: { phase: 'querying', label: 'Querying 58 research tables...', progress: 0.55 },
   executing: { phase: 'executing', label: 'Retrieving signed records', progress: 0.55 },
-  synthesizing: { phase: 'synthesizing', label: 'Writing answer with citations', progress: 0.8 },
+  synthesizing: { phase: 'synthesizing', label: 'Synthesizing the answer...', progress: 0.8 },
+  verifying: { phase: 'verifying', label: 'Verifying citations...', progress: 0.94 },
   verified: { phase: 'verified', label: 'Verified by HMAC chain', progress: 1 },
   error: { phase: 'error', label: 'Answer paused', progress: 0 },
 }
@@ -244,21 +248,52 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
 
     if (phaseName === 'heartbeat') return
 
+    if (phaseName === 'answer') {
+      const answerText = String(parsed.response || parsed.answer || '')
+      fullTextRef.current = answerText
+      setFullText(answerText)
+      useQueryStore.getState().setStreaming({ answer: answerText })
+      setSql(parsed.sql_query || parsed.sql_queries?.[0] || '')
+      if (Array.isArray(parsed.sql_results)) setRetrievedCount(parsed.sql_results.length)
+      if (Array.isArray(parsed.citations)) {
+        const answerCitations = parsed.citations.map(toStreamCitation)
+        citationsRef.current = answerCitations
+        setCitations(answerCitations)
+      }
+      setAuditEventId(parsed.audit_event_id || null)
+      completeStream({
+        phase: 'verified',
+        citations: Array.isArray(parsed.citations) ? parsed.citations : [],
+        audit_event_id: parsed.audit_event_id || `stream-${Date.now()}`,
+        signature_bytes: parsed.signature_bytes ?? 26,
+      })
+      return
+    }
+
     if (phaseName === 'planned') {
       setPlan(parsed.plan || { steps: ['Classify research intent', 'Retrieve matching evidence', 'Prepare verified answer'] })
       setPhase('planned')
       return
     }
 
-    if (phaseName === 'executing') {
+    if (phaseName === 'executing' || phaseName === 'querying') {
       setSql(parsed.sql || '')
       if (typeof parsed.retrieved_count === 'number') setRetrievedCount(parsed.retrieved_count)
-      setPhase('executing')
+      if (typeof parsed.row_count === 'number') setRetrievedCount(parsed.row_count)
+      setPhase(phaseName as StreamPhaseName, {
+        label: parsed.label,
+        progress: parsed.progress,
+        elapsed_ms: parsed.elapsed_ms,
+      })
       return
     }
 
     if (phaseName === 'synthesizing') {
-      setPhase('synthesizing')
+      setPhase('synthesizing', {
+        label: parsed.label,
+        progress: parsed.progress,
+        elapsed_ms: parsed.elapsed_ms,
+      })
       appendToken(parsed.token || '')
       if (parsed.citation) addCitation(parsed.citation)
       return
@@ -298,6 +333,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
       setPhase(normalizeLegacyPhase(parsed.phase), {
         label: parsed.label,
         progress: parsed.progress,
+        elapsed_ms: parsed.elapsed_ms,
       })
     }
   }, [addCitation, appendToken, completeStream, failRecoverably, resetSilenceTimer, setPhase])
@@ -367,7 +403,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
       }) as EventListener)
     }
 
-    for (const eventType of ['planned', 'executing', 'synthesizing', 'verified', 'heartbeat', 'citation', 'phase', 'meta', 'done', 'error']) {
+    for (const eventType of ['planned', 'executing', 'querying', 'synthesizing', 'verifying', 'verified', 'heartbeat', 'citation', 'phase', 'answer', 'meta', 'done', 'error']) {
       addTypedListener(eventType)
     }
 

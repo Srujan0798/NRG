@@ -15,6 +15,7 @@ import { PersonaToggle } from '../components/PersonaToggle'
 import { QueryPhaseProgress } from '../components/QueryPhaseProgress'
 import { StatsCard } from '../components/StatsCard/StatsCard'
 import { ErrorState } from '../components/ErrorState/ErrorState'
+import PromptBlocked from '../components/PromptBlocked/PromptBlocked'
 import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { ResearchAreasBarChart } from '../components/DataViz/ResearchAreasBarChart'
 import { TierDataNotice } from '../components/TierDataNotice'
@@ -48,6 +49,7 @@ const TABS = [
 ] as const
 
 const PRODUCTION_QUERY_SUGGESTIONS = [
+  'Top funding agencies by grant amount',
   'Which institutes in India have the highest grant amount in renewable energy?',
   'Compare AI research output between Gujarat and Karnataka over the last 5 years',
   'Show me the research network around hydrogen fuel cells',
@@ -212,7 +214,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-950"
+              className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-950 sm:flex"
               aria-label={t("auto.views.ResearcherDashboard.3")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -223,6 +225,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
               onClick={logout}
               className="hidden h-10 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-500 transition hover:border-rose-300 hover:text-rose-600 sm:flex"
               aria-label={t("auto.views.ResearcherDashboard.4")}
+              data-testid="logout-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -347,12 +350,16 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
               {queryError && (
                 <div className="mt-4">
-                  <ErrorState
-                    title={t("auto.views.ResearcherDashboard.13")}
-                    message={queryError}
-                    severity="error"
-                    onRetry={handleRetry}
-                  />
+                  {queryError.toLowerCase().includes('sensitive information') ? (
+                    <PromptBlocked reason={`${queryError} Try aggregate counts, research areas, or institutional trends instead.`} />
+                  ) : (
+                    <ErrorState
+                      title={t("auto.views.ResearcherDashboard.13")}
+                      message={queryError}
+                      severity="error"
+                      onRetry={handleRetry}
+                    />
+                  )}
                 </div>
               )}
 

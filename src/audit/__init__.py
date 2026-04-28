@@ -369,7 +369,8 @@ class ImmutableAuditLog:
         self._user_key_cache: dict[str, str] = {}
         self.last_hash = self._load_last_hash()
         self.event_count = self._count_events()
-        self._persist_merkle_root()
+        if os.environ.get("AUDIT_PERSIST_MERKLE_ON_INIT", "").lower() in {"1", "true", "yes", "on"}:
+            self._persist_merkle_root()
 
         from src.audit.per_user_keys import get_per_user_key_manager
         self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
@@ -428,10 +429,20 @@ class ImmutableAuditLog:
             return self._genesis_hash()
 
         last_line = ""
-        with open(self.chain_file) as f:
-            for line in f:
-                if line.strip():
-                    last_line = line
+        with open(self.chain_file, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            position = f.tell()
+            buffer = bytearray()
+            while position > 0:
+                position -= 1
+                f.seek(position)
+                char = f.read(1)
+                if char == b"\n" and buffer:
+                    break
+                if char != b"\n":
+                    buffer.extend(char)
+            if buffer:
+                last_line = bytes(reversed(buffer)).decode()
 
         if not last_line:
             return self._genesis_hash()
@@ -675,7 +686,6 @@ class ImmutableAuditLog:
             with self._file_lock.hold():
                 with self._lock:
                     self.last_hash = self._read_last_chain_hash()
-                    self.event_count = self._count_events()
                     new_hash = self._compute_hash(self.last_hash, event)
 
                     per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
@@ -702,8 +712,9 @@ class ImmutableAuditLog:
 
                     self.last_hash = new_hash
                     self.last_hash_file.write_text(new_hash)
+                    chain_was_empty = self.event_count == 0
                     self.event_count += 1
-                    if self.event_count == 1:
+                    if chain_was_empty:
                         self._pin_genesis_hash(new_hash)
 
                     cosign_args = (event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)

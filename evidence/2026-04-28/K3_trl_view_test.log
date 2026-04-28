@@ -16,4 +16,4 @@ tests/db/test_trl_view.py::test_trl_view_returns_same_rows [32mPASSED[0m[32m 
 tests/db/test_trl_view.py::test_trl_view_columns_preserve_base_table_and_trl_alias [32mPASSED[0m[32m [ 66%][0m
 tests/db/test_trl_view.py::test_validate_identifier_rejects_64_byte_postgres_identifier [32mPASSED[0m[32m [100%][0m
 
-[32m============================== [32m[1m3 passed[0m[32m in 0.38s[0m[32m ===============================[0m
+[32m============================== [32m[1m3 passed[0m[32m in 1.95s[0m[32m ===============================[0m

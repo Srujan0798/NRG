@@ -46,9 +46,9 @@ ACCEPTANCE_QUERIES = {
 }
 
 CREDENTIALS = {
-    "researcher": ("researcher_user", "researcher-pass"),
-    "government": ("gov_user", "government-pass"),
-    "industry": ("industry_user", "industry-pass"),
+    "researcher": ("researcher@iitgn.ac.in", "Researcher@2026"),
+    "government": ("ministry@nrg.gov.in", "Ministry@2026"),
+    "industry": ("partner@industry.in", "Industry@2026"),
 }
 
 

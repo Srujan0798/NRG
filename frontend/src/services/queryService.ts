@@ -96,6 +96,7 @@ const api = axios.create({
   baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
   timeout: 20000,
+  withCredentials: true,
 });
 
 export interface StatsResponse {
@@ -369,7 +370,7 @@ export const queryService = {
       const response = await api.post<QueryResponse>(
         '/query',
         { query: request.query, session_id: request.sessionId },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: authService.getAuthHeaders(accessToken) }
       );
       return normalizeQueryResponse(response.data);
     });
@@ -379,7 +380,7 @@ export const queryService = {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<GraphData>('/query/graph', {
         params: { topic },
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return normalizeGraphData(response.data);
     });
@@ -390,7 +391,7 @@ export const queryService = {
       const response = await api.post<GraphData>(
         '/query/graph',
         { query: request.query, depth: request.depth ?? 2 },
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        { headers: authService.getAuthHeaders(accessToken) }
       );
       return normalizeGraphData(response.data);
     });
@@ -399,7 +400,7 @@ export const queryService = {
   async fetchStats(): Promise<StatsResponse> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<StatsResponse>('/stats', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return response.data;
     });
@@ -409,7 +410,7 @@ export const queryService = {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<PublicationsResponse>('/publications', {
         params: { limit },
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return response.data;
     });
@@ -418,7 +419,7 @@ export const queryService = {
   async fetchResearchers(): Promise<{ results: unknown[] }> {
     return authService.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get<{ results: unknown[] }>('/researchers', {
-        headers: { Authorization: `Bearer ${accessToken}` },
+        headers: authService.getAuthHeaders(accessToken),
       });
       return response.data;
     });
@@ -439,7 +440,7 @@ export const queryService = {
       return await authService.withAuthenticatedRequest(async (accessToken) => {
         const response = await api.get<{ events?: any[] }>('/audit/events', {
           params: { limit },
-          headers: { Authorization: `Bearer ${accessToken}` },
+          headers: authService.getAuthHeaders(accessToken),
         });
         const events = (response.data.events || []).map(normaliseAuditEvent);
         return { events, chain_status: 'intact', total: events.length };
@@ -454,7 +455,7 @@ export const queryService = {
     try {
       return await authService.withAuthenticatedRequest(async (accessToken) => {
         const response = await api.get<any>(`/audit/event/${encodeURIComponent(id)}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+          headers: authService.getAuthHeaders(accessToken),
         });
         return normaliseAuditEvent(response.data.event || response.data, 0);
       });
@@ -468,7 +469,7 @@ export const queryService = {
     try {
       return await authService.withAuthenticatedRequest(async (accessToken) => {
         const response = await api.get<any>('/audit/verify', {
-          headers: { Authorization: `Bearer ${accessToken}` },
+          headers: authService.getAuthHeaders(accessToken),
         });
         const event = findFallbackAuditEvent(id);
         return {

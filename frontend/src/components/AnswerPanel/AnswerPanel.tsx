@@ -110,17 +110,31 @@ const TabularView: React.FC<{
   rows: string[][]
   testId?: string
 }> = ({ headers, rows, testId }) => {
-  const [sortIndex, setSortIndex] = useState(0)
+  const defaultSortIndex = useMemo(
+    () => headers.findIndex((header) => header.trim().toLowerCase() === 'rank'),
+    [headers]
+  )
+  const effectiveDefaultSortIndex = defaultSortIndex >= 0 ? defaultSortIndex : null
+  const primaryIndex = useMemo(() => {
+    const nameIndex = headers.findIndex((header) => /name|institution|institute|agency|organisation/i.test(header))
+    if (nameIndex >= 0) return nameIndex
+    const firstNonRankIndex = headers.findIndex((_, index) => index !== effectiveDefaultSortIndex)
+    return firstNonRankIndex >= 0 ? firstNonRankIndex : 0
+  }, [effectiveDefaultSortIndex, headers])
+
+  const [sortIndex, setSortIndex] = useState<number | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const activeSortIndex = sortIndex ?? effectiveDefaultSortIndex
 
   const sortedRows = useMemo(() => {
+    if (activeSortIndex === null) return rows
     return [...rows].sort((a, b) => {
-      const left = a[sortIndex] ?? ''
-      const right = b[sortIndex] ?? ''
+      const left = a[activeSortIndex] ?? ''
+      const right = b[activeSortIndex] ?? ''
       const comparison = left.localeCompare(right, 'en-IN', { numeric: true, sensitivity: 'base' })
       return sortDir === 'asc' ? comparison : -comparison
     })
-  }, [rows, sortDir, sortIndex])
+  }, [activeSortIndex, rows, sortDir])
 
   const exportCsv = () => {
     const csv = [
@@ -155,7 +169,35 @@ const TabularView: React.FC<{
           CSV
         </button>
       </div>
-      <div className="w-full max-w-full overflow-x-auto">
+      <div className="divide-y divide-nrg-border sm:hidden">
+        {sortedRows.map((row, rowIndex) => (
+          <div key={`${row.join('|')}-card-${rowIndex}`} className="bg-[var(--nrg-surface-1)] px-4 py-4">
+            <div className="mb-3 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-nrg-text">
+                  {row[primaryIndex] || `Row ${rowIndex + 1}`}
+                </p>
+                {effectiveDefaultSortIndex !== null && (
+                  <p className="mt-1 text-xs font-medium text-nrg-muted">
+                    Rank {row[effectiveDefaultSortIndex] || rowIndex + 1}
+                  </p>
+                )}
+              </div>
+            </div>
+            <dl className="grid grid-cols-1 gap-2">
+              {headers.map((header, index) => (
+                index === primaryIndex ? null : (
+                  <div key={`${header}-${index}`} className="rounded-lg border border-nrg-border/70 bg-[var(--glass-bg)] px-3 py-2">
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-nrg-muted">{header}</dt>
+                    <dd className="mt-1 break-words text-sm font-medium text-nrg-text">{row[index] || '—'}</dd>
+                  </div>
+                )
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+      <div className="hidden w-full max-w-full overflow-x-auto sm:block">
         <table className="min-w-full text-sm">
           <thead className="bg-[var(--glass-bg)]">
             <tr>
@@ -163,12 +205,15 @@ const TabularView: React.FC<{
                 <th
                   key={header}
                   className="border-b border-nrg-border px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-nrg-muted"
-                  aria-sort={sortIndex === index ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
+                  aria-sort={activeSortIndex === index ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'}
                 >
                   <button
                     type="button"
                     onClick={() => {
-                      if (sortIndex === index) setSortDir((current) => current === 'asc' ? 'desc' : 'asc')
+                      if (activeSortIndex === index) {
+                        setSortIndex(index)
+                        setSortDir((current) => current === 'asc' ? 'desc' : 'asc')
+                      }
                       else {
                         setSortIndex(index)
                         setSortDir('asc')
@@ -177,7 +222,7 @@ const TabularView: React.FC<{
                     className="inline-flex min-h-8 items-center gap-1 rounded-md px-1 text-left transition hover:text-[var(--nrg-focus)]"
                   >
                     {header}
-                    {sortIndex === index && (
+                    {activeSortIndex === index && (
                       <ChevronDown
                         size={12}
                         className={`transition-transform ${sortDir === 'asc' ? 'rotate-180' : ''}`}

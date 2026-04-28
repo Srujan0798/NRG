@@ -39,7 +39,7 @@ from src.auth.middleware import get_current_user
 from src.audit import log_query as audit_log_query
 from src.observability.metrics import get_slo_tracker
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
-from src.services.consent import ConsentService
+from src.services.consent import get_consent_service
 
 router = APIRouter(prefix="", tags=["query"])
 logger = get_logger(__name__)
@@ -114,7 +114,7 @@ async def query_with_langgraph(
                     logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
             raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
-        consent_service = ConsentService()
+        consent_service = get_consent_service()
         if not consent_service.has_consent(user_id, "research_access"):
             raise HTTPException(
                 status_code=403,
@@ -348,7 +348,7 @@ async def query_stream(
     if not validation["valid"]:
         raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
-    consent_service = ConsentService()
+    consent_service = get_consent_service()
     if not consent_service.has_consent(user_id, "research_access"):
         raise HTTPException(status_code=403, detail="Consent required for research_access")
 

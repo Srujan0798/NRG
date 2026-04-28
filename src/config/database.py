@@ -51,6 +51,17 @@ def resolve_runtime_database_url(database_url: str | None = None) -> str:
         "true",
         "yes",
     }
+    default_sqlite_urls = {
+        "",
+        "sqlite:///nrg_research.db",
+        f"sqlite:///{Path.cwd() / 'nrg_research.db'}",
+    }
+    if (
+        not disable_fallback
+        and LOCAL_SQLITE_FALLBACK_PATH.exists()
+        and raw_url in default_sqlite_urls
+    ):
+        return f"sqlite:///{LOCAL_SQLITE_FALLBACK_PATH}"
     if (
         raw_url.startswith("postgresql://")
         and not running_pytest

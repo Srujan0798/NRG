@@ -43,9 +43,9 @@ function writeDiagnostic(message) {
 }
 
 const API_PATHS = [
-  '/login', '/refresh', '/logout', '/query', '/researchers',
+  '/login', '/refresh', '/logout', '/auth', '/auth/', '/query', '/researchers',
   '/publications', '/stats', '/health', '/health/', '/consent',
-  '/me', '/me/', '/audit', '/audit/',
+  '/me', '/me/', '/audit', '/audit/', '/api/query/stream', '/api/telemetry',
 ];
 
 function isApiPath(urlPath) {

@@ -697,5 +697,28 @@ class PromptSanitiser:
         return result
 
 
-# Singleton instance for easy import
-prompt_sanitiser = PromptSanitiser()
+class LazyPromptSanitiser:
+    """Import-light proxy for the process-wide prompt sanitiser.
+
+    The full sanitiser compiles a large rule set. Deferring that work keeps API
+    module import and pytest collection bounded while preserving the same
+    `prompt_sanitiser.validate_query(...)` call surface.
+    """
+
+    def __init__(self) -> None:
+        self._instance: PromptSanitiser | None = None
+        self._instance_lock = threading.Lock()
+
+    def _get_instance(self) -> PromptSanitiser:
+        if self._instance is None:
+            with self._instance_lock:
+                if self._instance is None:
+                    self._instance = PromptSanitiser()
+        return self._instance
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._get_instance(), name)
+
+
+# Singleton proxy for easy import without eager rule compilation.
+prompt_sanitiser = LazyPromptSanitiser()

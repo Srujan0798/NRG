@@ -45,12 +45,13 @@ const api = axios.create({
     'Content-Type': 'application/json'
   },
   timeout: 10000,
+  withCredentials: true,
 })
 
 const PERSONA_CREDENTIALS: Record<PersonaRole, { username: string; password: string; tier: number }> = {
-  researcher: { username: 'researcher_user', password: 'researcher-pass', tier: 1 },
-  government: { username: 'gov_user', password: 'government-pass', tier: 2 },
-  industry: { username: 'industry_user', password: 'industry-pass', tier: 3 },
+  researcher: { username: 'researcher@iitgn.ac.in', password: 'Researcher@2026', tier: 1 },
+  government: { username: 'ministry@nrg.gov.in', password: 'Ministry@2026', tier: 2 },
+  industry: { username: 'partner@industry.in', password: 'Industry@2026', tier: 3 },
 }
 
 const buildSession = (
@@ -115,14 +116,14 @@ export const authService = {
 
   async refreshSession(refreshToken?: string): Promise<AuthSession> {
     const existingSession = this.getStoredSession()
-    const activeRefreshToken = refreshToken || existingSession?.refreshToken
 
-    if (!activeRefreshToken || !existingSession) {
-      throw new Error('No refresh token available')
+    if (!existingSession) {
+      return this.fetchSession()
     }
 
-    const response = await api.post<RefreshApiResponse>('/refresh', {
-      refresh_token: activeRefreshToken
+    const response = await api.post<RefreshApiResponse>('/auth/refresh', {
+      refresh_token: refreshToken || existingSession.refreshToken || undefined,
+      access_token: existingSession.accessToken || undefined,
     })
 
     const session = buildSession(response.data, existingSession.user)
@@ -130,30 +131,38 @@ export const authService = {
     return session
   },
 
+  async fetchSession(): Promise<AuthSession> {
+    const response = await api.get<LoginApiResponse>('/auth/session')
+    const session = buildSession({
+      access_token: '',
+      refresh_token: '',
+      token_type: 'cookie',
+      user: response.data.user,
+    })
+    this.saveSession(session)
+    return session
+  },
+
   async logout(session?: AuthSession | null): Promise<void> {
     const activeSession = session || this.getStoredSession()
 
-    if (activeSession) {
-      try {
-        await api.post(
-          '/logout',
-          { refresh_token: activeSession.refreshToken },
-          {
-            headers: {
-              Authorization: `Bearer ${activeSession.accessToken}`
-            }
-          }
-        )
-      } catch (_error) {
-        // Best-effort logout; local cleanup still happens.
-      }
+    try {
+      await api.post(
+        '/auth/logout',
+        { refresh_token: activeSession?.refreshToken || undefined },
+        {
+          headers: this.getAuthHeaders(activeSession?.accessToken),
+        }
+      )
+    } catch (_error) {
+      // Best-effort logout; local cleanup still happens.
     }
 
     this.clearSession()
   },
 
   getStoredSession(): AuthSession | null {
-    const rawSession = localStorage.getItem(STORAGE_KEY)
+    const rawSession = sessionStorage.getItem(STORAGE_KEY)
     if (!rawSession) {
       return null
     }
@@ -167,20 +176,27 @@ export const authService = {
   },
 
   saveSession(session: AuthSession): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+    const persisted: AuthSession = {
+      ...session,
+      accessToken: '',
+      refreshToken: '',
+    }
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(persisted))
   },
 
   clearSession(): void {
+    sessionStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(STORAGE_KEY)
+  },
+
+  getAuthHeaders(accessToken?: string | null): Record<string, string> {
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
   },
 
   async withAuthenticatedRequest<T>(
     operation: (accessToken: string) => Promise<T>
   ): Promise<T> {
-    const session = this.getStoredSession()
-    if (!session) {
-      throw new Error('Not authenticated')
-    }
+    const session = this.getStoredSession() || await this.fetchSession()
 
     try {
       return await operation(session.accessToken)
@@ -198,9 +214,7 @@ export const authService = {
   async fetchResearchers(): Promise<unknown> {
     return this.withAuthenticatedRequest(async (accessToken) => {
       const response = await api.get('/researchers', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
+        headers: this.getAuthHeaders(accessToken),
       })
 
       return response.data

@@ -56,6 +56,7 @@ export const IndustryHeader: React.FC<IndustryHeaderProps> = ({ onThemeToggle, t
               onClick={logout}
               className="h-10 px-3 rounded-xl border border-nrg-border flex items-center gap-2 text-sm font-semibold text-nrg-muted hover:text-rose-600 hover:border-rose-300 transition-all duration-200"
               aria-label={t("auto.components.Industry.IndustryHeader.4")}
+              data-testid="logout-button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >

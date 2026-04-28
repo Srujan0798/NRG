@@ -170,7 +170,7 @@ Add to crontab for daily backups:
 crontab -e
 
 # Add this line (runs at 2 AM daily)
-0 2 * * * /opt/nrg/scripts/backup.sh >> /var/log/nrg-backup.log 2>&1
+0 2 * * * cd /opt/nrg && bash scripts/backup_db.sh >> /var/log/nrg-backup.log 2>&1
 ```
 
 ### 2.5 Restore from Backup
@@ -466,7 +466,7 @@ sqlite3 nrg_research.db "SELECT COUNT(*) FROM researchers;"
 **If No Clean Backup:**
 ```bash
 # Re-import from source CSVs
-python scripts/reimport_from_source.py
+python scripts/seed_from_csvs.py --rebuild --csv-dir "$NRG_DATA_SOURCE_DIR/CSV_Data"
 
 # Verify
 sqlite3 nrg_research.db "SELECT COUNT(*) FROM researchers; SELECT COUNT(*) FROM publications;"
@@ -762,10 +762,10 @@ curl -X POST http://localhost:8000/admin/maintenance \
 
 **Step 3: Regenerate embeddings**
 ```bash
-# Run embedding regeneration script
-python scripts/regenerate_embeddings.py \
-  --collection nrg \
-  --model sentence-transformers/all-MiniLM-L6-v2 \
+# Rebuild Qdrant points from the configured source directory
+NRG_DATA_SOURCE_DIR=/data/National_Research_Database \
+python scripts/ingest_qdrant.py \
+  --collection nrg_research \
   --batch-size 100
 
 # Monitor progress
@@ -779,8 +779,8 @@ curl -X POST http://localhost:6333/collections/nrg/points/search \
   -H "Content-Type: application/json" \
   -d '{"query":[0.1,0.2,0.3],"limit":5}'
 
-# Check average similarity score
-python scripts/check_embedding_quality.py --collection nrg
+# Check vector-drift and collection health after reindex
+python scripts/vector_drift_check.py --check-only --json
 ```
 
 **Step 5: Resume operations**
@@ -801,7 +801,7 @@ watch -n 30 'curl -s http://localhost:8000/metrics | grep error_rate'
 
 ```bash
 # Run sample queries and verify quality
-python scripts/verify_query_quality.py
+python scripts/benchmark_dhairya_queries.py --url "$DATABASE_URL"
 
 # Check user feedback
 grep "positive" .protocol/feedback_log.jsonl | wc -l
@@ -903,7 +903,7 @@ uvicorn src.api.main:app --port 8000 &
 curl http://localhost:8000/audit/verify
 
 # Check for gaps in audit log
-python scripts/investigate_audit.py
+python scripts/audit_investigate.py
 
 # If breach suspected, escalate immediately
 ```

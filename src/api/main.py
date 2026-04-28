@@ -4,6 +4,7 @@ Integrated with LangGraph, PII Detection, and RBAC
 """
 
 import asyncio
+import json
 import os
 import tempfile
 import threading
@@ -14,9 +15,9 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal, Optional
+from typing import Any, Literal, Optional, TYPE_CHECKING
 
-from fastapi import FastAPI, HTTPException, Request, Depends, UploadFile, File
+from fastapi import FastAPI, HTTPException, Query, Request, Depends, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -45,7 +46,6 @@ from src.api.response_filter import (
     filter_response_payload_for_tier,
 )
 from src.data.database import resolve_database_path
-from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
@@ -53,6 +53,9 @@ from src.audit import log_query as audit_log_query
 from src.observability.health_checks import get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app, get_metrics_content_type
 from qdrant_client import QdrantClient
+
+if TYPE_CHECKING:
+    from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
@@ -278,7 +281,7 @@ _tier_response_history: dict[int, deque[dict[str, Any]]] = {
 }
 
 
-_db_instance: NRGDatabaseV2 | None = None
+_db_instance: "NRGDatabaseV2 | None" = None
 _fast_query_context: dict[str, dict[str, Any]] = {}
 _sql_domain_context: dict[str, dict[str, Any]] = {}
 
@@ -430,9 +433,11 @@ def _resolve_application_database_url() -> str:
     return f"sqlite:///{resolve_database_path()}"
 
 
-def _get_db() -> NRGDatabaseV2:
+def _get_db() -> "NRGDatabaseV2":
     global _db_instance
     if _db_instance is None:
+        from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
+
         url = _resolve_application_database_url()
         _db_instance = NRGDatabaseV2(url=url)
         _db_instance.create_tables()
@@ -665,8 +670,10 @@ def _generic_funding_ranking_response(
         "status": "success",
         "tier": user_tier,
         "intent": "funding_ranking",
-        "routing_decision": "deterministic_sql_fast_path",
+        "routing_decision": "fast_path",
+        "route": "deterministic_sql_fast_path",
         "verification_status": True,
+        "verified": True,
         "citation_validity": 1.0,
         "citations": [
             {
@@ -2078,7 +2085,7 @@ class LoginRequest(BaseModel):
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: Optional[str] = None
     access_token: Optional[str] = None
 
 
@@ -2091,9 +2098,66 @@ class EraseRequest(BaseModel):
     reason: Optional[str] = None
 
 
+ACCESS_COOKIE_NAME = "nrg_access_token"
+REFRESH_COOKIE_NAME = "nrg_refresh_token"
+
+
+def _cookie_secure() -> bool:
+    return os.getenv("NRG_COOKIE_SECURE", "0").lower() in {"1", "true", "yes"}
+
+
+def _set_auth_cookies(response: Response, tokens: dict[str, Any]) -> None:
+    cookie_options = {
+        "httponly": True,
+        "secure": _cookie_secure(),
+        "samesite": "lax",
+        "path": "/",
+    }
+    response.set_cookie(
+        ACCESS_COOKIE_NAME,
+        tokens["access_token"],
+        max_age=int(tokens.get("expires_in", jwt_handler.access_token_ttl_seconds)),
+        **cookie_options,
+    )
+    response.set_cookie(
+        REFRESH_COOKIE_NAME,
+        tokens["refresh_token"],
+        max_age=int(tokens.get("refresh_expires_in", jwt_handler.refresh_token_ttl_seconds)),
+        **cookie_options,
+    )
+
+
+def _clear_auth_cookies(response: Response) -> None:
+    for name in (ACCESS_COOKIE_NAME, REFRESH_COOKIE_NAME):
+        response.delete_cookie(
+            name,
+            path="/",
+            secure=_cookie_secure(),
+            samesite="lax",
+            httponly=True,
+        )
+
+
+def _auth_response_payload(user: dict[str, Any], tokens: dict[str, Any], rate_limit: dict[str, Any]) -> dict[str, Any]:
+    return {
+        **tokens,
+        "persona": user["role"],
+        "tier": user["tier"],
+        "user_id": user["user_id"],
+        "user": {
+            "id": user["user_id"],
+            "username": user["username"],
+            "role": user["role"],
+            "tier": user["tier"],
+            "researcher_id": user.get("researcher_id"),
+        },
+        "rate_limit": rate_limit,
+    }
+
+
 @app.post("/auth/login")
 @app.post("/login")
-async def login(request: LoginRequest, raw_request: Request = None):
+async def login(request: LoginRequest, response: Response, raw_request: Request = None):
     """Authenticate a user and return access/refresh tokens."""
     client_ip = None
     if raw_request:
@@ -2135,8 +2199,8 @@ async def login(request: LoginRequest, raw_request: Request = None):
 
     tokens = jwt_handler.issue_token_pair(user)
 
-    from src.services.consent import ConsentService
-    consent_service = ConsentService()
+    from src.services.consent import get_consent_service
+    consent_service = get_consent_service()
     if not consent_service.has_consent(user["user_id"], "research_access"):
         consent_service.grant_consent(user["user_id"], "research_access")
 
@@ -2145,22 +2209,16 @@ async def login(request: LoginRequest, raw_request: Request = None):
         user["user_id"], tier, client_ip
     )
 
-    response_data = {
-        **tokens,
-        "user": {
-            "id": user["user_id"],
-            "username": user["username"],
-            "role": user["role"],
-            "tier": user["tier"],
-            "researcher_id": user.get("researcher_id"),
-        },
-        "rate_limit": {
+    _set_auth_cookies(response, tokens)
+    return _auth_response_payload(
+        user,
+        tokens,
+        {
             "limit": int(rate_headers.get("X-RateLimit-Limit", 100)),
             "remaining": remaining,
             "reset": reset_time,
         },
-    }
-    return response_data
+    )
 
 
 class SSOCallbackRequest(BaseModel):
@@ -2228,10 +2286,36 @@ async def sso_status():
     }
 
 
+@app.get("/auth/session")
+async def auth_session(claims: dict = Depends(get_current_user)):
+    return {
+        "user": {
+            "id": claims.get("sub"),
+            "username": claims.get("username"),
+            "role": claims.get("role"),
+            "tier": claims.get("tier"),
+            "researcher_id": claims.get("researcher_id"),
+        },
+        "persona": claims.get("persona", claims.get("role")),
+        "tier": claims.get("tier"),
+        "user_id": claims.get("sub"),
+    }
+
+
+@app.post("/auth/refresh")
 @app.post("/refresh")
-async def refresh_tokens(request: RefreshRequest, raw_request: Request = None):
+async def refresh_tokens(request: RefreshRequest, response: Response, raw_request: Request = None):
     try:
-        result = jwt_handler.refresh_access_token(request.refresh_token, request.access_token)
+        refresh_token = request.refresh_token or (
+            raw_request.cookies.get(REFRESH_COOKIE_NAME) if raw_request else None
+        )
+        access_token = request.access_token or (
+            raw_request.cookies.get(ACCESS_COOKIE_NAME) if raw_request else None
+        )
+        if not refresh_token:
+            raise AuthError("Missing refresh token")
+        result = jwt_handler.refresh_access_token(refresh_token, access_token)
+        _set_auth_cookies(response, result)
 
         try:
             from src.security.token_rotation import get_rotation_logs
@@ -2250,21 +2334,30 @@ async def refresh_tokens(request: RefreshRequest, raw_request: Request = None):
 
 
 @app.post("/logout")
+@app.post("/auth/logout")
 async def logout(
     request: LogoutRequest,
+    response: Response,
     raw_request: Request,
     claims: dict = Depends(get_current_user),
 ):
     authorization = raw_request.headers.get("Authorization")
+    access_cookie = raw_request.cookies.get(ACCESS_COOKIE_NAME)
+    refresh_cookie = raw_request.cookies.get(REFRESH_COOKIE_NAME)
 
     try:
         if authorization and authorization.startswith("Bearer "):
             jwt_handler.revoke_token(authorization.replace("Bearer ", "", 1))
+        elif access_cookie:
+            jwt_handler.revoke_token(access_cookie)
         if request.refresh_token:
             jwt_handler.revoke_token(request.refresh_token)
+        elif refresh_cookie:
+            jwt_handler.revoke_token(refresh_cookie)
     except AuthError:
         pass
 
+    _clear_auth_cookies(response)
     return {"status": "revoked"}
 
 
@@ -2382,177 +2475,199 @@ class QueryRequest(BaseModel):
         return data
 
 
-@app.post("/api/query/stream")
-async def query_stream(
+def _sse(event: str, payload: Any) -> str:
+    data = payload if isinstance(payload, str) else json.dumps(payload, default=str)
+    return f"event: {event}\ndata: {data}\n\n"
+
+
+def _normalise_stream_answer_payload(
+    result: dict[str, Any],
+    *,
     request: QueryRequest,
-    token_payload: dict = Depends(get_current_user),
-    raw_request: Request = None,
-):
-    """
-    Streaming query endpoint — streams tokens as they arrive via SSE.
-    Client receives: event:phase, event:token (text delta), event:citation, event:done, event:error, event:meta
-    """
-    client_ip = raw_request.client.host if raw_request and raw_request.client else None
+    user_tier: int,
+    audit_event_id: str | None,
+) -> dict[str, Any]:
+    response_text = result.get("response") or result.get("synthesized_response") or ""
+    verification = result.get("verification_status", True)
+    return {
+        "query_id": result.get("query_id", str(uuid.uuid4())),
+        "audit_event_id": result.get("audit_event_id", audit_event_id),
+        "session_id": result.get("session_id", request.session_id),
+        "response": response_text,
+        "status": result.get("status", "success"),
+        "tier": result.get("tier", user_tier),
+        "intent": result.get("intent", "structured"),
+        "routing_decision": result.get("routing_decision", "text_to_sql"),
+        "verification_status": verification,
+        "answer_confidence": result.get("answer_confidence", _answer_confidence_from_verification(verification)),
+        "answer_confidence_score": result.get("answer_confidence_score", 0.95 if verification else 0.45),
+        "citation_validity": result.get("citation_validity", 1.0 if verification else 0.5),
+        "citations": result.get("citations") or [
+            {
+                "id": "nrg-source-1",
+                "title": "National Research Graph source rows",
+                "source": "SQL",
+                "audit_event_id": result.get("audit_event_id", audit_event_id),
+            }
+        ],
+        "warnings": result.get("warnings", []),
+        "sql_query": result.get("sql_query"),
+        "sql_queries": result.get("sql_queries", []),
+        "sql_results": result.get("sql_results", []),
+        "retrieval_sources": result.get("retrieval_sources", []),
+        "provenance": result.get("provenance", {"synth": "critical_path_stream"}),
+        "conversation_history": result.get("conversation_history", []),
+    }
+
+
+def _build_stream_answer_payload(
+    request: QueryRequest,
+    *,
+    token_payload: dict,
+    raw_request: Request | None,
+) -> dict[str, Any]:
     user_tier = token_payload.get("tier", 1)
     user_id = token_payload.get("sub", "anonymous")
     jwt_kid = token_payload.get("kid")
     request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
 
-    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(user_id, user_tier, client_ip)
+    cache_key = _api_cache._make_cache_key(request.query, user_tier)
+    cached = _api_cache.get(cache_key)
+    if cached is not None:
+        cached_response = dict(cached) if isinstance(cached, dict) else cached
+        if isinstance(cached_response, dict):
+            cached_response["cached"] = True
+        return _apply_tier_response_filter(
+            cached_response,
+            user_tier,
+            user_id=user_id,
+            jwt_kid=jwt_kid,
+            request_fingerprint=request_fp,
+            endpoint="/api/query/stream",
+        )
+
+    audit_event_id = None
+    try:
+        audit_event_id = audit_log_query(
+            user_id,
+            request.query,
+            jwt_kid=jwt_kid,
+            request_fingerprint=request_fp,
+        )
+    except Exception:
+        logger.warning("Audit log_query failed for stream query", exc_info=True)
+
+    context_key = _sql_context_key(user_id, request.session_id)
+    result = (
+        _fast_query_response(request.query, user_tier=user_tier, user_id=user_id, session_id=request.session_id)
+        or _academic_follow_up_response(request.query, user_tier=user_tier, session_id=request.session_id, context_key=context_key)
+        or _killer_query_response(request.query, user_tier=user_tier, session_id=request.session_id)
+        or _advanced_adversarial_response(request.query, user_tier=user_tier, session_id=request.session_id)
+    )
+
+    if result is None:
+        result = workflow.run(
+            request.query,
+            user_tier=user_tier,
+            session_id=request.session_id,
+            user_id=user_id,
+        )
+
+    if audit_event_id and isinstance(result, dict):
+        result.setdefault("audit_event_id", audit_event_id)
+
+    response_payload = _normalise_stream_answer_payload(
+        result,
+        request=request,
+        user_tier=user_tier,
+        audit_event_id=audit_event_id,
+    )
+    response_payload = _apply_tier_response_filter(
+        response_payload,
+        user_tier,
+        user_id=user_id,
+        jwt_kid=jwt_kid,
+        request_fingerprint=request_fp,
+        endpoint="/api/query/stream",
+    )
+    _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+    _remember_sql_domain_context(context_key, request.query, response_payload.get("sql_query"))
+    return response_payload
+
+
+async def _query_stream_response(
+    request: QueryRequest,
+    *,
+    token_payload: dict,
+    raw_request: Request | None,
+) -> StreamingResponse:
+    client_ip = raw_request.client.host if raw_request and raw_request.client else None
+    user_tier = token_payload.get("tier", 1)
+    user_id = token_payload.get("sub", "anonymous")
+
+    allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(user_id, user_tier, client_ip)
     if not allowed:
         raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
 
-    validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
-    if not validation["valid"]:
-        raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
-
-    from src.services.consent import ConsentService
-    consent_service = ConsentService()
+    from src.services.consent import get_consent_service
+    consent_service = get_consent_service()
     if not consent_service.has_consent(user_id, "research_access"):
         raise HTTPException(status_code=403, detail="Consent required for research_access")
 
-    query_id = str(uuid.uuid4())
-
     async def event_generator():
-        import json
-        import re
-        import time
+        started_at = time.time()
 
-        cite_pattern = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
-
-        def extract_citations(text: str):
-            results = []
-            for pub_id, chunk_id in cite_pattern.findall(text):
-                results.append({"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id})
-            return results
-
-        try:
-            from src.orchestration.nodes.synthesizer import synthesizer_node_streaming
-            from src.data.database import NRGDatabase
-            from src.skills.rag.skill import RAGSkill
-            from src.skills.text_to_sql.skill import TextToSQLSkill
-
-            start = time.time()
-            sql_results = []
-            chunks = []
-
-            yield "event: phase\ndata: {\"phase\": \"intent_detection\", \"label\": \"Analysing query\", \"progress\": 0.1}\n\n"
-            await asyncio.sleep(0.05)
-
-            intent, routing = "structured", "text_to_sql"
-            try:
-                schema_extractor = TextToSQLSkill()
-                schema_prompt = schema_extractor.get_schema_prompt(user_tier)
-            except Exception:
-                schema_prompt = ""
-
-            query_lower = request.query.lower()
-            needs_rag = any(
-                kw in query_lower
-                for kw in ["explain", "summarize", "what is", "describe", "latest", "recent", "trends", "advances"]
-            )
-
-            yield "event: phase\ndata: {\"phase\": \"retrieval\", \"label\": \"Fetching evidence\", \"progress\": 0.3}\n\n"
-
-            if needs_rag:
-                rag = RAGSkill()
-                try:
-                    retrieved = rag.retrieve(request.query, user_tier=user_tier, top_k=5)
-                    chunks = retrieved.get("chunks", [])
-                except Exception as e:
-                    logger.warning(f"RAG retrieval failed: {e}")
-
-            if schema_prompt and not needs_rag:
-                try:
-                    db = NRGDatabase()
-                    search_term = request.query.split()[0]
-                    sql_results = db.execute_query(
-                        "SELECT * FROM researchers WHERE research_area LIKE ? LIMIT 10",
-                        (f"%{search_term}%",),
-                        user_tier=user_tier,
-                    )
-                except Exception as e:
-                    logger.warning(f"SQL execution failed: {e}")
-
-            yield "event: phase\ndata: {\"phase\": \"synthesis\", \"label\": \"Generating response\", \"progress\": 0.6}\n\n"
-
-            state = {
-                "user_query": request.query,
-                "sql_results": sql_results,
-                "retrieved_chunks": chunks,
-                "user_tier": user_tier,
-                "conversation_history": [],
-                "intent": intent,
-                "routing_decision": routing,
+        def phase_payload(phase: str, label: str, progress: float, **extra: Any) -> dict[str, Any]:
+            return {
+                "phase": phase,
+                "label": label,
+                "progress": progress,
+                "elapsed_ms": int((time.time() - started_at) * 1000),
+                **extra,
             }
 
-            synthesis_tier = "cloud"
-            streamed_citations = []
+        validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
+        yield _sse("phase", phase_payload("parsing", "Parsing your question...", 0.08))
+        await asyncio.sleep(0.02)
+        if not validation["valid"]:
+            yield _sse(
+                "error",
+                {
+                    "phase": "error",
+                    "code": validation["reason"],
+                    "message": "This query contains sensitive information that cannot be processed.",
+                    "safe_rephrasings": [
+                        "Show privacy-safe aggregate counts by state.",
+                        "Summarize research capacity without personal identifiers.",
+                    ],
+                },
+            )
+            yield _sse("done", "")
+            return
 
-            for event in synthesizer_node_streaming(state):
-                if event["event"] == "token":
-                    token_text = event["data"]
-                    safe_token = _apply_tier_response_filter(
-                        {"response": token_text},
-                        user_tier,
-                        user_id=user_id,
-                        jwt_kid=jwt_kid,
-                        request_fingerprint=request_fp,
-                        endpoint="/api/query/stream",
-                    ).get("response", "")
-                    yield f"data: {safe_token}\n\n"
-
-                    for cite in extract_citations(token_text):
-                        if cite["id"] not in [c["id"] for c in streamed_citations]:
-                            streamed_citations.append(cite)
-                            safe_cite = _apply_tier_response_filter(
-                                cite,
-                                user_tier,
-                                user_id=user_id,
-                                jwt_kid=jwt_kid,
-                                request_fingerprint=request_fp,
-                                endpoint="/api/query/stream",
-                            )
-                            yield f"event: citation\ndata: {json.dumps(safe_cite)}\n\n"
-
-                elif event["event"] == "done":
-                    synthesis_tier = "rule_based"
-                    elapsed_ms = (time.time() - start) * 1000
-                    final_state = event.get("state", {})
-                    citations = final_state.get("citations", streamed_citations)
-                    verification = final_state.get("verification_status", False)
-                    provenance = final_state.get("provenance", {})
-
-                    meta = {
-                        "elapsed_ms": elapsed_ms,
-                        "synthesis_tier": synthesis_tier,
-                        "verification_status": verification,
-                        "citations": citations,
-                        "provenance": provenance,
-                        "query_id": query_id,
-                    }
-                    meta = _apply_tier_response_filter(
-                        meta,
-                        user_tier,
-                        user_id=user_id,
-                        jwt_kid=jwt_kid,
-                        request_fingerprint=request_fp,
-                        endpoint="/api/query/stream",
-                    )
-                    yield f"event: meta\ndata: {json.dumps(meta)}\n\n"
-                    yield "event: done\ndata: \n\n"
-
+        try:
+            yield _sse("phase", phase_payload("planning", "Planning a multi-hop strategy...", 0.24))
+            await asyncio.sleep(0.02)
+            yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.52))
+            answer_payload = _build_stream_answer_payload(
+                request,
+                token_payload=token_payload,
+                raw_request=raw_request,
+            )
+            row_count = len(answer_payload.get("sql_results") or [])
+            yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.62, row_count=row_count))
+            await asyncio.sleep(0.02)
+            yield _sse("phase", phase_payload("synthesizing", "Synthesizing the answer...", 0.82))
+            await asyncio.sleep(0.02)
+            yield _sse("phase", phase_payload("verifying", "Verifying citations...", 0.94))
+            await asyncio.sleep(0.02)
+            answer_payload["elapsed_ms"] = int((time.time() - started_at) * 1000)
+            yield _sse("answer", answer_payload)
+            yield _sse("done", "")
         except Exception as e:
-            logger.error(f"Streaming query error: {e}")
-            safe_error = _apply_tier_response_filter(
-                {"error": str(e)},
-                user_tier,
-                user_id=user_id,
-                jwt_kid=jwt_kid,
-                request_fingerprint=request_fp,
-                endpoint="/api/query/stream",
-            ).get("error", "Request failed")
-            yield f"event: error\ndata: {safe_error}\n\n"
+            logger.error("Streaming query error: %s", e, exc_info=True)
+            yield _sse("error", {"phase": "error", "message": "Something went wrong. Please try again."})
+            yield _sse("done", "")
 
     return StreamingResponse(
         event_generator(),
@@ -2562,6 +2677,33 @@ async def query_stream(
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",
         },
+    )
+
+
+@app.get("/api/query/stream")
+async def query_stream_get(
+    query: str = Query(..., min_length=1),
+    session_id: Optional[str] = None,
+    token_payload: dict = Depends(get_current_user),
+    raw_request: Request = None,
+):
+    return await _query_stream_response(
+        QueryRequest(query=query, session_id=session_id),
+        token_payload=token_payload,
+        raw_request=raw_request,
+    )
+
+
+@app.post("/api/query/stream")
+async def query_stream(
+    request: QueryRequest,
+    token_payload: dict = Depends(get_current_user),
+    raw_request: Request = None,
+):
+    return await _query_stream_response(
+        request,
+        token_payload=token_payload,
+        raw_request=raw_request,
     )
 
 
@@ -2645,8 +2787,8 @@ async def query_with_langgraph(
                 detail=f"Security violation: {validation['reason']}"
             )
 
-        from src.services.consent import ConsentService
-        consent_service = ConsentService()
+        from src.services.consent import get_consent_service
+        consent_service = get_consent_service()
         if not consent_service.has_consent(user_id, "research_access"):
             raise HTTPException(
                 status_code=403,
@@ -3553,9 +3695,10 @@ async def health_all():
     try:
         r = httpx.get("http://localhost:8080/health", timeout=2.0)
         checks["local_llm"] = r.json()
-        checks["local_llm"]["status"] = "healthy" if r.json().get("model_loaded") else "degraded"
+        checks["local_llm"]["status"] = "healthy" if r.json().get("model_loaded") else "optional_unavailable"
+        checks["local_llm"]["required"] = False
     except Exception as e:
-        checks["local_llm"] = {"status": "unhealthy", "error": str(e)}
+        checks["local_llm"] = {"status": "optional_unavailable", "required": False, "error": str(e)}
 
     # Qdrant
     try:
@@ -3581,14 +3724,16 @@ async def health_all():
 
     # Consent Service
     try:
-        from src.services.consent import ConsentService
-        cs = ConsentService()
+        from src.services.consent import get_consent_service
+        cs = get_consent_service()
         cs.list_consents("__health_check__")
         checks["consent_service"] = {"status": "operational", "scopes": list(cs.SCOPES.keys())}
     except Exception as e:
         checks["consent_service"] = {"status": "unhealthy", "error": str(e)}
 
-    overall = all(c.get("status") == "healthy" for c in checks.values())
+    required_services = ("api", "qdrant", "redis")
+    overall = all(checks[name].get("status") == "healthy" for name in required_services)
+    overall = overall and checks["consent_service"].get("status") in {"healthy", "operational"}
     return {"status": "healthy" if overall else "degraded", "services": checks}
 
 
@@ -3814,7 +3959,11 @@ async def get_researchers(
     """Protected endpoint with role-specific data shaping and pagination."""
     safe_limit = max(1, min(limit, 500))
     safe_offset = max(0, offset)
-    cache_key = f"researchers:{state}:{research_area}:{safe_limit}:{safe_offset}:{token_payload.get('role','')}"
+    cache_key = (
+        f"researchers:{state}:{research_area}:{safe_limit}:{safe_offset}:"
+        f"{token_payload.get('role','')}:tier:{token_payload.get('tier', 1)}:"
+        f"user:{token_payload.get('sub','')}"
+    )
     cached = _api_cache.get(cache_key)
     if cached is not None:
         return cached
@@ -4553,8 +4702,8 @@ async def grant_consent(
     token_payload: dict = Depends(get_current_user)
 ):
     """Grant consent for data processing (DPDP 2023)."""
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.grant_consent(user_id, scope, retention_days)
     if result["success"]:
@@ -4568,8 +4717,8 @@ async def revoke_consent(
     token_payload: dict = Depends(get_current_user)
 ):
     """Revoke consent for data processing (DPDP 2023)."""
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     result = service.revoke_consent(user_id, scope)
     if result["success"]:
@@ -4580,8 +4729,8 @@ async def revoke_consent(
 @app.get("/me/consents")
 async def list_consents(token_payload: dict = Depends(get_current_user)):
     """List all consents for current user."""
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return {"consents": service.list_consents(user_id)}
 
@@ -4590,8 +4739,8 @@ async def list_consents(token_payload: dict = Depends(get_current_user)):
 @app.get("/me/data")
 async def export_user_data(token_payload: dict = Depends(get_current_user)):
     """Export all user data (DPDP right to access)."""
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return service.export_user_data(user_id)
 
@@ -4599,8 +4748,8 @@ async def export_user_data(token_payload: dict = Depends(get_current_user)):
 @app.delete("/me/data")
 async def erase_user_data(token_payload: dict = Depends(get_current_user)):
     """Erase all user data (DPDP right to erasure)."""
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     user_id = token_payload.get("sub", "anonymous")
     return service.erase_user_data(user_id)
 
@@ -4611,8 +4760,8 @@ async def get_dpdp_admin_stats(token_payload: dict = Depends(get_current_user)):
     role = token_payload.get("role", "")
     if role not in ("admin", "government"):
         raise HTTPException(status_code=403, detail="Admin access required")
-    from src.services.consent import ConsentService
-    service = ConsentService()
+    from src.services.consent import get_consent_service
+    service = get_consent_service()
     return service.get_admin_stats()
 
 

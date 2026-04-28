@@ -6,6 +6,7 @@ import { DataTable } from '../components/Government/DataTables'
 import { StatsCard } from '../components/StatsCard/StatsCard'
 import { SkeletonLoader } from '../components/Skeleton/SkeletonLoader'
 import { ErrorState } from '../components/ErrorState/ErrorState'
+import PromptBlocked from '../components/PromptBlocked/PromptBlocked'
 import { ErrorBoundary, WidgetErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { AnswerPanel } from '../components/AnswerPanel/AnswerPanel'
 import { GraphView } from '../components/GraphView/GraphView'
@@ -405,12 +406,16 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                     )}
                     {queryError && (
                       <div className="mt-4">
-                        <ErrorState
-                          title={t("auto.views.GovernmentDashboard.21")}
-                          message={queryError}
-                          severity="error"
-                          onRetry={handleSearch}
-                        />
+                        {queryError.toLowerCase().includes('sensitive information') ? (
+                          <PromptBlocked reason={`${queryError} Ask for aggregated cohorts or state-level counts instead.`} />
+                        ) : (
+                          <ErrorState
+                            title={t("auto.views.GovernmentDashboard.21")}
+                            message={queryError}
+                            severity="error"
+                            onRetry={handleSearch}
+                          />
+                        )}
                       </div>
                     )}
                   </div>
@@ -500,12 +505,16 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                   )}
                   {queryError && (
                     <div className="mt-4">
-                      <ErrorState
-                        title={t("auto.views.GovernmentDashboard.29")}
-                        message={queryError}
-                        severity="error"
-                        onRetry={handleSearch}
-                      />
+                      {queryError.toLowerCase().includes('sensitive information') ? (
+                        <PromptBlocked reason={`${queryError} Ask for aggregated cohorts or state-level counts instead.`} />
+                      ) : (
+                        <ErrorState
+                          title={t("auto.views.GovernmentDashboard.29")}
+                          message={queryError}
+                          severity="error"
+                          onRetry={handleSearch}
+                        />
+                      )}
                     </div>
                   )}
                   {queryResult && !queryError && (

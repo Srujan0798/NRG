@@ -31,12 +31,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [_consecutiveFailures, setConsecutiveFailures] = useState(0)
 
   useEffect(() => {
-    const storedSession = authService.getStoredSession()
+    let mounted = true
+    const restoreSession = async () => {
+      const storedSession = authService.getStoredSession()
+      if (storedSession) {
+        startTransition(() => {
+          if (!mounted) return
+          setSession(storedSession)
+          setIsLoading(false)
+        })
+        return
+      }
 
-    startTransition(() => {
-      setSession(storedSession)
-      setIsLoading(false)
-    })
+      try {
+        const cookieSession = await authService.fetchSession()
+        startTransition(() => {
+          if (!mounted) return
+          setSession(cookieSession)
+          setIsLoading(false)
+        })
+      } catch {
+        startTransition(() => {
+          if (!mounted) return
+          setSession(null)
+          setIsLoading(false)
+        })
+      }
+    }
+
+    void restoreSession()
+    return () => {
+      mounted = false
+    }
   }, [])
 
   useEffect(() => {

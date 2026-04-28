@@ -37,7 +37,11 @@ async def get_researchers(
 ):
     safe_limit = max(1, min(limit, 500))
     safe_offset = max(0, offset)
-    cache_key = f"researchers:{state}:{research_area}:{safe_limit}:{safe_offset}:{token_payload.get('role','')}"
+    cache_key = (
+        f"researchers:{state}:{research_area}:{safe_limit}:{safe_offset}:"
+        f"{token_payload.get('role','')}:tier:{token_payload.get('tier', 1)}:"
+        f"user:{token_payload.get('sub','')}"
+    )
     api_cache = get_api_cache()
     cached = api_cache.get(cache_key)
     if cached is not None:

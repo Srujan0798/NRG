@@ -4,11 +4,11 @@
 **Status:** BLOCKED on founder private key
 **Reason:** GnuPG is installed, but `gpg --list-secret-keys --keyid-format LONG`
 returns no configured private signing keys for this user.
+**Last checked:** 2026-04-29
 
 ## Local Tool Check
 
 ```text
-gpg (GnuPG) 2.5.19
 Home: /Users/srujansai/.gnupg
 Secret keys: none listed
 ```
