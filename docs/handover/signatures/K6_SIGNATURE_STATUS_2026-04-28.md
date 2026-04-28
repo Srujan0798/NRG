@@ -1,0 +1,43 @@
+# K-6 GPG Signature Status
+
+**Protocol:** FOUNDER-SPRINT-2026-04-28  
+**Status:** BLOCKED locally  
+**Reason:** `gpg` is not installed in this shell environment.
+
+## Required Documents
+
+| # | Document | Expected signature file |
+|---|---|---|
+| 1 | `docs/handover/README.md` | `README.md.asc` |
+| 2 | `docs/handover/SYSTEM_OVERVIEW.md` | `SYSTEM_OVERVIEW.md.asc` |
+| 3 | `docs/handover/ARCHITECTURE.md` | `ARCHITECTURE.md.asc` |
+| 4 | `docs/handover/API_REFERENCE.md` | `API_REFERENCE.md.asc` |
+| 5 | `docs/handover/OPERATIONS_RUNBOOK.md` | `OPERATIONS_RUNBOOK.md.asc` |
+| 6 | `docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md` | `SECURITY_COMPLIANCE_ATTESTATION.md.asc` |
+| 7 | `docs/handover/DATA_INTAKE_PROTOCOL.md` | `DATA_INTAKE_PROTOCOL.md.asc` |
+| 8 | `docs/handover/UAT_RESULTS.md` | `UAT_RESULTS.md.asc` |
+
+## Command To Run On Founder Machine
+
+```bash
+cd docs/handover/signatures/
+for doc in ../README.md ../SYSTEM_OVERVIEW.md ../ARCHITECTURE.md \
+           ../API_REFERENCE.md ../OPERATIONS_RUNBOOK.md \
+           ../SECURITY_COMPLIANCE_ATTESTATION.md ../DATA_INTAKE_PROTOCOL.md \
+           ../UAT_RESULTS.md; do
+  gpg --armor --detach-sign --output "$(basename "$doc").asc" "$doc"
+done
+ls *.asc | wc -l
+```
+
+Expected count: `8`.
+
+## Verification
+
+```bash
+cd docs/handover/signatures/
+for sig in *.asc; do
+  doc="../${sig%.asc}"
+  gpg --verify "$sig" "$doc"
+done
+```

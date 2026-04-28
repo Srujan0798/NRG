@@ -1,0 +1,195 @@
+%PDF-1.4
+1 0 obj
+<< /Length 333 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 1: Problem) Tj
+/F1 14 Tf
+0 -30 Td
+(Indian research intelligence is fragmented across institutes,) Tj
+0 -30 Td
+(ministries, grants, publications, patents, labs, and collaborations.) Tj
+0 -30 Td
+(Decision makers cannot ask trusted cross-domain questions without manual) Tj
+0 -30 Td
+(reconciliation.) Tj
+ET
+endstream
+endobj
+2 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 1 0 R >>
+endobj
+3 0 obj
+<< /Length 298 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 2: Solution) Tj
+/F1 14 Tf
+0 -30 Td
+(National Research Graph is a sovereign research intelligence platform) Tj
+0 -30 Td
+(with natural-language querying, citation-backed answers, tiered access,) Tj
+0 -30 Td
+(DPDP-aware controls, and non-repudiable audit evidence.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 3 0 R >>
+endobj
+5 0 obj
+<< /Length 293 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 3: Market) Tj
+/F1 14 Tf
+0 -30 Td
+(Primary buyers are universities, IIT and NIT networks, ministries, state) Tj
+0 -30 Td
+(innovation missions, and R&D-heavy enterprises that need searchable) Tj
+0 -30 Td
+(research capability and compliance-ready data access.) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 292 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 4: Product) Tj
+/F1 14 Tf
+0 -30 Td
+(NRG combines PostgreSQL, Qdrant, Redis, Kong, Helm/Kubernetes) Tj
+0 -30 Td
+(deployment, schema-RAG, tier response filtering, red-team replay, vector) Tj
+0 -30 Td
+(drift monitoring, and evidence-backed handover workflows.) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 287 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 5: Traction) Tj
+/F1 14 Tf
+0 -30 Td
+(Launch-ready local evidence, production Helm charts, red-team tooling,) Tj
+0 -30 Td
+(UAT scripts, data-intake protocol, C4 load-test harness, and commercial) Tj
+0 -30 Td
+(handover artifacts are present in the repo.) Tj
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 9 0 R >>
+endobj
+11 0 obj
+<< /Length 214 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 6: Team) Tj
+/F1 14 Tf
+0 -30 Td
+(Founder-led build with IITGN path, security-first architecture, and an) Tj
+0 -30 Td
+(operator-focused handover packet for institutional adoption.) Tj
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 11 0 R >>
+endobj
+13 0 obj
+<< /Length 224 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 7: Ask) Tj
+/F1 14 Tf
+0 -30 Td
+(INR 50L to 1Cr for sovereign activation, official data ingest, external) Tj
+0 -30 Td
+(audit, first reference deployment, and 12 months of focused execution.) Tj
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 13 0 R >>
+endobj
+15 0 obj
+<< /Length 258 >>
+stream
+BT
+/F1 26 Tf
+72 740 Td
+(Slide 8: Roadmap) Tj
+/F1 14 Tf
+0 -30 Td
+(30 days: entity, IP letter, cluster activation. 60 days: 600GB ingest,) Tj
+0 -30 Td
+(UAT, external audit start. 90 days: first reference deployment and buyer) Tj
+0 -30 Td
+(conversations.) Tj
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 18 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 17 0 R >> >> /Contents 15 0 R >>
+endobj
+17 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+18 0 obj
+<< /Type /Pages /Kids [2 0 R 4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R] /Count 8 >>
+endobj
+19 0 obj
+<< /Type /Catalog /Pages 18 0 R >>
+endobj
+xref
+0 20
+0000000000 65535 f 
+0000000009 00000 n 
+0000000393 00000 n 
+0000000521 00000 n 
+0000000870 00000 n 
+0000000998 00000 n 
+0000001342 00000 n 
+0000001470 00000 n 
+0000001813 00000 n 
+0000001941 00000 n 
+0000002279 00000 n 
+0000002408 00000 n 
+0000002674 00000 n 
+0000002804 00000 n 
+0000003080 00000 n 
+0000003210 00000 n 
+0000003520 00000 n 
+0000003650 00000 n 
+0000003721 00000 n 
+0000003825 00000 n 
+trailer
+<< /Size 20 /Root 19 0 R >>
+startxref
+3876
+%%EOF
