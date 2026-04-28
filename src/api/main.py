@@ -2424,15 +2424,51 @@ async def health_check():
         slo_tracker.set_drift_score(drift_score)
 
     vector_drift_health = _get_vector_drift_health()
+    qdrant_health = _get_qdrant_vector_count_health()
+    if qdrant_health.get("status") == "CRITICAL":
+        overall = "CRITICAL"
 
     return {
         "status": overall,
         "timestamp": datetime.now(UTC).isoformat(),
         "consent_service": "operational",
         "retriever": retriever_health,
+        "qdrant": qdrant_health,
         "vector_drift": vector_drift_health,
         "database": db_health,
         "audit": audit_health,
+    }
+
+
+def _get_qdrant_vector_count_health() -> dict:
+    host = os.getenv("QDRANT_HOST", "localhost")
+    port = int(os.getenv("QDRANT_PORT", "6333"))
+    collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
+
+    try:
+        client = QdrantClient(host=host, port=port, timeout=1.0)
+        count_result = client.count(collection_name=collection, exact=True)
+        vector_count = int(getattr(count_result, "count", 0) or 0)
+    except Exception as exc:
+        return {
+            "status": "unavailable",
+            "collection": collection,
+            "vectors": None,
+            "message": f"Qdrant vector count unavailable: {exc}",
+        }
+
+    if vector_count == 0:
+        return {
+            "status": "CRITICAL",
+            "collection": collection,
+            "vectors": 0,
+            "message": "Collection is empty - ingestion required",
+        }
+
+    return {
+        "status": "healthy",
+        "collection": collection,
+        "vectors": vector_count,
     }
 
 

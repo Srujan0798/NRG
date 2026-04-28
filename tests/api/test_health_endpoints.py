@@ -22,6 +22,17 @@ class FakeQdrantClient:
         return FakeCollections()
 
 
+class FakeQdrantCount:
+    count = 0
+
+
+class EmptyQdrantCountClient(FakeQdrantClient):
+    def count(self, collection_name: str, exact: bool = True):
+        assert collection_name == "nrg_research"
+        assert exact is True
+        return FakeQdrantCount()
+
+
 def test_db_health_endpoint_uses_canonical_database(monkeypatch):
     class FakeDB:
         dialect = "sqlite"
@@ -90,6 +101,38 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
     assert payload["database"]["tables"] == 75
     assert payload["audit"]["chain_valid"] is True
     assert payload["audit"]["chain_length"] == 7
+
+
+def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCountClient)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "CRITICAL"
+    assert payload["qdrant"] == {
+        "status": "CRITICAL",
+        "collection": "nrg_research",
+        "vectors": 0,
+        "message": "Collection is empty - ingestion required",
+    }
 
 
 def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
