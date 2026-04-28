@@ -23,7 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.responses import Response, StreamingResponse
+from starlette.responses import JSONResponse, Response, StreamingResponse
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
@@ -2428,7 +2428,7 @@ async def health_check():
     if qdrant_health.get("status") == "CRITICAL":
         overall = "CRITICAL"
 
-    return {
+    payload = {
         "status": overall,
         "timestamp": datetime.now(UTC).isoformat(),
         "consent_service": "operational",
@@ -2438,6 +2438,9 @@ async def health_check():
         "database": db_health,
         "audit": audit_health,
     }
+    if overall == "CRITICAL":
+        return JSONResponse(status_code=503, content=payload)
+    return payload
 
 
 def _get_qdrant_vector_count_health() -> dict:
@@ -2447,9 +2450,37 @@ def _get_qdrant_vector_count_health() -> dict:
 
     try:
         client = QdrantClient(host=host, port=port, timeout=1.0)
-        count_result = client.count(collection_name=collection, exact=True)
-        vector_count = int(getattr(count_result, "count", 0) or 0)
     except Exception as exc:
+        return {
+            "status": "unavailable",
+            "collection": collection,
+            "vectors": None,
+            "message": f"Qdrant vector count unavailable: {exc}",
+        }
+
+    try:
+        collection_info = client.get_collection(collection_name=collection)
+        vector_count = getattr(collection_info, "vectors_count", None)
+        if vector_count is None:
+            vector_count = getattr(collection_info, "points_count", None)
+    except Exception:
+        vector_count = None
+
+    if vector_count is None:
+        try:
+            count_result = client.count(collection_name=collection, exact=True)
+            vector_count = getattr(count_result, "count", 0)
+        except Exception as exc:
+            return {
+                "status": "unavailable",
+                "collection": collection,
+                "vectors": None,
+                "message": f"Qdrant vector count unavailable: {exc}",
+            }
+
+    try:
+        vector_count = int(vector_count or 0)
+    except (TypeError, ValueError) as exc:
         return {
             "status": "unavailable",
             "collection": collection,

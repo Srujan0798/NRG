@@ -33,6 +33,17 @@ class EmptyQdrantCountClient(FakeQdrantClient):
         return FakeQdrantCount()
 
 
+class EmptyQdrantCollectionInfo:
+    vectors_count = 0
+    points_count = 0
+
+
+class EmptyQdrantCollectionClient(FakeQdrantClient):
+    def get_collection(self, collection_name: str):
+        assert collection_name == "nrg_research"
+        return EmptyQdrantCollectionInfo()
+
+
 def test_db_health_endpoint_uses_canonical_database(monkeypatch):
     class FakeDB:
         dialect = "sqlite"
@@ -124,7 +135,7 @@ def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
 
     response = client.get("/health")
 
-    assert response.status_code == 200
+    assert response.status_code == 503
     payload = response.json()
     assert payload["status"] == "CRITICAL"
     assert payload["qdrant"] == {
@@ -133,6 +144,34 @@ def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
         "vectors": 0,
         "message": "Collection is empty - ingestion required",
     }
+
+
+def test_root_health_reports_zero_vectors_from_collection_metadata_as_critical(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCollectionClient)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "CRITICAL"
+    assert payload["qdrant"]["status"] == "CRITICAL"
+    assert payload["qdrant"]["vectors"] == 0
 
 
 def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
