@@ -114,7 +114,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.env not in ["acceptance", "test"]:
-        print("ERROR: Never run this against production.")
+        print("ERROR: choose acceptance or test.")
         exit(1)
 
     researchers = generate_researchers(500)
