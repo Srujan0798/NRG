@@ -233,7 +233,7 @@ GAP-A git hash: `b873b71`
 GAP-B git hash: `527af23`
 GAP-C git hash: `4c743b8`
 Evidence folder: `evidence/2026-04-24/`
-Final git tag: not created; local evidence commit recorded separately if committed
+Final git tag: not created; evidence commit: `3b7ee6e`
 
 ## Appendix A - Evidence Inventory
 
