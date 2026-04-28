@@ -69,16 +69,16 @@ Each persona receives **10 pre-seeded queries** to execute. These queries should
 
 | # | Query | Expected Behavior | Time (s) | Quality | Citations | Notes |
 |---|-------|-------------------|----------|---------|-----------|-------|
-| 1 | "Find robotics researchers in Gujarat" | List of researchers with details | | | | |
-| 2 | "Who has published the most on machine learning in the last 5 years?" | Ranked list with counts | | | | |
-| 3 | "Show me researchers working on hydrogen fuel cells" | List with affiliation and h-index | | | | |
-| 4 | "Compare AI research output between Gujarat and Karnataka over the last 5 years" | Multi-hop: two states, 5 years, aggregated comparison | | | | |
-| 5 | "Find my profile and show my publications" | Own data retrieval | | | | |
-| 6 | "Which institutions have the highest collaboration rate?" | Aggregated institutional stats | | | | |
-| 7 | "Show me labs working on quantum computing" | Lab list with capabilities | | | | |
-| 8 | "What is the funding trend for renewable energy research?" | Time-series funding analysis | | | | |
-| 9 | "Find researchers who have patents in semiconductor design" | Researcher + patent linkage | | | | |
-| 10 | "Show the knowledge graph for deep learning" | Graph visualization | | | | |
+| 1 | "How many IIT Gandhinagar publications were published in 2023, grouped by research area?" | Count and grouping by institution, year, and research area | | | | |
+| 2 | "Which researchers at IIT Gandhinagar published on hydrogen catalysis between 2020 and 2024, and what are their email contacts?" | Tier 1 researcher details with citations and contact fields | | | | |
+| 3 | "Show the top 10 Computer Science researchers by publication count since 2021, including institution, h-index, and recent paper titles." | Ranked researcher list with joined publication evidence | | | | |
+| 4 | "Find researchers in Gujarat working on robotics who also have patents or funded projects." | Cross-table researcher, patent, and project linkage | | | | |
+| 5 | "Which labs collaborate most often with researchers publishing in machine learning?" | Lab and researcher collaboration network summary | | | | |
+| 6 | "Compare publication growth for IIT Gandhinagar, IIT Bombay, and IIT Madras from 2019 to 2024." | Multi-institution time-series comparison | | | | |
+| 7 | "List researchers whose funding increased after they started publishing in renewable energy topics." | Joined funding and publication trend analysis | | | | |
+| 8 | "Show co-author networks for quantum computing researchers and identify the most connected collaborator." | Collaboration graph with ranked connectivity | | | | |
+| 9 | "Which institutions have researchers working at TRL 6 or above in semiconductor or chip design?" | Institution and TRL-stage join with researcher details | | | | |
+| 10 | "For hydrogen research, show publications, active researchers, grants, patents, and likely collaboration opportunities." | Complex multi-hop synthesis across publications, people, funding, patents, and institutions | | | | |
 
 ### UAT Notes
 
@@ -128,16 +128,16 @@ Query 2:
 
 | # | Query | Expected Behavior | Time (s) | Quality | Citations | Notes |
 |---|-------|-------------------|----------|---------|-----------|-------|
-| 1 | "Show state-wise research funding for the last 3 years" | Aggregated funding by state | | | | |
-| 2 | "Which states have the most publications in AI?" | State ranking | | | | |
-| 3 | "What percentage of research is in healthcare vs engineering?" | Domain distribution | | | | |
-| 4 | "Show the growth trend of IIT publications over 10 years" | Time-series chart | | | | |
-| 5 | "Which institutions have the highest patents filed?" | Institutional patent ranking | | | | |
-| 6 | "Compare funding allocation between government and private institutions" | Segmented analysis | | | | |
-| 7 | "What is the research output per crore of funding?" | ROI analysis | | | | |
-| 8 | "Show the geographic distribution of renewable energy research" | State map visualization | | | | |
-| 9 | "Which research areas have grown the fastest in 5 years?" | Trend analysis | | | | |
-| 10 | "Generate a summary report of national research capacity" | Multi-section report | | | | |
+| 1 | "Which states had the highest AI publication growth from 2020 to 2024?" | State-level aggregate trends only | | | | |
+| 2 | "Compare total government innovation grant funding by institution type and year." | Aggregated funding by institution class and year | | | | |
+| 3 | "Which institutes convert grants into patents most efficiently, grouped by state?" | Institution/state aggregate conversion ratios, no researcher PII | | | | |
+| 4 | "Show the top research areas by national publication output and funding trend for the last five years." | National aggregate trend summary | | | | |
+| 5 | "Which ministries or agencies appear most often in funded research collaborations?" | Agency collaboration counts without individual profiles | | | | |
+| 6 | "Compare IIT, NIT, and private-university research output per crore of funding." | Institution-type ROI comparison | | | | |
+| 7 | "Which states have strong renewable energy research but low patent commercialization?" | Aggregate state gap analysis | | | | |
+| 8 | "Show aggregate TRL distribution by institute type for market-ready technologies." | TRL-stage histogram by institution class | | | | |
+| 9 | "Identify national collaboration clusters between institutions in AI, healthcare, and clean energy." | Institution-level collaboration clusters only | | | | |
+| 10 | "Generate a policy summary of underfunded high-output research areas without showing individual researcher details." | Policy-ready summary with anonymized aggregates | | | | |
 
 ### UAT Notes
 
@@ -182,16 +182,16 @@ Query 1:
 
 | # | Query | Expected Behavior | Time (s) | Quality | Citations | Notes |
 |---|-------|-------------------|----------|---------|-----------|-------|
-| 1 | "Who works on electric vehicle battery technology?" | Researcher names + areas | | | | |
-| 2 | "Find institutions with semiconductor research capability" | Institution names + focus | | | | |
-| 3 | "Who are the top experts in machine learning?" | Names + research areas | | | | |
-| 4 | "Show research groups working on quantum computing" | Group/institution names | | | | |
-| 5 | "Which institutions collaborate on robotics research?" | Collaboration network (no personal data) | | | | |
-| 6 | "Find researchers in graphene-related technologies" | Research area matches | | | | |
-| 7 | "Who has expertise in chip design and verification?" | Technical expertise mapping | | | | |
-| 8 | "Show the top 10 research institutions in India by area" | Institutional ranking | | | | |
-| 9 | "Which researchers publish on 5G and next-gen communications?" | Domain expertise | | | | |
-| 10 | "Find industry-academia collaboration examples in AI" | Collaboration patterns | | | | |
+| 1 | "Which institutions publicly publish the most work on electric vehicle battery technology?" | Public institution and topic summary only | | | | |
+| 2 | "Find public collaboration opportunities in semiconductor design based on published papers and patents only." | Public publications and patent metadata only | | | | |
+| 3 | "Which research groups publish on 5G or next-generation communications?" | Public group/institution names and research areas | | | | |
+| 4 | "Show institutions with public patents or publications related to graphene applications." | Public patent/publication evidence only | | | | |
+| 5 | "Which IITs have published work in robotics, and what topics do they focus on?" | Published topic summary by institution | | | | |
+| 6 | "List public research areas where industry-academia collaboration is visible from publications or patents." | Public-domain collaboration patterns | | | | |
+| 7 | "Find published papers since 2021 on hydrogen fuel cells and their affiliated institutions." | Publication metadata and institution affiliations | | | | |
+| 8 | "Which institutions appear strongest in AI safety or trustworthy AI using public publication evidence?" | Public publication strength signal | | | | |
+| 9 | "Show market-ready technology areas using only public patent and publication metadata." | Public metadata-based opportunity summary | | | | |
+| 10 | "Summarize potential public-domain partners for quantum computing collaboration without grant or personal-contact data." | Tier 3-safe partner summary with restricted fields | | | | |
 
 ### UAT Notes
 
