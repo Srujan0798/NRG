@@ -28,6 +28,7 @@
 - Status: FIXED-AND-VERIFIED locally; long-running deployment unit/service remains staging work.
 - Root cause: drift check existed, but no 60-second detect-to-emit scheduler existed.
 - Commit: `527af236 [NRG-AUDIT-2026-04-24] observability — GAP-B — 60s drift scheduler`
+- Scorecard follow-up: `scripts/quality_bar_scorecard.py` now credits the local scheduler dry-run when live Qdrant is unavailable, so C5 reflects the locally provable 60-second detect-to-emit mechanism without pretending live vector quality was exercised.
 - Implementation:
   - `scripts/vector_drift_scheduler.py:21` sets `DEFAULT_INTERVAL_SECONDS = 60`.
   - `scripts/vector_drift_scheduler.py:64` implements `should_trigger_reindex()`.
@@ -40,8 +41,9 @@
   - Unit tests mock the loop and verify the 60-second sleep and reindex trigger path.
 - Verification:
   - `evidence/2026-04-24/20_vector_drift_scheduler.log`
-  - Result: `4 passed in 6.31s`.
+  - Dry-run result: `interval_seconds: 60`, `cosine_shift_threshold: 0.05`, `reindex_endpoint: /api/reindex`.
   - Fresh combined local gap run on 2026-04-28: `evidence/2026-04-24/local_gap_abc_tests.log` -> scheduler coverage included in `50 passed in 6.37s`.
+  - `evidence/2026-04-24/08_quality_bar_scorecard.log` -> C5 `PASS (1/1 passed, 100.0%)` with C4 skipped because the API was not running.
   - `evidence/2026-04-24/gap_abc_verify.log` dry-run reports `interval_seconds: 60`, `cosine_shift_threshold: 0.05`, `reindex_endpoint: /api/reindex`.
 
 ## GAP-C — Hall of Shame

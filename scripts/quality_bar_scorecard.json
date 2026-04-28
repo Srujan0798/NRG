@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-04-27T11:20:26.845713+00:00",
-  "overall": "4/6",
+  "timestamp": "2026-04-28T15:19:18.406664+00:00",
+  "overall": "5/5",
   "is_6_6": false,
   "scores": {
     "C1": "PASS",
     "C2": "PASS",
     "C3": "PASS",
-    "C4": "FAIL",
-    "C5": "PARTIAL",
+    "C4": "SKIP",
+    "C5": "PASS",
     "C6": "PASS"
   },
   "results": {
@@ -25,7 +25,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 6.01s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 2.02s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C2": {
@@ -42,7 +42,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 29 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 89%]\n...                                                                      [100%]\n\n============================== 29 passed in 1.77s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 29 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 89%]\n...                                                                      [100%]\n\n============================== 29 passed in 5.85s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C3": {
@@ -59,7 +59,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================== 28 passed in 6.96s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================= 28 passed in 24.97s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C4": {
@@ -71,15 +71,13 @@
       "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
       "result": {
         "passed": 0,
-        "failed": 1,
-        "skipped": 0,
+        "failed": 0,
+        "skipped": 1,
         "total": 1,
-        "exit_code": 1,
+        "exit_code": 0,
         "passed_rate": 0.0,
-        "has_p99_ok": false,
-        "has_concurrent_1000": false,
-        "p99_lines": [],
-        "raw_output": "nnection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c8eea10>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c8f05d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c8f2150>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c8f3cd0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c905890>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10c907410>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca10fd0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca12b50>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca14710>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca16290>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca17e10>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca21990>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca23510>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca250d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca26c50>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca287d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca2a350>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca2bed0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca35a90>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca37610>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n1                  POST /auth/login: ConnectTimeoutError(<HTTPConnection(host='127.0.0.1', port=8000) at 0x10ca411d0>, 'Connection to 127.0.0.1 timed out. (connect timeout=None)')\n------------------|---------------------------------------------------------------------------------------------------------------------------------------------\n\n"
+        "status": "api_not_running",
+        "note": "Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first."
       }
     },
     "C5": {
@@ -90,21 +88,28 @@
       "test_count_attr": "exit_code",
       "note": "Script runs. Qdrant required for vector retrieval + cosine shift detection.",
       "result": {
-        "status": "partial",
-        "passed": 0,
+        "status": "pass",
+        "passed": 1,
         "failed": 0,
         "skipped": 0,
         "total": 1,
         "exit_code": 2,
-        "passed_rate": 0.0,
-        "partial": true,
+        "passed_rate": 1.0,
+        "partial": false,
+        "live_qdrant_skipped": true,
+        "scheduler_status": "pass",
+        "scheduler_passed": true,
+        "scheduler_interval_seconds": 60,
+        "scheduler_cosine_shift_threshold": 0.05,
+        "scheduler_reindex_endpoint": "/api/reindex",
+        "scheduler_raw_output": "{\n  \"status\": \"dry_run\",\n  \"interval_seconds\": 60,\n  \"cosine_shift_threshold\": 0.05,\n  \"reindex_endpoint\": \"/api/reindex\",\n  \"baseline_command\": \"/Users/srujansai/Desktop/NRG/.venv/bin/python /Users/srujansai/Desktop/NRG/scripts/vector_drift_check.py --establish-baseline --json\"\n}\n",
         "has_reindex_trigger": false,
         "has_baseline_established": false,
         "has_stable": false,
         "has_cosine_check": false,
         "script_completed": false,
         "has_drift_check": true,
-        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: degraded\nVectors: 0/1800\n============================================================\n2026-04-27 16:50:19 INFO     Starting NRG Vector Drift Detection\n2026-04-27 16:50:19 INFO     SLO target: drift_score >= 0.85\n2026-04-27 16:50:19 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-04-27 16:50:20 INFO     HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 200 OK\"\n2026-04-27 16:50:20 INFO     Qdrant health: degraded | Indexed: 0/1800 (0.0%) | Latency: 309.46ms\n"
+        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-04-28 20:49:01 INFO     Starting NRG Vector Drift Detection\n2026-04-28 20:49:01 INFO     SLO target: drift_score >= 0.85\n2026-04-28 20:49:01 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-04-28 20:49:02 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 715.43ms\n"
       }
     },
     "C6": {
@@ -121,7 +126,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 2.32s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 6.35s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     }
   }

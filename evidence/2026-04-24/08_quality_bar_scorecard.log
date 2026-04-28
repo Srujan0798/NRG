@@ -3,7 +3,7 @@
 NRG QUALITY BAR SCORECARD
 ============================================================
 
-  Running C1 (DPDP-Compliant Indian PII Detection)... PASS (8/8 passed, 100.0%)
+  Running C1 (DPDP-Compliant Indian PII Detection)... PASS (10/10 passed, 100.0%)
   Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (29/29 passed, 100.0%)
   Running C3 (Multi-Hop Intent Decomposition (DAG Planner))... PASS (28/28 passed, 100.0%)
   Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))... SKIP (0/1 passed, 0.0%)
@@ -14,7 +14,7 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 
 # NRG Quality Bar Scorecard
 
-**Generated**: 2026-04-24T20:33:26.643852+00:00
+**Generated**: 2026-04-28T15:19:18.406664+00:00
 **Overall Score**: 5/5 (5/5 = 5/5)
 **6/6 Compliant**: ❌ NO
 
@@ -22,7 +22,7 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 
 | # | Constraint | Tests | Passed | Rate | Status |
 |:--|:-----------|:------:|:------:|:----:|:------:|
-| C1 | DPDP-Compliant Indian PII Detection | 8/8 | 100% | ✅ |
+| C1 | DPDP-Compliant Indian PII Detection | 10/10 | 100% | ✅ |
 | C2 | Per-User Audit Binding (Non-Repudiation) | 29/29 | 100% | ✅ |
 | C3 | Multi-Hop Intent Decomposition (DAG Planner) | 28/28 | 100% | ✅ |
 | C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | 0/1 | 0% | ⏭️ |
@@ -36,7 +36,7 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 ### C1: DPDP-Compliant Indian PII Detection
 
 - **Description**: 8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial
-- **Tests**: 8 passed / 8 total
+- **Tests**: 10 passed / 10 total
 - **Pass Rate**: 100.0%
 - **Min Required**: 100%
 - **Status**: PASS

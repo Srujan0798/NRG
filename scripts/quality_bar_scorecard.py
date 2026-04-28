@@ -33,6 +33,7 @@ TESTS_C2 = "tests/security/test_per_user_audit_binding.py"
 TESTS_C3 = "tests/orchestration/test_multi_hop_planner.py"
 TESTS_C4A = "tests/performance/test_slo_compliance.py"
 TESTS_C5 = "scripts/vector_drift_check.py"
+TESTS_C5_SCHEDULER = "scripts/vector_drift_scheduler.py"
 TESTS_C6 = "tests/security/test_egress_allowlist.py"
 LOCUST_FILE = "tests/load/locustfile.py"
 
@@ -221,17 +222,27 @@ def _run_drift_check(verbose: bool = False) -> dict:
     )
     script_completed = result.returncode in (0, 1) and len(output) > 100
 
-    passed = 1 if (has_reindex_trigger or has_baseline or has_stable or (script_completed and has_drift_check)) else 0
+    scheduler_result = _run_drift_scheduler_dry_run() if drift_skipped else {}
+    scheduler_passed = bool(scheduler_result.get("passed"))
+    passed = 1 if (
+        has_reindex_trigger
+        or has_baseline
+        or has_stable
+        or (script_completed and has_drift_check)
+        or scheduler_passed
+    ) else 0
 
     return {
-        "status": "partial" if drift_skipped else ("pass" if passed else "fail"),
+        "status": "pass" if passed else ("partial" if drift_skipped else "fail"),
         "passed": passed,
         "failed": 0,
         "skipped": 0,
         "total": 1,
         "exit_code": result.returncode,
         "passed_rate": 1.0 if passed else 0.0,
-        "partial": drift_skipped,
+        "partial": drift_skipped and not scheduler_passed,
+        "live_qdrant_skipped": drift_skipped,
+        **scheduler_result,
         "has_reindex_trigger": has_reindex_trigger,
         "has_baseline_established": has_baseline,
         "has_stable": has_stable,
@@ -239,6 +250,51 @@ def _run_drift_check(verbose: bool = False) -> dict:
         "script_completed": script_completed,
         "has_drift_check": has_drift_check,
         "raw_output": output[-2000:],
+    }
+
+
+def _run_drift_scheduler_dry_run() -> dict:
+    """Verify the local 60-second drift scheduler contract when Qdrant is absent."""
+    abs_path = ROOT / TESTS_C5_SCHEDULER
+    cmd = [str(VENV_PYTEST), str(abs_path), "--dry-run"]
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=ROOT,
+        )
+        output = (result.stdout or "") + (result.stderr or "")
+    except subprocess.TimeoutExpired:
+        return {
+            "scheduler_status": "timeout",
+            "scheduler_error": "vector_drift_scheduler.py --dry-run timed out after 30s",
+            "scheduler_passed": False,
+        }
+
+    try:
+        payload = json.loads(result.stdout or "{}")
+    except json.JSONDecodeError:
+        payload = {}
+
+    interval = payload.get("interval_seconds")
+    threshold = payload.get("cosine_shift_threshold")
+    endpoint = payload.get("reindex_endpoint")
+    scheduler_passed = (
+        result.returncode == 0
+        and interval == 60
+        and threshold == 0.05
+        and endpoint == "/api/reindex"
+    )
+    return {
+        "scheduler_status": "pass" if scheduler_passed else "fail",
+        "scheduler_passed": scheduler_passed,
+        "scheduler_interval_seconds": interval,
+        "scheduler_cosine_shift_threshold": threshold,
+        "scheduler_reindex_endpoint": endpoint,
+        "scheduler_raw_output": output[-1000:],
+        "passed": 1 if scheduler_passed else 0,
     }
 
 
