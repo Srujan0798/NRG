@@ -58,6 +58,7 @@ logger = get_logger(__name__)
 REPO_ROOT = Path(__file__).resolve().parents[2]
 KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.json"
 DEFAULT_VECTOR_DRIFT_STATUS_FILE = REPO_ROOT / ".cache" / "vector_drift_status.json"
+DEFAULT_DATA_QUALITY_SCORECARD_FILE = REPO_ROOT / "docs/ops/data_quality_scorecard.json"
 
 
 def _get_vector_drift_health() -> dict[str, Any]:
@@ -91,6 +92,37 @@ def _get_vector_drift_health() -> dict[str, Any]:
         },
     )
     return payload
+
+
+def _get_data_quality_health() -> dict[str, Any]:
+    """Read the latest data quality scorecard without running database scans."""
+    import json
+
+    path = Path(os.getenv("NRG_DATA_QUALITY_SCORECARD_FILE", str(DEFAULT_DATA_QUALITY_SCORECARD_FILE)))
+    if not path.exists():
+        return {
+            "status": "unknown",
+            "message": "No data quality scorecard has been emitted yet.",
+            "path": str(path),
+        }
+    try:
+        payload = json.loads(path.read_text())
+    except Exception as exc:
+        return {"status": "error", "message": str(exc), "path": str(path)}
+
+    p0_alerts = [
+        alert for alert in payload.get("alerts", [])
+        if str(alert.get("severity", "")).upper() == "P0"
+    ]
+    status = "unhealthy" if p0_alerts else "healthy" if payload.get("ok") else "degraded"
+    return {
+        "status": status,
+        "overall_status": payload.get("overall_status"),
+        "overall_score": payload.get("overall_score"),
+        "p0_alerts": len(p0_alerts),
+        "generated_at": payload.get("generated_at"),
+        "path": str(path),
+    }
 
 
 def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
@@ -152,6 +184,9 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
         logger.info(f"PII redaction applied to response: {redacted_types}")
 
     return redacted_response, redacted_types
+
+
+QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
 
 
 class _APIMemoryCache:
@@ -226,7 +261,7 @@ class _APIMemoryCache:
             self._store.clear()
 
 
-_api_cache = _APIMemoryCache(default_ttl=30)
+_api_cache = _APIMemoryCache(default_ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
 _tier_response_history: dict[int, deque[dict[str, Any]]] = {
     1: deque(maxlen=100),
     2: deque(maxlen=100),
@@ -2112,7 +2147,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
-            _api_cache.set(cache_key, fast_response, ttl=30)
+            _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return fast_response
 
         context_key = _sql_context_key(user_id, request.session_id)
@@ -2146,7 +2181,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
-            _api_cache.set(cache_key, follow_up_response, ttl=30)
+            _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return follow_up_response
 
         killer_response = _killer_query_response(
@@ -2178,7 +2213,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
-            _api_cache.set(cache_key, killer_response, ttl=30)
+            _api_cache.set(cache_key, killer_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             _remember_sql_domain_context(
                 _sql_context_key(user_id, request.session_id),
                 request.query,
@@ -2210,7 +2245,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
-            _api_cache.set(cache_key, adversarial_response, ttl=30)
+            _api_cache.set(cache_key, adversarial_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return adversarial_response
 
         from src.observability.metrics import get_slo_tracker
@@ -2321,7 +2356,7 @@ async def query_with_langgraph(
             endpoint="/query",
         )
 
-        _api_cache.set(cache_key, response_payload, ttl=30)
+        _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
         _remember_sql_domain_context(
             _sql_context_key(user_id, request.session_id),
             request.query,
@@ -2343,7 +2378,13 @@ async def health_check():
         from src.audit import get_chain_health
 
         audit_health = get_chain_health()
-        audit_health["status"] = "healthy" if audit_health.get("chain_valid") else "unhealthy"
+        audit_lineage = audit_health.get("lineage_break", {}) or {}
+        if audit_lineage.get("repair_required"):
+            audit_health["status"] = "critical"
+        elif audit_health.get("chain_valid"):
+            audit_health["status"] = "healthy"
+        else:
+            audit_health["status"] = "unhealthy"
     except Exception as exc:
         audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
 
@@ -2376,6 +2417,15 @@ async def health_check():
             "table_count": table_count,
             "tables": table_count,
         }
+        if hasattr(db, "pool_stats"):
+            pool_stats = db.pool_stats()
+            db_health["pool"] = {
+                "active": getattr(pool_stats, "active", 0),
+                "idle": getattr(pool_stats, "idle", 0),
+                "waiting": getattr(pool_stats, "waiting", 0),
+                "max_size": getattr(pool_stats, "max_size", 0),
+                "min_size": getattr(pool_stats, "min_size", 0),
+            }
     except Exception as exc:
         db_health = {"status": "error", "message": str(exc)}
 
@@ -2409,6 +2459,15 @@ async def health_check():
     overall = "healthy"
     if audit_health.get("chain_valid") is False:
         overall = "unhealthy"
+    if (audit_health.get("lineage_break") or {}).get("repair_required"):
+        audit_health["status"] = "critical"
+        overall = "unhealthy"
+
+    auth_status = jwt_handler.jwt_secret_health()
+    if auth_status.get("status") == "unhealthy":
+        overall = "unhealthy"
+    if retriever_health.get("status") == "critical":
+        overall = "unhealthy"
 
     from src.observability.metrics import get_slo_tracker
     slo_tracker = get_slo_tracker()
@@ -2424,6 +2483,10 @@ async def health_check():
         slo_tracker.set_drift_score(drift_score)
 
     vector_drift_health = _get_vector_drift_health()
+    data_quality_health = _get_data_quality_health()
+    if data_quality_health.get("status") == "unhealthy":
+        overall = "unhealthy"
+
     qdrant_health = _get_qdrant_vector_count_health()
     if qdrant_health.get("status") == "CRITICAL":
         overall = "CRITICAL"
@@ -2435,8 +2498,10 @@ async def health_check():
         "retriever": retriever_health,
         "qdrant": qdrant_health,
         "vector_drift": vector_drift_health,
+        "data_quality": data_quality_health,
         "database": db_health,
         "audit": audit_health,
+        "auth_status": auth_status,
     }
     if overall == "CRITICAL":
         return JSONResponse(status_code=503, content=payload)
@@ -2658,32 +2723,45 @@ async def vectors_health():
         from qdrant_client import QdrantClient
         client = QdrantClient(host=host, port=port, timeout=5.0)
         collection_info = client.get_collection(collection_name=collection)
-        vectors_count = collection_info.vectors_count
+        points_count = collection_info.points_count
         indexed_count = collection_info.indexed_vectors_count
-        seg_info = collection_info.segments
-        index_status = "green"
-        if vectors_count and indexed_count is not None and indexed_count < vectors_count:
-            index_status = "yellow"
 
-        points_result = client.scroll(
+        index_status = "green"
+        if points_count and indexed_count is not None and indexed_count < points_count:
+            index_status = "yellow"
+        if not indexed_count and points_count and points_count > 0:
+            index_status = "red"
+
+        scroll_result = client.scroll(
             collection_name=collection,
             limit=1,
             with_payload=True,
             scroll_filter=None,
         )
-        last_doc = points_result[0][0].payload if points_result[0] else {}
+        last_doc = scroll_result[0][0].payload if scroll_result and scroll_result[0] else {}
         last_ingestion = last_doc.get("ingested_at")
+
+        if not indexed_count and points_count and points_count > 0:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"Vector index not built: {indexed_count}/{points_count} vectors indexed. "
+                    "Qdrant HNSW index build required before RAG queries can execute. "
+                    "Run: python scripts/build_qdrant_index.py"
+                ),
+            )
 
         return {
             "collection_name": collection,
-            "vector_count": vectors_count,
+            "vector_count": points_count,
             "indexed_vectors_count": indexed_count,
             "dimension": collection_info.config.params.vectors.size if collection_info.config and collection_info.config.params else None,
             "distance_metric": collection_info.config.params.vectors.distance.name if collection_info.config and collection_info.config.params else None,
             "index_status": index_status,
             "last_ingestion_time": last_ingestion,
-            "segment_count": len(seg_info) if seg_info else 0,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Vector health check failed: {e}")
 
@@ -3310,7 +3388,7 @@ async def get_stats(token_payload: dict = Depends(get_current_user)):
         jwt_kid=token_payload.get("kid"),
         endpoint="/stats",
     )
-    _api_cache.set(cache_key, result, ttl=30)
+    _api_cache.set(cache_key, result, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
     return result
 
 
@@ -3758,7 +3836,7 @@ async def get_graph_data(
             jwt_kid=token_payload.get("kid"),
             endpoint="/query/graph",
         )
-        _api_cache.set(cache_key, result, ttl=30)
+        _api_cache.set(cache_key, result, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
         return result
 
     db = _get_db()
@@ -3902,7 +3980,7 @@ async def get_graph_data(
         jwt_kid=token_payload.get("kid"),
         endpoint="/query/graph",
     )
-    _api_cache.set(cache_key, result, ttl=30)
+    _api_cache.set(cache_key, result, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
     return result
 
 

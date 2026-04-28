@@ -473,10 +473,37 @@ class Retriever:
             result["collection_exists"] = True
             result["vectors_total"] = info.points_count or 0
             result["vectors_indexed"] = info.indexed_vectors_count or 0
+            optimizer_cfg = getattr(info.config, "optimizer_config", None)
+            indexing_threshold = getattr(optimizer_cfg, "indexing_threshold", None)
+            try:
+                indexing_threshold = (
+                    int(indexing_threshold) if indexing_threshold is not None else None
+                )
+            except (TypeError, ValueError):
+                indexing_threshold = None
+            try:
+                from src.observability.metrics import (
+                    nrg_qdrant_vectors_indexed,
+                    nrg_qdrant_vectors_total,
+                )
+
+                nrg_qdrant_vectors_indexed.set(result["vectors_indexed"])
+                nrg_qdrant_vectors_total.set(result["vectors_total"])
+            except Exception:
+                logger.debug("Could not update Qdrant vector metric", exc_info=True)
 
             if result["vectors_total"] == 0:
-                result["issues"].append("Collection is empty")
-            elif result["vectors_indexed"] < result["vectors_total"]:
+                message = "CRITICAL: Qdrant collection empty"
+                logger.critical(message)
+                result["status"] = "critical"
+                result["issues"].append(message)
+            elif (
+                result["vectors_indexed"] < result["vectors_total"]
+                and (
+                    indexing_threshold is None
+                    or result["vectors_total"] >= indexing_threshold
+                )
+            ):
                 result["issues"].append(
                     f"HNSW index incomplete: {result['vectors_indexed']}/{result['vectors_total']} vectors indexed"
                 )
@@ -507,7 +534,7 @@ class Retriever:
 
         if not result["issues"]:
             result["status"] = "ok"
-        elif result["status"] != "unhealthy":
+        elif result["status"] not in {"critical", "unhealthy"}:
             result["status"] = "degraded"
 
         return result

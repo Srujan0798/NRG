@@ -165,6 +165,37 @@ nrg_audit_db_cosign_latency_seconds = Gauge(
 )
 
 
+# ── Data Quality Metrics ──────────────────────────────────────────────────────
+nrg_data_quality_pillar_status = Gauge(
+    'nrg_data_quality_pillar_status',
+    'Data quality pillar status (1=pass, 0=fail)',
+    ['pillar']
+)
+
+nrg_data_quality_pillar_score = Gauge(
+    'nrg_data_quality_pillar_score',
+    'Data quality pillar score from 0.0 to 1.0',
+    ['pillar']
+)
+
+nrg_data_quality_p0_alerts = Gauge(
+    'nrg_data_quality_p0_alerts',
+    'Current P0 data quality alert count'
+)
+
+
+# ── Vector Store Metrics ──────────────────────────────────────────────────────
+nrg_qdrant_vectors_indexed = Gauge(
+    'nrg_qdrant_vectors_indexed',
+    'Number of indexed vectors in the active Qdrant collection'
+)
+
+nrg_qdrant_vectors_total = Gauge(
+    'nrg_qdrant_vectors_total',
+    'Total number of points/vectors in the active Qdrant collection'
+)
+
+
 # ── Rate Limiting ──────────────────────────────────────────────────────────────
 nrg_rate_limited_total = Counter(
     'nrg_rate_limited_total',

@@ -87,6 +87,13 @@ def test_root_health_uses_canonical_database(monkeypatch):
 
 
 def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
+    class PoolStats:
+        active = 3
+        idle = 17
+        waiting = 1
+        max_size = 40
+        min_size = 20
+
     class FakeDB:
         dialect = "postgresql"
 
@@ -96,6 +103,9 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
         def execute(self, query: str):
             assert "information_schema.tables" in query
             return [{"table_count": 75}]
+
+        def pool_stats(self):
+            return PoolStats()
 
     monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
     monkeypatch.setattr(
@@ -110,8 +120,91 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
     payload = response.json()
     assert payload["database"]["table_count"] == 75
     assert payload["database"]["tables"] == 75
+    assert payload["database"]["pool"] == {
+        "active": 3,
+        "idle": 17,
+        "waiting": 1,
+        "max_size": 40,
+        "min_size": 20,
+    }
     assert payload["audit"]["chain_valid"] is True
     assert payload["audit"]["chain_length"] == 7
+
+
+def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {
+            "chain_valid": False,
+            "chain_length": 2,
+            "valid_events": 0,
+            "error_count": 1,
+            "errors": ["Line 1: hash mismatch"],
+            "lineage_break": {"repair_required": True, "lineage_intact": False},
+        },
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "unhealthy"
+    assert payload["audit"]["status"] == "critical"
+
+
+def test_health_fails_when_qdrant_empty(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    class EmptyRetriever:
+        def __init__(self, timeout: float):
+            self.timeout = timeout
+
+        def health_check(self):
+            return {
+                "status": "critical",
+                "collection": "nrg_research",
+                "qdrant_reachable": True,
+                "collection_exists": True,
+                "index_built": False,
+                "vectors_indexed": 0,
+                "vectors_total": 0,
+                "issues": ["CRITICAL: Qdrant collection empty"],
+            }
+
+    monkeypatch.setenv("NRG_DEEP_HEALTH_CHECKS", "true")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr("src.skills.rag.retriever.Retriever", EmptyRetriever)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["status"] == "unhealthy"
+    assert payload["retriever"]["status"] == "critical"
+    assert "CRITICAL: Qdrant collection empty" in payload["retriever"]["issues"]
 
 
 def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
@@ -146,6 +239,33 @@ def test_root_health_reports_zero_vector_qdrant_as_critical(monkeypatch):
     }
 
 
+def test_qdrant_zero_vectors(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", EmptyQdrantCountClient)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "CRITICAL"
+    assert payload["qdrant"]["status"] == "CRITICAL"
+
+
 def test_root_health_reports_zero_vectors_from_collection_metadata_as_critical(monkeypatch):
     class FakeDB:
         dialect = "sqlite"
@@ -172,6 +292,10 @@ def test_root_health_reports_zero_vectors_from_collection_metadata_as_critical(m
     assert payload["status"] == "CRITICAL"
     assert payload["qdrant"]["status"] == "CRITICAL"
     assert payload["qdrant"]["vectors"] == 0
+
+
+def test_query_result_cache_ttl_is_long_enough_for_load_review():
+    assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 300
 
 
 def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):

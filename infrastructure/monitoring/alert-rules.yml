@@ -39,6 +39,28 @@ groups:
           description: "HMAC audit chain broken. Immediate investigation required."
           runbook_url: "https://wiki.internal/nrg/runbooks/audit-chain-broken"
 
+      - alert: DataQualityPIILeak
+        expr: nrg_data_quality_pillar_status{pillar="pii_sanitization"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: security
+        annotations:
+          summary: "PII leak detected in non-PII tables"
+          description: "The data quality scorecard found PII in a table that is not allowed to carry PII."
+          runbook_url: "https://wiki.internal/nrg/runbooks/data-quality"
+
+      - alert: DataQualityReferentialIntegrityCritical
+        expr: nrg_data_quality_pillar_score{pillar="referential_integrity"} < 0.90
+        for: 5m
+        labels:
+          severity: critical
+          team: data-platform
+        annotations:
+          summary: "Referential integrity below 90%"
+          description: "Database referential integrity is below the P0 threshold. Query answers may be incomplete or fabricated from orphaned facts."
+          runbook_url: "https://wiki.internal/nrg/runbooks/data-quality"
+
       - alert: EgressViolation
         expr: increase(nrg_egress_block_total[5m]) > 0
         labels:
@@ -70,6 +92,17 @@ groups:
           summary: "Qdrant vector database unreachable"
           description: "Qdrant has been unreachable for 5 minutes. RAG functionality degraded."
           runbook_url: "https://wiki.internal/nrg/runbooks/qdrant-down"
+
+      - alert: QdrantCollectionEmpty
+        expr: nrg_qdrant_vectors_total == 0
+        for: 1m
+        labels:
+          severity: critical
+          team: ml-platform
+        annotations:
+          summary: "Qdrant collection has zero vectors"
+          description: "The active Qdrant collection is empty. RAG must be treated as unavailable until vectors are restored."
+          runbook_url: "https://wiki.internal/nrg/runbooks/qdrant-empty"
 
   - name: nrg_warning
     rules:
