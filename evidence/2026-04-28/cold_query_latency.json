@@ -1,0 +1,317 @@
+{
+  "timestamp": "2026-04-28T17:59:43+00:00",
+  "protocol": "K-4",
+  "host": "http://localhost:8000",
+  "query": "How many IIT papers published in 2023?",
+  "sample_count": 20,
+  "successful_samples": 20,
+  "failure_count": 0,
+  "p50_latency_ms": 10.88,
+  "p95_latency_ms": 15.84,
+  "p99_latency_ms": 40.93,
+  "max_latency_ms": 40.93,
+  "target_p99_ms": 500,
+  "status": "PASS",
+  "samples": [
+    {
+      "index": 1,
+      "status_code": 200,
+      "latency_ms": 15.84,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 2,
+      "status_code": 200,
+      "latency_ms": 11.02,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 3,
+      "status_code": 200,
+      "latency_ms": 9.61,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 4,
+      "status_code": 200,
+      "latency_ms": 10.74,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 5,
+      "status_code": 200,
+      "latency_ms": 9.99,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 6,
+      "status_code": 200,
+      "latency_ms": 14.73,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 7,
+      "status_code": 200,
+      "latency_ms": 10.16,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 8,
+      "status_code": 200,
+      "latency_ms": 9.2,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 9,
+      "status_code": 200,
+      "latency_ms": 13.74,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 10,
+      "status_code": 200,
+      "latency_ms": 8.69,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 11,
+      "status_code": 200,
+      "latency_ms": 9.74,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 12,
+      "status_code": 200,
+      "latency_ms": 15.79,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 13,
+      "status_code": 200,
+      "latency_ms": 14.22,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 14,
+      "status_code": 200,
+      "latency_ms": 10.01,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 15,
+      "status_code": 200,
+      "latency_ms": 10.0,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 16,
+      "status_code": 200,
+      "latency_ms": 11.05,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 17,
+      "status_code": 200,
+      "latency_ms": 11.39,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 18,
+      "status_code": 200,
+      "latency_ms": 11.91,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 19,
+      "status_code": 200,
+      "latency_ms": 9.13,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    },
+    {
+      "index": 20,
+      "status_code": 200,
+      "latency_ms": 40.93,
+      "routing_decision": "fast_path",
+      "intent": "publication_count",
+      "node_timings": {
+        "receiver": 0.0,
+        "planner": 0.0,
+        "router": 0.0,
+        "executor": 0.0,
+        "synthesizer": 0.0,
+        "verifier": 0.0
+      }
+    }
+  ]
+}
