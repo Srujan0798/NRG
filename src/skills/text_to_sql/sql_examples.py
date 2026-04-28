@@ -161,7 +161,7 @@ ORDER BY capex DESC, courses ASC""",
         "category": "pipeline_trend",
         "question_pattern": "trends over fiscal years trl progression",
         "sql": """SELECT financial_year, stage_of_technology, COUNT(*) as count
-FROM innovations_at_various_stages_of_technology_readiness_level
+FROM trl_stages
 GROUP BY financial_year, stage_of_technology
 ORDER BY financial_year DESC, stage_of_technology""",
         "key_patterns": ["multi-metric aggregation", "GROUP BY + ORDER BY", "include financial_year in GROUP BY"],
@@ -171,7 +171,7 @@ ORDER BY financial_year DESC, stage_of_technology""",
         "id": "ex_011",
         "category": "status_filter",
         "question_pattern": "technologies at level 9 market ready",
-        "sql": """SELECT * FROM innovations_at_various_stages_of_technology_readiness_level
+        "sql": """SELECT * FROM trl_stages
 WHERE institute LIKE '%IIT Madras%' AND stage_of_technology = 'Level 9'
 LIMIT 100""",
         "key_patterns": ["WHERE stage_of_technology = 'Level 9'", "LIKE for fuzzy institute"],
@@ -306,11 +306,11 @@ WRONG_SQL_BY_EXAMPLE_ID: Dict[str, Dict[str, str]] = {
         "why": "Leaves the course domain during a course follow-up.",
     },
     "ex_010": {
-        "sql": "SELECT stage_of_technology, COUNT(*) FROM innovations_at_various_stages_of_technology_readiness_level GROUP BY stage_of_technology",
+        "sql": "SELECT stage_of_technology, COUNT(*) FROM trl_stages GROUP BY stage_of_technology",
         "why": "Drops the financial_year dimension needed for stage trends.",
     },
     "ex_011": {
-        "sql": "SELECT * FROM innovations_at_various_stages_of_technology_readiness_level WHERE stage_of_technology LIKE '%TRL 9%' LIMIT 100",
+        "sql": "SELECT * FROM trl_stages WHERE stage_of_technology LIKE '%TRL 9%' LIMIT 100",
         "why": "Uses user wording instead of the stored Level value.",
     },
     "ex_012": {

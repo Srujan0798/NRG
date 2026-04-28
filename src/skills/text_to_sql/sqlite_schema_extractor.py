@@ -14,7 +14,7 @@ ROOT_LOCAL_DB = REPO_ROOT / "nrg_research.db"
 POSTGRESQL_ONLY_TABLES = {
     "academic_courses_details",
     "innovation_grant_from_govt",
-    "innovations_at_various_stages_of_technology_readiness_level",
+    "trl_stages",
     "combined_ipo_patent_data",
     "incubation_details",
     "financial_expenses_capital",
@@ -70,7 +70,7 @@ POSTGRESQL_ONLY_KEYWORDS = {
         "sanctioned grant", "grant received", "fund agency", "dST", "SERB",
         "innovation grant", "funding agency", "gov_organisation",
     },
-    "innovations_at_various_stages_of_technology_readiness_level": {
+    "trl_stages": {
         "trl", "technology readiness", "lab validation", "market ready",
         "pilot scale", "prototype", "technology readiness level",
         "level 1", "level 2", "level 3", "level 4", "level 5",
@@ -364,7 +364,7 @@ class SQLiteSchemaExtractor:
                 "year of receiving", "funding drop", "rising star", "funding trend",
                 "grant received", "yoy", "year-over-year",
             ],
-            "innovations_at_various_stages_of_technology_readiness_level": [
+            "trl_stages": [
                 "trl", "technology readiness", "stage of technology", "market ready",
                 "lab validation", "bottleneck", "level 9", "trl 9", "pipeline progression",
                 "level 4", "various stage", "technology readiness level",

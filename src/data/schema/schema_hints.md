@@ -114,21 +114,21 @@ WHERE curr.year_of_receiving = '2022-23'
 ```sql
 -- Q6: Market Ready (TRL 9) at IIT Madras
 SELECT innovation_name, financial_year
-FROM innovations_at_various_stages_of_technology_readiness_level
+FROM trl_stages
 WHERE stage_of_technology = 'Level 9'
   AND institute LIKE '%IIT Madras%';
 
 -- Q5: Lab Validation (Level 4) bottleneck
 SELECT stage_of_technology, COUNT(*) as innovation_count,
-       (COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%'), 0)) as pct
-FROM innovations_at_various_stages_of_technology_readiness_level
+       (COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM trl_stages WHERE institute LIKE '%IIT Madras%'), 0)) as pct
+FROM trl_stages
 WHERE institute LIKE '%IIT Madras%'
 GROUP BY stage_of_technology
 ORDER BY innovation_count DESC;
 
 -- Q17: Full TRL pipeline distribution
 SELECT stage_of_technology, COUNT(*) as count
-FROM innovations_at_various_stages_of_technology_readiness_level
+FROM trl_stages
 GROUP BY stage_of_technology
 ORDER BY stage_of_technology;
 ```
@@ -580,8 +580,8 @@ LEFT JOIN PatentData p ON LOWER(TRIM(g.institute)) = LOWER(TRIM(p.applicants));
 | Q2 | PhD:UG ratio for IIT Bombay | `academic_courses_details` | `level_of_course` (`UG`, `PhD`), `institute` |
 | Q3 | >50% grant drop YoY | `innovation_grant_from_govt` | `grant_received`, `year_of_receiving`, `institute` |
 | Q4 | Top 5 funding agencies | `innovation_grant_from_govt` | `gov_organisation_name`, `grant_received` |
-| Q5 | % IIT Madras stuck at Lab Validation | `innovations_at_various_stages_of_technology_readiness_level` | `stage_of_technology` (`Level 4`/`Level 5`), `institute` |
-| Q6 | TRL-9 Market Ready at IIT Madras | `innovations_at_various_stages_of_technology_readiness_level` | `stage_of_technology` (`Level 9`), `institute` |
+| Q5 | % IIT Madras stuck at Lab Validation | `trl_stages` | `stage_of_technology` (`Level 4`/`Level 5`), `institute` |
+| Q6 | TRL-9 Market Ready at IIT Madras | `trl_stages` | `stage_of_technology` (`Level 9`), `institute` |
 | Q7 | Cost of Innovation (grant per patent) | `innovation_grant_from_govt` + `combined_ipo_patent_data` | `applicants`, `status='Granted'`, `grant_received` |
 | Q8 | PG courses at IIT Madras (last 3 years) | `academic_courses_details` | `level_of_course='PG'`, `institute`, `financial_year` |
 | Q9 | Institute with most PhD courses | `academic_courses_details` | `level_of_course='PhD'`, `institute` |
@@ -592,7 +592,7 @@ LEFT JOIN PatentData p ON LOWER(TRIM(g.institute)) = LOWER(TRIM(p.applicants));
 | Q14 | High capex, low innovation courses | `academic_courses_details` + `financial_expenses_capital` | course intensity vs capital spend |
 | Q15 | (Error — no table reference found) | | |
 | Q16 | High grants vs low expenditure | `innovation_grant_from_govt` + `financial_expenses_operational` | `salaries`, `grant_received` |
-| Q17 | Pipeline progression across TRL stages | `innovations_at_various_stages_of_technology_readiness_level` | `stage_of_technology` (all levels) |
+| Q17 | Pipeline progression across TRL stages | `trl_stages` | `stage_of_technology` (all levels) |
 
 ---
 

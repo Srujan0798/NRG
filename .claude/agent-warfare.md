@@ -168,7 +168,7 @@ After every sprint, the EVOLVE phase updates these files. Next sprint starts wit
 
 ---
 
-## Skill Inventory (91 total: 39 Claude + 52 Agent)
+## Skill Inventory (102 total: 74 Claude + 28 Agent)
 
 ### Core NRG Skills (13 — both Claude + Agents)
 | `/test-suite` | `/audit-check` | `/deploy-local` | `/code-review` | `/security-audit` |

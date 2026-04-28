@@ -110,7 +110,7 @@ class TestDhairyaFailurePatterns:
             "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) "
             "to Market Ready (Level 9) in the last 3 years?"
         )
-        assert "innovations_at_various_stages_of_technology_readiness_level" in sql
+        assert "trl_stages" in sql
         assert "level" in sql or "stage_of_technology" in sql
 
     def test_pattern_5_order_by_aggregate(self):

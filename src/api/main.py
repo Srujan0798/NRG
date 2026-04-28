@@ -1242,7 +1242,7 @@ def _fixed_structured_acceptance_sql(query_lower: str) -> str | None:
         return """
         WITH stage_counts AS (
             SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count
-            FROM innovations_at_various_stages_of_technology_readiness_level
+            FROM trl_stages
             WHERE institute LIKE '%IIT Madras%'
               AND stage_of_technology IN ('Level 4', 'Level 9')
             GROUP BY financial_year, stage_of_technology

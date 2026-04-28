@@ -375,7 +375,7 @@ def get_dhairya_required_tables() -> Set[str]:
     return {
         "academic_courses_details",
         "innovation_grant_from_govt",
-        "innovations_at_various_stages_of_technology_readiness_level",
+        "trl_stages",
         "combined_ipo_patent_data",
         "incubation_details",
         "financial_expenses_capital",

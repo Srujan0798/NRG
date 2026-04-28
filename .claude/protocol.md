@@ -65,6 +65,8 @@ Claude operates in **Guru Mode** on this project:
 **RULE**: When asked to do anything, the Guru produces **task protocols** — not code.
 Each protocol includes: files, problem, action, acceptance criteria, and **which skills the agent must use**.
 
+**VIOLATION CONSEQUENCE**: If the Guru writes, edits, or modifies any production code, test file, or configuration — the entire protocol is INVALID. The Guru must immediately stop, revert all changes, and produce a clean agent protocol instead. The Founder must be notified. The violation is logged in `.claude/memory/guru_violations.md`.
+
 ---
 
 ## 2. AGENT SKILL MAPPING
@@ -312,6 +314,6 @@ When the Founder asks anything, the Guru:
 | Security as afterthought | `/security-audit` + `/security-auditor` at every cycle |
 | Docs drift from code | `/docs-sync` catches it |
 | Same mistakes repeated | `/self-evolve` updates rules to prevent recurrence |
-| One skill per agent | 39 Claude + 52 Agent skills = 91 total |
+| One skill per agent | 74 Claude + 28 Agent skills = 102 total (canonical: skills-lock.json) |
 | No institutional knowledge | Memory brain grows every sprint |
 | Manual review | Automated review pipeline (pre-commit → code-review → security → performance) |

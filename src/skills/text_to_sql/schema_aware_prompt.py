@@ -51,7 +51,7 @@ def build_schema_aware_prompt(
     if _mentions_stage_transition(query):
         guidance.append(
             "TRL and commercialization stages live in "
-            "innovations_at_various_stages_of_technology_readiness_level.stage_of_technology. "
+            "trl_stages.stage_of_technology. "
             "Map Lab Validation to 'Level 4' and Market Ready or TRL 9 to 'Level 9'. "
             "Trend answers must GROUP BY financial_year, stage_of_technology."
         )

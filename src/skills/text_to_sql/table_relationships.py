@@ -276,7 +276,7 @@ APPLICATION_JOINS: Dict[str, List[Dict[str, str]]] = {
             "note": "Alternative join key",
         },
     ],
-    "innovations_at_various_stages_of_technology_readiness_level": [
+    "trl_stages": [
         {
             "from_column": "institute",
             "to_table": "tb_institute_mstr",
@@ -504,6 +504,7 @@ INDEPENDENT_TABLES: Set[str] = {
     "adv_se",
     "nirf_pdf_record",
     "startup_recognition_old",
+    "innovations_at_various_stages_of_technology_readiness_level",
 }
 
 
@@ -597,7 +598,7 @@ ALL_58_TABLES: Set[str] = {
     "founders_of_fortune_500_companies",
     "incubation_details",
     "innovation_grant_from_govt",
-    "innovations_at_various_stages_of_technology_readiness_level",
+    "trl_stages",
     "ipo_patent_details_flat",
     "ipo_patent_details_flat_old",
     "master_expertise",

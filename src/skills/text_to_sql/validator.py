@@ -265,7 +265,7 @@ class QueryCompletenessValidator:
     def _check_stage_synonym_sql(self, sql: str) -> list[str]:
         """Reject unresolved TRL/user-facing stage strings in SQL."""
         sql_upper = sql.upper()
-        if "INNOVATIONS_AT_VARIOUS_STAGES_OF_TECHNOLOGY_READINESS_LEVEL" not in sql_upper:
+        if "TRL_STAGES" not in sql_upper:
             return []
         unresolved_literals = (
             "'TRL 9'",

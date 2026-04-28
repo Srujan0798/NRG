@@ -413,7 +413,7 @@ class TestRecallBenchmark:
             {
                 "question": "TRL stage progression for innovations",
                 "relevant_tables": [
-                    "innovations_at_various_stages_of_technology_readiness_level"
+                    "trl_stages"
                 ],
             },
             {

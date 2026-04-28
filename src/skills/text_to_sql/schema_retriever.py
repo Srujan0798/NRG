@@ -57,7 +57,7 @@ QUERY_TABLE_HINTS: dict[str, tuple[str, ...]] = {
         "patent", "patents", "applicant", "applicants", "filing date",
         "grant date", "cost per patent", "status granted",
     ),
-    "innovations_at_various_stages_of_technology_readiness_level": (
+    "trl_stages": (
         "trl", "technology readiness", "lab validation", "market ready",
         "level 1", "level 4", "level 9", "stage", "stages",
         "bottleneck", "pipeline progression",
@@ -312,9 +312,10 @@ class SchemaRetriever:
         score = 0.0
         q = question_lower
 
-        for hint in QUERY_TABLE_HINTS.get(table.name, ()):
-            if hint in q:
-                score += 2.0 if " " in hint or "_" in hint else 0.9
+        for hint_key in (table.name, table.alias):
+            for hint in QUERY_TABLE_HINTS.get(hint_key, ()):
+                if hint in q:
+                    score += 2.0 if " " in hint or "_" in hint else 0.9
 
         table_terms = table.name.lower().replace("_", " ").split()
         for term in table_terms:
@@ -626,7 +627,8 @@ def _table_to_alias(table_name: str) -> str:
         "academic_courses_details": "courses",
         "innovation_grant_from_govt": "grants",
         "patents_details": "patents",
-        "innovations_at_various_stages_of_technology_readiness_level": "tech_trl_stages",
+        "innovations_at_various_stages_of_technology_readiness_level": "trl_stages",
+        "trl_stages": "tech_trl_stages",
         "combined_ipo_patent_data": "ipo_patents",
         "faculty_strength": "faculty",
         "advance_search_data": "publications",

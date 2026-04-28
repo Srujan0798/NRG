@@ -39,7 +39,7 @@ ADVERSARIAL_CORPUS = [
         "id": "ADV-02",
         "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in last 3 years?",
         "required_tables": [
-            "innovations_at_various_stages_of_technology_readiness_level"
+            "trl_stages"
         ],
         "forbidden_direct": [],
         "requires_join": False,
@@ -123,7 +123,7 @@ ADVERSARIAL_CORPUS = [
         "id": "ADV-12",
         "query": "Progression of innovations from Idea (Level 1) to Market Ready (Level 9) across all IITs; what % of those reaching Level 4 made it to Level 9?",
         "required_tables": [
-            "innovations_at_various_stages_of_technology_readiness_level"
+            "trl_stages"
         ],
         "forbidden_direct": [],
         "requires_join": False,
@@ -208,7 +208,7 @@ ADVERSARIAL_CORPUS = [
         "id": "ADV-21",
         "query": "Count projects by their innovation stage (TRL level), grouped per institute.",
         "required_tables": [
-            "innovations_at_various_stages_of_technology_readiness_level"
+            "trl_stages"
         ],
         "forbidden_direct": [],
         "requires_join": False,
@@ -227,7 +227,7 @@ ADVERSARIAL_CORPUS = [
         "id": "KILLER-02",
         "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
         "required_tables": [
-            "innovations_at_various_stages_of_technology_readiness_level"
+            "trl_stages"
         ],
         "forbidden_direct": [],
         "requires_join": False,

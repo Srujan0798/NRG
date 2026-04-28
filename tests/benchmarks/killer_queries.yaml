@@ -33,7 +33,7 @@ killer_queries:
     expected_sql_pattern: |
       GROUP BY financial_year, stage_of_technology
     must_contain:
-      - "innovations_at_various_stages_of_technology_readiness_level"
+      - "trl_stages"
       - "GROUP BY"
       - "financial_year"
     expected_min_rows: 1
@@ -180,8 +180,8 @@ adversarial_breakers:
 
   - id: ADV-21
     nl: "Count projects by their innovation stage (TRL level), grouped per institute."
-    breaks: "PostgreSQL 63-byte identifier limit on `innovations_at_various_stages_of_technology_readiness_level` (62 chars) — any LLM-emitted alias triggers truncation crash"
-    correct_pattern: "Query routes through view `vw_innovations_trl` OR semantic-layer rename to `tech_readiness_stage`; LLM never sees the 62-char column"
+    breaks: "PostgreSQL 63-byte identifier limit on `innovations_at_various_stages_of_technology_readiness_level` (59 chars) — any LLM-emitted alias triggers truncation crash"
+    correct_pattern: "Query routes through view `trl_stages` OR semantic-layer rename to `tech_readiness_stage`; LLM never sees the 59-char column"
     wrong_pattern: "LLM emits `SELECT innovations_at_various_stages_of_technology_readiness_level AS x_count` → PG error 42602 identifier truncation; query crashes"
 
   - id: ADV-22
@@ -261,7 +261,7 @@ v11_killer_queries:
 
   - id: KILLER-14
     nl: "TRL pipeline progression: per institute, what percentage of innovations are stuck at Low TRL (Levels 1-4) versus High TRL (Levels 8-9), and how has that ratio changed over the last 5 years?"
-    must_contain: ["WITH", "innovations_at_various_stages_of_technology_readiness_level", "tech_readiness_stage", "FILTER (WHERE", "Level 1", "Level 4", "Level 8", "Level 9", "LAG(", "PARTITION BY", "ORDER BY"]
+    must_contain: ["WITH", "trl_stages", "tech_readiness_stage", "FILTER (WHERE", "Level 1", "Level 4", "Level 8", "Level 9", "LAG(", "PARTITION BY", "ORDER BY"]
     insight_for_user: "Exposes whether India is building a research-commercialisation culture or a perpetual-pilot culture. Year-over-year ratio shift = systemic policy-fixable signal."
     notes: "Forces semantic-layer rename of the 62-char column (LB-6/LB-8). Window function LAG() across financial_year. Bucketed COUNT FILTER aggregates."
 

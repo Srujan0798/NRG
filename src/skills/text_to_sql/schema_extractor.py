@@ -240,7 +240,7 @@ class SchemaExtractor:
                 "sanctioned grant", "grant received", "fund agency", "dST", "SERB",
                 "innovation grant", "funding agency",
             ],
-            "innovations_at_various_stages_of_technology_readiness_level": [
+            "trl_stages": [
                 "trl", "technology readiness", "lab validation", "market ready",
                 "pilot scale", "prototype", "technology readiness level",
                 "level 1", "level 2", "level 3", "level 4", "level 5",
@@ -298,7 +298,7 @@ class SchemaExtractor:
                 "funding_records",
                 "academic_courses_details",
                 "innovation_grant_from_govt",
-                "innovations_at_various_stages_of_technology_readiness_level",
+                "trl_stages",
             }
             relevant = {t for t in all_tables if t in default_tables}
 

@@ -141,8 +141,8 @@ class TestDhairyaQueries:
 
         sql = result.get("query", "")
         assert sql, "SQL should be generated"
-        assert "INNOVATIONS_AT_VARIOUS_STAGES" in sql.upper(), \
-            "Must use innovations_at_various_stages_of_technology_readiness_level"
+        assert "TRL_STAGES" in sql.upper(), \
+            "Must use trl_stages"
         is_complete, _ = validator.validate(sql)
         assert is_complete, f"Query incomplete: {sql}"
 
@@ -357,8 +357,8 @@ class TestDhairyaQueries:
 
         sql = result.get("query", "")
         assert sql, "SQL should be generated"
-        assert "INNOVATIONS_AT_VARIOUS_STAGES" in sql.upper(), \
-            "Must use innovations_at_various_stages_of_technology_readiness_level"
+        assert "TRL_STAGES" in sql.upper(), \
+            "Must use trl_stages"
         is_complete, _ = validator.validate(sql)
         assert is_complete, f"Query incomplete: {sql}"
 
@@ -475,7 +475,7 @@ class TestDhairyaBenchmarks:
         (2, "Show me the ratio of PhD level innovation courses to Undergraduate ones for IIT Bombay.", ["LEVEL_OF_COURSE", "CASE"]),
         (3, "Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-21 to 2021-22.", ["WITH", "GROUP BY"]),
         (4, "Who are the top 5 unique funding agencies providing grants to us?", ["GROUP BY", "SUM", "ORDER BY"]),
-        (5, "Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?", ["INNOVATIONS_AT_VARIOUS_STAGES"]),
+        (5, "Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?", ["TRL_STAGES"]),
         (6, "List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.", ["'Level 9'"]),
         (7, "Calculate the 'Cost of Innovation': How much government grant money do we spend for every 1 Patent granted?", ["GRANT_RECEIVED", "PATENT"]),
         (8, "Show me all PG innovation courses at IIT Madras for the last 3 years starting from FY 2021-22.", ["PG", "ACADEMIC_COURSES_DETAILS"]),
@@ -487,7 +487,7 @@ class TestDhairyaBenchmarks:
         (14, "Gap Analysis: High Capital Expenses but Low Innovation Courses in FY 2023-24.", ["FINANCIAL_EXPENSES_CAPITAL", "CAPEX"]),
         (15, "Rising Stars: Institutes growing funding while the average declines.", ["WITH", "SUM"]),
         (16, "Utilization Audit: High Grants vs Low Expenditure.", ["HAVING", "GRANT_RECEIVED"]),
-        (17, "Pipeline Progression: Are we moving from Low TRL to High TRL?", ["INNOVATIONS_AT_VARIOUS_STAGES", "STAGE_OF_TECHNOLOGY"]),
+        (17, "Pipeline Progression: Are we moving from Low TRL to High TRL?", ["TRL_STAGES", "STAGE_OF_TECHNOLOGY"]),
     ])
     def test_all_17_queries_generate_sql(self, query_num, query, expected_patterns, skill, validator):
         """All 17 queries must generate SQL (no error/000 status)."""

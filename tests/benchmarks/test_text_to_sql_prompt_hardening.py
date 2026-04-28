@@ -49,7 +49,7 @@ def test_validator_rejects_quoted_and_qualified_credit_score_casts():
 
 def test_validator_rejects_raw_stage_synonym_like_patterns():
     valid, issues = QueryCompletenessValidator().validate(
-        "SELECT * FROM innovations_at_various_stages_of_technology_readiness_level "
+        "SELECT * FROM trl_stages "
         "WHERE stage_of_technology LIKE '%TRL 9%' LIMIT 10"
     )
 
