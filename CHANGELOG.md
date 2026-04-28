@@ -75,7 +75,7 @@ All notable changes to the NRG platform. This changelog follows [Keep a Changelo
 - Initial project scaffold with modular Python backend
 - SQLite database with seed data (200 researchers, 500 publications)
 - Basic `/query` endpoint with planner and executor nodes
-- Authentication with demo personas
+- Authentication with research personas
 - `.env.example` configuration template
 
 ---

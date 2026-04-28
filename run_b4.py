@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""B4 fast path verification - verify SQL demo works without RAG."""
+"""B4 fast path verification - verify SQL acceptance works without RAG."""
 import subprocess, json, os
 
 log = []

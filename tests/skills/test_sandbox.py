@@ -146,12 +146,10 @@ def test_sandbox_uses_database_url_when_present(monkeypatch):
         seen["connection_string"] = connection_string
         return FakeEngine()
 
-    monkeypatch.setenv("DATABASE_URL", "postgresql://demo:demo@localhost:5432/nrg")
-    monkeypatch.setattr(sandbox_module, "create_engine", _capture_engine)
-
+    monkeypatch.setenv("DATABASE_URL", os.environ.get("TEST_DB_URL", "postgresql://test:test@localhost:5432/nrg_test"))
     sandbox_module.Sandbox()
 
-    assert seen["connection_string"] == "postgresql://demo:demo@localhost:5432/nrg"
+    assert seen["connection_string"] == os.environ.get("TEST_DB_URL", "postgresql://test:test@localhost:5432/nrg_test")
 
 
 def test_sqlite_sandbox_registers_split_part_function():

@@ -17,7 +17,7 @@
 # Each phase aborts on the first failure. Read MASTER_CLOSURE_2026-04-26.md.
 set -euo pipefail
 
-REPO=/Users/srujansai/Desktop/NRG
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATE=$(date +%Y-%m-%d)
 cd "$REPO"
 

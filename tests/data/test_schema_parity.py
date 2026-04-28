@@ -12,11 +12,13 @@ Usage:
 import hashlib
 import os
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 import pytest
+from sqlalchemy import create_engine, inspect
 
 SRC_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SRC_ROOT))
@@ -101,6 +103,38 @@ def compute_schema_fingerprint(tables: Dict[str, List[str]]) -> str:
     return hashlib.sha256(schema_str.encode()).hexdigest()[:16]
 
 
+@pytest.fixture(scope="session")
+def local_alembic_db_url(tmp_path_factory) -> str:
+    """Build the active Alembic schema in SQLite for local parity checks."""
+    db_path = tmp_path_factory.mktemp("schema_parity") / "nrg_schema_parity.sqlite"
+    db_url = f"sqlite:///{db_path}"
+    env = os.environ.copy()
+    env["DATABASE_URL"] = db_url
+
+    result = subprocess.run(
+        [sys.executable, "-m", "alembic", "upgrade", "head"],
+        cwd=SRC_ROOT,
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, (
+        "alembic upgrade head failed for local SQLite schema parity DB\n"
+        f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+    )
+    return db_url
+
+
+def _tables_for_url(db_url: str) -> set[str]:
+    engine = create_engine(db_url, pool_pre_ping=True)
+    try:
+        return set(inspect(engine).get_table_names())
+    finally:
+        engine.dispose()
+
+
 class TestSchemaParity:
     """Test that db_struct.sql and live database are in sync."""
 
@@ -120,6 +154,26 @@ class TestSchemaParity:
         """Verify db_struct.sql has expected table count (≥58)."""
         table_count = len(authoritative_schema)
         assert table_count >= 58, f"Expected ≥58 tables, found {table_count}"
+
+    def test_alembic_upgrade_head_creates_all_db_struct_tables_locally(
+        self,
+        authoritative_schema: Dict[str, List[str]],
+        local_alembic_db_url: str,
+    ):
+        """Verify active Alembic head creates every db_struct.sql table locally."""
+        live_tables = _tables_for_url(local_alembic_db_url)
+        expected_tables = set(authoritative_schema)
+
+        missing = expected_tables - live_tables
+
+        assert len(expected_tables) == 58
+        assert not missing, f"Alembic head missing db_struct.sql tables: {sorted(missing)}"
+
+    def test_seed_script_declares_every_db_struct_table(self, authoritative_schema: Dict[str, List[str]]):
+        """Verify seed_production_tables tracks every table in db_struct.sql."""
+        from scripts import seed_production_tables
+
+        assert set(seed_production_tables.get_production_table_names()) == set(authoritative_schema)
 
     def test_dhairya_tables_present(self, authoritative_schema: Dict[str, List[str]], dhairya_required: Set[str]):
         """Verify all tables needed for Dhairya benchmark are in db_struct.sql."""

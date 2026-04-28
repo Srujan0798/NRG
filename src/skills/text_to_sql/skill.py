@@ -3,6 +3,11 @@
 import os
 import re
 import logging
+import time
+import hashlib
+import threading
+from collections import OrderedDict
+from functools import lru_cache
 from typing import Dict, Any, Optional, List, Tuple
 import json
 
@@ -23,6 +28,15 @@ from src.observability.langfuse_tracer import _init_langfuse
 
 
 logger = logging.getLogger(__name__)
+
+QUERY_PLAN_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_PLAN_CACHE_TTL_SECONDS", "600"))
+QUERY_PLAN_CACHE_MAX_SIZE = int(os.getenv("TEXT_TO_SQL_PLAN_CACHE_MAX_SIZE", "256"))
+SQL_GENERATION_CACHE_TTL_SECONDS = int(os.getenv("TEXT_TO_SQL_SQL_CACHE_TTL_SECONDS", "600"))
+SQL_GENERATION_CACHE_MAX_SIZE = int(os.getenv("TEXT_TO_SQL_SQL_CACHE_MAX_SIZE", "256"))
+
+_query_plan_cache: OrderedDict[str, tuple[float, dict[str, Any]]] = OrderedDict()
+_sql_generation_cache: OrderedDict[str, tuple[float, str]] = OrderedDict()
+_cache_lock = threading.Lock()
 
 TIER_AWARE_TABLES = {
     "researchers",
@@ -50,6 +64,83 @@ _GENERIC_IIT_TERMS = {
     "what",
     "whose",
 }
+
+
+def _normalise_cache_text(value: str) -> str:
+    return re.sub(r"\s+", " ", (value or "").strip().lower())
+
+
+def _bounded_cache_get(
+    cache: OrderedDict[str, tuple[float, Any]],
+    key: str,
+    ttl_seconds: int,
+) -> Any | None:
+    now = time.monotonic()
+    with _cache_lock:
+        cached = cache.get(key)
+        if cached is None:
+            return None
+        timestamp, value = cached
+        if now - timestamp > ttl_seconds:
+            cache.pop(key, None)
+            return None
+        cache.move_to_end(key)
+        return value
+
+
+def _bounded_cache_set(
+    cache: OrderedDict[str, tuple[float, Any]],
+    key: str,
+    value: Any,
+    max_size: int,
+) -> None:
+    with _cache_lock:
+        cache[key] = (time.monotonic(), value)
+        cache.move_to_end(key)
+        while len(cache) > max_size:
+            cache.popitem(last=False)
+
+
+def _query_plan_cache_key(db_type: str, db_url: str, user_query: str) -> str:
+    raw = f"{db_type}|{db_url}|{_normalise_cache_text(user_query)}"
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def _sql_generation_cache_key(
+    db_type: str,
+    user_query: str,
+    schema_prompt: str,
+    conversation_context: str,
+    provider_model: str,
+) -> str:
+    raw = "|".join(
+        (
+            db_type,
+            provider_model,
+            _normalise_cache_text(user_query),
+            hashlib.sha256((schema_prompt or "").encode()).hexdigest(),
+            hashlib.sha256((conversation_context or "").encode()).hexdigest(),
+        )
+    )
+    return hashlib.sha256(raw.encode()).hexdigest()
+
+
+def clear_query_plan_cache() -> None:
+    """Clear latency caches for tests and operational cache resets."""
+    with _cache_lock:
+        _query_plan_cache.clear()
+        _sql_generation_cache.clear()
+    _cached_retriever_ddl.cache_clear()
+
+
+@lru_cache(maxsize=256)
+def _cached_retriever_ddl(question: str, db_type: str, top_k: int) -> str:
+    return build_relevant_ddl_prompt_section(
+        question=question,
+        planner_output=None,
+        schema_retriever=get_default_retriever(),
+        top_k=top_k,
+    )
 
 
 def detect_semantic_anomaly(user_query: str, sql: str, result: Dict[str, Any]) -> Dict[str, Any]:
@@ -383,6 +474,33 @@ class TextToSQLSkill:
         logger.info(f"Initialized TextToSQLSkill with {self._db_type} backend")
         return extractor, sandbox
 
+    def _get_query_plan(self, user_query: str) -> dict[str, Any]:
+        """Return cached schema plan for repeated natural-language questions."""
+        cache_key = _query_plan_cache_key(self._db_type, self._db_url, user_query)
+        cached = _bounded_cache_get(
+            _query_plan_cache,
+            cache_key,
+            QUERY_PLAN_CACHE_TTL_SECONDS,
+        )
+        if cached is not None:
+            return cached
+
+        relevant_tables = self.extractor.get_relevant_tables(user_query)
+        schema = self.extractor.get_schema_metadata(relevant_tables)
+        schema_prompt = self.extractor.generate_llm_prompt(schema)
+        plan = {
+            "relevant_tables": list(relevant_tables),
+            "schema": schema,
+            "schema_prompt": schema_prompt,
+        }
+        _bounded_cache_set(
+            _query_plan_cache,
+            cache_key,
+            plan,
+            QUERY_PLAN_CACHE_MAX_SIZE,
+        )
+        return plan
+
     def _get_dialect_system_prompt(self) -> str:
         """Return dialect-correct system prompt based on DB type."""
         if self._db_type == "postgresql":
@@ -540,12 +658,7 @@ FOLLOW-UP QUERIES:
 
         retriever_ddl = ""
         try:
-            retriever_ddl = build_relevant_ddl_prompt_section(
-                question=user_query,
-                planner_output=None,
-                schema_retriever=get_default_retriever(),
-                top_k=5,
-            )
+            retriever_ddl = _cached_retriever_ddl(user_query, self._db_type, 5)
         except Exception as e:
             logger.debug("Schema retriever unavailable: %s", e)
 
@@ -564,6 +677,22 @@ FOLLOW-UP QUERIES:
             {"role": "user", "content": user_content},
         ]
 
+        provider_model = getattr(self.llm_provider, "model", type(self.llm_provider).__name__)
+        generation_cache_key = _sql_generation_cache_key(
+            self._db_type,
+            user_query,
+            schema_prompt,
+            conversation_context,
+            str(provider_model),
+        )
+        cached_sql = _bounded_cache_get(
+            _sql_generation_cache,
+            generation_cache_key,
+            SQL_GENERATION_CACHE_TTL_SECONDS,
+        )
+        if cached_sql is not None:
+            return cached_sql
+
         client = _init_langfuse()
         trace = None
         span = None
@@ -578,6 +707,12 @@ FOLLOW-UP QUERIES:
             response = self.llm_provider.chat(messages)
             sql: str = response.content.strip()
             sql = sql.strip("`").strip("sql").strip()
+            _bounded_cache_set(
+                _sql_generation_cache,
+                generation_cache_key,
+                sql,
+                SQL_GENERATION_CACHE_MAX_SIZE,
+            )
             try:
                 audit_log_llm_call(
                     "text-to-sql",
@@ -1264,9 +1399,10 @@ FOLLOW-UP QUERIES:
         with the error context appended to the prompt. Maximum 2 attempts.
         """
         MAX_CORRECTION_ATTEMPTS = 2
-        relevant_tables = self.extractor.get_relevant_tables(user_query)
-        schema = self.extractor.get_schema_metadata(relevant_tables)
-        schema_prompt = self.extractor.generate_llm_prompt(schema)
+        plan = self._get_query_plan(user_query)
+        relevant_tables = plan["relevant_tables"]
+        schema = plan["schema"]
+        schema_prompt = plan["schema_prompt"]
 
         conversation_context = self._context.get_followup_context()
 

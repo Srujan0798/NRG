@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Ingest the real NRG research-document corpus into Qdrant.
 
-Default source:
-/Users/srujansai/Desktop/NRG DB/National_Research_Database/Research_Documents/
+Default source: set via NRG_DATA_SOURCE_DIR env var
+  (default: data/National_Research_Database/Research_Documents/)
 
 The script parses YAML-like frontmatter from 3,310 `.txt` documents, chunks
 body text into 512-token windows with 50-token overlap, embeds chunks, and
@@ -33,12 +33,14 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 from src.skills.rag.embedder import Embedder
 
-DEFAULT_SOURCE_DIR = Path(
-    "/Users/srujansai/Desktop/NRG DB/National_Research_Database/Research_Documents"
+_NRG_DATA_BASE = Path(
+    os.getenv(
+        "NRG_DATA_SOURCE_DIR",
+        str(Path(__file__).resolve().parents[1] / "data" / "National_Research_Database"),
+    )
 )
-DEFAULT_PREBUILT_PATH = Path(
-    "/Users/srujansai/Desktop/NRG DB/National_Research_Database/JSON_Data/qdrant_ready_payload.json"
-)
+DEFAULT_SOURCE_DIR = _NRG_DATA_BASE / "Research_Documents"
+DEFAULT_PREBUILT_PATH = _NRG_DATA_BASE / "JSON_Data" / "qdrant_ready_payload.json"
 DEFAULT_COLLECTION = os.getenv("QDRANT_COLLECTION", "nrg_research")
 DEFAULT_BATCH_SIZE = 100
 DEFAULT_CHUNK_TOKENS = 512

@@ -1,10 +1,11 @@
 #!/bin/bash
-# Backup NRG database before demo
+# Backup NRG database
 set -euo pipefail
 
-BACKUP_DIR="/Users/srujansai/Desktop/NRG/backups"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BACKUP_DIR="${NRG_BACKUP_DIR:-$REPO/backups}"
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-DB_PATH="/Users/srujansai/Desktop/NRG/nrg_research.db"
+DB_PATH="${NRG_DB_PATH:-$REPO/nrg_research.db}"
 
 mkdir -p "$BACKUP_DIR"
 

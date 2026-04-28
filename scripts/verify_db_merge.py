@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import random
 import re
 import sqlite3
@@ -24,7 +25,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-DEFAULT_SOURCE_DIR = Path("/Users/srujansai/Desktop/NRG DB/National_Research_Database")
+DEFAULT_SOURCE_DIR = Path(
+    os.getenv(
+        "NRG_DATA_SOURCE_DIR",
+        str(PROJECT_ROOT / "data" / "National_Research_Database"),
+    )
+)
 DEFAULT_DB_PATH = PROJECT_ROOT / "nrg_research.db"
 DEFAULT_QDRANT_COLLECTION = "nrg_research"
 

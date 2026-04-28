@@ -277,7 +277,7 @@ Production: PostgreSQL with 600GB real data, Row-Level Security, full-text searc
 - [ ] UAT with all three user groups
 - [ ] Performance: sub-second latency, 1000+ concurrent users
 - [ ] Multi-language support (Hindi, Tamil, etc.)
-- [ ] Documentation, pitch deck, proposal for national scale
+- [ ] Documentation, production proposal for national scale
 
 ---
 

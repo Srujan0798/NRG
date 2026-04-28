@@ -137,7 +137,11 @@ def planner_node(state: Any) -> dict:
     )
 
     client = _get_planner_client()
-    schema_prompt = _build_schema_prompt(planning_query)
+    schema_prompt = (
+        _build_schema_prompt(planning_query)
+        if client is not None
+        else _build_heuristic_schema_prompt(planning_query)
+    )
 
     if client is not None:
         system_prompt = _load_prompt()
@@ -439,6 +443,84 @@ def _extract_schema_tables(schema_prompt: str) -> list[str]:
     table_pattern = r'(?:table|view):\s*(\w+)'
     tables = re.findall(table_pattern, schema_prompt.lower())
     return list(set(tables)) if tables else []
+
+
+def _build_heuristic_schema_prompt(user_query: str) -> str:
+    """Build minimal table-only schema context for no-LLM planning."""
+    query_lower = user_query.lower()
+    table_keywords = {
+        "academic_courses_details": (
+            "course",
+            "curriculum",
+            "credit",
+            "innovation course",
+            "ug",
+            "pg",
+            "phd",
+        ),
+        "financial_expenses_capital": (
+            "capex",
+            "capital",
+            "capital expense",
+            "capital assets",
+        ),
+        "financial_expenses_operational": (
+            "opex",
+            "operational",
+            "salary",
+            "maintenance",
+        ),
+        "innovation_grant_from_govt": (
+            "grant",
+            "funding",
+            "budget",
+            "agency",
+        ),
+        "combined_ipo_patent_data": (
+            "patent",
+            "ipo",
+            "inventor",
+        ),
+        "incubation_details": (
+            "startup",
+            "incubat",
+        ),
+        "trl_stages": (
+            "trl",
+            "technology readiness",
+            "lab validation",
+            "market ready",
+            "stage",
+        ),
+        "researchers": (
+            "researcher",
+            "faculty",
+            "scientist",
+        ),
+        "publications": (
+            "publication",
+            "paper",
+            "article",
+        ),
+        "institutions": (
+            "institution",
+            "institute",
+            "iit",
+            "university",
+        ),
+        "labs": (
+            "lab",
+            "laboratory",
+        ),
+    }
+    tables = [
+        table
+        for table, keywords in table_keywords.items()
+        if any(keyword in query_lower for keyword in keywords)
+    ]
+    if not tables:
+        tables = ["researchers", "institutions", "publications"]
+    return "\n".join(f"Table: {table}" for table in tables)
 
 
 def _determine_skills(query_lower: str) -> list[str]:

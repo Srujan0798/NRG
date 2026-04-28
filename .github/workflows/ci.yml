@@ -137,7 +137,7 @@ jobs:
          uv pip install -e .
           nohup python -m src.api.main &
           for i in {1..30}; do curl -sf http://localhost:8000/health && echo "API ready" && break; sleep 2; done
-      - name: Run E2E browser persona tests
+      - name: Run E2E browser persona tests serially
         run: |
           pytest tests/e2e/test_personas.py -v --tb=short -m e2e --no-cov
         continue-on-error: false
@@ -476,7 +476,7 @@ jobs:
 
   deploy-block:
     runs-on: ubuntu-22.04
-    needs: [test-python, coverage-python, test-node, lint, secrets-scan, docker-smoke, security-gate, red-team-live-replay]
+    needs: [test-python, coverage-python, e2e-persona-tests, test-node, lint, secrets-scan, docker-smoke, security-gate, red-team-live-replay]
     if: always()
     steps:
       - name: Check for failures
@@ -485,6 +485,7 @@ jobs:
           declare -A RESULTS=(
             [test-python]="${{ needs.test-python.result }}"
             [coverage-python]="${{ needs.coverage-python.result }}"
+            [e2e-persona-tests]="${{ needs.e2e-persona-tests.result }}"
             [test-node]="${{ needs.test-node.result }}"
             [lint]="${{ needs.lint.result }}"
             [secrets-scan]="${{ needs.secrets-scan.result }}"

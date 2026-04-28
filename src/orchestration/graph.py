@@ -54,15 +54,20 @@ def _timed_node(node_name: str, fn):
     @wraps(fn)
     def wrapper(state: Any) -> dict:
         t0 = time.perf_counter()
-        try:
-            result = fn(state)
-        finally:
-            elapsed_ms = (time.perf_counter() - t0) * 1000
-            if isinstance(state, dict):
-                node_timings = state.setdefault("node_timings", {})
-                node_timings[node_name] = round(elapsed_ms, 2)
-            elif hasattr(state, "node_timings"):
-                state.node_timings[node_name] = round(elapsed_ms, 2)
+        result = fn(state)
+        elapsed_ms = (time.perf_counter() - t0) * 1000
+        if isinstance(state, dict):
+            node_timings = dict(state.get("node_timings", {}))
+            state["node_timings"] = node_timings
+        elif hasattr(state, "node_timings"):
+            node_timings = dict(state.node_timings)
+            state.node_timings = node_timings
+        else:
+            node_timings = {}
+        node_timings[node_name] = round(elapsed_ms, 2)
+        if isinstance(result, dict):
+            result = dict(result)
+            result["node_timings"] = node_timings
         return result
     return wrapper
 
@@ -70,6 +75,15 @@ def _timed_node(node_name: str, fn):
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+PIPELINE_NODE_LATENCY_BUDGET_MS = {
+    "receiver": 25,
+    "planner": 250,
+    "router": 75,
+    "executor": 1200,
+    "synthesizer": 1200,
+    "verifier": 250,
+}
 
 
 class NRGWorkflow:
@@ -146,9 +160,15 @@ class NRGWorkflow:
         result = dict(receiver_node(state))
         elapsed_ms = (time.perf_counter() - t0) * 1000
         if isinstance(state, dict):
-            state.setdefault("node_timings", {})["receiver"] = round(elapsed_ms, 2)
+            node_timings = dict(state.get("node_timings", {}))
+            state["node_timings"] = node_timings
         elif hasattr(state, "node_timings"):
-            state.node_timings["receiver"] = round(elapsed_ms, 2)
+            node_timings = dict(state.node_timings)
+            state.node_timings = node_timings
+        else:
+            node_timings = {}
+        node_timings["receiver"] = round(elapsed_ms, 2)
+        result["node_timings"] = node_timings
         return result
 
     def _get_session_history(self, session_id: str) -> list[dict]:

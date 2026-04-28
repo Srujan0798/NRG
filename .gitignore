@@ -74,6 +74,11 @@ models/
 logs/
 coverage.xml
 
+# Runtime / PID / backup files
+*.pid
+*.bak
+.api_server.pid
+
 # Claude artifacts
 claude_docs_backup/
 .cache/

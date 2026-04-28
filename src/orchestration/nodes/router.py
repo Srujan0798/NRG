@@ -59,6 +59,13 @@ MAX_QUERY_LENGTH = int(os.getenv("ROUTER_MAX_QUERY_LENGTH", "10000"))
 ENABLE_2STAGE_ROUTING = os.getenv("ROUTER_ENABLE_2STAGE", "true").lower() == "true"
 ENABLE_SELF_CALIBRATION = os.getenv("ROUTER_ENABLE_SELF_CALIBRATION", "true").lower() == "true"
 
+COMPLEXITY_ORDER = ("trivial", "simple", "moderate", "complex", "synthesis_heavy")
+TIER_COMPLEXITY_LIMITS = {
+    1: "moderate",
+    2: "complex",
+    3: "synthesis_heavy",
+}
+
 
 class RouterState(TypedDict):
     """State passed from router node."""
@@ -397,6 +404,17 @@ def _route_to_skill(intent: str) -> str:
         "hybrid": "text_to_sql+rag",
     }
     return routing_map.get(intent, "rag")
+
+
+def _apply_tier_complexity_limit(complexity: str, user_tier: int) -> tuple[str, str, bool]:
+    """Clamp expensive query handling by tier before synthesis/provider selection."""
+    limit = TIER_COMPLEXITY_LIMITS.get(user_tier, "moderate")
+    try:
+        if COMPLEXITY_ORDER.index(complexity) > COMPLEXITY_ORDER.index(limit):
+            return limit, limit, True
+    except ValueError:
+        return limit, limit, True
+    return complexity, limit, False
 
 
 INTENT_CLASSIFICATION_PROMPT = """You are an expert intent classifier for a national research graph query system.
@@ -915,6 +933,16 @@ def router_node(state) -> dict:
     except Exception:
         complexity = "moderate"
 
+    complexity, complexity_limit, complexity_limit_applied = _apply_tier_complexity_limit(
+        complexity,
+        user_tier,
+    )
+    if complexity_limit_applied:
+        rationale.append(
+            f"Tier complexity limit: capped to {complexity_limit} for tier {user_tier}"
+        )
+        reasoning_parts.append(f"Complexity capped to {complexity_limit}")
+
     return {
         "intent": intent,
         "routing_decision": routing_decision,
@@ -930,4 +958,6 @@ def router_node(state) -> dict:
         "llm_enhanced": llm_enhanced,
         "stage": details.get("stage", "regex"),
         "complexity": complexity,
+        "complexity_limit": complexity_limit,
+        "complexity_limit_applied": complexity_limit_applied,
     }

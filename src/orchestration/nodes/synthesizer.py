@@ -513,6 +513,28 @@ def _synthesize(
     """
     import uuid
 
+    if _is_sql_only_fast_path(sql_results, chunks, routing_decision):
+        response = _fallback_synthesis(
+            query,
+            sql_results,
+            chunks,
+            context_summary,
+            intent,
+            routing_decision,
+            user_tier,
+            warning="SQL-only analytical response formatted without LLM to meet latency SLO.",
+        )
+        try:
+            log_llm_call(
+                "synthesizer",
+                query,
+                {"response": response[:500] if response else "", "mode": "sql_only_fast_path"},
+                "rule-based-sql-fast-path",
+            )
+        except Exception:
+            pass
+        return response, {"synth": "rule_based_sql_fast_path", "cloud_synthesis_used": False}
+
     from src.config.llm_config import CostGuard
 
     cost_guard = CostGuard.get_instance()
@@ -696,6 +718,15 @@ def _synthesize(
     return response, {"synth": "rule_based", "cloud_synthesis_used": False}
 
 
+def _is_sql_only_fast_path(sql_results: list, chunks: list, routing_decision: str = "") -> bool:
+    """Bypass LLM synthesis when structured evidence already answers the query."""
+    if not sql_results:
+        return False
+    if chunks:
+        return False
+    return routing_decision in ("", "text_to_sql", "sql")
+
+
 def _build_context_summary(conversation_history: list) -> str:
     if not conversation_history:
         return ""
@@ -728,7 +759,7 @@ def _generate_search_suggestions(query: str) -> str:
     if terms:
         suggestions.append(f"• Try broader terms: {' or '.join(terms[:3])}")
         suggestions.append(f"• Use partial matches: '{terms[0][:4]}*'")
-        suggestions.append(f"• Search by author name or institution")
+        suggestions.append("• Search by author name or institution")
 
     suggest_terms = [
         ("machine learning", "deep learning OR neural networks"),

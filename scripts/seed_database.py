@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Database Seeding Script
-Seeds the database with sample research data for testing and demo.
+Seeds the database with sample research data for testing and release.
 Matches the existing schema in nrg_research.db.
 """
 

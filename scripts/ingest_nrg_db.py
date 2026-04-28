@@ -2,7 +2,7 @@
 """
 Ingest NRG CSVs into SQLite.
 
-Source: /Users/srujansai/Desktop/NRG DB/National_Research_Database/
+Source: set via NRG_DATA_SOURCE_DIR env var (default: data/National_Research_Database/)
 Target: nrg_research.db (project root)
 
 Idempotent: drops and recreates tables on each run.
@@ -34,7 +34,9 @@ TABLES = [
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SCHEMA_PATH = REPO_ROOT / "src" / "data" / "schema" / "nrg_full_schema.sql"
-DEFAULT_SOURCE_DIR = Path("/Users/srujansai/Desktop/NRG DB/National_Research_Database")
+DEFAULT_SOURCE_DIR = Path(
+    os.getenv("NRG_DATA_SOURCE_DIR", str(REPO_ROOT / "data" / "National_Research_Database"))
+)
 DEFAULT_DB_PATH = REPO_ROOT / "nrg_research.db"
 
 

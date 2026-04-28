@@ -229,6 +229,34 @@ INDUSTRY_PASSWORD=industry_secure_password
 CLOUD_SYNTHESIS_ALLOWED=false  # Set true to enable cloud LLM
 ```
 
+### Data Source (Corpus Ingestion)
+
+The research document corpus lives outside the repo (600GB on production).
+On a fresh clone, set the path before running ingestion scripts:
+
+```bash
+# Option A: place the corpus at the default location
+mkdir -p data/National_Research_Database
+# copy CSV/text files there
+
+# Option B: point to wherever the corpus lives
+export NRG_DATA_SOURCE_DIR=/path/to/National_Research_Database
+python scripts/ingest_nrg_db.py
+python scripts/ingest_qdrant.py
+```
+
+### Switching LLM Providers
+
+NRG is model-agnostic. Change `LLM_PROVIDER` in `.env` (no code changes needed):
+
+| Provider | `.env` value | Required key |
+|----------|-------------|--------------|
+| Gemini | `gemini` | `GEMINI_API_KEY` |
+| OpenAI | `openai` | `OPENAI_API_KEY` |
+| Anthropic | `anthropic` | `ANTHROPIC_API_KEY` |
+| NVIDIA | `nvidia` | `NVIDIA_API_KEY` |
+| Local LLaMA | `local_llama` | none (set `LLAMA_CPP_URL`) |
+
 ### Tier Test Users
 
 | Username | Password | Tier |
