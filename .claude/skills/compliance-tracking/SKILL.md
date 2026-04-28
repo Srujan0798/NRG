@@ -3,46 +3,42 @@ name: compliance-tracking
 description: Track compliance requirements and audit readiness. Trigger with "compliance", "audit prep", "SOC 2", "ISO 27001", "GDPR", "regulatory requirement", or when the user needs help tracking, preparing for, or documenting compliance activities.
 ---
 
-# /compliance-tracking
+# Compliance Tracking
 
-Track compliance requirements and maintain audit readiness.
+Help track compliance requirements, prepare for audits, and maintain regulatory readiness.
 
-## Usage
+## Common Frameworks
 
-```
-/compliance-tracking $ARGUMENTS
-```
+| Framework | Focus | Key Requirements |
+|-----------|-------|-----------------|
+| SOC 2 | Service organizations | Security, availability, processing integrity, confidentiality, privacy |
+| ISO 27001 | Information security | Risk assessment, security controls, continuous improvement |
+| GDPR | Data privacy (EU) | Consent, data rights, breach notification, DPO |
+| HIPAA | Healthcare data (US) | PHI protection, access controls, audit trails |
+| PCI DSS | Payment card data | Encryption, access control, vulnerability management |
 
-## Workflow
+## Compliance Tracking Components
 
-### 1. Identify Framework
+### Control Inventory
+- Map controls to framework requirements
+- Document control owners and evidence
+- Track control effectiveness
 
-Determine which compliance framework applies:
-- SOC 2
-- ISO 27001
-- GDPR / DPDP
-- HIPAA
-- PCI DSS
-- Custom regulatory requirements
+### Audit Calendar
+- Upcoming audit dates and deadlines
+- Evidence collection timelines
+- Remediation deadlines
 
-### 2. Map Requirements
+### Evidence Management
+- What evidence is needed for each control
+- Where evidence is stored
+- When evidence was last collected
 
-- List applicable controls and requirements
-- Map to current organizational practices
-- Identify gaps
-
-### 3. Track Evidence
-
-- Document where evidence lives
-- Track collection status per control
-- Assign owners and deadlines
-
-### 4. Audit Readiness Check
-
-- Pre-audit self-assessment
-- Missing artifacts list
-- Remediation timeline
+### Gap Analysis
+- Requirements vs. current state
+- Prioritized remediation plan
+- Timeline to compliance
 
 ## Output
 
-Compliance dashboard / tracker with control mapping, evidence status, gap analysis, and readiness score.
+Produce compliance status dashboards, gap analyses, audit prep checklists, and evidence collection plans.
