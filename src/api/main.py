@@ -262,6 +262,7 @@ class _APIMemoryCache:
 
 
 _api_cache = _APIMemoryCache(default_ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+_publication_count_cache: dict[tuple[int, bool], int] = {}
 _tier_response_history: dict[int, deque[dict[str, Any]]] = {
     1: deque(maxlen=100),
     2: deque(maxlen=100),
@@ -678,6 +679,8 @@ def _publication_count_fast_response(
     if db_path is None:
         return None
 
+    cache_key = (year, iit_only)
+    cached_count = _publication_count_cache.get(cache_key)
     if iit_only:
         sql = """
             SELECT COUNT(DISTINCT p.publication_id) AS publication_count
@@ -697,15 +700,19 @@ def _publication_count_fast_response(
         sql = "SELECT COUNT(*) AS publication_count FROM publications WHERE year = ?"
         scope = "all"
 
-    try:
-        with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as conn:
-            conn.row_factory = sqlite3.Row
-            row = conn.execute(sql, (year,)).fetchone()
-    except sqlite3.Error as exc:
-        logger.warning("Publication count fast path failed", error=str(exc))
-        return None
+    if cached_count is None:
+        try:
+            with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as conn:
+                conn.row_factory = sqlite3.Row
+                row = conn.execute(sql, (year,)).fetchone()
+        except sqlite3.Error as exc:
+            logger.warning("Publication count fast path failed", error=str(exc))
+            return None
+        count = int(row["publication_count"] if row else 0)
+        _publication_count_cache[cache_key] = count
+    else:
+        count = cached_count
 
-    count = int(row["publication_count"] if row else 0)
     scope_label = "IIT-linked papers" if iit_only else "papers"
     return {
         "query_id": str(uuid.uuid4()),
@@ -760,6 +767,15 @@ def _publication_count_fast_response(
             "verifier": 0.0,
         },
     }
+
+
+def _prewarm_publication_count_cache() -> None:
+    for year, iit_only in ((2023, True), (2023, False), (2024, True), (2024, False)):
+        _publication_count_fast_response(
+            f"How many {'IIT ' if iit_only else ''}papers published in {year}?",
+            user_tier=1,
+            session_id=None,
+        )
 
 
 def _fast_query_response(
@@ -1604,6 +1620,18 @@ async def lifespan(app: FastAPI):
             embedder.close()
         except Exception as e:
             logger.warning(f"Embedder warm-up skipped: {e}")
+    try:
+        warm_start = time.time()
+        _prewarm_publication_count_cache()
+        logger.info(
+            "Publication count cache prewarmed",
+            extra={
+                "duration_ms": round((time.time() - warm_start) * 1000, 2),
+                "entries": len(_publication_count_cache),
+            },
+        )
+    except Exception:
+        logger.warning("Publication count cache prewarm skipped", exc_info=True)
     yield
     logger.info("Received shutdown signal, draining connections...")
     await drain_connections()
