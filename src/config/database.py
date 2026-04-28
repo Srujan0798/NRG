@@ -45,6 +45,7 @@ def _local_postgres_is_unreachable(database_url: str) -> bool:
 
 def resolve_runtime_database_url(database_url: str | None = None) -> str:
     raw_url = database_url or os.getenv("DATABASE_URL", "") or ""
+    running_pytest = bool(os.getenv("PYTEST_CURRENT_TEST"))
     disable_fallback = os.getenv("NRG_DISABLE_LOCAL_SQLITE_FALLBACK", "").lower() in {
         "1",
         "true",
@@ -52,6 +53,7 @@ def resolve_runtime_database_url(database_url: str | None = None) -> str:
     }
     if (
         raw_url.startswith("postgresql://")
+        and not running_pytest
         and not disable_fallback
         and LOCAL_SQLITE_FALLBACK_PATH.exists()
         and _local_postgres_is_unreachable(raw_url)

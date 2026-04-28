@@ -1,15 +1,13 @@
-K4 baseline captured on 2026-04-28 after local API startup completed.
+COMMAND: cold curl /query
+curl: (7) Failed to connect to 127.0.0.1 port 8000 after 0 ms: Couldn't connect to server
+http_code=000
+time_total=0.000106
+time_connect=0.000000
+time_starttransfer=0.000000
 
-Requested endpoint: /api/query (unauthenticated, as specified)
-curl -sS -o /dev/null -w 'status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s\n' -X POST http://127.0.0.1:8000/api/query -H 'Content-Type: application/json' -d '{"query": "How many IIT papers published in 2023?"}'
-cold /api/query: status=405 time_total=0.091077s time_connect=0.002339s time_starttransfer=0.080838s
-warm /api/query: status=405 time_total=5.300563s time_connect=0.000976s time_starttransfer=0.034274s
-
-Implemented endpoint: /query (authenticated researcher_user)
-curl -sS -o /dev/null -w 'status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s\n' -X POST http://127.0.0.1:8000/query -H @/tmp/nrg_auth_header.txt -H 'Content-Type: application/json' -d '{"query": "How many IIT papers published in 2023?"}'
-cold /query: status=200 time_total=1.353460s time_connect=0.010645s time_starttransfer=1.352386s
-warm /query: status=200 time_total=0.114492s time_connect=0.001599s time_starttransfer=0.114310s
-
-Environment notes:
-- /api/query is not a registered POST query endpoint in src/api/main.py; it returns 405.
-- Local PostgreSQL and Qdrant were not reachable during /health, so the meaningful baseline is the authenticated /query route using local fallback/cache behavior.
+COMMAND: warm curl /query
+curl: (7) Failed to connect to 127.0.0.1 port 8000 after 0 ms: Couldn't connect to server
+http_code=000
+time_total=0.000112
+time_connect=0.000000
+time_starttransfer=0.000000

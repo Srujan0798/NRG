@@ -10,9 +10,8 @@ rootdir: /Users/srujansai/Desktop/NRG
 configfile: pytest.ini
 plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
 asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-[1mcollecting ... [0mcollected 2 items
+[1mcollecting ... [0mcollected 1 item
 
-tests/api/test_health_endpoints.py::test_root_health_reports_zero_vector_qdrant_as_critical [32mPASSED[0m[32m [ 50%][0m
-tests/api/test_health_endpoints.py::test_root_health_reports_zero_vectors_from_collection_metadata_as_critical [32mPASSED[0m[32m [100%][0m
+tests/api/test_health_endpoints.py::test_qdrant_zero_vectors [32mPASSED[0m[32m      [100%][0m
 
-[32m============================== [32m[1m2 passed[0m[32m in 22.48s[0m[32m ==============================[0m
+[32m============================== [32m[1m1 passed[0m[32m in 1.45s[0m[32m ===============================[0m
