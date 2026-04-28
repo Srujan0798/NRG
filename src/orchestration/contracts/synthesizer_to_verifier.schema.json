@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nrg.local/contracts/pipeline/synthesizer_to_verifier/1.0.0",
+  "title": "synthesizer_to_verifier",
+  "description": "Payload emitted by synthesizer and consumed by verifier. It carries the natural-language response, citations, provenance, synthesis method, and evidence used for faithfulness checks.",
+  "type": "object",
+  "x-contract-version": "1.0.0",
+  "x-edge": "synthesizer_to_verifier",
+  "additionalProperties": true,
+  "required": [
+    "query_id",
+    "session_id",
+    "user_query",
+    "user_tier",
+    "synthesized_response",
+    "citations",
+    "verification_status",
+    "context_summary",
+    "provenance",
+    "synthesis_method"
+  ],
+  "properties": {
+    "query_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_query": {"type": "string"},
+    "user_tier": {"type": "integer", "minimum": 1, "maximum": 3},
+    "sql_results": {"type": "array", "items": {"type": "object"}},
+    "retrieved_chunks": {"type": "array", "items": {"type": ["object", "string"]}},
+    "synthesized_response": {"type": "string"},
+    "citations": {"type": "array", "items": {"type": "object"}},
+    "verification_status": {"type": ["boolean", "string"]},
+    "context_summary": {"type": "string"},
+    "provenance": {"type": "object"},
+    "synthesis_method": {"type": "string"},
+    "verification_retries": {"type": "integer", "minimum": 0}
+  }
+}

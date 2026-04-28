@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nrg.local/contracts/pipeline/executor_to_synthesizer/1.0.0",
+  "title": "executor_to_synthesizer",
+  "description": "Payload emitted by executor and consumed by synthesizer. It carries structured SQL evidence, retrieved chunks, retrieval metadata, warnings, errors, and execution timings.",
+  "type": "object",
+  "x-contract-version": "1.0.0",
+  "x-edge": "executor_to_synthesizer",
+  "additionalProperties": true,
+  "required": [
+    "query_id",
+    "session_id",
+    "user_query",
+    "user_tier",
+    "routing_decision",
+    "sql_results",
+    "retrieved_chunks",
+    "retrieval_metadata",
+    "errors",
+    "warnings",
+    "retrieval_sources",
+    "execution_time_ms"
+  ],
+  "properties": {
+    "query_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_query": {"type": "string"},
+    "user_tier": {"type": "integer", "minimum": 1, "maximum": 3},
+    "routing_decision": {"type": "string", "enum": ["text_to_sql", "rag", "text_to_sql+rag"]},
+    "intent": {"type": "string"},
+    "sql_query": {"type": ["string", "null"]},
+    "sql_queries": {"type": "array", "items": {"type": "string"}},
+    "sql_results": {"type": "array", "items": {"type": "object"}},
+    "sql_anomaly_report": {"type": "object"},
+    "answer_confidence": {"type": "string"},
+    "answer_confidence_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "needs_clarification": {"type": "boolean"},
+    "clarification_question": {"type": ["string", "null"]},
+    "retrieved_chunks": {
+      "type": "array",
+      "items": {"type": ["object", "string"]}
+    },
+    "retrieval_metadata": {"type": "array", "items": {"type": "object"}},
+    "retrieval_sources": {"type": "array", "items": {"type": "string"}},
+    "errors": {"type": "array", "items": {"type": ["object", "string"]}},
+    "warnings": {"type": "array", "items": {"type": ["object", "string"]}},
+    "execution_time_ms": {"type": "object"},
+    "dag_node_count": {"type": "integer", "minimum": 0},
+    "dag_root_id": {"type": "string"}
+  }
+}

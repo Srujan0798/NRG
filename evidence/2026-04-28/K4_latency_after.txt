@@ -1,0 +1,20 @@
+K4 after measurement captured on 2026-04-28 after K-4 fast-path and local DB fallback changes.
+
+Server command:
+NRG_SKIP_EMBEDDER_WARMUP=1 .venv/bin/python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --log-level info --no-access-log
+
+Startup prewarm:
+Publication count cache prewarmed before application startup completed.
+
+Requested endpoint: /api/query (unauthenticated, as specified)
+curl -sS -o /dev/null -w 'status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s\n' -X POST http://127.0.0.1:8000/api/query -H 'Content-Type: application/json' -d '{"query": "How many IIT papers published in 2023?"}'
+cold /api/query: status=405 time_total=0.005728s time_connect=0.000358s time_starttransfer=0.005316s
+warm /api/query: status=405 time_total=0.005565s time_connect=0.000412s time_starttransfer=0.005264s
+
+Implemented endpoint: /query (authenticated researcher_user)
+curl -sS -o /dev/null -w 'status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s\n' -X POST http://127.0.0.1:8000/query -H @/tmp/nrg_auth_header.txt -H 'Content-Type: application/json' -d '{"query": "How many IIT papers published in 2023?"}'
+cold /query: status=200 time_total=0.050784s time_connect=0.000413s time_starttransfer=0.049559s
+warm /query: status=200 time_total=0.082425s time_connect=0.006916s time_starttransfer=0.081101s
+
+Result:
+Cold implemented query path is 50.784ms, below the 500ms K-4 target.

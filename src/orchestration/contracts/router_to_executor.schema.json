@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nrg.local/contracts/pipeline/router_to_executor/1.0.0",
+  "title": "router_to_executor",
+  "description": "Payload emitted by router and consumed by executor. It fixes the routing decision, confidence, rationale, ambiguity metadata, and complexity tier for skill execution.",
+  "type": "object",
+  "x-contract-version": "1.0.0",
+  "x-edge": "router_to_executor",
+  "additionalProperties": true,
+  "required": [
+    "query_id",
+    "session_id",
+    "user_query",
+    "user_tier",
+    "plan",
+    "intent",
+    "routing_decision",
+    "routing_confidence",
+    "routing_rationale"
+  ],
+  "properties": {
+    "query_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_query": {"type": "string"},
+    "user_tier": {"type": "integer", "minimum": 1, "maximum": 3},
+    "plan": {"type": "object"},
+    "intent": {"type": "string", "enum": ["structured", "unstructured", "hybrid"]},
+    "routing_decision": {"type": "string", "enum": ["text_to_sql", "rag", "text_to_sql+rag"]},
+    "routing_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "routing_rationale": {"type": "array", "items": {"type": "string"}},
+    "routing_reason": {"type": "string"},
+    "plan_skills_used": {"type": "boolean"},
+    "multi_intent": {"type": "boolean"},
+    "subqueries": {"type": "array", "items": {"type": "string"}},
+    "is_ambiguous": {"type": "boolean"},
+    "ambiguity_issues": {"type": "array", "items": {"type": "string"}},
+    "clarifications": {"type": "array", "items": {"type": "string"}},
+    "llm_enhanced": {"type": "boolean"},
+    "stage": {"type": "string"},
+    "complexity": {
+      "type": "string",
+      "enum": ["trivial", "simple", "moderate", "complex", "synthesis_heavy"]
+    },
+    "complexity_limit": {
+      "type": "string",
+      "enum": ["trivial", "simple", "moderate", "complex", "synthesis_heavy"]
+    },
+    "complexity_limit_applied": {"type": "boolean"}
+  }
+}

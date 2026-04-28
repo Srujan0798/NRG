@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nrg.local/contracts/pipeline/planner_to_router/1.0.0",
+  "title": "planner_to_router",
+  "description": "Payload emitted by planner and consumed by router. It adds a query plan with desired skills, schema tables, output shape, DAG metadata, and planner provenance.",
+  "type": "object",
+  "x-contract-version": "1.0.0",
+  "x-edge": "planner_to_router",
+  "additionalProperties": true,
+  "required": [
+    "query_id",
+    "session_id",
+    "user_query",
+    "user_tier",
+    "conversation_history",
+    "plan",
+    "planner_metadata"
+  ],
+  "properties": {
+    "query_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_query": {"type": "string"},
+    "user_tier": {"type": "integer", "minimum": 1, "maximum": 3},
+    "conversation_history": {"type": "array", "items": {"type": "object"}},
+    "planner_metadata": {"type": "object"},
+    "active_domain": {"type": "string"},
+    "previous_domain": {"type": "string"},
+    "domain_switch_detected": {"type": "boolean"},
+    "last_domain_table": {"type": "string"},
+    "last_query_type": {"type": "string"},
+    "last_primary_entity": {"type": "string"},
+    "plan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "schema_tables",
+        "desired_skills",
+        "expected_output_shape",
+        "dag_nodes",
+        "dag_root_id",
+        "is_dag",
+        "subqueries"
+      ],
+      "properties": {
+        "schema_tables": {"type": "array", "items": {"type": "string"}},
+        "desired_skills": {
+          "type": "array",
+          "items": {"type": "string", "enum": ["sql", "rag", "sql+rag", "hybrid"]}
+        },
+        "expected_output_shape": {"type": "string"},
+        "dag_nodes": {"type": "array", "items": {"type": "object"}},
+        "dag_root_id": {"type": "string"},
+        "is_dag": {"type": "boolean"},
+        "subqueries": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  }
+}

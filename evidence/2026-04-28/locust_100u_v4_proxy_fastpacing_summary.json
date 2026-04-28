@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-04-28T19:29:54+0530",
+  "scenario": "K-2 100-user local Locust rerun with corrected >50-QPS pacing, 4 uvicorn workers, trusted proxy headers",
+  "host": "http://127.0.0.1:8010",
+  "users": 100,
+  "spawn_rate": 25,
+  "run_time": "5m",
+  "api_workers": 4,
+  "query_result_cache_ttl_seconds": 300,
+  "trusted_proxy_headers": true,
+  "aggregate": {
+    "request_count": 959,
+    "failure_count": 104,
+    "failure_rate": 0.1084,
+    "requests_per_second": 3.79,
+    "median_ms": 410,
+    "average_ms": 8507,
+    "p90_ms": 44000,
+    "p95_ms": 76000,
+    "p99_ms": 98000
+  },
+  "query": {
+    "request_count": 846,
+    "failure_count": 99,
+    "failure_rate": 0.117,
+    "requests_per_second": 3.34,
+    "median_ms": 320,
+    "average_ms": 9087,
+    "p90_ms": 47000,
+    "p95_ms": 76000,
+    "p99_ms": 98000
+  },
+  "c4_listener_successful_samples": {
+    "sample_count": 852,
+    "mean_ms": 843.8,
+    "p50_ms": 286.8,
+    "p90_ms": 1730.5,
+    "p95_ms": 3843.9,
+    "p99_ms": 6653.9,
+    "max_ms": 29435.5
+  },
+  "acceptance": {
+    "k2_error_rate_lt_1_percent": false,
+    "k2_query_p95_lt_2s": false,
+    "k2_qps_gt_50": false,
+    "c4_p99_lt_500ms": false
+  },
+  "root_cause_observed": [
+    "Fast pacing forced lazy embedding model initialization during the load window.",
+    "API logs show HuggingFace BGE/Indic model loading in worker process 85321 during the run.",
+    "That worker died and was restarted, producing HTTP0 failures and long tail latency."
+  ],
+  "source_files": {
+    "stats_csv": "evidence/2026-04-28/locust_100u_v4_proxy_fastpacing_stats.csv",
+    "failures_csv": "evidence/2026-04-28/locust_100u_v4_proxy_fastpacing_failures.csv",
+    "log": "evidence/2026-04-28/locust_100u_v4_proxy_fastpacing.log"
+  }
+}

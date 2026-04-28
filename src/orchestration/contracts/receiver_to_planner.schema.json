@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nrg.local/contracts/pipeline/receiver_to_planner/1.0.0",
+  "title": "receiver_to_planner",
+  "description": "Payload emitted by receiver and consumed by planner. It establishes query identity, session identity, user query text, tier, and conversation context.",
+  "type": "object",
+  "x-contract-version": "1.0.0",
+  "x-edge": "receiver_to_planner",
+  "additionalProperties": true,
+  "required": [
+    "query_id",
+    "session_id",
+    "user_query",
+    "user_tier",
+    "conversation_history",
+    "created_at"
+  ],
+  "properties": {
+    "query_id": {"type": "string", "minLength": 1},
+    "session_id": {"type": "string", "minLength": 1},
+    "user_query": {"type": "string"},
+    "user_tier": {"type": "integer", "minimum": 1, "maximum": 3},
+    "conversation_history": {"type": "array", "items": {"type": "object"}},
+    "created_at": {"type": "string", "minLength": 1},
+    "node_timings": {"type": "object"}
+  }
+}

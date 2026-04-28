@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-04-28T19:14:24+0530",
+  "scenario": "K-2 100-user local Locust rerun, 4 uvicorn workers, trusted proxy headers, warmed cache",
+  "host": "http://127.0.0.1:8010",
+  "users": 100,
+  "spawn_rate": 25,
+  "run_time": "5m",
+  "api_workers": 4,
+  "query_result_cache_ttl_seconds": 300,
+  "trusted_proxy_headers": true,
+  "aggregate": {
+    "request_count": 7413,
+    "failure_count": 56,
+    "failure_rate": 0.0076,
+    "requests_per_second": 25.36,
+    "p50_ms": 160,
+    "p90_ms": 1100,
+    "p95_ms": 1900,
+    "p99_ms": 4200
+  },
+  "query": {
+    "request_count": 7192,
+    "failure_count": 56,
+    "failure_rate": 0.0078,
+    "requests_per_second": 24.61,
+    "p50_ms": 160,
+    "p90_ms": 1100,
+    "p95_ms": 1900,
+    "p99_ms": 4200
+  },
+  "acceptance": {
+    "k2_error_rate_lt_1_percent": true,
+    "k2_query_p95_lt_2s": true,
+    "k2_qps_gt_50": false,
+    "c4_p99_lt_500ms": false
+  },
+  "failures": [
+    {
+      "Method": "POST",
+      "Name": "/query",
+      "Error": "CatchResponseError('HTTP 0')",
+      "Occurrences": "56"
+    }
+  ],
+  "source_files": {
+    "stats_csv": "evidence/2026-04-28/locust_100u_v3_proxy_stats.csv",
+    "failures_csv": "evidence/2026-04-28/locust_100u_v3_proxy_failures.csv",
+    "log": "evidence/2026-04-28/locust_100u_v3_proxy.log"
+  }
+}
