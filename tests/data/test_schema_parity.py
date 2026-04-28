@@ -23,6 +23,9 @@ from sqlalchemy import create_engine, inspect
 SRC_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(SRC_ROOT))
 
+TRL_VIEW_NAME = "trl_stages"
+TRL_VIEW_SQL_MIGRATION = SRC_ROOT / "migrations" / "20260428_add_trl_stages_view.sql"
+
 
 def parse_db_struct_sql() -> Dict[str, List[str]]:
     """Parse db_struct.sql and extract table→columns mapping."""
@@ -168,6 +171,30 @@ class TestSchemaParity:
 
         assert len(expected_tables) == 58
         assert not missing, f"Alembic head missing db_struct.sql tables: {sorted(missing)}"
+
+    def test_trl_stages_sql_migration_aliases_stage_column(self):
+        """Verify the handoff SQL migration creates the short TRL view alias."""
+        assert TRL_VIEW_SQL_MIGRATION.exists(), (
+            f"Missing SQL migration: {TRL_VIEW_SQL_MIGRATION}"
+        )
+        source = TRL_VIEW_SQL_MIGRATION.read_text()
+        normalized = re.sub(r"\s+", " ", source)
+
+        assert "CREATE OR REPLACE VIEW trl_stages AS" in normalized
+        assert "stage_of_technology AS trl_level" in normalized
+        assert "FROM innovations_at_various_stages_of_technology_readiness_level" in normalized
+
+    def test_active_schema_has_trl_stages_view(self, local_alembic_db_url: str):
+        """Verify active Alembic head exposes trl_stages as a queryable view."""
+        engine = create_engine(local_alembic_db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
+        view_names = set(inspector.get_view_names())
+
+        assert TRL_VIEW_NAME in view_names
+
+        view_columns = {column["name"] for column in inspector.get_columns(TRL_VIEW_NAME)}
+        assert {"stage_of_technology", "trl_level"}.issubset(view_columns)
+        engine.dispose()
 
     def test_seed_script_declares_every_db_struct_table(self, authoritative_schema: Dict[str, List[str]]):
         """Verify seed_production_tables tracks every table in db_struct.sql."""

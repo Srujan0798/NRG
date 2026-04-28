@@ -525,6 +525,9 @@ safe_views:
       - alias: stage_of_technology
         actual: stage_of_technology
         description: "TRL stage (Level 1-9)"
+      - alias: trl_level
+        actual: stage_of_technology
+        description: "Short TRL level alias exposed by trl_stages"
       - alias: tech_readiness_stage
         actual: stage_of_technology
         description: "TRL stage alias for readable SQL"

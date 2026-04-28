@@ -20,6 +20,18 @@ depends_on: Union[str, Sequence[str], None] = None
 
 TRL_SOURCE_TABLE = "innovations_at_various_stages_of_technology_readiness_level"
 
+TRL_VIEW_SELECT = f"""
+SELECT
+    innovation_name,
+    stage_of_technology,
+    stage_of_technology AS trl_level,
+    financial_year,
+    institute,
+    as_on_year,
+    id
+FROM {TRL_SOURCE_TABLE}
+"""
+
 
 def upgrade() -> None:
     context = op.get_context()
@@ -27,7 +39,7 @@ def upgrade() -> None:
         op.execute(
             f"""
             CREATE OR REPLACE VIEW trl_stages AS
-            SELECT * FROM {TRL_SOURCE_TABLE}
+            {TRL_VIEW_SELECT}
             """
         )
         return
@@ -36,7 +48,7 @@ def upgrade() -> None:
     op.execute(
         f"""
         CREATE VIEW trl_stages AS
-        SELECT * FROM {TRL_SOURCE_TABLE}
+        {TRL_VIEW_SELECT}
         """
     )
 
