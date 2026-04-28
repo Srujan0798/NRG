@@ -1,57 +1,94 @@
 ---
 name: sprint-planning
 description: Plan a sprint — scope work, estimate capacity, set goals, and draft a sprint plan. Use when kicking off a new sprint, sizing a backlog against team availability (accounting for PTO and meetings), deciding what's P0 vs. stretch, or handling carryover from the last sprint.
+argument-hint: "[sprint name or date range]"
 ---
 
 # /sprint-planning
 
-Plan a sprint — scope work, estimate capacity, set goals, and draft a sprint plan.
+> If you see unfamiliar placeholders or need to check which tools are connected, see [CONNECTORS.md](../../CONNECTORS.md).
+
+Plan a sprint by scoping work, estimating capacity, and setting clear goals.
 
 ## Usage
 
 ```
-/sprint-planning <sprint goals or backlog items>
+/sprint-planning $ARGUMENTS
 ```
 
-## When to Use
+## How It Works
 
-- Kicking off a new sprint
-- Sizing a backlog against team availability
-- Deciding what's P0 vs. stretch
-- Handling carryover from the last sprint
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SPRINT PLANNING                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  STANDALONE (always works)                                       │
+│  ✓ Define sprint goals and success criteria                     │
+│  ✓ Estimate team capacity (accounting for PTO, meetings)        │
+│  ✓ Scope and prioritize backlog items                           │
+│  ✓ Identify dependencies and risks                              │
+│  ✓ Generate sprint plan document                                │
+├─────────────────────────────────────────────────────────────────┤
+│  SUPERCHARGED (when you connect your tools)                      │
+│  + Project tracker: Pull backlog, create sprint, assign items   │
+│  + Calendar: Account for PTO and meetings in capacity           │
+│  + Chat: Share sprint plan with the team                        │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-## Workflow
+## What I Need From You
 
-1. **Calculate capacity** — Team size × days minus PTO, holidays, meetings
-2. **List backlog items** — Prioritized user stories/tasks
-3. **Estimate effort** — Story points or time estimates
-4. **Commit to scope** — What fits in capacity (P0), what doesn't (stretch)
-5. **Define sprint goal** — One-sentence objective
-6. **Identify risks** — Dependencies, blockers, unknowns
+- **Team**: Who's on the team and their availability this sprint?
+- **Sprint length**: How many days/weeks?
+- **Backlog**: What's prioritized? (Pull from tracker, paste, or describe)
+- **Carryover**: Anything unfinished from last sprint?
+- **Dependencies**: Anything blocked on other teams?
 
-## Output Format
+## Output
 
 ```markdown
-# Sprint [N] Plan
+## Sprint Plan: [Sprint Name]
+**Dates:** [Start] — [End] | **Team:** [X] engineers
+**Sprint Goal:** [One clear sentence about what success looks like]
 
-## Sprint Goal
-[One sentence]
+### Capacity
+| Person | Available Days | Allocation | Notes |
+|--------|---------------|------------|-------|
+| [Name] | [X] of [Y] | [X] points/hours | [PTO, on-call, etc.] |
+| **Total** | **[X]** | **[X] points** | |
 
-## Capacity
-- Team: [N] people
-- Available days: [N]
-- Effective capacity: [N] story points
+### Sprint Backlog
+| Priority | Item | Estimate | Owner | Dependencies |
+|----------|------|----------|-------|--------------|
+| P0 | [Must ship] | [X] pts | [Person] | [None / Blocked by X] |
+| P1 | [Should ship] | [X] pts | [Person] | [None] |
+| P2 | [Stretch] | [X] pts | [Person] | [None] |
 
-## Committed Work (P0)
-| Item | Assignee | Points | Status |
-|------|----------|--------|--------|
-| [Item] | [Name] | [N] | Ready |
+### Planned Capacity: [X] points | Sprint Load: [X] points ([X]% of capacity)
 
-## Stretch Goals
-| Item | Points |
-|------|--------|
-| [Item] | [N] |
+### Risks
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| [Risk] | [What happens] | [What to do] |
 
-## Risks
-- [Risk] → [Mitigation]
+### Definition of Done
+- [ ] Code reviewed and merged
+- [ ] Tests passing
+- [ ] Documentation updated (if applicable)
+- [ ] Product sign-off
+
+### Key Dates
+| Date | Event |
+|------|-------|
+| [Date] | Sprint start |
+| [Date] | Mid-sprint check-in |
+| [Date] | Sprint end / Demo |
+| [Date] | Retro |
 ```
+
+## Tips
+
+1. **Leave buffer** — Plan to 70-80% capacity. You will get interrupts.
+2. **One clear sprint goal** — If you can't state it in one sentence, the sprint is unfocused.
+3. **Identify stretch items** — Know what to cut if things take longer than expected.
+4. **Carry over honestly** — If something didn't ship, understand why before re-committing.
