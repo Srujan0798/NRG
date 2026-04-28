@@ -5,7 +5,7 @@
 set -euo pipefail
 
 BASE_URL="${BASE_URL:-http://localhost:8000}"
-DEMO_RESEARCHER_PASSWORD="${DEMO_RESEARCHER_PASSWORD:-researcher-pass}"
+RESEARCHER_PASSWORD="${RESEARCHER_PASSWORD:-researcher-pass}"
 
 echo "🧪 NRG Smoke Tests"
 echo "=================="
@@ -66,7 +66,7 @@ test_endpoint "GET" "/health" "200"
 echo -n "Testing POST /login... "
 login_response=$(curl -s -w "%{http_code}" -X POST "$BASE_URL/login" \
     -H "Content-Type: application/json" \
-    -d '{"username":"researcher_user","password":"'"$DEMO_RESEARCHER_PASSWORD"'"}')
+    -d '{"username":"researcher_user","password":"'"$RESEARCHER_PASSWORD"'"}')
 http_code="${login_response: -3}"
 body="${login_response%???}"
 

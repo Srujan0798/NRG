@@ -85,6 +85,10 @@ def mock_llm(monkeypatch):
     monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", mock_get_local_llm_client)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "_fast_query_response", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "_academic_follow_up_response", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "_killer_query_response", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "_advanced_adversarial_response", lambda *args, **kwargs: None)
 
     class StubWorkflow:
         call_count = 0

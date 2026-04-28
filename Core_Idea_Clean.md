@@ -246,7 +246,7 @@ Production: PostgreSQL with 600GB real data, Row-Level Security, full-text searc
 
 ## Roadmap
 
-### Phase 1: Working Demo (Months 1-2) — **WE ARE HERE**
+### Phase 1: Working Acceptance (Months 1-2) — **WE ARE HERE**
 - [x] LangGraph pipeline (receiver → router → executor → synthesizer)
 - [x] Text-to-SQL with fallback SQL generation
 - [x] JWT RS256 auth with 3 tiers

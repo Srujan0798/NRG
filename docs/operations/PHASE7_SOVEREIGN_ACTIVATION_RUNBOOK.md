@@ -4,6 +4,22 @@
 **Scope:** P7-A through P7-H execution on the sovereign IIT-GN cluster.  
 **Status:** Repo-ready, live execution blocked until Kubernetes context, DNS/TLS, secrets, and official data bundles are available.
 
+## Activation Control
+
+This runbook is a template until the Phase 7 preflight marks the target task
+`READY`. Do not assign or execute P7-A through P7-H from this document while the
+preflight reports `BLOCKED`.
+
+```bash
+python3 scripts/phase7_preflight.py \
+  --require P7-A \
+  --output evidence/phase7_preflight.json
+```
+
+Current local note: `kubectl` is present on this workstation, but P7-A still
+requires Helm 3 and a live sovereign cluster context before activation commands
+are executable.
+
 ## Prerequisites
 
 - `kubectl config current-context` points to the sovereign cluster.
@@ -13,6 +29,8 @@
 - Official intake bundle is present under `/data/intake/2026-05-xx/` with `manifest.json`, `.asc` or `.sig` sidecars, and `row_hmac` columns for CSV rows.
 
 ## P7-A Cluster Provision
+
+Trigger: `python3 scripts/phase7_preflight.py --require P7-A` exits `0`.
 
 ```bash
 python infrastructure/helm/nrg/scripts/validate_chart.py --skip-helm
@@ -29,6 +47,8 @@ Acceptance: `/health` returns HTTP 200, `database.table_count >= 75`, and all cr
 
 ## P7-B 600 GB Data Ingest
 
+Trigger: `python3 scripts/phase7_preflight.py --require P7-B --intake-bundle-dir /data/intake/2026-05-xx` exits `0`.
+
 ```bash
 export DATA_INTAKE_HMAC_SECRET="$(vault kv get -field=row_hmac secret/nrg/intake)"
 python scripts/verify_intake_bundle.py \
@@ -42,6 +62,8 @@ Acceptance: manifest file count, SHA-256, GPG signatures, and row HMACs pass; al
 
 ## P7-C Vector Baseline And Drift Cron
 
+Trigger: `python3 scripts/phase7_preflight.py --require P7-C --qdrant-populated` exits `0`.
+
 ```bash
 python scripts/vector_drift_check.py --establish-baseline --json
 kubectl -n nrg-production get cronjob nrg-vector-drift-lightweight nrg-vector-drift-deep
@@ -54,6 +76,8 @@ Acceptance: `vector_drift.status == "healthy"`. The Helm chart now includes:
 - `nrg-vector-drift-deep`: nightly at 02:30, `--json`
 
 ## P7-D C4 1000-User Locust Run
+
+Trigger: `python3 scripts/phase7_preflight.py --require P7-D --api-live` exits `0`.
 
 ```bash
 mkdir -p evidence/2026-05-xx/C4_1000_user_locust
@@ -71,6 +95,8 @@ Acceptance: p50 < 500 ms, p99 < 3 s, error rate < 1%, throughput >= 100 RPS, and
 
 ## P7-E UAT x 3 Personas
 
+Trigger: `python3 scripts/phase7_preflight.py --require P7-E --api-live --professor-scheduled` exits `0`.
+
 Use `docs/uat/UAT_SCRIPT_T1_RESEARCHER.md`, `docs/uat/UAT_SCRIPT_T2_GOVERNMENT.md`, and `docs/uat/UAT_SCRIPT_T3_INDUSTRY.md`.
 
 Evidence paths:
@@ -83,6 +109,8 @@ Acceptance: all three testers sign off; Tier 2 sees aggregates without PII; Tier
 
 ## P7-F Live Red Team
 
+Trigger: `python3 scripts/phase7_preflight.py --require P7-F --api-live` exits `0`.
+
 ```bash
 API_URL=https://api.nrg.iitgn.ac.in \
 python scripts/red_team_live_replay.py --api-url https://api.nrg.iitgn.ac.in
@@ -91,6 +119,8 @@ python scripts/red_team_live_replay.py --api-url https://api.nrg.iitgn.ac.in
 Acceptance: at least 121 payload attempts, all blocked or downgraded; attach `evidence/2026-05-xx/lb5_red_team_sovereign.md`.
 
 ## P7-G DR Dry Run And Chaos
+
+Trigger: `python3 scripts/phase7_preflight.py --require P7-G --cluster-stable` exits `0`.
 
 ```bash
 bash infrastructure/sovereign/disaster_recovery.sh assess "phase7-dr-drill"
@@ -102,6 +132,8 @@ python scripts/audit_rebuild.py --verify
 Acceptance: API replacement pod is Ready in under 60 seconds, PostgreSQL failover is verified by the operator, and audit rebuild returns a valid chain.
 
 ## P7-H Chain Seal And GPG Signatures
+
+Trigger: `python3 scripts/phase7_preflight.py --require P7-H --qdrant-populated --api-live --professor-scheduled --cluster-stable --prior-phase-complete` exits `0`.
 
 ```bash
 python scripts/audit_rebuild.py --verify

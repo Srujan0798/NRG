@@ -1,67 +1,117 @@
 # NRG — Agent (Shishya) Entry Point
 
-> **You are an execution agent.** Read this, then read your assigned skill(s), then execute.
-
-## Start Here (5 Steps, 60 Seconds)
-
-1. **Read [.claude/rules/production_only.md](../.claude/rules/production_only.md)** - production framing rule
-2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth
-3. **Read [prompts/shishya_universal.md](prompts/shishya_universal.md)** - operating mindset
-4. **Read [.claude/CLAUDE.md](../.claude/CLAUDE.md)** - project context + current state
-5. **Read the SKILL.md for every skill in your task** - then begin
+> **You are an execution agent for a production sovereign AI platform.**
+> Read this, then read your assigned skill(s), then execute.
 
 ---
 
-## Your 21 Skills
+## Start Here (3 Steps — do in order)
 
+1. **Read [.claude/CURRENT_STATE.md](../.claude/CURRENT_STATE.md)** — current open items, quality bar, what's blocked
+2. **Read [.claude/rules/production_only.md](../.claude/rules/production_only.md)** — forbidden vocabulary, production framing
+3. **Read the SKILL.md for every skill in your task** — then begin
+
+> Only if your task touches SQL/schema: also read `db_struct.sql` and `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+> Only if architecture context needed: read `Core_Idea_Clean.md`
+
+---
+
+## Quality Bar (6 Hard Constraints — know these cold)
+
+| # | Constraint | Test | Current |
+|---|-----------|------|---------|
+| C1 | DPDP Indian PII detection | `tests/security/test_pii_indian.py` | ✅ |
+| C2 | Per-user audit binding | `tests/security/test_per_user_audit_binding.py` | ✅ |
+| C3 | Multi-hop DAG planner | `tests/orchestration/test_multi_hop_planner.py` | ✅ |
+| C4 | P99 <500ms @ 1000 concurrent | `tests/load/test_slo_under_load.py` | ⏳ pending |
+| C5 | Vector drift auto-retrain | `scripts/vector_drift_check.py` | ✅ |
+| C6 | Schema egress allowlist | `tests/security/test_egress_allowlist.py` | ✅ |
+
+Full constraint spec: `.claude/quality-bar.md`
+
+---
+
+## Your Skills Arsenal (46 in .agents/skills/ + 83 in .claude/skills/)
+
+### .agents/skills/ — Execution Skills
 | Category | Skills |
 |----------|--------|
-| **Data** | explore-data · validate-data · statistical-analysis · sql-queries · build-dashboard · create-viz · data-visualization |
-| **Design** | frontend-design · design-critique · ux-copy · accessibility-review · react-composition-patterns |
-| **Backend** | debug · test-driven-development · database-schema-designer · database-migration · secure-linux-web-hosting |
-| **DevOps** | deploy-checklist · deployment-pipeline-design |
-| **Security** | better-auth-security-best-practices |
-| **Docs** | documentation |
-| **NRG Ops** | nrg-redis-caching · nrg-kong-gateway · nrg-nginx-sovereign · nrg-embedding-models |
+| **Data** | `explore-data` · `validate-data` · `statistical-analysis` · `sql-queries` · `build-dashboard` · `create-viz` · `data-visualization` |
+| **Data Pipelines** | `data-engineering` · `authoring-dags` · `debugging-dags` · `testing-dags` · `profiling-tables` · `checking-freshness` |
+| **Design** | `frontend-design` · `design-critique` · `ux-copy` · `accessibility-review` · `react-composition-patterns` · `figma-implement-design` · `figma-generate-design` |
+| **Backend** | `debug` · `test-driven-development` · `database-schema-designer` · `database-migration` · `fastapi-python` · `postgresql-table-design` · `secure-linux-web-hosting` |
+| **AI/ML** | `langchain-rag` · `langgraph-fundamentals` · `vector-index-tuning` · `pydantic-ai` |
+| **DevOps** | `deploy-checklist` · `deployment-pipeline-design` · `helm-chart-scaffolding` · `prometheus-configuration` |
+| **Security** | `better-auth-security-best-practices` |
+| **Workflow** | `using-git-worktrees` · `dispatching-parallel-agents` · `finishing-a-development-branch` · `verification-before-completion` · `subagent-driven-development` · `writing-plans` · `requesting-code-review` · `receiving-code-review` |
+| **Docs** | `documentation` |
 
-**Canonical skills** (in `.agents/skills/`, use when assigned): pre-commit · code-review-and-quality · python-backend · security-auditor · frontend-react-best-practices · webapp-testing · test-suite
+### .claude/skills/ — Strategy + NRG-Sovereign Skills
+**NRG Sovereign (8):** `nrg-audit-chain` · `nrg-data-analyst` · `nrg-dpdp-compliance` · `nrg-embedding-models` · `nrg-grafana-monitoring` · `nrg-kong-gateway` · `nrg-nginx-sovereign` · `nrg-redis-caching`
+
+**Engineering:** `python-backend` · `code-review-and-quality` · `security-auditor` · `frontend-react-best-practices` · `database-migrations-sql-migrations` · `test-suite` · `security-audit` · `pre-commit` · `post-deploy` · `bug-hunt` + 66 more
+
+**Search + Synthesis:** `knowledge-synthesis` · `search-strategy`
+
+**Developer Workflow (8):** `superpowers` · `feature-dev` · `security-guidance` · `skill-creator` · `pr-review-toolkit` · `claudemd-management` · `session-report` · `context7`
+
+> When in doubt which skill to use: pick the most specific one. Multiple skills can be combined.
 
 ---
 
-## Task Format
+## Evidence Standard
 
-Every task you receive:
-- **FILES** — What to modify
-- **PROBLEM** — What's wrong
-- **ACTION** — Fortify → Elevate → Immortalize
-- **SKILLS TO USE** — Which skills to activate
-- **ACCEPTANCE CRITERIA** — How to verify
-- **GURU ASSIGNMENT NOTE** — WHY this matters
+**Full audit cycle** (use for milestone/LB tasks): 20 files per `.claude/rules/audit/protocol.md §2.1`
+
+**Small task** (use for K-*/fix/feat tasks):
+```
+evidence/2026-<MM-DD>/
+├── <task_id>_test_output.log     ← pytest -v or test run output
+├── <task_id>_before_after.diff   ← git diff of changes
+└── <task_id>_verification.txt    ← one-line confirm: command + result
+```
+Commit these with the fix. No evidence = not done.
+
+---
+
+## Task Format (what every Guru assignment gives you)
+
+```
+FILES      — What to read/modify
+PROBLEM    — What's wrong
+STEPS      — Sequential actions
+SKILLS     — Which skills to activate
+EVIDENCE   — What to produce
+DONE WHEN  — Acceptance criteria
+```
+
+---
 
 ## Report Back
 
 ```
-TASK COMPLETE: [name]
-STATUS: [done / partial / blocked]
+TASK COMPLETE: [task-id / name]
+STATUS: done | partial | blocked
 
 SKILLS USED:
   - [skill] — [how applied]
 
 CHANGES:
-  - [file]: [what changed]
+  - [file]: [what changed and why]
+
+EVIDENCE:
+  - evidence/2026-XX-XX/<files committed>
 
 TESTS: X passed, Y failed
-UPGRADED BEYOND MINIMUM:
-  - [what you improved beyond the ask]
-
 ISSUES FOR GURU:
-  - [anything the Guru should know]
+  - [blockers or decisions needed]
 ```
 
 ---
 
 ## DO NOT
-- Make strategic decisions (ask Guru)
-- Skip pre-commit checks
-- Commit without tests
-- Target only the 18-table SQLite — always consider the 58-table PostgreSQL schema
+- Make strategic decisions — flag to Guru
+- Skip pre-commit checks (`/pre-commit`)
+- Commit without a test
+- Use SQLite-only schema — always consider the 58-table PostgreSQL schema (`db_struct.sql`)
+- Claim DONE without evidence file committed

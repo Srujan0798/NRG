@@ -32,7 +32,7 @@ export function getQueryStatusCopy({
   domain: 'research' | 'policy' | 'industry'
 }): string {
   if (isSlowQuery) {
-    return 'Still working. NRG is validating aggregate evidence before showing results.'
+    return 'Still working across 58 tables. NRG is validating aggregate evidence before showing results.'
   }
 
   const domainCopy: Record<typeof domain, string> = {

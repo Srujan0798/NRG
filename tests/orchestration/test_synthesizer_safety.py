@@ -108,7 +108,7 @@ def test_cloud_synthesis_is_explicitly_gated(monkeypatch):
     )
 
     assert response != "cloud answer"
-    assert provenance == {"synth": "rule_based", "cloud_synthesis_used": False}
+    assert provenance == {"synth": "rule_based_sql_fast_path", "cloud_synthesis_used": False}
 
 
 def test_synthesizer_node_does_not_preverify_with_cloud_when_gate_is_closed(monkeypatch):
@@ -134,7 +134,7 @@ def test_synthesizer_node_does_not_preverify_with_cloud_when_gate_is_closed(monk
     )
 
     assert result["provenance"] == {
-        "synth": "rule_based",
+        "synth": "rule_based_sql_fast_path",
         "cloud_synthesis_used": False,
     }
 
@@ -148,7 +148,7 @@ def test_cloud_synthesis_reports_provenance_when_allowed(monkeypatch):
         query="Find robotics researchers",
         sources=["structured"],
         sql_results=[{"name": "Dr. Rao"}],
-        chunks=[],
+        chunks=[{"chunk_id": "ch_1", "publication_id": "pub_1", "title": "Robotics", "content": "Robotics evidence"}],
         user_tier=1,
         context_summary="",
     )

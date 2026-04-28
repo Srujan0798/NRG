@@ -574,6 +574,61 @@ class ImmutableAuditLog:
             "last_hash": self.last_hash,
         }
 
+    def _first_chain_event(self) -> dict | None:
+        if not self.chain_file.exists():
+            return None
+        with open(self.chain_file) as f:
+            for line in f:
+                if line.strip():
+                    return json.loads(line)
+        return None
+
+    def _lineage_break_metadata(
+        self,
+        *,
+        valid: bool,
+        errors: list[str],
+        repair: dict | None,
+    ) -> dict:
+        first_event = self._first_chain_event()
+        first_result = first_event.get("result", {}) if isinstance(first_event, dict) else {}
+        active_chain_traceable = (
+            first_event is None
+            or (
+                first_event.get("event_type") == "chain_genesis"
+                and first_result.get("origin") == "audit_chain_reseed"
+            )
+        )
+        repair_required = bool(
+            not valid and errors and errors[0].startswith("Line 1: hash mismatch")
+        )
+        backups = sorted(self.storage_path.glob("chain_line1_hash_mismatch_backup_*.jsonl"))
+
+        reseeding_events = []
+        if first_event and first_event.get("event_type") == "chain_genesis":
+            reseeding_events.append(
+                {
+                    "timestamp": first_event.get("timestamp"),
+                    "reason": first_result.get("reason"),
+                    "source_backup": first_result.get("source_backup"),
+                    "source_sha256": first_result.get("source_sha256"),
+                    "preserved_event_count": first_result.get("preserved_event_count"),
+                }
+            )
+
+        return {
+            "lineage_intact": bool(valid and active_chain_traceable and not repair_required),
+            "active_chain_traceable": bool(active_chain_traceable),
+            "repair_required": repair_required,
+            "auto_repair_triggered": repair is not None,
+            "backup_count": len(backups),
+            "backup_files": [path.name for path in backups],
+            "reseeding_events": reseeding_events,
+            "original_event_count": first_result.get("preserved_event_count"),
+            "active_genesis_hash": (first_event.get("hash", "")[:16] if first_event else None),
+            "active_genesis_event_id": first_event.get("event_id") if first_event else None,
+        }
+
     def append(self, event: AuditEvent) -> str:
         """Append event to log with per-user non-repudiation binding. Thread-safe, process-safe."""
         if event.user_id is None:
@@ -769,10 +824,11 @@ class ImmutableAuditLog:
     def get_chain_health(self, auto_repair: bool | None = None) -> dict:
         """Get chain health status for monitoring, including explicit verifier errors."""
         if auto_repair is None:
-            auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "1").lower() not in {
-                "0",
-                "false",
-                "no",
+            auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "0").lower() in {
+                "1",
+                "true",
+                "yes",
+                "on",
             }
 
         valid, errors, valid_count = self.verify_chain()
@@ -783,6 +839,10 @@ class ImmutableAuditLog:
             and errors
             and errors[0].startswith("Line 1: hash mismatch")
         ):
+            logger.warning(
+                "Audit chain Line 1 hash mismatch auto-repair triggered; "
+                "operator review and ADR lineage documentation are required"
+            )
             repair = self.repair_line1_hash_mismatch()
             valid, errors, valid_count = self.verify_chain()
 
@@ -790,6 +850,11 @@ class ImmutableAuditLog:
         self.event_count = chain_length
         if valid and self.chain_file.exists():
             self.last_hash = self._load_last_hash()
+        lineage_break = self._lineage_break_metadata(
+            valid=valid,
+            errors=errors,
+            repair=repair,
+        )
 
         return {
             "chain_valid": valid,
@@ -799,6 +864,7 @@ class ImmutableAuditLog:
             "error_count": len(errors),
             "errors": errors,
             "repair": repair,
+            "lineage_break": lineage_break,
             "db_cosign": get_db_cosign_metrics(),
             "last_hash": self.last_hash[:16] + "...",
             "last_event": self._get_last_event_time(),

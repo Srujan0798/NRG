@@ -330,7 +330,7 @@ class TestTrainingDataCollector:
         collector = TrainingDataCollector(db_path=str(db_path))
 
         queries = [
-            {"query_id": "export-jsonl-0", "user_query": "Find robotics researchers in Gujarat state", "synthesized_response": "Robotics researchers: Dr. Test, Dr. Demo, Dr. Sample"},
+            {"query_id": "export-jsonl-0", "user_query": "Find robotics researchers in Gujarat state", "synthesized_response": "Robotics researchers: Dr. Test, Dr. Acceptance, Dr. Sample"},
             {"query_id": "export-jsonl-1", "user_query": "Show publications from Indian institutions in 2023", "synthesized_response": "Publications 2023: Paper Alpha, Paper Beta, Paper Gamma"},
             {"query_id": "export-jsonl-2", "user_query": "List AI research projects funded by government grants", "synthesized_response": "Government AI projects: Project X, Project Y, Project Z"},
         ]

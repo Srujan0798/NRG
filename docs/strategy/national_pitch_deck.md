@@ -1,4 +1,4 @@
-# National Infrastructure Pitch Deck
+# National Infrastructure Capability Deck
 
 ## National Research Intelligence Platform
 ### Sovereign AI Infrastructure for India's Research Ecosystem

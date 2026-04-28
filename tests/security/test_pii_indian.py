@@ -31,7 +31,7 @@ def test_aadhaar_dashed_detected():
     assert "aadhaar" in _types("Aadhaar: 1234-5678-9010")
 
 
-def test_aadhaar_verhoeff_rejects_invalid_demo_number():
+def test_aadhaar_verhoeff_rejects_invalid_sample_number():
     assert validate_aadhaar("1234 5678 9012") is False
 
 

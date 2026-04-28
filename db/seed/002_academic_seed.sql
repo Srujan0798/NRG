@@ -87,7 +87,7 @@ INSERT INTO innovations_at_various_stages_of_technology_readiness_level (id, ins
 ('TRL004', 'IIT Madras', 'Smart Grid Controller', 'Level 7', '2022-23'),  -- Pre-Pilot
 ('TRL005', 'IIT Madras', 'Smart Grid Controller', 'Level 8', '2023-24'),  -- First-of-Kind
 ('TRL006', 'IIT Madras', 'Quantum Key Distribution', 'Level 3', '2021-22'),  -- Feasibility
-('TRL007', 'IIT Madras', 'Quantum Key Distribution', 'Level 5', '2022-23'),  -- Tech Demo
+('TRL007', 'IIT Madras', 'Quantum Key Distribution', 'Level 5', '2022-23'),  -- Field Validation
 ('TRL008', 'IIT Madras', 'Autonomous Drone Platform', 'Level 9', '2022-23'),  -- Market Ready (Q6)
 ('TRL009', 'IIT Madras', 'Battery Management System', 'Level 5', '2021-22'),
 ('TRL010', 'IIT Madras', 'Battery Management System', 'Level 7', '2022-23'),

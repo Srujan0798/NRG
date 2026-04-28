@@ -142,7 +142,7 @@ class TestPlannerNode:
             return "Table: academic_courses_details\n"
 
         with patch("src.orchestration.nodes.planner._get_planner_client", return_value=None):
-            with patch("src.orchestration.nodes.planner._build_schema_prompt", side_effect=fake_schema_prompt):
+            with patch("src.orchestration.nodes.planner._build_heuristic_schema_prompt", side_effect=fake_schema_prompt):
                 result = planner_node(
                     {
                         "user_query": "How does that compare to their UG numbers?",

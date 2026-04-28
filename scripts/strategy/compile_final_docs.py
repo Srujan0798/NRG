@@ -4,7 +4,6 @@ Strategy Document Compiler
 Compiles all Phase 3 strategy documents into a comprehensive report.
 """
 
-import os
 import json
 import sys
 from datetime import datetime
@@ -63,16 +62,16 @@ def compile_final_docs():
     print("=" * 60)
     print(f"\nDocuments Delivered: {len(compiled['documents'])}")
     print(f"Status: {compiled['status']}")
-    print(f"\nKey Deliverables:")
-    print(f"  ✅ Kong AI Gateway (with DLP, Rate Limiting, Audit)")
-    print(f"  ✅ React Frontend (3 Persona Views)")
-    print(f"  ✅ DPDP 2023 Compliance")
-    print(f"  ✅ Red-team Security Testing")
-    print(f"  ✅ UAT (All 3 Personas)")
-    print(f"  ✅ National Pitch Deck")
-    print(f"  ✅ Export Blueprint")
-    print(f"  ✅ Architecture Report")
-    print(f"  ✅ Expansion Proposal")
+    print("\nKey Deliverables:")
+    print("  ✅ Kong AI Gateway (with DLP, Rate Limiting, Audit)")
+    print("  ✅ React Frontend (3 Persona Views)")
+    print("  ✅ DPDP 2023 Compliance")
+    print("  ✅ Red-team Security Testing")
+    print("  ✅ UAT (All 3 Personas)")
+    print("  ✅ National Capability Deck")
+    print("  ✅ Export Blueprint")
+    print("  ✅ Architecture Report")
+    print("  ✅ Expansion Proposal")
 
     return compiled
 

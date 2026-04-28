@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from src.audit import log_sql as audit_log_sql
-from src.config.database import register_sqlite_compat_functions
+from src.config.database import register_sqlite_compat_functions, resolve_runtime_database_url
 
 
 logger = logging.getLogger(__name__)
@@ -168,7 +168,7 @@ class Sandbox:
 
 def _default_connection_string() -> str:
     """Prefer DATABASE_URL; otherwise use the dev SQLite file."""
-    database_url = (os.getenv("DATABASE_URL") or "").strip()
+    database_url = resolve_runtime_database_url((os.getenv("DATABASE_URL") or "").strip())
     if database_url:
         return database_url
     return "sqlite:///src/data/nrg_research.db"

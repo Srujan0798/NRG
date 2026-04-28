@@ -140,7 +140,7 @@ ACCEPTANCE CRITERIA:
   (These must verify ELEVATION, not just "it doesn't crash.")
   - [ ] Cost impact documented: estimated ₹ per 1,000 queries if this touches the hot path
   - [ ] If this touches any of the 6 Quality Bar constraints, compliance verified before claiming DONE
-  - [ ] **If this touches frontend/UI**: Demo Readiness verified — walk through the 10-step launch script (`.claude/rules/ux_audit/protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
+  - [ ] **If this touches frontend/UI**: Acceptance Readiness verified — walk through the 10-step launch script (`.claude/rules/ux_audit/protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
 
 BEFORE COMMIT:
   - Run /pre-commit — must pass all gates

@@ -57,7 +57,7 @@ export const Hero: React.FC = () => {
 
   useEffect(() => {
     if (!lastQuery) return
-    const timer = window.setTimeout(() => setIsSlowQuery(true), 5000)
+    const timer = window.setTimeout(() => setIsSlowQuery(true), 3000)
     return () => window.clearTimeout(timer)
   }, [lastQuery])
 

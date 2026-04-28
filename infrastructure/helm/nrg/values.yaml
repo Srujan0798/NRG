@@ -19,6 +19,10 @@ fullnameOverride: "nrg-platform"
 
 namespace: nrg-production
 
+security:
+  jwtSecretMinBytes: 32
+  jwtSecretPlaceholder: "vault://secret/data/nrg/production#jwt_secret-minimum-32-bytes"
+
 serviceAccount:
   create: true
   annotations:

@@ -16,3 +16,5 @@ paths:
 - Tier filtering is mandatory: researcher=1, government=2, industry=3
 - **Health endpoint honesty:** `/health` must call the same verification function an external auditor would call. Auto-repair that hides root failures is forbidden.
 - **Audit chain verification:** Use `verify_chain()` for direct verification. Do not rely on `/health` or `get_chain_health()` auto-repair for security-critical checks.
+- **Pydantic V2 only:** New code imports from `pydantic`, never `pydantic.v1`. Prefer `field_validator`, `model_validator`, `ConfigDict`, `model_dump()`, and `model_validate()` for new schemas.
+- **Python 3.14 guardrail:** Required CI jobs remain pinned below Python 3.14 until `python-314-compat` passes without warnings and is promoted from allowed-to-fail to required.

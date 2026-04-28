@@ -19,12 +19,34 @@ from alembic import op
 from src.audit.db_cosign import generate_audit_cosign_trigger_sql
 
 revision: str = "add_audit_cosign_trigger_001"
-down_revision: str = "add_production_tables_001"
+down_revision: str = "schema_parity_columns_001"
 branch_labels = None
 depends_on = None
 
 
 def upgrade() -> None:
+    context = op.get_context()
+    if context.dialect.name != "postgresql":
+        op.execute("""
+            CREATE TABLE IF NOT EXISTS audit_db_cosign (
+                event_id     TEXT NOT NULL PRIMARY KEY,
+                chain_hash   TEXT NOT NULL,
+                user_id      TEXT NOT NULL,
+                event_type   TEXT NOT NULL,
+                db_signature TEXT NOT NULL,
+                created_at   TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        op.execute("""
+            CREATE INDEX IF NOT EXISTS idx_audit_db_cosign_chain_hash
+            ON audit_db_cosign (chain_hash)
+        """)
+        op.execute("""
+            CREATE INDEX IF NOT EXISTS idx_audit_db_cosign_created_at
+            ON audit_db_cosign (created_at)
+        """)
+        return
+
     op.execute(generate_audit_cosign_trigger_sql())
 
     op.execute("""
@@ -52,6 +74,11 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    context = op.get_context()
+    if context.dialect.name != "postgresql":
+        op.execute("DROP TABLE IF EXISTS audit_db_cosign")
+        return
+
     op.execute("DROP TRIGGER IF EXISTS audit_cosign_trigger ON audit_events")
     op.execute("DROP FUNCTION IF EXISTS audit_cosign_event()")
     op.execute("DROP TABLE IF EXISTS audit_db_cosign")

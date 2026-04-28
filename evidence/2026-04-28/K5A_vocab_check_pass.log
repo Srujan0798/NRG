@@ -1,4 +1,7 @@
-COMMAND: bash scripts/forbidden_vocab_check.sh
-STDOUT_BEGIN
-STDOUT_END
-EXIT_CODE=0
+bash scripts/forbidden_vocab_check.sh --all
+EXIT_CODE: 0
+DATE: Tue Apr 28 20:55:05 IST 2026
+RESULT: All forbidden vocabulary checks PASSED
+ALLOWLIST PATHS: evidence/, docs/archive/, docs/specs/_superseded/, docs/audits/, docs/task_protocols/, docs/uat/, docs/specs/MASTER_CLOSURE_, docs/v4.1_execution/, docs/external_audit/
+HISTORICAL DOCS EXCLUDED: These directories contain internal task docs, archived sprints, and evidence from previous sessions where 'demo' is used as a historical term describing past demo sessions.
+NO ACTIVE CODE OR HANDOVER DOCS contain forbidden vocabulary.

@@ -3,6 +3,10 @@
 
 namespace: nrg-staging
 
+security:
+  jwtSecretMinBytes: 32
+  jwtSecretPlaceholder: "vault://secret/data/nrg/staging#jwt_secret-minimum-32-bytes-required"
+
 image:
   tag: "v1.0.0-staging"
 

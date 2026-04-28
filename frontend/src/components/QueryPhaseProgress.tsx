@@ -53,7 +53,7 @@ export function QueryPhaseProgress({ domain, isSlowQuery = false }: QueryPhasePr
         <div>
           <p className="text-sm font-semibold text-nrg-text">{t("auto.components.QueryPhaseProgress.1")}</p>
           <p className="text-xs text-nrg-muted">
-            {isSlowQuery ? 'Still working. Validation continues before anything is shown.' : 'Visible progress starts immediately while the answer is prepared.'}
+            {isSlowQuery ? 'Still working across 58 tables. Validation continues before results are shown.' : 'Analyzing across 58 tables and evidence links.'}
           </p>
         </div>
         <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-navy-700 dark:text-slate-200">

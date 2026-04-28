@@ -10,12 +10,13 @@ Usage:
 """
 
 import hashlib
+import importlib.util
 import os
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set
 
 import pytest
 from sqlalchemy import create_engine, inspect
@@ -138,12 +139,58 @@ def _tables_for_url(db_url: str) -> set[str]:
         engine.dispose()
 
 
+def _views_for_url(db_url: str) -> set[str]:
+    engine = create_engine(db_url, pool_pre_ping=True)
+    try:
+        return set(inspect(engine).get_view_names())
+    finally:
+        engine.dispose()
+
+
+def _load_lb6_migration():
+    path = SRC_ROOT / "alembic" / "versions" / "lb6_schema_parity_indexes_rls_001.py"
+    spec = importlib.util.spec_from_file_location("lb6_schema_parity_indexes_rls_001", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _can_connect(db_url: str) -> bool:
+    try:
+        _tables_for_url(db_url)
+    except Exception:
+        return False
+    return True
+
+
+@pytest.fixture(scope="session")
+def local_seeded_db_url(local_alembic_db_url: str) -> str:
+    """Seed the local Alembic schema so row-count checks run without PostgreSQL."""
+    result = subprocess.run(
+        [sys.executable, "scripts/seed_production_tables.py", "--url", local_alembic_db_url, "--rows", "1"],
+        cwd=SRC_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, (
+        "seed_production_tables.py failed for local schema parity DB\n"
+        f"STDOUT:\n{result.stdout}\nSTDERR:\n{result.stderr}"
+    )
+    return local_alembic_db_url
+
+
 class TestSchemaParity:
     """Test that db_struct.sql and live database are in sync."""
 
     @pytest.fixture
-    def db_url(self) -> str:
-        return os.getenv("DATABASE_URL", "postgresql://nrg:nrg_default_password@localhost:5432/nrg")
+    def db_url(self, local_seeded_db_url: str) -> str:
+        configured_url = os.getenv("DATABASE_URL")
+        if configured_url and "sqlite" not in configured_url.lower() and _can_connect(configured_url):
+            return configured_url
+        return local_seeded_db_url
 
     @pytest.fixture
     def authoritative_schema(self) -> Dict[str, List[str]]:
@@ -202,6 +249,41 @@ class TestSchemaParity:
 
         assert set(seed_production_tables.get_production_table_names()) == set(authoritative_schema)
 
+    def test_hot_join_indexes_apply_and_explain_locally(self, local_alembic_db_url: str):
+        """Verify LB-6 hot JOIN indexes can be applied and selected by a local planner."""
+        migration = _load_lb6_migration()
+        engine = create_engine(local_alembic_db_url, pool_pre_ping=True)
+        probes = {
+            "idx_lb6_courses_institute_year_level": """
+                SELECT * FROM academic_courses_details
+                WHERE institute = 'IIT Bombay'
+                  AND financial_year = '2024-25'
+                  AND level_of_course = 'PG'
+            """,
+            "idx_lb6_grants_institute_year": """
+                SELECT * FROM innovation_grant_from_govt
+                WHERE institute = 'IIT Bombay'
+                  AND year_of_receiving = '2024-25'
+            """,
+            "idx_lb6_patents_status_applicants_grant_date": """
+                SELECT * FROM combined_ipo_patent_data
+                WHERE status = 'Granted'
+                  AND applicants = 'IIT Bombay'
+                  AND date_of_grant = '2024-01-01'
+            """,
+        }
+
+        with engine.begin() as conn:
+            for name, table, columns in migration.COMPOSITE_INDEXES:
+                conn.exec_driver_sql(migration._create_index_sql(name, table, columns, concurrent=False))
+
+            for index_name, query in probes.items():
+                plan_rows = conn.exec_driver_sql(f"EXPLAIN QUERY PLAN {query}").fetchall()
+                plan = "\n".join(str(row) for row in plan_rows)
+                assert index_name in plan, f"{index_name} not used by query plan:\n{plan}"
+
+        engine.dispose()
+
     def test_dhairya_tables_present(self, authoritative_schema: Dict[str, List[str]], dhairya_required: Set[str]):
         """Verify all tables needed for Dhairya benchmark are in db_struct.sql."""
         missing = dhairya_required - set(authoritative_schema.keys())
@@ -209,66 +291,45 @@ class TestSchemaParity:
 
     def test_live_db_connection(self, db_url: str):
         """Verify we can connect to live database."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available, skipping live DB check")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
-            live_tables = inspector.get_table_names()
-            engine.dispose()
-            assert len(live_tables) > 0, "Live database has no tables"
-        except Exception as e:
-            pytest.skip(f"Cannot connect to live DB: {e}")
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
+        live_tables = inspector.get_table_names()
+        engine.dispose()
+        assert len(live_tables) > 0, "Database has no tables"
 
     def test_live_db_has_all_tables(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify live DB has every table from db_struct.sql."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available, skipping live DB check")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
-            live_tables = set(inspector.get_table_names())
-            auth_tables = set(authoritative_schema.keys())
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
+        live_tables = set(inspector.get_table_names())
+        auth_tables = set(authoritative_schema.keys())
 
-            missing = auth_tables - live_tables
-            extra = live_tables - auth_tables
+        missing = auth_tables - live_tables
+        extra = live_tables - auth_tables
 
-            if missing:
-                print(f"\nMissing in live DB: {sorted(missing)}")
-            if extra:
-                print(f"\nExtra in live DB (OK): {sorted(extra)}")
+        if missing:
+            print(f"\nMissing in DB: {sorted(missing)}")
+        if extra:
+            print(f"\nExtra in DB (OK): {sorted(extra)}")
 
-            assert not missing, f"Tables in db_struct.sql but not in live DB: {missing}"
-            engine.dispose()
-        except Exception as e:
-            pytest.skip(f"Cannot verify live DB: {e}")
+        assert not missing, f"Tables in db_struct.sql but not in DB: {missing}"
+        engine.dispose()
 
     def test_live_db_has_all_columns(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify live DB has all columns for each table from db_struct.sql."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available, skipping live DB check")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
 
-            issues = []
-            for table_name, expected_cols in authoritative_schema.items():
-                try:
-                    live_cols = set([c["name"] for c in inspector.get_columns(table_name)])
-                    expected_set = set(expected_cols)
-                    missing_cols = expected_set - live_cols
-                    if missing_cols:
-                        issues.append(f"{table_name}: missing columns {sorted(missing_cols)}")
-                except Exception:
-                    pass
+        issues = []
+        for table_name, expected_cols in authoritative_schema.items():
+            live_cols = {c["name"] for c in inspector.get_columns(table_name)}
+            expected_set = set(expected_cols)
+            missing_cols = expected_set - live_cols
+            if missing_cols:
+                issues.append(f"{table_name}: missing columns {sorted(missing_cols)}")
 
-            engine.dispose()
-            assert not issues, f"Column mismatches:\n" + "\n".join(issues)
-        except Exception as e:
-            pytest.skip(f"Cannot verify live DB columns: {e}")
+        engine.dispose()
+        assert not issues, "Column mismatches:\n" + "\n".join(issues)
 
     def test_schema_fingerprint_stable(self, authoritative_schema: Dict[str, List[str]]):
         """Verify schema fingerprint is deterministic (used for audit chain)."""
@@ -287,72 +348,51 @@ class TestSchemaParity:
 
     def test_all_dhairya_tables_have_minimum_rows(self, db_url: str, dhairya_required: Set[str]):
         """Verify all Dhairya-required tables have data (≥1 row for seeding)."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available")
-        try:
-            from sqlalchemy import create_engine, text
-            engine = create_engine(db_url, pool_pre_ping=True)
+        from sqlalchemy import text
 
-            with engine.connect() as conn:
-                empty_tables = []
-                for table in sorted(dhairya_required):
-                    result = conn.execute(text(f"SELECT COUNT(*) FROM {table}"))
-                    count = result.scalar()
-                    if count == 0:
-                        empty_tables.append(table)
+        engine = create_engine(db_url, pool_pre_ping=True)
 
-                engine.dispose()
-                assert not empty_tables, f"Dhairya tables with zero rows: {empty_tables}"
-        except Exception as e:
-            pytest.skip(f"Cannot verify row counts: {e}")
+        with engine.connect() as conn:
+            empty_tables = []
+            for table in sorted(dhairya_required):
+                result = conn.execute(text(f'SELECT COUNT(*) FROM "{table}"'))
+                count = result.scalar()
+                if count == 0:
+                    empty_tables.append(table)
+
+            engine.dispose()
+            assert not empty_tables, f"Dhairya tables with zero rows: {empty_tables}"
 
     def test_primary_keys_intact(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify all tables have primary keys."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
 
-            no_pk = []
-            for table_name in authoritative_schema:
-                try:
-                    pk = inspector.get_pk_constraint(table_name)
-                    if not pk or not pk.get("constrained_columns"):
-                        no_pk.append(table_name)
-                except Exception:
-                    no_pk.append(table_name)
+        no_pk = []
+        for table_name in authoritative_schema:
+            pk = inspector.get_pk_constraint(table_name)
+            if not pk or not pk.get("constrained_columns"):
+                no_pk.append(table_name)
 
-            engine.dispose()
-            assert not no_pk, f"Tables without primary key: {no_pk}"
-        except Exception as e:
-            pytest.skip(f"Cannot verify PKs: {e}")
+        engine.dispose()
+        assert not no_pk, f"Tables without primary key: {no_pk}"
 
     def test_no_orphan_foreign_keys(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify all foreign key relationships are valid."""
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
 
-            invalid_fks = []
-            for table_name in authoritative_schema:
-                try:
-                    fks = inspector.get_foreign_keys(table_name)
-                    for fk in fks:
-                        referred_table = fk["referred_table"]
-                        if referred_table not in authoritative_schema:
-                            invalid_fks.append(f"{table_name}→{referred_table}")
-                except Exception:
-                    pass
+        invalid_fks = []
+        live_tables = set(inspector.get_table_names())
+        for table_name in authoritative_schema:
+            fks = inspector.get_foreign_keys(table_name)
+            for fk in fks:
+                referred_table = fk["referred_table"]
+                if referred_table not in live_tables:
+                    invalid_fks.append(f"{table_name}->{referred_table}")
 
-            engine.dispose()
-            assert not invalid_fks, f"Invalid FK references: {invalid_fks}"
-        except Exception as e:
-            pytest.skip(f"Cannot verify FKs: {e}")
+        engine.dispose()
+        assert not invalid_fks, f"Invalid FK references: {invalid_fks}"
 
     def test_total_credit_score_is_text_type(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify total_credit_score is TEXT type (not INTEGER) — critical for SPLIT_PART parsing.
@@ -360,25 +400,19 @@ class TestSchemaParity:
         The column stores values like '3:1' (lecture:tutorial format). Casting to INTEGER fails.
         SQL generation must use SPLIT_PART(total_credit_score, ':', 1)::double precision.
         """
-        if "sqlite" in db_url.lower():
-            pytest.skip("PostgreSQL not available")
-        try:
-            from sqlalchemy import create_engine, inspect
-            engine = create_engine(db_url, pool_pre_ping=True)
-            inspector = inspect(engine)
+        engine = create_engine(db_url, pool_pre_ping=True)
+        inspector = inspect(engine)
 
-            cols = inspector.get_columns("academic_courses_details")
-            credit_col = next((c for c in cols if c["name"] == "total_credit_score"), None)
-            assert credit_col is not None, "total_credit_score column not found"
+        cols = inspector.get_columns("academic_courses_details")
+        credit_col = next((c for c in cols if c["name"] == "total_credit_score"), None)
+        assert credit_col is not None, "total_credit_score column not found"
 
-            col_type = str(credit_col.get("type", "")).upper()
-            assert "TEXT" in col_type or "VARCHAR" in col_type or "CHAR" in col_type, (
-                f"total_credit_score must be TEXT type, got {col_type}. "
-                "Integer cast will fail on '3:1' format — use SPLIT_PART."
-            )
-            engine.dispose()
-        except Exception as e:
-            pytest.skip(f"Cannot verify column type: {e}")
+        col_type = str(credit_col.get("type", "")).upper()
+        assert "TEXT" in col_type or "VARCHAR" in col_type or "CHAR" in col_type, (
+            f"total_credit_score must be TEXT type, got {col_type}. "
+            "Integer cast will fail on '3:1' format — use SPLIT_PART."
+        )
+        engine.dispose()
 
 
 def run_cli_check():

@@ -32,6 +32,20 @@ import statistics
 _response_times: list = []
 
 
+def _wait_window(prefix: str, default_min: float, default_max: float):
+    """Build a configurable wait window without hiding the default load profile."""
+    min_wait = float(os.environ.get(f"{prefix}_WAIT_MIN_SECONDS", str(default_min)))
+    max_wait = float(os.environ.get(f"{prefix}_WAIT_MAX_SECONDS", str(default_max)))
+    return between(min_wait, max(max_wait, min_wait))
+
+
+def _client_ip_for_user(user: HttpUser) -> str:
+    """Return a stable synthetic client IP for local load tests behind a proxy."""
+    if not hasattr(user, "_nrg_client_ip"):
+        user._nrg_client_ip = f"10.240.{random.randint(0, 255)}.{random.randint(1, 254)}"
+    return user._nrg_client_ip
+
+
 def _credentials(
     username_env: str,
     default_username: str,
@@ -90,15 +104,20 @@ def _login_user(
 ) -> None:
     """Authenticate a Locust persona using a catch_response context."""
     should_quit = False
+    proxy_headers = {"X-Forwarded-For": _client_ip_for_user(user)}
     with user.client.post(
         "/auth/login",
+        headers=proxy_headers,
         json=_credentials(username_env, default_username, password_env, default_password),
         catch_response=True,
         name="/auth/login",
     ) as response:
         if response.status_code == 200:
             token = response.json().get("access_token")
-            user.headers = {"Authorization": f"Bearer {token}"}
+            user.headers = {
+                "Authorization": f"Bearer {token}",
+                "X-Forwarded-For": proxy_headers["X-Forwarded-For"],
+            }
             response.success()
         else:
             should_quit = _handle_login_failure(user, response)
@@ -194,7 +213,7 @@ ADVERSARIAL_QUERIES = [
 class C4FastPathUser(HttpUser):
     """Fast-path workload — cached and bounded researcher-style queries."""
     abstract = False
-    wait_time = between(1, 3)
+    wait_time = _wait_window("C4_FAST", 0.2, 0.9)
     weight = 60
 
     def on_start(self):
@@ -221,7 +240,7 @@ class C4FastPathUser(HttpUser):
 class C4FullPathUser(HttpUser):
     """Full-path workload — aggregate and cross-domain queries."""
     abstract = False
-    wait_time = between(2, 5)
+    wait_time = _wait_window("C4_FULL", 0.5, 1.5)
     weight = 30
 
     def on_start(self):
@@ -248,7 +267,7 @@ class C4FullPathUser(HttpUser):
 class C4AdversarialUser(HttpUser):
     """Adversarial workload — blocked or downgraded security probes."""
     abstract = False
-    wait_time = between(2, 5)
+    wait_time = _wait_window("C4_ADVERSARIAL", 0.5, 1.5)
     weight = 10
 
     def on_start(self):

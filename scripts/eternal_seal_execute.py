@@ -24,7 +24,7 @@ SEQUENCE:
     Step 3a → UAT T1 (Professor)
     Step 3b → UAT T2 (Ministry Liaison)
     Step 3c → UAT T3 (Industry Partner)
-    Step 4 → Demo Video (≤3min screencap)
+    Step 4 → Acceptance Video (≤3min screencap)
     Step 5 → Chain Seal (C1/C2/C6 live attestation)
     Step 6 → Founder GPG Signatures (8 signatures)
     Step 7 → Git Tag v1.0.0-eternal
@@ -94,7 +94,7 @@ def step1_stage_up() -> dict:
     ])
 
     print("\n[4/4] Run quality bar scorecard...")
-    result = run_cmd([
+    run_cmd([
         "kubectl", "-n", "nrg", "exec", "deploy/api", "--",
         "python", "scripts/quality_bar_scorecard.py", "--json-only"
     ])
@@ -202,10 +202,10 @@ def step3c_uat_t3() -> dict:
     return {"step": "03_uat_t3", "status": "PENDING_EXECUTION"}
 
 
-def step4_demo_video() -> dict:
-    """Step 4: Record demo video (≤3 min)."""
+def step4_acceptance_video() -> dict:
+    """Step 4: Record acceptance video (≤3 min)."""
     print("\n" + "=" * 70)
-    print("STEP 4: DEMO VIDEO — ≤3 min screencap")
+    print("STEP 4: ACCEPTANCE VIDEO — ≤3 min screencap")
     print("=" * 70)
     print("\nFlow: login → 1 query per tier → audit chain verify → scorecard")
     print("\nOn sovereign cluster, terminal 1:")
@@ -313,7 +313,7 @@ STEPS = {
     "3a": step3a_uat_t1,
     "3b": step3b_uat_t2,
     "3c": step3c_uat_t3,
-    "4": step4_demo_video,
+    "4": step4_acceptance_video,
     "5": step5_chain_seal,
     "6": step6_founder_signatures,
     "7": step7_git_tag,

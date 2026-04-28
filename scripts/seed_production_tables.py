@@ -37,15 +37,27 @@ import argparse
 import os
 import sys
 import random
-from datetime import datetime, timedelta
+import re
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
+
+from sqlalchemy import (
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    Integer,
+    MetaData,
+    Numeric,
+    Table,
+    create_engine,
+    inspect,
+    text,
+)
 
 SRC_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SRC_ROOT))
-
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import sessionmaker
 
 
 INSTITUTES = [
@@ -80,6 +92,76 @@ GOV_ORGS = [
     "Ministry of Education", "Ministry of Science & Technology",
     "ICMR", "DRDO", "ISRO"
 ]
+
+
+def get_production_table_names() -> list[str]:
+    """Return the authoritative production table list from db_struct.sql."""
+    db_struct_path = SRC_ROOT / "db_struct.sql"
+    content = db_struct_path.read_text()
+    return re.findall(r"CREATE TABLE public\.(\w+)", content)
+
+
+def _fit_string(value: str, max_length: int | None) -> str:
+    if not max_length or len(value) <= max_length:
+        return value
+    suffix = str(abs(hash(value)) % 10000)
+    return f"{value[: max_length - len(suffix)]}{suffix}"
+
+
+def _sample_value(table_name: str, column, row_number: int) -> Any:
+    """Generate deterministic seed data compatible with reflected SQLAlchemy types."""
+    column_name = column.name
+    column_key = f"{table_name}_{column_name}_{row_number}"
+    column_type = column.type
+
+    if isinstance(column_type, Boolean):
+        return row_number % 2 == 0
+    if isinstance(column_type, DateTime):
+        return datetime(2024, 1, 1, 12, 0, 0)
+    if isinstance(column_type, Date):
+        return datetime(2024, 1, 1).date()
+    if isinstance(column_type, Integer):
+        return row_number
+    if isinstance(column_type, (Float, Numeric)):
+        return float(row_number * 100)
+    if column_type.__class__.__name__.lower() in {"json", "jsonb"}:
+        return {"seed": True, "row": row_number}
+    if "email" in column_name:
+        return _fit_string(f"{column_key}@example.test", getattr(column_type, "length", None))
+    if "password" in column_name:
+        return _fit_string("seeded-password-hash", getattr(column_type, "length", None))
+    if "phone" in column_name or "contact_number" in column_name:
+        return _fit_string(f"900000{row_number:04d}", getattr(column_type, "length", None))
+    if column_name in {"is_active", "is_staff", "is_superuser", "is_approved"}:
+        return row_number % 2 == 1
+    return _fit_string(column_key, getattr(column_type, "length", None))
+
+
+def seed_table_generic(conn, table_name: str, rows: int) -> int:
+    """Seed a reflected table with synthetic rows when it is empty."""
+    existing_count = conn.execute(text(f'SELECT COUNT(*) FROM "{table_name}"')).scalar_one()
+    if existing_count:
+        return 0
+
+    metadata = MetaData()
+    table = Table(table_name, metadata, autoload_with=conn)
+    payload = []
+    for row_number in range(1, max(rows, 1) + 1):
+        payload.append({column.name: _sample_value(table_name, column, row_number) for column in table.columns})
+
+    conn.execute(table.insert(), payload)
+    return len(payload)
+
+
+def seed_all_production_tables(conn, rows: int = 10) -> dict[str, int]:
+    """Seed every table from db_struct.sql that exists in the connected database."""
+    live_tables = set(inspect(conn).get_table_names())
+    inserted: dict[str, int] = {}
+    for table_name in get_production_table_names():
+        if table_name not in live_tables:
+            continue
+        inserted[table_name] = seed_table_generic(conn, table_name, rows)
+    return inserted
 
 
 def random_int(min_val: int, max_val: int) -> int:
@@ -194,8 +276,8 @@ def seed_combined_ipo_patent_data(conn, rows: int = 10):
             "primary_applicant_entity": "Educational Institution",
             "primary_applicant_nationality": "Indian",
             "primary_applicant_synonym": f"Synonym{i+1}",
-            "all_applicant_names": f"Applicant 1, Applicant 2",
-            "all_applicant_addresses": f"Address 1, Address 2",
+            "all_applicant_names": "Applicant 1, Applicant 2",
+            "all_applicant_addresses": "Address 1, Address 2",
             "all_applicant_cities": "Mumbai, Bangalore",
             "all_applicant_nationalities": "Indian",
             "all_applicant_countries": "India",
@@ -832,7 +914,7 @@ def seed_tb_goi_ministries_mstr(conn, rows: int = 10):
             "id": i + 1,
             "name": f"Ministry of {random.choice(['Education', 'Science', 'Health', 'Finance', 'Defense'])}",
             "short_name": f"Mo{random.randint(100, 999)}",
-            "address": f"Shastri Bhavan, New Delhi",
+            "address": "Shastri Bhavan, New Delhi",
             "phone_no": f"+91-11-230{random.randint(10000, 99999)}",
             "email": f"ministry{i+1}@gov.in",
             "website": "https://www.india.gov.in"
@@ -921,7 +1003,7 @@ def seed_advance_search_data(conn, rows: int = 10):
         data.append({
             "id": i + 1,
             "title": f"Research Paper {i+1}",
-            "authors": f"Author 1, Author 2, Author 3",
+            "authors": "Author 1, Author 2, Author 3",
             "guide": f"Guide {i+1}",
             "year": str(random.randint(2020, 2025)),
             "journal": f"Journal of Research {i+1}",
@@ -943,7 +1025,7 @@ def seed_scraped_data(conn, rows: int = 10):
         data.append({
             "id": i + 1,
             "title": f"Scraped Paper {i+1}",
-            "authors": f"Author A, Author B",
+            "authors": "Author A, Author B",
             "year": str(random.randint(2020, 2025)),
             "abstract": f"Abstract for scraped paper {i+1}",
             "doi": f"10.9999/scraped{i+1}"
@@ -1055,10 +1137,6 @@ def main():
 
     args = parser.parse_args()
 
-    if "sqlite" in args.db_url.lower():
-        print("ERROR: This script requires PostgreSQL, not SQLite")
-        return 1
-
     print(f"Connecting to: {args.db_url}")
     engine = create_engine(args.db_url, pool_pre_ping=True)
 
@@ -1069,51 +1147,11 @@ def main():
         with engine.connect() as conn:
             trans = conn.begin()
             try:
-                seed_academic_courses_details(conn, args.rows)
-                seed_innovation_grant_from_govt(conn, args.rows)
-                seed_innovations_at_various_stages_of_technology_readiness_level(conn, args.rows)
-                seed_combined_ipo_patent_data(conn, args.rows)
-                seed_incubation_details(conn, args.rows)
-                seed_financial_expenses_capital(conn, args.rows)
-                seed_financial_expenses_operational(conn, args.rows)
-                seed_phd_students(conn, args.rows)
-                seed_sanctioned_intake(conn, args.rows)
-                seed_actual_student_strength(conn, args.rows)
-                seed_placements_and_higher_studies(conn, args.rows)
-                seed_patents_details(conn, args.rows)
-                seed_fdp_details(conn, args.rows)
-                seed_faculty_details(conn, args.rows)
-                seed_faculty_strength(conn, args.rows)
-                seed_expertise(conn, args.rows)
-                seed_master_expertise(conn, args.rows)
-                seed_package_data(conn, args.rows)
-                seed_role_data(conn, args.rows)
-                seed_seed_funding(conn, args.rows)
-                seed_startup_receiving_vc_investment(conn, args.rows)
-                seed_startup_recognition(conn, args.rows)
-                seed_startups_turnover_50_lacs(conn, args.rows)
-                seed_fdi_investment(conn, args.rows)
-                seed_founders_of_fortune_500_companies(conn, args.rows)
-                seed_research_consultancy_details_consultancy(conn, args.rows)
-                seed_research_consultancy_details_sponsered(conn, args.rows)
-                seed_nirf_pdf_record(conn, args.rows)
-                seed_nirf_extracted_table(conn, args.rows)
-                seed_nirf_table_row(conn, args.rows)
-                seed_tb_institute_mstr(conn, args.rows)
-                seed_tb_goi_ministries_mstr(conn, args.rows)
-                seed_tb_academic_year_mstr(conn, args.rows)
-                seed_tb_course_program_types(conn, args.rows)
-                seed_user_registration(conn, args.rows)
-                seed_advance_search_data(conn, args.rows)
-                seed_scraped_data(conn, args.rows)
-                seed_combined_ipo_patent_data_old(conn, args.rows // 2)
-                seed_ipo_patent_details_flat(conn, args.rows)
-                seed_startup_recognition_old(conn, args.rows // 2)
-                seed_tb_institute_scrap_data_url(conn, args.rows)
+                inserted = seed_all_production_tables(conn, args.rows)
 
                 trans.commit()
                 print("\n" + "=" * 60)
-                print("All tables seeded successfully!")
+                print(f"All tables seeded successfully! Inserted rows: {sum(inserted.values())}")
                 print("=" * 60)
                 return 0
             except Exception as e:

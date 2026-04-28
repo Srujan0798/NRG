@@ -153,7 +153,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     setIsSearching(true)
     setQueryError(null)
     setIsSlowQuery(false)
-    const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 5000)
+    const slowTimer = window.setTimeout(() => setIsSlowQuery(true), 3000)
     try {
       const result = await queryService.query({ query: submittedQuery })
       lastCompletedQueryRef.current = { query: submittedQuery, at: Date.now() }

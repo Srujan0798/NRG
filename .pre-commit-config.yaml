@@ -24,6 +24,36 @@ repos:
     language: system
     pass_filenames: false
     always_run: true
+  - id: schema-parity-static
+    name: Verify db_struct/Alembic table parity
+    entry: python3 scripts/check_schema_sync.py --migration-static
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: data-quality-scorecard
+    name: Verify data quality scorecard
+    entry: python3 scripts/data_quality_scorecard.py --json-output .cache/data_quality_scorecard.json --markdown-output .cache/data_quality_scorecard.md --baseline docs/ops/data_quality_scorecard.json --check-baseline --fail-on-p0
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: pipeline-contracts
+    name: Validate orchestration pipeline contracts
+    entry: python3 scripts/validate_contracts.py --docs-output .cache/pipeline_contracts.md --report-output .cache/pipeline_contracts_report.json --version-baseline docs/ops/pipeline_contract_versions.json
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: jwt-secret-config
+    name: Verify JWT secret placeholder length
+    entry: python3 scripts/check_jwt_secret_config.py
+    language: system
+    pass_filenames: false
+    always_run: true
+  - id: pydantic-migration-guard
+    name: Verify Pydantic/Python migration guardrails
+    entry: python3 scripts/check_pydantic_migration_guard.py
+    language: system
+    pass_filenames: false
+    always_run: true
   - id: slow-test-marker-check
     name: Require slow marker for long tests
     entry: python scripts/check_slow_test_markers.py

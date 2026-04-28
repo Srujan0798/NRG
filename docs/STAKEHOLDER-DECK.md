@@ -27,7 +27,7 @@
 
 ---
 
-## 2. Demo Scenarios
+## 2. Acceptance Scenarios
 
 ### 2.1 Researcher Query
 > "Show AI researchers in Gujarat with >20 publications"

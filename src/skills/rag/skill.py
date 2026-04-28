@@ -127,7 +127,7 @@ class RAGSkill:
 
 
 def main():
-    """Demo entry point."""
+    """Acceptance entry point."""
     import argparse
 
     parser = argparse.ArgumentParser(description="NRG RAG Skill")

@@ -56,6 +56,7 @@ def _timed_node(node_name: str, fn):
         t0 = time.perf_counter()
         result = fn(state)
         elapsed_ms = (time.perf_counter() - t0) * 1000
+        elapsed_rounded = round(elapsed_ms, 2)
         if isinstance(state, dict):
             node_timings = dict(state.get("node_timings", {}))
             state["node_timings"] = node_timings
@@ -64,7 +65,15 @@ def _timed_node(node_name: str, fn):
             state.node_timings = node_timings
         else:
             node_timings = {}
-        node_timings[node_name] = round(elapsed_ms, 2)
+        node_timings[node_name] = elapsed_rounded
+        logger.info(
+            "pipeline node completed",
+            extra={
+                "node": node_name,
+                "duration_ms": elapsed_rounded,
+                "budget_ms": PIPELINE_NODE_LATENCY_BUDGET_MS.get(node_name),
+            },
+        )
         if isinstance(result, dict):
             result = dict(result)
             result["node_timings"] = node_timings
@@ -159,6 +168,7 @@ class NRGWorkflow:
         t0 = time.perf_counter()
         result = dict(receiver_node(state))
         elapsed_ms = (time.perf_counter() - t0) * 1000
+        elapsed_rounded = round(elapsed_ms, 2)
         if isinstance(state, dict):
             node_timings = dict(state.get("node_timings", {}))
             state["node_timings"] = node_timings
@@ -167,7 +177,15 @@ class NRGWorkflow:
             state.node_timings = node_timings
         else:
             node_timings = {}
-        node_timings["receiver"] = round(elapsed_ms, 2)
+        node_timings["receiver"] = elapsed_rounded
+        logger.info(
+            "pipeline node completed",
+            extra={
+                "node": "receiver",
+                "duration_ms": elapsed_rounded,
+                "budget_ms": PIPELINE_NODE_LATENCY_BUDGET_MS.get("receiver"),
+            },
+        )
         result["node_timings"] = node_timings
         return result
 

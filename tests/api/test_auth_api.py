@@ -39,6 +39,29 @@ def test_login_returns_access_and_refresh_tokens(monkeypatch):
     assert payload["user"]["tier"] == 1
 
 
+def test_health_reports_auth_secret_status(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 0, "publications": 0}
+
+        def execute(self, _query: str):
+            return [{"table_count": 58}]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["auth_status"]["min_bytes"] == 32
+    assert payload["auth_status"]["status"] in {"healthy", "not_required"}
+    assert "secret_key" not in payload["auth_status"]
+    assert "value" not in payload["auth_status"]
+
+
 def test_refresh_and_logout_revoke_tokens(monkeypatch):
     monkeypatch.setattr(api_main, "workflow", StubWorkflow())
     client = TestClient(api_main.app)

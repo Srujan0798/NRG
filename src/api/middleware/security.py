@@ -6,6 +6,7 @@ import hmac
 import ipaddress
 import logging
 import json
+import os
 from typing import Optional
 
 from fastapi import HTTPException, Request, Header
@@ -212,7 +213,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
         if not self._should_skip_path(request.url.path):
             fields = await self._extract_text_fields(request)
             for field_name, field_value in fields:
-                identifier = request.client.host if request.client else None
+                identifier = self._identifier_for_request(request)
                 if identifier == "testclient":
                     identifier = None
                 validation = _prompt_sanitiser.validate_query(
@@ -246,6 +247,24 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                     )
 
         return await call_next(request)
+
+    def _identifier_for_request(self, request: Request) -> Optional[str]:
+        """Return the client identifier used for rejection tracking.
+
+        Proxy headers are trusted only when explicitly enabled, because a direct
+        internet client can spoof X-Forwarded-For.
+        """
+        trust_proxy = os.environ.get("TRUST_PROXY_HEADERS", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        if trust_proxy:
+            forwarded_for = request.headers.get("x-forwarded-for")
+            if forwarded_for:
+                return forwarded_for.split(",", 1)[0].strip()
+        return request.client.host if request.client else None
 
     def _should_skip_path(self, path: str) -> bool:
         for skip in self.SKIP_PATHS:

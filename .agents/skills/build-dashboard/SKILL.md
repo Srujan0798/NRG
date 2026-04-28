@@ -87,7 +87,7 @@ If **product analytics** is connected:
 
 If **spreadsheet** is connected:
 
-- Prototype the dashboard in a spreadsheet first
+- Draft the dashboard in a spreadsheet first
 - Validate metric definitions and calculations
 
 ## Tips

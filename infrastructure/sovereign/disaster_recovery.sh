@@ -17,8 +17,8 @@ set -euo pipefail
 # Configuration
 NAMESPACE="nrg-production"
 S3_BUCKET="${BACKUP_S3_BUCKET:-nrg-backups}"
-S3_ENDPOINT="${BACKUP_S3_ENDPOINT}"
-KMS_KEY_ID="${BACKUP_KMS_KEY_ID}"
+S3_ENDPOINT="${BACKUP_S3_ENDPOINT:-}"
+KMS_KEY_ID="${BACKUP_KMS_KEY_ID:-}"
 CLUSTER_CONTEXT="${CLUSTER_CONTEXT:-nrg-cluster}"
 BACKUP_RETENTION_DAYS=90
 
@@ -386,6 +386,10 @@ reopen_traffic() {
 START_TIME=$(date +%s)
 
 case "${1:-help}" in
+    preflight)
+        shift || true
+        python3 scripts/phase7_preflight.py --require P7-G "$@"
+        ;;
     assess)
         assess_disaster "${2:-}"
         ;;
@@ -427,6 +431,7 @@ case "${1:-help}" in
         echo "Usage: $0 <command> [options]"
         echo ""
         echo "Commands:"
+        echo "  preflight [options]   - Read-only P7-G trigger check"
         echo "  assess [scenario]     - Assess disaster scenario"
         echo "  full                  - Execute full disaster recovery"
         echo "  database-only [backup]- Restore only the database"
@@ -436,6 +441,7 @@ case "${1:-help}" in
         echo "  reopen-traffic        - Reopen traffic"
         echo ""
         echo "Examples:"
+        echo "  $0 preflight --cluster-stable"
         echo "  $0 assess 'cluster-failure'"
         echo "  $0 full"
         echo "  $0 database-only nrg-backup-20240101-120000.tar.gz.gpg"

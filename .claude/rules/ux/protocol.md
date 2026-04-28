@@ -281,7 +281,7 @@ A blank white screen while loading = "the app is broken" in the professor's mind
 
 ---
 
-## 10. THE PROFESSOR'S ACCEPTANCE TEST SCRIPT (Run This Before Every Demo)
+## 10. THE PROFESSOR'S ACCEPTANCE TEST SCRIPT (Run This Before Every Acceptance Session)
 
 This is the exact sequence the professor will run. Walk through it end-to-end, in order, with all three tiers. Any failure = stop and fix before the evaluation.
 
@@ -298,7 +298,7 @@ STEP 2 — LOGIN AS RESEARCHER (Tier 1)
  ✓ Stats are real numbers (not 0 or null)
  ✓ Navigation visible and complete
 
-STEP 3 — RUN THE KEY DEMO QUERY
+STEP 3 — RUN THE KEY ACCEPTANCE QUERY
  Type: "Which institutes in India have the highest grant amount in renewable energy?"
  ✓ Loading indicator appears immediately
  ✓ Answer appears within 10 seconds
@@ -460,7 +460,7 @@ PRODUCTION-READINESS SCORE: ___ / 10
 
 ---
 
-## 13. DEMO RISK MAP
+## 13. ACCEPTANCE RISK MAP
 
 Map everything that could go wrong during the 12-minute evaluation. Include technical, UX, data, environment, and human risks.
 
@@ -481,11 +481,11 @@ Map everything that could go wrong during the 12-minute evaluation. Include tech
 | Query returns raw JSON | Low | Catastrophic | Test every query type that will be shown | Have formatted version screenshot ready |
 | "undefined" visible anywhere | Medium | Serious | Search every page for null/undefined | Have fallback content for all data fields |
 | Audit trail page is blank | Low | Serious | Verify audit events are being written | Have sample audit events pre-seeded |
-| Professor asks "how do I know this is correct?" | High | Serious | Prepare citation demonstration | Show audit chain + source SQL + retrieved rows |
+| Professor asks "how do I know this is correct?" | High | Serious | Prepare citation acceptancenstration | Show audit chain + source SQL + retrieved rows |
 
 ---
 
-## 14. KILLER DEMO QUERIES
+## 14. KILLER ACCEPTANCE QUERIES
 
 Before any launch, prepare 3 queries that:
 1. Cannot be answered by Google Scholar, Scopus, or Excel

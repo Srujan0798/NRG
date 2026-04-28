@@ -8,16 +8,15 @@
 
 ## Session Start
 
-1. **Read [rules/production_only.md](rules/production_only.md)** - production framing rule.
-2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth.
-3. **Read [memory/INDEX.md](memory/INDEX.md)** and [memory/INDEX.md](memory/INDEX.md) - current state and durable founder directives.
-4. **Check git + system health** - `git status`, `git log --oneline -5`, API health.
-5. **Check for external audits** - Read any `NRG_*_AUDIT_*.md` in repo root. If external findings contradict internal claims, external wins.
-6. **Verify evidence freshness** - Any evidence older than 7 days (load test, benchmark, security scan) is stale until re-run.
-7. **Read the Founder's request.**
-8. **Execute only against the master plan, active protocols, and explicit founder instructions.**
+1. **Read [rules/production_only.md](rules/production_only.md)** — production framing, forbidden vocabulary.
+2. **Read [CURRENT_STATE.md](CURRENT_STATE.md)** — open items, quality bar, what's blocked. Single fastest context file.
+3. **Read [memory/INDEX.md](memory/INDEX.md)** — durable founder directives and past learnings.
+4. **Check git** — `git status`, `git log --oneline -5`
+5. **Check for external audits** — any `NRG_*_AUDIT_*.md` in repo root. External findings override internal claims.
+6. **Read the Founder's request. Execute.**
 
-Do not use older framed planning documents as standalone execution authority. Their remaining engineering content is valid only where the master execution plan maps it into production milestones.
+> For deep context: `MASTER_EXECUTION_PLAN_2026-04-25.md` is the architectural source of truth.
+> Evidence older than 7 days (load test, benchmark, security scan) is stale — must re-run before claiming valid.
 
 ---
 
@@ -104,6 +103,9 @@ docker compose up
 
 ### Engineering (14 skills)
 [python-backend](skills/python-backend) · [code-review-and-quality](skills/code-review-and-quality) · [security-auditor](skills/security-auditor) · [frontend-react-best-practices](skills/frontend-react-best-practices) · [webapp-testing](skills/webapp-testing) · [prompt-engineering-patterns](skills/prompt-engineering-patterns) · [dockerfile-validator](skills/dockerfile-validator) · [database-migrations-sql-migrations](skills/database-migrations-sql-migrations) · [typescript-advanced-types](skills/typescript-advanced-types) · [changelog-generator](skills/changelog-generator) · [claude-api](skills/claude-api) · [external-prompt-merge](skills/external-prompt-merge) · [find-skills](skills/find-skills)
+
+### Developer Workflow (8 skills)
+[superpowers](skills/superpowers) · [feature-dev](skills/feature-dev) · [security-guidance](skills/security-guidance) · [skill-creator](skills/skill-creator) · [pr-review-toolkit](skills/pr-review-toolkit) · [claudemd-management](skills/claudemd-management) · [session-report](skills/session-report) · [context7](skills/context7)
 
 ### NRG Sovereign (8 skills)
 [nrg-audit-chain](skills/nrg-audit-chain) · [nrg-data-analyst](skills/nrg-data-analyst) · [nrg-dpdp-compliance](skills/nrg-dpdp-compliance) · [nrg-embedding-models](skills/nrg-embedding-models) · [nrg-grafana-monitoring](skills/nrg-grafana-monitoring) · [nrg-kong-gateway](skills/nrg-kong-gateway) · [nrg-nginx-sovereign](skills/nrg-nginx-sovereign) · [nrg-redis-caching](skills/nrg-redis-caching)

@@ -143,14 +143,14 @@ def main():
             uat_all_pass = False
     all_passed = all_passed and uat_all_pass
 
-    # 6. Demo Video SHA256
-    print("\n[6/9] Demo Video")
+    # 6. Acceptance Video SHA256
+    print("\n[6/9] Acceptance Video")
     demo_sha = EVIDENCE_DIR / "04_demo.sha256"
     if demo_sha.exists():
         sha_content = demo_sha.read_text().strip()
-        check("Demo video SHA256 recorded", len(sha_content) > 0, f"SHA: {sha_content[:20]}...")
+        check("Acceptance video SHA256 recorded", len(sha_content) > 0, f"SHA: {sha_content[:20]}...")
     else:
-        check("Demo video SHA256 recorded", False, "04_demo.sha256 not found")
+        check("Acceptance video SHA256 recorded", False, "04_acceptance.sha256 not found")
         all_passed = False
 
     # 7. Chain Seal Attestation
@@ -189,9 +189,9 @@ def main():
     print(f"\n{'='*60}")
     if all_passed:
         print("✅ ALL 9 PREREQUISITES MET — Ready to tag v1.0.0-eternal")
-        print(f"\nNext step:")
-        print(f"  git tag -s v1.0.0-eternal -m 'Eternal Seal #45 complete'")
-        print(f"  git push origin v1.0.0-eternal")
+        print("\nNext step:")
+        print("  git tag -s v1.0.0-eternal -m 'Eternal Seal #45 complete'")
+        print("  git push origin v1.0.0-eternal")
     else:
         failed = [c["name"] for c in CHECKS if not c["passed"]]
         print(f"❌ {len(failed)} prerequisites not met:")

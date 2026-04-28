@@ -173,10 +173,10 @@ EOF
 
 ```
 mkdir -p docs/operations
-git mv docs/demo/DEMO_SCRIPT.md                       docs/operations/PRODUCTION_ACCEPTANCE_RUN.md
-git mv scripts/seed_demo_data.py                      scripts/seed_production_initial_dataset.py
-git mv evidence/2026-04-26/demo_rehearsal.mp4         evidence/2026-04-26/acceptance_run_recording.mp4
-rmdir docs/demo
+git mv docs/launch/ACCEPTANCE_RUN.md                  docs/operations/PRODUCTION_ACCEPTANCE_RUN.md
+git mv scripts/seed_production_data.py                scripts/seed_production_initial_dataset.py
+git mv evidence/2026-04-26/acceptance_rehearsal.mp4   evidence/2026-04-26/acceptance_run_recording.mp4
+rmdir docs/launch
 ```
 
 ### 3.6 Memory cleanup
@@ -198,10 +198,10 @@ cd /Users/srujansai/Desktop/NRG
 
 # 0.1 forbidden-vocab moves (§3.5)
 mkdir -p docs/operations
-git mv docs/demo/DEMO_SCRIPT.md docs/operations/PRODUCTION_ACCEPTANCE_RUN.md 2>/dev/null || true
-git mv scripts/seed_demo_data.py scripts/seed_production_initial_dataset.py 2>/dev/null || true
-git mv evidence/2026-04-26/demo_rehearsal.mp4 evidence/2026-04-26/acceptance_run_recording.mp4 2>/dev/null || true
-rmdir docs/demo 2>/dev/null || true
+git mv docs/launch/ACCEPTANCE_RUN.md docs/operations/PRODUCTION_ACCEPTANCE_RUN.md 2>/dev/null || true
+git mv scripts/seed_production_data.py scripts/seed_production_initial_dataset.py 2>/dev/null || true
+git mv evidence/2026-04-26/acceptance_rehearsal.mp4 evidence/2026-04-26/acceptance_run_recording.mp4 2>/dev/null || true
+rmdir docs/launch 2>/dev/null || true
 
 # 0.2 archive root .md (§3.1)
 mkdir -p docs/archive/2026-Q1

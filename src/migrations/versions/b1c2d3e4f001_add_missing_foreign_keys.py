@@ -16,6 +16,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    if op.get_context().dialect.name == 'sqlite':
+        return
+
     op.create_foreign_key(
         'fk_funding_records_researcher',
         'funding_records', 'researchers',
@@ -43,6 +46,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    if op.get_context().dialect.name == 'sqlite':
+        return
+
     op.drop_constraint('fk_patents_applicant_institution', 'patents', type_='foreignkey')
     op.drop_constraint('fk_funding_records_project', 'funding_records', type_='foreignkey')
     op.drop_constraint('fk_funding_records_institution', 'funding_records', type_='foreignkey')

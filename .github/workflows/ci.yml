@@ -88,6 +88,7 @@ jobs:
       - name: Run security tests (SQL injection, rate limiting, HMAC validation)
         run: |
           uv pip install pytest
+          python scripts/check_jwt_secret_config.py
           pytest tests/security/test_sql_injection_blocked.py tests/security/test_rate_limit_enforced.py tests/security/test_hmac_validation.py tests/scripts/test_red_team_live_replay.py -v --tb=short -m security
         continue-on-error: false
 
@@ -103,10 +104,23 @@ jobs:
         run: pip install uv
       - name: Install dependencies
         run: uv pip install -e ".[dev]"
+      - name: Validate orchestration pipeline contracts
+        id: pipeline-contracts
+        run: |
+          mkdir -p .cache
+          python scripts/validate_contracts.py \
+            --docs-output docs/ops/pipeline_contracts.md \
+            --report-output .cache/pipeline_contracts_report.json \
+            --version-baseline docs/ops/pipeline_contract_versions.json \
+            --github-output "$GITHUB_OUTPUT"
       - name: Run contract tests (API schema validation)
         run: |
           uv pip install pytest
           pytest tests/contract/ -v --tb=short -m contract
+      - name: Run integration tests for major contract bumps
+        if: steps.pipeline-contracts.outputs.integration_required == 'true'
+        run: |
+          pytest tests/integration/ -v --tb=short -m integration --no-cov
         continue-on-error: false
 
   e2e-persona-tests:
@@ -335,10 +349,30 @@ jobs:
         run: pip install uv
       - name: Install linters
         run: uv pip install ruff mypy black
+      - name: Verify Pydantic/Python migration guardrails
+        run: python scripts/check_pydantic_migration_guard.py
       - name: Run ruff linter
         run: ruff check src tests
       - name: Run mypy type check
         run: mypy src
+
+  python-314-compat:
+    runs-on: ubuntu-22.04
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.14 compatibility lane
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run import and contract smoke tests
+        run: |
+          python -W default -c "import pydantic; import langchain_core; import src.api.main"
+          pytest tests/contract/test_pipeline_contracts.py -q --no-cov
 
   # ===========================================================================
   # PRODUCTION VOCABULARY GATE
@@ -355,7 +389,7 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           FORBIDDEN_PATTERN='\b(demo|demo-ready|demo day|demo video|demo dataset|demo rehearsal|pitch deck|MVP|prototype|works on my machine)\b'
-          ALLOWLIST='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN|scripts/forbidden_vocab_check\.sh|protocols/|BACKLOG\.md$|\.github/workflows/ci\.yml$'
+          ALLOWLIST='\.claude/rules/production_only\.md|\.claude/memory/|\.agents/skills/forbidden-vocab-cleanup/SKILL\.md|docs/specs/MASTER_EXECUTION_PLAN|scripts/forbidden_vocab_check\.sh|protocols/|BACKLOG\.md$|\.github/workflows/ci\.yml$'
 
           if [[ -n "${BASE_SHA:-}" && ! "$BASE_SHA" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=2 origin "$BASE_SHA" || true
@@ -365,7 +399,7 @@ jobs:
           fi
 
           TARGET_FILES=$(printf '%s\n' "$CHANGED_FILES" \
-            | grep -E '^(\.agents/|\.claude/|docs/|evidence/|protocols/|scripts/|BACKLOG\.md$)' \
+            | grep -E '^(\.agents/|\.claude/|docs/|evidence/|protocols/|scripts/|BACKLOG\.md$|[^/]+\.md$)' \
             | grep -v -E "$ALLOWLIST" \
             | grep -v -E '(^|/)(node_modules|\.npm-cache|playwright-report|test-results|dist|build|coverage)/|\.((json|lock|svg|png|jpg|jpeg|webp|gif|woff2?|ttf|otf|ico|pdf|mp4|webm|min\.js|min\.css))$' \
             || true)
@@ -378,7 +412,7 @@ jobs:
           VIOLATIONS=""
           while IFS= read -r file; do
             [[ -f "$file" ]] || continue
-            hit=$(grep -InE "$FORBIDDEN_PATTERN" "$file" || true)
+            hit=$(grep -IniE "$FORBIDDEN_PATTERN" "$file" || true)
             if [[ -n "$hit" ]]; then
               VIOLATIONS="${VIOLATIONS}${hit}"$'\n'
             fi

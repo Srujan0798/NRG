@@ -33,7 +33,7 @@ For every finding, run the verification yourself:
 | "Audit chain broken" | Direct verification | `python -c "from src.audit import verify_chain; print(verify_chain())"` |
 | "Health endpoint lying" | Compare checks | `verify_chain()` vs `/health` output |
 
-**Critical:** Use `verify_chain()` for audit checks, NOT `/health`. `/health` may auto-repair and hide root failures.
+**Critical:** Use `verify_chain()` for audit checks, not only `/health`. `/health` must call the same verifier and report explicit lineage metadata, but direct verification is still the external-auditor proof.
 
 ### Step 3: Classify
 
@@ -85,6 +85,7 @@ bash scripts/forbidden_vocab_check.sh
 Before submitting any work to an external reviewer (co-work, IRPC, IndiaAI, ministry):
 
 - [ ] `verify_chain()` returns `(True, [], N)` — not just `/health`
+- [ ] `get_chain_health(auto_repair=False)["lineage_break"]["lineage_intact"] is True`
 - [ ] `forbidden_vocab_check.sh` passes on ALL files including `.md`
 - [ ] Load test evidence is < 7 days old
 - [ ] Benchmark evidence is < 7 days old

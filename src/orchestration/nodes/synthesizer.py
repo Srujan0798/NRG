@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 from typing import Any, TypedDict, Generator
 from pathlib import Path
 
@@ -21,6 +22,10 @@ CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
 ALTERNATE_CITATION_PATTERN = re.compile(r"\[ref:([^:\]]+):([^\]]+)\]")
 PLAIN_PUB_ID_PATTERN = re.compile(r"\b(PUB[-\s]?\d+)\b", re.IGNORECASE)
 BRACKETED_CITE_PATTERN = re.compile(r"\[[^\]]*\]")
+_LLM_TIMEOUT_EXECUTOR = ThreadPoolExecutor(
+    max_workers=max(1, int(os.getenv("SYNTHESIS_LLM_TIMEOUT_WORKERS", "4"))),
+    thread_name_prefix="synthesis-timeout",
+)
 
 SENSITIVE_KEY_TERMS = (
     "email",
@@ -61,6 +66,20 @@ _context_window_sizes = {
     "gemini": 128000,
     "local": 4096,
 }
+
+
+def _synthesis_timeout_seconds() -> float:
+    return max(0.001, float(os.getenv("SYNTHESIS_LLM_TIMEOUT_SECONDS", "5.0")))
+
+
+def _call_llm_with_timeout(label: str, func, *args, **kwargs):
+    timeout = _synthesis_timeout_seconds()
+    future = _LLM_TIMEOUT_EXECUTOR.submit(func, *args, **kwargs)
+    try:
+        return future.result(timeout=timeout)
+    except FutureTimeoutError as exc:
+        future.cancel()
+        raise TimeoutError(f"{label} exceeded {timeout:.2f}s synthesis timeout") from exc
 
 
 class TokenBudget:
@@ -591,7 +610,9 @@ def _synthesize(
             user_prompt = f"User Query: {query}"
             try:
                 logger.info("Complexity=simple — using local SLM for synthesis")
-                response = local_client.generate(
+                response = _call_llm_with_timeout(
+                    "local simple synthesis",
+                    local_client.generate,
                     system_prompt,
                     user_prompt,
                     conversation_history=_coerce_history(context_summary),
@@ -621,8 +642,15 @@ def _synthesize(
         try:
             mesh = get_llm_mesh()
             user_prompt = f"User Query: {query}"
-            logger.info(f"Using SovereignLLMMesh for synthesis (complexity={complexity}, 15s budget, health-weighted)")
-            response = mesh.generate(
+            logger.info(
+                "Using SovereignLLMMesh for synthesis "
+                "(complexity=%s, %.1fs timeout, health-weighted)",
+                complexity,
+                _synthesis_timeout_seconds(),
+            )
+            response = _call_llm_with_timeout(
+                "cloud synthesis",
+                mesh.generate,
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
@@ -671,7 +699,9 @@ def _synthesize(
         user_prompt = f"User Query: {query}"
         try:
             logger.info("Using local LLM for synthesis")
-            response = local_client.generate(
+            response = _call_llm_with_timeout(
+                "local synthesis",
+                local_client.generate,
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),

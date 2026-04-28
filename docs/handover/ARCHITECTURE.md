@@ -293,7 +293,7 @@ Request + JWT ─► Verify RS256 signature ─► Extract tier ─► RBAC chec
 
 ## 8. The 6 Hard Constraints (Quality Bar Scorecard)
 
-*(Cross-reference: Core_Idea_Clean.md — "Phase 1: Working Demo" and Quality Bar Scorecard)*
+*(Cross-reference: Core_Idea_Clean.md — "Phase 1: Working Acceptance" and Quality Bar Scorecard)*
 
 | # | Constraint | Implementation | Status |
 |---|------------|---------------|--------|

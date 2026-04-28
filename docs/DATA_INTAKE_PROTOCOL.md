@@ -12,6 +12,19 @@
 
 This document describes the end-to-end process for receiving, validating, transforming, and loading 600GB of national research data into the NRG PostgreSQL database. It covers data arrival formats, validation checks, transformation rules, loading procedures, and post-load verification.
 
+### 1.1.1 Phase 7 Trigger Gate
+
+P7-B is blocked until the sovereign cluster and SFTP intake bundle are both
+ready. Before assigning or executing ingest work, run:
+
+```bash
+python3 scripts/phase7_preflight.py \
+  --require P7-B \
+  --intake-bundle-dir /data/intake/2026-05-xx
+```
+
+If the command exits non-zero, do not load data and do not claim ingest evidence.
+
 ### 1.2 Data Sources
 
 The 600GB dataset consists of:

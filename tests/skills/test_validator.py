@@ -46,6 +46,20 @@ class TestSQLValidator:
         with pytest.raises(SQLValidationError):
             validator.validate("SELECT * FROM users")
 
+    def test_postgres_identifier_over_63_bytes_rejected(self):
+        validator = SQLValidator()
+        too_long = "innovations_at_various_stages_of_technology_readiness_level_alias"
+
+        with pytest.raises(SQLValidationError, match="identifier exceeds PostgreSQL limit"):
+            validator.validate(f"SELECT * FROM {too_long} LIMIT 10")
+
+    def test_short_trl_view_identifier_passes(self):
+        validator = SQLValidator()
+
+        result = validator.validate("SELECT * FROM trl_stages LIMIT 10")
+
+        assert "trl_stages" in result
+
     def test_validation_time_tracked(self):
         validator = SQLValidator()
         validator.validate("SELECT * FROM researchers LIMIT 10")

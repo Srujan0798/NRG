@@ -152,7 +152,8 @@ def _create_django_auth_tables() -> None:
 
 
 def upgrade() -> None:
-    op.execute("CREATE EXTENSION IF NOT EXISTS tablefunc")
+    if op.get_context().dialect.name == "postgresql":
+        op.execute("CREATE EXTENSION IF NOT EXISTS tablefunc")
     _create_django_auth_tables()
 
     op.create_table(
@@ -1121,4 +1122,5 @@ def downgrade() -> None:
     op.drop_table('adv_se')
     op.drop_table('actual_student_strength')
     op.drop_table('academic_courses_details')
-    op.execute("DROP EXTENSION IF EXISTS tablefunc")
+    if op.get_context().dialect.name == "postgresql":
+        op.execute("DROP EXTENSION IF EXISTS tablefunc")

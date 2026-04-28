@@ -236,7 +236,7 @@ Evidence required: Start API → query → restart → query → run verify_chai
 
 ---
 
-## DELIVERABLE 5: 3 KILLER DEMO QUERIES
+## DELIVERABLE 5: 3 KILLER ACCEPTANCE QUERIES
 
 ### KILLER 1: Innovation Credit Intensity
 **Question:** "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?"  
@@ -409,7 +409,7 @@ Prevention: Test production queries to ensure they return >=5 rows
 Recovery: "The system protects researcher privacy by not showing small cohorts."
 Category: Security
 
-Risk 15: Demo host panics and starts improvising
+Risk 15: Acceptance host panics and starts improvising
 Probability: High (human factor)
 Impact: Catastrophic (saying things that are not true about the system)
 Prevention: Rehearse script 5 times; have backup queries memorized
@@ -525,7 +525,7 @@ The 3 things that must happen first:
   2. Fix Locust load test to achieve <10% error rate at 100 concurrent users
   3. Create PostgreSQL VIEW "trl_stages" to eliminate 63-byte identifier risk
 
-THE SINGLE BIGGEST RISK TO THE DEMO:
+THE SINGLE BIGGEST RISK TO THE ACCEPTANCE SESSION:
 The professor types an unscripted question that misses the cache, the LLM takes 7+ seconds, and the skeleton loader makes him think the app is frozen — he closes his laptop before the answer appears.
 
 THE THING THAT WILL IMPRESS THE PROFESSOR:

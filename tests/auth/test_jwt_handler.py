@@ -1,7 +1,9 @@
 import pytest
+from pathlib import Path
 
 from src.auth import jwt_handler as jwt_handler_module
-from src.auth.jwt_handler import JWTHandler, AuthError
+from src.auth.jwt_handler import JWTHandler, AuthError, validate_jwt_secret
+from scripts.rotate_jwt_secret import generate_jwt_secret
 
 
 @pytest.fixture
@@ -34,6 +36,30 @@ def test_generates_and_verifies_access_and_refresh_tokens(jwt_handler):
     assert access_claims["token_type"] == "access"
     assert access_claims["iss"] == "researcher"
     assert refresh_claims["token_type"] == "refresh"
+
+
+def test_jwt_secret_length_returns_unhealthy_status(monkeypatch):
+    monkeypatch.setenv("JWT_ALGORITHM", "HS256")
+    monkeypatch.setenv("JWT_SECRET", "short-secret")
+
+    handler = JWTHandler(users={})
+    health = handler.jwt_secret_health()
+    assert health["status"] == "unhealthy"
+    assert health["valid"] is False
+    assert health["enforced"] is False
+
+
+def test_short_explicit_test_fixture_secret_is_allowed():
+    handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
+
+    assert handler.jwt_secret_health()["status"] == "test_override"
+
+
+def test_rotation_script_generates_32_byte_secret():
+    secret = generate_jwt_secret(num_bytes=32)
+
+    assert validate_jwt_secret(secret) is True
+    assert len(secret.encode("utf-8")) >= 32
 
 
 def test_refresh_rotates_refresh_token_and_revokes_old_one(jwt_handler):
@@ -69,13 +95,13 @@ def test_revoked_access_token_is_rejected(jwt_handler):
         jwt_handler.verify_access_token(tokens["access_token"])
 
 
-def test_legacy_dev_password_environment_names_are_supported(monkeypatch):
+def test_production_password_environment_names_are_supported(monkeypatch):
     monkeypatch.delenv("RESEARCHER_PASSWORD", raising=False)
     monkeypatch.delenv("GOV_PASSWORD", raising=False)
     monkeypatch.delenv("INDUSTRY_PASSWORD", raising=False)
-    monkeypatch.setenv("DEMO_RESEARCHER_PASSWORD", "legacy-researcher-pass")
-    monkeypatch.setenv("DEMO_GOVERNMENT_PASSWORD", "legacy-government-pass")
-    monkeypatch.setenv("DEMO_INDUSTRY_PASSWORD", "legacy-industry-pass")
+    monkeypatch.setenv("RESEARCHER_PASSWORD", "release-researcher-pass")
+    monkeypatch.setenv("GOV_PASSWORD", "release-government-pass")
+    monkeypatch.setenv("INDUSTRY_PASSWORD", "release-industry-pass")
 
     users = jwt_handler_module.build_default_users()
     handler = JWTHandler(
@@ -84,12 +110,18 @@ def test_legacy_dev_password_environment_names_are_supported(monkeypatch):
         users=users,
     )
 
-    researcher = handler.authenticate_user("researcher_user", "legacy-researcher-pass")
-    government = handler.authenticate_user("gov_user", "legacy-government-pass")
-    industry = handler.authenticate_user("industry_user", "legacy-industry-pass")
+    researcher = handler.authenticate_user("researcher_user", "release-researcher-pass")
+    government = handler.authenticate_user("gov_user", "release-government-pass")
+    industry = handler.authenticate_user("industry_user", "release-industry-pass")
     assert researcher["role"] == "researcher"
     assert government["role"] == "government"
     assert industry["role"] == "industry"
+
+
+def test_auth_code_does_not_support_forbidden_password_aliases():
+    source = Path("src/auth/jwt_handler.py").read_text()
+
+    assert "DEMO_" not in source
 
 
 def test_refresh_token_survives_handler_restart_with_store(tmp_path, monkeypatch):

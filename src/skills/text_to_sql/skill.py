@@ -250,7 +250,9 @@ class TierAwareSqlRewriter:
             raise PermissionError("Potentially unsafe SQL is not allowed")
 
     def _get_dialect(self) -> str:
-        db_url = os.getenv("DATABASE_URL", "")
+        from src.config.database import resolve_runtime_database_url
+
+        db_url = resolve_runtime_database_url(os.getenv("DATABASE_URL", ""))
         if db_url.startswith("postgresql") or db_url.startswith("postgres"):
             return "postgres"
         return "sqlite"
@@ -439,7 +441,9 @@ class TextToSQLSkill:
 
     def _detect_database(self) -> tuple:
         """Detect database type from DATABASE_URL environment variable."""
-        db_url = os.getenv("DATABASE_URL", "").strip()
+        from src.config.database import resolve_runtime_database_url
+
+        db_url = resolve_runtime_database_url(os.getenv("DATABASE_URL", "").strip())
 
         if not db_url:
             return "sqlite", "sqlite:///nrg_research.db"

@@ -3,12 +3,13 @@ DatabaseManager — Task #23 Phase 1
 Dual-database runtime: SQLite for dev, PostgreSQL for prod.
 Reads DATABASE_URL env var to determine driver.
 Provides unified interface: execute(), fetch_all(), fetch_one(), transaction().
-Connection pool: min=5, max=20 for PostgreSQL. Single connection for SQLite.
+Connection pool: min=20, max=40 for PostgreSQL by default. Single connection for SQLite.
 """
 
 from __future__ import annotations
 
 import os
+import socket
 import sqlite3
 import threading
 import time
@@ -16,13 +17,50 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Generator, Literal
+from urllib.parse import urlparse
 
 import logging
 logger = logging.getLogger(__name__)
 
-DEFAULT_POOL_MIN = 5
-DEFAULT_POOL_MAX = 20
+DEFAULT_POOL_MIN = int(os.getenv("DATABASE_POOL_MIN", "20"))
+DEFAULT_POOL_MAX = int(os.getenv("DATABASE_POOL_MAX", "40"))
 DEFAULT_POOL_TIMEOUT = 30.0
+LOCAL_SQLITE_FALLBACK_PATH = Path(__file__).resolve().parents[2] / "data" / "nrg_research.db"
+_LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
+
+
+def _local_postgres_is_unreachable(database_url: str) -> bool:
+    parsed = urlparse(database_url)
+    host = parsed.hostname or ""
+    if host not in _LOOPBACK_HOSTS:
+        return False
+    port = parsed.port or 5432
+    timeout = float(os.getenv("NRG_LOCAL_DB_PROBE_TIMEOUT_SECONDS", "0.05"))
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return False
+    except OSError:
+        return True
+
+
+def resolve_runtime_database_url(database_url: str | None = None) -> str:
+    raw_url = database_url or os.getenv("DATABASE_URL", "") or ""
+    disable_fallback = os.getenv("NRG_DISABLE_LOCAL_SQLITE_FALLBACK", "").lower() in {
+        "1",
+        "true",
+        "yes",
+    }
+    if (
+        raw_url.startswith("postgresql://")
+        and not disable_fallback
+        and LOCAL_SQLITE_FALLBACK_PATH.exists()
+        and _local_postgres_is_unreachable(raw_url)
+    ):
+        logger.warning(
+            "Local PostgreSQL is unreachable; using populated SQLite fallback for this process"
+        )
+        return f"sqlite:///{LOCAL_SQLITE_FALLBACK_PATH}"
+    return raw_url
 
 
 def sqlite_split_part(value: Any, delimiter: Any, field_index: Any) -> str:
@@ -76,7 +114,7 @@ class DatabaseManager:
     _lock = threading.Lock()
 
     def __init__(self, database_url: str | None = None):
-        self.database_url = database_url or os.getenv("DATABASE_URL", "") or ""
+        self.database_url = resolve_runtime_database_url(database_url)
         self.driver = self._detect_driver()
         self._pool: Any = None
         self._pool_lock = threading.Lock()
@@ -132,6 +170,9 @@ class DatabaseManager:
             )
         except Exception as e:
             logger.error(f"Failed to create PostgreSQL pool: {e}")
+            if LOCAL_SQLITE_FALLBACK_PATH.exists():
+                self.database_url = f"sqlite:///{LOCAL_SQLITE_FALLBACK_PATH}"
+                self._sqlite_path = self._resolve_sqlite_path()
             self.driver = "sqlite"
 
     @contextmanager

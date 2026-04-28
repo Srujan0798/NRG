@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import uuid
 from dataclasses import dataclass
@@ -12,6 +13,9 @@ from typing import Any, Optional
 import jwt
 
 from src.auth.refresh_store import RefreshStore
+
+logger = logging.getLogger(__name__)
+MIN_JWT_SECRET_BYTES = 32
 
 
 class AuthError(Exception):
@@ -45,22 +49,35 @@ def _first_env(names: tuple[str, ...], default: str) -> str:
     return default
 
 
-LEGACY_PASSWORD_ENV_ALIASES = {
-    "RESEARCHER_PASSWORD": ("DEMO_RESEARCHER_PASSWORD",),
-    "GOV_PASSWORD": ("DEMO_GOV_PASSWORD", "DEMO_GOVERNMENT_PASSWORD"),
-    "INDUSTRY_PASSWORD": ("DEMO_INDUSTRY_PASSWORD",),
-}
-
-
 def _require_env(name: str) -> str:
     value = os.getenv(name)
-    for legacy_name in LEGACY_PASSWORD_ENV_ALIASES.get(name, ()):
-        if value:
-            break
-        value = os.getenv(legacy_name)
     if not value:
         raise RuntimeError(f"Production requires {name} to be set in environment")
     return value
+
+
+def jwt_secret_byte_length(secret: str) -> int:
+    """Return the byte length that matters for HMAC key strength."""
+    return len(secret.encode("utf-8"))
+
+
+def validate_jwt_secret(secret: str, min_bytes: int = MIN_JWT_SECRET_BYTES) -> bool:
+    """Return True when a symmetric JWT secret meets the production floor."""
+    return jwt_secret_byte_length(secret) >= min_bytes
+
+
+def _raise_short_jwt_secret(secret: str, source: str) -> None:
+    length = jwt_secret_byte_length(secret)
+    logger.critical(
+        "Refusing to start: %s is %d bytes; minimum is %d bytes",
+        source,
+        length,
+        MIN_JWT_SECRET_BYTES,
+    )
+    raise AuthError(
+        f"{source} must be at least {MIN_JWT_SECRET_BYTES} bytes "
+        f"for HS256/HS384/HS512 signing; got {length} bytes"
+    )
 
 
 def build_default_users() -> dict[str, dict[str, Any]]:
@@ -109,9 +126,12 @@ class JWTHandler:
         users: dict[str, dict[str, Any]] | None = None,
         private_key_path: str | None = None,
         public_key_path: str | None = None,
+        enforce_secret_min_length: bool | None = None,
     ):
         # Determine algorithm (prefer RS256 for production)
         self.algorithm = algorithm or os.getenv("JWT_ALGORITHM", "RS256")
+        self._secret_source = "asymmetric"
+        self._secret_length_enforced = False
         
         # Load RSA keys if using asymmetric algorithm
         self.private_key: Optional[str] = None
@@ -135,9 +155,14 @@ class JWTHandler:
                 raise AuthError("RSA key files could not be loaded")
         else:
             # Fallback to symmetric (HS256)
-            self.secret_key = secret_key or os.getenv("JWT_SECRET")
+            env_secret = os.getenv("JWT_SECRET")
+            self.secret_key = secret_key if secret_key is not None else env_secret
+            self._secret_source = "explicit" if secret_key is not None else "JWT_SECRET"
             if not self.secret_key:
                 raise AuthError("JWT_SECRET environment variable must be set")
+            self._secret_length_enforced = enforce_secret_min_length if enforce_secret_min_length is not None else False
+            if self._secret_length_enforced and not validate_jwt_secret(self.secret_key):
+                _raise_short_jwt_secret(self.secret_key, self._secret_source)
         
         self.access_token_ttl_seconds = access_token_ttl_seconds
         self.refresh_token_ttl_seconds = refresh_token_ttl_seconds
@@ -148,6 +173,31 @@ class JWTHandler:
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids: set[str] = {self._signing_key_id}
         self._jti_ip_registry: dict[str, tuple[str, str, float]] = {}
+
+    def jwt_secret_health(self) -> dict[str, Any]:
+        """Return non-sensitive JWT signing-key health for readiness endpoints."""
+        if self.algorithm not in {"HS256", "HS384", "HS512"}:
+            return {
+                "status": "not_required",
+                "algorithm": self.algorithm,
+                "min_bytes": MIN_JWT_SECRET_BYTES,
+                "message": "Asymmetric JWT signing is active; JWT_SECRET is not used.",
+            }
+
+        length = jwt_secret_byte_length(self.secret_key or "")
+        valid = length >= MIN_JWT_SECRET_BYTES
+        status = "healthy" if valid else "unhealthy"
+        if not valid and not self._secret_length_enforced and self._secret_source == "explicit":
+            status = "test_override"
+        return {
+            "status": status,
+            "algorithm": self.algorithm,
+            "secret_source": self._secret_source,
+            "secret_bytes": length,
+            "min_bytes": MIN_JWT_SECRET_BYTES,
+            "valid": valid,
+            "enforced": self._secret_length_enforced,
+        }
     
     def _load_rsa_keys(self, private_key_path: str, public_key_path: str) -> None:
         """Load RSA keypair from PEM files."""

@@ -66,6 +66,15 @@ Every claim must meet this table. No exceptions.
 | "Red team passed" | `evidence/<date>/red_team_results.md` — 30 attacks, BLOCKED/ALLOWED per row |
 | "GAP fixed" | Before code → after code diff + test that fails before fix + passes after |
 
+**Audit-chain proof is direct verification first.** External audit evidence must include:
+
+```bash
+python3 -c "from src.audit import verify_chain; print(verify_chain())"
+python3 -c "from src.audit import get_chain_health; print(get_chain_health(auto_repair=False)['lineage_break'])"
+```
+
+`/health` may confirm monitoring status, but it is not sufficient by itself.
+
 ---
 
 ### 2.1 Evidence Folder Structure (MANDATORY)

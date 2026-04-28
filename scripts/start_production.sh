@@ -18,7 +18,7 @@ python3 src/data/database.py
 
 # Start API server
 echo "Starting API server..."
-nohup uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers 2 > api.log 2>&1 &
+nohup uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers "${UVICORN_WORKERS:-4}" > api.log 2>&1 &
 
 # Wait for API to start
 sleep 3

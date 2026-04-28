@@ -10,7 +10,7 @@
 |------|-------|
 | Quality Bar | **5/6** — C4 (load test P99 <500ms) pending live stack |
 | Full test suite | ✅ 1585+ passed, 0 failed |
-| Audit chain | ✅ valid, 296 events (lineage break documented in ADR-006) |
+| Audit chain | ✅ valid, 8382 events (traceable genesis reseed documented in ADR-006) |
 | Last commit | `d786fad` — evidence Apr-28 + test cleanup |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
@@ -20,8 +20,8 @@
 
 | ID | Task | Assigned? | Blocker |
 |----|------|-----------|---------|
-| K-5A | Forbidden vocab cleanup — `forbidden_vocab_check.sh --all` exits 0 | TBD | None |
-| K-3 | Create PostgreSQL `trl_stages` VIEW + migration | TBD | None |
+| K-5A | Forbidden vocab cleanup — `forbidden_vocab_check.sh --all` exits 0 | Done locally | None |
+| K-3 | Create PostgreSQL `trl_stages` VIEW + migration | Done locally | None |
 | K-1 | Qdrant zero-vector must return CRITICAL in /health | TBD | None |
 | K-4 | Cold query latency <500ms P99 (code optimizations) | TBD | Partial — measurement needs stack |
 | K-2 | Load test re-run (100 concurrent), fresh Locust evidence | TBD | Needs Docker stack |

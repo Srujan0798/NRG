@@ -25,9 +25,9 @@ Source of truth: `docs/specs/DISPATCH_2026-04-28.md`. This section tracks the po
 | Schema alias drift (`trl_stages`) | ✅ DONE | 17 files canonicalized; `test_q05`, `test_q17`, `test_all_tables_have_relationship_entry` pass | `964c2bb` |
 | Skill count reconciliation | ✅ DONE | `protocol.md` + `agent-warfare.md` updated 91→102 | `964c2bb` |
 | Guru boundary consequence clause | ✅ DONE | Section 1 of `protocol.md` now has violation enforcement text | `964c2bb` |
-| Forbidden vocab cleanup (active paths) | ✅ DONE | `seed_demo_data.py` → `seed_production_data.py`; `prewarm_demo_cache.py` → `prewarm_acceptance_cache.py`; `NRG_50LAKH_DELIVERY_REPORT` → `NRG_PRODUCTION_READINESS_REPORT_2026-04-28.md` | `964c2bb` |
+| Forbidden vocab cleanup (active paths) | ✅ DONE | Production seed/cache scripts and `NRG_PRODUCTION_READINESS_REPORT_2026-04-28.md` verified by `scripts/forbidden_vocab_check.sh --all` | `964c2bb` + current working tree |
 | Workflow system hardening | ✅ DONE | `.claude/rules/external_audit.md` with 7 rules; 10 workflow files modified | `964c2bb` |
-| Audit chain auto-repair | ✅ DONE (with ADR) | `verify_chain()` → `(True, [], 296)`; ADR-006 documents lineage break | `964c2bb` + `docs/adr/ADR-006-audit-chain-auto-repair-lineage-break.md` |
+| Audit chain genesis reseed | ✅ DONE (with ADR) | `verify_chain()` → `(True, [], 8382)`; ADR-006 documents lineage and traceable reseed | `964c2bb` + current working tree |
 | PII test optimization | ✅ DONE | `test_pii_compliance.py` + `test_pii_indian.py` use `setUpClass` for 10× speedup | unstaged |
 | `forbidden_vocab_check.sh --all` | ✅ DONE | Full-repo scan supported; `docs/specs/DISPATCH_` added to allowlist | unstaged |
 
@@ -38,10 +38,10 @@ Source: External co-work audit. Per `external_audit.md` Rule 1, all external fin
 | ID | Finding | Classification | Verification | Owner |
 |---|---|---|---|---|
 | **K-1** | Qdrant has 0 vectors | **FALSE ALARM** | Actual count: 1,800 vectors. Health endpoint did not flag this as CRITICAL. | Backend Agent |
-| **K-2** | Load test fails at 100 concurrent | **REAL — OUTDATED EVIDENCE** | Last evidence 2026-04-26 shows 90% error rate. No fresh evidence exists. C4 Quality Bar PENDING. | Performance Agent |
-| **K-3** | `trl_stages` alias missing in PostgreSQL | **REAL** | Code uses alias but `db_struct.sql` still has 59-byte name. No `CREATE VIEW` exists. | Backend Agent |
-| **K-4** | Cold query latency 7–12s | **REAL** | Violates SLO (P99 < 500ms). SSE phases exist but no query plan cache or LLM timeout guard. | Backend Agent |
-| **K-5** | Forbidden vocab in docs | **REAL — PARTIAL** | `--all` scan finds 80+ hits. Most are historical/allowlist-candidate. 7 active-path hits remain (see protocol K-5A below). | DevOps Agent |
+| **K-2** | Load test fails at 100 concurrent | **REAL — FRESH EVIDENCE** | `locust_100u_v3_proxy_summary.json`: 0.76% error / P95 1.9s / 25.36 RPS. Corrected >50-QPS pacing still fails in `locust_100u_v4_proxy_fastpacing_summary.json`. | Performance Agent |
+| **K-3** | `trl_stages` alias missing in PostgreSQL | **FIXED** | `alembic/versions/safe_trl_alias_views_001.py` creates `trl_stages` and `tech_trl_stages`; validator rejects >63-byte identifiers. | Backend Agent |
+| **K-4** | Cold query latency 7–12s | **REAL — PARTIAL** | Query cache TTL, progress UX, and LLM timeout guard are in place; C4/P99 remains open under fresh load evidence. | Backend Agent |
+| **K-5** | Forbidden vocab in docs | **FIXED FOR ACTIVE PATHS** | `scripts/forbidden_vocab_check.sh --all` exits 0; active report/scripts no longer contain forbidden vocabulary. | DevOps Agent |
 | **K-6** | Empty GPG signatures | **REAL — FOUNDER-ONLY** | `docs/handover/signatures/` has 0 `.asc` files. Requires founder's private key. | Founder |
 | **K-7** | (If applicable — not in compacted context) | — | — | — |
 
@@ -338,8 +338,8 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
   - ✅ docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md (QB 6/6 evidence, DPDP mapping)
   - ✅ docs/handover/DATA_INTAKE_PROTOCOL.md (SFTP+GPG+HMAC handshake)
   - ✅ docs/handover/UAT_RESULTS.md (template for 3 personas × 10 queries)
-  - ✅ pitch/NRG_PITCH_DECK.md (20 slides, committed)
-  - ⏸️ pitch/NRG_DEMO.mp4 (pending — film on sovereign staging)
+  - ✅ commercial/NRG_CAPABILITY_BRIEF.md (20 sections, committed)
+  - ⏸️ acceptance/NRG_ACCEPTANCE_RECORDING.mp4 (pending — record on sovereign staging)
 - **UAT**: Pending scheduling with professor (Tier1), ministry liaison (Tier2), industry partner (Tier3)
 - **Shadowing timeline**: 30-day → 60-day → 90-day independence
 

@@ -1,6 +1,6 @@
 # External AI Audit
 
-> **Trigger:** Before major demos, quarterly, or when internal audits feel "too easy."  
+> **Trigger:** Before major reviews, quarterly, or when internal audits feel "too easy."  
 > **Purpose:** Get independent AI auditors to find gaps your own agents missed.  
 > **Source:** `.claude/rules/audit/protocol.md` Section 13
 
@@ -63,7 +63,7 @@ Create a master gap list:
 # Master Gap List — External Audit <date>
 
 ## All Gaps Found (Union of N AI Audits)
-| Gap | Found By | Location | Blocks Demo | Time | Status |
+| Gap | Found By | Location | Blocks Acceptance | Time | Status |
 |-----|----------|----------|-------------|------|--------|
 |     |          |          |             |      |        |
 
@@ -78,9 +78,9 @@ Create a master gap list:
 ...
 ```
 
-### Step 6: Sort by "Blocks Demo"
+### Step 6: Sort by "Blocks Acceptance"
 
-All GAP entries marked "Blocks Demo: YES" go to the top of the sprint backlog.
+All GAP entries marked "Blocks Acceptance: YES" go to the top of the sprint backlog.
 
 ### Step 7: Fix and Re-Run
 
@@ -102,14 +102,14 @@ Compare against your own UI/UX audit in `.claude/rules/ux_audit/protocol.md`. It
 ### Deliverable 4 (Top 10 Questions)
 Run these against your system. If any expose a real weakness — fix before launch.
 
-### Deliverable 5 (Killer Demo Queries)
+### Deliverable 5 (Killer Acceptance Queries)
 Add these to your launch script in `.claude/rules/ux_audit/protocol.md` Section 14. Pre-run them before every launch review.
 
 ### Deliverable 6 (Risk Map)
 Merge with your own risk map in `.claude/rules/ux_audit/protocol.md` Section 13.
 
 ### Deliverable 7 (Self-Fix Protocol)
-This IS your sprint backlog. Sort by "Blocks Demo: YES" first. Assign to agents.
+This IS your sprint backlog. Sort by "Blocks Acceptance: YES" first. Assign to agents.
 
 ### Deliverable 8 (Final Verdict)
 If overall readiness is < 7/10 — do not launch. Fix first. If ≥ 7/10 but production-ready is NO — fix the 3 blockers and re-audit.

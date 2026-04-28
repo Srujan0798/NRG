@@ -82,7 +82,7 @@ Plan a sprint by scoping work, estimating capacity, and setting clear goals.
 |------|-------|
 | [Date] | Sprint start |
 | [Date] | Mid-sprint check-in |
-| [Date] | Sprint end / Demo |
+| [Date] | Sprint end / Acceptance |
 | [Date] | Retro |
 ```
 

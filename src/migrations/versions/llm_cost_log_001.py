@@ -40,12 +40,15 @@ def upgrade() -> None:
     op.create_index("idx_llm_cost_log_query_id", "llm_cost_log", ["query_id"], unique=False)
     op.create_index("idx_llm_cost_log_provider", "llm_cost_log", ["provider"], unique=False)
     op.create_index("idx_llm_cost_log_persona", "llm_cost_log", ["persona"], unique=False)
-    op.create_index(
-        "idx_llm_cost_log_month",
-        "llm_cost_log",
-        [sa.text("date_trunc('month', timestamp)")],
-        unique=False,
-    )
+    if op.get_context().dialect.name == "postgresql":
+        op.create_index(
+            "idx_llm_cost_log_month",
+            "llm_cost_log",
+            [sa.text("date_trunc('month', timestamp)")],
+            unique=False,
+        )
+    else:
+        op.create_index("idx_llm_cost_log_timestamp", "llm_cost_log", ["timestamp"], unique=False)
 
 
 def downgrade() -> None:

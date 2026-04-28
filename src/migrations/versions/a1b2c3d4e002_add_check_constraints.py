@@ -16,6 +16,9 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    if op.get_context().dialect.name == 'sqlite':
+        return
+
     op.create_check_constraint(
         'ck_publications_year',
         'publications',
@@ -54,6 +57,9 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    if op.get_context().dialect.name == 'sqlite':
+        return
+
     op.drop_constraint('ck_researchers_years_experience', 'researchers', type_='check')
     op.drop_constraint('ck_researchers_h_index', 'researchers', type_='check')
     op.drop_constraint('ck_funding_records_positive_amount', 'funding_records', type_='check')

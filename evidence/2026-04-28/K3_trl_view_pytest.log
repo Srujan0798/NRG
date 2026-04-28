@@ -58,4 +58,4 @@ tests/data/test_schema_parity.py::TestSchemaParity::test_primary_keys_intact [3
 tests/data/test_schema_parity.py::TestSchemaParity::test_no_orphan_foreign_keys [32mPASSED[0m[32m [ 97%][0m
 tests/data/test_schema_parity.py::TestSchemaParity::test_total_credit_score_is_text_type [32mPASSED[0m[32m [100%][0m
 
-[32m============================= [32m[1m45 passed[0m[32m in 30.86s[0m[32m ==============================[0m
+[32m============================= [32m[1m45 passed[0m[32m in 54.74s[0m[32m ==============================[0m

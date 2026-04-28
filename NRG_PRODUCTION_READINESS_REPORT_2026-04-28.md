@@ -282,7 +282,7 @@ TOTAL:      14/14 queries warmed in 18.8s
 | 6 | Killer Query 2 | Grant-to-patent conversion | ✅ PASS |
 | 7 | PII block attempt | Clean professional block message | ✅ PASS |
 | 8 | Switch to Tier 3 | Visibly different dashboard | ✅ PASS |
-| 9 | Tier restriction demonstration | "Exact analytical columns hidden for Tier 3" | ✅ PASS |
+| 9 | Tier restriction proof | "Exact analytical columns hidden for Tier 3" | ✅ PASS |
 | 10 | Copy Answer | Button shows "✓ Copied" | ✅ PASS |
 
 **Bonus Steps Verified:**

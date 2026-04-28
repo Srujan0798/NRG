@@ -38,6 +38,7 @@ class SQLValidator:
     ALLOWED_OPERATIONS = {"SELECT"}
     MAX_ROWS = 1000
     MAX_DEPTH = 2
+    MAX_IDENTIFIER_BYTES = 63
     
     def __init__(self, column_allowlist: Optional[dict] = None):
         self.column_allowlist = column_allowlist or {}
@@ -61,14 +62,17 @@ class SQLValidator:
             
             # 2. No multi-statement
             self._validate_single_statement(sql)
+
+            # 3. PostgreSQL identifier byte limit
+            self._validate_identifier_lengths(statement)
             
-            # 3. No queries on disallowed tables
+            # 4. No queries on disallowed tables
             self._validate_tables(statement)
             
-            # 4. Enforce LIMIT
+            # 5. Enforce LIMIT
             self._validate_limit(statement)
             
-            # 5. Column allowlist
+            # 6. Column allowlist
             self._validate_columns(statement, user_tier)
             
             self.validation_time_ms = int((time.monotonic() - start) * 1000)
@@ -87,6 +91,32 @@ class SQLValidator:
         statements = sqlglot.parse(sql)
         if len(statements) > 1:
             raise SQLValidationError("Multiple statements not allowed")
+
+    def _validate_identifier_lengths(self, statement) -> None:
+        """Reject identifiers PostgreSQL would truncate at 63 bytes."""
+        names: set[str] = set()
+        for identifier in statement.find_all(exp.Identifier):
+            value = identifier.name or identifier.this
+            if value:
+                names.add(str(value))
+        for table in statement.find_all(exp.Table):
+            if table.name:
+                names.add(str(table.name))
+            if table.alias:
+                names.add(str(table.alias))
+        for column in statement.find_all(exp.Column):
+            if column.name:
+                names.add(str(column.name))
+            if column.table:
+                names.add(str(column.table))
+
+        for name in names:
+            byte_len = len(name.encode("utf-8"))
+            if byte_len > self.MAX_IDENTIFIER_BYTES:
+                raise SQLValidationError(
+                    f"identifier exceeds PostgreSQL limit: {name} is "
+                    f"{byte_len} bytes > {self.MAX_IDENTIFIER_BYTES}"
+                )
     
     def _validate_tables(self, statement) -> None:
         """No queries against disallowed tables."""

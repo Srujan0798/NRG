@@ -9,6 +9,7 @@ matching the current implementation in synthesizer.py which uses the mesh
 for cloud synthesis and local_llm_client for fallback.
 """
 import os
+import time
 import pytest
 from unittest.mock import patch
 
@@ -31,6 +32,22 @@ class _FailingCloudMesh:
 
     def generate(self, system_prompt: str, user_prompt: str, conversation_history: list = None):
         raise RuntimeError("cloud timeout")
+
+
+class _SlowCloudMesh:
+    """Cloud mesh that exceeds the synthesis latency budget."""
+    provider = "test-cloud"
+    model = "slow-mesh"
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list = None,
+        complexity: str = None,
+    ):
+        time.sleep(0.05)
+        return "Cloud LLM arrived too late."
 
 
 class _FakeLocalClient:
@@ -68,6 +85,7 @@ def test_cloud_tier_succeeds(sample_sql_results, sample_chunks):
                 chunks=sample_chunks,
                 user_tier=1,
                 context_summary="",
+                routing_decision="hybrid",
             )
     assert "Cloud LLM says" in response
     assert provenance["synth"] == "cloud_llm"
@@ -76,16 +94,41 @@ def test_cloud_tier_succeeds(sample_sql_results, sample_chunks):
 
 def test_cloud_falls_back_to_local(sample_sql_results, sample_chunks):
     """When cloud fails but local works, local response is used."""
-    with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
-        with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FakeLocalClient()):
-            response, provenance = _synthesize(
-                query="How many researchers?",
-                sources=["Structured data: 1 records"],
-                sql_results=sample_sql_results,
-                chunks=sample_chunks,
-                user_tier=1,
-                context_summary="",
-            )
+    with patch.dict(os.environ, {"CLOUD_SYNTHESIS_ALLOWED": "true"}):
+        with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
+            with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FakeLocalClient()):
+                response, provenance = _synthesize(
+                    query="How many researchers?",
+                    sources=["Structured data: 1 records"],
+                    sql_results=sample_sql_results,
+                    chunks=sample_chunks,
+                    user_tier=1,
+                    context_summary="",
+                    routing_decision="hybrid",
+                )
+    assert "Local SLM says" in response
+    assert provenance["synth"] == "local_llm"
+    assert provenance["cloud_synthesis_used"] is False
+
+
+def test_cloud_synthesis_timeout_falls_back_to_local(sample_sql_results, sample_chunks):
+    """Cloud synthesis must not hold the cold path beyond its timeout budget."""
+    with patch.dict(
+        os.environ,
+        {"CLOUD_SYNTHESIS_ALLOWED": "true", "SYNTHESIS_LLM_TIMEOUT_SECONDS": "0.01"},
+    ):
+        with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_SlowCloudMesh()):
+            with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FakeLocalClient()):
+                response, provenance = _synthesize(
+                    query="How many researchers?",
+                    sources=["Structured data: 1 records"],
+                    sql_results=sample_sql_results,
+                    chunks=sample_chunks,
+                    user_tier=1,
+                    context_summary="",
+                    routing_decision="hybrid",
+                )
+
     assert "Local SLM says" in response
     assert provenance["synth"] == "local_llm"
     assert provenance["cloud_synthesis_used"] is False
@@ -93,16 +136,18 @@ def test_cloud_falls_back_to_local(sample_sql_results, sample_chunks):
 
 def test_both_fail_uses_rule_based(sample_sql_results, sample_chunks):
     """When both cloud and local fail, rule-based fallback activates."""
-    with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
-        with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FailingLocalClient()):
-            response, provenance = _synthesize(
-                query="How many researchers?",
-                sources=["Structured data: 1 records"],
-                sql_results=sample_sql_results,
-                chunks=sample_chunks,
-                user_tier=1,
-                context_summary="",
-            )
+    with patch.dict(os.environ, {"CLOUD_SYNTHESIS_ALLOWED": "true"}):
+        with patch("src.orchestration.nodes.synthesizer.get_llm_mesh", return_value=_FailingCloudMesh()):
+            with patch("src.orchestration.nodes.synthesizer.get_local_llm_client", return_value=_FailingLocalClient()):
+                response, provenance = _synthesize(
+                    query="How many researchers?",
+                    sources=["Structured data: 1 records"],
+                    sql_results=sample_sql_results,
+                    chunks=sample_chunks,
+                    user_tier=1,
+                    context_summary="",
+                    routing_decision="hybrid",
+                )
     assert "NATIONAL RESEARCH GRAPH" in response or "Query:" in response
     assert provenance["synth"] == "rule_based"
     assert provenance["cloud_synthesis_used"] is False

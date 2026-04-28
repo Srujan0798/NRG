@@ -15,8 +15,12 @@ data:
   LOG_LEVEL: "INFO"
   LOG_FORMAT: "json"
   API_WORKERS: "4"
+  TRUST_PROXY_HEADERS: "true"
+  UVICORN_WORKERS: "4"
   UVICORN_TIMEOUT_KEEP_ALIVE: "5"
   UVICORN_GRACEFUL_TIMEOUT: "30"
+  QUERY_RESULT_CACHE_TTL_SECONDS: "300"
+  SYNTHESIS_LLM_TIMEOUT_SECONDS: "5"
   # Feature flags
   FEATURE_KNOWLEDGE_GRAPH: "{{ .Values.features.knowledgeGraph | default false }}"
   FEATURE_CONSENT_UI: "{{ .Values.features.consentUi | default true }}"
@@ -34,9 +38,12 @@ data:
   DB_HOST: "{{ .Values.postgresql.host }}"
   DB_PORT: "5432"
   DB_NAME: "{{ .Values.postgresql.database }}"
+  DATABASE_POOL_MIN: "20"
+  DATABASE_POOL_MAX: "40"
   # Qdrant
   QDRANT_HOST: "{{ .Values.qdrant.host }}"
   QDRANT_PORT: "{{ .Values.qdrant.port }}"
   # Redis
   REDIS_HOST: "{{ .Values.redis.host }}"
   REDIS_PORT: "6379"
+  AUDIT_AUTO_REPAIR_LINE1: "false"

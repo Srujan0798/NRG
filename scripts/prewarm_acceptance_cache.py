@@ -9,21 +9,20 @@ Usage:
     python scripts/prewarm_acceptance_cache.py --tier industry
     python scripts/prewarm_acceptance_cache.py --all
 
-The API uses an in-memory TTL cache (30s default).
+The API uses an in-memory TTL cache (300s default for query responses).
 Warming ensures <1s response times for repeated queries.
 """
 
 import argparse
-import asyncio
 import json
 import time
 import urllib.request
-from typing import List, Tuple
+from typing import Tuple
 
 API_BASE = "http://localhost:8000"
 
 # Working acceptance queries by tier — these trigger the fast-path planner
-DEMO_QUERIES = {
+ACCEPTANCE_QUERIES = {
     "researcher": [
         "Which IIT has the highest total innovation credits in FY 2022-23",
         "Top 5 funding agencies by total grant amount",
@@ -91,7 +90,7 @@ def prewarm_tier(tier: str) -> None:
     print(f"{'='*60}")
 
     token = get_token(username, password)
-    queries = DEMO_QUERIES.get(tier, [])
+    queries = ACCEPTANCE_QUERIES.get(tier, [])
 
     total_time = 0.0
     success_count = 0

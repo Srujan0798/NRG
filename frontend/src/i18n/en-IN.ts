@@ -121,7 +121,7 @@ export const dashboardCopy = {
     research: 'Checking research evidence, citations, and access rules.',
     policy: 'Checking policy aggregates, state data, and access rules.',
     industry: 'Checking partnership signals, anonymized data, and access rules.',
-    slow: 'Still working. NRG is validating aggregate evidence before showing results.',
+    slow: 'Still working across 58 tables. NRG is validating aggregate evidence before showing results.',
   },
 }
 

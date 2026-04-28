@@ -251,7 +251,11 @@ class TestAuditChainIntegrity:
         assert "last_hash" in health
         assert "last_event" in health
 
-    def test_chain_health_repairs_line1_hash_mismatch_with_traceable_genesis(self, fresh_audit_log):
+    def test_chain_health_repairs_line1_hash_mismatch_with_traceable_genesis(
+        self,
+        fresh_audit_log,
+        caplog,
+    ):
         """Line-1 corruption is archived, reseeded, and replayed without event loss."""
         log = fresh_audit_log
 
@@ -274,6 +278,7 @@ class TestAuditChainIntegrity:
         health = log.get_chain_health(auto_repair=True)
 
         assert health["chain_valid"] is True
+        assert "Audit chain Line 1 hash mismatch auto-repair triggered" in caplog.text
         assert health["repair"]["action"] == "reseeded_with_genesis"
         assert health["valid_events"] == 2
 
@@ -292,6 +297,36 @@ class TestAuditChainIntegrity:
         assert valid_after is True
         assert errors_after == []
         assert count_after == 2
+        assert health["lineage_break"]["lineage_intact"] is True
+        assert health["lineage_break"]["active_chain_traceable"] is True
+        assert health["lineage_break"]["repair_required"] is False
+
+    def test_chain_health_default_does_not_silently_repair_line1_mismatch(
+        self,
+        fresh_audit_log,
+        monkeypatch,
+    ):
+        """Default health checks must report line-1 corruption without rewriting evidence."""
+        monkeypatch.delenv("AUDIT_AUTO_REPAIR_LINE1", raising=False)
+        log = fresh_audit_log
+
+        log.append(AuditEvent(event_type="query", user_id="u1", query="first preserved"))
+        log.append(AuditEvent(event_type="query", user_id="u2", query="second preserved"))
+
+        chain_file = Path(log.chain_file)
+        original_lines = chain_file.read_text().splitlines()
+        chain_file.write_text(original_lines[1] + "\n")
+
+        health = log.get_chain_health()
+
+        assert health["chain_valid"] is False
+        assert health["errors"] == ["Line 1: hash mismatch"]
+        assert health["repair"] is None
+        assert health["lineage_break"]["repair_required"] is True
+        assert health["lineage_break"]["lineage_intact"] is False
+        assert health["lineage_break"]["active_chain_traceable"] is False
+        assert chain_file.read_text().splitlines() == [original_lines[1]]
+        assert not list(Path(log.storage_path).glob("chain_line1_hash_mismatch_backup_*.jsonl"))
 
     def test_merkle_root_persistence(self, fresh_audit_log):
         """Test that daily Merkle roots are persisted."""

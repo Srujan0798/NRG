@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Seed relationship tables for nrg_research.db (SQLite MVP)."""
+"""Seed relationship tables for nrg_research.db (SQLite v1.0)."""
 
 import random
 import sys

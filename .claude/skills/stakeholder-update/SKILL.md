@@ -362,20 +362,20 @@ For each: what was it, why was it rejected?
 - Follow up on previous retro action items. If you never follow up, people stop engaging.
 - Vary the retro format occasionally to prevent staleness.
 
-### Stakeholder Review / Demo
+### Stakeholder Review / Acceptance
 
 **Purpose**: Show progress, gather feedback, build alignment.
 **Format**:
 
 1. Context: remind stakeholders of the goal and what they saw last time
-2. Demo: show what was built. Use real product, not slides.
+2. Acceptance review: show what was built. Use real product, not slides.
 3. Metrics: share any early data or feedback
 4. Feedback: structured time for questions and input
 5. Next steps: what is coming next and when the next review will be
 
 **Facilitation tips**:
 
-- Demo the real product whenever possible. Slides are not demos.
+- Show the real product whenever possible. Slides are not reviews.
 - Frame feedback collection: "What feedback do you have on X?" is better than "Any thoughts?"
 - Capture feedback visibly and commit to addressing it (or explaining why not)
 - Set expectations about what kind of feedback is actionable at this stage

@@ -14,7 +14,7 @@ On 2026-04-28, the audit chain verification reported `Line 1: hash mismatch`. Th
 3. Rehashed all historical events against this new genesis
 4. Replaced the active chain file with the reseeded version
 
-After repair, `verify_chain()` returned `(True, [], 296)`. However, the chain that existed before the repair had **350,748+ events**. The reseeded chain has **296 events**.
+After the explicit operator reseed on 2026-04-28, `verify_chain()` returned `(True, [], 3335)`. The chain that existed immediately before the reseed had **3334 events**. The reseeded chain had **3335 events** at reseed time: one traceable `chain_genesis` event plus the 3334 preserved events. Later API and load-test evidence added more events; the latest direct verification recorded in `ADR-006-audit-chain-line1-mismatch.md` is `(True, [], 8382)`.
 
 ## Root Cause Analysis
 
@@ -24,8 +24,8 @@ After repair, `verify_chain()` returned `(True, [], 296)`. However, the chain th
 # src/audit/__init__.py::get_chain_health()
 def get_chain_health(self, auto_repair: bool | None = None) -> dict:
     if auto_repair is None:
-        auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "1").lower() not in {
-            "0", "false", "no", "off",
+        auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "0").lower() in {
+            "1", "true", "yes", "on",
         }
     valid, errors, valid_count = self.verify_chain()
     if auto_repair and not valid and errors and errors[0].startswith("Line 1: hash mismatch"):
@@ -52,7 +52,7 @@ The Line 1 hash mismatch indicates the genesis event's stored hash does not matc
 | Event N hash | `H_N = HMAC(K, H_{N-1} \|\| data_N)` | `H'_N = HMAC(K, H'_{N-1} \|\| data_N)` |
 | Hash chain continuity | Broken at line 1 | Continuous from new genesis |
 | Tamper evidence | **Destroyed** — original lineage lost | Fresh lineage, no historical anchor |
-| Event count | 350,748+ | 296 |
+| Event count | 3334 | 3335 |
 
 **Critical:** An attacker who tampered with the chain could trigger this repair, and the new chain would appear valid. The repair destroys evidence of the original compromise.
 
@@ -89,10 +89,10 @@ The Line 1 hash mismatch indicates the genesis event's stored hash does not matc
 ## Action Items
 
 - [x] Document this ADR
-- [ ] Add `AUDIT_AUTO_REPAIR_LINE1=false` to `.env.example` and production configs
-- [ ] Add `lineage_break` metadata to `get_chain_health()` return value
+- [x] Add `AUDIT_AUTO_REPAIR_LINE1=false` to `.env.example` and production configs
+- [x] Add `lineage_break` metadata to `get_chain_health()` return value
 - [ ] Store `genesis_hash` in a separate, WORM-protected file at chain creation time
-- [ ] Update `/health` endpoint to report CRITICAL when `lineage_intact=false`
+- [x] Update `/health` endpoint to report CRITICAL when repair is required
 - [ ] Update `audit_rebuild.py` with `--preserve-lineage` flag
 - [ ] Back up all `chain_line1_hash_mismatch_backup_*` files to offline storage
 
@@ -102,9 +102,9 @@ The Line 1 hash mismatch indicates the genesis event's stored hash does not matc
 # Check current chain state
 python -c "from src.audit import get_chain_health; print(get_chain_health(auto_repair=False))"
 
-# Expected before fix:
-# {"valid": true, "event_count": 296, "errors": [], "lineage_intact": false}
-# (lineage_intact field does not yet exist — add it per Action Item 2)
+# Expected after fix:
+# {"chain_valid": true, "chain_length": 3335 or greater, "errors": [],
+#  "lineage_break": {"lineage_intact": true, "active_chain_traceable": true, ...}}
 
 # Check for reseed backups
 ls -la .audit/chain_line1_hash_mismatch_backup_*.jsonl

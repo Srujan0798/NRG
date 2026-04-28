@@ -34,7 +34,7 @@ NRG is a sovereign AI platform providing research intelligence for the Indian ac
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 2.2 Demo Scenarios
+### 2.2 Acceptance Scenarios
 
 **Scenario 1: Researcher Query**
 ```

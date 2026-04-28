@@ -12,7 +12,7 @@ def client():
 
 @pytest.fixture(scope="module")
 def auth_headers():
-    # Use the demo researcher login
+    # Use the researcher login
     r = TestClient(app).post("/login", json={"username": "researcher_user", "password": "researcher-pass"})
     assert r.status_code == 200, f"Login failed: {r.text}"
     token = r.json()["access_token"]

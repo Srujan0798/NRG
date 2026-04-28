@@ -141,6 +141,51 @@ class TestRetriever:
         assert info["status"] == "not_found"
 
     @patch("src.skills.rag.retriever.QdrantClient")
+    def test_retriever_warns_on_zero_vectors(self, mock_qc, caplog):
+        from src.skills.rag.retriever import Retriever
+
+        mock_client = MagicMock()
+        mock_qc.return_value = mock_client
+        mock_info = MagicMock()
+        mock_info.points_count = 0
+        mock_info.indexed_vectors_count = 0
+        mock_info.config.params.vectors.size = 1024
+        mock_info.config.hnsw_config = None
+        mock_client.get_collection.return_value = mock_info
+
+        retriever = Retriever()
+        result = retriever.health_check()
+
+        assert result["status"] == "critical"
+        assert result["vectors_total"] == 0
+        assert result["vectors_indexed"] == 0
+        assert "CRITICAL: Qdrant collection empty" in result["issues"]
+        assert "CRITICAL: Qdrant collection empty" in caplog.text
+
+    @patch("src.skills.rag.retriever.QdrantClient")
+    def test_retriever_does_not_treat_small_unindexed_collection_as_empty(self, mock_qc):
+        from src.skills.rag.retriever import Retriever
+
+        mock_client = MagicMock()
+        mock_qc.return_value = mock_client
+        mock_info = MagicMock()
+        mock_info.points_count = 1800
+        mock_info.indexed_vectors_count = 0
+        mock_info.config.params.vectors.size = 1024
+        mock_info.config.hnsw_config = None
+        mock_info.config.optimizer_config.indexing_threshold = 20000
+        mock_client.get_collection.return_value = mock_info
+
+        retriever = Retriever()
+        result = retriever.health_check()
+
+        assert result["status"] == "ok"
+        assert result["vectors_total"] == 1800
+        assert result["vectors_indexed"] == 0
+        assert result["index_built"] is True
+        assert result["issues"] == []
+
+    @patch("src.skills.rag.retriever.QdrantClient")
     def test_retriever_build_filter(self, mock_qc):
         from src.skills.rag.retriever import Retriever
         mock_client = MagicMock()
