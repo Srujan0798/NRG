@@ -49,9 +49,9 @@ const api = axios.create({
 })
 
 const PERSONA_CREDENTIALS: Record<PersonaRole, { username: string; password: string; tier: number }> = {
-  researcher: { username: 'researcher@iitgn.ac.in', password: 'Researcher@2026', tier: 1 },
-  government: { username: 'ministry@nrg.gov.in', password: 'Ministry@2026', tier: 2 },
-  industry: { username: 'partner@industry.in', password: 'Industry@2026', tier: 3 },
+  researcher: { username: 'researcher_user', password: 'researcher-pass', tier: 1 },
+  government: { username: 'gov_user', password: 'government-pass', tier: 2 },
+  industry: { username: 'industry_user', password: 'industry-pass', tier: 3 },
 }
 
 const buildSession = (

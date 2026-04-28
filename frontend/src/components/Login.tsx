@@ -27,18 +27,18 @@ const PERSONA_LABELS: Record<PersonaKey, { en: string; hi: string; tier: string;
 
 const PERSONA_CREDENTIALS: Record<PersonaKey, { username: string; password: string; accent: string }> = {
   researcher: {
-    username: 'researcher@iitgn.ac.in',
-    password: 'Researcher@2026',
+    username: 'researcher_user',
+    password: 'researcher-pass',
     accent: 'var(--nrg-chart-5)',
   },
   government: {
-    username: 'ministry@nrg.gov.in',
-    password: 'Ministry@2026',
+    username: 'gov_user',
+    password: 'government-pass',
     accent: 'var(--nrg-chart-2)',
   },
   industry: {
-    username: 'partner@industry.in',
-    password: 'Industry@2026',
+    username: 'industry_user',
+    password: 'industry-pass',
     accent: 'var(--nrg-chart-3)',
   },
 }
@@ -94,8 +94,8 @@ const AshokaLogo: React.FC<{ className?: string }> = ({ className }) => (
 
 const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }) => {
   const [selectedPersona, setSelectedPersona] = useState<PersonaKey>('researcher')
-  const [username, setUsername] = useState('researcher@iitgn.ac.in')
-  const [password, setPassword] = useState('Researcher@2026')
+  const [username, setUsername] = useState('researcher_user')
+  const [password, setPassword] = useState('researcher-pass')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null)
@@ -117,7 +117,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const nextErrors: { username?: string; password?: string } = {}
-    if (!username.trim()) nextErrors.username = 'Enter your email'
+    if (!username.trim()) nextErrors.username = 'Enter your username'
     if (!password.trim()) nextErrors.password = 'Enter your password'
     setFieldErrors(nextErrors)
     setLocalMessage(null)
@@ -264,7 +264,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="block text-sm font-medium text-slate-900 mb-2">Email</span>
+              <span className="block text-sm font-medium text-slate-900 mb-2">Username</span>
               <div className="relative">
                 <div
                   className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
@@ -273,7 +273,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   <UserIcon className="w-4 h-4" />
                 </div>
                 <input
-                  type="email"
+                  type="text"
                   data-testid="login-username"
                   value={username}
                   onChange={(e) => {
@@ -284,7 +284,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="username"
-                  placeholder="you@institution.ac.in"
+                  placeholder="researcher_user"
                   aria-invalid={Boolean(fieldErrors.username)}
                   aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                   style={{ borderColor: focusedField === 'username' ? accentColor : undefined }}

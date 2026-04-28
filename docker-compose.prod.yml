@@ -38,10 +38,8 @@ services:
       --host 0.0.0.0
       --port 8000
       --workers 4
-      --timeout-keep-alive 5
-      --graceful-timeout 30"
+      --timeout-keep-alive 5"
     deploy:
-      replicas: 2
       resources:
         limits:
           memory: 4G
@@ -58,7 +56,6 @@ services:
   frontend:
     restart: always
     deploy:
-      replicas: 2
       resources:
         limits:
           memory: 256M
