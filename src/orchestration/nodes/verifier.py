@@ -235,7 +235,11 @@ def _deduplicate_citations(citations: list[dict]) -> list[dict]:
 
 
 _NUMERIC_CLAIM_RE = re.compile(
-    r"(?P<raw>₹?\s*\d+(?:,\d{2,3})*(?:\.\d+)?\s*(?:crore|cr|lakhs|lakh)?)",
+    r"(?P<raw>"
+    r"₹\s*\d+(?:,\d{2,3})*(?:\.\d+)?(?:\s*(?:crore|cr|lakhs|lakh))?"
+    r"|\d+(?:,\d{2,3})*(?:\.\d+)?\s*(?:crore|cr|lakhs|lakh)"
+    r"|\b\d{2,}(?:,\d{2,3})*(?:\.\d+)?\b"
+    r")",
     re.IGNORECASE,
 )
 
@@ -247,7 +251,8 @@ def _unsupported_numeric_claims(answer: str, sql_results: list[dict]) -> list[st
 
     source_numbers = _extract_source_numbers(sql_results)
     unsupported: list[str] = []
-    for match in _NUMERIC_CLAIM_RE.finditer(answer):
+    answer_without_citations = CITATION_PATTERN.sub("", answer)
+    for match in _NUMERIC_CLAIM_RE.finditer(answer_without_citations):
         raw = " ".join(match.group("raw").split())
         target = _normalise_numeric_claim(raw)
         if target is None:
@@ -255,6 +260,26 @@ def _unsupported_numeric_claims(answer: str, sql_results: list[dict]) -> list[st
         if not _number_supported(target, source_numbers):
             unsupported.append(f"Unsupported numeric claim: {raw}")
     return unsupported
+
+
+def _numeric_claims_without_sentence_citation(answer: str) -> list[str]:
+    """Return sentences that contain numeric claims but no citation token."""
+    if not answer:
+        return []
+
+    unsupported: list[str] = []
+    for sentence in _split_sentences(answer):
+        sentence_without_citations = CITATION_PATTERN.sub("", sentence)
+        if _NUMERIC_CLAIM_RE.search(sentence_without_citations) and not CITATION_PATTERN.search(sentence):
+            unsupported.append(f"Numeric claim without citation: {sentence.strip()}")
+    return unsupported
+
+
+def _split_sentences(answer: str) -> list[str]:
+    normalized = re.sub(r"\s+", " ", answer).strip()
+    if not normalized:
+        return []
+    return [part.strip() for part in re.split(r"(?<=[.!?])\s+", normalized) if part.strip()]
 
 
 def _extract_source_numbers(sql_results: list[dict]) -> list[float]:
@@ -368,6 +393,32 @@ def verifier_node(state: Any) -> dict:
             "answer_confidence": "low_clarify",
             "answer_confidence_score": float(anomaly_report.get("confidence_score", 0.05) or 0.05),
             "sql_anomaly_report": anomaly_report,
+        }
+
+    uncited_numeric_claims = _numeric_claims_without_sentence_citation(response)
+    unsupported_numbers = _unsupported_numeric_claims(response, sql_results)
+    numeric_failures = uncited_numeric_claims + unsupported_numbers
+    if numeric_failures:
+        score_breakdown = {
+            "citation_present": 0.0,
+            "evidence_match": FAITHFULNESS_WEIGHTS["evidence_match"] * (0.25 if unsupported_numbers else 0.5),
+            "no_fabrication": 0.0,
+            "tier_compliance": FAITHFULNESS_WEIGHTS["tier_compliance"],
+        }
+        return {
+            "verification_status": "fail",
+            "faithfulness_score": sum(score_breakdown.values()),
+            "score_breakdown": score_breakdown,
+            "unsupported_claims": numeric_failures,
+            "verification_retries": retries,
+            "synthesis_method": synth_method,
+            "citation_validity": 0.0 if not citations else 1.0,
+            "citation_coverage": _calculate_citation_coverage(response, citations),
+            "invalid_citations": [],
+            "citations": [],
+            "synthesized_response": "Insufficient data to support the numeric claims with required citations.",
+            "answer_confidence": "low",
+            "answer_confidence_score": sum(score_breakdown.values()),
         }
 
     score_breakdown = {

@@ -7,6 +7,8 @@ from unittest.mock import patch, MagicMock
 from src.config.llm_config import (
     load_llm_settings,
     LLMConfigError,
+    LLMSettings,
+    MinimaxLLMClient,
     _env,
     _inspect_cloud_payload,
     get_llm_client,
@@ -110,3 +112,36 @@ class TestGetLLMClient:
             assert get_llm_client() is None
             assert get_llm_client() is None
         get_llm_client.cache_clear()
+
+class TestMinimaxDefaults:
+    @patch("src.config.llm_config.requests.post")
+    @patch("src.config.llm_config._inspect_cloud_payload")
+    def test_synthesis_defaults_are_low_drift(self, mock_inspect, mock_post):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"choices": [{"message": {"content": "answer"}}]}
+        mock_post.return_value = mock_response
+        client = MinimaxLLMClient(
+            LLMSettings(provider="minimax", api_key="test-key", model="minimax-m2.7")
+        )
+
+        client.generate("Synthesize a research answer", "question", [])
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["temperature"] == 0.2
+        assert payload["top_p"] == 0.9
+
+    @patch("src.config.llm_config.requests.post")
+    @patch("src.config.llm_config._inspect_cloud_payload")
+    def test_sql_generation_defaults_are_deterministic(self, mock_inspect, mock_post):
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"choices": [{"message": {"content": "SELECT 1"}}]}
+        mock_post.return_value = mock_response
+        client = MinimaxLLMClient(
+            LLMSettings(provider="minimax", api_key="test-key", model="minimax-m2.7")
+        )
+
+        client.generate("You are a text_to_sql generator. Return SQL only.", "count rows", [])
+
+        payload = mock_post.call_args.kwargs["json"]
+        assert payload["temperature"] == 0.0
+        assert payload["top_p"] == 0.9

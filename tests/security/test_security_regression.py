@@ -118,7 +118,8 @@ class TestPromptInjectionDetection:
     """Verify prompt injection patterns are blocked correctly."""
 
     @pytest.fixture
-    def sanitiser(self):
+    def sanitiser(self, monkeypatch):
+        monkeypatch.delenv("NRG_QUOTA_DISABLED", raising=False)
         return PromptSanitiser()
 
     def test_ignore_previous_instructions_blocked(self, sanitiser):
@@ -288,7 +289,8 @@ class TestRateLimiting:
     """Verify behavioral rate limiting after repeated rejections."""
 
     @pytest.fixture
-    def sanitiser(self):
+    def sanitiser(self, monkeypatch):
+        monkeypatch.delenv("NRG_QUOTA_DISABLED", raising=False)
         return PromptSanitiser()
 
     def test_rate_limit_triggers_after_5_rejections(self, sanitiser):
@@ -382,9 +384,11 @@ class TestJWTHardening:
     """Verify JWT has all required hardening claims."""
 
     @pytest.fixture
-    def jwt_handler(self):
-        os.environ["JWT_SECRET"] = "jwt-hardening-test-secret"
-        os.environ["NRG_ENV"] = "dev"
+    def jwt_handler(self, monkeypatch):
+        monkeypatch.setenv("JWT_SECRET", "jwt-hardening-test-secret")
+        monkeypatch.setenv("NRG_ENV", "dev")
+        monkeypatch.setenv("JWT_AUDIENCE", "nrg-api")
+        monkeypatch.setenv("JWT_ISSUER", "nrg-iitgn")
         return JWTHandler(algorithm="HS256", secret_key="jwt-hardening-test-secret")
 
     @pytest.fixture

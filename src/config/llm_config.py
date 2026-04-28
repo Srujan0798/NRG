@@ -617,11 +617,13 @@ class MinimaxLLMClient:
             if turn.get("response"):
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
+        generation_defaults = _minimax_generation_defaults(system_prompt, user_prompt)
 
         payload = {
             "model": self.settings.model,
             "messages": messages,
-            "temperature": 0.2,
+            "temperature": generation_defaults["temperature"],
+            "top_p": generation_defaults["top_p"],
             "max_tokens": 800,
         }
         _inspect_cloud_payload(payload)
@@ -658,11 +660,13 @@ class MinimaxLLMClient:
             if turn.get("response"):
                 messages.append({"role": "assistant", "content": turn["response"]})
         messages.append({"role": "user", "content": user_prompt})
+        generation_defaults = _minimax_generation_defaults(system_prompt, user_prompt)
 
         payload = {
             "model": self.settings.model,
             "messages": messages,
-            "temperature": 0.2,
+            "temperature": generation_defaults["temperature"],
+            "top_p": generation_defaults["top_p"],
             "max_tokens": 800,
             "stream": True,
         }
@@ -695,6 +699,20 @@ class MinimaxLLMClient:
                                 yield content
                         except Exception:
                             continue
+
+
+def _minimax_generation_defaults(system_prompt: str, user_prompt: str) -> dict[str, float]:
+    """Keep MiniMax synthesis stable and SQL generation deterministic."""
+    prompt = f"{system_prompt}\n{user_prompt}".lower()
+    sql_markers = (
+        "text_to_sql",
+        "sql generation",
+        "generate sql",
+        "return sql only",
+        "select ",
+    )
+    temperature = 0.0 if any(marker in prompt for marker in sql_markers) else 0.2
+    return {"temperature": temperature, "top_p": 0.9}
 
 
 class SovereignLLMMesh:

@@ -64,6 +64,7 @@ _context_window_sizes = {
     "anthropic": 200000,
     "azure": 128000,
     "gemini": 128000,
+    "minimax": 128000,
     "local": 4096,
 }
 
@@ -884,11 +885,14 @@ def _build_system_prompt(
     return f"""{base_prompt}
 
 Synthesize a response for a {policy_note} user.
+{_tier_voice_instruction(user_tier)}
 Use only the provided data. If no data is provided, say so.
 Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
 drawn from the provided evidence list. Never fabricate citations.
+Every sentence containing a number MUST include a citation marker mapped to the retrieved SQL row or document evidence.
 
 {format_instruction}
+{_answer_quality_contract()}
 
 IMPORTANT:
 - When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
@@ -900,6 +904,32 @@ Data Sources: {sources}
 SQL Evidence: {safe_sql_results}
 Document Evidence: {safe_chunks}
 """
+
+
+def _tier_voice_instruction(user_tier: int) -> str:
+    """Return tier-specific answer voice guidance for synthesis prompts."""
+    if user_tier == 1:
+        return "Tier voice: You are advising a senior researcher; be technical and precise."
+    if user_tier == 2:
+        return (
+            "Tier voice: You are advising a ministry official; be policy-framed, cite cohort "
+            "sizes and aggregated trends, and never surface individuals."
+        )
+    if user_tier == 3:
+        return (
+            "Tier voice: You are advising an industry partner under NDA; surface partnership "
+            "opportunities and anonymized capability maps, and never include PII."
+        )
+    return "Tier voice: Use a concise evidence-first research briefing voice."
+
+
+def _answer_quality_contract() -> str:
+    return """Return a 4-paragraph answer:
+(a) headline number/finding,
+(b) explanation in plain English with no jargon,
+(c) why it matters to the user's tier,
+(d) caveats and source confidence.
+If the evidence cannot support a numeric claim, say "Insufficient data" instead of estimating."""
 
 
 def _minimise_sql_results(sql_results: list) -> list:
@@ -1025,7 +1055,7 @@ def _fallback_synthesis(
 
     if sql_results:
         lines.append("┌─ Structured Data Results")
-        lines.append(f"│  Found {len(sql_results)} research record{'s' if len(sql_results) != 1 else ''}")
+        lines.append(f"│  Found {len(sql_results)} research record{'s' if len(sql_results) != 1 else ''} [cite:structured:0]")
         lines.append("└" + "─" * 40)
         lines.append("")
 
@@ -1039,7 +1069,7 @@ def _fallback_synthesis(
     if chunks:
         section_title = "Supplementary Document Analysis" if sql_results else "Document Analysis"
         lines.append(f"┌─ {section_title}")
-        lines.append(f"│  Found {len(chunks)} relevant excerpt{'s' if len(chunks) != 1 else ''}")
+        lines.append(f"│  Found {len(chunks)} relevant excerpt{'s' if len(chunks) != 1 else ''} [cite:structured:0]")
         lines.append("└" + "─" * 40)
         lines.append("")
         lines = _format_chunks(lines, chunks)
@@ -1118,10 +1148,10 @@ def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> 
         shown += 1
 
     if len(sql_results) > 20:
-        lines.append(f"  ... and {len(sql_results) - 20} more researchers")
+        lines.append(f"  ... and {len(sql_results) - 20} more researchers [cite:structured:0]")
 
     lines.append("")
-    lines.append(f"  Total: {len(sql_results)} researcher{'s' if len(sql_results) != 1 else ''}")
+    lines.append(f"  Total: {len(sql_results)} researcher{'s' if len(sql_results) != 1 else ''} [cite:structured:0]")
     return lines
 
 
@@ -1145,7 +1175,7 @@ def _format_publication_table(lines: list, sql_results: list) -> list:
         lines.append(f"      Year: {year} | Authors: {authors}")
 
     if len(sql_results) > 15:
-        lines.append(f"  ... and {len(sql_results) - 15} more publications")
+        lines.append(f"  ... and {len(sql_results) - 15} more publications [cite:structured:0]")
 
     lines.append("")
     return lines
@@ -1169,7 +1199,7 @@ def _format_generic_table(lines: list, sql_results: list) -> list:
         lines.append("")
 
     if len(sql_results) > 15:
-        lines.append(f"  ... and {len(sql_results) - 15} more records")
+        lines.append(f"  ... and {len(sql_results) - 15} more records [cite:structured:0]")
 
     return lines
 
@@ -1187,7 +1217,7 @@ def _format_chunks(lines: list, chunks: list) -> list:
         lines.append("")
 
     if len(chunks) > 3:
-        lines.append(f"  [+ {len(chunks) - 3} more excerpts available]")
+        lines.append(f"  [+ {len(chunks) - 3} more excerpts available] [cite:structured:0]")
     return lines
 
 
@@ -1296,12 +1326,14 @@ def _build_condensed_prompt(
             format_note = "- OUTPUT: Aggregate stats only. No individual records."
 
     return f"""You are NRG AI. Answer user queries using ONLY the provided data.
+{_tier_voice_instruction(user_tier)}
 If data is insufficient, say so. Cite sources as [cite:id:chunk].
 
 Rules:
 - Keep response under 200 words
-- Use bullet points when possible
+- Return a 4-paragraph answer: (a) headline number/finding, (b) plain-English explanation, (c) why it matters to the user's tier, (d) caveats and source confidence
 - Cite EVERY factual claim: [cite:pub_id:chunk_id] or [cite:structured:0]
+- Every sentence containing a number MUST include a citation marker mapped to retrieved evidence
 {format_note}
 
 Data Sources: {sources}
@@ -1341,18 +1373,23 @@ def _build_standard_prompt(
             format_note = "\n- OUTPUT: Aggregate stats only. No individual-level records."
 
     return f"""You are the National Research Graph AI. Answer research queries using ONLY the provided evidence.
+{_tier_voice_instruction(user_tier)}
 
 IMPORTANT RULES:
 - Every factual claim MUST be cited: [cite:pub_id:chunk_id] or [cite:structured:0]
+- Every sentence containing a number MUST include a citation marker mapped to retrieved evidence
 - Never fabricate or extrapolate beyond the evidence
 - If evidence is insufficient, clearly state limitations
 - SQL aggregate results (count, sum) ARE direct answers - state them clearly
 {format_note}
 
 Response format:
-- Start with direct answer to the query
-- Follow with supporting evidence citations
-- Use tables for structured data comparisons
+Return a 4-paragraph answer:
+(a) headline number/finding,
+(b) explanation in plain English with no jargon,
+(c) why it matters to the user's tier,
+(d) caveats and source confidence.
+Use tables only when they make structured comparisons clearer.
 
 {policy_note} access level applied.
 
@@ -1404,9 +1441,12 @@ def _build_full_prompt(
     return f"""{base_prompt}
 
 Synthesize a response for a {policy_note} user.
+{_tier_voice_instruction(user_tier)}
 Use only the provided data. If no data is provided, say so.
 Every factual claim MUST be followed by a citation token [cite:pub_id:chunk_id]
 drawn from the provided evidence list. Never fabricate citations.
+Every sentence containing a number MUST include a citation marker mapped to retrieved evidence.
+{_answer_quality_contract()}
 
 IMPORTANT:
 - When SQL Evidence contains aggregate results (e.g., {{"count": 625}}), that IS the direct answer. State it clearly.
