@@ -28,7 +28,8 @@ import { buildRelaxedQuery, isEmptyResultResponse } from '../utils/emptyResults'
 import { useQuery } from '@tanstack/react-query'
 import {
   Search, Users, FileText, Building,
-  Sun as SunIcon, Moon as MoonIcon, BookOpen, History, LogOut
+  Sun as SunIcon, Moon as MoonIcon, BookOpen, History, LogOut,
+  LayoutDashboard, Network, ShieldCheck, ClipboardList, Activity
 } from 'lucide-react'
 import type { Theme } from '../hooks/useTheme'
 import { t } from '../i18n'
@@ -39,11 +40,11 @@ interface ResearcherDashboardProps {
 }
 
 const TABS = [
-  { key: 'dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', icon: '📊' },
-  { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ', icon: '🕸️' },
-  { key: 'dpdp', label: 'Data Rights', labelHi: 'डेटा अधिकार', icon: '🔒' },
-  { key: 'audit', label: 'Audit Log', labelHi: 'ऑडिट लॉग', icon: '📋' },
-  { key: 'admin', label: 'Admin', labelHi: 'एडमिन', icon: '📈', tier: 1 },
+  { key: 'dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', icon: LayoutDashboard },
+  { key: 'graph', label: 'Knowledge Graph', labelHi: 'ज्ञान ग्राफ', icon: Network },
+  { key: 'dpdp', label: 'Data Rights', labelHi: 'डेटा अधिकार', icon: ShieldCheck },
+  { key: 'audit', label: 'Audit Log', labelHi: 'ऑडिट लॉग', icon: ClipboardList },
+  { key: 'admin', label: 'Admin', labelHi: 'एडमिन', icon: Activity, tier: 1 },
 ] as const
 
 const PRODUCTION_QUERY_SUGGESTIONS = [
@@ -79,10 +80,9 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
     history, currentQuery, isSearching,
     setCurrentQuery, addToHistory, setIsSearching, setLastResult,
   } = useQueryStore()
-  const { grantConsent, addAuditEntry, getConsentStatus } = useDPDPStore()
+  const { grantConsent, addAuditEntry } = useDPDPStore()
 
-  const hasExistingConsent = getConsentStatus('research_access')?.granted
-  const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
+  const [showDPDPConsent, setShowDPDPConsent] = useState(false)
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('dashboard')
   const [graphData, setGraphData] = useState(queryService.emptyGraphData())
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null)
@@ -191,29 +191,28 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
 
   return (
     <ErrorBoundary title={t("auto.views.ResearcherDashboard.1")}>
-      <div className="nrg-app-canvas min-h-screen">
-      <header className="sticky top-0 z-40 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-nrg-border">
-        <div className="h-1 w-full bg-gradient-to-r from-violet-600 via-violet-400 to-navy-300" />
+      <div className="min-h-screen bg-[#f7f8f4] text-slate-950">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-[#f7f8f4]/95 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <motion.div
-              className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-500 via-violet-600 to-navy-500 flex items-center justify-center shadow-lg"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-[#ff8b4a]/40 bg-white text-slate-950 shadow-sm"
               whileHover={{ scale: 1.05, rotate: 4 }}
               transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
-              <span className="text-white font-display text-lg">न</span>
+              <span className="font-display text-lg font-bold">न</span>
             </motion.div>
             <div>
-              <h1 className="text-lg font-bold text-nrg-text font-devanagari">राष्ट्रीय गवेषण मंच</h1>
-              <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">{t("auto.views.ResearcherDashboard.2")}</p>
+              <h1 className="text-lg font-bold text-slate-950 font-devanagari">राष्ट्रीय गवेषण मंच</h1>
+              <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Researcher Workspace · National Research Graph</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex w-full min-w-0 items-center gap-2 overflow-x-auto pb-1 sm:w-auto sm:gap-3 sm:overflow-visible sm:pb-0">
             <PersonaToggle />
             {user && <TierBadge tier={user.tier} role={user.role} />}
             <motion.button
               onClick={onThemeToggle}
-              className="w-10 h-10 rounded-xl border border-nrg-border flex items-center justify-center text-nrg-muted hover:text-violet-500 hover:border-violet-300 transition-all duration-200"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:border-slate-400 hover:text-slate-950"
               aria-label={t("auto.views.ResearcherDashboard.3")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -222,7 +221,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
             </motion.button>
             <motion.button
               onClick={logout}
-              className="h-10 px-3 rounded-xl border border-nrg-border flex items-center gap-2 text-sm font-semibold text-nrg-muted hover:text-rose-600 hover:border-rose-300 transition-all duration-200"
+              className="hidden h-10 shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-500 transition hover:border-rose-300 hover:text-rose-600 sm:flex"
               aria-label={t("auto.views.ResearcherDashboard.4")}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -233,27 +232,28 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 flex gap-2 -mb-px overflow-x-auto pb-1">
+        <div className="max-w-7xl mx-auto w-full min-w-0 px-4 sm:px-6 lg:px-8 flex gap-2 overflow-x-auto pb-3">
           {TABS.map((tab) => {
             if ('tier' in tab && tab.tier !== undefined && (user?.tier ?? 0) < tab.tier) return null
+            const TabIcon = tab.icon
             return (
               <motion.button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 aria-label={`${tab.label}, ${tab.labelHi} tab`}
                 aria-current={activeTab === tab.key ? 'page' : undefined}
-                className={`nrg-tab flex items-center gap-1.5 whitespace-nowrap rounded-t-xl ${
+                className={`flex min-h-10 items-center gap-2 whitespace-nowrap rounded-lg border px-3 text-xs font-semibold uppercase tracking-[0.08em] transition ${
                   activeTab === tab.key
-                    ? 'active'
-                    : 'text-nrg-muted hover:text-nrg-text'
+                    ? 'border-slate-950 bg-slate-950 text-white shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-500 hover:border-slate-400 hover:text-slate-950'
                 }`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 data-testid={`tab-${tab.key}`}
               >
-                <span aria-hidden="true">{tab.icon}</span>
+                <TabIcon size={15} aria-hidden="true" />
                 {tab.label}
-                <span className="text-xs font-devanagari text-nrg-muted ml-1">{tab.labelHi}</span>
+                <span className={`text-xs font-devanagari ${activeTab === tab.key ? 'text-white/70' : 'text-slate-400'}`}>{tab.labelHi}</span>
               </motion.button>
             )
           })}

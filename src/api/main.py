@@ -928,16 +928,19 @@ def _fast_query_response(
     )
     if publication_count is not None:
         return publication_count
+    previous_topic = _fast_query_context.get(context_key, {}).get("topic")
+    topic_match = _fast_topic_for_query(query, previous_topic)
+    topic_funding_query = topic_match is not None and any(
+        term in query_lower
+        for term in ("grant", "funding", "highest", "top", "same for", "same as", "compare")
+    )
     bounded_local_response = _bounded_local_query_fast_response(
         query,
         user_tier=user_tier,
         session_id=session_id,
-    )
+    ) if not topic_funding_query else None
     if bounded_local_response is not None:
         return bounded_local_response
-
-    previous_topic = _fast_query_context.get(context_key, {}).get("topic")
-    topic_match = _fast_topic_for_query(query, previous_topic)
 
     if not topic_match:
         if any(term in query_lower for term in ["no results", "zzzz", "unknown institute", "nonexistent"]):

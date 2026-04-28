@@ -47,26 +47,28 @@ export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCo
       >
         <div className="bg-gradient-to-r from-saffron-50/70 to-nrg-navy-50/80 border-b border-nrg-border backdrop-blur-md">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-            <div className="flex items-center gap-4">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-saffron-100/70 dark:bg-saffron-900/30 flex items-center justify-center">
-                <Shield size={14} className="text-saffron-700 dark:text-saffron-300" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex flex-1 items-start gap-3">
+                <div className="shrink-0 w-8 h-8 rounded-full bg-saffron-100/70 dark:bg-saffron-900/30 flex items-center justify-center">
+                  <Shield size={14} className="text-saffron-700 dark:text-saffron-300" />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-sm leading-6 text-nrg-text">
+                    <span className="font-semibold">{t("auto.components.ConsentBanner.1")}</span>{' '}
+                    {labels.line1}
+                  </p>
+                  <p className="text-xs leading-5 text-nrg-muted mt-0.5">
+                    {labels.line2}
+                    {expiringCount > 0 && (
+                      <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-saffron-500/20 px-2 py-0.5 text-xs text-saffron-800 dark:text-saffron-200 sm:ml-2 sm:mt-0">
+                        {expiringCount} {t("auto.components.ConsentBanner.2")}{expiringCount > 1 ? 's' : ''} {t("auto.components.ConsentBanner.3")}</span>
+                    )}
+                  </p>
+                </div>
               </div>
 
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-nrg-text">
-                  <span className="font-semibold">{t("auto.components.ConsentBanner.1")}</span>{' '}
-                  {labels.line1}
-                </p>
-                <p className="text-xs text-nrg-muted mt-0.5">
-                  {labels.line2}
-                  {expiringCount > 0 && (
-                    <span className="ml-2 inline-flex items-center gap-1 bg-saffron-500/20 text-saffron-800 dark:text-saffron-200 px-2 py-0.5 rounded-full text-xs">
-                      {expiringCount} {t("auto.components.ConsentBanner.2")}{expiringCount > 1 ? 's' : ''} {t("auto.components.ConsentBanner.3")}</span>
-                  )}
-                </p>
-              </div>
-
-              <div className="shrink-0 flex items-center gap-2">
+              <div className="flex shrink-0 items-center justify-end gap-2">
                 {onManageConsent && (
                   <button
                     onClick={onManageConsent}

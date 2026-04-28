@@ -53,6 +53,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
     stub_workflow = StubWorkflow()
     monkeypatch.setattr(api_main, "workflow", stub_workflow)
     monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-hash-123")
+    api_main._api_cache.invalidate()
 
     from src.services.consent import ConsentService
     original_has_consent = ConsentService.has_consent
@@ -62,7 +63,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         client = TestClient(api_main.app)
         response = client.post(
             "/query",
-            json={"query": "Show funding for quantum computing projects", "session_id": "session-123"},
+            json={"query": "Summarize sovereign readiness signals", "session_id": "session-123"},
             headers=_auth_headers(client),
         )
 
@@ -88,7 +89,7 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         assert payload["retrieval_sources"] == ["structured"]
         assert len(stub_workflow.calls) == 1
         call = stub_workflow.calls[0]
-        assert call["query"] == "Show funding for quantum computing projects"
+        assert call["query"] == "Summarize sovereign readiness signals"
         assert call["user_tier"] == 1
         assert call["session_id"] == "session-123"
         assert "user_id" in call
@@ -100,6 +101,7 @@ def test_query_endpoint_accepts_question_alias(monkeypatch):
     stub_workflow = StubWorkflow()
     monkeypatch.setattr(api_main, "workflow", stub_workflow)
     monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-hash-123")
+    api_main._api_cache.invalidate()
 
     from src.services.consent import ConsentService
     original_has_consent = ConsentService.has_consent
@@ -109,12 +111,12 @@ def test_query_endpoint_accepts_question_alias(monkeypatch):
         client = TestClient(api_main.app)
         response = client.post(
             "/query",
-            json={"question": "Top 5 funding agencies by total grant amount"},
+            json={"question": "Summarize sovereign readiness signals"},
             headers=_auth_headers(client),
         )
 
         assert response.status_code == 200
-        assert stub_workflow.calls[0]["query"] == "Top 5 funding agencies by total grant amount"
+        assert stub_workflow.calls[0]["query"] == "Summarize sovereign readiness signals"
     finally:
         ConsentService.has_consent = original_has_consent
 
