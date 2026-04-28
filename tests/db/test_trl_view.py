@@ -1,4 +1,5 @@
 import importlib
+from contextlib import contextmanager
 
 import sqlalchemy as sa
 from alembic.migration import MigrationContext
@@ -10,7 +11,8 @@ from src.db.validators import validate_identifier
 LONG_TRL_TABLE = "innovations_at_various_stages_of_technology_readiness_level"
 
 
-def test_trl_stages_view_exists_and_is_queryable_from_active_migration():
+@contextmanager
+def migrated_trl_view():
     migration = importlib.import_module("src.migrations.versions.add_trl_stages_view_001")
     engine = sa.create_engine("sqlite:///:memory:")
 
@@ -35,7 +37,8 @@ def test_trl_stages_view_exists_and_is_queryable_from_active_migration():
                 INSERT INTO {LONG_TRL_TABLE}
                     (innovation_name, stage_of_technology, financial_year, institute, as_on_year, id)
                 VALUES
-                    ('Hydrogen catalyst', 'Level 9', '2025-26', 'IIT Madras', '2026', 1)
+                    ('Hydrogen catalyst', 'Level 9', '2025-26', 'IIT Madras', '2026', 1),
+                    ('Battery pack', 'Level 4', '2024-25', 'IIT Gandhinagar', '2025', 2)
                 """
             )
         )
@@ -46,39 +49,42 @@ def test_trl_stages_view_exists_and_is_queryable_from_active_migration():
         migration.op = operations
         try:
             migration.upgrade()
-
-            view_names = {
-                row[0]
-                for row in connection.execute(
-                    sa.text("SELECT name FROM sqlite_master WHERE type='view'")
-                )
-            }
-            assert "trl_stages" in view_names
-
-            row = (
-                connection.execute(
-                    sa.text(
-                        "SELECT innovation_name, stage_of_technology, institute "
-                        "FROM trl_stages"
-                    )
-                )
-                .mappings()
-                .one()
-            )
-            assert row["innovation_name"] == "Hydrogen catalyst"
-            assert row["stage_of_technology"] == "Level 9"
-            assert row["institute"] == "IIT Madras"
-
-            migration.downgrade()
-            remaining = connection.execute(
-                sa.text(
-                    "SELECT COUNT(*) FROM sqlite_master "
-                    "WHERE type='view' AND name='trl_stages'"
-                )
-            ).scalar_one()
-            assert remaining == 0
+            yield connection
         finally:
+            migration.downgrade()
             migration.op = original_op
+
+
+def test_trl_view_returns_same_rows():
+    with migrated_trl_view() as connection:
+        view_names = {
+            row[0]
+            for row in connection.execute(
+                sa.text("SELECT name FROM sqlite_master WHERE type='view'")
+            )
+        }
+        assert "trl_stages" in view_names
+
+        base_count = connection.execute(
+            sa.text(f"SELECT COUNT(*) FROM {LONG_TRL_TABLE}")
+        ).scalar_one()
+        view_count = connection.execute(sa.text("SELECT COUNT(*) FROM trl_stages")).scalar_one()
+        assert view_count == base_count
+
+
+def test_trl_view_columns_preserve_base_table_and_trl_alias():
+    with migrated_trl_view() as connection:
+        base_columns = {
+            row[1]
+            for row in connection.execute(sa.text(f"PRAGMA table_info({LONG_TRL_TABLE})"))
+        }
+        view_columns = {
+            row[1]
+            for row in connection.execute(sa.text("PRAGMA table_info(trl_stages)"))
+        }
+
+        assert base_columns.issubset(view_columns)
+        assert "trl_level" in view_columns
 
 
 def test_validate_identifier_rejects_64_byte_postgres_identifier():

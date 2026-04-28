@@ -36,9 +36,10 @@ FROM {TRL_SOURCE_TABLE}
 def upgrade() -> None:
     context = op.get_context()
     if context.dialect.name == "postgresql":
+        op.execute("DROP VIEW IF EXISTS trl_stages")
         op.execute(
             f"""
-            CREATE OR REPLACE VIEW trl_stages AS
+            CREATE VIEW trl_stages AS
             {TRL_VIEW_SELECT}
             """
         )

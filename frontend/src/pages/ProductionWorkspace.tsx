@@ -1,76 +1,24 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import {
   BarChart3,
   BookOpen,
   Building2,
-  ChevronDown,
-  Download,
-  FileText,
-  Lock,
-  RefreshCw,
-  ShieldCheck,
   SlidersHorizontal,
   Users,
 } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { AuthUser } from '../services/authService'
-import {
-  AuditEventRecord,
-  PublicationRow,
-  StatsResponse,
-  queryService,
-} from '../services/queryService'
 import { t } from '../i18n'
 import {
   productionWorkspaceRoutes,
-  type ProductionWorkspaceRoute,
   type ProductionWorkspaceScreen,
+  type ProductionWorkspaceRoute,
 } from './productionWorkspaceConfig'
-import {
-  buildIndustryCapabilityRowsFromStats,
-  type IndustryCapabilityRow,
-  parseMetricNumber,
-} from './productionWorkspaceData'
-
-type Loadable<T> =
-  | { status: 'idle' | 'loading'; rows?: T[]; value?: T; message?: string }
-  | { status: 'loaded'; rows?: T[]; value?: T; message?: string }
-  | { status: 'error'; rows?: T[]; value?: T; message: string }
-
-export interface ResearcherProfileRow {
-  researcher_id?: string
-  name?: string
-  institution_id?: string
-  institution?: string
-  state?: string
-  research_area?: string
-  email?: string
-  phone?: string
-}
-
-export interface ProductionWorkspaceData {
-  publications: Loadable<PublicationRow>
-  researchers: Loadable<ResearcherProfileRow>
-  stats: Loadable<StatsResponse>
-  industry: Loadable<IndustryCapabilityRow>
-  audit: Loadable<AuditEventRecord>
-}
-
-const emptyData: ProductionWorkspaceData = {
-  publications: { status: 'idle', rows: [] },
-  researchers: { status: 'idle', rows: [] },
-  stats: { status: 'idle' },
-  industry: { status: 'idle', rows: [] },
-  audit: { status: 'idle', rows: [] },
-}
-
-const routeIcons: Record<ProductionWorkspaceScreen, React.ElementType> = {
-  publications: BookOpen,
-  researchers: Users,
-  reports: BarChart3,
-  industry: Building2,
-  settings: SlidersHorizontal,
-}
+import { WorkspaceTable } from './components/WorkspaceTable'
+import { RestrictedPanel, StatePanel } from './components/StatePanel'
+import { ScreenHeader } from './components/ScreenHeader'
+import { useWorkspaceData, type ProductionWorkspaceData } from './useWorkspaceData'
+import { parseMetricNumber } from './productionWorkspaceData'
 
 function canAccessRoute(user: AuthUser, route: ProductionWorkspaceRoute): boolean {
   return user.tier <= route.minimumTier
@@ -80,292 +28,15 @@ function getRoute(screen: ProductionWorkspaceScreen): ProductionWorkspaceRoute {
   return productionWorkspaceRoutes.find((route) => route.screen === screen) || productionWorkspaceRoutes[0]
 }
 
+const iconMap = { BookOpen, Users, BarChart3, Building2, SlidersHorizontal }
+
 function formatNumber(value?: number | string | null): string {
   const numericValue = parseMetricNumber(value)
   if (numericValue === null) return t('productionWorkspace.common.notAvailable')
   return numericValue.toLocaleString('en-IN')
 }
 
-function normaliseResearcherRows(payload: { results?: unknown[] } | unknown): ResearcherProfileRow[] {
-  const rows = Array.isArray((payload as { results?: unknown[] })?.results)
-    ? (payload as { results?: unknown[] }).results
-    : Array.isArray(payload)
-      ? payload
-      : []
-
-  return rows
-    .filter((row): row is ResearcherProfileRow => Boolean(row && typeof row === 'object'))
-    .slice(0, 12)
-}
-
-function downloadCsv(filename: string, rows: Array<Record<string, unknown>>): void {
-  if (!rows.length) return
-  const headers = Object.keys(rows[0])
-  const csv = [
-    headers.join(','),
-    ...rows.map((row) => headers.map((header) => `"${String(row[header] ?? '').replace(/"/g, '""')}"`).join(',')),
-  ].join('\n')
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const anchor = window.document.createElement('a')
-  anchor.href = url
-  anchor.download = filename
-  anchor.click()
-  URL.revokeObjectURL(url)
-}
-
-function downloadTableCsv(filename: string, headers: string[], rows: string[][]): void {
-  const records = rows.map((row) => (
-    headers.reduce<Record<string, string>>((record, header, index) => {
-      record[header] = row[index] || ''
-      return record
-    }, {})
-  ))
-  downloadCsv(filename, records)
-}
-
-function exportWorkspacePdf(): void {
-  window.print()
-}
-
-const WorkspaceTable: React.FC<{
-  caption: string
-  headers: string[]
-  rows: string[][]
-  exportFilename?: string
-}> = ({ caption, headers, rows, exportFilename = 'nrg-workspace-table.csv' }) => {
-  const [sortIndex, setSortIndex] = useState(0)
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
-
-  const sortedRows = useMemo(() => (
-    [...rows].sort((leftRow, rightRow) => {
-      const left = leftRow[sortIndex] || ''
-      const right = rightRow[sortIndex] || ''
-      const comparison = left.localeCompare(right, 'en-IN', { numeric: true, sensitivity: 'base' })
-      return sortDirection === 'asc' ? comparison : -comparison
-    })
-  ), [rows, sortDirection, sortIndex])
-
-  if (!rows.length) {
-    return (
-      <div className="rounded-2xl border border-dashed border-nrg-border bg-[var(--glass-bg)] p-6 text-sm text-nrg-muted">
-        {t('productionWorkspace.common.noRows')}
-      </div>
-    )
-  }
-
-  return (
-    <div className="overflow-hidden rounded-2xl border border-nrg-border bg-[var(--nrg-surface)] shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">
-          {caption}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => downloadTableCsv(exportFilename, headers, sortedRows)}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-nrg-border bg-[var(--nrg-surface)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
-          >
-            <Download size={14} aria-hidden="true" />
-            {t('productionWorkspace.common.exportCsv')}
-          </button>
-          <button
-            type="button"
-            onClick={exportWorkspacePdf}
-            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-nrg-border bg-[var(--nrg-surface)] px-3 py-1.5 text-xs font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
-          >
-            <FileText size={14} aria-hidden="true" />
-            {t('productionWorkspace.common.exportPdf')}
-          </button>
-        </div>
-      </div>
-      <div className="space-y-3 border-t border-nrg-border/60 p-4 md:hidden" data-testid="workspace-table-cards">
-        {sortedRows.map((row, rowIndex) => (
-          <article
-            key={`${row.join('|')}-card-${rowIndex}`}
-            className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-4"
-          >
-            {headers.map((header, cellIndex) => (
-              <div key={`${header}-${cellIndex}`} className="grid grid-cols-[minmax(6rem,0.8fr)_1fr] gap-3 border-b border-nrg-border/40 py-2 last:border-b-0">
-                <dt className="text-xs font-semibold uppercase tracking-[0.12em] text-nrg-muted">{header}</dt>
-                <dd className="min-w-0 break-words text-sm font-medium text-nrg-text">
-                  {row[cellIndex] || t('productionWorkspace.common.notAvailable')}
-                </dd>
-              </div>
-            ))}
-          </article>
-        ))}
-      </div>
-      <div className="hidden max-w-full overflow-x-auto md:block">
-        <table className="min-w-full text-left text-sm">
-          <caption className="sr-only">{caption}</caption>
-          <thead className="bg-[var(--glass-bg)] text-xs uppercase tracking-[0.12em] text-nrg-muted">
-            <tr>
-              {headers.map((header, index) => (
-                <th
-                  key={header}
-                  scope="col"
-                  className="border-b border-nrg-border px-4 py-3 font-semibold"
-                  aria-sort={sortIndex === index ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
-                >
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (sortIndex === index) {
-                        setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')
-                      } else {
-                        setSortIndex(index)
-                        setSortDirection('asc')
-                      }
-                    }}
-                    className="inline-flex min-h-8 items-center gap-1 rounded-md text-left transition hover:text-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
-                    aria-label={t('productionWorkspace.common.sortBy', { header })}
-                  >
-                    {header}
-                    {sortIndex === index && (
-                      <ChevronDown
-                        size={12}
-                        className={`transition-transform ${sortDirection === 'asc' ? 'rotate-180' : ''}`}
-                        aria-hidden="true"
-                      />
-                    )}
-                  </button>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {sortedRows.map((row, rowIndex) => (
-              <tr key={`${row.join('|')}-${rowIndex}`} className="hover:bg-saffron-500/5">
-                {row.map((cell, cellIndex) => (
-                  <td key={`${cell}-${cellIndex}`} className="border-b border-nrg-border/40 px-4 py-3 text-nrg-text">
-                    {cell || t('productionWorkspace.common.notAvailable')}
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-const StatePanel: React.FC<{
-  status: Loadable<unknown>['status']
-  onRetry: () => void
-  message?: string
-}> = ({ status, onRetry, message }) => {
-  if (status === 'loaded') return null
-
-  const isLoading = status === 'loading' || status === 'idle'
-  if (isLoading) {
-    return (
-      <div
-        className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-6"
-        role="status"
-        aria-busy="true"
-      >
-        <p className="text-sm font-semibold text-nrg-text">{t('productionWorkspace.common.loading')}</p>
-        <p className="mt-1 text-sm text-nrg-muted">{t('productionWorkspace.common.loadingBody')}</p>
-        <div className="mt-5 space-y-3" aria-hidden="true">
-          <div className="h-3 w-4/5 rounded-full bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-[length:200%_100%] motion-safe:animate-pulse" />
-          <div className="h-3 w-2/3 rounded-full bg-gradient-to-r from-slate-200 via-white to-slate-200 bg-[length:200%_100%] motion-safe:animate-pulse" />
-          <div className="grid gap-3 md:grid-cols-3">
-            {[1, 2, 3].map((item) => (
-              <div key={item} className="h-16 rounded-xl border border-nrg-border bg-[var(--nrg-surface)]" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-nrg-text">{t('productionWorkspace.common.errorTitle')}</p>
-          <p className="mt-1 text-sm text-nrg-muted">
-            {message || t('productionWorkspace.common.errorBody')}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
-        >
-          <RefreshCw size={16} aria-hidden="true" />
-          {t('productionWorkspace.common.retry')}
-        </button>
-      </div>
-    </div>
-  )
-}
-
-const RestrictedPanel: React.FC<{
-  user: AuthUser
-  titleKey?: string
-  bodyKey?: string
-}> = ({
-  user,
-  titleKey = 'productionWorkspace.researchers.restrictedTitle',
-  bodyKey = 'productionWorkspace.researchers.restrictedBody',
-}) => (
-  <section className="rounded-3xl border border-nrg-border bg-[var(--nrg-surface)] p-8 shadow-sm">
-    <div className="flex max-w-3xl flex-col gap-4">
-      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-nrg-text">
-        <Lock size={22} aria-hidden="true" />
-      </div>
-      <div>
-        <h2 className="text-2xl font-bold text-nrg-text">{t(titleKey)}</h2>
-        <p className="mt-2 text-sm leading-6 text-nrg-muted">
-          {t(bodyKey, { role: user.role })}
-        </p>
-      </div>
-    </div>
-  </section>
-)
-
-const ScreenHeader: React.FC<{
-  screen: ProductionWorkspaceScreen
-  user: AuthUser
-}> = ({ screen, user }) => {
-  const activeRoute = getRoute(screen)
-  const Icon = routeIcons[screen]
-
-  return (
-    <section className="rounded-3xl border border-nrg-border bg-[var(--nrg-surface)] p-6 shadow-sm">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-[var(--glass-bg)] text-nrg-text">
-            <Icon size={24} aria-hidden="true" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-nrg-muted">
-              {t('productionWorkspace.common.workspace')}
-            </p>
-            <h1 className="mt-2 text-3xl font-bold text-nrg-text">{t(activeRoute.labelKey)}</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-nrg-muted">{t(activeRoute.descriptionKey)}</p>
-          </div>
-        </div>
-        <div className="rounded-2xl border border-nrg-border bg-[var(--glass-bg)] px-4 py-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-nrg-muted">
-            {t('productionWorkspace.common.activeAccess')}
-          </p>
-          <p className="mt-1 text-sm font-semibold text-nrg-text">
-            {t('productionWorkspace.common.tierLabel', { tier: user.tier, role: user.role })}
-          </p>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-const PublicationsScreen: React.FC<{
-  data: ProductionWorkspaceData
-  onRetry: () => void
-}> = ({ data, onRetry }) => {
+function PublicationsScreen({ data, onRetry }: { data: ProductionWorkspaceData; onRetry: () => void }) {
   const rows = data.publications.rows || []
   return (
     <section className="space-y-4">
@@ -384,7 +55,7 @@ const PublicationsScreen: React.FC<{
           t('productionWorkspace.publications.venue'),
         ]}
         rows={rows.map((row) => [
-          row.title,
+          row.title || '',
           row.research_area || '',
           formatNumber(row.year),
           formatNumber(row.citations),
@@ -395,11 +66,15 @@ const PublicationsScreen: React.FC<{
   )
 }
 
-const ResearchersScreen: React.FC<{
+function ResearchersScreen({
+  user,
+  data,
+  onRetry,
+}: {
   user: AuthUser
   data: ProductionWorkspaceData
   onRetry: () => void
-}> = ({ user, data, onRetry }) => {
+}) {
   if (user.tier > 1) return <RestrictedPanel user={user} />
 
   const rows = data.researchers.rows || []
@@ -428,10 +103,7 @@ const ResearchersScreen: React.FC<{
   )
 }
 
-const ReportsScreen: React.FC<{
-  data: ProductionWorkspaceData
-  onRetry: () => void
-}> = ({ data, onRetry }) => {
+function ReportsScreen({ data, onRetry }: { data: ProductionWorkspaceData; onRetry: () => void }) {
   const stats = data.stats.value
   const areaRows = stats?.research_area_distribution?.length
     ? stats.research_area_distribution
@@ -453,8 +125,11 @@ const ReportsScreen: React.FC<{
           [t('productionWorkspace.reports.institutions'), formatNumber(stats?.total_institutions)],
           [t('productionWorkspace.reports.labs'), formatNumber(stats?.total_labs)],
         ].map(([label, value]) => (
-          <article key={label} className="rounded-2xl border border-nrg-border bg-[var(--nrg-surface)] p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-nrg-muted">{label}</p>
+          <article
+            key={label as string}
+            className="rounded-2xl border border-nrg-border bg-[var(--nrg-surface)] p-5 shadow-sm"
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-nrg-muted">{label as string}</p>
             <p className="mt-3 text-2xl font-bold text-nrg-text">{value}</p>
           </article>
         ))}
@@ -477,10 +152,7 @@ const ReportsScreen: React.FC<{
   )
 }
 
-const IndustryScreen: React.FC<{
-  data: ProductionWorkspaceData
-  onRetry: () => void
-}> = ({ data, onRetry }) => {
+function IndustryScreen({ data, onRetry }: { data: ProductionWorkspaceData; onRetry: () => void }) {
   const rows = data.industry.rows || []
 
   return (
@@ -512,19 +184,26 @@ const IndustryScreen: React.FC<{
   )
 }
 
-const SettingsScreen: React.FC<{
+function SettingsScreen({
+  user,
+  data,
+  onRetry,
+  onLogout,
+}: {
   user: AuthUser
   data: ProductionWorkspaceData
   onRetry: () => void
   onLogout: () => void
-}> = ({ user, data, onRetry, onLogout }) => {
+}) {
   const events = data.audit.rows || []
 
   return (
     <section className="grid gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <article className="rounded-3xl border border-nrg-border bg-[var(--nrg-surface)] p-6 shadow-sm">
         <div className="flex items-center gap-3">
-          <ShieldCheck size={22} className="text-emerald-600" aria-hidden="true" />
+          <svg className="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042.133-2.482.478-3.623z" />
+          </svg>
           <h2 className="text-xl font-bold text-nrg-text">{t('productionWorkspace.settings.profileTitle')}</h2>
         </div>
         <dl className="mt-6 space-y-4 text-sm">
@@ -561,7 +240,14 @@ const SettingsScreen: React.FC<{
             onClick={onRetry}
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--glass-bg)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)] focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
           >
-            <RefreshCw size={16} aria-hidden="true" />
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
             {t('productionWorkspace.common.refresh')}
           </button>
         </div>
@@ -577,8 +263,8 @@ const SettingsScreen: React.FC<{
               t('productionWorkspace.settings.integrity'),
             ]}
             rows={events.slice(0, 8).map((event) => [
-              event.id,
-              event.action,
+              event.id || '',
+              event.action || '',
               event.status || '',
               event.integrity_status || '',
             ])}
@@ -604,10 +290,11 @@ export const ProductionWorkspaceView: React.FC<{
     <div className="nrg-app-canvas min-h-screen">
       <header className="sticky top-0 z-40 border-b border-nrg-border bg-[var(--glass-bg)] backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 lg:flex-row lg:items-center lg:justify-between">
-          <a href="/" className="flex min-h-11 items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-saffron-600 text-lg font-bold text-white">
-              N
-            </div>
+          <a
+            href="/"
+            className="flex min-h-11 items-center gap-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--nrg-focus)]"
+          >
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-saffron-600 text-lg font-bold text-white">N</div>
             <div>
               <p className="text-sm font-bold text-nrg-text">{t('productionWorkspace.header.product')}</p>
               <p className="text-xs uppercase tracking-[0.16em] text-nrg-muted">{t('productionWorkspace.header.subtitle')}</p>
@@ -623,14 +310,21 @@ export const ProductionWorkspaceView: React.FC<{
                 key={label}
                 className="inline-flex min-h-8 items-center gap-1.5 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-3 text-emerald-800"
               >
-                <ShieldCheck size={13} aria-hidden="true" />
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042.133-2.482.478-3.623z"
+                  />
+                </svg>
                 {label}
               </span>
             ))}
           </div>
           <nav aria-label={t('productionWorkspace.header.navLabel')} className="flex gap-2 overflow-x-auto">
             {visibleRoutes.map((route) => {
-              const Icon = routeIcons[route.screen]
+              const Icon = iconMap[route.screen] || BookOpen
               const active = route.screen === activeRoute.screen
               return (
                 <a
@@ -662,10 +356,18 @@ export const ProductionWorkspaceView: React.FC<{
             bodyKey="productionWorkspace.common.restrictedBody"
           />
         )}
-        {activeRouteAllowed && screen === 'publications' && <PublicationsScreen data={data} onRetry={() => onRetry('publications')} />}
-        {activeRouteAllowed && screen === 'researchers' && <ResearchersScreen user={user} data={data} onRetry={() => onRetry('researchers')} />}
-        {activeRouteAllowed && screen === 'reports' && <ReportsScreen data={data} onRetry={() => onRetry('reports')} />}
-        {activeRouteAllowed && screen === 'industry' && <IndustryScreen data={data} onRetry={() => onRetry('industry')} />}
+        {activeRouteAllowed && screen === 'publications' && (
+          <PublicationsScreen data={data} onRetry={() => onRetry('publications')} />
+        )}
+        {activeRouteAllowed && screen === 'researchers' && (
+          <ResearchersScreen user={user} data={data} onRetry={() => onRetry('researchers')} />
+        )}
+        {activeRouteAllowed && screen === 'reports' && (
+          <ReportsScreen data={data} onRetry={() => onRetry('reports')} />
+        )}
+        {activeRouteAllowed && screen === 'industry' && (
+          <IndustryScreen data={data} onRetry={() => onRetry('industry')} />
+        )}
         {activeRouteAllowed && screen === 'settings' && (
           <SettingsScreen user={user} data={data} onRetry={() => onRetry('settings')} onLogout={onLogout} />
         )}
@@ -676,83 +378,18 @@ export const ProductionWorkspaceView: React.FC<{
 
 export const ProductionWorkspace: React.FC<{ screen: ProductionWorkspaceScreen }> = ({ screen }) => {
   const { user, logout } = useAuth()
-  const [data, setData] = useState<ProductionWorkspaceData>(emptyData)
+  const { data, handleRetry } = useWorkspaceData(screen, user)
 
-  const setSection = useCallback(<K extends keyof ProductionWorkspaceData>(key: K, value: ProductionWorkspaceData[K]) => {
-    setData((current) => ({ ...current, [key]: value }))
-  }, [])
-
-  const loadScreen = useCallback(async (nextScreen: ProductionWorkspaceScreen) => {
-    if (!user) return
-    const nextRoute = getRoute(nextScreen)
-    if (!canAccessRoute(user, nextRoute)) return
-
-    if (nextScreen === 'publications') {
-      setSection('publications', { status: 'loading', rows: [] })
-      try {
-        const response = await queryService.fetchPublications(25)
-        setSection('publications', { status: 'loaded', rows: response.publications || [] })
-      } catch {
-        setSection('publications', { status: 'error', rows: [], message: t('productionWorkspace.publications.error') })
-      }
-    }
-
-    if (nextScreen === 'researchers') {
-      if (user.tier > 1) return
-      setSection('researchers', { status: 'loading', rows: [] })
-      try {
-        const response = await queryService.fetchResearchers()
-        setSection('researchers', { status: 'loaded', rows: normaliseResearcherRows(response) })
-      } catch {
-        setSection('researchers', { status: 'error', rows: [], message: t('productionWorkspace.researchers.error') })
-      }
-    }
-
-    if (nextScreen === 'reports') {
-      setSection('stats', { status: 'loading' })
-      try {
-        const response = await queryService.fetchStats()
-        setSection('stats', { status: 'loaded', value: response })
-      } catch {
-        setSection('stats', { status: 'error', message: t('productionWorkspace.reports.error') })
-      }
-    }
-
-    if (nextScreen === 'industry') {
-      setSection('industry', { status: 'loading', rows: [] })
-      try {
-        const response = await queryService.fetchStats()
-        setSection('industry', { status: 'loaded', rows: buildIndustryCapabilityRowsFromStats(response) })
-      } catch {
-        setSection('industry', { status: 'error', rows: [], message: t('productionWorkspace.industry.error') })
-      }
-    }
-
-    if (nextScreen === 'settings') {
-      setSection('audit', { status: 'loading', rows: [] })
-      try {
-        const response = await queryService.listAuditEvents(20)
-        setSection('audit', { status: 'loaded', rows: response.events })
-      } catch {
-        setSection('audit', { status: 'error', rows: [], message: t('productionWorkspace.settings.error') })
-      }
-    }
-  }, [setSection, user])
-
-  useEffect(() => {
-    void loadScreen(screen)
-  }, [loadScreen, screen])
-
-  const handleRetry = useCallback((nextScreen: ProductionWorkspaceScreen) => {
-    void loadScreen(nextScreen)
-  }, [loadScreen])
-
-  const safeUser = useMemo<AuthUser>(() => user || {
-    id: 'unknown',
-    username: 'unknown',
-    role: 'industry',
-    tier: 3,
-  }, [user])
+  const safeUser = useMemo<AuthUser>(
+    () =>
+      user || {
+        id: 'unknown',
+        username: 'unknown',
+        role: 'industry',
+        tier: 3,
+      },
+    [user],
+  )
 
   return (
     <ProductionWorkspaceView

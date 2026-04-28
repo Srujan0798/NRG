@@ -2,75 +2,11 @@
   "tier": 1,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "e91e77f5-07e7-4e82-ac5a-bb61962b745c",
-    "session_id": null,
-    "response": "The highest aggregate grant capacity for Computer Science is concentrated in a small set of national institutions. [cite:nrg-researchers:0] [cite:nrg-institutions:0]\n\n| Rank | Institution | State | Researchers | Aggregate funding |\n| --- | --- | --- | ---: | ---: |\n| 1 | IIT Madras | Tamil Nadu | 71 | \u20b9187.20 Cr |\n| 2 | IIT Bombay | Maharashtra | 66 | \u20b9171.50 Cr |\n\n- Top institution: IIT Madras with \u20b9187.20 Cr across 71 matching researchers.\n- The top five institutions together represent \u20b9358.70 Cr in aggregate researcher-reported funding.\n- Figures are derived from NRG researcher funding fields and institution metadata, not from individual personal records.\n",
-    "status": "success",
-    "tier": 1,
-    "intent": "funding_aggregate",
-    "routing_decision": "fast_path",
-    "verification_status": true,
-    "citation_validity": 1.0,
-    "citations": [
-      {
-        "id": "nrg-researchers:0",
-        "pub_id": "nrg-researchers",
-        "paper_id": "nrg-researchers",
-        "chunk_id": "0",
-        "title": "NRG funding corpus: aggregate institution evidence",
-        "authors": [
-          "National Research Graph"
-        ],
-        "year": 2026,
-        "source": "researchers",
-        "chunk_text": "Aggregate funding and matching record counts are computed from the runtime database or deterministic release seed when local tables are empty.",
-        "relevance_score": 1.0
-      },
-      {
-        "id": "nrg-institutions:0",
-        "pub_id": "nrg-institutions",
-        "paper_id": "nrg-institutions",
-        "chunk_id": "0",
-        "title": "NRG institution metadata",
-        "authors": [
-          "National Research Graph"
-        ],
-        "year": 2026,
-        "source": "institutions",
-        "chunk_text": "Institution names, states, and identifiers are joined from NRG institution metadata.",
-        "relevance_score": 1.0
-      }
-    ],
+    "status": "blocked",
+    "response": "Security violation: RATE_LIMITED",
+    "http_status": 400,
     "warnings": [
-      {
-        "message": "Fast bounded synthesis used for aggregate funding query."
-      }
-    ],
-    "retrieval_sources": [
-      "researchers",
-      "institutions"
-    ],
-    "provenance": {
-      "planner": "fast_path",
-      "synth": "rule_based",
-      "verifier": "faithfulness: 1.0",
-      "cloud_synthesis_used": false,
-      "nrg-researchers": {
-        "found_in": "researchers",
-        "source": "fast_path"
-      },
-      "nrg-institutions": {
-        "found_in": "institutions",
-        "source": "fast_path"
-      }
-    },
-    "synthesis_method": "rule_based",
-    "conversation_history": [
-      {
-        "query": "top AI funding institutions",
-        "response": "Computer Science"
-      }
-    ],
-    "audit_event_id": "fast_path_ui_audit"
+      "Security violation: RATE_LIMITED"
+    ]
   }
 }
