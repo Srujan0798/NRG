@@ -1,0 +1,57 @@
+L-4 Performance Baseline (Local)
+Date: 2026-04-29 IST
+Status: BLOCKED - local Docker daemon/API unavailable
+
+Requested procedure:
+1. docker compose up -d
+2. Warm up: 5 test queries
+3. Measure cold /api/query
+4. Measure warm /api/query
+
+Observed blocker:
+
+Command:
+  docker compose up -d
+
+Result:
+  unable to get image 'edoburu/pgbouncer:latest': Cannot connect to the Docker daemon at unix:///Users/srujansai/.colima/default/docker.sock. Is the docker daemon running?
+
+Colima checks:
+
+Command:
+  colima list
+
+Result:
+  PROFILE    STATUS    ARCH       CPUS    MEMORY    DISK      RUNTIME    ADDRESS
+  default    Broken    aarch64    4       8GiB      100GiB
+
+Command:
+  docker info
+
+Result:
+  Server:
+  Cannot connect to the Docker daemon at unix:///Users/srujansai/.colima/default/docker.sock. Is the docker daemon running?
+
+Local API check:
+
+Command:
+  curl -sS http://127.0.0.1:8000/health
+
+Result:
+  curl: (28) Failed to connect to 127.0.0.1 port 8000 after 7846 ms: Couldn't connect to server
+
+Additional local API check:
+
+Command:
+  curl -sS http://127.0.0.1:8001/health
+
+Result:
+  API responds, but dependencies required for /api/query are unavailable:
+  - database.status=error: PostgreSQL connection refused on localhost:5432
+  - qdrant.status=unavailable: connection refused
+  - vector_drift.status=unhealthy
+
+Conclusion:
+  No cold/warm latency numbers were collected. The local performance baseline
+  remains blocked until Docker/Colima is repaired or another local stack is
+  provided.

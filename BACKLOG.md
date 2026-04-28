@@ -14,6 +14,24 @@
 
 ---
 
+## 2026-04-29 L-1 FINAL CODE REVIEW BLOCKERS
+
+Source: `evidence/2026-04-28/code_review_final.md`.
+Instruction: record critical issues only; do not fix in this local-review pass.
+
+| ID | Severity | Finding | Owner |
+|---|---|---|---|
+| L1-CR-001 | P0 | `src/security/pii_encryption.py` fails open: missing/invalid `NRG_PII_ENCRYPTION_KEY` can fall back to an all-zero key, and `encrypt()` may store plaintext. | Security |
+| L1-CR-002 | P0 | `src/security/query_allowlist.py` logs blocked SQL previews without PII/secret redaction. | Security |
+| L1-CR-003 | P0 | `src/security/dpdp_compliance.py` uses `hashlib` without importing it; deletion can commit before audit logging fails. | Security |
+| L1-CR-004 | P0 | `src/security/egress_guard/__init__.py` fails open when the allowlist file is missing and can return unfiltered schema. | Security |
+| L1-CR-005 | P0 | `src/api/query_helpers.py` references `os.getenv` without importing `os`; modular `/query` publication fast path can 500. | Backend |
+| L1-CR-006 | P0 | `src/api/main.py` and `src/api/query_helpers.py` duplicated fast paths have drifted, losing local bounded-query and citation/provenance behavior on router path. | Backend |
+| L1-CR-007 | P1 | Async `/query` handlers call synchronous workflow execution directly, risking event-loop stalls on cache misses. | Backend |
+| L1-CR-008 | P1 | `TextToSQLSkill` is cached as a singleton but closed after every SQL request, disposing the PostgreSQL engine and defeating pooling. | Backend |
+
+---
+
 ## 2026-04-28 GURU RECOVERY + CO-WORK AUDIT CLASSIFICATION
 
 Source of truth: `docs/specs/DISPATCH_2026-04-28.md`. This section tracks the post-violation recovery work and the external co-work audit (K-1..K-7) classification.
