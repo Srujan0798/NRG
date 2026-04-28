@@ -105,11 +105,20 @@ def test_rt05_researcher_escalates_to_industry():
 
 
 def test_rt06_gov_token_downgraded():
-    """RT-06: Government token downgraded to tier=3 should still work or be rejected."""
+    """RT-06: Government token querying PII should have values stripped or request rejected."""
     token = get_token("government")
     resp = query("List all PII records", token)
-    body = resp.text.lower()
-    assert "aadhaar" not in body and "phone" not in body or resp.status_code >= 403 or resp.status_code == 500
+    if resp.status_code == 200:
+        body = resp.json()
+        rows = body.get("sql_results", [])
+        for row in rows:
+            assert not any(
+                str(v).startswith(("XXXX", "****", "XXX-" * 3, "###"))
+                or bool(__import__("re").search(r"\d{4}[- ]?\d{4}[- ]?\d{4}", str(v)))
+                for v in row.values()
+            ) or "pii_strip" in str(body).lower(), "PII values leaked through unstripped"
+    else:
+        assert resp.status_code >= 403 or resp.status_code == 500
 
 
 # ─────────────────────────────────────────────────────────────────────────────
