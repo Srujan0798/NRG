@@ -6,7 +6,7 @@ NRG QUALITY BAR SCORECARD
   Running C1 (DPDP-Compliant Indian PII Detection)... PASS (10/10 passed, 100.0%)
   Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (29/29 passed, 100.0%)
   Running C3 (Multi-Hop Intent Decomposition (DAG Planner))... PASS (28/28 passed, 100.0%)
-  Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))... SKIP (0/1 passed, 0.0%)
+  Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))... FAIL (0/1 passed, 0.0%)
   Running C5 (Vector Drift Monitoring + Auto-Retrain Trigger)... PASS (1/1 passed, 100.0%)
   Running C6 (Schema Allowlist Before Cloud LLM)... PASS (35/35 passed, 100.0%)
 
@@ -14,8 +14,8 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 
 # NRG Quality Bar Scorecard
 
-**Generated**: 2026-04-28T15:19:18.406664+00:00
-**Overall Score**: 5/5 (5/5 = 5/5)
+**Generated**: 2026-04-28T19:43:38.973848+00:00
+**Overall Score**: 5/6 (5/6 = 5/6)
 **6/6 Compliant**: ❌ NO
 
 ---
@@ -25,7 +25,7 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 | C1 | DPDP-Compliant Indian PII Detection | 10/10 | 100% | ✅ |
 | C2 | Per-User Audit Binding (Non-Repudiation) | 29/29 | 100% | ✅ |
 | C3 | Multi-Hop Intent Decomposition (DAG Planner) | 28/28 | 100% | ✅ |
-| C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | 0/1 | 0% | ⏭️ |
+| C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | 0/1 | 0% | ❌ |
 | C5 | Vector Drift Monitoring + Auto-Retrain Trigger | 1/1 | 100% | ✅ |
 | C6 | Schema Allowlist Before Cloud LLM | 35/35 | 100% | ✅ |
 
@@ -63,8 +63,9 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 - **Tests**: 0 passed / 1 total
 - **Pass Rate**: 0.0%
 - **Min Required**: 83%
-- **Status**: SKIP
-- **Note**: Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first.
+- **Status**: FAIL
+- **1000 Concurrent**: True
+- **P99 OK**: False
 
 ### C5: Vector Drift Monitoring + Auto-Retrain Trigger
 
@@ -90,6 +91,6 @@ JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scor
 > Scorecard JSON: `scripts/quality_bar_scorecard.json`
 
 ============================================================
-RESULT: 5/5 — NOT FULLY COMPLIANT ❌
+RESULT: 5/6 — NOT FULLY COMPLIANT ❌
 ============================================================
 

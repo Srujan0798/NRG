@@ -56,4 +56,4 @@ tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_
 tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[17-Pipeline Progression: Are we moving from Low TRL to High TRL?-expected_patterns16] [32mPASSED[0m[32m [ 97%][0m
 tests/benchmarks/test_dhairya_regression.py::test_dhairya_accuracy_target [32mPASSED[0m[32m [100%][0m
 
-[32m============================== [32m[1m43 passed[0m[32m in 2.03s[0m[32m ==============================[0m
+[32m============================= [32m[1m43 passed[0m[32m in 11.10s[0m[32m ==============================[0m

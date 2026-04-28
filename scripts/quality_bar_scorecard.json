@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-04-28T15:19:18.406664+00:00",
-  "overall": "5/5",
+  "timestamp": "2026-04-28T19:43:38.973848+00:00",
+  "overall": "5/6",
   "is_6_6": false,
   "scores": {
     "C1": "PASS",
     "C2": "PASS",
     "C3": "PASS",
-    "C4": "SKIP",
+    "C4": "FAIL",
     "C5": "PASS",
     "C6": "PASS"
   },
@@ -25,7 +25,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 2.02s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 0.88s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C2": {
@@ -42,7 +42,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 29 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 89%]\n...                                                                      [100%]\n\n============================== 29 passed in 5.85s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 29 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 89%]\n...                                                                      [100%]\n\n============================== 29 passed in 1.28s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C3": {
@@ -59,7 +59,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================= 28 passed in 24.97s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================== 28 passed in 9.43s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     },
     "C4": {
@@ -71,13 +71,15 @@
       "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
       "result": {
         "passed": 0,
-        "failed": 0,
-        "skipped": 1,
+        "failed": 1,
+        "skipped": 0,
         "total": 1,
-        "exit_code": 0,
+        "exit_code": 1,
         "passed_rate": 0.0,
-        "status": "api_not_running",
-        "note": "Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first."
+        "has_p99_ok": false,
+        "has_concurrent_1000": true,
+        "p99_lines": [],
+        "raw_output": "                                                            500     0(0.00%) |  33898   13491   43101  36000 |   27.10        0.00\nPOST     /query                                                                           311 311(100.00%) |   6089       1   11810   6100 |   20.10       20.10\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                       835  335(40.12%) |  22765       1   43101  22000 |   48.80       21.70\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nGET      /health/all                                                                       48   43(89.58%) |   8116       1   35953   4900 |    2.40        2.40\nPOST     /login                                                                           814     0(0.00%) |  37689   13491   44851  41000 |   27.10        0.00\nPOST     /query                                                                           605 605(100.00%) |   4520       0   11810   4900 |   27.90       27.90\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                      1467  648(44.17%) |  23042       0   44851  22000 |   57.40       30.30\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nGET      /health/all                                                                       89   82(92.13%) |   5135       0   35953    540 |    3.50        3.20\nPOST     /login                                                                          1000     0(0.00%) |  38440   13491   44851  41000 |   18.30        0.00\nPOST     /query                                                                          1068 1068(100.00%) |   2695       0   11810    530 |   40.30       40.30\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                      2157 1150(53.31%) |  19367       0   44851  12000 |   62.10       43.50\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nGET      /health/all                                                                      132  125(94.70%) |   3772       0   35953    500 |    8.00        7.30\nPOST     /login                                                                          1000     0(0.00%) |  38440   13491   44851  41000 |   68.30        0.00\nPOST     /query                                                                          1804 1711(94.84%) |   3637       0   39729    510 |   98.90       98.90\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                      2936 1836(62.53%) |  15497       0   44851   4800 |  175.20      106.20\n\n"
       }
     },
     "C5": {
@@ -109,7 +111,7 @@
         "has_cosine_check": false,
         "script_completed": false,
         "has_drift_check": true,
-        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-04-28 20:49:01 INFO     Starting NRG Vector Drift Detection\n2026-04-28 20:49:01 INFO     SLO target: drift_score >= 0.85\n2026-04-28 20:49:01 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-04-28 20:49:02 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 715.43ms\n"
+        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-04-29 01:13:20 INFO     Starting NRG Vector Drift Detection\n2026-04-29 01:13:20 INFO     SLO target: drift_score >= 0.85\n2026-04-29 01:13:20 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-04-29 01:13:21 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 640.5ms\n"
       }
     },
     "C6": {
@@ -126,7 +128,7 @@
         "passed_rate": 1.0,
         "errors": [],
         "exit_code": 0,
-        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 6.35s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 6.92s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
       }
     }
   }

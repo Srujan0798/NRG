@@ -1,4 +1,5 @@
 import hashlib
+import os
 import re
 import threading
 import time
@@ -10,6 +11,10 @@ from typing import Dict, Any, Optional
 REJECTED_QUERY_WINDOW_SECONDS = 600
 REJECTED_QUERY_THRESHOLD = 5
 RATE_LIMIT_DURATION_SECONDS = 60
+
+
+def _is_quota_disabled() -> bool:
+    return os.getenv("NRG_QUOTA_DISABLED", "").lower() in {"1", "true", "yes"}
 
 _DEVANAGARI_TO_LATIN = {
     "\u0916": "kh", "\u0917": "gh", "\u0918": "jh", "\u0919": "nh",
@@ -354,6 +359,10 @@ class PromptSanitiser:
                 "egress_exfiltration",
                 re.compile(r"\b(?:query|lookup|resolve)\b.*\btxt\s+records?\b"),
             ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"\b(?:websocket|wss?://)\b.*\b(?:send\s+all\s+data|evil\.example\.com|exfil|external\s+host)\b"),
+            ),
             _Rule("ssrf", re.compile(r"https?://(169\.254\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|10\.)")),
             _Rule("ssrf", re.compile(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)[:/]")),
             _Rule("ssrf", re.compile(r"file:///")),
@@ -402,6 +411,8 @@ class PromptSanitiser:
 
     def _record_rejected_query(self, identifier: str) -> bool:
         """Record a rejected query for a user/IP. Returns True if rate-limited."""
+        if _is_quota_disabled():
+            return False
         now = time.time()
         with self._lock:
             cutoff = now - REJECTED_QUERY_WINDOW_SECONDS
@@ -417,6 +428,8 @@ class PromptSanitiser:
 
     def is_rate_limited(self, identifier: str) -> bool:
         """Check if an identifier is currently rate-limited due to adversarial behavior."""
+        if _is_quota_disabled():
+            return False
         with self._lock:
             expiry = self._rate_limited.get(identifier, 0)
             if expiry and time.time() < expiry:
