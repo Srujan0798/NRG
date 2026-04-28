@@ -1,0 +1,35 @@
+{
+  "timestamp": "2026-04-28T22:34:52+05:30",
+  "protocol": "K-2",
+  "run": "100 users, spawn-rate 10, run-time 5m",
+  "host": "http://localhost:8000",
+  "status": "PASS",
+  "summary": "P99=3200ms @ 100 users, error_rate=0.0% on POST /query; aggregate p99=4600ms including login/setup traffic.",
+  "total_requests": 16251,
+  "requests_per_second": 54.39,
+  "failure_rate": 0.0,
+  "p50_latency_ms": 400.0,
+  "p95_latency_ms": 1900.0,
+  "p99_latency_ms": 3200.0,
+  "target_endpoint": "POST /query",
+  "target_requests": 15780,
+  "target_requests_per_second": 52.81,
+  "target_failure_rate": 0.0,
+  "pass_criteria": {
+    "failure_rate_lt_1_percent": true,
+    "query_p95_lt_2000_ms": true,
+    "query_p99_lt_5000_ms": true
+  },
+  "aggregate_metrics": {
+    "p50_latency_ms": 400.0,
+    "p95_latency_ms": 2000.0,
+    "p99_latency_ms": 4600.0,
+    "max_latency_ms": 79991.11170800007
+  },
+  "raw_evidence": [
+    "evidence/2026-04-28/K2_locust_100u_v2_stats.csv",
+    "evidence/2026-04-28/K2_locust_100u_v2_failures.csv",
+    "evidence/2026-04-28/K2_locust_100u_v2_exceptions.csv",
+    "evidence/2026-04-28/K2_locust_100u_v2_stats_history.csv"
+  ]
+}
