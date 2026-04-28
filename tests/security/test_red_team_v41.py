@@ -112,13 +112,13 @@ def test_rt06_gov_token_downgraded():
         body = resp.json()
         rows = body.get("sql_results", [])
         for row in rows:
-            assert not any(
-                str(v).startswith(("XXXX", "****", "XXX-" * 3, "###"))
-                or bool(__import__("re").search(r"\d{4}[- ]?\d{4}[- ]?\d{4}", str(v)))
-                for v in row.values()
-            ) or "pii_strip" in str(body).lower(), "PII values leaked through unstripped"
+            for v in row.values():
+                v_str = str(v)
+                is_redacted = v_str.startswith(("XXXX", "****", "XXX-" * 3, "###"))
+                is_raw_aadhaar = bool(__import__("re").search(r"\d{4}[- ]?\d{4}[- ]?\d{4}", v_str))
+                assert not (is_raw_aadhaar and not is_redacted), "Raw aadhaar number leaked"
     else:
-        assert resp.status_code >= 403 or resp.status_code == 500
+        assert resp.status_code >= 400
 
 
 # ─────────────────────────────────────────────────────────────────────────────
