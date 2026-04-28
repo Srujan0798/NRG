@@ -1,5 +1,7 @@
 """Tests for Text-to-SQL Sandbox."""
 
+import os
+
 import pytest
 
 import src.skills.text_to_sql.sandbox as sandbox_module
@@ -146,6 +148,7 @@ def test_sandbox_uses_database_url_when_present(monkeypatch):
         seen["connection_string"] = connection_string
         return FakeEngine()
 
+    monkeypatch.setattr(sandbox_module, "create_engine", _capture_engine)
     monkeypatch.setenv("DATABASE_URL", os.environ.get("TEST_DB_URL", "postgresql://test:test@localhost:5432/nrg_test"))
     sandbox_module.Sandbox()
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """B4 fast path verification - verify SQL acceptance works without RAG."""
-import subprocess, json, os
+import os
+import subprocess
 
 log = []
 
@@ -77,14 +78,18 @@ log.append(f"PII block: {r.stdout}\n")
 
 # Check minimax in logs
 r = subprocess.run(["tail", "-50", "/tmp/uvicorn.log"], capture_output=True, text=True, timeout=5)
-lines = [l for l in r.stdout.split('\n') if any(x in l.lower() for x in ['minimax', 'mesh', 'synthesizer', 'local llm', 'cloud llm'])]
-for l in lines[:5]:
-    print(f"Log: {l[:200]}")
-    log.append(f"Log: {l}\n")
+lines = [
+    line
+    for line in r.stdout.split("\n")
+    if any(x in line.lower() for x in ["minimax", "mesh", "synthesizer", "local llm", "cloud llm"])
+]
+for line in lines[:5]:
+    print(f"Log: {line[:200]}")
+    log.append(f"Log: {line}\n")
 
 # Verdict
 log.append("\n=== VERDICT ===\n")
-log.append("DEMO READY: SQL queries work with local synthesis (cloud minimax times out, falls back to local LLM)\n")
+log.append("ACCEPTANCE READY: SQL queries work with local synthesis (cloud minimax times out, falls back to local LLM)\n")
 log.append("NOT READY: RAG/Knowledge graph (Qdrant collection missing - vectors not ingested)\n")
 
 os.makedirs("evidence/2026-04-25/critical_blockers", exist_ok=True)
