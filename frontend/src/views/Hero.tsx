@@ -50,11 +50,17 @@ const tierCopy: Record<string, { label: string; className: string; scope: string
   },
 }
 
+const HERO_VIEW_COPY = {
+  logout: 'Logout',
+  viewingAs: 'You are viewing as',
+}
+
 export const Hero: React.FC = () => {
   const bootQuery = typeof window === 'undefined' ? '' : window.__nrgBootQuery || ''
   const shouldSubmitBootQuery = typeof window !== 'undefined' && window.__nrgBootSubmit === true && bootQuery.trim().length > 0
   const [searchValue, setSearchValue] = useState(bootQuery)
   const [lastQuery, setLastQuery] = useState(shouldSubmitBootQuery ? bootQuery.trim() : '')
+  const [streamNonce, setStreamNonce] = useState(0)
   const [selectedCitation, setSelectedCitation] = useState<Citation | null>(null)
   const [isCitationOpen, setIsCitationOpen] = useState(false)
   const [isSlowQuery, setIsSlowQuery] = useState(false)
@@ -72,6 +78,7 @@ export const Hero: React.FC = () => {
       window.__nrgBootSubmit = false
     }
     setLastQuery(query)
+    setStreamNonce((current) => current + 1)
     setIsSlowQuery(false)
   }
 
@@ -101,12 +108,12 @@ export const Hero: React.FC = () => {
       <section className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-6xl flex-col gap-7">
         <header className="flex flex-col gap-4 border-b border-nrg-border pb-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-base font-bold text-[#ff8b4a]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-slate-950 text-base font-bold text-[var(--nrg-saffron-400)]">
               न
             </div>
             <div>
               <p className="font-devanagari text-lg font-bold leading-tight">राष्ट्रीय गवेषण मंच</p>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-nrg-muted">National Research Graph</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-nrg-muted">{heroCopy.productName}</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -115,8 +122,9 @@ export const Hero: React.FC = () => {
               type="button"
               onClick={() => void logout()}
               className="min-h-10 rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] px-3 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
+              data-testid="logout-button"
             >
-              Logout
+              {HERO_VIEW_COPY.logout}
             </button>
           </div>
         </header>
@@ -130,7 +138,7 @@ export const Hero: React.FC = () => {
         </div>
 
         <div className={`rounded-lg border px-4 py-3 text-sm font-medium ${tier.className}`} data-testid="tier-banner">
-          You are viewing as {tier.label}. {tier.scope}
+          {HERO_VIEW_COPY.viewingAs} {tier.label}. {tier.scope}
         </div>
 
         <div className="sticky top-0 z-30 rounded-lg bg-[var(--nrg-app-bg)] py-2 sm:static sm:bg-transparent sm:py-0">
@@ -152,7 +160,7 @@ export const Hero: React.FC = () => {
               <QueryPhaseProgress domain={roleToDomain(user?.role)} isSlowQuery={isSlowQuery} />
             )}
             <StreamingAnswerPanel
-              key={`${user?.role || 'anonymous'}:${lastQuery}`}
+              key={`${user?.role || 'anonymous'}:${streamNonce}:${lastQuery}`}
               query={lastQuery}
               onCitationClick={handleCitationClick}
               onProofOpen={handleProofOpen}

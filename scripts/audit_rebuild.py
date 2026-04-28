@@ -182,6 +182,7 @@ def verify_chain_file(chain_path: str, chain_key: str) -> tuple[bool, list[str]]
     """Verify a chain file and return (valid, errors)."""
     errors = []
     prev_hash = genesis_hash()
+    key_manager = get_per_user_key_manager(chain_key)
 
     with open(chain_path) as f:
         for line_num, line in enumerate(f, 1):
@@ -202,6 +203,20 @@ def verify_chain_file(chain_path: str, chain_key: str) -> tuple[bool, list[str]]
                 
                 if computed_hash != recorded_hash:
                     errors.append(f"Line {line_num}: hash mismatch")
+
+                stored_binding = event_data.get("per_user_binding")
+                if stored_binding and event.user_id != "system":
+                    if event.jwt_kid is not None or event.request_fingerprint is not None:
+                        valid_binding, binding_error = key_manager.verify_binding(
+                            user_id=event.user_id or "system",
+                            jwt_kid=event.jwt_kid,
+                            request_fingerprint=event.request_fingerprint,
+                            chain_hash=recorded_hash,
+                            event_serialized=event.serialize(),
+                            stored_binding=stored_binding,
+                        )
+                        if not valid_binding:
+                            errors.append(f"Line {line_num}: per-user binding failure: {binding_error}")
                 
                 prev_hash = recorded_hash
                 
@@ -238,7 +253,7 @@ def main():
     parser.add_argument("--chain-key", default=None, help="Override chain key")
     args = parser.parse_args()
 
-    audit_dir = Path(".audit")
+    audit_dir = Path(os.environ.get("NRG_AUDIT_DIR", ".audit"))
     chain_file = audit_dir / "chain.jsonl"
     timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     backup_file = audit_dir / f"chain_corrupted_backup_{timestamp}.jsonl"

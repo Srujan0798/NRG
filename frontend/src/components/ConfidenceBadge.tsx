@@ -42,6 +42,10 @@ const CONFIG: Record<ConfidenceLevel, {
   },
 }
 
+const CONFIDENCE_COPY = {
+  emptySignals: 'No additional verification signals.',
+}
+
 export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({
   level,
   score,
@@ -97,7 +101,7 @@ export const ConfidenceBadge: React.FC<ConfidenceBadgeProps> = ({
               ))}
             </ul>
           ) : (
-            <p className="text-gray-500">No additional verification signals.</p>
+            <p className="text-gray-500">{CONFIDENCE_COPY.emptySignals}</p>
           )}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-white border-r border-b border-gray-200" />
         </div>

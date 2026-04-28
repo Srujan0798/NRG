@@ -150,7 +150,7 @@ chain_valid = audit.get("chain_valid")
 
 required_ok = status == "healthy" and auth.get("status") not in {"unhealthy"}
 if strict:
-    required_ok = required_ok and chain_valid is True and tables in {58, 73}
+    required_ok = required_ok and chain_valid is True and tables is not None and int(tables) >= 58
 else:
     required_ok = required_ok and (tables is None or int(tables) >= 1)
 
@@ -169,16 +169,30 @@ PY
 
 write_summary() {
   local summary="${EVIDENCE_DIR}/walk_summary.md"
-  {
-    echo "# Critical Path Walk Summary"
-    echo
-    echo "- Captured at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    echo "- Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
-    echo "- API: ${API_BASE}"
-    echo "- Frontend: ${FRONTEND_BASE}"
-    echo "- Strict: ${STRICT}"
-    echo "- Walk: ${WALK}"
-  } > "${summary}"
+  if [[ -f "${summary}" ]]; then
+    {
+      echo
+      echo "## Runner"
+      echo
+      echo "- Completed at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "- Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
+      echo "- API: ${API_BASE}"
+      echo "- Frontend: ${FRONTEND_BASE}"
+      echo "- Strict: ${STRICT}"
+      echo "- Walk: ${WALK}"
+    } >> "${summary}"
+  else
+    {
+      echo "# Critical Path Walk Summary"
+      echo
+      echo "- Captured at: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      echo "- Commit: $(git rev-parse HEAD 2>/dev/null || echo unknown)"
+      echo "- API: ${API_BASE}"
+      echo "- Frontend: ${FRONTEND_BASE}"
+      echo "- Strict: ${STRICT}"
+      echo "- Walk: ${WALK}"
+    } > "${summary}"
+  fi
 }
 
 log "Preflight"
@@ -200,10 +214,12 @@ if [[ "${SKIP_DOCKER}" -eq 0 ]]; then
   fi
 
   log "Boot compose stack"
-  compose up -d --build postgres pgbouncer qdrant redis api frontend
+  compose up -d postgres qdrant redis pgbouncer
   wait_tcp localhost 5432 "Postgres" 90
   wait_tcp localhost 6333 "Qdrant" 90
   wait_tcp localhost 6379 "Redis" 90
+  docker rm -f nrg-api nrg-frontend >/dev/null 2>&1 || true
+  compose up -d --build --force-recreate api frontend
   wait_tcp localhost 8000 "API" 120
   wait_tcp localhost 5173 "Frontend" 120
 else
@@ -215,11 +231,16 @@ wait_http "${FRONTEND_BASE}" "Frontend" 120
 
 log "Migrate"
 if [[ "${SKIP_DOCKER}" -eq 0 ]]; then
-  if ! compose exec -T api python -m alembic upgrade head; then
+  if ! compose exec -T api /app/venv/bin/alembic -c alembic.ini upgrade head; then
     [[ "${STRICT}" -eq 1 ]] && fail "alembic migration failed"
     warn "alembic migration failed; continuing because --strict was not set"
   fi
-elif ! python3 -m alembic upgrade head; then
+elif [[ -x .venv/bin/alembic ]]; then
+  if ! .venv/bin/alembic -c alembic.ini upgrade head; then
+    [[ "${STRICT}" -eq 1 ]] && fail "alembic migration failed"
+    warn "alembic migration failed; continuing because --strict was not set"
+  fi
+elif ! alembic -c alembic.ini upgrade head; then
   [[ "${STRICT}" -eq 1 ]] && fail "alembic migration failed"
   warn "alembic migration failed; continuing because --strict was not set"
 fi

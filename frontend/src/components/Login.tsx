@@ -27,18 +27,18 @@ const PERSONA_LABELS: Record<PersonaKey, { en: string; hi: string; tier: string;
 
 const PERSONA_CREDENTIALS: Record<PersonaKey, { username: string; password: string; accent: string }> = {
   researcher: {
-    username: 'researcher_user',
-    password: 'researcher-pass',
+    username: 'researcher@iitgn.ac.in',
+    password: 'Researcher@2026',
     accent: 'var(--nrg-chart-5)',
   },
   government: {
-    username: 'gov_user',
-    password: 'government-pass',
+    username: 'ministry@nrg.gov.in',
+    password: 'Ministry@2026',
     accent: 'var(--nrg-chart-2)',
   },
   industry: {
-    username: 'industry_user',
-    password: 'industry-pass',
+    username: 'partner@industry.in',
+    password: 'Industry@2026',
     accent: 'var(--nrg-chart-3)',
   },
 }
@@ -61,6 +61,26 @@ const TRUST_MARKERS = [
   'Audit chain valid',
   'Tier-shaped responses',
 ]
+
+const LOGIN_COPY = {
+  productName: 'National Research Graph',
+  consoleEyebrow: 'Sovereign research intelligence console',
+  heroTitle: 'Verified research, funding, patent, and readiness intelligence in one controlled workspace.',
+  heroBody: 'Role-bound access for researchers, government reviewers, and industry partners. Every response is shaped by tier policy and tied to audit evidence.',
+  signIn: 'Sign in',
+  accessBound: 'Access is bound to your selected tier.',
+  currentWorkspace: 'Current workspace credentials are pre-filled for this role.',
+  emailLabel: 'Email',
+  usernamePlaceholder: 'researcher@iitgn.ac.in',
+  signingIn: 'Signing you in...',
+  showPassword: 'Show',
+  hidePassword: 'Hide',
+  hidePasswordLabel: 'Hide password',
+  showPasswordLabel: 'Show password',
+  securityLine: 'Kong Gateway · JWT RS256 · HMAC audit binding',
+  footerGov: 'Gov of India · DST · IIT Gandhinagar',
+  footerPreview: 'Frontend local preview · API health checked separately',
+}
 
 interface LoginProps {
   onLogin: (username: string, password: string) => Promise<boolean>
@@ -94,8 +114,8 @@ const AshokaLogo: React.FC<{ className?: string }> = ({ className }) => (
 
 const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }) => {
   const [selectedPersona, setSelectedPersona] = useState<PersonaKey>('researcher')
-  const [username, setUsername] = useState('researcher_user')
-  const [password, setPassword] = useState('researcher-pass')
+  const [username, setUsername] = useState('researcher@iitgn.ac.in')
+  const [password, setPassword] = useState('Researcher@2026')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [focusedField, setFocusedField] = useState<'username' | 'password' | null>(null)
@@ -134,7 +154,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
   const accentColor = PERSONA_CREDENTIALS[selectedPersona].accent
 
   return (
-    <div className="min-h-screen bg-[#f7f8f4] text-slate-950">
+    <div className="min-h-screen bg-[var(--nrg-bg)] text-slate-950">
       {!backendAvailable && (
         <div className="w-full bg-red-700 text-white text-center py-2 px-4 text-sm font-medium flex items-center justify-center gap-2">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,20 +170,20 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
       )}
 
       <main id="main-content" tabIndex={-1} className="min-h-screen">
-        <div className="mx-auto flex min-h-screen w-full max-w-[1440px] flex-col px-5 py-5 sm:px-8 lg:px-10">
+        <div className="mx-auto flex min-h-screen w-full max-w-[90rem] flex-col px-5 py-5 sm:px-8 lg:px-10">
           <header className="flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <div className="relative h-14 w-14 shrink-0">
                 <AshokaLogo className="h-14 w-14" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-[#ff8b4a]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-950 text-sm font-bold text-[var(--nrg-saffron-400)]">
                     न
                   </div>
                 </div>
               </div>
               <div>
                 <p className="font-devanagari text-xl font-bold leading-tight text-slate-950">राष्ट्रीय गवेषण मंच</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">National Research Graph</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{LOGIN_COPY.productName}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600">
@@ -175,18 +195,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
             </div>
           </header>
 
-          <section className="grid flex-1 gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-stretch">
+          <section className="grid flex-1 gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_26.25rem] lg:items-stretch">
             <div className="flex min-w-0 flex-col gap-6">
               <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm lg:p-8">
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
                   <span className="h-2 w-2 rounded-full bg-emerald-600" />
-                  Sovereign research intelligence console
+                  {LOGIN_COPY.consoleEyebrow}
                 </div>
                 <h2 className="max-w-4xl text-3xl font-bold leading-tight text-slate-950 sm:text-4xl lg:text-5xl">
-                  Verified research, funding, patent, and readiness intelligence in one controlled workspace.
+                  {LOGIN_COPY.heroTitle}
                 </h2>
                 <p className="mt-4 max-w-3xl text-base leading-7 text-slate-600">
-                  Role-bound access for researchers, government reviewers, and industry partners. Every response is shaped by tier policy and tied to audit evidence.
+                  {LOGIN_COPY.heroBody}
                 </p>
               </div>
 
@@ -226,7 +246,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                           </span>
                           <span className="font-semibold text-slate-950">{info.en}</span>
                         </div>
-                        <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[11px] text-slate-500">{info.tier}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[0.6875rem] text-slate-500">{info.tier}</span>
                       </div>
                       <p className="text-sm leading-6 text-slate-600">{info.desc}</p>
                     </button>
@@ -241,8 +261,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   <LogInIcon className="h-5 w-5" />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-950">Sign in</h1>
-                  <p className="text-sm text-slate-500">Access is bound to your selected tier.</p>
+                  <h1 className="text-2xl font-bold text-slate-950">{LOGIN_COPY.signIn}</h1>
+                  <p className="text-sm text-slate-500">{LOGIN_COPY.accessBound}</p>
                 </div>
               </div>
 
@@ -253,18 +273,18 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   </span>
                   <span className="text-slate-400">·</span>
                   <span className="text-sm text-slate-600">{PERSONA_LABELS[selectedPersona].en}</span>
-                  <span className="ml-auto rounded-full bg-white px-2 py-1 font-mono text-[11px] text-slate-500">
+                  <span className="ml-auto rounded-full bg-white px-2 py-1 font-mono text-[0.6875rem] text-slate-500">
                     {PERSONA_LABELS[selectedPersona].tier}
                   </span>
                 </div>
                 <p className="mt-2 text-xs leading-5 text-slate-500">
-                  Current workspace credentials are pre-filled for this role.
+                  {LOGIN_COPY.currentWorkspace}
                 </p>
               </div>
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             <label className="block">
-              <span className="block text-sm font-medium text-slate-900 mb-2">Username</span>
+              <span className="block text-sm font-medium text-slate-900 mb-2">{LOGIN_COPY.emailLabel}</span>
               <div className="relative">
                 <div
                   className="absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-200"
@@ -284,7 +304,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   onBlur={() => setFocusedField(null)}
                   className="nrg-input pl-11"
                   autoComplete="username"
-                  placeholder="researcher_user"
+                  placeholder={LOGIN_COPY.usernamePlaceholder}
                   aria-invalid={Boolean(fieldErrors.username)}
                   aria-describedby={fieldErrors.username ? 'username-error' : undefined}
                   style={{ borderColor: focusedField === 'username' ? accentColor : undefined }}
@@ -328,9 +348,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
                   className="absolute right-3 top-1/2 min-h-9 -translate-y-1/2 rounded-md px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? LOGIN_COPY.hidePasswordLabel : LOGIN_COPY.showPasswordLabel}
                 >
-                  {showPassword ? 'Hide' : 'Show'}
+                  {showPassword ? LOGIN_COPY.hidePassword : LOGIN_COPY.showPassword}
                 </button>
               </div>
               {fieldErrors.password && (
@@ -359,9 +379,9 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               {isLoading ? (
                   <span className="flex items-center gap-2">
                   <span className="nrg-ashoka-spinner nrg-ashoka-spinner--sm" />
-                  Signing you in...</span>
+                  {LOGIN_COPY.signingIn}</span>
               ) : (
-                'Sign in'
+                LOGIN_COPY.signIn
               )}
             </button>
           </form>
@@ -374,7 +394,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
             >
               {t("auto.components.Login.16")}</button>
             <p className="text-xs text-slate-500">
-              Kong Gateway · JWT RS256 · HMAC audit binding
+              {LOGIN_COPY.securityLine}
             </p>
           </div>
             </aside>
@@ -382,8 +402,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
 
           <footer className="border-t border-slate-200 py-4 text-xs text-slate-500">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <span>Gov of India · DST · IIT Gandhinagar</span>
-              <span>Frontend local preview · API health checked separately</span>
+              <span>{LOGIN_COPY.footerGov}</span>
+              <span>{LOGIN_COPY.footerPreview}</span>
             </div>
           </footer>
         </div>

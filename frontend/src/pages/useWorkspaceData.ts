@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ProductionWorkspaceScreen } from './productionWorkspaceConfig'
 import { AuthUser } from '../services/authService'
 import { queryService } from '../services/queryService'
 import {
   buildIndustryCapabilityRowsFromStats,
   type IndustryCapabilityRow,
-  parseMetricNumber,
 } from './productionWorkspaceData'
 import { t } from '../i18n'
 

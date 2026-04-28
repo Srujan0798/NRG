@@ -6,8 +6,6 @@
 services:
   postgres:
     restart: always
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data:rw
     deploy:
       resources:
         limits:
@@ -73,7 +71,3 @@ services:
     restart: always
     profiles:
       - prod
-
-volumes:
-  postgres_data_prod:
-    driver: local

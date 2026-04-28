@@ -27,6 +27,11 @@ interface AnswerPanelProps {
 
 type ResponseType = 'tabular' | 'geographic' | 'statistical' | 'comparison' | 'text'
 
+const ANSWER_PANEL_COPY = {
+  rank: 'Rank',
+  auditId: 'Audit ID',
+}
+
 const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
   if (source === 'SQL') return <Database size={14} className="text-blue-500" />
   if (source === 'RAG') return <GitMerge size={14} className="text-purple-500" />
@@ -54,6 +59,18 @@ const ConfidenceMeter: React.FC<{
   )
 }
 
+const friendlyPlannerLabel = (raw: string): string => {
+  if (/fast.path/i.test(raw)) return 'NRG Engine'
+  if (/workflow/i.test(raw)) return 'AI Pipeline'
+  return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+const friendlySynthLabel = (raw: string): string => {
+  if (raw === 'rule_based') return 'Verified'
+  if (/llm|cloud|minimax/i.test(raw)) return 'AI Synthesized'
+  return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
 const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenance }) => {
   if (!provenance) return null
 
@@ -65,7 +82,9 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
           animate={{ opacity: 1, scale: 1 }}
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-navy-50 dark:bg-navy-700/50 text-navy-700 dark:text-navy-300 border border-navy-100 dark:border-navy-600"
         >
-          {provenance.planner} {t("auto.components.AnswerPanel.AnswerPanel.1")}</motion.span>
+          <Database size={12} />
+          {friendlyPlannerLabel(provenance.planner)}
+        </motion.span>
       )}
       <motion.span
         initial={{ opacity: 0, scale: 0.9 }}
@@ -77,7 +96,7 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
         }`}
       >
         {provenance.cloud_synthesis_used ? <Cloud size={12} /> : <Database size={12} />}
-        {provenance.cloud_synthesis_used ? 'Cloud Synthesis' : 'Local Model'}
+        {provenance.cloud_synthesis_used ? 'Cloud AI' : 'Local Database'}
       </motion.span>
       {provenance.synth && (
         <motion.span
@@ -86,7 +105,7 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-700"
         >
           <CheckCircle size={12} />
-          {provenance.synth}
+          {friendlySynthLabel(provenance.synth)}
         </motion.span>
       )}
     </div>
@@ -179,7 +198,7 @@ const TabularView: React.FC<{
                 </p>
                 {effectiveDefaultSortIndex !== null && (
                   <p className="mt-1 text-xs font-medium text-nrg-muted">
-                    Rank {row[effectiveDefaultSortIndex] || rowIndex + 1}
+                    {ANSWER_PANEL_COPY.rank} {row[effectiveDefaultSortIndex] || rowIndex + 1}
                   </p>
                 )}
               </div>
@@ -188,7 +207,7 @@ const TabularView: React.FC<{
               {headers.map((header, index) => (
                 index === primaryIndex ? null : (
                   <div key={`${header}-${index}`} className="rounded-lg border border-nrg-border/70 bg-[var(--glass-bg)] px-3 py-2">
-                    <dt className="text-[11px] font-semibold uppercase tracking-[0.12em] text-nrg-muted">{header}</dt>
+                    <dt className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-nrg-muted">{header}</dt>
                     <dd className="mt-1 break-words text-sm font-medium text-nrg-text">{row[index] || '—'}</dd>
                   </div>
                 )
@@ -407,14 +426,28 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
   const sqlResultTable = useMemo(() => buildSqlResultTable(sqlResults), [sqlResults])
 
   const summary = useMemo(() => {
-    const firstPara = response.split('\n')[0]
+    const firstPara = response.split('\n')[0].replace(/\[cite:[^\]]+\]/g, '').replace(/\s{2,}/g, ' ').trim()
     return firstPara.length < 300 ? firstPara : firstPara.substring(0, 300) + '...'
   }, [response])
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <ProvenanceBadge provenance={provenance} />
+        <div className="flex flex-wrap items-center gap-2">
+          <ProvenanceBadge provenance={provenance} />
+          {auditEventId && (
+            <a
+              href={`/app/audit/event/${encodeURIComponent(auditEventId)}`}
+              className="inline-flex min-h-9 max-w-full items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-800 transition hover:border-emerald-400 hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+              aria-label={`Open audit event ${auditEventId}`}
+              data-testid="visible-audit-id"
+            >
+              <ClipboardList size={13} aria-hidden="true" />
+              <span>{ANSWER_PANEL_COPY.auditId}</span>
+              <span className="max-w-[12rem] truncate font-mono sm:max-w-[18rem]">{auditEventId}</span>
+            </a>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           <ConfidenceMeter status={verification_status} answerConfidence={answer_confidence} answerConfidenceScore={answer_confidence_score} warnings={warnings} />
           <motion.button
@@ -564,7 +597,10 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
         </div>
       </motion.div>
 
-      {warnings && warnings.length > 0 && (
+      {warnings && warnings.filter(w => {
+        const msg = (w.message || w.error_type || '').toLowerCase()
+        return !msg.includes('fast bounded') && !msg.includes('fast-path') && !msg.includes('fast path') && !msg.includes('deterministic') && !msg.includes('rule_based') && !msg.includes('synthesis used')
+      }).length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -574,7 +610,10 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             <AlertCircle size={16} />
             {t("auto.components.AnswerPanel.AnswerPanel.6")}</h4>
           <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
-            {warnings.map((warning, index) => (
+            {warnings.filter(w => {
+              const msg = (w.message || w.error_type || '').toLowerCase()
+              return !msg.includes('fast bounded') && !msg.includes('fast-path') && !msg.includes('fast path') && !msg.includes('deterministic') && !msg.includes('rule_based') && !msg.includes('synthesis used')
+            }).map((warning, index) => (
               <li key={index} className="flex items-start gap-2">
                 {warning.skill && <span className="font-medium shrink-0">[{warning.skill}]</span>}
                 <span>{warning.message || warning.error_type || 'Warning'}</span>

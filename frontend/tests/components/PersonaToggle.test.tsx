@@ -53,6 +53,6 @@ describe('PersonaToggle', () => {
       Simulate.click(industryTab)
     })
 
-    expect(login).toHaveBeenCalledWith('industry_user', 'industry-pass')
+    expect(login).toHaveBeenCalledWith('partner@industry.in', 'Industry@2026')
   })
 })

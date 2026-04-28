@@ -361,6 +361,18 @@ class PromptSanitiser:
             ),
             _Rule(
                 "egress_exfiltration",
+                re.compile(
+                    r"\b(?:send|make|perform|issue)\s+(?:a\s+)?(?:get|post|http|https)\s+"
+                    r"(?:request|call)?\b.*https?://[^\s]+",
+                    re.IGNORECASE,
+                ),
+            ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"https?://[^\s]+/(?:api/)?beacon\b", re.IGNORECASE),
+            ),
+            _Rule(
+                "egress_exfiltration",
                 re.compile(r"\b(?:websocket|wss?://)\b.*\b(?:send\s+all\s+data|evil\.example\.com|exfil|external\s+host)\b"),
             ),
             _Rule("ssrf", re.compile(r"https?://(169\.254\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|10\.)")),

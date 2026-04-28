@@ -26,7 +26,7 @@ RUN pip install --upgrade pip wheel setuptools
 RUN python -m venv /app/venv
 ENV PATH=/app/venv/bin:$PATH
 
-# Copy project files
+# Copy dependency metadata
 COPY pyproject.toml .
 
 # Install CPU-only torch FIRST — prevents sentence-transformers from pulling ~2GB CUDA packages
@@ -38,6 +38,8 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
 RUN pip install --no-cache-dir -e .
 
 # Copy source code
+COPY alembic.ini .
+COPY alembic/ ./alembic/
 COPY src/ ./src/
 COPY scripts/ ./scripts/
 

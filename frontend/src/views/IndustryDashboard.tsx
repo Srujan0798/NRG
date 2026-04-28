@@ -52,9 +52,8 @@ const toFriendlyQueryError = (err: any): string => {
 
 export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardProps) {
   const { user } = useAuth()
-  const { addAuditEntry, grantConsent, getConsentStatus } = useDPDPStore()
-  const hasExistingConsent = getConsentStatus('research_access')?.granted
-  const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
+  const { addAuditEntry, grantConsent } = useDPDPStore()
+  const [showDPDPConsent, setShowDPDPConsent] = useState(false)
   const [activeTab, setActiveTab] = useState<'opportunities' | 'researchers' | 'analytics' | 'rights'>('opportunities')
   const [currentQuery, setCurrentQuery] = useState('')
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)

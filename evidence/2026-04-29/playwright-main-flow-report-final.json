@@ -1,0 +1,32 @@
+{
+  "base": "http://localhost:5173",
+  "generated_at": "2026-04-28T22:01:16.560Z",
+  "desktop": {
+    "hasVerified": true,
+    "hasAudit": true,
+    "hasCitation": true,
+    "hasTableLeader": true,
+    "hasExport": true,
+    "hasNoRawJson": true,
+    "hasNoReactOverlay": true,
+    "auditHref": "/app/audit/event/f12beb8c9ad8e4f734b14809820063d13f5ee79800181145242ba66d10d09da3",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": [],
+    "badResponses": []
+  },
+  "mobile": {
+    "hasVerified": true,
+    "hasAudit": true,
+    "hasCitation": true,
+    "hasTableLeader": true,
+    "hasExport": true,
+    "hasNoRawJson": true,
+    "hasNoReactOverlay": true,
+    "auditHref": "/app/audit/event/f12beb8c9ad8e4f734b14809820063d13f5ee79800181145242ba66d10d09da3",
+    "consoleErrors": [],
+    "pageErrors": [],
+    "failedRequests": [],
+    "badResponses": []
+  }
+}

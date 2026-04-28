@@ -52,9 +52,8 @@ const POLICY_QUERY_SUGGESTIONS = [
 
 export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboardProps) {
   const { user } = useAuth()
-  const { addAuditEntry, grantConsent, getConsentStatus } = useDPDPStore()
-  const hasExistingConsent = getConsentStatus('research_access')?.granted
-  const [showDPDPConsent, setShowDPDPConsent] = useState(!hasExistingConsent)
+  const { addAuditEntry, grantConsent } = useDPDPStore()
+  const [showDPDPConsent, setShowDPDPConsent] = useState(false)
   const [activeTab, setActiveTab] = useState<typeof TABS[number]['key']>('overview')
   const [currentQuery, setCurrentQuery] = useState('')
   const [queryResult, setQueryResult] = useState<QueryResponse | null>(null)

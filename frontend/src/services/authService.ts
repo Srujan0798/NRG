@@ -24,13 +24,14 @@ interface LoginApiResponse {
   access_token: string
   refresh_token: string
   token_type: string
+  authenticated?: boolean
   user: {
     id: string
     username: string
     role: PersonaRole
     tier: number
     researcher_id?: string
-  }
+  } | null
 }
 
 interface RefreshApiResponse {
@@ -49,26 +50,26 @@ const api = axios.create({
 })
 
 const PERSONA_CREDENTIALS: Record<PersonaRole, { username: string; password: string; tier: number }> = {
-  researcher: { username: 'researcher_user', password: 'researcher-pass', tier: 1 },
-  government: { username: 'gov_user', password: 'government-pass', tier: 2 },
-  industry: { username: 'industry_user', password: 'industry-pass', tier: 3 },
+  researcher: { username: 'researcher@iitgn.ac.in', password: 'Researcher@2026', tier: 1 },
+  government: { username: 'ministry@nrg.gov.in', password: 'Ministry@2026', tier: 2 },
+  industry: { username: 'partner@industry.in', password: 'Industry@2026', tier: 3 },
 }
 
 const buildSession = (
   payload: LoginApiResponse | RefreshApiResponse,
   existingUser?: AuthUser
 ): AuthSession => {
-  if (!existingUser && !('user' in payload)) {
+  if (!existingUser && (!('user' in payload) || !payload.user)) {
     throw new Error('Missing user payload during session refresh')
   }
 
   const user = 'user' in payload
     ? {
-        id: payload.user.id,
-        username: payload.user.username,
-        role: payload.user.role,
-        tier: payload.user.tier,
-        researcherId: payload.user.researcher_id
+        id: payload.user!.id,
+        username: payload.user!.username,
+        role: payload.user!.role,
+        tier: payload.user!.tier,
+        researcherId: payload.user!.researcher_id
       }
     : existingUser!
 
@@ -133,6 +134,9 @@ export const authService = {
 
   async fetchSession(): Promise<AuthSession> {
     const response = await api.get<LoginApiResponse>('/auth/session')
+    if (!response.data.user) {
+      throw new Error('No active authenticated session')
+    }
     const session = buildSession({
       access_token: '',
       refresh_token: '',

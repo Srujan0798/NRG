@@ -14,6 +14,16 @@ const formatRows = (rows: number | null | undefined) => {
   return new Intl.NumberFormat('en-IN').format(rows)
 }
 
+const AUDIT_COPY = {
+  viewAuditEvent: 'View Audit Event',
+  eventId: 'Event ID',
+  jwtKid: 'JWT kid',
+  boundToSession: 'bound-to-session',
+  timestamp: 'Timestamp',
+  previousChainHash: 'Previous chain hash',
+  previousHashPrefix: 'prev-',
+}
+
 export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
   answer,
   sqlQuery,
@@ -82,7 +92,7 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
             className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-nrg-border bg-[var(--nrg-surface-2)] px-4 py-2 text-sm font-semibold text-nrg-text transition hover:border-[var(--nrg-focus)]"
           >
             <ClipboardList className="h-4 w-4" aria-hidden="true" />
-            View Audit Event
+            {AUDIT_COPY.viewAuditEvent}
             <ChevronDown
               className={`h-4 w-4 transition-transform ${auditOpen ? 'rotate-180' : ''}`}
               aria-hidden="true"
@@ -131,20 +141,20 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
         >
           <dl className="grid gap-3 text-sm text-nrg-text sm:grid-cols-2">
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Event ID</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">{AUDIT_COPY.eventId}</dt>
               <dd className="mt-1 break-all font-mono text-xs">{auditEventId}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">JWT kid</dt>
-              <dd className="mt-1 font-mono text-xs">bound-to-session</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">{AUDIT_COPY.jwtKid}</dt>
+              <dd className="mt-1 font-mono text-xs">{AUDIT_COPY.boundToSession}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Timestamp</dt>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">{AUDIT_COPY.timestamp}</dt>
               <dd className="mt-1 font-mono text-xs">{new Date().toISOString()}</dd>
             </div>
             <div>
-              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">Previous chain hash</dt>
-              <dd className="mt-1 break-all font-mono text-xs">prev-{String(auditEventId).slice(0, 12)}</dd>
+              <dt className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">{AUDIT_COPY.previousChainHash}</dt>
+              <dd className="mt-1 break-all font-mono text-xs">{AUDIT_COPY.previousHashPrefix}{String(auditEventId).slice(0, 12)}</dd>
             </div>
           </dl>
         </div>

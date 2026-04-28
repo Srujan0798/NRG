@@ -188,7 +188,7 @@ services:
     container_name: nrg-frontend
     restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT:-3000}:80"
+      - "${FRONTEND_PORT:-5173}:80"
     environment:
       - NODE_ENV=production
     depends_on:

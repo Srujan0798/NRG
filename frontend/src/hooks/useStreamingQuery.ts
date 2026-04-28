@@ -114,6 +114,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const personaRef = useRef<string>('anonymous')
   const observedPhaseRef = useRef<Set<string>>(new Set())
   const currentPhaseRef = useRef<StreamPhaseName>('planning')
+  const terminalEventRef = useRef(false)
 
   useEffect(() => {
     optionsRef.current = options
@@ -158,6 +159,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const failRecoverably = useCallback((message: string) => {
     closeSource()
     clearSilenceTimer()
+    terminalEventRef.current = true
     setIsStreaming(false)
     setIsRecoverableError(true)
     setError(message)
@@ -198,6 +200,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const completeStream = useCallback((payload: Extract<StreamQueryEvent, { phase: 'verified' }>) => {
     closeSource()
     clearSilenceTimer()
+    terminalEventRef.current = true
     const verifiedCitations = payload.citations.map(toStreamCitation)
     citationsRef.current = verifiedCitations
     setCitations(verifiedCitations)
@@ -245,6 +248,8 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     }
 
     const phaseName = parsed.phase || eventType
+
+    if (terminalEventRef.current) return
 
     if (phaseName === 'heartbeat') return
 
@@ -362,6 +367,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     fullTextRef.current = ''
     citationsRef.current = []
     observedPhaseRef.current = new Set()
+    terminalEventRef.current = false
     setIsStreaming(true)
     setPlan(null)
     setSql('')
@@ -412,6 +418,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     }
 
     eventSource.onerror = () => {
+      if (terminalEventRef.current) return
       failRecoverably(CONNECTION_ERROR)
     }
   }, [abortStream, failRecoverably, handleEvent, resetSilenceTimer, setPhase])
