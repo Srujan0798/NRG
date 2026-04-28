@@ -38,6 +38,11 @@ export function PersonaToggle() {
     setSwitchError(null)
     try {
       const switched = await login(persona.username, persona.password)
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href)
+        url.searchParams.set('persona', role)
+        window.history.replaceState({}, '', url)
+      }
       if (!switched) {
         await authService.switchPersona(role)
         window.location.reload()

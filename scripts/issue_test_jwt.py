@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.auth.jwt_handler import get_jwt_handler  # noqa: E402
+from src.auth.jwt_handler import JWTHandler  # noqa: E402
 
 
 PERSONA_CREDENTIALS = {
@@ -30,7 +30,7 @@ def main() -> int:
     args = parser.parse_args()
 
     username, password = PERSONA_CREDENTIALS[args.persona]
-    handler = get_jwt_handler()
+    handler = JWTHandler()
     user = handler.authenticate_user(username, password)
     tokens = handler.issue_token_pair(user)
     payload = {

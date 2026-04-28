@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.auth.jwt_handler import AuthError, get_jwt_handler  # noqa: E402
+from src.auth.jwt_handler import AuthError, JWTHandler  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -59,7 +59,7 @@ def post_json(url: str, payload: dict[str, Any], timeout: float = 10.0) -> tuple
 
 
 def verify_local() -> list[dict[str, Any]]:
-    handler = get_jwt_handler()
+    handler = JWTHandler()
     results: list[dict[str, Any]] = []
     for persona in PERSONAS:
         user = handler.authenticate_user(persona.email, persona.password)

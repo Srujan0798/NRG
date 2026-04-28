@@ -116,7 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const status = error?.response?.status
       const detail = error?.response?.data?.detail
       const message = status === 401
-        ? 'Invalid username or password'
+        ? 'Email or password is incorrect'
         : status === 429
           ? 'Too many login attempts. Please wait a moment and try again.'
           : detail || 'Unable to sign in. Please check the API server and try again.'

@@ -1,0 +1,17 @@
+COMMAND: bash -n scripts/generate_jwt_keys.sh scripts/run_critical_path.sh scripts/run_critical_path_final.sh
+exit_code: 0
+
+COMMAND: python -m py_compile acceptance helper scripts
+exit_code: 0
+
+COMMAND: scripts/seed_acceptance_users.py --json (summarized)
+local_personas 3
+statuses local-ready,local-ready,local-ready
+exit_code: 0
+
+COMMAND: scripts/issue_test_jwt.py researcher --json (token values redacted)
+persona researcher
+tier 1
+has_access_token True
+has_refresh_token True
+exit_code: 0

@@ -14,4 +14,4 @@ collecting ... collected 1 item
 
 tests/api/test_critical_path_stream.py::test_get_stream_uses_cookie_auth_and_named_phases PASSED [100%]
 
-============================== 1 passed in 26.50s ==============================
+============================== 1 passed in 14.42s ==============================

@@ -62,9 +62,28 @@ Remaining likely bottlenecks:
 
 ## Next Required K-2 Action
 
-Before retrying 100-user Locust:
+Fresh post-fix Locust evidence was captured:
+
+- Summary: `evidence/2026-04-28/K2_locust_after_hotpath_summary.json`
+- Users: 100
+- Spawn rate: 10/s
+- Duration: 5m
+- Host: `http://127.0.0.1:8011`
+- Workers: 4
+- Qdrant vectors observed: 1800
+- Database rows observed: 50,000 researchers and 50,000 publications
+
+Result:
+
+- Aggregate failure rate: 0.45% (PASS for <1%)
+- Query failure rate: 0.47% (PASS for <1%)
+- Aggregate P95: 9,500 ms (FAIL)
+- Aggregate P99: 13,000 ms (FAIL)
+- Aggregate throughput: 20.21 RPS (FAIL for >=50)
+
+Before retrying 100-user Locust again:
 
 1. Move refresh-token persistence off SQLite for load runs or use the production PostgreSQL/Redis-backed session store.
 2. Separate login ramp-up from steady-state `/query` latency in the load report.
-3. Re-run with isolated API port, 4 workers, warmed cache, Redis available, and no concurrent local agents restarting the API.
+3. Profile why successful `/query` responses cluster around 3.5-4.0s under concurrent load despite local single-query hot paths being sub-second.
 4. Record both auth-inclusive and query-only P95/P99.

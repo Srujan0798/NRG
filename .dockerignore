@@ -24,7 +24,6 @@ frontend/playwright-report
 frontend/evidence
 
 node_modules
-dist
 build
 
 evidence

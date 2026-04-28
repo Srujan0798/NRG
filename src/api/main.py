@@ -2649,11 +2649,24 @@ async def _query_stream_response(
             yield _sse("phase", phase_payload("planning", "Planning a multi-hop strategy...", 0.24))
             await asyncio.sleep(0.02)
             yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.52))
-            answer_payload = _build_stream_answer_payload(
-                request,
-                token_payload=token_payload,
-                raw_request=raw_request,
+            answer_task = asyncio.create_task(
+                asyncio.to_thread(
+                    _build_stream_answer_payload,
+                    request,
+                    token_payload=token_payload,
+                    raw_request=raw_request,
+                )
             )
+            while not answer_task.done():
+                yield _sse(
+                    "heartbeat",
+                    {
+                        "phase": "heartbeat",
+                        "elapsed_ms": int((time.time() - started_at) * 1000),
+                    },
+                )
+                await asyncio.sleep(1)
+            answer_payload = await answer_task
             row_count = len(answer_payload.get("sql_results") or [])
             yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.62, row_count=row_count))
             await asyncio.sleep(0.02)

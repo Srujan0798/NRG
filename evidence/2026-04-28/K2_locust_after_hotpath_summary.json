@@ -1,0 +1,50 @@
+{
+  "timestamp": "2026-04-29T03:03:19+05:30",
+  "scenario": "K-2 100-user Locust rerun after request-path hot-path fixes",
+  "host": "http://127.0.0.1:8011",
+  "users": 100,
+  "spawn_rate": 10,
+  "run_time": "5m",
+  "api_workers": 4,
+  "redis_url_configured": true,
+  "qdrant_vectors": 1800,
+  "database_rows_observed": {
+    "researchers": 50000,
+    "publications": 50000
+  },
+  "aggregate": {
+    "request_count": 5999,
+    "failure_count": 27,
+    "failure_rate": 0.0045,
+    "requests_per_second": 20.21,
+    "p50_latency_ms": 3500,
+    "p95_latency_ms": 9500,
+    "p99_latency_ms": 13000,
+    "max_latency_ms": 15482.68
+  },
+  "query": {
+    "request_count": 5699,
+    "failure_count": 27,
+    "failure_rate": 0.0047,
+    "requests_per_second": 19.2,
+    "p50_latency_ms": 3500,
+    "p95_latency_ms": 9500,
+    "p99_latency_ms": 13000,
+    "max_latency_ms": 15482.68
+  },
+  "acceptance": {
+    "failure_rate_lt_1_percent": true,
+    "query_failure_rate_lt_1_percent": true,
+    "p95_latency_lt_2000_ms": false,
+    "p99_latency_lt_5000_ms": false,
+    "qps_gte_50": false
+  },
+  "status": "FAIL",
+  "reason": "Failure rate improved below 1%, but P95/P99 latency and QPS still miss K-2/C4 targets.",
+  "source_files": {
+    "stats_csv": "evidence/2026-04-28/K2_locust_after_hotpath_stats.csv",
+    "history_csv": "evidence/2026-04-28/K2_locust_after_hotpath_stats_history.csv",
+    "failures_csv": "evidence/2026-04-28/K2_locust_after_hotpath_failures.csv",
+    "exceptions_csv": "evidence/2026-04-28/K2_locust_after_hotpath_exceptions.csv"
+  }
+}

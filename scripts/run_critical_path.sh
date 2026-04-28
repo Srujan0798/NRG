@@ -200,7 +200,7 @@ if [[ "${SKIP_DOCKER}" -eq 0 ]]; then
   fi
 
   log "Boot compose stack"
-  compose up -d postgres pgbouncer qdrant redis api frontend
+  compose up -d --build postgres pgbouncer qdrant redis api frontend
   wait_tcp localhost 5432 "Postgres" 90
   wait_tcp localhost 6333 "Qdrant" 90
   wait_tcp localhost 6379 "Redis" 90

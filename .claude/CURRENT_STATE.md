@@ -8,7 +8,7 @@
 
 | Item | State |
 |------|-------|
-| Quality Bar | **5/6** — C4 load bar still FAIL from latest 100-user evidence; local K-4 hot path now passes |
+| Quality Bar | **5/6** — C4 load bar still FAIL after fresh 100-user rerun; local K-4 hot path passes |
 | Full test suite | ✅ 1585+ passed (Python 3.14 import errors in .venv, pass with Python 3.11) |
 | Audit chain | ✅ valid, 24602 events (traceable genesis reseed documented in ADR-006) |
 | Last commit | `6085c3b` — citation test patching and workflow evidence |
@@ -24,7 +24,7 @@
 | K-3 | Create PostgreSQL `trl_stages` VIEW + migration | Done locally | None |
 | K-1 | Qdrant zero-vector must return CRITICAL in /health | Done locally | None |
 | K-4 | Cold query latency <500ms P99 (code optimizations) | Verified locally | `tests/performance/test_query_latency_hot_path.py -m "slow or not slow"` passes |
-| K-2 | Load test re-run (100 concurrent), fresh Locust evidence | Evidence captured, FAIL; backend profile added | Needs post-fix retry on isolated stack |
+| K-2 | Load test re-run (100 concurrent), fresh Locust evidence | Fresh post-fix evidence captured, FAIL | P95 9.5s, P99 13s, 0.45% failure rate, 20.21 RPS |
 | K-6 | GPG signatures for handover | FOUNDER ONLY | Founder private key |
 
 ---
@@ -35,7 +35,7 @@
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
 | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
 
-**C4 FAIL for load evidence**: aggregated P99=46,000ms and `/query` P99=38,000ms @ 100 users. The run had 0% request failures, but queueing under concurrency violates the latency bar. Local K-4 hot-path verification now passes after removing request-path Redis probing, full-chain audit recounting, per-request consent DDL setup, and synchronous training collector initialization. Re-run K-2 on an isolated stack before changing C4 status.
+**C4 FAIL for load evidence**: a fresh 100-user rerun after hot-path fixes produced aggregate failure rate 0.45%, P95=9,500ms, P99=13,000ms, and 20.21 RPS. Local K-4 hot-path verification now passes after removing request-path Redis probing, full-chain audit recounting, per-request consent DDL setup, and synchronous training collector initialization. K-2 remains open until concurrent `/query` latency is profiled and reduced.
 
 Everything else is code-complete locally.
 
