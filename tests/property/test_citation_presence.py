@@ -82,7 +82,8 @@ class BrokenCitationWorkflow:
 
 @pytest.fixture(autouse=True)
 def setup(monkeypatch):
-    monkeypatch.setattr(api_main, "workflow", CitationValidatingWorkflow())
+    from src.api import deps
+    monkeypatch.setattr(deps, "workflow", CitationValidatingWorkflow())
     api_main._api_cache.invalidate()
 
 
