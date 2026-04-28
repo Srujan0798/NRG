@@ -223,6 +223,19 @@ tables:
     blocked_columns:
       - contact_details
 
+  trl_stages:
+    description: "Alias view for technology readiness levels by institute"
+    actual_table: innovations_at_various_stages_of_technology_readiness_level
+    allowlisted_columns:
+      - innovation_name
+      - stage_of_technology
+      - financial_year
+      - institute
+      - as_on_year
+      - id
+    blocked_columns:
+      - contact_details
+
   academic_courses_details:
     description: "Academic course offerings"
     allowlisted_columns:
