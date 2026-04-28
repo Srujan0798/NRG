@@ -151,7 +151,12 @@ export const Hero: React.FC = () => {
             {isSlowQuery && (
               <QueryPhaseProgress domain={roleToDomain(user?.role)} isSlowQuery={isSlowQuery} />
             )}
-            <StreamingAnswerPanel query={lastQuery} onCitationClick={handleCitationClick} onProofOpen={handleProofOpen} />
+            <StreamingAnswerPanel
+              key={`${user?.role || 'anonymous'}:${lastQuery}`}
+              query={lastQuery}
+              onCitationClick={handleCitationClick}
+              onProofOpen={handleProofOpen}
+            />
             <SideBySidePanel />
           </Suspense>
         )}
