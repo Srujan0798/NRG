@@ -1,61 +1,123 @@
-# NRG Text-to-SQL Hall of Shame
+# Hall of Shame — NRG Text-to-SQL Adversarial Failures
 
-This ledger records the seven Dhairya benchmark failure patterns that must never regress.
-It is the production-path companion to the root `docs/compliance/hall-of-shame.md` and is read by the
-Text-to-SQL validator when rejected SQL shapes are recorded.
+This file records the seven Dhairya benchmark failure patterns that must never regress.
+Each entry is tied to the original audit examples in `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+and to regression coverage in `tests/benchmarks/test_dhairya_regression.py`.
 
-### P1: SPLIT_PART Format Blind (Q1)
+## P1: SPLIT_PART Format Blind (Q1)
 
-**Original question:** Average credit score across departments.  
-**Wrong SQL generated:** `SELECT AVG(total_credit_score) FROM academic_courses_details`.  
-**Why it failed:** `total_credit_score` is stored as text in `X:Y` format, for example `3:1`. Direct numeric casts either fail or aggregate the wrong value.  
-**Fix applied:** Production SQL must parse the column with `SPLIT_PART(total_credit_score, ':', 1)::double precision` plus the second component when total credits are required.  
-**Test covering this:** `tests/benchmarks/test_dhairya_regression.py`, `tests/benchmarks/test_text_to_sql_prompt_hardening.py`.
+- Original query: Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not just course count?
+- Wrong SQL generated:
+```sql
+SELECT "institute",
+       SUM(CAST("total_credit_score" AS INTEGER)) AS total_credits
+FROM public.academic_courses_details
+WHERE "financial_year" = '2022-23'
+GROUP BY "institute"
+ORDER BY total_credits DESC
+LIMIT 1;
+```
+- Why it failed: `total_credit_score` is `text` in `"X:Y"` format such as `"3:1"`. A direct integer cast either fails or ignores the structured credit format.
+- Fix applied: Parse the credit field with `SPLIT_PART(total_credit_score, ':', 1)::double precision` before aggregating, and only apply `LIMIT` when the user asks for a single winner.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q01_uses_split_part_for_credit_score`.
 
-### P2: Aggregation Scope Error (Q4)
+## P2: Top-N Metric Ranking Becomes Alphabetical DISTINCT (Q4)
 
-**Original question:** Top funding agencies by total amount.  
-**Wrong SQL generated:** `SELECT DISTINCT gov_organisation_name ... ORDER BY gov_organisation_name`.  
-**Why it failed:** Ranking by total funding requires grouped sums, not distinct alphabetical ordering.  
-**Fix applied:** Use `GROUP BY gov_organisation_name ORDER BY SUM(grant_received) DESC`.  
-**Test covering this:** Dhairya Q4 regression and adversarial ranked-funding mutations.
+- Original query: Who are the top 5 unique funding agencies providing grants to us?
+- Wrong SQL generated:
+```sql
+SELECT DISTINCT "gov_organisation_name"
+FROM public.innovation_grant_from_govt
+ORDER BY "gov_organisation_name"
+LIMIT 5;
+```
+- Why it failed: "Top 5" by funding requires grouped sums. The generated SQL returned the first five agency names alphabetically, not the largest funders.
+- Fix applied: Generate `GROUP BY gov_organisation_name ORDER BY SUM(grant_received) DESC LIMIT 5` for "top N by metric" prompts.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q04_top_funding_agencies_grouped_by_sum`.
 
-### P3: Year-Over-Year Row Comparison (Q3, Q11)
+## P3: Year-Over-Year Row Comparison Instead Of Yearly Aggregation (Q3, Q11)
 
-**Original question:** Flag institutes with large year-over-year funding drops or course growth.  
-**Wrong SQL generated:** Window functions over raw rows.  
-**Why it failed:** Individual rows were compared before institute/year aggregation, producing false drops and false growth.  
-**Fix applied:** First aggregate in a CTE by institute and financial year, then self-join or window over those yearly totals.  
-**Test covering this:** Dhairya Q3/Q11 regression and silent-wrong-answer suite.
+- Original query: Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-21 to 2021-22.
+- Wrong SQL generated:
+```sql
+SELECT ig1.institute, ig1.year_of_receiving AS previous_year,
+       ig1.grant_received AS previous_year_grant,
+       ig2.year_of_receiving AS current_year,
+       ig2.grant_received AS current_year_grant,
+       ((ig2.grant_received::decimal / ig1.grant_received::decimal) * 100)
+           AS percentage_change
+FROM innovation_grant_from_govt ig1
+JOIN innovation_grant_from_govt ig2
+    ON ig1.institute = ig2.institute
+    AND ig1.year_of_receiving::integer = ig2.year_of_receiving::integer - 1
+WHERE (ig2.grant_received::decimal / ig1.grant_received::decimal) * 100 < 50;
+```
+- Why it failed: The query compared individual grant rows before summing per institute and year, so multiple grants in the same year could silently produce wrong growth or drop signals.
+- Fix applied: Use a CTE that aggregates by institute and year first, then self-join or window over those yearly totals.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q03_multi_row_yearly_grants_are_summed_before_yoy_comparison`.
 
-### P4: TRL Synonym Leakage (Q6)
+## P4: Missing Or Wrong HAVING / Truncated SQL (Q14, Q16)
 
-**Original question:** List TRL 9 or Market Ready technologies.  
-**Wrong SQL generated:** `stage_of_technology = 'TRL 9'`.  
-**Why it failed:** The schema stores market-ready technologies as `Level 9`, not as user-facing TRL phrases.  
-**Fix applied:** Normalize `TRL 9`, `TRL-9`, `TRL9`, and `Market Ready` to `stage_of_technology = 'Level 9'`.  
-**Test covering this:** Dhairya Q6 regression and TRL prompt-hardening tests.
+- Original query: Utilization Audit: High Grants vs Low Expenditure.
+- Wrong SQL generated:
+```sql
+SELECT ig."institute", SUM(ig."grant_received") AS total_grants_received,
+       SUM(fe."salaries" + fe."maintenance" + fe."seminars") AS total_operational_expenditure,
+       SUM(fc."library" + fc."equipment" + fc."workshops" + fc."capital_assets")
+           AS total_capital_expenditure,
+       (SUM(fe."salaries" + fe."maintenance" + fe."seminars")
+        + SUM(fc."library" + fc."equipment" + fc."workshops" + fc."capital_assets"))
+           AS total_expenditure
+FROM public."innovation_grant_from_govt" ig
+LEFT JOIN public."financial_expenses_operational" fe
+    ON ig."institute" = fe."institute" AND ig."as_on_year" = fe."as_on_year"
+LEFT JOIN public."financial_expenses_capital" fc
+    ON ig."institute" = fc."institute"
+-- [INCOMPLETE — missing HAVING / audit condition]
+```
+- Why it failed: The SQL stopped before the required audit condition, so it could return broad spend data instead of the high-grant/low-expenditure exception set.
+- Fix applied: The completeness validator rejects truncated SQL, missing terminal clauses, and missing `HAVING` for comparative aggregate filters before execution.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q16_high_grants_low_expenditure_requires_having_clause`.
 
-### P5: Follow-Up Context Loss (Q10, Q12)
+## P5: Active Domain Lost Across Follow-Up Turns (Q10, Q12)
 
-**Original question:** After a course query, "How does that compare to UG numbers?"  
-**Wrong SQL generated:** Query switched to student-strength tables.  
-**Why it failed:** Follow-up planning lost the previous domain and treated "UG numbers" as enrolment instead of course-level comparison.  
-**Fix applied:** Session state carries previous domain/table context; course follow-ups stay in `academic_courses_details` unless the user explicitly asks for student counts.  
-**Test covering this:** Dhairya Q10/Q12 regression and graph session memory tests.
+- Original query: How does that compare to their UG numbers? (follow-up after "Which institute has the most PhD courses?")
+- Wrong SQL generated:
+```sql
+SELECT "program", "male_students", "female_students", "total_students",
+       "within_state", "outside_state", "outside_country",
+       "economically_backward", "socially_challenged",
+       "reimbursed_by_government", "reimbursed_by_institution",
+       "reimbursed_by_private", "not_reimbursed", "as_on_year"
+FROM public.actual_student_strength
+WHERE "institute" LIKE '%IIT Hyderabad%'
+  AND "program" LIKE '%UG%';
+```
+- Why it failed: The follow-up was still about innovation courses, but the model switched domains to student-strength enrollment tables.
+- Fix applied: Persist `active_domain` and prior table context across turns so course follow-ups stay in `academic_courses_details` unless the user explicitly changes domain.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q10_followup_keeps_academic_courses_domain`.
 
-### P6: Grant And Patent JOIN Key Mismatch (Q7, Q13)
+## P6: TRL Synonym Map Missing (Q6)
 
-**Original question:** Cost of innovation or grant per granted patent by institute.  
-**Wrong SQL generated:** Joined grant institute to the wrong patent table/column or skipped patent status.  
-**Why it failed:** `combined_ipo_patent_data.applicants` is the semantic key matching `innovation_grant_from_govt.institute`, and only `status = 'Granted'` counts.  
-**Fix applied:** Join with `lower(trim(g.institute)) = lower(trim(p.applicants))` and filter `p.status = 'Granted'`.  
-**Test covering this:** Dhairya Q7/Q13 regression and patent join validator checks.
+- Original query: List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.
+- Wrong SQL generated:
+```sql
+SELECT "innovation_name", "stage_of_technology", "financial_year", "as_on_year"
+FROM public."innovations_at_various_stages_of_technology_readiness_level"
+WHERE "stage_of_technology" = 'TRL 9'
+  AND "institute" = 'IIT Madras';
+```
+- Why it failed: The database stores this stage as `'Level 9'`, while users naturally ask for `TRL 9`, `TRL-9`, `TRL9`, or `Market Ready`.
+- Fix applied: Normalize `TRL-9 = TRL9 = Level 9 = Market Ready = Stage 9` to `stage_of_technology = 'Level 9'`.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q06_trl_9_market_ready_maps_to_level_9`.
 
-### P7: Multi-Stage HAVING Or Complete Reasoning Failure (Q14, Q15, Q16)
+## P7: Complex CTE, Scalar Average, And Semantic Join Failure (Q7, Q15)
 
-**Original question:** Financial audit and rising-star comparisons requiring multiple stages.  
-**Wrong SQL generated:** Truncated `HAVING`, incomplete SQL, or no SQL at all.  
-**Why it failed:** The planner did not fully decompose multi-stage filters and comparative ranking logic.  
-**Fix applied:** Prompt templates require complete CTE, `GROUP BY`, and `HAVING` stages; validators reject incomplete SQL and low-confidence answers trigger correction or clarification.  
-**Test covering this:** Dhairya Q14/Q15/Q16 regression and result-anomaly detector tests.
+- Original query: Rising Stars: Institutes growing funding while the average declines.
+- Wrong SQL generated:
+```text
+Error
+```
+- Why it failed: The model did not decompose the query into institute-level growth and global-average comparison. A related Dhairya failure also joined patent/grant data through the wrong semantic key instead of `combined_ipo_patent_data.applicants`.
+- Fix applied: Generate complete CTEs for individual growth and global averages, use scalar subqueries where needed, and enforce semantic join rules such as `innovation_grant_from_govt.institute` to `combined_ipo_patent_data.applicants` with `status = 'Granted'`.
+- Test covering this: `tests/benchmarks/test_dhairya_regression.py::test_q15_rising_stars_uses_cte_and_scalar_global_average`.

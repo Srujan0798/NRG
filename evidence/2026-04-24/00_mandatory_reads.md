@@ -1,7 +1,7 @@
 # Mandatory Source File Reads — Step 0 Confirmation
 
-**Agent:** NRG Principal Engineer Agent  
-**Date:** 2026-04-24  
+**Agent:** Codex
+**Date:** 2026-04-24 protocol folder; refreshed 2026-04-28
 **Protocol:** NRG ULTIMATE PRINCIPAL ENGINEER VERIFICATION & FORCED COMPLETION PROTOCOL v4.0
 
 ---
@@ -13,8 +13,8 @@
 | `Core_Idea_Clean.md` | ✅ YES | 5-layer architecture, 6-node LangGraph, 3 tiers, zero-data-leakage, two-brain endgame SLM, 24-month roadmap |
 | `db_struct.sql` | ✅ YES | 58 PostgreSQL tables documented, exact column types, composite PKs, FK relationships |
 | `BACKLOG.md` | ✅ YES | Phase 3–5 claimed DONE, Quality Bar 5/6, 10 remaining handover items, GAP-A/B/C local-fixable |
-| `SQL_AUDIT_REPORT_DHAIRYA.md` | ✅ YES | 41% baseline (7/17), 7 failure patterns, 7.2s avg latency vs 3s SLO |
-| `NRG_SELF_AUDIT_REPORT_2026-04-24.md` | ✅ YES | 7.5/10 score, 26/26 audit binding, 35/35 egress, 28/28 DAG, GAP-A/B/C identified |
+| `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` | ✅ YES | 41% baseline (7/17), 7 failure patterns, 7.2s avg latency vs 3s SLO |
+| `docs/archive/2026-Q1/NRG_SELF_AUDIT_REPORT_2026-04-24.md` | ✅ YES | Prior local audit result, evidence failures, and the known local/cluster gap split |
 
 ---
 
@@ -87,7 +87,8 @@ user_registration_old
 
 ## 3. Python Type and Format of `total_credit_score`
 
-- **SQL type:** `text` (`db_struct.sql` line 65)
+- **Python type:** `str`
+- **SQL type:** `text` (`db_struct.sql` table `academic_courses_details`)
 - **Alembic migration type:** `sa.Text()` (`src/migrations/versions/add_production_tables_001.py` line 166)
 - **ORM type:** `String`/`Text` (not `Integer`)
 - **Format:** `"X:Y"` where X = lecture credits, Y = tutorial credits (e.g., `"3:1"`)

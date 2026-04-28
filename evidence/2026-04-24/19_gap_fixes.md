@@ -19,7 +19,8 @@
   - Trigger writes `audit_events.db_cosign_hmac` on insert when `app.audit_db_cosign_key` is set.
 - Verification:
   - `evidence/2026-04-24/05_audit_binding.log`
-  - Result: `29 passed in 1.89s`.
+  - Fresh result on 2026-04-28: `29 passed in 3.49s`.
+  - Combined local gap run: `evidence/2026-04-24/local_gap_abc_tests.log` -> `50 passed in 6.37s`.
   - `evidence/2026-04-24/gap_abc_verify.log` confirms local verifier status is `disabled:no_postgres_database_url`; the trigger must be applied against staging Postgres to produce live DB-side signatures.
 
 ## GAP-B — 60-Second Drift Scheduler
@@ -40,23 +41,31 @@
 - Verification:
   - `evidence/2026-04-24/20_vector_drift_scheduler.log`
   - Result: `4 passed in 6.31s`.
+  - Fresh combined local gap run on 2026-04-28: `evidence/2026-04-24/local_gap_abc_tests.log` -> scheduler coverage included in `50 passed in 6.37s`.
   - `evidence/2026-04-24/gap_abc_verify.log` dry-run reports `interval_seconds: 60`, `cosine_shift_threshold: 0.05`, `reindex_endpoint: /api/reindex`.
 
 ## GAP-C — Hall of Shame
 
 - Status: FIXED-AND-VERIFIED.
-- Root cause: `BACKLOG.md` and audit protocols referenced `src/data/schema/failed_queries/HALL_OF_SHAME.md`, but the file was missing.
-- Commit: `4c743b84 [NRG-AUDIT-2026-04-24] docs — GAP-C — Hall of Shame seven patterns`
+- Root cause: `BACKLOG.md` and audit protocols referenced `src/data/schema/failed_queries/HALL_OF_SHAME.md`; a later file existed, but it did not match the protocol-required title/field structure or include full SQL examples for the Dhairya failures.
+- Prior commit: `4c743b84 [NRG-AUDIT-2026-04-24] docs — GAP-C — Hall of Shame seven patterns`
+- Current commit: recorded by `git rev-parse --short HEAD` after this evidence commit.
+- Current tightening: test-first update in `tests/data/test_failed_queries_hall_of_shame.py` requires the exact title, seven `## Pn:` sections, all five required fields per pattern, and real SQL excerpts from the Dhairya report.
 - Implementation:
   - `src/data/schema/failed_queries/HALL_OF_SHAME.md`
-  - 195 lines covering all seven Dhairya failure patterns.
+  - 123 lines covering all seven Dhairya failure patterns with original query, wrong SQL, failure reason, fix, and test coverage.
 - Before:
-  - `src/data/schema/failed_queries/HALL_OF_SHAME.md` did not exist.
+  - The file used `###` headings and abbreviated examples such as `SELECT AVG(total_credit_score) FROM academic_courses_details`.
+  - The stricter regression test failed before the doc update:
+    `FAILED tests/data/test_failed_queries_hall_of_shame.py::test_failed_queries_hall_documents_all_dhairya_patterns - assert 0 == 7`.
 - After:
-  - File exists and documents P1 through P7 with original query, wrong SQL, failure reason, fix, and test coverage.
+  - File starts with `# Hall of Shame — NRG Text-to-SQL Adversarial Failures`.
+  - It contains seven `## Pn:` sections and seven occurrences each of `Original query`, `Wrong SQL generated`, `Why it failed`, `Fix applied`, and `Test covering this`.
+  - It includes the Q1 cast failure, Q4 alphabetical `DISTINCT`, Q6 `TRL 9` value mismatch, and Q16 incomplete `HAVING` SQL excerpts from the Dhairya audit.
 - Verification:
-  - `wc -l src/data/schema/failed_queries/HALL_OF_SHAME.md` -> `195`.
-  - `evidence/2026-04-24/gap_abc_verify.log`.
+  - `pytest tests/data/test_failed_queries_hall_of_shame.py -v` -> `1 passed in 0.86s`.
+  - `evidence/2026-04-24/local_gap_abc_tests.log` -> `50 passed in 6.37s`.
+  - `wc -l src/data/schema/failed_queries/HALL_OF_SHAME.md` -> `123`.
 
 ## Additional Security Closure
 

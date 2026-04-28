@@ -1,0 +1,37 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 21 items
+
+tests/observability/test_vector_drift_scheduler.py::test_default_interval_is_60_seconds [32mPASSED[0m[32m [  4%][0m
+tests/observability/test_vector_drift_scheduler.py::test_main_without_args_runs_one_drift_check_without_crash [32mPASSED[0m[32m [  9%][0m
+tests/observability/test_vector_drift_scheduler.py::test_default_check_establishes_baseline_before_drift_check [32mPASSED[0m[32m [ 14%][0m
+tests/observability/test_vector_drift_scheduler.py::test_scheduler_sleeps_for_configured_60_second_interval [32mPASSED[0m[32m [ 19%][0m
+tests/observability/test_vector_drift_scheduler.py::test_scheduler_triggers_reindex_on_cosine_shift_breach [32mPASSED[0m[32m [ 23%][0m
+tests/observability/test_vector_drift_scheduler.py::test_scheduler_emits_retrain_event_on_threshold_breach [32mPASSED[0m[32m [ 28%][0m
+tests/observability/test_vector_drift_scheduler.py::test_cron_manifest_exists_without_inline_secrets [32mPASSED[0m[32m [ 33%][0m
+tests/observability/test_vector_drift_scheduler.py::test_scheduler_does_not_reindex_when_stable [32mPASSED[0m[32m [ 38%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_reindex_info_flag_set [32mPASSED[0m[32m [ 42%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_max_shift_breaches_threshold [32mPASSED[0m[32m [ 47%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_drift_alert_warning [32mPASSED[0m[32m [ 52%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_triggers_when_drift_alert_critical [32mPASSED[0m[32m [ 57%][0m
+tests/scripts/test_vector_drift_scheduler.py::TestShouldTriggerReindex::test_no_trigger_when_stable_and_no_flags [32mPASSED[0m[32m [ 61%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_default_check_skips_benchmark_when_qdrant_has_no_indexed_vectors [32mPASSED[0m[32m [ 66%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_calls_check_fn [32mPASSED[0m[32m [ 71%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_triggers_reindex_when_needed [32mPASSED[0m[32m [ 76%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_run_once_no_trigger_when_stable [32mPASSED[0m[32m [ 80%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_loop_runs_max_iterations [32mPASSED[0m[32m [ 85%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_loop_returns_schedulerrun_list [32mPASSED[0m[32m [ 90%][0m
+tests/scripts/test_vector_drift_scheduler.py::test_interval_must_be_positive [32mPASSED[0m[32m [ 95%][0m
+tests/data/test_failed_queries_hall_of_shame.py::test_failed_queries_hall_documents_all_dhairya_patterns [32mPASSED[0m[32m [100%][0m
+
+[32m============================== [32m[1m21 passed[0m[32m in 7.97s[0m[32m ==============================[0m
