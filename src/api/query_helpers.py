@@ -26,6 +26,11 @@ from src.api.deps import (
     QUERY_RESULT_CACHE_TTL_SECONDS,
     REPO_ROOT,
 )
+from src.api._shared_sql_domain import (
+    extract_institute_hint as _extract_institute_hint,
+    extract_year_hint as _extract_year_hint,
+    previous_financial_year as _previous_financial_year,
+)
 from src.api.logging_config import get_logger
 
 logger = get_logger(__name__)

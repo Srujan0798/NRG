@@ -173,6 +173,10 @@ class JWTHandler:
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids: set[str] = {self._signing_key_id}
         self._jti_ip_registry: dict[str, tuple[str, str, float]] = {}
+        # NOTE: This in-process registry does not survive restarts and is not
+        # shared across gunicorn workers. For multi-worker deployments, replace
+        # with a Redis-backed store keyed by jti. See issue: token replay can bypass
+        # detection across workers or after restart.
 
     def jwt_secret_health(self) -> dict[str, Any]:
         """Return non-sensitive JWT signing-key health for readiness endpoints."""

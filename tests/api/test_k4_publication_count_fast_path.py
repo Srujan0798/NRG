@@ -61,3 +61,27 @@ def test_publication_count_fast_path_counts_iit_papers_from_local_sqlite(tmp_pat
         {"year": 2023, "scope": "IIT-linked", "publication_count": 1}
     ]
     assert "1 IIT-linked papers" in response["response"]
+
+
+def test_common_c4_query_shapes_use_bounded_fast_path():
+    queries = [
+        "find robotics researchers in Gujarat",
+        "labs working on renewable energy",
+        "funding agencies for electronics research",
+        "publication counts by institution",
+        "technology transfer candidates",
+    ]
+
+    for query in queries:
+        response = api_main._fast_query_response(
+            query,
+            user_tier=1,
+            user_id="k4-test-user",
+            session_id="k4-load-shapes",
+        )
+
+        assert response is not None, query
+        assert response["routing_decision"] == "fast_path"
+        assert response["synthesis_method"] == "rule_based"
+        assert response["citations"]
+        assert response["node_timings"]["executor"] == 0.0

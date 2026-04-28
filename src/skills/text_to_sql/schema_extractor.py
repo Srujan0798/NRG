@@ -207,102 +207,14 @@ class SchemaExtractor:
 
         Simple keyword matching - checks if query mentions entity keywords.
         """
-        query_lower = query.lower()
+        from src.skills.text_to_sql._schema_prompt_utils import relevant_tables_for_query
         all_tables = self.inspector.get_table_names()
-
-        # Map table names to query keywords that indicate relevance
-        keywords = {
-            "researchers": ["researcher", "faculty", "professor", "scientist", "people", "person"],
-            "labs": ["lab", "laboratory", "center"],
-            "publications": [
-                "publication",
-                "paper",
-                "article",
-                "journal",
-                "conference",
-            ],
-            "projects": ["project", "pi", "co-pi", "co pi", "principal investigator", "ongoing", "completed"],
-            "patents": ["patent", "inventor", "filing", "grant", "technology transfer", "ip"],
-            "collaborations": ["collaboration", "partner", "network", "cross-institutional"],
-            "research_documents": ["document", "research document", "full text", "category"],
-            "funding_records": ["funding", "grant", "fund", "budget"],
-            "institutions": ["institution", "university", "iit", "nit", "college"],
-            "keywords": ["topic", "keyword", "specialization"],
-            "researcher_publications": ["author", "wrote", "published"],
-            "researcher_labs": ["member", "works in", "affiliated"],
-            "academic_courses_details": [
-                "course", "curriculum", "credit", "credits", "ug ", "pg ", "phd",
-                "undergraduate", "postgraduate", "doctoral", "level_of_course",
-                "academic course", "innovation course", "elective", "core course",
-            ],
-            "innovation_grant_from_govt": [
-                "grant", "funding", "govt grant", "government grant", "fund agency",
-                "sanctioned grant", "grant received", "fund agency", "dST", "SERB",
-                "innovation grant", "funding agency",
-            ],
-            "trl_stages": [
-                "trl", "technology readiness", "lab validation", "market ready",
-                "pilot scale", "prototype", "technology readiness level",
-                "level 1", "level 2", "level 3", "level 4", "level 5",
-                "level 6", "level 7", "level 8", "level 9",
-                "pipeline progression", "innovation pipeline", "commercialize",
-            ],
-            "combined_ipo_patent_data": [
-                "ipo patent", "combined patent", "patent granted", "patent filed",
-                "patent status", "cost of innovation", "patent cost",
-            ],
-            "financial_expenses_capital": [
-                "capex", "capital expense", "capital asset", "library", "equipment",
-                "workshop", "capital spending", "high capex", "low capex",
-            ],
-            "financial_expenses_operational": [
-                "operational expense", "salaries", "maintenance", "seminars",
-                "operating cost", "utilization audit", "low expenditure",
-            ],
-            "incubation_details": [
-                "incubated", "incubation", "startup", "startup incubated",
-                "incubated startup", "cohort",
-            ],
-            "startup_recognition": [
-                "recognized startup", "startup recognition", "dst-tbi",
-            ],
-            "phd_students": [
-                "phd student", "phd enrollment", "doctoral student",
-            ],
-            "sanctioned_intake": [
-                "sanctioned intake", "student intake", "seats",
-            ],
-            "actual_student_strength": [
-                "student strength", "student count", "male female",
-                "economically backward", "socially challenged", "reimbursed",
-            ],
-        }
-
-        relevant = set()
-        for table in all_tables:
-            table_lower = table.lower()
-            if table_lower in keywords:
-                for kw in keywords[table_lower]:
-                    if kw in query_lower:
-                        relevant.add(table)
-                        break
-
-        # If no specific tables matched, return commonly useful tables
-        if not relevant:
-            default_tables = {
-                "researchers",
-                "institutions",
-                "labs",
-                "projects",
-                "publications",
-                "funding_records",
-                "academic_courses_details",
-                "innovation_grant_from_govt",
-                "trl_stages",
-            }
-            relevant = {t for t in all_tables if t in default_tables}
-
-        return list(relevant) if relevant else all_tables
+        pg_default_tables = frozenset({
+            "researchers", "institutions", "labs", "projects",
+            "publications", "funding_records",
+            "academic_courses_details", "innovation_grant_from_govt", "trl_stages",
+        })
+        return relevant_tables_for_query(query, all_tables, pg_default_tables)
 
     def close(self):
         self.engine.dispose()
@@ -396,16 +308,10 @@ class SchemaExtractor:
 
 
 def _load_schema_hints() -> str:
-    hints_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_hints.md"
-    try:
-        return hints_path.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+    from src.skills.text_to_sql._schema_prompt_utils import _load_schema_hints as _shared_load_hints
+    return _shared_load_hints()
 
 
 def _load_value_synonyms() -> str:
-    synonyms_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_value_synonyms.md"
-    try:
-        return synonyms_path.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+    from src.skills.text_to_sql._schema_prompt_utils import _load_value_synonyms as _shared_load_synonyms
+    return _shared_load_synonyms()

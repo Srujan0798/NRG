@@ -51,9 +51,9 @@ class BruteForceProtection:
 
         if self._failure_count[normalized] >= self.MAX_FAILURES:
             self._lockout_until[normalized] = time.time() + self.LOCKOUT_DURATION
-            logger.warning(f"Account locked due to failed attempts: {username}")
+            logger.warning(f"Account locked due to failed attempts: {normalized}")
         elif self._failure_count[normalized] >= 3:
-            logger.warning(f"Login failed ({self._failure_count[normalized]}/5): {username}")
+            logger.warning(f"Login failed ({self._failure_count[normalized]}/5): {normalized}")
 
     def record_success(self, username: str):
         """Clear failures on successful login."""

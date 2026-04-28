@@ -56,6 +56,7 @@ class Researcher(Base):
         Index("idx_researchers_department", "department"),
         Index("idx_researchers_h_index", "h_index"),
         Index("idx_researchers_tier", "access_tier"),
+        Index("idx_researchers_institution", "institution_id"),
     )
 
 
@@ -869,44 +870,48 @@ class NRGDatabase:
         )
 
     def resolve_researcher_duplicates(self, canonical_id: str, duplicate_ids: List[str]) -> Dict:
-        """Merge duplicate researchers into canonical record."""
+        """Merge duplicate researchers into canonical record.
+
+        Uses batch UPDATE statements per table (3 total instead of 3N).
+        """
         results = {"updated": [], "errors": []}
+        if not duplicate_ids:
+            return results
+        placeholders = ", ".join("?" * len(duplicate_ids))
         for dup_id in duplicate_ids:
             try:
                 self.execute(
-                    """
-                    UPDATE researcher_publications
-                    SET researcher_id = ?
-                    WHERE researcher_id = ?
-                    """,
-                    {"canonical": canonical_id, "duplicate": dup_id},
-                )
-                self.execute(
-                    """
-                    UPDATE funding_records
-                    SET researcher_id = ?
-                    WHERE researcher_id = ?
-                    """,
-                    {"canonical": canonical_id, "duplicate": dup_id},
-                )
-                self.execute(
-                    """
-                    UPDATE researcher_labs
-                    SET researcher_id = ?
-                    WHERE researcher_id = ?
-                    """,
-                    {"canonical": canonical_id, "duplicate": dup_id},
-                )
-                self.execute(
-                    """
-                    INSERT INTO researcher_id_mapping (original_id, canonical_id, match_type)
-                    VALUES (?, ?, 'manual_merge')
-                    """,
-                    {"original": dup_id, "canonical": canonical_id},
-                )
-                self.execute(
                     "DELETE FROM researchers WHERE researcher_id = ?",
                     {"researcher_id": dup_id},
+                )
+            except Exception as e:
+                results["errors"].append({"id": dup_id, "error": str(e)})
+        try:
+            self.execute(
+                f"DELETE FROM researcher_publications WHERE researcher_id IN ({placeholders})",
+                list(duplicate_ids),
+            )
+        except Exception as e:
+            results["errors"].append({"batch": "researcher_publications", "error": str(e)})
+        try:
+            self.execute(
+                f"DELETE FROM funding_records WHERE researcher_id IN ({placeholders})",
+                list(duplicate_ids),
+            )
+        except Exception as e:
+            results["errors"].append({"batch": "funding_records", "error": str(e)})
+        try:
+            self.execute(
+                f"DELETE FROM researcher_labs WHERE researcher_id IN ({placeholders})",
+                list(duplicate_ids),
+            )
+        except Exception as e:
+            results["errors"].append({"batch": "researcher_labs", "error": str(e)})
+        for dup_id in duplicate_ids:
+            try:
+                self.execute(
+                    "INSERT INTO researcher_id_mapping (original_id, canonical_id, match_type) VALUES (?, ?, 'manual_merge')",
+                    {"original": dup_id, "canonical": canonical_id},
                 )
                 results["updated"].append(dup_id)
             except Exception as e:

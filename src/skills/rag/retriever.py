@@ -180,6 +180,9 @@ class Retriever:
 
         self._client = None
 
+        # Cache the collection vector size to avoid repeated Qdrant round-trips
+        self._cached_vector_size: int | None = None
+
         # Initialize drift detector
         self._drift_detector = VectorDriftDetector(
             baseline_window=int(os.getenv("DRIFT_BASELINE_WINDOW", "1000")),
@@ -402,6 +405,8 @@ class Retriever:
         return [*query_vector, *([0.0] * (expected_dim - len(query_vector)))]
 
     def _collection_vector_size(self) -> int | None:
+        if self._cached_vector_size is not None:
+            return self._cached_vector_size
         try:
             info = self.client.get_collection(self.collection_name)
             vectors = info.config.params.vectors
@@ -410,15 +415,18 @@ class Retriever:
 
         size = getattr(vectors, "size", None)
         if size:
-            return int(size)
+            self._cached_vector_size = int(size)
+            return self._cached_vector_size
 
         if isinstance(vectors, dict):
             for vector_config in vectors.values():
                 size = getattr(vector_config, "size", None)
                 if size:
-                    return int(size)
+                    self._cached_vector_size = int(size)
+                    return self._cached_vector_size
                 if isinstance(vector_config, dict) and vector_config.get("size"):
-                    return int(vector_config["size"])
+                    self._cached_vector_size = int(vector_config["size"])
+                    return self._cached_vector_size
 
         return None
 

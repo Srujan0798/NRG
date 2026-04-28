@@ -6,7 +6,7 @@ import os
 import re
 import time
 import uuid
-from collections import deque
+from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any, Optional
 
@@ -33,8 +33,10 @@ QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS",
 
 
 class _APIMemoryCache:
+    MAX_SIZE: int = 1000
+
     def __init__(self, default_ttl: int = 30):
-        self._store: dict[str, tuple[float, Any]] = {}
+        self._store: OrderedDict[str, tuple[float, Any]] = OrderedDict()
         self._default_ttl = default_ttl
 
     @staticmethod
@@ -75,9 +77,14 @@ class _APIMemoryCache:
         if now > expires_at:
             self._store.pop(key, None)
             return None
+        self._store.move_to_end(key)
         return value
 
     def set(self, key: str, value: Any, ttl: Optional[int] = None) -> None:
+        if key in self._store:
+            self._store.move_to_end(key)
+        elif len(self._store) >= self.MAX_SIZE:
+            self._store.popitem(last=False)
         self._store[key] = (time.time() + (ttl or self._default_ttl), value)
 
     def invalidate(self, prefix: str = "") -> None:
@@ -184,31 +191,12 @@ def _remember_sql_domain_context(context_key: str, query: str, sql_query: str | 
     sql_lower = sql_query.lower()
     if "academic_courses_details" not in sql_lower:
         return
-    import re
+    from src.api._shared_sql_domain import extract_institute_hint, extract_year_hint
     previous = _sql_domain_context.get(context_key, {})
-
-    def _extract_institute_hint(q: str) -> str | None:
-        match = re.search(r"\b(IIT\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)\b", q, flags=re.IGNORECASE)
-        if match:
-            parts = match.group(1).split()
-            while len(parts) > 2 and parts[-1].lower() in {"offer", "offered", "offers", "has", "have", "had"}:
-                parts.pop()
-            return " ".join(part.capitalize() if part.lower() != "iit" else "IIT" for part in parts)
-        return None
-
-    def _extract_year_hint(q: str) -> str | None:
-        match = re.search(r"\b(20\d{2})(?:[-/](\d{2}))?\b", q)
-        if not match:
-            return None
-        start = int(match.group(1))
-        if match.group(2):
-            return f"{start}-{match.group(2)}"
-        return f"{start}-{str(start + 1)[-2:]}"
-
     _sql_domain_context[context_key] = {
         "domain": "academic_courses_details",
-        "institute": _extract_institute_hint(query) or previous.get("institute") or "IIT Bombay",
-        "financial_year": _extract_year_hint(query) or previous.get("financial_year") or "2022-23",
+        "institute": extract_institute_hint(query) or previous.get("institute") or "IIT Bombay",
+        "financial_year": extract_year_hint(query) or previous.get("financial_year") or "2022-23",
         "last_query": query,
     }
 

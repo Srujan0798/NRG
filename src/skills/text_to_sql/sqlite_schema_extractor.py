@@ -332,79 +332,9 @@ class SQLiteSchemaExtractor:
         Simple keyword matching - checks if query mentions entity keywords.
         Includes PostgreSQL-only tables for awareness but marks unavailable ones.
         """
-        query_lower = query.lower()
+        from src.skills.text_to_sql._schema_prompt_utils import relevant_tables_for_query
         all_tables = self.get_table_names()
-
-        keywords = {
-            "researchers": ["researcher", "faculty", "professor", "scientist", "people", "person"],
-            "labs": ["lab", "laboratory", "center"],
-            "publications": [
-                "publication",
-                "paper",
-                "article",
-                "journal",
-                "conference",
-            ],
-            "projects": ["project", "pi", "co-pi", "co pi", "principal investigator", "ongoing", "completed"],
-            "patents": ["patent", "inventor", "filing", "grant", "technology transfer", "ip"],
-            "collaborations": ["collaboration", "partner", "network", "cross-institutional"],
-            "research_documents": ["document", "research document", "full text", "category"],
-            "funding_records": ["funding", "grant", "fund", "budget"],
-            "institutions": ["institution", "university", "iit", "nit", "college"],
-            "keywords": ["topic", "keyword", "specialization"],
-            "researcher_publications": ["author", "wrote", "published"],
-            "researcher_labs": ["member", "works in", "affiliated"],
-            "academic_courses_details": [
-                "course", "pg course", "ug course", "phd course", "master course",
-                "innovation curriculum", "credit", "academic", "level of course",
-                "total credit", "curriculum", "iit madras", "iit bombay", "iit hyderabad",
-            ],
-            "innovation_grant_from_govt": [
-                "grant", "funding agency", "government grant", "gov_organisation",
-                "year of receiving", "funding drop", "rising star", "funding trend",
-                "grant received", "yoy", "year-over-year",
-            ],
-            "trl_stages": [
-                "trl", "technology readiness", "stage of technology", "market ready",
-                "lab validation", "bottleneck", "level 9", "trl 9", "pipeline progression",
-                "level 4", "various stage", "technology readiness level",
-            ],
-            "combined_ipo_patent_data": ["patent", "ipo", "grant", "cost per patent"],
-            "financial_expenses_capital": [
-                "capital expense", "capex", "capital asset", "equipment", "library",
-                "workshop", "high capital", "gap analysis", "financial expense",
-            ],
-            "financial_expenses_operational": [
-                "operational expense", "opex", "salary", "maintenance", "consumable",
-                "seminar", "travel", "utilization audit", "expenditure", "low expenditure",
-            ],
-            "incubation_details": [
-                "incubated", "startup", "incubation", "cohort", "cohort year",
-                "incubated startup", "startup incubated",
-            ],
-        }
-
-        relevant = set()
-        for table in all_tables:
-            table_lower = table.lower()
-            if table_lower in keywords:
-                for kw in keywords[table_lower]:
-                    if kw in query_lower:
-                        relevant.add(table)
-                        break
-
-        if not relevant:
-            default_tables = {
-                "researchers",
-                "institutions",
-                "labs",
-                "projects",
-                "publications",
-                "funding_records",
-            }
-            relevant = {t for t in all_tables if t in default_tables}
-
-        return list(relevant) if relevant else all_tables
+        return relevant_tables_for_query(query, all_tables)
 
     def get_postgresql_table_warning(self, query: str) -> Optional[str]:
         """
@@ -427,19 +357,13 @@ class SQLiteSchemaExtractor:
 
 
 def _load_schema_hints() -> str:
-    hints_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_hints.md"
-    try:
-        return hints_path.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+    from src.skills.text_to_sql._schema_prompt_utils import _load_schema_hints as _shared_load_hints
+    return _shared_load_hints()
 
 
 def _load_value_synonyms() -> str:
-    synonyms_path = Path(__file__).resolve().parents[2] / "data" / "schema" / "schema_value_synonyms.md"
-    try:
-        return synonyms_path.read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        return ""
+    from src.skills.text_to_sql._schema_prompt_utils import _load_value_synonyms as _shared_load_synonyms
+    return _shared_load_synonyms()
 
 
 def extract_schema(db_path: Optional[str] = None) -> Dict[str, Any]:

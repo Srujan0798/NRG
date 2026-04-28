@@ -275,6 +275,7 @@ class PromptSanitiser:
             _Rule("data_exfiltration", re.compile(r"\b(?:aadhaar|aadhar)\s+numbers?\b")),
             _Rule("data_exfiltration", re.compile(r"\bgstin\b")),
             _Rule("data_exfiltration", re.compile(r"\bbank\s+account\b")),
+            _Rule("data_exfiltration", re.compile(r"\blist\s+(?:all\s+)?pii\s+records?\b")),
             _Rule(
                 "data_exfiltration",
                 re.compile(r"\b(show|list|return|dump|print)\s+me\s+all\s+researchers?\b(?!\s+(in|from|at|working|based|who|with))"),
@@ -337,6 +338,22 @@ class PromptSanitiser:
             _Rule("command_injection", re.compile(r"\$\(\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl|bash|sh)\b", re.IGNORECASE)),
             _Rule("command_injection", re.compile(r"&&\s*(ls|cat|rm|whoami|id|uname|ps|grep|wget|curl)\b", re.IGNORECASE)),
             _Rule("command_injection", re.compile(r">\s*(/dev/|/etc/|/tmp/|/var/)")),
+            _Rule(
+                "command_injection",
+                re.compile(r"\binstall\s+(?:a\s+)?(?:malicious\s+)?package\b.*\b(?:pip|execute|run)\b"),
+            ),
+            _Rule(
+                "model_inversion",
+                re.compile(r"\bembedding\s+vector\b.*\ball\s+zeros\b|\ball\s+zeros\b.*\bembedding\s+vector\b"),
+            ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"\b(?:dns|txt\s+records?|attacker\.com)\b.*\b(?:exfil|embedded\s+data|attacker\.com|txt\s+records?)\b"),
+            ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"\b(?:query|lookup|resolve)\b.*\btxt\s+records?\b"),
+            ),
             _Rule("ssrf", re.compile(r"https?://(169\.254\.|172\.(1[6-9]|2[0-9]|3[0-1])\.|192\.168\.|10\.)")),
             _Rule("ssrf", re.compile(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)[:/]")),
             _Rule("ssrf", re.compile(r"file:///")),

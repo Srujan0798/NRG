@@ -35,9 +35,10 @@ def log_deletion(
         "retention_days": DATA_RETENTION_DAYS,
     }
     DELETION_AUDIT_LOG.append(entry)
+    user_id_hash = hashlib.sha256(user_id.encode()).hexdigest()[:16]
     logger.info(
-        "DPDP deletion: user=%s type=%s count=%d reason=%s",
-        user_id,
+        "DPDP deletion: user_hash=%s type=%s count=%d reason=%s",
+        user_id_hash,
         data_type,
         records_deleted,
         reason,

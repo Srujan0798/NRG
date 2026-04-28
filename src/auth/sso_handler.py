@@ -204,9 +204,8 @@ def _fetch_userinfo(config: SSOConfig, access_token: str) -> dict[str, Any]:
     return resp.json()
 
 
-def _normalize_role(config: SSOConfig, claims: dict[str, Any]) -> dict[str, Any]:
-    """Determine NRG role from SSO claims."""
-    email = claims.get("email", "")
+def _normalize_role(config: SSOConfig, claims: dict[str, Any]) -> str:
+    """Derive role from structured claims only. Email keywords are NOT authoritative."""
     role = config.default_role
 
     role_hints = [
@@ -217,20 +216,20 @@ def _normalize_role(config: SSOConfig, claims: dict[str, Any]) -> dict[str, Any]
     for hint in role_hints:
         if isinstance(hint, list):
             for item in hint:
-                if "gov" in item.lower() or "admin" in item.lower():
-                    role = "government"
-                    break
+                if "gov" in str(item).lower() or "admin" in str(item).lower():
+                    return "government"
         elif isinstance(hint, str):
             if "gov" in hint.lower() or "admin" in hint.lower():
-                role = "government"
-
-    if "researcher" in email.lower() or "faculty" in email.lower():
-        role = "researcher"
-    elif any(k in email.lower() for k in ["gov.in", "govt", "gov.in"]):
-        role = "government"
-    elif any(k in email.lower() for k in [".org", ".com", "industry"]):
-        role = "industry"
-
+                return "government"
+    structured_role = claims.get("role") or claims.get("groups")
+    if structured_role:
+        sr = str(structured_role).lower()
+        if "researcher" in sr or "faculty" in sr:
+            return "researcher"
+        if "gov" in sr or "admin" in sr:
+            return "government"
+        if "industry" in sr:
+            return "industry"
     return role
 
 
@@ -293,17 +292,20 @@ class SSOAuthHandler:
             verifier = OIDCTokenVerifier(self.config.jwks_url)
             claims = verifier.verify(id_token)
         else:
+            if not self.config.authorization_url:
+                raise AuthError("SSO not configured: missing authorization_url")
             claims = jwt.decode(
                 id_token,
                 self.config.client_secret,
                 algorithms=["HS256"],
-                options={"verify_aud": False},
+                options={"verify_aud": True, "verify_iss": True, "verify_iat": True},
             )
 
         if not self.config.domain_allowed(claims.get("email", "")):
             raise AuthError(f"Email domain not allowed: {claims.get('email')}")
 
         role = _normalize_role(self.config, claims)
+        domain = claims.get("email", "").split("@")[-1] if "@" in claims.get("email", "") else ""
         user_info = {
             "user_id": f"sso-{claims.get('sub', claims.get('email', 'unknown'))}",
             "username": claims.get("email", claims.get("preferred_username", "sso_user")),
