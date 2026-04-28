@@ -11,9 +11,7 @@ import json
 import os
 import time
 from datetime import datetime, UTC
-from unittest.mock import MagicMock, patch
 
-import pytest
 import requests
 
 BASE_URL = os.getenv("NRG_BASE_URL", "http://localhost:8000")
@@ -121,7 +119,6 @@ def test_rt06_gov_token_downgraded():
 
 def test_rt07_jwt_key_confusion():
     """RT-07: Sign token with wrong key/algorithm."""
-    token = get_token("researcher")
     try:
         import jwt
 
@@ -143,7 +140,6 @@ def test_rt07_jwt_key_confusion():
 
 def test_rt08_jwt_alg_none():
     """RT-08: alg:none header attack."""
-    token = get_token("researcher")
     try:
         import jwt
 
@@ -193,13 +189,13 @@ def test_rt09_jwt_expired_token():
 # ─────────────────────────────────────────────────────────────────────────────
 
 
-def test_rt10_audit_chain_modified_event():
+def test_rt10_audit_chain_modified_event(tmp_path):
     """RT-10: Modify a middle event in audit DB, verify_chain() should fail."""
     from src.audit import ImmutableAuditLog
 
-    chain_dir = ".audit"
-    os.makedirs(chain_dir, exist_ok=True)
-    chain_path = os.path.join(chain_dir, "chain.jsonl")
+    chain_dir = tmp_path / "audit"
+    chain_dir.mkdir()
+    chain_path = chain_dir / "chain.jsonl"
     with open(chain_path, "a") as f:
         f.write(json.dumps({"event_id": "test-event", "hash": "orig_hash", "timestamp": datetime.now(UTC).isoformat()}) + "\n")
     with open(chain_path, "r+") as f:
@@ -207,19 +203,19 @@ def test_rt10_audit_chain_modified_event():
         content = content.replace("orig_hash", "tampered_hash")
         f.seek(0)
         f.write(content)
-    chain = ImmutableAuditLog(storage_path=chain_dir)
+    chain = ImmutableAuditLog(storage_path=str(chain_dir))
     valid, errors, count = chain.verify_chain()
-    os.remove(chain_path)
+    chain_path.unlink(missing_ok=True)
     assert not valid or count > 0 or len(errors) > 0, "Tampered event passed verify!"
 
 
-def test_rt11_append_fake_event_without_hmac():
+def test_rt11_append_fake_event_without_hmac(tmp_path):
     """RT-11: Append fake event without valid HMAC."""
     from src.audit import ImmutableAuditLog
 
-    chain_dir = ".audit"
-    os.makedirs(chain_dir, exist_ok=True)
-    chain_path = os.path.join(chain_dir, "chain.jsonl")
+    chain_dir = tmp_path / "audit"
+    chain_dir.mkdir()
+    chain_path = chain_dir / "chain.jsonl"
     with open(chain_path, "w") as f:
         f.write("")
     fake_event = json.dumps({
@@ -230,19 +226,19 @@ def test_rt11_append_fake_event_without_hmac():
     })
     with open(chain_path, "a") as f:
         f.write(fake_event + "\n")
-    chain = ImmutableAuditLog(storage_path=chain_dir)
+    chain = ImmutableAuditLog(storage_path=str(chain_dir))
     valid, errors, count = chain.verify_chain()
-    os.remove(chain_path)
+    chain_path.unlink(missing_ok=True)
     assert not valid or count > 0 or len(errors) > 0, "Fake event passed verify!"
 
 
-def test_rt12_replay_old_event():
+def test_rt12_replay_old_event(tmp_path):
     """RT-12: Replay an old valid event at the end of the chain."""
     from src.audit import ImmutableAuditLog
 
-    chain_dir = ".audit"
-    os.makedirs(chain_dir, exist_ok=True)
-    chain_path = os.path.join(chain_dir, "chain.jsonl")
+    chain_dir = tmp_path / "audit"
+    chain_dir.mkdir()
+    chain_path = chain_dir / "chain.jsonl"
     old_event = json.dumps({
         "event_id": "old-event",
         "hash": "old_hash",
@@ -251,9 +247,9 @@ def test_rt12_replay_old_event():
     with open(chain_path, "w") as f:
         f.write(old_event + "\n")
         f.write(old_event + "\n")
-    chain = ImmutableAuditLog(storage_path=chain_dir)
+    chain = ImmutableAuditLog(storage_path=str(chain_dir))
     valid, errors, count = chain.verify_chain()
-    os.remove(chain_path)
+    chain_path.unlink(missing_ok=True)
     assert not valid, "Replay attack not detected!"
 
 

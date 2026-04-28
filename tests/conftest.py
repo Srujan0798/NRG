@@ -154,6 +154,7 @@ def _apply_tier_marker(item: pytest.Item, subdir: str) -> None:
     _add_marker_once(item, "unit")
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_collection_modifyitems(items):
     """Auto-mark tests based on their location; skip tests requiring unavailable services."""
     for item in items:

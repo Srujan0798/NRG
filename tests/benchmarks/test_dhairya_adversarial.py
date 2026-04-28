@@ -127,11 +127,14 @@ def _load_killer_queries() -> dict:
 
 def _login(username: str, password: str) -> str:
     api_url = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
-    resp = requests.post(
-        f"{api_url}/login",
-        json={"username": username, "password": password},
-        timeout=15,
-    )
+    try:
+        resp = requests.post(
+            f"{api_url}/login",
+            json={"username": username, "password": password},
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        pytest.skip(f"API login unavailable at {api_url}: {exc}")
     if resp.status_code != 200:
         pytest.skip(f"API login failed: {resp.status_code} — {resp.text[:200]}")
     return resp.json()["access_token"]
@@ -234,6 +237,8 @@ class TestDhairyaFailurePatternContracts:
         assert any(pattern["expected_issue"].lower() in issue.lower() for issue in issues), issues
 
 
+@pytest.mark.e2e
+@pytest.mark.slow
 class TestDhairyaFailurePatterns:
     """Verify each Dhairya failure pattern is guarded against in generated SQL."""
 
@@ -303,6 +308,8 @@ class TestDhairyaFailurePatterns:
         assert len(sql) > 50, "Query too short — likely incomplete"
 
 
+@pytest.mark.e2e
+@pytest.mark.slow
 class TestAdversarialBreakers:
     """22 ADV adversarial mutations — each must be caught or generate correct SQL."""
 
@@ -442,6 +449,8 @@ class TestAdversarialBreakers:
             assert "-- [incomplete]" not in sql, f"{adv_id}: Query truncated"
 
 
+@pytest.mark.e2e
+@pytest.mark.slow
 class TestKillerQueriesEndToEnd:
     """KILLER-01..KILLER-03 must pass end-to-end with live DB."""
 
