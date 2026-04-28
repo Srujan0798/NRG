@@ -10,6 +10,7 @@ import hashlib
 import json
 import logging
 import os
+import shutil
 import threading
 import time
 import uuid
@@ -33,6 +34,18 @@ _chain_key_cache: bytes | None = None
 _chain_key_lock = threading.Lock()
 _cosign_executor: ThreadPoolExecutor | None = None
 _cosign_executor_lock = threading.Lock()
+_cosign_metrics_lock = threading.Lock()
+_cosign_metrics = {
+    "submitted": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "queue_depth": 0,
+    "max_queue_depth": 0,
+    "success_rate": 1.0,
+    "last_latency_ms": None,
+    "last_error": None,
+    "last_completed_at": None,
+}
 
 
 def _configured_chain_key_text() -> str:
@@ -87,6 +100,154 @@ def _get_cosign_executor() -> ThreadPoolExecutor:
                 thread_name_prefix="audit-db-cosign",
             )
         return _cosign_executor
+
+
+def _executor_queue_depth(executor: object) -> int:
+    """Return pending DB co-sign work when the executor exposes a queue."""
+    work_queue = getattr(executor, "_work_queue", None)
+    if work_queue is None:
+        return 0
+    try:
+        return int(work_queue.qsize())
+    except Exception:
+        return 0
+
+
+def _publish_db_cosign_metrics(snapshot: dict) -> None:
+    try:
+        from src.observability.metrics import set_audit_db_cosign_metrics
+
+        set_audit_db_cosign_metrics(snapshot)
+    except Exception:
+        pass
+
+
+def _db_cosign_metrics_snapshot() -> dict:
+    submitted = int(_cosign_metrics["submitted"])
+    succeeded = int(_cosign_metrics["succeeded"])
+    failed = int(_cosign_metrics["failed"])
+    completed = succeeded + failed
+    success_rate = succeeded / completed if completed else 1.0
+    snapshot = dict(_cosign_metrics)
+    snapshot["submitted"] = submitted
+    snapshot["succeeded"] = succeeded
+    snapshot["failed"] = failed
+    snapshot["success_rate"] = success_rate
+    return snapshot
+
+
+def _record_db_cosign_submitted(queue_depth: int) -> None:
+    with _cosign_metrics_lock:
+        _cosign_metrics["submitted"] = int(_cosign_metrics["submitted"]) + 1
+        _cosign_metrics["queue_depth"] = queue_depth
+        _cosign_metrics["max_queue_depth"] = max(
+            int(_cosign_metrics["max_queue_depth"]),
+            queue_depth,
+        )
+        snapshot = _db_cosign_metrics_snapshot()
+    _publish_db_cosign_metrics(snapshot)
+
+
+def _record_db_cosign_completed(
+    *,
+    success: bool,
+    latency_ms: float,
+    queue_depth: int,
+    error: str | None = None,
+) -> None:
+    with _cosign_metrics_lock:
+        if success:
+            _cosign_metrics["succeeded"] = int(_cosign_metrics["succeeded"]) + 1
+            _cosign_metrics["last_error"] = None
+        else:
+            _cosign_metrics["failed"] = int(_cosign_metrics["failed"]) + 1
+            _cosign_metrics["last_error"] = error
+        _cosign_metrics["last_latency_ms"] = round(latency_ms, 3)
+        _cosign_metrics["last_completed_at"] = datetime.now(UTC).isoformat()
+        _cosign_metrics["queue_depth"] = queue_depth
+        _cosign_metrics["max_queue_depth"] = max(
+            int(_cosign_metrics["max_queue_depth"]),
+            queue_depth,
+        )
+        snapshot = _db_cosign_metrics_snapshot()
+    _publish_db_cosign_metrics(snapshot)
+
+
+def get_db_cosign_metrics() -> dict:
+    """Return DB co-sign worker metrics for health and CI checks."""
+    with _cosign_metrics_lock:
+        return _db_cosign_metrics_snapshot()
+
+
+def reset_db_cosign_metrics() -> None:
+    """Reset DB co-sign worker metrics. Intended for tests."""
+    with _cosign_metrics_lock:
+        _cosign_metrics.update(
+            {
+                "submitted": 0,
+                "succeeded": 0,
+                "failed": 0,
+                "queue_depth": 0,
+                "max_queue_depth": 0,
+                "success_rate": 1.0,
+                "last_latency_ms": None,
+                "last_error": None,
+                "last_completed_at": None,
+            }
+        )
+        snapshot = _db_cosign_metrics_snapshot()
+    _publish_db_cosign_metrics(snapshot)
+
+
+def _schedule_db_cosign(cosign_args: tuple[str, str, str, str, str]) -> None:
+    """Submit DB co-sign work and record failures from the background Future."""
+    event_id = cosign_args[0]
+    executor = _get_cosign_executor()
+    submitted_at = time.perf_counter()
+
+    def _cosign_fire_and_forget():
+        from src.audit.db_cosign import cosign_event as _cosign
+
+        signature = _cosign(*cosign_args)
+        if signature is None:
+            raise RuntimeError(f"DB co-sign returned no signature for event {event_id}")
+        return signature
+
+    def _cosign_done(future) -> None:
+        latency_ms = (time.perf_counter() - submitted_at) * 1000
+        try:
+            exc = future.exception()
+        except Exception as callback_exc:
+            exc = callback_exc
+        queue_depth = _executor_queue_depth(executor)
+        if exc is not None:
+            logger.warning("DB co-sign background task failed for event %s: %s", event_id, exc)
+            _record_db_cosign_completed(
+                success=False,
+                latency_ms=latency_ms,
+                queue_depth=queue_depth,
+                error=str(exc),
+            )
+            return
+        _record_db_cosign_completed(
+            success=True,
+            latency_ms=latency_ms,
+            queue_depth=queue_depth,
+        )
+
+    try:
+        future = executor.submit(_cosign_fire_and_forget)
+        _record_db_cosign_submitted(_executor_queue_depth(executor))
+        future.add_done_callback(_cosign_done)
+    except Exception as exc:
+        latency_ms = (time.perf_counter() - submitted_at) * 1000
+        logger.warning("DB co-sign background submit failed for event %s: %s", event_id, exc)
+        _record_db_cosign_completed(
+            success=False,
+            latency_ms=latency_ms,
+            queue_depth=_executor_queue_depth(executor),
+            error=str(exc),
+        )
 
 
 def verify_chain_continuity(stored_key_hash: str) -> bool:
@@ -260,6 +421,22 @@ class ImmutableAuditLog:
     def _genesis_hash(self) -> str:
         return "0" * 64
 
+    def _read_last_chain_hash(self) -> str:
+        """Read the hash on the actual last chain line, bypassing stale process state."""
+        if not self.chain_file.exists():
+            return self._genesis_hash()
+
+        last_line = ""
+        with open(self.chain_file) as f:
+            for line in f:
+                if line.strip():
+                    last_line = line
+
+        if not last_line:
+            return self._genesis_hash()
+
+        return json.loads(last_line).get("hash") or self._genesis_hash()
+
     def _compute_hash(self, prev_hash: str, event: AuditEvent) -> str:
         message = prev_hash + event.serialize()
         return hmac.new(
@@ -276,6 +453,127 @@ class ImmutableAuditLog:
             hashlib.sha256,
         ).hexdigest()
 
+    def _event_from_chain_data(self, event_data: dict) -> AuditEvent:
+        event_kwargs = {
+            k: v
+            for k, v in event_data.items()
+            if k not in ("hash", "per_user_binding", "user_key_hash")
+        }
+        if "_v" not in event_data:
+            event_kwargs["_v"] = None
+        return AuditEvent(**event_kwargs)
+
+    def _chain_file_sha256(self) -> str:
+        digest = hashlib.sha256()
+        if not self.chain_file.exists():
+            return digest.hexdigest()
+        with open(self.chain_file, "rb") as f:
+            for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    def _write_rehashed_event(
+        self,
+        f,
+        prev_hash: str,
+        event: AuditEvent,
+        include_binding: bool = True,
+    ) -> str:
+        if event.user_id is None:
+            event.user_id = "system"
+
+        new_hash = self._compute_hash(prev_hash, event)
+        event_data = event.to_dict()
+        event_data["hash"] = new_hash
+
+        if include_binding:
+            user_key = self._derive_user_key(event.user_id)
+            per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
+            if event.jwt_kid is not None or event.request_fingerprint is not None:
+                try:
+                    per_user_hash = self._per_user_key_manager.compute_binding(
+                        user_id=event.user_id,
+                        jwt_kid=event.jwt_kid,
+                        request_fingerprint=event.request_fingerprint,
+                        chain_hash=new_hash,
+                        event_serialized=event.serialize(),
+                    )
+                except Exception:
+                    pass
+            event_data["per_user_binding"] = per_user_hash[:16]
+
+        f.write(json.dumps(event_data, sort_keys=True, default=str) + "\n")
+        return new_hash
+
+    def repair_line1_hash_mismatch(self, reason: str = "line1_hash_mismatch") -> dict:
+        """Archive and reseed an unanchored chain, preserving every readable event."""
+        if not self.chain_file.exists():
+            return {"action": "noop", "reason": "chain_missing"}
+
+        timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%fZ")
+        backup_path = self.storage_path / f"chain_line1_hash_mismatch_backup_{timestamp}.jsonl"
+        temp_path = self.storage_path / f"chain_reseed_{timestamp}.jsonl"
+
+        with self._file_lock.hold():
+            source_sha256 = self._chain_file_sha256()
+            source_lines = self.chain_file.read_text().splitlines()
+            source_events = [json.loads(line) for line in source_lines if line.strip()]
+            shutil.copy2(self.chain_file, backup_path)
+
+            first_source = source_events[0] if source_events else {}
+            genesis_event = AuditEvent(
+                event_id="genesis",
+                event_type="chain_genesis",
+                user_id="system",
+                result={
+                    "origin": "audit_chain_reseed",
+                    "reason": reason,
+                    "source_backup": str(backup_path),
+                    "source_sha256": source_sha256,
+                    "preserved_event_count": len(source_events),
+                    "source_line1_event_id": first_source.get("event_id"),
+                    "source_line1_timestamp": first_source.get("timestamp"),
+                    "source_line1_recorded_hash": first_source.get("hash"),
+                },
+            )
+
+            prev_hash = self._genesis_hash()
+            with open(temp_path, "w") as f:
+                prev_hash = self._write_rehashed_event(f, prev_hash, genesis_event)
+                for event_data in source_events:
+                    prev_hash = self._write_rehashed_event(
+                        f,
+                        prev_hash,
+                        self._event_from_chain_data(event_data),
+                    )
+
+            temp_path.replace(self.chain_file)
+            self.last_hash = prev_hash
+            self.last_hash_file.write_text(prev_hash)
+            self.event_count = self._count_events()
+
+        global _chain_health_cache
+        _chain_health_cache = None
+
+        self.log_tamper_alert(
+            f"Line 1 hash mismatch repaired by reseeding {len(source_events)} events "
+            f"from {backup_path.name}"
+        )
+        logger.critical(
+            "Audit chain line 1 hash mismatch repaired: backup=%s preserved_events=%s",
+            backup_path,
+            len(source_events),
+        )
+        return {
+            "action": "reseeded_with_genesis",
+            "reason": reason,
+            "backup_path": str(backup_path),
+            "source_sha256": source_sha256,
+            "preserved_event_count": len(source_events),
+            "chain_length": self.event_count,
+            "last_hash": self.last_hash,
+        }
+
     def append(self, event: AuditEvent) -> str:
         """Append event to log with per-user non-repudiation binding. Thread-safe, process-safe."""
         if event.user_id is None:
@@ -287,6 +585,8 @@ class ImmutableAuditLog:
         try:
             with self._file_lock.hold():
                 with self._lock:
+                    self.last_hash = self._read_last_chain_hash()
+                    self.event_count = self._count_events()
                     new_hash = self._compute_hash(self.last_hash, event)
 
                     per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
@@ -322,11 +622,7 @@ class ImmutableAuditLog:
             raise
 
         if should_db_cosign():
-            def _cosign_fire_and_forget():
-                from src.audit.db_cosign import cosign_event as _cosign
-                _cosign(*cosign_args)
-
-            _get_cosign_executor().submit(_cosign_fire_and_forget)
+            _schedule_db_cosign(cosign_args)
 
         logger.debug(
             "Audit event %s appended, chain=%s..., user_bind=%s...",
@@ -393,17 +689,18 @@ class ImmutableAuditLog:
                     recorded_hash = event_data.get("hash")
                     stored_binding = event_data.get("per_user_binding")
 
-                    event_kwargs = {k: v for k, v in event_data.items() if k != "hash"}
-                    if "_v" not in event_data:
-                        event_kwargs["_v"] = None
-
                     computed_hash = self._compute_hash_with_key(
                         chain_key, prev_hash,
-                        AuditEvent(**event_kwargs)
+                        self._event_from_chain_data(event_data)
                     )
 
                     if computed_hash != recorded_hash:
                         errors.append(f"Line {line_num}: hash mismatch")
+                        if line_num == 1:
+                            logger.critical(
+                                "Audit chain line 1 hash mismatch: chain is unanchored "
+                                "and must be repaired before audit-dependent gates run"
+                            )
                         valid_count = line_num - 1
                         break
                     else:
@@ -469,15 +766,40 @@ class ImmutableAuditLog:
             "event_count": len(events),
         }
 
-    def get_chain_health(self) -> dict:
-        """Get chain health status for monitoring."""
-        # Fast-path: return metadata without full chain verification
-        # Full verify_chain() with 380k+ entries blocks for >30s
+    def get_chain_health(self, auto_repair: bool | None = None) -> dict:
+        """Get chain health status for monitoring, including explicit verifier errors."""
+        if auto_repair is None:
+            auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "1").lower() not in {
+                "0",
+                "false",
+                "no",
+            }
+
+        valid, errors, valid_count = self.verify_chain()
+        repair = None
+        if (
+            auto_repair
+            and not valid
+            and errors
+            and errors[0].startswith("Line 1: hash mismatch")
+        ):
+            repair = self.repair_line1_hash_mismatch()
+            valid, errors, valid_count = self.verify_chain()
+
+        chain_length = self._count_events()
+        self.event_count = chain_length
+        if valid and self.chain_file.exists():
+            self.last_hash = self._load_last_hash()
+
         return {
-            "chain_valid": True,
-            "chain_length": self.event_count,
-            "valid_events": self.event_count,
-            "error_count": 0,
+            "chain_valid": valid,
+            "chain_length": chain_length,
+            "valid_events": valid_count,
+            "valid_event_count": valid_count,
+            "error_count": len(errors),
+            "errors": errors,
+            "repair": repair,
+            "db_cosign": get_db_cosign_metrics(),
             "last_hash": self.last_hash[:16] + "...",
             "last_event": self._get_last_event_time(),
         }
@@ -720,19 +1042,19 @@ def verify_chain(verify_per_user: bool = True) -> tuple[bool, list[str], int]:
     return get_audit_log().verify_chain(verify_per_user=verify_per_user)
 
 
-_chain_health_cache: tuple[float, dict] | None = None
+_chain_health_cache: tuple[float, bool | None, dict] | None = None
 
 
-def get_chain_health() -> dict:
+def get_chain_health(auto_repair: bool | None = None) -> dict:
     """Get chain health status for monitoring. Cached for 5s to avoid repeated full-chain scans."""
     global _chain_health_cache
     now = time.time()
     if _chain_health_cache is not None:
-        cached_at, cached_result = _chain_health_cache
-        if now - cached_at < 5.0:
+        cached_at, cached_auto_repair, cached_result = _chain_health_cache
+        if cached_auto_repair == auto_repair and now - cached_at < 5.0:
             return cached_result
-    result = get_audit_log().get_chain_health()
-    _chain_health_cache = (now, result)
+    result = get_audit_log().get_chain_health(auto_repair=auto_repair)
+    _chain_health_cache = (now, auto_repair, result)
     return result
 
 

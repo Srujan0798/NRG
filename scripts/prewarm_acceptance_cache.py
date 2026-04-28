@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Pre-warm NRG API cache with demo queries.
-Run this 10-15 minutes before any demo.
+Pre-warm NRG API cache with production-tier acceptance queries.
+Run this 10-15 minutes before a stakeholder acceptance session.
 
 Usage:
-    python scripts/prewarm_demo_cache.py --tier researcher
-    python scripts/prewarm_demo_cache.py --tier government
-    python scripts/prewarm_demo_cache.py --tier industry
-    python scripts/prewarm_demo_cache.py --all
+    python scripts/prewarm_acceptance_cache.py --tier researcher
+    python scripts/prewarm_acceptance_cache.py --tier government
+    python scripts/prewarm_acceptance_cache.py --tier industry
+    python scripts/prewarm_acceptance_cache.py --all
 
 The API uses an in-memory TTL cache (30s default).
 Warming ensures <1s response times for repeated queries.
@@ -22,7 +22,7 @@ from typing import List, Tuple
 
 API_BASE = "http://localhost:8000"
 
-# Working demo queries by tier — these trigger the fast-path planner
+# Working acceptance queries by tier — these trigger the fast-path planner
 DEMO_QUERIES = {
     "researcher": [
         "Which IIT has the highest total innovation credits in FY 2022-23",
@@ -109,13 +109,13 @@ def prewarm_tier(tier: str) -> None:
 
     print(f"\nSummary: {success_count}/{len(queries)} warmed in {total_time:.1f}s")
     if success_count == len(queries):
-        print("🎯 All queries cached. Demo responses will be <1s.")
+        print("All queries cached. Acceptance responses will be <1s.")
     else:
         print("⚠️  Some queries failed. Review errors above.")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Pre-warm NRG demo cache")
+    parser = argparse.ArgumentParser(description="Pre-warm NRG acceptance cache")
     parser.add_argument("--tier", choices=["researcher", "government", "industry"], help="Tier to warm")
     parser.add_argument("--all", action="store_true", help="Warm all tiers")
     args = parser.parse_args()
@@ -126,8 +126,8 @@ def main():
     elif args.tier:
         prewarm_tier(args.tier)
     else:
-        print("Usage: python scripts/prewarm_demo_cache.py --tier researcher")
-        print("       python scripts/prewarm_demo_cache.py --all")
+        print("Usage: python scripts/prewarm_acceptance_cache.py --tier researcher")
+        print("       python scripts/prewarm_acceptance_cache.py --all")
 
 
 if __name__ == "__main__":

@@ -175,6 +175,11 @@ def main():
     parser.add_argument("--check", action="store_true", help="Check current chain status")
     parser.add_argument("--rebuild", action="store_true", help="Rebuild the chain")
     parser.add_argument("--verify", action="store_true", help="Verify existing chain")
+    parser.add_argument(
+        "--reseed-genesis",
+        action="store_true",
+        help="Archive active chain, insert a traceable genesis event, and replay all events",
+    )
     parser.add_argument("--chain-key", default=None, help="Override chain key")
     args = parser.parse_args()
 
@@ -215,9 +220,9 @@ def main():
             print("RESULT: Chain is VALID")
             return 0
         else:
-            print(f"RESULT: Chain is INVALID")
+            print("RESULT: Chain is INVALID")
             print(f"Errors found: {len(errors)}")
-            print(f"First 10 errors:")
+            print("First 10 errors:")
             for e in errors[:10]:
                 print(f"  {e}")
             return 1
@@ -259,6 +264,31 @@ def main():
         if valid:
             print("\nChain is already valid. No rebuild needed.")
             return 0
+
+        if args.reseed_genesis or any(e.startswith("Line 1: hash mismatch") for e in errors):
+            print("\nStep 2: Reseeding chain with traceable genesis event...")
+            ImmutableAuditLog._reset()
+            audit_log = ImmutableAuditLog(storage_path=str(audit_dir))
+            repair = audit_log.repair_line1_hash_mismatch(
+                reason="script_rebuild_line1_hash_mismatch"
+            )
+            print(f"  Action: {repair['action']}")
+            print(f"  Preserved events: {repair['preserved_event_count']:,}")
+            print(f"  Archived to: {repair['backup_path']}")
+            print(f"  Source SHA-256: {repair['source_sha256']}")
+
+            print("\nStep 3: Verifying reseeded chain...")
+            valid_after, verify_errors, count_after = audit_log.verify_chain()
+            if valid_after:
+                print("  Reseeded chain is VALID")
+                print(f"  Valid events: {count_after:,}")
+                print(f"  Final chain hash: {audit_log.last_hash[:20]}...")
+                return 0
+
+            print(f"  Reseeded chain is INVALID ({len(verify_errors)} errors)")
+            for e in verify_errors[:10]:
+                print(f"    {e}")
+            return 1
         
         # Archive
         print("\nStep 2: Archiving corrupted chain...")

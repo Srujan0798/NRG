@@ -33,7 +33,7 @@ killer_queries:
     expected_sql_pattern: |
       GROUP BY financial_year, stage_of_technology
     must_contain:
-      - "trl_stages"
+      - "innovations_at_various_stages_of_technology_readiness_level"
       - "GROUP BY"
       - "financial_year"
     expected_min_rows: 1

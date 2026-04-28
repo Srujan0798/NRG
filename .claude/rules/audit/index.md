@@ -18,11 +18,14 @@
 | **Code Interrogation** | §9 | Line-by-line verification format |
 | **Eternal Standard** | §10 | Principal engineer bar |
 | **External AI Audit** | §13 | Third-party AI review protocol |
+| **Evidence Expiration** | §14 | Max age per evidence type |
+| **Health Honesty** | §15 | /health must not hide failures |
 
 ## Read This When
 
 - **Before claiming any task DONE** — check §0–§3
 - **Before committing** — run through §4 checklist
 - **Before release** — execute §5 red team + §7 report
+- **After external audit** — read §14 + §15 + `.claude/rules/external_audit.md`
 
 → [Full Protocol](protocol.md)

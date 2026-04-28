@@ -1,95 +1,271 @@
-# Hall of Shame — NRG Benchmark & Failure Patterns
+# Hall of Shame - NRG Dhairya Failure Patterns
 
-> This document records failure patterns so they are never repeated.
-> It is a learning tool, not a blame tool.
+This document mirrors the seven failure patterns in
+`docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`. It is a CI-checked prevention
+ledger: every pattern below must have a wrong SQL example, failure explanation,
+correct SQL shape, adversarial fixture, and validator rule.
 
-## Pattern 1: Credit Score Parsing Without SPLIT_PART
+## Coverage Map
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q1)
-- **Severity:** Critical
-- **Root Cause:** Text-to-SQL used `CAST(total_credit_score AS INTEGER)` instead of parsing the `X:Y` format stored in the column.
-- **Impact:** Q1 ("most intensive innovation curriculum") returned wrong institute rankings — credits were being compared as raw strings rather than numeric components.
-- **Fix:** `src/skills/text_to_sql/skill.py` updated to emit `SPLIT_PART(total_credit_score, ':', 1)` before numeric aggregation. Commits `sql_audit_fix_branch` and `cc8b5d3`.
-- **Prevention:** Schema-aware prompt now explicitly documents the `X:Y` credit format. New test `test_credit_score_parsing` added to `tests/skills/test_text_to_sql.py`.
+| Pattern | Dhairya queries | Validator rule | Adversarial fixture |
+|---|---:|---|---|
+| P1 Incorrect Aggregation Logic | Q3, Q11 | `dhairya_p1_incorrect_aggregation_logic` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P1]` |
+| P2 Missing/Late HAVING Clause | Q14, Q16 | `dhairya_p2_missing_or_late_having` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P2]` |
+| P3 Cross-Domain Confusion | Q10, Q12 | `dhairya_p3_cross_domain_confusion` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P3]` |
+| P4 String Value Mismatch | Q6 | `dhairya_p4_stage_string_value_mismatch` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P4]` |
+| P5 ORDER BY / LIMIT Scope Errors | Q1, Q4 | `dhairya_p5_order_by_limit_scope_errors` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P5]` |
+| P6 JOIN Key Mismatch | Q7, Q13 | `dhairya_p6_join_key_mismatch` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P6]` |
+| P7 Complete Failure | Q15 | `dhairya_p7_complete_generation_failure` | `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P7]` |
 
----
+### P1: Incorrect Aggregation Logic — Q3, Q11
 
-## Pattern 2: TRL Stage String Mismatch
+**Dhairya Queries:** Q3, Q11
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q6)
-- **Severity:** High
-- **Root Cause:** Database stores `"Level 9"` but the LLM searched for `"TRL 9"`. No synonym mapping existed.
-- **Impact:** Q6 ("TRL-9 Market Ready innovations at IIT Madras") returned zero results — query generated but returned no rows.
-- **Fix:** `src/skills/text_to_sql/sql_examples.py` and `src/skills/text_to_sql/schema_retriever.py` updated to include stage-of-technology synonym set (Level 9 = TRL 9 = Market Ready = TRL9). Schema metadata now expanded.
-- **Prevention:** `tests/skills/test_schema_retriever.py` now includes stage synonym recall test.
+**Wrong SQL:**
+```sql
+SELECT financial_year, total_credit_score,
+       LAG(total_credit_score) OVER (ORDER BY financial_year) AS previous_year_credit_score
+FROM academic_courses_details
+WHERE institute = 'IIT Madras' AND level_of_course = 'PG'
+ORDER BY financial_year;
+```
 
----
+**Why It Fails:** Q3 and Q11 require yearly aggregates before comparison.
+Row-level values and `LAG(total_credit_score)` compare individual records, not
+institute/year totals or course-count growth.
 
-## Pattern 3: YoY Calculation Using Row-Level Instead of Aggregated Values
+**Correct SQL:**
+```sql
+WITH yearly AS (
+    SELECT financial_year, COUNT(*) AS course_count
+    FROM academic_courses_details
+    WHERE institute = 'IIT Madras' AND level_of_course = 'PG'
+    GROUP BY financial_year
+)
+SELECT cur.financial_year,
+       cur.course_count,
+       prev.course_count AS previous_count,
+       ((cur.course_count - prev.course_count)::float / NULLIF(prev.course_count, 0)) * 100 AS growth_rate
+FROM yearly cur
+JOIN yearly prev ON cur.financial_year > prev.financial_year
+ORDER BY cur.financial_year;
+```
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q3, Q11)
-- **Severity:** Critical
-- **Root Cause:** LLM generated `LAG(amount) OVER (ORDER BY year)` on raw rows instead of CTE-grouped sums. Growth was computed on per-row values, not institutional aggregates.
-- **Impact:** Q3 (">50% grant drop YoY") and Q11 ("YoY growth for PG courses") returned incorrect or truncated results.
-- **Fix:** Prompt updated to emit explicit CTE scaffolding: `WITH yearly AS (SELECT institute, year, SUM(col) AS total FROM table GROUP BY institute, year) SELECT ... LAG(total) FROM yearly`.
-- **Prevention:** Dhairya regression suite now covers YoY queries. Two dedicated tests added for CTE aggregation patterns.
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P1]`
 
----
+**Validator Rule:** `dhairya_p1_incorrect_aggregation_logic`
 
-## Pattern 4: JOIN Key Mismatch (applicants vs institute)
+### P2: Missing/Late HAVING Clause — Q14, Q16
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q7)
-- **Severity:** High
-- **Root Cause:** `innovation_grant_from_govt` and `combined_ipo_patent_data` were joined on `applicants` vs `institute` columns — different semantics. No text normalization applied.
-- **Impact:** Q7 ("cost of innovation = grant per patent") returned either zero results or incorrect cross-joins.
-- **Fix:** Prompt updated to include join key normalization: `WHERE lower(trim(gov.institute)) = lower(trim(patent.applicants))`. Sandbox validation rejects cross-domain joins without explicit normalization.
-- **Prevention:** `tests/skills/test_sandbox.py` includes cross-table join semantic validation.
+**Dhairya Queries:** Q14, Q16
 
----
+**Wrong SQL:**
+```sql
+SELECT ig.institute, SUM(ig.grant_received) AS total_grants_received
+FROM innovation_grant_from_govt ig
+LEFT JOIN financial_expenses_operational fe ON ig.institute = fe.institute
+-- [INCOMPLETE - missing HAVING / audit condition]
+```
 
-## Pattern 5: ORDER BY Without Aggregation (DISTINCT abuse)
+**Why It Fails:** Q14 and Q16 are multi-stage audit queries. They need the full
+`WHERE -> GROUP BY -> HAVING` shape or an explicit ranking/filter condition.
+Truncated SQL silently drops the actual audit predicate.
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q4)
-- **Severity:** Medium
-- **Root Cause:** LLM generated `SELECT DISTINCT ... ORDER BY SUM(grant_received)` — DISTINCT cannot order by aggregate functions. Correct pattern is `GROUP BY col ORDER BY SUM(val) DESC`.
-- **Impact:** Q4 ("top 5 funding agencies by amount") returned alphabetical ordering instead of ranked sums.
-- **Fix:** SQL examples in prompt updated to show GROUP BY + ORDER BY + LIMIT pattern. Validator now flags DISTINCT + ORDER BY + aggregate.
-- **Prevention:** `tests/benchmarks/test_dhairya_regression.py` Q4 is a permanent regression anchor.
+**Correct SQL:**
+```sql
+SELECT g.institute,
+       SUM(g.grant_received) AS grants_received,
+       SUM(e.salaries + e.maintenance + e.seminars) AS operational_expenses
+FROM innovation_grant_from_govt g
+JOIN financial_expenses_operational e ON g.institute = e.institute
+WHERE g.as_on_year = '2024' AND e.as_on_year = '2023'
+GROUP BY g.institute
+HAVING SUM(g.grant_received) > (SUM(e.salaries + e.maintenance + e.seminars) * 2);
+```
 
----
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P2]`
 
-## Pattern 6: Multi-Stage Query Truncation (Incomplete HAVING)
+**Validator Rule:** `dhairya_p2_missing_or_late_having`
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q14, Q16)
-- **Severity:** High
-- **Root Cause:** LLM generated `WHERE ... GROUP BY ...` but truncated before the HAVING clause. Q16 had `-- [INCOMPLETE]` marker in output.
-- **Impact:** Q14 ("high capex, low innovation courses") and Q16 ("high grants vs low expenditure") returned wrong or empty results.
-- **Fix:** Prompt enforces multi-stage completion: all three stages (WHERE → GROUP BY → HAVING) must appear together or the query is rejected by validator.
-- **Prevention:** Dhairya suite includes two multi-stage HAVING tests. Validator now rejects truncated SQL.
+### P3: Cross-Domain Confusion — Q10, Q12
 
----
+**Dhairya Queries:** Q10, Q12
 
-## Pattern 7: Complete Query Generation Failure (Complex Reasoning)
+**Wrong SQL:**
+```sql
+SELECT phd.institute, SUM(phd.total) AS total_phd_students, SUM(ug.seats) AS total_ug_seats
+FROM phd_students phd
+LEFT JOIN sanctioned_intake ug ON phd.institute = ug.institute
+WHERE phd.institute = 'IIT Madras'
+GROUP BY phd.institute;
+```
 
-- **Date:** 2026-04-23
-- **Test / Component:** `tests/benchmarks/test_dhairya_regression.py` (Q15)
-- **Severity:** Medium
-- **Root Cause:** Q15 ("rising stars: funding growth vs average") requires multi-step reasoning: compute per-institute growth, compare to mean, rank. LLM could not decompose the steps.
-- **Impact:** Q15 returned `Error` — no query generated. The only complete failure in the 17-query Dhairya set.
-- **Fix:** Prompt enhanced with explicit step-by-step reasoning framing: "Step 1: compute X. Step 2: compute Y. Step 3: compare." Chain-of-thought examples added for comparative-rank queries.
-- **Prevention:** Q15 retained as permanent regression test for complex multi-step query decomposition.
+**Why It Fails:** The Dhairya follow-up was still about innovation courses.
+Switching to student-strength, PhD-student, or sanctioned-intake tables answers
+an enrollment question the user did not ask.
 
----
+**Correct SQL:**
+```sql
+SELECT financial_year,
+       SUM(CASE WHEN level_of_course = 'UG' THEN 1 ELSE 0 END) AS ug_count,
+       SUM(CASE WHEN level_of_course = 'PhD' THEN 1 ELSE 0 END) AS phd_count
+FROM academic_courses_details
+WHERE institute = 'IIT Madras'
+GROUP BY financial_year
+ORDER BY financial_year;
+```
 
-## Meta: How to Add a New Pattern
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P3]`
 
-1. Open a PR with the pattern following the template above.
-2. Link to the failing test or incident report.
-3. Assign to the Backend Agent for review.
-4. Ensure the pattern has a corresponding regression test in `tests/benchmarks/test_dhairya_regression.py` before closing the issue.
+**Validator Rule:** `dhairya_p3_cross_domain_confusion`
+
+### P4: String Value Mismatch — Q6
+
+**Dhairya Queries:** Q6
+
+**Wrong SQL:**
+```sql
+SELECT innovation_name
+FROM innovations_at_various_stages_of_technology_readiness_level
+WHERE institute = 'IIT Madras' AND stage_of_technology = 'TRL 9';
+```
+
+**Why It Fails:** The schema stores readiness values as `Level 4`, `Level 9`,
+and similar stored values. User-facing strings such as `TRL 9`, `TRL9`, and
+`Market Ready` must be normalized before reaching SQL.
+
+**Correct SQL:**
+```sql
+SELECT innovation_name, financial_year
+FROM innovations_at_various_stages_of_technology_readiness_level
+WHERE institute = 'IIT Madras'
+  AND stage_of_technology = 'Level 9';
+```
+
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P4]`
+
+**Validator Rule:** `dhairya_p4_stage_string_value_mismatch`
+
+### P5: ORDER BY / LIMIT Scope Errors — Q1, Q4
+
+**Dhairya Queries:** Q1, Q4
+
+**Wrong SQL:**
+```sql
+SELECT DISTINCT gov_organisation_name
+FROM innovation_grant_from_govt
+ORDER BY gov_organisation_name
+LIMIT 5;
+```
+
+**Why It Fails:** Q4 asked for top agencies by grant amount. `DISTINCT` plus
+alphabetical `ORDER BY` ranks names, not funding. Q1 has the same scope family:
+ranking by credits must parse `total_credit_score` before ordering, and must not
+add `LIMIT 1` unless the user asks for one row.
+
+**Correct SQL:**
+```sql
+SELECT gov_organisation_name,
+       COUNT(*) AS grant_count,
+       SUM(grant_received) AS total_amount
+FROM innovation_grant_from_govt
+GROUP BY gov_organisation_name
+ORDER BY total_amount DESC
+LIMIT 5;
+```
+
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P5]`
+
+**Validator Rule:** `dhairya_p5_order_by_limit_scope_errors`
+
+### P6: JOIN Key Mismatch — Q7, Q13
+
+**Dhairya Queries:** Q7, Q13
+
+**Wrong SQL:**
+```sql
+SELECT SUM(ig.grant_received) / NULLIF(SUM(pd.patents_granted), 0) AS cost_of_innovation
+FROM innovation_grant_from_govt ig
+JOIN patents_details pd ON ig.institute = pd.institute;
+```
+
+**Why It Fails:** Dhairya Q7 needs granted-patent counts from
+`combined_ipo_patent_data`, matched with grants by institute/applicants. The
+wrong table and key either undercount patents or join unrelated entities.
+
+**Correct SQL:**
+```sql
+WITH grant_data AS (
+    SELECT institute, SUM(grant_received) AS total_money
+    FROM innovation_grant_from_govt
+    GROUP BY institute
+),
+patent_data AS (
+    SELECT applicants, COUNT(*) AS total_patents
+    FROM combined_ipo_patent_data
+    WHERE status = 'Granted'
+    GROUP BY applicants
+)
+SELECT g.institute,
+       g.total_money,
+       p.total_patents,
+       g.total_money / NULLIF(p.total_patents, 0) AS cost_per_patent
+FROM grant_data g
+JOIN patent_data p ON lower(trim(g.institute)) = lower(trim(p.applicants));
+```
+
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P6]`
+
+**Validator Rule:** `dhairya_p6_join_key_mismatch`
+
+### P7: Complete Failure — Q15
+
+**Dhairya Queries:** Q15
+
+**Wrong SQL:**
+```text
+Error
+```
+
+**Why It Fails:** Q15 requires multi-step decomposition: per-institute funding
+growth, national average movement, comparison, and ranking. Returning `Error`
+means no auditable SQL exists.
+
+**Correct SQL:**
+```sql
+WITH yearly AS (
+    SELECT institute, year_of_receiving, SUM(grant_received) AS total_funding
+    FROM innovation_grant_from_govt
+    GROUP BY institute, year_of_receiving
+),
+growth AS (
+    SELECT cur.institute,
+           cur.total_funding AS current_funding,
+           prev.total_funding AS previous_funding,
+           (cur.total_funding - prev.total_funding) / NULLIF(prev.total_funding, 0) AS growth_rate
+    FROM yearly cur
+    JOIN yearly prev
+      ON cur.institute = prev.institute
+     AND cur.year_of_receiving > prev.year_of_receiving
+),
+national AS (
+    SELECT AVG(growth_rate) AS average_growth_rate
+    FROM growth
+)
+SELECT g.*
+FROM growth g
+CROSS JOIN national n
+WHERE g.growth_rate > 0 AND n.average_growth_rate < 0
+ORDER BY g.growth_rate DESC;
+```
+
+**Adversarial Test Fixture:** `TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P7]`
+
+**Validator Rule:** `dhairya_p7_complete_generation_failure`
+
+## CI Gate
+
+`tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts`
+parses `SQL_AUDIT_REPORT_DHAIRYA.md` and this Hall of Shame. If the report gains
+a new `### Pattern N:` entry or this file omits any required field, CI fails
+until the pattern, fixture, and validator rule are added.

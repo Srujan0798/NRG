@@ -70,6 +70,10 @@ def _get_vector_drift_health() -> dict[str, Any]:
             "status": "unknown",
             "message": "No vector drift status file has been emitted yet.",
             "path": str(path),
+            "scheduler": {
+                "status": "unknown",
+                "message": "Vector drift scheduler has not emitted a run marker yet.",
+            },
         }
     try:
         payload = json.loads(path.read_text())
@@ -79,6 +83,13 @@ def _get_vector_drift_health() -> dict[str, Any]:
     alert_level = str(payload.get("alert_level", "")).upper()
     if "status" not in payload:
         payload["status"] = "healthy" if alert_level in {"GREEN", "AMBER"} else "unhealthy"
+    payload.setdefault(
+        "scheduler",
+        {
+            "status": "unknown",
+            "message": "Vector drift scheduler has not emitted a run marker yet.",
+        },
+    )
     return payload
 
 
@@ -1574,6 +1585,71 @@ async def login(request: LoginRequest, raw_request: Request = None):
     return response_data
 
 
+class SSOCallbackRequest(BaseModel):
+    code: str
+    state: str
+
+
+class SSOAuthorizationResponse(BaseModel):
+    redirect_url: str
+    state: str
+    provider: str
+
+
+@app.get("/auth/sso/login", response_model=SSOAuthorizationResponse, tags=["auth"])
+async def sso_login():
+    """Initiate SSO login — redirects to institutional IdP."""
+    from src.auth.sso_handler import get_sso_handler, is_sso_enabled
+
+    if not is_sso_enabled():
+        raise HTTPException(status_code=501, detail="SSO is not configured")
+
+    handler = get_sso_handler()
+    redirect_url, state = handler.initiate_login()
+    return SSOAuthorizationResponse(
+        redirect_url=redirect_url,
+        state=state,
+        provider="oidc",
+    )
+
+
+@app.post("/auth/sso/callback", tags=["auth"])
+async def sso_callback(request: SSOCallbackRequest):
+    """Handle SSO IdP callback, issue JWT on success."""
+    from src.auth.sso_handler import get_sso_handler, is_sso_enabled
+
+    if not is_sso_enabled():
+        raise HTTPException(status_code=501, detail="SSO is not configured")
+
+    handler = get_sso_handler()
+    try:
+        tokens = handler.handle_callback(
+            code=request.code,
+            state=request.state,
+            expected_state=request.state,
+        )
+        return {
+            "access_token": tokens.access_token,
+            "refresh_token": tokens.refresh_token,
+            "token_type": tokens.token_type,
+            "sso_authenticated": True,
+        }
+    except AuthError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+@app.get("/auth/sso/status", tags=["auth"])
+async def sso_status():
+    """Return SSO configuration status."""
+    from src.auth.sso_handler import is_sso_enabled
+
+    return {
+        "sso_enabled": is_sso_enabled(),
+        "provider": os.getenv("SSO_PROVIDER_TYPE", "").lower() or None,
+        "authorization_url": os.getenv("SSO_AUTHORIZATION_URL", "") or None,
+    }
+
+
 @app.post("/refresh")
 async def refresh_tokens(request: RefreshRequest, raw_request: Request = None):
     try:
@@ -1782,7 +1858,7 @@ async def query_stream(
             sql_results = []
             chunks = []
 
-            yield f"event: phase\ndata: {{\"phase\": \"intent_detection\", \"label\": \"Analysing query\", \"progress\": 0.1}}\n\n"
+            yield "event: phase\ndata: {\"phase\": \"intent_detection\", \"label\": \"Analysing query\", \"progress\": 0.1}\n\n"
             await asyncio.sleep(0.05)
 
             intent, routing = "structured", "text_to_sql"
@@ -1798,7 +1874,7 @@ async def query_stream(
                 for kw in ["explain", "summarize", "what is", "describe", "latest", "recent", "trends", "advances"]
             )
 
-            yield f"event: phase\ndata: {{\"phase\": \"retrieval\", \"label\": \"Fetching evidence\", \"progress\": 0.3}}\n\n"
+            yield "event: phase\ndata: {\"phase\": \"retrieval\", \"label\": \"Fetching evidence\", \"progress\": 0.3}\n\n"
 
             if needs_rag:
                 rag = RAGSkill()
@@ -1820,7 +1896,7 @@ async def query_stream(
                 except Exception as e:
                     logger.warning(f"SQL execution failed: {e}")
 
-            yield f"event: phase\ndata: {{\"phase\": \"synthesis\", \"label\": \"Generating response\", \"progress\": 0.6}}\n\n"
+            yield "event: phase\ndata: {\"phase\": \"synthesis\", \"label\": \"Generating response\", \"progress\": 0.6}\n\n"
 
             state = {
                 "user_query": request.query,
@@ -2911,11 +2987,12 @@ async def api_metrics(request: Request):
         circuit_trips = {}
 
     try:
-        from src.audit import get_chain_health
+        from src.audit import get_chain_health, get_db_cosign_metrics
         audit_health = get_chain_health()
         audit_chain_length = int(audit_health.get("chain_length", 0) or 0)
         chain_valid = bool(audit_health.get("chain_valid", True))
         chain_errors = audit_health.get("errors", []) or []
+        db_cosign_metrics = get_db_cosign_metrics()
         valid_count = int(
             audit_health.get(
                 "valid_events",
@@ -2928,6 +3005,7 @@ async def api_metrics(request: Request):
         chain_valid = True
         chain_errors = []
         valid_count = 0
+        db_cosign_metrics = {}
 
     langfuse_enabled = _init_langfuse() is not None
 
@@ -2995,6 +3073,7 @@ async def api_metrics(request: Request):
             "chain_valid": chain_valid,
             "chain_errors": chain_errors[:10] if chain_errors else [],
             "valid_event_count": valid_count,
+            "db_cosign": db_cosign_metrics,
         },
         "slo": slo_status,
         "training_data": training_data,

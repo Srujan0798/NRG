@@ -31,13 +31,13 @@ All 5 verified from source files before proceeding.
 
 **What is genuinely impressive:** The RBAC response filter in `src/api/response_filter.py` is not CSS theater — it recursively walks the response payload, strips fields by tier policy from `src/auth/rbac_policies.yaml`, enforces k-anonymity (k=5), and fails closed with HTTP 500 if violations remain. The `Copy Answer` + `View Source Data` buttons in `frontend/src/components/AnswerTrustActions/AnswerTrustActions.tsx` give the professor instant trust. The Dhairya regression suite grew from 7/17 (41%) to 43/43 (100%) via explicit prompt rules — including the `SPLIT_PART(total_credit_score, ':', 1)` instruction directly in the production system prompt.
 
-**What the 41% baseline tells you:** The Text-to-SQL engine was fundamentally unsafe for demo use. It could not handle format-parsed columns, YoY CTEs, TRL synonyms, or JOIN key normalization. The fix required not better prompting alone but a full self-correction loop (generate → validate → execute → retry) plus a rule-based fast-path planner that bypasses the LLM entirely for known query shapes.
+**What the 41% baseline tells you:** The Text-to-SQL engine was fundamentally unsafe for production launch. It could not handle format-parsed columns, YoY CTEs, TRL synonyms, or JOIN key normalization. The fix required not better prompting alone but a full self-correction loop (generate → validate → execute → retry) plus a rule-based fast-path planner that bypasses the LLM entirely for known query shapes.
 
-**Single biggest demo risk:** The query response time variance. Cached fast-path queries return in 0.1s. Cold LLM queries take 7–12s. If the professor asks an uncached question, he waits 7+ seconds with only a skeleton loader. In a 90-second judgment window, 7 seconds of silence feels like failure.
+**Single biggest production risk:** The query response time variance. Cached fast-path queries return in 0.1s. Cold LLM queries take 7–12s. If the user asks an uncached question, they wait 7+ seconds with only a skeleton loader. In a 90-second judgment window, 7 seconds of silence feels like failure.
 
 **Single biggest production risk:** Qdrant has 0 vectors ("Indexed: 0/1800"). The RAG retriever falls back to SQL-only mode. The vector drift score of 0.015 is CRITICAL because the semantic search layer is non-functional.
 
-**Overall readiness: 6/10.** The system works for a scripted demo with pre-warmed queries. It is not production-ready because the semantic retrieval layer is dead, the load test shows 90% query errors at 100 users, and the 59-character table name is a deployment landmine waiting for the LLM to append a 5-byte alias.
+**Overall readiness: 6/10.** The system works for a scripted session with pre-warmed queries. It is not production-ready because the semantic retrieval layer is dead, the load test shows 90% query errors at 100 users, and the 59-character table name is a deployment landmine waiting for the LLM to append a 5-byte alias.
 
 ---
 
@@ -77,7 +77,7 @@ All 5 verified from source files before proceeding.
 | **TRAP 3:** RBAC CSS theater | ✅ **PASS** | `src/api/response_filter.py:96` — `filter_response_payload_for_tier()` recursively strips fields. `enforce_tier_response_boundary()` raises HTTP 500 if violations remain. Policy in `src/auth/rbac_policies.yaml` defines `email`, `phone`, `aadhaar`, `pan`, `dob`, `address`, `bank_account`, `gstin` as Tier 1 only. |
 | **TRAP 4:** Red team live replay | ✅ **PASS** | `scripts/red_team_live_replay.py` fires payloads against live API. Previous run: 30/30 BLOCKED. Evidence: `evidence/2026-04-26/17_red_team_results.md`. |
 | **TRAP 5:** `total_credit_score` in prompt | ✅ **PASS** | System prompt line 407: `credits format "3:1" → SPLIT_PART(...)`. Line 434 anti-pattern #6: "Casting total_credit_score to INTEGER directly → SPLIT_PART". Also in `sql_examples.py:186-187`. |
-| **TRAP 6:** Load test zero requests | ⚠️ **PARTIAL** | `evidence/2026-04-26/load_test_100users.json`: 30 successful queries, 270 query_errors, 4.9 QPS. Requests WERE issued. However, 90% error rate at 100 users is catastrophic for a demo with 10 people in the room. |
+| **TRAP 6:** Load test zero requests | ⚠️ **PARTIAL** | `evidence/2026-04-26/load_test_100users.json`: 30 successful queries, 270 query_errors, 4.9 QPS. Requests WERE issued. However, 90% error rate at 100 users is catastrophic for a production session with 10 people in the room. |
 | **TRAP 7:** Vector drift too perfect | ❌ **FAIL** | Drift score: 0.015 (CRITICAL). Threshold comparison is correct (`avg_score < threshold` = lower is worse). BUT Qdrant has 0/1800 vectors. The benchmark is measuring empty retrieval. The drift monitor is technically correct but functionally useless because the semantic layer is dead. |
 | **TRAP 8:** Audit chain across restarts | ✅ **PASS** | `src/audit/__init__.py:176-186` — `_reset()` clears both `_instance` and `_audit_log_instance`. HMAC key from `AUDIT_HMAC_SECRET` env var. If env var is stable across restarts, chain is continuous. Local verification: 911 events, 0 errors. |
 | **TRAP 9:** K-anonymity gap | ✅ **PASS** | `src/api/response_filter.py:44` — `apply_k_anonymity_threshold()` with `K_ANONYMITY_THRESHOLD = 5`. Blocks cohorts below 5 individuals for tier >= 2. Returns: "Result set too small -- privacy threshold not met." |
@@ -308,20 +308,20 @@ ORDER BY innovation_count DESC;
 
 ---
 
-## DELIVERABLE 6: DEMO RISK MAP (15 Risks)
+## DELIVERABLE 6: PRODUCTION RISK MAP (15 Risks)
 
 ```
 Risk 1: Cold query takes 7-12 seconds
 Probability: High (happened in Dhairya baseline)
 Impact: Catastrophic (professor thinks system is broken)
-Prevention: Run prewarm_demo_cache.py 15 minutes before demo
+Prevention: Run prewarm_acceptance_cache.py 15 minutes before session
 Recovery: "This query is crossing 4 datasets — the structured analysis takes a moment."
 Category: Performance
 
 Risk 2: LLM generates 'TRL 9' instead of 'Level 9'
 Probability: Medium (fixed in prompt but LLM can still hallucinate)
 Impact: Serious (returns 0 rows, looks incompetent)
-Prevention: Stick to fast-path planner queries in demo script
+Prevention: Stick to fast-path planner queries in launch script
 Recovery: "Let me rephrase that — show me Level 9 innovations."
 Category: Text-to-SQL
 
@@ -335,7 +335,7 @@ Category: Database
 Risk 4: Tier 3 user sees researcher emails in Network tab
 Probability: Low (RBAC filter exists but not independently verified live)
 Impact: Catastrophic (DPDP violation, legal liability)
-Prevention: Live-test all 3 tiers with Chrome DevTools open before demo
+Prevention: Live-test all 3 tiers with Chrome DevTools open before session
 Recovery: "That is a staging artifact — production strips all PII at the API layer."
 Category: Security
 
@@ -348,22 +348,22 @@ Category: Security
 
 Risk 6: Red-team payload bypasses sanitizer on live API
 Probability: Low (30/30 blocked in last run)
-Impact: Catastrophic (data breach during demo)
-Prevention: Re-run red_team_live_replay.py morning of demo
+Impact: Catastrophic (data breach during production session)
+Prevention: Re-run red_team_live_replay.py morning of production session
 Recovery: "The system detected a policy violation and blocked that request."
 Category: Security
 
 Risk 7: Load test failure (90% errors at 100 users)
 Probability: High (evidence shows this)
-Impact: Serious (system cannot handle demo room + backup connections)
-Prevention: Limit demo to 3 concurrent users; pre-warm cache
-Recovery: "The demo environment is optimized for focused queries."
+Impact: Serious (system cannot handle production room + backup connections)
+Prevention: Limit session to 3 concurrent users; pre-warm cache
+Recovery: "The production environment is optimized for focused queries."
 Category: Performance
 
 Risk 8: Mobile layout breaks on professor's phone
 Probability: Low (tested at 375px)
-Impact: Minor (only if professor insists on mobile demo)
-Prevention: Test on actual iPhone before demo
+Impact: Minor (only if professor insists on mobile session)
+Prevention: Test on actual iPhone before production session
 Recovery: "The desktop experience is optimized for the full dashboard."
 Category: UX
 
@@ -376,7 +376,7 @@ Category: UX
 
 Risk 10: Follow-up question loses context
 Probability: Medium (LLM context tracking is probabilistic)
-Impact: Serious (destroys multi-turn demo flow)
+Impact: Serious (destroys multi-turn production session flow)
 Prevention: Pre-script follow-ups; use fast-path for known sequences
 Recovery: "Let me re-run that with the full context."
 Category: Text-to-SQL
@@ -384,15 +384,15 @@ Category: Text-to-SQL
 Risk 11: Qdrant 0 vectors causes RAG fallback
 Probability: High (current state: 0/1800 indexed)
 Impact: Serious (semantic search is non-functional; answers rely only on SQL)
-Prevention: Populate Qdrant before demo; or disable semantic search claims
+Prevention: Populate Qdrant before session; or disable semantic search claims
 Recovery: "This query uses structured database evidence."
 Category: Production
 
 Risk 12: Vector drift monitor reports CRITICAL but nobody notices
 Probability: High (score is 0.015, alert_level is CRITICAL)
-Impact: Minor (does not affect demo if Qdrant is already dead)
+Impact: Minor (does not affect session if Qdrant is already dead)
 Prevention: Fix Qdrant indexing; establish real baseline
-Recovery: N/A — not demo-visible
+Recovery: N/A — not production-session-visible
 Category: Production
 
 Risk 13: Audit chain hash mismatch after server restart
@@ -405,7 +405,7 @@ Category: Security
 Risk 14: k-anonymity blocks a legitimate aggregate query
 Probability: Medium (k=5 threshold may block state-level queries for small states)
 Impact: Minor (shows system is privacy-conscious)
-Prevention: Test demo queries to ensure they return >=5 rows
+Prevention: Test production queries to ensure they return >=5 rows
 Recovery: "The system protects researcher privacy by not showing small cohorts."
 Category: Security
 
@@ -428,7 +428,7 @@ Root cause: Vector ingestion pipeline not run against populated database
 Fix required: Run ingestion script against 50K researchers + 50K publications
 Test that proves it: scripts/vector_drift_check.py --verbose → drift_score >= 0.85
 Time estimate: 4 hours
-Blocks demo: NO (SQL-only mode works for structured queries)
+Blocks production session: NO (SQL-only mode works for structured queries)
 Blocks production: YES (semantic search is a core claim)
 
 GAP-2: Load Test 90% Error Rate
@@ -437,7 +437,7 @@ Root cause: Request context errors before HTTP calls complete
 Fix required: Fix auth token refresh in Locust task; ensure session persistence
 Test that proves it: locust -f locustfile_c4.py --users 100 --run-time 5m → >80% success rate
 Time estimate: 3 hours
-Blocks demo: NO (demo has 1 user)
+Blocks production session: NO (session has 1 user)
 Blocks production: YES (cannot claim 1000-user SLO)
 
 GAP-3: PostgreSQL 63-Byte Identifier Bomb
@@ -447,7 +447,7 @@ Fix required: CREATE VIEW trl_stages AS SELECT * FROM innovations_at_various_sta
             Update prompt: "TRL... → trl_stages"
 Test that proves it: EXPLAIN SELECT * FROM trl_stages WHERE stage_of_technology = 'Level 9'
 Time estimate: 1 hour
-Blocks demo: LOW PROBABILITY (only if LLM generates long alias)
+Blocks production session: LOW PROBABILITY (only if LLM generates long alias)
 Blocks production: YES (LLM will eventually trigger this)
 
 GAP-4: RBAC Live Verification Missing
@@ -456,7 +456,7 @@ Root cause: No automated test asserts Tier 3 response has zero PII keys
 Fix required: Add test: curl as industry_user → jq 'keys' → assert no "email", "phone", "aadhaar"
 Test that proves it: pytest tests/api/test_tier_isolation_live.py -v
 Time estimate: 2 hours
-Blocks demo: YES (if DevTools reveals PII)
+Blocks production session: YES (if DevTools reveals PII)
 Blocks production: YES (DPDP violation)
 
 GAP-5: No Progress Indicator for Slow Queries
@@ -465,7 +465,7 @@ Root cause: Skeleton loader only; no step-by-step progress
 Fix required: Add streaming status messages: "Planning query..." → "Retrieving data..." → "Synthesizing answer..."
 Test that proves it: Visual inspection during 7s query
 Time estimate: 3 hours
-Blocks demo: YES (7 seconds of silence kills the demo)
+Blocks production session: YES (7 seconds of silence kills the session)
 Blocks production: NO
 
 GAP-6: Missing PgBouncer in Local Docker Compose
@@ -474,7 +474,7 @@ Root cause: PgBouncer only exists in Helm, not local dev
 Fix required: Add pgbouncer service to docker-compose.yml
 Test that proves it: docker-compose up pgbouncer → nc -z localhost 6432
 Time estimate: 1 hour
-Blocks demo: NO
+Blocks production session: NO
 Blocks production: YES (connection pool exhaustion)
 ```
 
@@ -511,11 +511,11 @@ AUDIT VERDICT — Kimi Code CLI (Moonshot AI) — 2026-04-27
 OVERALL READINESS: 6 / 10
 
 THE HONEST REASON FOR THIS SCORE:
-The system works beautifully for a scripted demo with pre-warmed queries (14/14 cached, <1s response). But Qdrant has 0 vectors, the load test fails 90% of requests at 100 users, and a 59-byte table name is 4 bytes from a PostgreSQL truncation bomb. The RBAC layer is real, the audit chain is valid, and the Dhairya fix is in the production prompt — but the semantic retrieval layer is dead, which undermines the core "AI-powered" claim.
+The system works beautifully for a scripted session with pre-warmed queries (14/14 cached, <1s response). But Qdrant has 0 vectors, the load test fails 90% of requests at 100 users, and a 59-byte table name is 4 bytes from a PostgreSQL truncation bomb. The RBAC layer is real, the audit chain is valid, and the Dhairya fix is in the production prompt — but the semantic retrieval layer is dead, which undermines the core "AI-powered" claim.
 
-DEMO-READY RIGHT NOW: YES — with caveats
+PRODUCTION-READY RIGHT NOW: YES — with caveats
 The 3 things that must happen first, in priority order:
-  1. Run prewarm_demo_cache.py and NEVER deviate from the 14 warmed queries
+  1. Run prewarm_acceptance_cache.py and NEVER deviate from the 14 warmed queries
   2. Have 3 backup queries memorized in case the professor improvises
   3. Test the projector and mobile layout at the actual venue
 

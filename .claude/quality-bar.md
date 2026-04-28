@@ -52,6 +52,24 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 
 ---
 
+## Evidence Expiration (Added 2026-04-28)
+
+| Constraint | Evidence Type | Max Age | Re-verify When |
+|---|---|---|---|
+| C4 (SLOs) | Locust load test | 7 days | Any performance change |
+| C4 (SLOs) | Latency benchmark | 7 days | Any orchestration change |
+| C5 (Vector drift) | Drift score | 1 day | Every session start |
+| C5 (Vector drift) | Vector count | 1 day | Every session start |
+| C1 (PII) | Security scan | 14 days | Any auth/PII change |
+| C2 (Audit) | Chain verification | 1 day | Every session start |
+| C6 (Egress) | Allowlist test | 14 days | Any schema/security change |
+
+**Rule:** Evidence older than max age is **stale**. Stale evidence cannot support a PASS claim. Re-run the test and commit fresh evidence to `evidence/<YYYY-MM-DD>/` before claiming DONE.
+
+**Rule:** If a release is re-tagged, ALL evidence for that release must be re-produced with the new commit hash.
+
+---
+
 ## Current Compliance Snapshot (2026-04-26)
 
 | Constraint | Status | Owning Protocol | Notes |

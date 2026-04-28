@@ -317,3 +317,119 @@ When the Founder asks anything, the Guru:
 | One skill per agent | 74 Claude + 28 Agent skills = 102 total (canonical: skills-lock.json) |
 | No institutional knowledge | Memory brain grows every sprint |
 | Manual review | Automated review pipeline (pre-commit → code-review → security → performance) |
+
+
+---
+
+## 9. EXTERNAL AUDIT HANDLING (Added 2026-04-28)
+
+When an external audit contradicts an internal claim, the internal claim is WRONG until proven otherwise.
+
+### The External-Audit-First Rule
+
+```
+External auditor says X is broken → Assume X is broken
+Internal report says X is 10/10 → Suspended until X is verified
+```
+
+**Process:**
+1. **Read the external audit completely** — every finding, every file reference, every line number
+2. **Do not defend internal claims** — the external auditor has no incentive to flatter you
+3. **Verify every finding independently** — run the commands they ran, check the files they checked
+4. **Classify each finding:**
+   - **REAL** → Add to BACKLOG.md as open item, assign agent, close with evidence
+   - **FALSE** → Document why it is false with counter-evidence, add to memory
+   - **OUTDATED** → Document when it was fixed and what commit fixed it
+5. **Rewrite internal reports** that contradict external findings — do not let contradictory reports coexist in the repo
+
+### External Audit Claim Verification Protocol
+
+For every claim in an external audit:
+
+| Claim | Verification Command | Pass Criteria |
+|---|---|---|
+| "Qdrant has 0 vectors" | `curl /health` or direct Qdrant client check | `vectors_indexed > 0` |
+| "90% error at 100 users" | Re-run Locust with same config | Error rate < 1% |
+| "Table name not aliased" | `grep -r long_name src/skills/text_to_sql/` | 0 matches outside VIEW defs |
+| "7–12s cold latency" | `time curl` on cold query | < 3s OR progress shown < 500ms |
+| "Audit chain broken" | `verify_chain()` directly (not `/health`) | `(True, [], N)` |
+
+**Critical:** `verify_chain()` and `/health` are NOT the same check. External auditors run `verify_chain()`. You must too.
+
+---
+
+## 10. EVIDENCE EXPIRATION (Added 2026-04-28)
+
+Evidence has a shelf life. Old evidence is a lie.
+
+| Evidence Type | Max Age | Re-verify Trigger |
+|---|---|---|
+| Load test (Locust) | 7 days | Any performance-related change |
+| Benchmark score | 7 days | Any code touching the benchmarked path |
+| Security scan | 14 days | Any auth/security change |
+| Audit chain verification | 1 day | Every session start |
+| Qdrant vector count | 1 day | Every session start |
+| RBAC tier test | 7 days | Any RBAC/policy change |
+
+**Rule:** If evidence is older than max age, re-run the test and produce fresh evidence before claiming the item is still valid.
+
+**Rule:** If you re-tag a release (e.g., `v1.0.0-eternal` → `v1.0.1-eternal`), ALL evidence must be re-produced with the new tag's commit hash.
+
+---
+
+## 11. HEALTH ENDPOINT HONESTY (Added 2026-04-28)
+
+The `/health` endpoint must never hide failures. If it reports "healthy" while `verify_chain()` returns false, the health endpoint is lying.
+
+**Rules:**
+1. `/health` must call the SAME verification function that an external auditor would call
+2. `/health` must NOT use auto-repair, caching, or fallback that hides root failures
+3. If auto-repair is used, it must emit a WARNING and the repaired state must be distinguishable from never-broken
+4. Every health sub-check must report its raw state, not just "healthy/unhealthy"
+
+**Example of honest health response:**
+```json
+{
+  "audit": {
+    "status": "healthy",
+    "chain_valid": true,
+    "verification_method": "verify_chain()",
+    "auto_repair_triggered": false,
+    "valid_events": 161
+  }
+}
+```
+
+**Example of dishonest health response (FORBIDDEN):**
+```json
+{
+  "audit": {
+    "status": "healthy",
+    "chain_valid": true
+    // Missing: how was this verified? Was auto-repair used?
+  }
+}
+```
+
+---
+
+## 12. COMMERCIAL READINESS LINKAGE (Added 2026-04-28)
+
+Technical readiness ≠ commercial readiness. The workflow must track both.
+
+**Commercial Gates (Founder-owned, tracked in BACKLOG.md):**
+
+| Gate | What | Blocks |
+|---|---|---|
+| C1 | Legal entity + GST + current account | Any fund transfer |
+| C2 | IIT-GN IP assignment letter | Any licensing deal |
+| C3 | CERT-In empanelled audit attestation | Govt/PSU procurement |
+| C4 | Pricing doc (3 tiers) | Any quote or proposal |
+| C5 | Cap table + use-of-funds | Any investor/grant conversation |
+| C6 | 3 warm intros booked | Any cold outreach |
+
+**Rule:** A technical protocol is NOT complete if its commercial dependencies are not tracked. Every P0 technical task must have a parallel C-track item.
+
+**Rule:** The `OVERALL READINESS` verdict template must include both technical AND commercial scores.
+
+---

@@ -128,6 +128,7 @@ def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
     payload = response.json()
     assert payload["vector_drift"]["status"] == "healthy"
     assert payload["vector_drift"]["drift_score"] == 0.91
+    assert payload["vector_drift"]["scheduler"]["status"] == "unknown"
 
 
 def test_qdrant_health_endpoint_reports_readiness(monkeypatch):

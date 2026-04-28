@@ -1,7 +1,10 @@
 """Audit Chain Integrity Tests — DPDP-2023 Compliance Verification."""
 
 import json
+import os
 import shutil
+import subprocess
+import sys
 import tempfile
 import threading
 from pathlib import Path
@@ -134,6 +137,25 @@ class TestAuditChainIntegrity:
         assert valid is True, f"Chain should be valid after concurrent appends: {verify_errors}"
         assert count == 100, f"Expected 100 events, got {count}"
 
+    def test_append_refreshes_tail_hash_across_log_instances(self, temp_audit_dir):
+        """A stale log object must not append from an old in-memory tail hash."""
+        ImmutableAuditLog._reset()
+        writer_one = ImmutableAuditLog(storage_path=temp_audit_dir)
+        writer_one.append(AuditEvent(event_type="query", user_id="u1", query="one"))
+
+        stale_writer = writer_one
+        ImmutableAuditLog._reset()
+        writer_two = ImmutableAuditLog(storage_path=temp_audit_dir)
+        writer_two.append(AuditEvent(event_type="query", user_id="u2", query="two"))
+
+        stale_writer.append(AuditEvent(event_type="query", user_id="u3", query="three"))
+
+        ImmutableAuditLog._reset()
+        verifier = ImmutableAuditLog(storage_path=temp_audit_dir)
+        valid, errors, count = verifier.verify_chain()
+        assert valid is True, f"Stale writer corrupted chain: {errors}"
+        assert count == 3
+
     def test_rebuild_produces_valid_chain(self, fresh_audit_log):
         """Test that rebuild corrects corrupted hashes."""
         log = fresh_audit_log
@@ -229,6 +251,48 @@ class TestAuditChainIntegrity:
         assert "last_hash" in health
         assert "last_event" in health
 
+    def test_chain_health_repairs_line1_hash_mismatch_with_traceable_genesis(self, fresh_audit_log):
+        """Line-1 corruption is archived, reseeded, and replayed without event loss."""
+        log = fresh_audit_log
+
+        first_hash = log.append(
+            AuditEvent(event_type="query", user_id="u1", query="first preserved")
+        )
+        second_hash = log.append(
+            AuditEvent(event_type="query", user_id="u2", query="second preserved")
+        )
+
+        chain_file = Path(log.chain_file)
+        lines = chain_file.read_text().splitlines()
+        chain_file.write_text(lines[1] + "\n")
+
+        valid_before, errors_before, count_before = log.verify_chain()
+        assert valid_before is False
+        assert errors_before == ["Line 1: hash mismatch"]
+        assert count_before == 0
+
+        health = log.get_chain_health(auto_repair=True)
+
+        assert health["chain_valid"] is True
+        assert health["repair"]["action"] == "reseeded_with_genesis"
+        assert health["valid_events"] == 2
+
+        repaired_lines = [json.loads(line) for line in chain_file.read_text().splitlines()]
+        assert repaired_lines[0]["event_type"] == "chain_genesis"
+        assert repaired_lines[0]["result"]["preserved_event_count"] == 1
+        assert repaired_lines[1]["event_id"] != repaired_lines[0]["event_id"]
+        assert repaired_lines[1]["event_id"] == json.loads(lines[1])["event_id"]
+        assert repaired_lines[1]["hash"] != second_hash
+        assert first_hash not in chain_file.read_text()
+
+        backups = list(Path(log.storage_path).glob("chain_line1_hash_mismatch_backup_*.jsonl"))
+        assert backups, "corrupted chain should be archived before repair"
+
+        valid_after, errors_after, count_after = log.verify_chain()
+        assert valid_after is True
+        assert errors_after == []
+        assert count_after == 2
+
     def test_merkle_root_persistence(self, fresh_audit_log):
         """Test that daily Merkle roots are persisted."""
         log = fresh_audit_log
@@ -318,3 +382,48 @@ class TestAuditChainRebuildScript:
         for line in lines:
             event = json.loads(line)
             assert event["hash"] != "0" * 64
+
+
+def test_audit_investigate_script_runs_directly(tmp_path):
+    """audit_investigate.py must work as a direct CLI, not only as an imported module."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            "scripts/audit_investigate.py",
+            "--chain-path",
+            str(tmp_path / "missing-chain.jsonl"),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert '"ok": true' in result.stdout
+
+
+def test_audit_chain_health_check_script_blocks_invalid_chain(tmp_path):
+    """CI/pre-commit health script exits non-zero with explicit verification errors."""
+    audit_dir = tmp_path / "audit"
+    audit_dir.mkdir()
+    chain_file = audit_dir / "chain.jsonl"
+    chain_file.write_text('{"event_type": "test", "hash": "bad"}\n')
+
+    env = {**os.environ, "NRG_AUDIT_DIR": str(audit_dir)}
+    result = subprocess.run(
+        [sys.executable, "scripts/audit_chain_health_check.py"],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "Line 1" in result.stdout
+
+
+def test_pre_commit_config_blocks_invalid_audit_chain():
+    config = Path(".pre-commit-config.yaml").read_text()
+
+    assert "audit-chain-health" in config
+    assert "scripts/audit_chain_health_check.py" in config

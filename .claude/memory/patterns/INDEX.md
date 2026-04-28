@@ -19,6 +19,7 @@ Permanent learnings from user feedback, architectural decisions, and operational
 | [dashboard-decoupled-metadata](dashboard-decoupled-metadata.md) | Founder | Hero counters render from `display_metadata.yaml`, not `COUNT(*)` on seeded rows |
 | [db-layer-defence](db-layer-defence.md) | Founder | Third defence layer: pg_anonymizer dynamic masking + PL/pgSQL HMAC trigger |
 | [partitioning-pitr](partitioning-pitr.md) | Founder | Range-partition by year for >50M-row tables; quarterly DR drill with WAL replay |
+| [pii-test-performance-budget](pii-test-performance-budget.md) | Founder | Fast PII tests are security gates; keep regex unit path under 10s and mark real NLP integrations slow |
 | [tier-shape-boundary](tier-shape-boundary.md) | Founder | RBAC enforced at API response-shape layer AND SQL boundary |
 
 ## Quality & Process

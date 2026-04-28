@@ -11,6 +11,8 @@ on:
 
 env:
   PYTEST_ADDOPTS: "-v --tb=short --color=yes"
+  TEST_RUNTIME_BASELINE_SECONDS: "250"
+  TEST_RUNTIME_MAX_SECONDS: "300"
 
 jobs:
   # ===========================================================================
@@ -249,6 +251,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, macos-14]
         python-version: ["3.11"]
+        tier: [unit, integration]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
@@ -259,10 +262,48 @@ jobs:
         run: pip install uv
       - name: Install dependencies
         run: uv pip install -e ".[dev]"
-      - name: Run all tests with coverage
+      - name: Run ${{ matrix.tier }} tests in parallel
         run: |
           uv pip install pytest pytest-cov pytest-xdist pytest-timeout pytest-asyncio
-          pytest tests/ -v --tb=short --cov=src --cov-report=xml --cov-report=term -n auto
+          SECONDS=0
+          pytest tests/ \
+            -m "${{ matrix.tier }} and not slow and not e2e" \
+            -n auto --dist=loadgroup --no-cov \
+            --junitxml="test-results-${{ matrix.os }}-${{ matrix.tier }}.xml"
+          python scripts/check_test_runtime_budget.py \
+            --runtime-seconds "$SECONDS" \
+            --baseline-seconds "$TEST_RUNTIME_BASELINE_SECONDS" \
+            --max-growth 0.20 \
+            --absolute-max-seconds "$TEST_RUNTIME_MAX_SECONDS"
+      - name: Upload test timing evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-${{ matrix.tier }}
+          path: test-results-${{ matrix.os }}-${{ matrix.tier }}.xml
+
+  coverage-python:
+    runs-on: ubuntu-22.04
+    needs: [test-python]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install uv
+        run: pip install uv
+      - name: Install dependencies
+        run: uv pip install -e ".[dev]"
+      - name: Run coverage with xdist-safe reporting
+        env:
+          COVERAGE_FILE: .coverage.ci
+        run: |
+          uv pip install pytest pytest-cov pytest-xdist pytest-timeout pytest-asyncio
+          pytest tests/ \
+            -m "not slow and not e2e" \
+            -n auto --dist=loadgroup \
+            --cov=src --cov-report=xml --no-cov-on-fail
       - name: Check coverage threshold (80% minimum)
         run: |
           python -c "
@@ -435,14 +476,23 @@ jobs:
 
   deploy-block:
     runs-on: ubuntu-22.04
-    needs: [test-python, test-node, lint, secrets-scan, docker-smoke, security-gate, red-team-live-replay]
+    needs: [test-python, coverage-python, test-node, lint, secrets-scan, docker-smoke, security-gate, red-team-live-replay]
     if: always()
     steps:
       - name: Check for failures
         run: |
           FAILED=false
-          for job in test-python test-node lint secrets-scan docker-smoke security-gate; do
-            if [[ "${{ needs.$job.result }}" == "failure" ]]; then
+          declare -A RESULTS=(
+            [test-python]="${{ needs.test-python.result }}"
+            [coverage-python]="${{ needs.coverage-python.result }}"
+            [test-node]="${{ needs.test-node.result }}"
+            [lint]="${{ needs.lint.result }}"
+            [secrets-scan]="${{ needs.secrets-scan.result }}"
+            [docker-smoke]="${{ needs.docker-smoke.result }}"
+            [security-gate]="${{ needs.security-gate.result }}"
+          )
+          for job in "${!RESULTS[@]}"; do
+            if [[ "${RESULTS[$job]}" == "failure" ]]; then
               echo "FAILED: $job"
               FAILED=true
             fi

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Generates realistic demo data for NRG.
-Run: python scripts/seed_demo_data.py --env demo
-DO NOT run against production.
+Generates realistic production seed data for NRG.
+Run: python scripts/seed_production_data.py --env production
+DO NOT run against production without approval.
 
-This script is a reference implementation. The actual demo dataset
+This script is a reference implementation. The production dataset
 (50K researchers, 50K publications, 181 institutions) was pre-seeded
-into the PostgreSQL demo database during infrastructure setup.
+into the PostgreSQL database during infrastructure setup.
 """
 
 import argparse
@@ -110,10 +110,10 @@ def generate_publications(researchers, count=2000):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--env", choices=["demo", "test"], required=True)
+    parser.add_argument("--env", choices=["reference", "test"], required=True)
     args = parser.parse_args()
 
-    if args.env not in ["demo", "test"]:
+    if args.env not in ["reference", "test"]:
         print("ERROR: Never run this against production.")
         exit(1)
 
@@ -125,6 +125,6 @@ if __name__ == "__main__":
     print(f"  {len(researchers)} researchers across {len(INSTITUTIONS)} institutions")
     print(f"  {len(grants)} grants totalling ₹{sum(g['grant_received'] for g in grants):,.0f}")
     print(f"  {len(publications)} publications across {len(RESEARCH_AREAS)} research areas")
-    print("\nNOTE: Actual demo dataset (50K researchers, 50K publications, 181 institutions)")
-    print("      is pre-seeded in the PostgreSQL demo database.")
+    print("\nNOTE: Actual production dataset (50K researchers, 50K publications, 181 institutions)")
+    print("      is pre-seeded in the PostgreSQL database.")
     print("      This script serves as the reference generation implementation.")

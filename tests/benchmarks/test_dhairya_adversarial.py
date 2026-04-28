@@ -22,6 +22,103 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 KillerQueries = dict
 
 
+DHAIRYA_FAILURE_PATTERNS = [
+    {
+        "id": "P1",
+        "name": "Incorrect Aggregation Logic — Q3, Q11",
+        "queries": ("Q3", "Q11"),
+        "validator_rule": "dhairya_p1_incorrect_aggregation_logic",
+        "expected_issue": "year-over-year",
+        "user_query": "Identify growth trends: Calculate Year-Over-Year growth for PG courses in IIT Madras.",
+        "wrong_sql": """
+            SELECT financial_year, total_credit_score,
+                   LAG(total_credit_score) OVER (ORDER BY financial_year) AS previous_year_credit_score
+            FROM academic_courses_details
+            WHERE institute = 'IIT Madras' AND level_of_course = 'PG'
+            ORDER BY financial_year
+        """,
+    },
+    {
+        "id": "P2",
+        "name": "Missing/Late HAVING Clause — Q14, Q16",
+        "queries": ("Q14", "Q16"),
+        "validator_rule": "dhairya_p2_missing_or_late_having",
+        "expected_issue": "INCOMPLETE",
+        "user_query": "Utilization Audit: High Grants vs Low Expenditure.",
+        "wrong_sql": """
+            SELECT ig.institute, SUM(ig.grant_received) AS total_grants_received
+            FROM innovation_grant_from_govt ig
+            LEFT JOIN financial_expenses_operational fe ON ig.institute = fe.institute
+            -- [INCOMPLETE - missing HAVING / audit condition]
+        """,
+    },
+    {
+        "id": "P3",
+        "name": "Cross-Domain Confusion — Q10, Q12",
+        "queries": ("Q10", "Q12"),
+        "validator_rule": "dhairya_p3_cross_domain_confusion",
+        "expected_issue": "course follow-up",
+        "user_query": "Detect Strategy Shift: Institute stops UG but spikes in PhD in IIT Madras.",
+        "wrong_sql": """
+            SELECT phd.institute, SUM(phd.total) AS total_phd_students, SUM(ug.seats) AS total_ug_seats
+            FROM phd_students phd
+            LEFT JOIN sanctioned_intake ug ON phd.institute = ug.institute
+            WHERE phd.institute = 'IIT Madras'
+            GROUP BY phd.institute
+        """,
+    },
+    {
+        "id": "P4",
+        "name": "String Value Mismatch — Q6",
+        "queries": ("Q6",),
+        "validator_rule": "dhairya_p4_stage_string_value_mismatch",
+        "expected_issue": "Stage synonyms",
+        "user_query": "List all technologies that are Market Ready (TRL 9) for commercialization in IIT Madras.",
+        "wrong_sql": """
+            SELECT innovation_name
+            FROM innovations_at_various_stages_of_technology_readiness_level
+            WHERE institute = 'IIT Madras' AND stage_of_technology = 'TRL 9'
+        """,
+    },
+    {
+        "id": "P5",
+        "name": "ORDER BY / LIMIT Scope Errors — Q1, Q4",
+        "queries": ("Q1", "Q4"),
+        "validator_rule": "dhairya_p5_order_by_limit_scope_errors",
+        "expected_issue": "aggregate first",
+        "user_query": "Who are the top 5 unique funding agencies providing grants to us?",
+        "wrong_sql": """
+            SELECT DISTINCT gov_organisation_name
+            FROM innovation_grant_from_govt
+            ORDER BY gov_organisation_name
+            LIMIT 5
+        """,
+    },
+    {
+        "id": "P6",
+        "name": "JOIN Key Mismatch — Q7, Q13",
+        "queries": ("Q7", "Q13"),
+        "validator_rule": "dhairya_p6_join_key_mismatch",
+        "expected_issue": "Grant/patent joins",
+        "user_query": "Calculate the Cost of Innovation: grant money spent for every 1 patent granted.",
+        "wrong_sql": """
+            SELECT SUM(ig.grant_received) / NULLIF(SUM(pd.patents_granted), 0) AS cost_of_innovation
+            FROM innovation_grant_from_govt ig
+            JOIN patents_details pd ON ig.institute = pd.institute
+        """,
+    },
+    {
+        "id": "P7",
+        "name": "Complete Failure — Q15",
+        "queries": ("Q15",),
+        "validator_rule": "dhairya_p7_complete_generation_failure",
+        "expected_issue": "failed without SQL",
+        "user_query": "Rising Stars: Institutes growing funding while the average declines.",
+        "wrong_sql": "Error",
+    },
+]
+
+
 def _load_killer_queries() -> dict:
     path = REPO_ROOT / "tests" / "benchmarks" / "killer_queries.yaml"
     with open(path, "r", encoding="utf-8") as f:
@@ -72,6 +169,71 @@ def _generate_sql(query_nl: str, persona: str = "researcher", *, _retries: int =
     pytest.skip(f"Query failed after {_retries + 1} attempts: {last_err}")
 
 
+class TestDhairyaFailurePatternContracts:
+    """Static CI gates for Dhairya report, Hall of Shame, and validator coverage."""
+
+    def test_report_patterns_are_mirrored_in_hall_of_shame(self):
+        report = (REPO_ROOT / "docs" / "reports" / "SQL_AUDIT_REPORT_DHAIRYA.md").read_text(
+            encoding="utf-8"
+        )
+        hall = (REPO_ROOT / "docs" / "compliance" / "hall-of-shame.md").read_text(
+            encoding="utf-8"
+        )
+
+        report_patterns = re.findall(
+            r"^### Pattern (\d+): ([^\n]+)$",
+            report,
+            flags=re.MULTILINE,
+        )
+
+        assert len(report_patterns) == 7
+        for pattern_num, pattern_name in report_patterns:
+            assert f"### P{pattern_num}: {pattern_name}" in hall
+
+    def test_hall_of_shame_documents_required_fields_for_each_pattern(self):
+        hall = (REPO_ROOT / "docs" / "compliance" / "hall-of-shame.md").read_text(
+            encoding="utf-8"
+        )
+
+        for pattern in DHAIRYA_FAILURE_PATTERNS:
+            section_match = re.search(
+                rf"^### {pattern['id']}: {re.escape(pattern['name'])}\n(?P<section>.*?)(?=^### P\d+:|\Z)",
+                hall,
+                flags=re.MULTILINE | re.DOTALL,
+            )
+            assert section_match, f"{pattern['id']} missing from Hall of Shame"
+            section = section_match.group("section")
+            for label in (
+                "Wrong SQL",
+                "Why It Fails",
+                "Correct SQL",
+                "Adversarial Test Fixture",
+                "Validator Rule",
+            ):
+                assert f"**{label}:**" in section, f"{pattern['id']} missing {label}"
+            assert pattern["validator_rule"] in section
+            for query_id in pattern["queries"]:
+                assert query_id in section
+
+    def test_validator_exports_rule_for_each_dhairya_pattern(self):
+        from src.skills.text_to_sql.validator import DHAIRYA_VALIDATOR_RULES
+
+        expected_rules = {pattern["validator_rule"] for pattern in DHAIRYA_FAILURE_PATTERNS}
+        assert set(DHAIRYA_VALIDATOR_RULES) == expected_rules
+
+    @pytest.mark.parametrize("pattern", DHAIRYA_FAILURE_PATTERNS, ids=lambda p: p["id"])
+    def test_validator_rejects_each_documented_wrong_sql(self, pattern):
+        from src.skills.text_to_sql.validator import QueryCompletenessValidator
+
+        is_valid, issues = QueryCompletenessValidator().validate(
+            pattern["wrong_sql"],
+            user_query=pattern["user_query"],
+        )
+
+        assert not is_valid, pattern["id"]
+        assert any(pattern["expected_issue"].lower() in issue.lower() for issue in issues), issues
+
+
 class TestDhairyaFailurePatterns:
     """Verify each Dhairya failure pattern is guarded against in generated SQL."""
 
@@ -110,7 +272,9 @@ class TestDhairyaFailurePatterns:
             "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) "
             "to Market Ready (Level 9) in the last 3 years?"
         )
-        assert "trl_stages" in sql
+        sql_lower = sql.lower()
+        assert "innovations_at_various_stages_of_technology_readiness_level" in sql_lower or "trl_stages" in sql_lower, \
+            "Must use innovations_at_various_stages_of_technology_readiness_level or trl_stages"
         assert "level" in sql or "stage_of_technology" in sql
 
     def test_pattern_5_order_by_aggregate(self):

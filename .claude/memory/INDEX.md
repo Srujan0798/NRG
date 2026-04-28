@@ -7,7 +7,7 @@
 | Category | What | Count |
 |----------|------|-------|
 | [bugs/](bugs/INDEX.md) | Known bugs, root causes, permanent fixes | 7 |
-| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 16 |
+| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 17 |
 | [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 9 |
 | [projects/](projects/INDEX.md) | Multi-session project trackers | 2 |
 
@@ -17,9 +17,11 @@
 - **Current focus**: Production hardening — auth, Docker, e2e tests, deployment docs
 - **Quality Bar**: See [.claude/quality-bar.md](../quality-bar.md)
 - **Production rule**: See [.claude/rules/production_only.md](../rules/production_only.md)
+- **External audit rule**: See [.claude/rules/external_audit.md](../rules/external_audit.md)
 - **Closure wave**: See [docs/specs/CLOSURE_PLAN_2026-04-26.md](../../docs/specs/CLOSURE_PLAN_2026-04-26.md)
 - **Commercial sprint**: See [docs/business/COMMERCIAL_SPRINT_2026-04-26.md](../../docs/business/COMMERCIAL_SPRINT_2026-04-26.md)
 - **Durable directives**: See [INDEX.md](INDEX.md)
+- **Guru violations**: See [guru_violations.md](guru_violations.md)
 
 ## Per-Session Checklist
 

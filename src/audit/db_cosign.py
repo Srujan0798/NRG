@@ -236,7 +236,8 @@ class DBCoSignStore:
         """Verify DB co-signature for an event.
 
         Returns (valid, stored_signature).
-        If DB unavailable or key missing, returns (True, None) — permissive.
+        If DB co-signing is disabled, returns (True, None). If DB co-signing is
+        configured but verification fails, returns (False, None).
         """
         if not _db_cosign_key():
             return True, None
@@ -271,11 +272,12 @@ class DBCoSignStore:
                             event_id, expected, stored
                         )
                     return valid, stored
-                except Exception:
-                    return True, None
+                except Exception as exc:
+                    logger.warning("DB co-sign verify failed for event %s: %s", event_id, exc)
+                    return False, None
         except Exception as exc:
-            logger.warning("DB co-sign verify failed for event %s (permissive): %s", event_id, exc)
-            return True, None
+            logger.warning("DB co-sign verify failed for event %s: %s", event_id, exc)
+            return False, None
 
     def verify_recent(
         self,

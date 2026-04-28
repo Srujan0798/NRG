@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nrg-drift-monitor
+  namespace: nrg-production
+  labels:
+    app.kubernetes.io/name: nrg
+    app.kubernetes.io/component: vector-drift
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 12
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: nrg
+            app.kubernetes.io/component: vector-drift
+        spec:
+          restartPolicy: OnFailure
+          serviceAccountName: nrg-sa
+          containers:
+            - name: drift-scheduler
+              image: nrg/api:latest
+              imagePullPolicy: IfNotPresent
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -euo pipefail
+                  cd /app
+                  python scripts/vector_drift_scheduler.py --once
+              env:
+                - name: NRG_API_URL
+                  value: http://nrg-api:8000
+                - name: NRG_DRIFT_CACHE_DIR
+                  value: /var/lib/nrg/drift
+                - name: NRG_VECTOR_DRIFT_STATUS_FILE
+                  value: /var/lib/nrg/drift/vector_drift_status.json
+                - name: NRG_VECTOR_DRIFT_BASELINE_MARKER
+                  value: /var/lib/nrg/drift/vector_drift_baseline.ok
+                - name: NRG_SERVICE_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: nrg-internal-service-token
+                      key: token
+                      optional: true
+              volumeMounts:
+                - name: vector-drift-cache
+                  mountPath: /var/lib/nrg/drift
+              securityContext:
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                runAsNonRoot: true
+                runAsUser: 10001
+                capabilities:
+                  drop:
+                    - ALL
+          volumes:
+            - name: vector-drift-cache
+              persistentVolumeClaim:
+                claimName: nrg-vector-drift-cache

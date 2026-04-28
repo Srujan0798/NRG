@@ -121,6 +121,16 @@ Every final answer **must** include:
 ## 7. The 6 Hard Constraints (Quality Bar)
 Every NRG deliverable must satisfy these. A protocol is NOT complete if it violates any. Full detail in `.claude/quality-bar.md`.
 
+### The 3 Workflow Disciplines (Added 2026-04-28)
+
+These are acceptance-blocking for any sovereign deployment:
+
+**W1 — External Audit First:** When an external audit contradicts an internal claim, the internal claim is **wrong until proven otherwise**. You do not defend 10/10 reports against 6/10 audits. You verify every finding independently and fix what is real.
+
+**W2 — Health Endpoint Honesty:** The `/health` endpoint must call the **same verification function** an external auditor would call. Auto-repair, caching, or fallback that hides root failures is **forbidden**. If `verify_chain()` returns false, `/health` must report unhealthy or explicitly document the repair.
+
+**W3 — Evidence Expiration:** Evidence has a shelf life. Load tests expire after 7 days. Benchmarks expire after 7 days. Audit chain verification expires after 1 day. Security scans expire after 14 days. Old evidence is a **lie** — re-run before claiming.
+
 1. **DPDP-compliant Indian PII detection** — PAN, Aadhaar (with Verhoeff), Indian mobile, email, passport, GSTIN, bank account. Zero false negatives on the Indian PII corpus.
 2. **Per-user audit binding (non-repudiation)** — every audit event signed with per-user derived key; JWT jti + user_id + request fingerprint embedded.
 3. **Multi-hop intent decomposition** — Planner must output a DAG of sub-queries with dependencies, not a flat list.

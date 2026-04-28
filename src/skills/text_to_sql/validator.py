@@ -7,13 +7,23 @@ from pathlib import Path
 
 import sqlglot
 from sqlglot import exp
-from typing import Set, Optional
+from typing import Optional, Set
 
 
 HALL_OF_SHAME_PATH = (
     Path(__file__).resolve().parents[3]
-    / "src/data/schema/failed_queries/docs/compliance/hall-of-shame.md"
+    / "docs/compliance/hall-of-shame.md"
 )
+
+DHAIRYA_VALIDATOR_RULES = {
+    "dhairya_p1_incorrect_aggregation_logic": "YoY analysis must aggregate to institute/year before comparing periods.",
+    "dhairya_p2_missing_or_late_having": "Multi-stage audit queries must complete HAVING/filter logic.",
+    "dhairya_p3_cross_domain_confusion": "Course follow-ups must not silently switch into student/enrollment tables.",
+    "dhairya_p4_stage_string_value_mismatch": "TRL and readiness synonyms must resolve to stored Level values.",
+    "dhairya_p5_order_by_limit_scope_errors": "Ranked results must aggregate before ORDER BY/LIMIT.",
+    "dhairya_p6_join_key_mismatch": "Grant/patent joins must use normalized institute-to-applicants keys.",
+    "dhairya_p7_complete_generation_failure": "Generation failures such as bare Error are invalid SQL.",
+}
 
 
 class SQLValidationError(Exception):
@@ -151,7 +161,7 @@ class QueryCompletenessValidator:
         self._incomplete_re = [re.compile(p, re.IGNORECASE) for p in self.INCOMPLETE_PATTERNS]
         self._trailing_re = [re.compile(p, re.IGNORECASE) for p in self.TRAILING_CLAUSE_PATTERNS]
 
-    def validate(self, sql: str) -> tuple[bool, list[str]]:
+    def validate(self, sql: str, user_query: str | None = None) -> tuple[bool, list[str]]:
         """
         Check if SQL query is complete.
 
@@ -162,6 +172,8 @@ class QueryCompletenessValidator:
 
         if not sql_clean:
             return False, ["Empty query"]
+
+        issues.extend(self._check_generation_failure(sql_clean))
 
         for pattern in self._incomplete_re:
             if pattern.search(sql_clean):
@@ -180,8 +192,11 @@ class QueryCompletenessValidator:
             issues.append("Query ends with trailing operator")
 
         issues.extend(self._check_credit_score_cast(sql_clean))
+        issues.extend(self._check_year_over_year_aggregation(sql_clean, user_query=user_query))
         issues.extend(self._check_stage_synonym_sql(sql_clean))
+        issues.extend(self._check_cross_domain_context(sql_clean, user_query=user_query))
         issues.extend(self._check_known_join_keys(sql_clean))
+        issues.extend(self._check_late_having_scope(sql_clean, user_query=user_query))
 
         try:
             import sqlglot
@@ -195,6 +210,15 @@ class QueryCompletenessValidator:
 
         deduped = list(dict.fromkeys(issues))
         return len(deduped) == 0, deduped
+
+    def _check_generation_failure(self, sql: str) -> list[str]:
+        """Reject model failure markers that are not SQL."""
+        sql_lower = sql.strip().lower()
+        if sql_lower in {"error", "failed", "failure", "none", "null", "no sql"}:
+            return ["Query generation failed without SQL"]
+        if not re.match(r"^(select|with)\b", sql_lower):
+            return ["Generated text is not a SELECT/WITH SQL query"]
+        return []
 
     def _check_having_without_group(self, parsed) -> list[str]:
         """Detect HAVING used without GROUP BY."""
@@ -262,12 +286,49 @@ class QueryCompletenessValidator:
             return ["total_credit_score is TEXT in X:Y format; parse components before casting"]
         return []
 
+    def _check_year_over_year_aggregation(self, sql: str, user_query: str | None = None) -> list[str]:
+        """Reject Dhairya P1 row-level YoY calculations that skip yearly aggregation."""
+        sql_lower = " ".join(sql.lower().split())
+        query_lower = (user_query or "").lower()
+        is_yoy_question = any(
+            token in query_lower
+            for token in ("year-over-year", "year over year", "yoy", "growth trends", "growth")
+        )
+        has_yoy_sql = "lag(" in sql_lower or "year_over_year" in sql_lower or "previous_year" in sql_lower
+        if not (is_yoy_question or has_yoy_sql):
+            return []
+
+        issues = []
+        if "total_credit_score" in sql_lower and "lag(" in sql_lower:
+            issues.append(
+                "Year-over-year course growth must aggregate course counts before comparing years"
+            )
+        if "grant_received" in sql_lower and "group by" not in sql_lower:
+            issues.append(
+                "Year-over-year grant comparisons must aggregate by institute/year before comparing rows"
+            )
+        if is_yoy_question and "group by" not in sql_lower and any(
+            token in sql_lower for token in ("total_credit_score", "grant_received", "financial_year")
+        ):
+            issues.append("Year-over-year analysis requires grouped yearly totals")
+        return issues
+
     def _check_stage_synonym_sql(self, sql: str) -> list[str]:
         """Reject unresolved TRL/user-facing stage strings in SQL."""
         sql_upper = sql.upper()
-        if "TRL_STAGES" not in sql_upper:
+        sql_lower = sql.lower()
+        has_stage_context = (
+            "TRL_STAGES" in sql_upper
+            or "STAGE_OF_TECHNOLOGY" in sql_upper
+            or "innovations_at_various_stages_of_technology_readiness_level" in sql_lower
+        )
+        if not has_stage_context:
             return []
         unresolved_literals = (
+            "'TRL 4'",
+            '"TRL 4"',
+            "'TRL4'",
+            '"TRL4"',
             "'TRL 9'",
             '"TRL 9"',
             "'TRL9'",
@@ -280,12 +341,42 @@ class QueryCompletenessValidator:
             '"LAB VALIDATION"',
         )
         raw_like = re.search(
-            r"\b(?:LIKE|ILIKE)\s+['\"]%?(?:TRL\s*9|TRL9|MARKET\s+READY|FULLY\s+MARKET\s+READY|LAB\s+VALIDATION)%?['\"]",
+            r"\b(?:LIKE|ILIKE)\s+['\"]%?(?:TRL\s*[49]|TRL[49]|MARKET\s+READY|FULLY\s+MARKET\s+READY|LAB\s+VALIDATION)%?['\"]",
             sql,
             re.IGNORECASE,
         )
         if raw_like or any(token in sql_upper for token in unresolved_literals):
             return ["Stage synonyms must be expanded to stored values such as 'Level 4' or 'Level 9'"]
+        return []
+
+    def _check_cross_domain_context(self, sql: str, user_query: str | None = None) -> list[str]:
+        """Reject course follow-up SQL that switches to enrollment tables."""
+        if not user_query:
+            return []
+        query_lower = user_query.lower()
+        sql_lower = " ".join(sql.lower().split())
+        course_followup = any(
+            token in query_lower
+            for token in (
+                "course",
+                "courses",
+                "curriculum",
+                "ug",
+                "undergraduate",
+                "phd",
+                "strategy shift",
+                "compare",
+            )
+        )
+        wrong_domain_tables = ("actual_student_strength", "phd_students", "sanctioned_intake")
+        if (
+            course_followup
+            and "academic_courses_details" not in sql_lower
+            and any(table in sql_lower for table in wrong_domain_tables)
+        ):
+            return [
+                "Course follow-up changed domain to student/enrollment tables; use academic_courses_details"
+            ]
         return []
 
     def _check_known_join_keys(self, sql: str) -> list[str]:
@@ -308,6 +399,20 @@ class QueryCompletenessValidator:
                 "Course follow-up joins must stay in academic_courses_details unless the question explicitly asks for student counts"
             )
         return issues
+
+    def _check_late_having_scope(self, sql: str, user_query: str | None = None) -> list[str]:
+        """Reject the Dhairya Q14 zero-course narrowing for capex gap analysis."""
+        if not user_query:
+            return []
+        query_lower = user_query.lower()
+        if not ("capital" in query_lower and "low innovation" in query_lower):
+            return []
+        sql_lower = " ".join(sql.lower().split())
+        if re.search(r"having .*count\s*\([^)]*\)\s*=\s*0", sql_lower):
+            return [
+                "Missing/Late HAVING scope: capex gap analysis should rank high capex with low course counts, not only zero-course institutes"
+            ]
+        return []
 
     def _check_patent_join_keys(self, sql: str) -> list[str]:
         """Require normalized applicants matching for grant/patent joins."""
@@ -365,7 +470,7 @@ class QueryCompletenessValidator:
         record_rejection: bool = False,
     ) -> None:
         """Validate and raise SQLValidationError if incomplete."""
-        is_valid, issues = self.validate(sql)
+        is_valid, issues = self.validate(sql, user_query=user_query)
         if not is_valid:
             if record_rejection:
                 self.record_rejection(sql, issues, accepted_sql=accepted_sql, user_query=user_query)

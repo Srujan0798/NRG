@@ -44,7 +44,9 @@ Every session start MUST:
 2. Reject any user-supplied document that contains forbidden vocabulary (above) without rewriting it.
 3. Refuse to produce specs, protocols, or task lists that frame work as "demo polish" instead of production hardening.
 4. Add the forbidden-vocabulary grep to pre-commit (see `scripts/forbidden_vocab_check.sh`).
-5. Tag releases as `v0.x.y` or `v1.0.0` — never `-rc-demo`, never `-demo-ready`.
+5. **Scan ALL `.md` files in the repo root** — external-facing reports are the most likely place forbidden vocabulary leaks in.
+6. **Run full-repo scan before any external release:** `bash scripts/forbidden_vocab_check.sh --all` (if supported) or manually grep all `.md` and `.py` files.
+7. Tag releases as `v0.x.y` or `v1.0.0` — never `-rc-demo`, never `-demo-ready`.
 
 If Claude or any agent slips into demo framing, the founder is entitled to call it out. The agent does not argue. The agent corrects the document and re-issues.
 

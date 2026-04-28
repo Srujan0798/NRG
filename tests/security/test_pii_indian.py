@@ -1,7 +1,22 @@
 """Indian PII detection regression tests for DPDP evidence."""
 
+import os
+import time
+
 from src.security.pii import scan
 from src.security.pii.verhoeff import validate_aadhaar
+
+
+INDIAN_PII_PATTERN_CASES = [
+    ("aadhaar_spaced", "Aadhaar holder 1234 5678 9012"),
+    ("aadhaar", "Aadhaar: 1234-5678-9010"),
+    ("pan", "PAN ABCDE1234F belongs to a grant recipient"),
+    ("phone", "Call 9876543210 for outreach"),
+    ("phone_91", "Call +91 9876543210"),
+    ("email", "Contact researcher@iitb.ac.in"),
+    ("email_academic_in", "Contact pi@iitgn.ac.in"),
+    ("gstin", "GSTIN 27ABCDE1234F1Z5"),
+]
 
 
 def _types(text: str) -> set[str]:
@@ -47,3 +62,17 @@ def test_gstin_detected():
 def test_clean_research_query_has_no_pii():
     result = scan("Show renewable energy research trends")
     assert result["detected_pii"] is False
+
+
+def test_indian_pii_scan_budget_covers_all_patterns():
+    """Fast CI gate: all Indian PII patterns must scan comfortably under budget."""
+    budget_seconds = float(os.getenv("PII_TEST_BUDGET_SECONDS", "2.0"))
+
+    started_at = time.perf_counter()
+    for expected_type, text in INDIAN_PII_PATTERN_CASES:
+        assert expected_type in _types(text), expected_type
+    elapsed = time.perf_counter() - started_at
+
+    assert elapsed < budget_seconds, (
+        f"Indian PII scan budget exceeded: {elapsed:.3f}s >= {budget_seconds:.3f}s"
+    )

@@ -134,6 +134,36 @@ nrg_audit_events_total = Counter(
     ['action']
 )
 
+nrg_audit_db_cosign_submitted = Gauge(
+    'nrg_audit_db_cosign_submitted',
+    'DB audit co-sign background tasks submitted'
+)
+
+nrg_audit_db_cosign_succeeded = Gauge(
+    'nrg_audit_db_cosign_succeeded',
+    'DB audit co-sign background tasks completed successfully'
+)
+
+nrg_audit_db_cosign_failed = Gauge(
+    'nrg_audit_db_cosign_failed',
+    'DB audit co-sign background tasks failed'
+)
+
+nrg_audit_db_cosign_queue_depth = Gauge(
+    'nrg_audit_db_cosign_queue_depth',
+    'Pending DB audit co-sign background tasks'
+)
+
+nrg_audit_db_cosign_success_rate = Gauge(
+    'nrg_audit_db_cosign_success_rate',
+    'DB audit co-sign success rate for completed background tasks'
+)
+
+nrg_audit_db_cosign_latency_seconds = Gauge(
+    'nrg_audit_db_cosign_latency_seconds',
+    'Last DB audit co-sign background task latency in seconds'
+)
+
 
 # ── Rate Limiting ──────────────────────────────────────────────────────────────
 nrg_rate_limited_total = Counter(
@@ -266,6 +296,18 @@ def count_audit_event(action: str):
 def set_audit_chain_ok(ok: bool):
     """Set audit chain status."""
     nrg_audit_chain_ok.set(1 if ok else 0)
+
+
+def set_audit_db_cosign_metrics(metrics: dict):
+    """Publish DB co-sign worker metrics to Prometheus gauges."""
+    nrg_audit_db_cosign_submitted.set(float(metrics.get("submitted", 0) or 0))
+    nrg_audit_db_cosign_succeeded.set(float(metrics.get("succeeded", 0) or 0))
+    nrg_audit_db_cosign_failed.set(float(metrics.get("failed", 0) or 0))
+    nrg_audit_db_cosign_queue_depth.set(float(metrics.get("queue_depth", 0) or 0))
+    nrg_audit_db_cosign_success_rate.set(float(metrics.get("success_rate", 1.0) or 0.0))
+    latency_ms = metrics.get("last_latency_ms")
+    if latency_ms is not None:
+        nrg_audit_db_cosign_latency_seconds.set(float(latency_ms) / 1000.0)
 
 
 def count_skill_error(skill_name: str, error_type: str):

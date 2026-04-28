@@ -81,7 +81,7 @@ class ResultVerifier:
         if result.get("row_count") == 0:
             warnings.append("Query returned 0 rows — possible schema mismatch or overly restrictive filter")
 
-        is_complete, completeness_issues = self.validator.validate(sql)
+        is_complete, completeness_issues = self.validator.validate(sql, user_query=user_query)
         if not is_complete:
             issues.append(f"Incomplete SQL: {'; '.join(completeness_issues)}")
 

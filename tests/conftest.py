@@ -4,6 +4,8 @@ Defines markers, fixtures, and test categorization for CI blocking gates.
 """
 
 import os
+from pathlib import Path
+
 os.environ["NRG_ENV"] = "dev"
 os.environ["NRG_QUOTA_DISABLED"] = "1"
 os.environ.setdefault("DATABASE_URL", "sqlite:///nrg_research.db")
@@ -11,8 +13,54 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///nrg_research.db")
 import pytest
 
 
+PATH_CATEGORY_MARKERS: dict[str, tuple[str, ...]] = {
+    "chaos": ("chaos",),
+    "contract": ("contract",),
+    "e2e": ("e2e",),
+    "evals": ("evals",),
+    "load": ("load",),
+    "performance": ("load",),
+    "property": ("property",),
+    "regression": ("regression",),
+    "security": ("security",),
+    "uat": ("uat",),
+}
+
+INTEGRATION_DIRS = frozenset(
+    {
+        "api",
+        "chaos",
+        "contract",
+        "evals",
+        "ingestion",
+        "integration",
+        "load",
+        "performance",
+        "regression",
+    }
+)
+E2E_DIRS = frozenset({"e2e", "uat"})
+
+XDIST_GROUP_BY_DIR = {
+    "api": "api-stack",
+    "audit": "audit-chain",
+    "chaos": "external-service",
+    "e2e": "e2e-stack",
+    "integration": "api-stack",
+    "load": "load-stack",
+    "performance": "load-stack",
+    "uat": "e2e-stack",
+}
+
+
 def pytest_configure(config):
     """Register custom markers."""
+    config.addinivalue_line(
+        "markers", "unit: unit tests for individual components"
+    )
+    config.addinivalue_line(
+        "markers", "integration: tests that exercise external services or API boundaries"
+    )
     config.addinivalue_line(
         "markers", "regression(bug_id, description): regression test for a fixed bug"
     )
@@ -32,7 +80,19 @@ def pytest_configure(config):
         "markers", "e2e: end-to-end persona flow tests"
     )
     config.addinivalue_line(
+        "markers", "evals: evaluation tests for model quality"
+    )
+    config.addinivalue_line(
+        "markers", "property: property-based tests for invariants"
+    )
+    config.addinivalue_line(
         "markers", "slow: slow-running tests that can be skipped locally"
+    )
+    config.addinivalue_line(
+        "markers", "uat: user acceptance tests against live API"
+    )
+    config.addinivalue_line(
+        "markers", "xdist_group(name): keep tests with shared services/state on the same xdist worker"
     )
     config.addinivalue_line(
         "markers", "requires_qdrant: tests that require Qdrant vector DB (skipped if unavailable)"
@@ -56,21 +116,76 @@ def _is_service_available(env_var: str) -> bool:
     return False
 
 
+def _test_subdir(item: pytest.Item) -> str:
+    """Return the first path component under tests/ for a collected item."""
+    path = Path(str(item.fspath))
+    parts = path.parts
+    if "tests" not in parts:
+        return ""
+    tests_index = parts.index("tests")
+    if len(parts) <= tests_index + 1:
+        return ""
+    return parts[tests_index + 1]
+
+
+def _add_marker_once(item: pytest.Item, marker_name: str) -> None:
+    if not item.get_closest_marker(marker_name):
+        item.add_marker(getattr(pytest.mark, marker_name))
+
+
+def _add_xdist_group(item: pytest.Item, group_name: str) -> None:
+    item.add_marker(pytest.mark.xdist_group(group_name))
+
+
+def _apply_tier_marker(item: pytest.Item, subdir: str) -> None:
+    """Ensure every test has a unit/integration/e2e tier marker."""
+    if item.get_closest_marker("e2e") or subdir in E2E_DIRS:
+        _add_marker_once(item, "e2e")
+        return
+    if (
+        item.get_closest_marker("integration")
+        or item.get_closest_marker("contract")
+        or item.get_closest_marker("chaos")
+        or item.get_closest_marker("load")
+        or subdir in INTEGRATION_DIRS
+    ):
+        _add_marker_once(item, "integration")
+        return
+    _add_marker_once(item, "unit")
+
+
 def pytest_collection_modifyitems(items):
     """Auto-mark tests based on their location; skip tests requiring unavailable services."""
     for item in items:
-        if "test_security" in item.nodeid or "/security/" in item.nodeid:
-            item.add_marker(pytest.mark.security)
-        if "test_contract" in item.nodeid or "/contract/" in item.nodeid:
-            item.add_marker(pytest.mark.contract)
-        if "test_chaos" in item.nodeid or "/chaos/" in item.nodeid:
-            item.add_marker(pytest.mark.chaos)
-        if "test_load" in item.nodeid or "/load/" in item.nodeid:
-            item.add_marker(pytest.mark.load)
-        if "test_e2e" in item.nodeid or "/e2e/" in item.nodeid:
-            item.add_marker(pytest.mark.e2e)
-        if "test_regression" in item.nodeid or "/regression/" in item.nodeid:
-            item.add_marker(pytest.mark.regression)
+        subdir = _test_subdir(item)
+
+        for marker_name in PATH_CATEGORY_MARKERS.get(subdir, ()):
+            _add_marker_once(item, marker_name)
+        if "test_security" in item.nodeid:
+            _add_marker_once(item, "security")
+        if "test_contract" in item.nodeid:
+            _add_marker_once(item, "contract")
+        if "test_chaos" in item.nodeid:
+            _add_marker_once(item, "chaos")
+        if "test_load" in item.nodeid:
+            _add_marker_once(item, "load")
+        if "test_e2e" in item.nodeid:
+            _add_marker_once(item, "e2e")
+        if "test_regression" in item.nodeid:
+            _add_marker_once(item, "regression")
+
+        _apply_tier_marker(item, subdir)
+
+        if subdir in XDIST_GROUP_BY_DIR:
+            _add_xdist_group(item, XDIST_GROUP_BY_DIR[subdir])
+        if item.get_closest_marker("requires_qdrant"):
+            _add_xdist_group(item, "external-service")
+        if item.get_closest_marker("requires_redis"):
+            _add_xdist_group(item, "external-service")
+        if item.get_closest_marker("requires_db"):
+            _add_xdist_group(item, "external-service")
+        if "kong" in item.nodeid:
+            _add_xdist_group(item, "external-service")
 
         if item.get_closest_marker("requires_qdrant"):
             if not _is_service_available("QDRANT_AVAILABLE"):

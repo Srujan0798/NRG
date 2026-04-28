@@ -14,3 +14,5 @@ paths:
 - Egress guard inspects all cloud LLM payloads before they leave
 - Refresh tokens must go through RefreshStore (store/verify/revoke)
 - PII patterns: Aadhaar, PAN, phone, email — always redact
+- **Audit chain transparency:** If `get_chain_health()` auto-repairs a hash mismatch, the repair must be logged as WARNING, not silent. The chain's cryptographic lineage must be traceable.
+- **Health endpoint security:** `/health` must not use auto-repair or caching to hide security failures. Raw verification state must be exposed.

@@ -12,6 +12,7 @@ Minimum 4 test cases per TP-001:
   4. verify_db_cosign detects missing signature (None)
 """
 
+import logging
 import os
 import tempfile
 from typing import Optional
@@ -24,8 +25,6 @@ from src.audit.db_cosign import (
     verify_db_cosign,
     cosign_event,
     DBCoSignStore,
-    _db_cosign_key,
-    DB_COSIGN_SETTING,
 )
 
 
@@ -234,6 +233,51 @@ class TestVerifyDbCosign:
                 finally:
                     DBCoSignStore.verify_cosign = original
 
+    def test_verify_cosign_accepts_legitimate_signature_and_rejects_tamper(self, monkeypatch):
+        """Real verify_cosign compares DB HMAC against event_id/hash/user binding."""
+        event_id = "evt-legit"
+        chain_hash = "a" * 64
+        per_user_binding = "binding-for-user-1"
+        stored_signature = compute_db_cosign_hmac(
+            event_id=event_id,
+            chain_hash=chain_hash,
+            per_user_binding=per_user_binding,
+            db_secret="test-secret",
+        )
+
+        class FakeCursor:
+            def execute(self, *_args, **_kwargs):
+                return None
+
+            def fetchone(self):
+                return (stored_signature,)
+
+            def close(self):
+                return None
+
+        class FakeConn:
+            def cursor(self):
+                return FakeCursor()
+
+            def close(self):
+                return None
+
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.setattr(DBCoSignStore, "_get_conn", lambda self: FakeConn())
+
+        store = DBCoSignStore()
+
+        valid, stored = store.verify_cosign(event_id, chain_hash, per_user_binding)
+        tampered_valid, tampered_stored = store.verify_cosign(
+            event_id, "b" * 64, per_user_binding
+        )
+
+        assert valid is True
+        assert stored == stored_signature
+        assert tampered_valid is False
+        assert tampered_stored == stored_signature
+
 
 class TestAuditCosignScheduling:
     """Tests for request-path DB co-sign scheduling decisions."""
@@ -274,6 +318,131 @@ class TestAuditCosignScheduling:
         monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
         assert audit_module.should_db_cosign() is True
 
+    def test_append_invokes_db_cosign_for_each_event_when_configured(
+        self,
+        tmp_path,
+        monkeypatch,
+    ):
+        """Each append calls the DB co-sign module when PostgreSQL co-signing is enabled."""
+        import src.audit as audit_module
+        import src.audit.db_cosign as db_cosign_module
+        from src.audit import AuditEvent, ImmutableAuditLog
+
+        class SucceededFuture:
+            def add_done_callback(self, callback):
+                callback(self)
+
+            def exception(self):
+                return None
+
+        class InlineExecutor:
+            def submit(self, fn):
+                fn()
+                return SucceededFuture()
+
+        calls = []
+
+        def fake_cosign_event(*args):
+            calls.append(args)
+            return "f" * 64
+
+        ImmutableAuditLog._reset()
+        audit_module.reset_db_cosign_metrics()
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        monkeypatch.setattr(audit_module, "_get_cosign_executor", lambda: InlineExecutor())
+        monkeypatch.setattr(db_cosign_module, "cosign_event", fake_cosign_event)
+
+        log = ImmutableAuditLog(storage_path=str(tmp_path))
+        for idx in range(3):
+            log.append(AuditEvent(event_type="query", user_id=f"u{idx}", query=f"q{idx}"))
+
+        assert len(calls) == 3
+        assert [call[4] for call in calls] == ["query", "query", "query"]
+        assert all(len(call[1]) == 64 for call in calls)
+        assert audit_module.get_db_cosign_metrics()["succeeded"] == 3
+
+    def test_background_cosign_failure_is_logged_and_counted(
+        self,
+        tmp_path,
+        monkeypatch,
+        caplog,
+    ):
+        """Fire-and-forget co-sign exceptions must not disappear inside Future objects."""
+        import src.audit as audit_module
+        from src.audit import AuditEvent, ImmutableAuditLog
+
+        class FailedFuture:
+            def add_done_callback(self, callback):
+                callback(self)
+
+            def exception(self):
+                return RuntimeError("co-sign worker crashed")
+
+        class FakeExecutor:
+            def __init__(self):
+                self.submitted = 0
+
+            def submit(self, _fn):
+                self.submitted += 1
+                return FailedFuture()
+
+        ImmutableAuditLog._reset()
+        audit_module.reset_db_cosign_metrics()
+        fake_executor = FakeExecutor()
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        monkeypatch.setattr(audit_module, "_get_cosign_executor", lambda: fake_executor)
+        caplog.set_level(logging.WARNING, logger="src.audit")
+
+        log = ImmutableAuditLog(storage_path=str(tmp_path))
+        log.append(AuditEvent(event_type="query", user_id="u1", query="test"))
+
+        metrics = audit_module.get_db_cosign_metrics()
+        assert fake_executor.submitted == 1
+        assert metrics["submitted"] == 1
+        assert metrics["failed"] == 1
+        assert metrics["queue_depth"] == 0
+        assert "DB co-sign background task failed" in caplog.text
+
+    def test_cosign_metrics_track_burst_without_queue_accumulation(self, tmp_path, monkeypatch):
+        """A 1000-event burst keeps queue depth visible and does not retain completed work."""
+        import src.audit as audit_module
+        from src.audit import AuditEvent, ImmutableAuditLog
+
+        class SucceededFuture:
+            def add_done_callback(self, callback):
+                callback(self)
+
+            def exception(self):
+                return None
+
+        class FakeExecutor:
+            def __init__(self):
+                self.submitted = 0
+
+            def submit(self, _fn):
+                self.submitted += 1
+                return SucceededFuture()
+
+        ImmutableAuditLog._reset()
+        audit_module.reset_db_cosign_metrics()
+        fake_executor = FakeExecutor()
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        monkeypatch.setattr(audit_module, "_get_cosign_executor", lambda: fake_executor)
+
+        log = ImmutableAuditLog(storage_path=str(tmp_path))
+        for idx in range(1000):
+            log.append(AuditEvent(event_type="query", user_id=f"u{idx}", query=f"q{idx}"))
+
+        metrics = audit_module.get_db_cosign_metrics()
+        assert fake_executor.submitted == 1000
+        assert metrics["submitted"] == 1000
+        assert metrics["succeeded"] == 1000
+        assert metrics["failed"] == 0
+        assert metrics["queue_depth"] == 0
+
 
 
 class TestCosignEvent:
@@ -292,3 +461,30 @@ class TestCosignEvent:
                 event_type="test",
             )
             assert result is None
+
+    def test_cosign_event_logs_warning_without_crashing_when_db_unavailable(
+        self,
+        monkeypatch,
+        caplog,
+    ):
+        """DB outage degrades by returning None and logging a warning."""
+        monkeypatch.setenv("DATABASE_URL", "postgresql://nrg:nrg@localhost/nrg")
+        monkeypatch.setenv("AUDIT_DB_COSIGN_KEY", "test-secret")
+        monkeypatch.setattr(
+            DBCoSignStore,
+            "_get_conn",
+            lambda self: (_ for _ in ()).throw(RuntimeError("database down")),
+        )
+        caplog.set_level(logging.WARNING, logger="src.audit.db_cosign")
+
+        result = cosign_event(
+            event_id="evt-db-down",
+            chain_hash="a" * 64,
+            per_user_binding="binding",
+            user_id="u1",
+            event_type="query",
+        )
+
+        assert result is None
+        assert "Failed to write DB co-sign for event evt-db-down" in caplog.text
+        assert "database down" in caplog.text

@@ -7,10 +7,11 @@ from src.security.pii.presidio_config import PresidioConfig
 class TestPIICompliance(unittest.TestCase):
     """Test suite for PII compliance and tokenization."""
 
-    def setUp(self):
-        self.tokenizer = PIITokenizer()
-        self.fpe_engine = FPEEngine()
-        self.presidio = PresidioConfig()
+    @classmethod
+    def setUpClass(cls):
+        cls.tokenizer = PIITokenizer()
+        cls.fpe_engine = FPEEngine()
+        cls.presidio = PresidioConfig()
 
     def test_aadhaar_detection(self):
         """Test Aadhaar number detection."""

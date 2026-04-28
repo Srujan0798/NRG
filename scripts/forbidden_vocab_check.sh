@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # NRG forbidden-vocabulary check.
 # Fails any commit whose CHANGED files contain demo-framing vocabulary.
+# With --all: scans ALL tracked files (use before external release).
 # NRG is production. See .claude/rules/production_only.md
 set -e
 
@@ -8,9 +9,16 @@ FORBIDDEN_PATTERN='\b(demo|demo-ready|demo day|demo video|demo dataset|demo rehe
 
 # Allowlist: rule documents and the master execution plan are allowed to MENTION the forbidden words
 # (they describe why those words are forbidden).
-ALLOWLIST_PATHS='\.claude/rules/production_only\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN_|docs/task_protocols/PRODUCTION_READINESS_MASTER\.md|scripts/forbidden_vocab_check\.sh|protocols/[0-9]+_LB[0-9]+_|^BACKLOG\.md$|\.github/workflows/ci\.yml$|frontend/tests/|src/skills/text_to_sql/schema_extractor\.py|src/skills/text_to_sql/sqlite_schema_extractor\.py'
+ALLOWLIST_PATHS='\.claude/rules/production_only\.md|\.claude/rules/external_audit\.md|\.claude/memory/|docs/specs/MASTER_EXECUTION_PLAN_|docs/specs/DISPATCH_|docs/task_protocols/PRODUCTION_READINESS_MASTER\.md|scripts/forbidden_vocab_check\.sh|protocols/[0-9]+_LB[0-9]+_|^BACKLOG\.md$|\.github/workflows/ci\.yml$|frontend/tests/|src/skills/text_to_sql/schema_extractor\.py|src/skills/text_to_sql/sqlite_schema_extractor\.py'
 
-CHANGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR | grep -v -E "$ALLOWLIST_PATHS" || true)"
+# Determine scan mode: changed files (default) or all tracked files (--all)
+if [[ "${1:-}" == "--all" ]]; then
+  CHANGED_FILES="$(git ls-files | grep -v -E "$ALLOWLIST_PATHS" || true)"
+  SCAN_MODE="full repo"
+else
+  CHANGED_FILES="$(git diff --cached --name-only --diff-filter=ACMR | grep -v -E "$ALLOWLIST_PATHS" || true)"
+  SCAN_MODE="changed files"
+fi
 
 if [[ -z "$CHANGED_FILES" ]]; then
   exit 0
@@ -23,12 +31,12 @@ if [[ -z "$TARGET_FILES" ]]; then
   exit 0
 fi
 
-# Run grep across changed files; capture violations.
+# Run grep across target files; capture violations.
 VIOLATIONS="$(grep -InE "$FORBIDDEN_PATTERN" $TARGET_FILES 2>/dev/null || true)"
 
 if [[ -n "$VIOLATIONS" ]]; then
   echo "─────────────────────────────────────────────────────────────"
-  echo "  FORBIDDEN VOCABULARY DETECTED"
+  echo "  FORBIDDEN VOCABULARY DETECTED ($SCAN_MODE)"
   echo "  NRG is production software. See .claude/rules/production_only.md"
   echo "─────────────────────────────────────────────────────────────"
   echo "$VIOLATIONS"

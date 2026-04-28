@@ -12,8 +12,10 @@
 2. **Read [MASTER_EXECUTION_PLAN_2026-04-25.md](../docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md)** - single source of truth.
 3. **Read [memory/INDEX.md](memory/INDEX.md)** and [memory/INDEX.md](memory/INDEX.md) - current state and durable founder directives.
 4. **Check git + system health** - `git status`, `git log --oneline -5`, API health.
-5. **Read the Founder's request.**
-6. **Execute only against the master plan, active protocols, and explicit founder instructions.**
+5. **Check for external audits** - Read any `NRG_*_AUDIT_*.md` in repo root. If external findings contradict internal claims, external wins.
+6. **Verify evidence freshness** - Any evidence older than 7 days (load test, benchmark, security scan) is stale until re-run.
+7. **Read the Founder's request.**
+8. **Execute only against the master plan, active protocols, and explicit founder instructions.**
 
 Do not use older framed planning documents as standalone execution authority. Their remaining engineering content is valid only where the master execution plan maps it into production milestones.
 

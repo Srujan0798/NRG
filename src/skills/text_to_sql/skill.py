@@ -1289,7 +1289,7 @@ FOLLOW-UP QUERIES:
 
                 sql = self.generate_sql(user_query, schema_prompt, retry_context)
 
-                is_complete, issues = self._completeness_validator.validate(sql)
+                is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
                 if not is_complete:
                     logger.warning(f"Query completeness issues detected: {issues}")
                     if self.llm_provider:
@@ -1299,7 +1299,7 @@ FOLLOW-UP QUERIES:
                             f"Previous query: {sql}"
                         )
                         sql = self.generate_sql(user_query, schema_prompt, retry_context)
-                        is_complete, issues = self._completeness_validator.validate(sql)
+                        is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
                         if not is_complete:
                             self._completeness_validator.record_rejection(
                                 sql,
