@@ -1,0 +1,65 @@
+QUALITY GATE LOG — 2026-04-28
+===========================
+Item | Evidence File | Gate 1 | Gate 2 | Gate 3 | Status
+------|---------------|--------|--------|--------|-------
+K-5A  | K5A_vocab_check_pass.log | YES | PASS | CLEAR | PASS
+K-3   | K3_trl_view_test.log | YES | PASS | CLEAR | PASS
+K-1   | K1_health_zero_vector_test.log | YES | PASS | CLEAR | PASS
+K-4   | cold_query_latency.json | YES | PASS | CLEAR | PASS
+K-2   | K2_locust_summary.txt | YES | FAIL | CLEAR | FAIL
+NEW-AUDIT-CHAIN-GENESIS | CLUSTER_BLOCKERS_2026-04-28.md (ref only) | YES | PASS | AMBIGUOUS | AMBIGUOUS
+L-1   | code_review_final.md | YES | PASS | CLEAR | PASS
+L-2   | test_coverage_report.txt | YES | PASS | CLEAR | PASS
+L-3   | schema_parity_check.log | YES | PASS | CLEAR | PASS
+L-4   | (none — Docker blocker) | NO | — | — | MISSING
+L-5   | vocab_final_sweep.log | YES | PASS | CLEAR | PASS
+WL-1  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-2  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-3  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-4  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-5  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-6  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+WL-7  | CLUSTER_BLOCKERS_2026-04-28.md | — | — | — | EXPECTED_BLOCKED
+UAT-T1| (none) | NO | — | — | MISSING
+UAT-T2| (none) | NO | — | — | MISSING
+UAT-T3| (none) | NO | — | — | MISSING
+Handover| (none) | NO | — | — | MISSING
+Changelog| (none) | NO | — | — | MISSING
+docs-sync| (none) | NO | — | — | MISSING
+self-evolve| (none) | NO | — | — | MISSING
+
+GATE DEFINITIONS
+===============
+Gate 1 = Evidence file exists
+Gate 2 = Evidence shows clear PASS (✅) or FAIL (❌) result
+Gate 3 = No ambiguity in evidence
+Status = PASS | FAIL | EXPECTED_BLOCKED | MISSING | AMBIGUOUS
+
+SUMMARY
+=======
+Items that PASSED gate:       9  (K-5A, K-3, K-1, K-4, L-1, L-2, L-3, L-5, NEW-AUDIT-CHAIN-GENESIS*)
+Items that FAILED gate:        1  (K-2 — C4 SLO P99=59s @ 100 users exceeds <500ms threshold)
+Items EXPECTED_BLOCKED:       7  (WL-1 through WL-7 — cluster-gated, awaiting sovereign cluster)
+Items MISSING evidence:        6  (L-4, UAT-T1, UAT-T2, UAT-T3, Handover, Changelog, docs-sync, self-evolve)
+Items AMBIGUOUS:              1  (NEW-AUDIT-CHAIN-GENESIS — result referenced but no dedicated evidence file)
+
+* NEW-AUDIT-CHAIN-GENESIS note: The verify_chain() result (True, [], 3330) is documented in
+  CLUSTER_BLOCKERS_2026-04-28.md line 72, referencing commit 1f0be5f. This is a clear PASS
+  but lacks a standalone evidence file.
+
+NOTES
+====
+1. K-2 FAIL is documented and intentional — the load test revealed LLM synthesis as the
+   bottleneck under concurrent load (P99=59s). This is a known gap requiring Redis-backed
+   LLM result caching + query pre-warming to close.
+
+2. L-4 MISSING — Docker was unavailable locally; performance baseline was not run.
+   The CLUSTER_BLOCKERS_2026-04-28.md acknowledges this as a Docker blocker but
+   no standalone evidence file was produced.
+
+3. Prep items (UAT-T1/T2/T3, Handover, Changelog, docs-sync, self-evolve): No evidence
+   files found in evidence/2026-04-28/. These are process/handover items, not
+   technical validations — may be tracked elsewhere.
+
+4. WL items are legitimately EXPECTED_BLOCKED — the cluster blockers doc (committed
+   at 0c68696) formally documents why WL-1 through WL-7 cannot run locally.

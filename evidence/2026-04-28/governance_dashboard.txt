@@ -1,0 +1,67 @@
+# Phase 1 Governance Dashboard
+Generated: 2026-04-29
+
+## Evidence Files Found
+
+### K* Evidence Files (23 files)
+- evidence/2026-04-28/K1_health_qdrant_critical.log
+- evidence/2026-04-28/K1_health_zero_vector_test.log
+- evidence/2026-04-28/K2_locust_100u_v2_exceptions.csv
+- evidence/2026-04-28/K2_locust_100u_v2_failures.csv
+- evidence/2026-04-28/K2_locust_100u_v2_stats.csv
+- evidence/2026-04-28/K2_locust_100u_v2_stats_history.csv
+- evidence/2026-04-28/K2_locust_100users_exceptions.csv
+- evidence/2026-04-28/K2_locust_100users_failures.csv
+- evidence/2026-04-28/K2_locust_100users_stats.csv
+- evidence/2026-04-28/K2_locust_100users_stats_history.csv
+- evidence/2026-04-28/K2_locust_exceptions.csv
+- evidence/2026-04-28/K2_locust_failures.csv
+- evidence/2026-04-28/K2_locust_stats.csv
+- evidence/2026-04-28/K2_locust_stats_history.csv
+- evidence/2026-04-28/K2_locust_summary.txt
+- evidence/2026-04-28/K3_trl_view_migration.sql
+- evidence/2026-04-28/K3_trl_view_pytest.log
+- evidence/2026-04-28/K3_trl_view_test.log
+- evidence/2026-04-28/K4_latency_after.txt
+- evidence/2026-04-28/K4_latency_before.txt
+- evidence/2026-04-28/K4_latency_before_after.txt
+- evidence/2026-04-28/K5A_forbidden_vocab_scan.log
+- evidence/2026-04-28/K5A_vocab_check_pass.log
+
+### P* Evidence Files
+No P* files found
+
+### L* Evidence Files
+No L* files found
+
+### C4* Evidence Files
+No C4* files found
+
+### WL* Evidence Files
+No WL* files found
+
+## FAIL Marks Found
+
+### K2_locust_summary.txt
+- Line 21: /query P99: 59,000ms  ← C4 SLO: <500ms ❌ FAIL
+- Line 26: /query P99: 7,681ms  ❌ FAIL
+- Line 27: /auth/login: 10,674ms  ❌ (not in SLO but notable)
+- Line 53: P99=59,000ms @ 100 users, error_rate=0% — C4 FAIL (LLM contention, not DB/cache)
+
+### K4_latency_before_after.txt
+- Line 39: Cold /query: 692-2072ms  ❌ FAIL (>500ms)
+- Line 40: Under 100-user load: 23s median  ❌ FAIL (LLM contention)
+
+### CLUSTER_BLOCKERS_2026-04-28.md
+- Line 71: K-2 Load Test FAIL documented (P99 59s @ 100 users)
+
+### code_review_final.md
+- Line 10: 39 test files FAIL on collection (Python 3.14 system interpreter import errors — unrelated to code quality; tests pass with project's .venv Python 3.11)
+
+## Git Commit
+454f33222480bb46ed73501ee48d6c248808ae79
+
+## Summary
+- Total K* evidence files: 23
+- FAILs documented: 7 (across load testing and latency checks)
+- Known issues: C4 FAIL on /query endpoint under load (LLM contention), Python 3.14 test import errors
