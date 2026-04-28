@@ -1,8 +1,17 @@
 # K-6 GPG Signature Status
 
-**Protocol:** FOUNDER-SPRINT-2026-04-28  
-**Status:** BLOCKED locally  
-**Reason:** `gpg` is not installed in this shell environment.
+**Protocol:** FOUNDER-SPRINT-2026-04-28
+**Status:** BLOCKED on founder private key
+**Reason:** GnuPG is installed, but `gpg --list-secret-keys --keyid-format LONG`
+returns no configured private signing keys for this user.
+
+## Local Tool Check
+
+```text
+gpg (GnuPG) 2.5.19
+Home: /Users/srujansai/.gnupg
+Secret keys: none listed
+```
 
 ## Required Documents
 
@@ -31,6 +40,15 @@ ls *.asc | wc -l
 ```
 
 Expected count: `8`.
+
+If the founder key has not been generated or imported on this machine, configure
+it first:
+
+```bash
+gpg --full-generate-key
+# or
+gpg --import founder-private-key.asc
+```
 
 ## Verification
 

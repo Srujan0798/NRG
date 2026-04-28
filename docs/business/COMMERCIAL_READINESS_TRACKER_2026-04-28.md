@@ -8,14 +8,14 @@ cluster execution.
 
 | ID | Task | Owner | Status | Evidence Target |
 | --- | --- | --- | --- | --- |
-| C1 | Legal entity, GST, PAN, current account | Founder | PENDING | incorporation docs, GST/PAN proof, current-account proof |
-| C2 | IITGN IP rights clarity | Founder | PENDING | signed IP letter or spin-off/license term sheet |
-| C3 | External security and DPDP assurance | Founder + auditor | PENDING | auditor SOW, test report, assurance letter |
+| C1 | Legal entity, GST, PAN, current account | Founder | ACTION PACK READY; EXTERNAL FILING PENDING | incorporation docs, GST/PAN proof, current-account proof |
+| C2 | IITGN IP rights clarity | Founder | DRAFT READY; IITGN SIGN-OFF PENDING | signed IP letter or spin-off/license term sheet |
+| C3 | External security and DPDP assurance | Founder + auditor | SOW + SHORTLIST READY; AUDITOR ACK PENDING | auditor SOW, test report, assurance letter |
 | C4 | First reference deployment | Founder | PENDING | reference deployment letter, UAT transcript |
-| C5 | Eight-slide buyer narrative deck | Founder | PENDING | buyer deck PDF/PPTX |
-| C6 | Pricing model | Founder | PENDING | approved quote sheet and pricing memo |
-| C7 | Cap table and 12-month use-of-funds | Founder | PENDING | cap table, 12-month budget, runway model |
-| C8 | Warm introduction tracker | Founder | PENDING | target list, intro status, next action, date |
+| C5 | Eight-slide buyer narrative deck | Founder | GENERATED; DESIGN REVIEW OPTIONAL | buyer deck PDF/PPTX |
+| C6 | Pricing model | Founder | DRAFT READY; FOUNDER APPROVAL PENDING | approved quote sheet and pricing memo |
+| C7 | Cap table and 12-month use-of-funds | Founder | MODEL GENERATED; CA REVIEW PENDING | cap table, 12-month budget, runway model |
+| C8 | Warm introduction tracker | Founder | TRACKER READY; OUTREACH PENDING | target list, intro status, next action, date |
 
 ## Existing Draft Assets
 
@@ -33,6 +33,9 @@ cluster execution.
 - Engineering may link technical evidence, but does not mark C1-C8 complete.
 - No commercial claim should cite Phase 7 evidence until P7-A through P7-H are
   complete and the eternal seal is signed.
+- External completion remains blocked on third parties for C1, C2, C3, and C4.
+  Local artifacts may be committed, but the tracker must not mark those tasks
+  complete until signed/scanned evidence is present.
 
 ## Definition Of Done
 
