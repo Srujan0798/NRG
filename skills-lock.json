@@ -329,23 +329,11 @@
       "source": ".claude/skills",
       "sourceType": "local"
     },
-    "capacity-plan": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
     "change-request": {
       "source": ".claude/skills",
       "sourceType": "local"
     },
     "compliance-tracking": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
-    "process-doc": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
-    "process-optimization": {
       "source": ".claude/skills",
       "sourceType": "local"
     },
@@ -356,16 +344,8 @@
     "runbook": {
       "source": ".claude/skills",
       "sourceType": "local"
-    },
-    "status-report": {
-      "source": ".claude/skills",
-      "sourceType": "local"
-    },
-    "vendor-review": {
-      "source": ".claude/skills",
-      "sourceType": "local"
     }
   },
-  "updated_at": "2026-04-25T00:30:00+05:30",
-  "count": 91
+  "updated_at": "2026-04-25T00:35:00+05:30",
+  "count": 86
 }
