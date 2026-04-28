@@ -50,6 +50,7 @@ from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
+from src.observability.health_checks import get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app, get_metrics_content_type
 from qdrant_client import QdrantClient
 
@@ -2675,63 +2676,7 @@ async def health_check():
 
 
 def _get_qdrant_vector_count_health() -> dict:
-    host = os.getenv("QDRANT_HOST", "localhost")
-    port = int(os.getenv("QDRANT_PORT", "6333"))
-    collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
-
-    try:
-        client = QdrantClient(host=host, port=port, timeout=1.0)
-    except Exception as exc:
-        return {
-            "status": "unavailable",
-            "collection": collection,
-            "vectors": None,
-            "message": f"Qdrant vector count unavailable: {exc}",
-        }
-
-    try:
-        collection_info = client.get_collection(collection_name=collection)
-        vector_count = getattr(collection_info, "vectors_count", None)
-        if vector_count is None:
-            vector_count = getattr(collection_info, "points_count", None)
-    except Exception:
-        vector_count = None
-
-    if vector_count is None:
-        try:
-            count_result = client.count(collection_name=collection, exact=True)
-            vector_count = getattr(count_result, "count", 0)
-        except Exception as exc:
-            return {
-                "status": "unavailable",
-                "collection": collection,
-                "vectors": None,
-                "message": f"Qdrant vector count unavailable: {exc}",
-            }
-
-    try:
-        vector_count = int(vector_count or 0)
-    except (TypeError, ValueError) as exc:
-        return {
-            "status": "unavailable",
-            "collection": collection,
-            "vectors": None,
-            "message": f"Qdrant vector count unavailable: {exc}",
-        }
-
-    if vector_count == 0:
-        return {
-            "status": "CRITICAL",
-            "collection": collection,
-            "vectors": 0,
-            "message": "Collection is empty - ingestion required",
-        }
-
-    return {
-        "status": "healthy",
-        "collection": collection,
-        "vectors": vector_count,
-    }
+    return get_qdrant_vector_count_health(client_factory=QdrantClient)
 
 
 @app.get("/api/health/killer_queries")

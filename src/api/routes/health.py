@@ -12,6 +12,7 @@ from fastapi.responses import JSONResponse
 from src.api.deps import get_db, REPO_ROOT, DEFAULT_VECTOR_DRIFT_STATUS_FILE, DEFAULT_DATA_QUALITY_SCORECARD_FILE
 from src.api.logging_config import get_logger
 from src.auth.jwt_handler import JWTHandler
+from src.observability.health_checks import get_qdrant_vector_count_health
 
 router = APIRouter(tags=["health"])
 logger = get_logger(__name__)
@@ -76,60 +77,7 @@ def _get_data_quality_health():
 
 def _get_qdrant_vector_count_health():
     from qdrant_client import QdrantClient
-
-    host = os.getenv("QDRANT_HOST", "localhost")
-    port = int(os.getenv("QDRANT_PORT", "6333"))
-    collection = os.getenv("QDRANT_COLLECTION", "nrg_research")
-
-    try:
-        client = QdrantClient(host=host, port=port, timeout=1.0)
-    except Exception as exc:
-        return {
-            "status": "unavailable",
-            "collection": collection,
-            "vectors": None,
-            "message": f"Qdrant vector count unavailable: {exc}",
-        }
-
-    try:
-        collection_info = client.get_collection(collection_name=collection)
-        vector_count = getattr(collection_info, "vectors_count", None)
-        if vector_count is None:
-            vector_count = getattr(collection_info, "points_count", None)
-    except Exception:
-        vector_count = None
-
-    if vector_count is None:
-        try:
-            count_result = client.count(collection_name=collection, exact=True)
-            vector_count = getattr(count_result, "count", 0)
-        except Exception as exc:
-            return {
-                "status": "unavailable",
-                "collection": collection,
-                "vectors": None,
-                "message": f"Qdrant vector count unavailable: {exc}",
-            }
-
-    try:
-        vector_count = int(vector_count or 0)
-    except (TypeError, ValueError) as exc:
-        return {
-            "status": "unavailable",
-            "collection": collection,
-            "vectors": None,
-            "message": f"Qdrant vector count unavailable: {exc}",
-        }
-
-    if vector_count == 0:
-        return {
-            "status": "CRITICAL",
-            "collection": collection,
-            "vectors": 0,
-            "message": "Collection is empty - ingestion required",
-        }
-
-    return {"status": "healthy", "collection": collection, "vectors": vector_count}
+    return get_qdrant_vector_count_health(client_factory=QdrantClient)
 
 
 @router.get("/health")

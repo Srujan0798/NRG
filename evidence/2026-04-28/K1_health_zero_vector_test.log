@@ -28,4 +28,4 @@ tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_expires [32m
 tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_invalidate_prefix [32mPASSED[0m[32m [ 93%][0m
 tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_invalidate_all [32mPASSED[0m[32m [100%][0m
 
-[32m============================= [32m[1m15 passed[0m[32m in 11.78s[0m[32m ==============================[0m
+[32m============================== [32m[1m15 passed[0m[32m in 5.52s[0m[32m ==============================[0m
