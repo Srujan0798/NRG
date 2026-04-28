@@ -50,6 +50,51 @@ def genesis_hash() -> str:
     return "0" * 64
 
 
+def first_event_hash(chain_path: Path) -> str | None:
+    """Return the active genesis event hash from a JSONL chain file."""
+    if not chain_path.exists():
+        return None
+    with chain_path.open() as f:
+        for line in f:
+            if line.strip():
+                return json.loads(line).get("hash")
+    return None
+
+
+def verify_genesis_pin(audit_dir: Path, chain_path: Path, *, force: bool) -> bool:
+    """Refuse lineage-changing repairs when the active genesis differs from the pin."""
+    pin_file = audit_dir / "genesis_hash.pin"
+    if not pin_file.exists():
+        return True
+
+    pinned_hash = pin_file.read_text().strip()
+    active_hash = first_event_hash(chain_path)
+    if not pinned_hash or not active_hash or pinned_hash == active_hash:
+        return True
+
+    message = (
+        "Genesis hash pin mismatch: "
+        f"pinned={pinned_hash[:16]} active={active_hash[:16]}"
+    )
+    if force:
+        print(f"WARNING: {message}; proceeding because --force was supplied")
+        return True
+
+    print(f"ERROR: {message}", file=sys.stderr)
+    print("Refusing rebuild with --preserve-lineage; rerun with --force to override.", file=sys.stderr)
+    return False
+
+
+def ensure_genesis_pin(audit_dir: Path, chain_path: Path) -> None:
+    """Create the genesis pin when an older chain predates ADR-006."""
+    pin_file = audit_dir / "genesis_hash.pin"
+    if pin_file.exists():
+        return
+    active_hash = first_event_hash(chain_path)
+    if active_hash:
+        pin_file.write_text(f"{active_hash}\n")
+
+
 def rebuild_chain(corrupted_path: str, new_path: str, chain_key: str) -> dict:
     """Rebuild the audit chain from corrupted file."""
     results = {
@@ -176,6 +221,16 @@ def main():
     parser.add_argument("--rebuild", action="store_true", help="Rebuild the chain")
     parser.add_argument("--verify", action="store_true", help="Verify existing chain")
     parser.add_argument(
+        "--preserve-lineage",
+        action="store_true",
+        help="Verify active genesis against genesis_hash.pin before rewriting the chain",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow --preserve-lineage rebuilds to proceed despite a genesis pin mismatch",
+    )
+    parser.add_argument(
         "--reseed-genesis",
         action="store_true",
         help="Archive active chain, insert a traceable genesis event, and replay all events",
@@ -254,6 +309,13 @@ def main():
         if not chain_file.exists():
             print("No chain file found.")
             return 1
+
+        if args.preserve_lineage and not verify_genesis_pin(
+            audit_dir,
+            chain_file,
+            force=args.force,
+        ):
+            return 2
         
         # First check
         print("\nStep 1: Checking current chain status...")
@@ -280,6 +342,7 @@ def main():
             print("\nStep 3: Verifying reseeded chain...")
             valid_after, verify_errors, count_after = audit_log.verify_chain()
             if valid_after:
+                ensure_genesis_pin(audit_dir, chain_file)
                 print("  Reseeded chain is VALID")
                 print(f"  Valid events: {count_after:,}")
                 print(f"  Final chain hash: {audit_log.last_hash[:20]}...")
@@ -321,6 +384,7 @@ def main():
             print("\nStep 5: Activating rebuilt chain...")
             chain_file.unlink()
             Path(new_chain_file).rename(chain_file)
+            ensure_genesis_pin(audit_dir, chain_file)
             
             # Update last hash
             last_hash_file.write_text(results["rebuild_hash"])

@@ -157,10 +157,42 @@ def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypa
 
     response = client.get("/health")
 
-    assert response.status_code == 200
+    assert response.status_code == 503
     payload = response.json()
-    assert payload["status"] == "unhealthy"
-    assert payload["audit"]["status"] == "critical"
+    assert payload["status"] == "CRITICAL"
+    assert payload["audit"]["status"] == "CRITICAL"
+
+
+def test_root_health_reports_broken_audit_lineage_as_critical(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda: {
+            "chain_valid": True,
+            "chain_length": 2,
+            "valid_events": 2,
+            "error_count": 0,
+            "lineage_intact": False,
+            "lineage_break": {"repair_required": False, "lineage_intact": False},
+        },
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    payload = response.json()
+    assert payload["status"] == "CRITICAL"
+    assert payload["audit"]["status"] == "CRITICAL"
 
 
 def test_health_fails_when_qdrant_empty(monkeypatch):

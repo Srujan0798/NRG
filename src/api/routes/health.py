@@ -90,8 +90,13 @@ async def health_check():
 
         audit_health = get_chain_health()
         audit_lineage = audit_health.get("lineage_break", {}) or {}
-        if audit_lineage.get("repair_required"):
-            audit_health["status"] = "critical"
+        if (
+            audit_health.get("status") == "CRITICAL"
+            or audit_lineage.get("repair_required")
+            or audit_lineage.get("lineage_intact") is False
+            or audit_health.get("lineage_intact") is False
+        ):
+            audit_health["status"] = "CRITICAL"
         elif audit_health.get("chain_valid"):
             audit_health["status"] = "healthy"
         else:
@@ -168,16 +173,21 @@ async def health_check():
             audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
 
     overall = "healthy"
-    if audit_health.get("chain_valid") is False:
-        overall = "unhealthy"
-    if (audit_health.get("lineage_break") or {}).get("repair_required"):
-        audit_health["status"] = "critical"
-        overall = "unhealthy"
+    audit_lineage = audit_health.get("lineage_break") or {}
+    if (
+        audit_health.get("status") == "CRITICAL"
+        or audit_health.get("chain_valid") is False
+        or audit_health.get("lineage_intact") is False
+        or audit_lineage.get("lineage_intact") is False
+        or audit_lineage.get("repair_required")
+    ):
+        audit_health["status"] = "CRITICAL"
+        overall = "CRITICAL"
 
     auth_status = jwt_handler.jwt_secret_health()
-    if auth_status.get("status") == "unhealthy":
+    if auth_status.get("status") == "unhealthy" and overall != "CRITICAL":
         overall = "unhealthy"
-    if retriever_health.get("status") == "critical":
+    if retriever_health.get("status") == "critical" and overall != "CRITICAL":
         overall = "unhealthy"
 
     from src.observability.metrics import get_slo_tracker
@@ -196,7 +206,7 @@ async def health_check():
 
     vector_drift_health = _get_vector_drift_health()
     data_quality_health = _get_data_quality_health()
-    if data_quality_health.get("status") == "unhealthy":
+    if data_quality_health.get("status") == "unhealthy" and overall != "CRITICAL":
         overall = "unhealthy"
 
     qdrant_health = _get_qdrant_vector_count_health()

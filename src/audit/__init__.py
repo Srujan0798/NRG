@@ -361,6 +361,7 @@ class ImmutableAuditLog:
         self.merkle_file = self.storage_path / "merkle_root.json"
         self.merkle_roots_file = self.storage_path / "merkle_roots.jsonl"
         self.last_hash_file = self.storage_path / ".last_hash"
+        self.genesis_pin_file = self.storage_path / "genesis_hash.pin"
         self.integrity_alerts_file = self.storage_path / "integrity_alerts.jsonl"
         self.witness_file = self.storage_path / "witness_replicas.jsonl"
         self.revocation_file = self.storage_path / "revoked_tokens.jsonl"
@@ -583,6 +584,21 @@ class ImmutableAuditLog:
                     return json.loads(line)
         return None
 
+    def _read_genesis_pin(self) -> str | None:
+        if not self.genesis_pin_file.exists():
+            return None
+        value = self.genesis_pin_file.read_text().strip()
+        return value or None
+
+    def _pin_genesis_hash(self, genesis_hash: str | None) -> str | None:
+        if not genesis_hash:
+            return self._read_genesis_pin()
+        pinned_hash = self._read_genesis_pin()
+        if pinned_hash:
+            return pinned_hash
+        self.genesis_pin_file.write_text(f"{genesis_hash}\n")
+        return genesis_hash
+
     def _lineage_break_metadata(
         self,
         *,
@@ -592,17 +608,25 @@ class ImmutableAuditLog:
     ) -> dict:
         first_event = self._first_chain_event()
         first_result = first_event.get("result", {}) if isinstance(first_event, dict) else {}
-        active_chain_traceable = (
-            first_event is None
-            or (
-                first_event.get("event_type") == "chain_genesis"
-                and first_result.get("origin") == "audit_chain_reseed"
-            )
-        )
         repair_required = bool(
             not valid and errors and errors[0].startswith("Line 1: hash mismatch")
         )
         backups = sorted(self.storage_path.glob("chain_line1_hash_mismatch_backup_*.jsonl"))
+        active_genesis_hash = first_event.get("hash") if first_event else None
+        pinned_genesis_hash = self._pin_genesis_hash(active_genesis_hash)
+        genesis_pin_matches = bool(
+            active_genesis_hash is None
+            or pinned_genesis_hash is None
+            or active_genesis_hash == pinned_genesis_hash
+        )
+        traceable_reseed = bool(
+            first_event
+            and first_event.get("event_type") == "chain_genesis"
+            and first_result.get("origin") == "audit_chain_reseed"
+        )
+        active_chain_traceable = bool(
+            first_event is None or genesis_pin_matches or traceable_reseed
+        )
 
         reseeding_events = []
         if first_event and first_event.get("event_type") == "chain_genesis":
@@ -617,7 +641,12 @@ class ImmutableAuditLog:
             )
 
         return {
-            "lineage_intact": bool(valid and active_chain_traceable and not repair_required),
+            "lineage_intact": bool(
+                valid
+                and active_chain_traceable
+                and not repair_required
+                and genesis_pin_matches
+            ),
             "active_chain_traceable": bool(active_chain_traceable),
             "repair_required": repair_required,
             "auto_repair_triggered": repair is not None,
@@ -625,7 +654,12 @@ class ImmutableAuditLog:
             "backup_files": [path.name for path in backups],
             "reseeding_events": reseeding_events,
             "original_event_count": first_result.get("preserved_event_count"),
-            "active_genesis_hash": (first_event.get("hash", "")[:16] if first_event else None),
+            "active_genesis_hash": (active_genesis_hash[:16] if active_genesis_hash else None),
+            "pinned_genesis_hash": (
+                pinned_genesis_hash[:16] if pinned_genesis_hash else None
+            ),
+            "genesis_pin_matches": genesis_pin_matches,
+            "genesis_pin_path": str(self.genesis_pin_file),
             "active_genesis_event_id": first_event.get("event_id") if first_event else None,
         }
 
@@ -669,6 +703,8 @@ class ImmutableAuditLog:
                     self.last_hash = new_hash
                     self.last_hash_file.write_text(new_hash)
                     self.event_count += 1
+                    if self.event_count == 1:
+                        self._pin_genesis_hash(new_hash)
 
                     cosign_args = (event.event_id, new_hash, per_user_hash, event.user_id, event.event_type)
 
@@ -855,8 +891,13 @@ class ImmutableAuditLog:
             errors=errors,
             repair=repair,
         )
+        lineage_intact = bool(lineage_break.get("lineage_intact"))
+        status = "healthy"
+        if not valid or (not lineage_intact and not auto_repair):
+            status = "CRITICAL"
 
         return {
+            "status": status,
             "chain_valid": valid,
             "chain_length": chain_length,
             "valid_events": valid_count,
@@ -864,6 +905,9 @@ class ImmutableAuditLog:
             "error_count": len(errors),
             "errors": errors,
             "repair": repair,
+            "lineage_intact": lineage_intact,
+            "auto_repair_enabled": bool(auto_repair),
+            "reseeding_events": lineage_break.get("reseeding_events", []),
             "lineage_break": lineage_break,
             "db_cosign": get_db_cosign_metrics(),
             "last_hash": self.last_hash[:16] + "...",

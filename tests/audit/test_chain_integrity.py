@@ -297,8 +297,9 @@ class TestAuditChainIntegrity:
         assert valid_after is True
         assert errors_after == []
         assert count_after == 2
-        assert health["lineage_break"]["lineage_intact"] is True
+        assert health["lineage_break"]["lineage_intact"] is False
         assert health["lineage_break"]["active_chain_traceable"] is True
+        assert health["lineage_break"]["genesis_pin_matches"] is False
         assert health["lineage_break"]["repair_required"] is False
 
     def test_chain_health_default_does_not_silently_repair_line1_mismatch(
@@ -327,6 +328,23 @@ class TestAuditChainIntegrity:
         assert health["lineage_break"]["active_chain_traceable"] is False
         assert chain_file.read_text().splitlines() == [original_lines[1]]
         assert not list(Path(log.storage_path).glob("chain_line1_hash_mismatch_backup_*.jsonl"))
+
+    def test_chain_health_reports_broken_genesis_pin(self, fresh_audit_log):
+        """A valid chain with the wrong pinned genesis must be marked critical."""
+        log = fresh_audit_log
+
+        log.append(AuditEvent(event_type="query", user_id="u1", query="first"))
+        pin_file = Path(log.genesis_pin_file)
+        assert pin_file.exists()
+        pin_file.write_text("f" * 64 + "\n")
+
+        health = log.get_chain_health(auto_repair=False)
+
+        assert health["chain_valid"] is True
+        assert health["status"] == "CRITICAL"
+        assert health["lineage_intact"] is False
+        assert health["lineage_break"]["lineage_intact"] is False
+        assert health["lineage_break"]["genesis_pin_matches"] is False
 
     def test_merkle_root_persistence(self, fresh_audit_log):
         """Test that daily Merkle roots are persisted."""
@@ -417,6 +435,24 @@ class TestAuditChainRebuildScript:
         for line in lines:
             event = json.loads(line)
             assert event["hash"] != "0" * 64
+
+    def test_rebuild_script_preserve_lineage_requires_force_on_pin_mismatch(
+        self,
+        temp_audit_dir,
+    ):
+        """--preserve-lineage must block a rewrite when the genesis pin differs."""
+        import sys
+        from pathlib import Path as P
+        sys.path.insert(0, str(P(__file__).parent.parent.parent))
+        from scripts.audit_rebuild import verify_genesis_pin
+
+        audit_dir = P(temp_audit_dir)
+        chain_file = audit_dir / "chain.jsonl"
+        chain_file.write_text(json.dumps({"event_type": "test", "hash": "0" * 64}) + "\n")
+        (audit_dir / "genesis_hash.pin").write_text("f" * 64 + "\n")
+
+        assert verify_genesis_pin(audit_dir, chain_file, force=False) is False
+        assert verify_genesis_pin(audit_dir, chain_file, force=True) is True
 
 
 def test_audit_investigate_script_runs_directly(tmp_path):
