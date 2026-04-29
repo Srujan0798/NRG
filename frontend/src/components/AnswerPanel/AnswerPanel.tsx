@@ -30,6 +30,9 @@ type ResponseType = 'tabular' | 'geographic' | 'statistical' | 'comparison' | 't
 const ANSWER_PANEL_COPY = {
   rank: 'Rank',
   auditId: 'Audit ID',
+  hybridEvidence: 'Hybrid evidence',
+  sqlRows: 'SQL rows',
+  documents: 'Documents',
 }
 
 const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
@@ -66,13 +69,20 @@ const friendlyPlannerLabel = (raw: string): string => {
 }
 
 const friendlySynthLabel = (raw: string): string => {
+  if (raw === 'rule_based_hybrid') return 'Hybrid verified'
   if (raw === 'rule_based') return 'Verified'
   if (/llm|cloud|minimax/i.test(raw)) return 'AI Synthesized'
   return raw.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+const formatEvidenceCount = (value: number | undefined) => (
+  new Intl.NumberFormat('en-IN').format(typeof value === 'number' ? value : 0)
+)
+
 const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenance }) => {
   if (!provenance) return null
+
+  const hybridEvidence = provenance.hybrid_evidence
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -106,6 +116,19 @@ const ProvenanceBadge: React.FC<{ provenance?: QueryProvenance }> = ({ provenanc
         >
           <CheckCircle size={12} />
           {friendlySynthLabel(provenance.synth)}
+        </motion.span>
+      )}
+      {hybridEvidence && (
+        <motion.span
+          data-testid="hybrid-evidence-badge"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="inline-flex max-w-full flex-wrap items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-800 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+        >
+          <GitMerge size={12} aria-hidden="true" />
+          <span>{ANSWER_PANEL_COPY.hybridEvidence}</span>
+          <span className="font-semibold">{ANSWER_PANEL_COPY.sqlRows}: {formatEvidenceCount(hybridEvidence.sql_rows)}</span>
+          <span className="font-semibold">{ANSWER_PANEL_COPY.documents}: {formatEvidenceCount(hybridEvidence.document_chunks)}</span>
         </motion.span>
       )}
     </div>
@@ -593,6 +616,7 @@ export const AnswerPanel: React.FC<AnswerPanelProps> = ({
             sqlQuery={sqlQuery}
             rowsReturned={rowsReturned}
             auditEventId={auditEventId}
+            provenance={provenance}
           />
         </div>
       </motion.div>

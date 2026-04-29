@@ -251,6 +251,10 @@ export interface NRGQueryResponse {
     synth?: string
     verifier?: string
     cloud_synthesis_used?: boolean
+    hybrid_evidence?: {
+      sql_rows?: number
+      document_chunks?: number
+    }
   }
   synthesis_method?: string
   conversation_history: Array<{ query: string; response: string }>

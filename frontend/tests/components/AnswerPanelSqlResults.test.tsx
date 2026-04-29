@@ -44,4 +44,48 @@ describe('AnswerPanel SQL result table', () => {
     expect(container.textContent).toContain('Level 9')
     expect(container.querySelector('[data-testid="sql-results-table"]')).not.toBeNull()
   })
+
+  it('makes hybrid SQL and document evidence visible in proof controls', () => {
+    const container = render(
+      <AnswerPanel
+        response="Structured grant rows and policy notes support this answer [cite:structured:0] [cite:DOC-FUNDING-1:ch_0]."
+        citations={[
+          {
+            id: 'DOC-FUNDING-1',
+            pub_id: 'DOC-FUNDING-1',
+            chunk_id: 'ch_0',
+            title: 'Funding policy note',
+            source: 'RAG',
+          },
+        ]}
+        provenance={{
+          synth: 'rule_based_hybrid',
+          cloud_synthesis_used: false,
+          hybrid_evidence: {
+            sql_rows: 7,
+            document_chunks: 3,
+          },
+        }}
+        verification_status
+        sqlQuery="SELECT agency, total_grant FROM grants"
+        sqlResults={[{ agency: 'MeitY', total_grant: 47338100000 }]}
+        rowsReturned={7}
+        auditEventId="audit-hybrid-1"
+      />
+    )
+
+    expect(container.textContent).toContain('Hybrid evidence')
+    expect(container.textContent).toContain('SQL rows: 7')
+    expect(container.textContent).toContain('Documents: 3')
+
+    const sourceButton = container.querySelector('[data-testid="source-data-toggle"]') as HTMLButtonElement
+    act(() => {
+      sourceButton.click()
+    })
+
+    const sourcePanel = container.querySelector('[data-testid="source-data-panel"]') as HTMLElement
+    expect(sourcePanel.textContent).toContain('Evidence mix')
+    expect(sourcePanel.textContent).toContain('Structured SQL rows')
+    expect(sourcePanel.textContent).toContain('Document excerpts')
+  })
 })

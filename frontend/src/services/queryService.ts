@@ -44,6 +44,10 @@ export interface QueryProvenance {
   synth?: string;
   verifier?: string;
   cloud_synthesis_used?: boolean;
+  hybrid_evidence?: {
+    sql_rows?: number;
+    document_chunks?: number;
+  };
 }
 
 export interface QueryResponse {

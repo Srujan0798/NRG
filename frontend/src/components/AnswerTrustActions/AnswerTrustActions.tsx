@@ -1,12 +1,14 @@
 import React, { useMemo, useState } from 'react'
 import { Check, ChevronDown, ClipboardList, ClipboardCopy, Database } from 'lucide-react'
 import { t } from '../../i18n'
+import type { QueryProvenance } from '../../services/queryService'
 
 interface AnswerTrustActionsProps {
   answer: string
   sqlQuery?: string | null
   rowsReturned?: number | null
   auditEventId?: string | null
+  provenance?: QueryProvenance
 }
 
 const formatRows = (rows: number | null | undefined) => {
@@ -24,16 +26,34 @@ const AUDIT_COPY = {
   previousHashPrefix: 'prev-',
 }
 
+const HYBRID_COPY = {
+  evidenceMix: 'Evidence mix',
+  structuredSqlRows: 'Structured SQL rows',
+  documentExcerpts: 'Document excerpts',
+  sourceSummary: 'This answer combines measurable database evidence with retrieved document context.',
+}
+
+const getHybridEvidence = (provenance?: QueryProvenance) => {
+  const evidence = provenance?.hybrid_evidence
+  if (!evidence) return null
+  return {
+    sqlRows: typeof evidence.sql_rows === 'number' ? evidence.sql_rows : 0,
+    documentChunks: typeof evidence.document_chunks === 'number' ? evidence.document_chunks : 0,
+  }
+}
+
 export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
   answer,
   sqlQuery,
   rowsReturned,
   auditEventId,
+  provenance,
 }) => {
   const [copied, setCopied] = useState(false)
   const [sourceOpen, setSourceOpen] = useState(false)
   const [auditOpen, setAuditOpen] = useState(false)
-  const hasSource = Boolean(sqlQuery || auditEventId || typeof rowsReturned === 'number')
+  const hybridEvidence = getHybridEvidence(provenance)
+  const hasSource = Boolean(sqlQuery || auditEventId || typeof rowsReturned === 'number' || hybridEvidence)
   const hasAudit = Boolean(auditEventId)
   const safeAnswer = answer.trim()
   const sourceLabel = sourceOpen
@@ -108,6 +128,27 @@ export const AnswerTrustActions: React.FC<AnswerTrustActionsProps> = ({
         >
           <div className="space-y-3 text-sm text-nrg-text">
             <div>
+              {hybridEvidence && (
+                <div
+                  data-testid="hybrid-evidence-source"
+                  className="mb-3 rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] p-3"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wider text-nrg-muted">{HYBRID_COPY.evidenceMix}</p>
+                  <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+                    <div>
+                      <dt className="text-xs font-medium text-nrg-muted">{HYBRID_COPY.structuredSqlRows}</dt>
+                      <dd className="mt-1 text-sm font-semibold text-nrg-text">{formatRows(hybridEvidence.sqlRows)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs font-medium text-nrg-muted">{HYBRID_COPY.documentExcerpts}</dt>
+                      <dd className="mt-1 text-sm font-semibold text-nrg-text">{formatRows(hybridEvidence.documentChunks)}</dd>
+                    </div>
+                  </dl>
+                  <p className="mt-2 text-xs font-medium text-nrg-muted">
+                    {HYBRID_COPY.sourceSummary}
+                  </p>
+                </div>
+              )}
               <p className="mb-2 font-semibold">{t('auto.components.AnswerTrustActions.5')}</p>
               <code className="block overflow-x-auto rounded-lg border border-nrg-border bg-[var(--nrg-surface-1)] p-3 font-mono text-xs leading-5 text-nrg-text whitespace-pre-wrap">
                 {sqlDisplay}
