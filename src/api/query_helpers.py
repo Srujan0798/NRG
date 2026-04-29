@@ -268,7 +268,64 @@ def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, 
         if normalized_rows:
             return " ".join(sql.split()), normalized_rows
     except Exception as exc:
-        logger.warning("Researcher ranking runtime query failed; trying local catalogue", error=str(exc), topic=topic)
+        logger.info("Researcher ranking canonical-schema query failed; trying alternate schema", error=str(exc), topic=topic)
+
+    live_schema_sql = f"""
+        SELECT
+            r.researcher_id AS researcher_id,
+            r.name AS name,
+            r.institution AS institution,
+            r.state AS state,
+            r.department AS department,
+            r.research_area AS research_area,
+            r.secondary_research_areas AS secondary_research_areas,
+            coalesce(r.h_index, 0) AS h_index,
+            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
+            r.email AS email
+        FROM researchers r
+        WHERE {ors}
+        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
+        LIMIT 5
+    """
+    try:
+        rows = _get_db().execute(live_schema_sql, params)
+        normalized_rows = [dict(row) for row in rows]
+        if normalized_rows:
+            return " ".join(live_schema_sql.split()), normalized_rows
+    except Exception as exc:
+        logger.info("Researcher ranking institution-column query failed; trying sparse schema", error=str(exc), topic=topic)
+
+    sparse_ors = " OR ".join(
+        [
+            f"lower(coalesce(r.research_area, '')) LIKE lower(:pattern_{idx})"
+            for idx, _ in enumerate(patterns)
+        ]
+    )
+    sparse_schema_sql = f"""
+        SELECT
+            r.researcher_id AS researcher_id,
+            r.name AS name,
+            NULL AS institution,
+            r.state AS state,
+            NULL AS department,
+            r.research_area AS research_area,
+            NULL AS secondary_research_areas,
+            0 AS h_index,
+            0 AS funding_cr,
+            r.email AS email,
+            'match_only_sparse_schema' AS ranking_basis
+        FROM researchers r
+        WHERE {sparse_ors}
+        ORDER BY r.name ASC
+        LIMIT 5
+    """
+    try:
+        rows = _get_db().execute(sparse_schema_sql, params)
+        normalized_rows = [dict(row) for row in rows]
+        if normalized_rows:
+            return " ".join(sparse_schema_sql.split()), normalized_rows
+    except Exception as exc:
+        logger.warning("Researcher ranking sparse-schema query failed; trying local catalogue", error=str(exc), topic=topic)
 
     local_db = _local_research_db_path()
     if local_db is None:
@@ -345,26 +402,44 @@ def _researcher_lookup_fast_response(query: str, *, user_tier: int, session_id: 
         }
 
     ranked = any(term in query.lower() for term in _RESEARCHER_RANKING_TERMS)
+    sparse_schema_match = any(row.get("ranking_basis") == "match_only_sparse_schema" for row in rows)
     visible_rows = rows if user_tier <= 1 else [
         {**row, "name": f"Researcher {index}", "email": None}
         for index, row in enumerate(rows, start=1)
     ]
+    lead = (
+        f"Matching {topic} researchers were found in the live NRG catalogue. "
+        "The live schema does not expose ranking metrics, so this is a relevance match rather than a claimed best ranking. "
+        f"[cite:nrg-researchers:{topic.lower().replace(' ', '-')}]"
+        if sparse_schema_match
+        else f"Top matching {topic} researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:{topic.lower().replace(' ', '-')}]"
+    )
     lines = [
-        f"Top matching {topic} researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:{topic.lower().replace(' ', '-')}]",
+        lead,
         "",
         "| Rank | Researcher | Institution | State | Area | h-index | Funding |",
         "| --- | --- | --- | --- | --- | ---: | ---: |",
     ]
     for index, row in enumerate(visible_rows, start=1):
         area = _display_research_area(row, topic)
+        h_index_value = "not exposed" if sparse_schema_match else str(int(row.get("h_index") or 0))
+        funding_value = "not exposed" if sparse_schema_match else _format_inr_crores(row.get("funding_cr"))
+        researcher_name = row.get("name") or f"Researcher {index}"
+        institution = row.get("institution") or "Unknown institution"
+        state = row.get("state") or "Unknown"
         lines.append(
-            f"| {index} | {row.get('name', f'Researcher {index}')} | {row.get('institution', 'Unknown institution')} | "
-            f"{row.get('state', 'Unknown')} | {area} | {int(row.get('h_index') or 0)} | {_format_inr_crores(row.get('funding_cr'))} |"
+            f"| {index} | {researcher_name} | {institution} | "
+            f"{state} | {area} | {h_index_value} | {funding_value} |"
         )
     if user_tier <= 1 and rows[0].get("email"):
-        lines.extend(["", f"Top contact shown for Tier 1 researcher access: {rows[0]['email']}"])
+        contact_label = "Available contact shown" if sparse_schema_match else "Top contact shown"
+        lines.extend(["", f"{contact_label} for Tier 1 researcher access: {rows[0]['email']}"])
     elif user_tier >= 3:
         lines.extend(["", "Access restricted: lower tiers show anonymized researcher labels and no direct contact details."])
+
+    warnings = [{"message": "Fast bounded synthesis used for researcher ranking query."}]
+    if sparse_schema_match:
+        warnings.append({"message": "Ranking metrics are unavailable in the live researcher schema; answer is a topic match."})
 
     return {
         "query_id": str(uuid.uuid4()),
@@ -390,9 +465,9 @@ def _researcher_lookup_fast_response(query: str, *, user_tier: int, session_id: 
                 "relevance_score": 1.0,
             }
         ],
-        "warnings": [{"message": "Fast bounded synthesis used for researcher ranking query."}],
-        "answer_confidence": "high",
-        "answer_confidence_score": 0.95,
+        "warnings": warnings,
+        "answer_confidence": "medium" if sparse_schema_match else "high",
+        "answer_confidence_score": 0.72 if sparse_schema_match else 0.95,
         "sql_anomaly_report": {},
         "sql_query": sql_query,
         "sql_queries": [sql_query],
@@ -401,7 +476,7 @@ def _researcher_lookup_fast_response(query: str, *, user_tier: int, session_id: 
         "provenance": {
             "planner": "researcher_lookup_fast_path",
             "synth": "rule_based",
-            "verifier": "row_count_and_citation",
+            "verifier": "row_count_sparse_schema" if sparse_schema_match else "row_count_and_citation",
             "cloud_synthesis_used": False,
         },
         "synthesis_method": "rule_based",

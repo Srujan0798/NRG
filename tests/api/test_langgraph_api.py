@@ -1,4 +1,5 @@
 import sqlite3
+from types import SimpleNamespace
 
 from fastapi.testclient import TestClient
 
@@ -231,6 +232,140 @@ def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
     assert "IISc Bengaluru" in payload["response"]
     assert "Quantum Computing" in payload["response"]
     assert payload["sql_query"]
+
+
+def test_researcher_ranking_uses_live_schema_institution_column(monkeypatch):
+    rows = [
+        {
+            "researcher_id": "res-live-q1",
+            "name": "Dr. Meera Sen",
+            "institution": "IIT Delhi",
+            "state": "Delhi",
+            "department": "Physics",
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": "",
+            "h_index": 79,
+            "funding_cr": 7.6,
+            "email": "meera.sen@example.edu",
+        }
+    ]
+
+    class FakeDB:
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, query, params=None):
+            self.calls.append(query)
+            if "r.institution_id" in query:
+                raise RuntimeError("column r.institution_id does not exist")
+            assert "r.institution AS institution" in query
+            return rows
+
+    fake_db = FakeDB()
+    monkeypatch.setattr(api_main, "_get_db", lambda: fake_db)
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
+
+    sql_query, result_rows = api_main._query_researchers_for_topic("Quantum Computing", ["%quantum%"])
+
+    assert result_rows == rows
+    assert "r.institution AS institution" in sql_query
+    assert len(fake_db.calls) == 2
+
+
+def test_stream_payload_uses_ranked_researcher_answer_for_quantum_live_schema(monkeypatch):
+    rows = [
+        {
+            "researcher_id": "res-live-q1",
+            "name": "Dr. Meera Sen",
+            "institution": "IIT Delhi",
+            "state": "Delhi",
+            "department": "Physics",
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": "",
+            "h_index": 79,
+            "funding_cr": 7.6,
+            "email": "meera.sen@example.edu",
+        }
+    ]
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            if "r.institution_id" in query:
+                raise RuntimeError("column r.institution_id does not exist")
+            return rows
+
+    raw_request = SimpleNamespace(
+        client=SimpleNamespace(host="127.0.0.1"),
+        state=SimpleNamespace(request_fingerprint="stream-live-schema"),
+    )
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
+    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-stream-live-schema")
+    api_main._api_cache.invalidate()
+
+    payload = api_main._build_stream_answer_payload(
+        api_main.QueryRequest(query="best quantum researchers....", session_id="stream-live-schema"),
+        token_payload={"tier": 1, "sub": "researcher-user", "kid": "test-kid"},
+        raw_request=raw_request,
+    )
+
+    answer_text = payload["response"]
+    assert payload["intent"] == "researcher_ranking"
+    assert payload["answer_confidence"] == "high"
+    assert payload["sql_results"] == rows
+    assert "Dr. Meera Sen" in answer_text
+    assert "Quantum Computing" in answer_text
+    assert "Matching researcher records are available" not in answer_text
+    assert payload["audit_event_id"] == "audit-stream-live-schema"
+
+
+def test_researcher_ranking_uses_sparse_live_researcher_schema(monkeypatch):
+    rows = [
+        {
+            "researcher_id": "res-sparse-q1",
+            "name": "Dr. Sparse Quantum",
+            "institution": None,
+            "state": "Gujarat",
+            "department": None,
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": None,
+            "h_index": 0,
+            "funding_cr": 0,
+            "email": "sparse.quantum@example.edu",
+            "ranking_basis": "match_only_sparse_schema",
+        }
+    ]
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            if "r.institution_id" in query:
+                raise RuntimeError("column r.institution_id does not exist")
+            if "r.institution AS institution" in query:
+                raise RuntimeError("column r.institution does not exist")
+            assert "NULL AS institution" in query
+            assert "NULL AS department" in query
+            assert "match_only_sparse_schema" in query
+            assert "r.secondary_research_areas" not in query
+            return rows
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
+
+    payload = api_main._fast_query_response(
+        "best quantum researchers",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="sparse-live-schema",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "researcher_ranking"
+    assert payload["answer_confidence"] == "medium"
+    assert payload["sql_results"] == rows
+    assert "Dr. Sparse Quantum" in payload["response"]
+    assert "live schema does not expose ranking metrics" in payload["response"]
+    assert "ranked by h-index" not in payload["response"]
+    assert "Matching researcher records are available" not in payload["response"]
 
 
 def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
