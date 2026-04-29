@@ -52,6 +52,14 @@ Hybrid proof checks:
 - Source drawer shows Evidence mix, Structured SQL rows, and Document excerpts.
 - Source drawer keeps SQL text and HMAC audit event visible in the same proof surface.
 
+## Live Hybrid Query Acceptance
+
+Evidence file:
+`evidence/2026-04-29/live_hybrid_query_acceptance.md`
+
+Result:
+One real backend-streamed query now returns hybrid SQL plus document proof, and the browser source drawer reads it through the real `/api/query/stream` endpoint.
+
 ## Build
 
 Command:

@@ -49,7 +49,8 @@ const API_PATHS = [
 ];
 
 function isApiPath(urlPath) {
-  return API_PATHS.some(p => urlPath === p || urlPath.startsWith(p + '/'));
+  const pathname = new URL(urlPath, 'http://localhost').pathname;
+  return API_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
 }
 
 function serveStatic(req, res) {

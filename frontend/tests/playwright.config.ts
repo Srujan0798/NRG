@@ -1,5 +1,8 @@
 import { defineConfig } from '@playwright/test';
 
+const serverPort = Number(process.env.PLAYWRIGHT_PORT || 3000);
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || `http://localhost:${serverPort}`;
+
 export default defineConfig({
   testDir: '.',
   testMatch: ['e2e/**/*.spec.ts', 'a11y/axe.test.ts', 'a11y/keyboard.test.ts'],
@@ -13,7 +16,7 @@ export default defineConfig({
     ['html', { open: 'never' }]
   ],
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    baseURL,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry'
@@ -25,8 +28,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'node ../e2e-server.js',
-    port: 3000,
+    command: `PORT=${serverPort} node ../e2e-server.js`,
+    port: serverPort,
     reuseExistingServer: !process.env.CI,
     timeout: 120000
   }
