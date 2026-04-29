@@ -26,6 +26,7 @@ from src.skills.text_to_sql.schema_retriever import (
     build_relevant_ddl_prompt_section,
 )
 from src.skills.text_to_sql.result_anomaly_detector import detect_result_anomalies
+from src.skills.text_to_sql.safe_sql_builder import SafeSQLBuildResult, build_safe_sql
 from src.observability.langfuse_tracer import _init_langfuse
 
 
@@ -215,7 +216,9 @@ def _chat_with_timeout(llm_provider: Any, messages: list[dict[str, str]]):
 
 
 def _retriever_ddl_with_timeout(question: str, db_type: str, top_k: int) -> str:
-    timeout_ms = int(os.getenv("TEXT_TO_SQL_RETRIEVER_DDL_TIMEOUT_MS", str(RETRIEVER_DDL_TIMEOUT_MS)))
+    timeout_ms = int(
+        os.getenv("TEXT_TO_SQL_RETRIEVER_DDL_TIMEOUT_MS", str(RETRIEVER_DDL_TIMEOUT_MS))
+    )
     if timeout_ms <= 0:
         return _cached_retriever_ddl(question, db_type, top_k)
 
@@ -224,7 +227,9 @@ def _retriever_ddl_with_timeout(question: str, db_type: str, top_k: int) -> str:
         return future.result(timeout=timeout_ms / 1000)
     except FuturesTimeoutError:
         future.cancel()
-        logger.debug("Schema retriever DDL timed out after %sms; using extractor schema prompt", timeout_ms)
+        logger.debug(
+            "Schema retriever DDL timed out after %sms; using extractor schema prompt", timeout_ms
+        )
         return ""
 
 
@@ -368,9 +373,7 @@ class TierAwareSqlRewriter:
                 names.add(alias.lower())
         return names
 
-    def _inject_tier_filter(
-        self, parsed: exp.Select, user_tier: int, tables: set
-    ) -> exp.Select:
+    def _inject_tier_filter(self, parsed: exp.Select, user_tier: int, tables: set) -> exp.Select:
         if self._has_tier_filter(parsed):
             return parsed
 
@@ -385,9 +388,13 @@ class TierAwareSqlRewriter:
                     this=exp.column("access_tier", table=table_ref),
                     expression=exp.Literal.number(user_tier),
                 )
-                tier_condition = condition if tier_condition is None else exp.and_(
-                    tier_condition,
-                    condition,
+                tier_condition = (
+                    condition
+                    if tier_condition is None
+                    else exp.and_(
+                        tier_condition,
+                        condition,
+                    )
                 )
 
         if tier_condition is None:
@@ -425,14 +432,38 @@ class TierAwareSqlRewriter:
     def _safe_fallback(self, sql: str, user_tier: int) -> str:
         raise PermissionError("Unsafe SQL fallback refused")
 
+
 # Indian states for WHERE clause extraction
 _INDIAN_STATES = [
-    "andhra pradesh", "arunachal pradesh", "assam", "bihar", "chhattisgarh",
-    "delhi", "goa", "gujarat", "haryana", "himachal pradesh", "jharkhand",
-    "karnataka", "kerala", "madhya pradesh", "maharashtra", "manipur",
-    "meghalaya", "mizoram", "nagaland", "odisha", "punjab", "rajasthan",
-    "sikkim", "tamil nadu", "telangana", "tripura", "uttar pradesh",
-    "uttarakhand", "west bengal",
+    "andhra pradesh",
+    "arunachal pradesh",
+    "assam",
+    "bihar",
+    "chhattisgarh",
+    "delhi",
+    "goa",
+    "gujarat",
+    "haryana",
+    "himachal pradesh",
+    "jharkhand",
+    "karnataka",
+    "kerala",
+    "madhya pradesh",
+    "maharashtra",
+    "manipur",
+    "meghalaya",
+    "mizoram",
+    "nagaland",
+    "odisha",
+    "punjab",
+    "rajasthan",
+    "sikkim",
+    "tamil nadu",
+    "telangana",
+    "tripura",
+    "uttar pradesh",
+    "uttarakhand",
+    "west bengal",
 ]
 
 _STATE_ABBREVIATIONS = {
@@ -469,13 +500,31 @@ _STATE_ABBREVIATIONS = {
 
 # Research areas for WHERE clause extraction
 _RESEARCH_AREAS = [
-    "ai", "machine learning", "deep learning", "nlp",
-    "natural language processing", "computer vision", "robotics",
-    "quantum computing", "cybersecurity", "data science",
-    "bioinformatics", "biotechnology", "nanotechnology", "sustainable energy",
-    "climate", "climate science", "semiconductor", "vlsi", "drug discovery",
-    "healthcare ai", "smart manufacturing", "agriculture technology",
-    "catalysis", "iot", "blockchain",
+    "ai",
+    "machine learning",
+    "deep learning",
+    "nlp",
+    "natural language processing",
+    "computer vision",
+    "robotics",
+    "quantum computing",
+    "cybersecurity",
+    "data science",
+    "bioinformatics",
+    "biotechnology",
+    "nanotechnology",
+    "sustainable energy",
+    "climate",
+    "climate science",
+    "semiconductor",
+    "vlsi",
+    "drug discovery",
+    "healthcare ai",
+    "smart manufacturing",
+    "agriculture technology",
+    "catalysis",
+    "iot",
+    "blockchain",
 ]
 
 
@@ -496,6 +545,7 @@ class QueryContext:
     def update(self, query: str, tables: list[str]) -> None:
         """Update context after a successful query."""
         import re
+
         self.query_count += 1
         self.last_tables = tables
         self.last_query_topic = query
@@ -516,7 +566,9 @@ class QueryContext:
             parts.append(f"Previous query used tables: {', '.join(self.last_tables)}")
         if self.last_institutes:
             parts.append(f"Previous query referenced: {', '.join(self.last_institutes)}")
-        parts.append("Do NOT switch to different tables (e.g., student_strength, phd_students) unless user explicitly asks.")
+        parts.append(
+            "Do NOT switch to different tables (e.g., student_strength, phd_students) unless user explicitly asks."
+        )
         return " | ".join(parts)
 
 
@@ -533,6 +585,7 @@ class TextToSQLSkill:
         self._completeness_validator = QueryCompletenessValidator()
         self.extractor, self.sandbox = self._initialize_backend()
         self._sql_rewriter = TierAwareSqlRewriter()
+        self._last_safe_sql_result: SafeSQLBuildResult | None = None
 
     def _detect_database(self) -> tuple:
         """Detect database type from DATABASE_URL environment variable."""
@@ -752,12 +805,22 @@ FOLLOW-UP QUERIES:
         user_query: str,
         schema_prompt: str,
         conversation_context: str = "",
+        user_tier: int = 1,
     ) -> str:
         """
         Generate SQL from natural language using schema-only context.
 
         Returns SQL query string - data values never leave sandbox.
         """
+        self._last_safe_sql_result = None
+        safe_sql = build_safe_sql(user_query, user_tier=user_tier)
+        if safe_sql.status == "ready" and safe_sql.sql:
+            self._last_safe_sql_result = safe_sql
+            return safe_sql.sql
+        if safe_sql.status == "blocked":
+            self._last_safe_sql_result = safe_sql
+            raise PermissionError(safe_sql.blocked_reason or "Safe SQL request blocked")
+
         if not self.llm_provider:
             return self._fallback_sql(user_query)
 
@@ -825,7 +888,9 @@ FOLLOW-UP QUERIES:
                 if otel_span is not None:
                     otel_span.set_attribute("cache_hit", False)
                     otel_span.set_attribute("row_count", 0)
-                    otel_span.set_attribute("timeout_ms", int(os.getenv("LLM_TIMEOUT_MS", str(LLM_TIMEOUT_MS))))
+                    otel_span.set_attribute(
+                        "timeout_ms", int(os.getenv("LLM_TIMEOUT_MS", str(LLM_TIMEOUT_MS)))
+                    )
                 response = _chat_with_timeout(self.llm_provider, messages)
             sql: str = response.content.strip()
             sql = sql.strip("`").strip("sql").strip()
@@ -847,7 +912,13 @@ FOLLOW-UP QUERIES:
 
             latency_ms = round((time.monotonic() - sql_generation_start) * 1000, 3)
             if span:
-                span.update(metadata={"latency_ms": latency_ms, "sql_preview": sql[:200], "node": "text_to_sql"})
+                span.update(
+                    metadata={
+                        "latency_ms": latency_ms,
+                        "sql_preview": sql[:200],
+                        "node": "text_to_sql",
+                    }
+                )
             if trace:
                 trace.update(metadata={"node": "text_to_sql", "sql_preview": sql[:200]})
 
@@ -907,35 +978,112 @@ FOLLOW-UP QUERIES:
             for term in ("grant", "funding", "cut grants", "dropped", "doing more", "efficiency")
         ):
             return self._fallback_grant_patent_efficiency(query, query_lower)
-        elif ("year-over-year" in query_lower or "yoy growth" in query_lower) and ("course" in query_lower or "pg " in query_lower or "ug " in query_lower or "phd " in query_lower):
+        elif ("year-over-year" in query_lower or "yoy growth" in query_lower) and (
+            "course" in query_lower
+            or "pg " in query_lower
+            or "ug " in query_lower
+            or "phd " in query_lower
+        ):
             return self._fallback_academic_courses(query, query_lower)
         elif self._is_rising_star_query(query_lower):
             return self._fallback_innovation_grants(query, query_lower)
-        elif "year-over-year" in query_lower or "yoy growth" in query_lower or "rising star" in query_lower or "growing funding" in query_lower or "funding drop" in query_lower or "unique funding" in query_lower or "government grant" in query_lower or "govt grant" in query_lower or "funding agency" in query_lower:
+        elif (
+            "year-over-year" in query_lower
+            or "yoy growth" in query_lower
+            or "rising star" in query_lower
+            or "growing funding" in query_lower
+            or "funding drop" in query_lower
+            or "unique funding" in query_lower
+            or "government grant" in query_lower
+            or "govt grant" in query_lower
+            or "funding agency" in query_lower
+        ):
             return self._fallback_innovation_grants(query, query_lower)
-        elif any(term in query_lower for term in ["gap analysis", "high capital", "capital expense"]):
+        elif any(
+            term in query_lower for term in ["gap analysis", "high capital", "capital expense"]
+        ):
             return self._fallback_capex(query, query_lower)
-        elif any(term in query_lower for term in ["utilization audit", "operational expense", "high expend", "low expend"]):
+        elif any(
+            term in query_lower
+            for term in ["utilization audit", "operational expense", "high expend", "low expend"]
+        ):
             return self._fallback_opex(query, query_lower)
         elif any(term in query_lower for term in ["capital asset", "capital equipment", "capex"]):
             return self._fallback_capex(query, query_lower)
-        elif any(term in query_lower for term in ["trl", "technology readiness", "lab validation", "market ready", "stage_of_technology", "bottleneck", "pipeline progression", "low trl", "high trl"]):
+        elif any(
+            term in query_lower
+            for term in [
+                "trl",
+                "technology readiness",
+                "lab validation",
+                "market ready",
+                "stage_of_technology",
+                "bottleneck",
+                "pipeline progression",
+                "low trl",
+                "high trl",
+            ]
+        ):
             return self._fallback_trl(query, query_lower)
         elif any(term in query_lower for term in ["patent", "ipo", "ip ", "inventor"]):
             return self._fallback_patents(query, query_lower)
-        elif any(term in query_lower for term in ["startup", "incubat", "incubated"]) and "correlation" not in query_lower:
+        elif (
+            any(term in query_lower for term in ["startup", "incubat", "incubated"])
+            and "correlation" not in query_lower
+        ):
             return self._fallback_incubation(query, query_lower)
-        elif any(term in query_lower for term in ["pg ", "ug ", "undergraduate", "phd ", "course", "curriculum", "credit", "growth trend", "yoy", "year-over-year", "correlation", "strategy shift", "case when"]):
+        elif any(
+            term in query_lower
+            for term in [
+                "pg ",
+                "ug ",
+                "undergraduate",
+                "phd ",
+                "course",
+                "curriculum",
+                "credit",
+                "growth trend",
+                "yoy",
+                "year-over-year",
+                "correlation",
+                "strategy shift",
+                "case when",
+            ]
+        ):
             return self._fallback_academic_courses(query, query_lower)
         elif any(term in query_lower for term in ["grant", "funding", "budget"]):
             return self._fallback_innovation_grants(query, query_lower)
-        elif any(term in query_lower for term in ["project", "co-pi", "co pi", "principal investigator", "ongoing", "completed"]):
+        elif any(
+            term in query_lower
+            for term in [
+                "project",
+                "co-pi",
+                "co pi",
+                "principal investigator",
+                "ongoing",
+                "completed",
+            ]
+        ):
             table = "projects"
-        elif any(term in query_lower for term in ["collaboration", "collaborator", "partner", "network", "cross-institutional"]):
+        elif any(
+            term in query_lower
+            for term in [
+                "collaboration",
+                "collaborator",
+                "partner",
+                "network",
+                "cross-institutional",
+            ]
+        ):
             table = "collaborations"
         elif "research document" in query_lower or "document" in query_lower:
             table = "research_documents"
-        elif "researcher" in query_lower or "faculty" in query_lower or "scientist" in query_lower or "expert" in query_lower:
+        elif (
+            "researcher" in query_lower
+            or "faculty" in query_lower
+            or "scientist" in query_lower
+            or "expert" in query_lower
+        ):
             table = "researchers"
         elif "lab" in query_lower or "laboratory" in query_lower:
             table = "labs"
@@ -969,7 +1117,9 @@ FOLLOW-UP QUERIES:
                 search_terms.add(lowered)
                 search_terms.update(term for term in lowered.split() if len(term) > 2)
             area_column = "research_focus_areas" if table == "labs" else "research_area"
-            area_conditions = [f"LOWER({area_column}) LIKE '%{term}%'" for term in sorted(search_terms)]
+            area_conditions = [
+                f"LOWER({area_column}) LIKE '%{term}%'" for term in sorted(search_terms)
+            ]
             if area_conditions:
                 area_condition = "(" + " OR ".join(area_conditions) + ")"
 
@@ -985,7 +1135,9 @@ FOLLOW-UP QUERIES:
                     for term in sorted(search_terms)
                 ]
             else:
-                area_conditions = [f"LOWER(research_area) LIKE '%{term}%'" for term in sorted(search_terms)]
+                area_conditions = [
+                    f"LOWER(research_area) LIKE '%{term}%'" for term in sorted(search_terms)
+                ]
             if area_conditions:
                 area_condition = "(" + " OR ".join(area_conditions) + ")"
 
@@ -997,7 +1149,7 @@ FOLLOW-UP QUERIES:
             if area_condition:
                 conditions.append(area_condition)
 
-        year_match = re.search(r'\b(19|20)\d{2}\b', query)
+        year_match = re.search(r"\b(19|20)\d{2}\b", query)
         if year_match:
             year = year_match.group()
             if table == "researchers":
@@ -1054,14 +1206,32 @@ FOLLOW-UP QUERIES:
 
     def _is_rising_star_query(self, query_lower: str) -> bool:
         """Detect institute growth compared with national/average decline."""
-        has_average_context = any(term in query_lower for term in ("average", "benchmark", "national"))
+        has_average_context = any(
+            term in query_lower for term in ("average", "benchmark", "national")
+        )
         has_growth_context = any(
             term in query_lower
-            for term in ("rising", "rising star", "grew", "growth", "growing", "positive", "beat", "above average", "leaders")
+            for term in (
+                "rising",
+                "rising star",
+                "grew",
+                "growth",
+                "growing",
+                "positive",
+                "beat",
+                "above average",
+                "leaders",
+            )
         )
-        has_decline_context = any(term in query_lower for term in ("declin", "falling", "down", "gira", "गिर"))
+        has_decline_context = any(
+            term in query_lower for term in ("declin", "falling", "down", "gira", "गिर")
+        )
         has_grant_context = any(term in query_lower for term in ("funding", "grant", "institute"))
-        return has_grant_context and has_average_context and (has_growth_context or has_decline_context)
+        return (
+            has_grant_context
+            and has_average_context
+            and (has_growth_context or has_decline_context)
+        )
 
     def _fallback_academic_courses(self, query: str, query_lower: str) -> str:
         """Generate SQL for academic_courses_details queries."""
@@ -1073,7 +1243,9 @@ FOLLOW-UP QUERIES:
             if institute:
                 institute_filter = f"institute LIKE '%{institute}%'"
                 conditions.append(institute_filter)
-        elif ("compare" in query_lower or "their" in query_lower or "how does" in query_lower) and "ug" in query_lower:
+        elif (
+            "compare" in query_lower or "their" in query_lower or "how does" in query_lower
+        ) and "ug" in query_lower:
             conditions.append("institute LIKE '%IIT Hyderabad%'")
             conditions.append("level_of_course = 'UG'")
             where_clause = " AND ".join(conditions)
@@ -1090,23 +1262,21 @@ FOLLOW-UP QUERIES:
         elif "phd" in query_lower or "doctoral" in query_lower:
             conditions.append("level_of_course = 'PhD'")
 
-        fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
+        fy_match = re.search(r"(FY\s*)?(\d{4})-(\d{2})", query, re.IGNORECASE)
         if fy_match:
             fy_val = f"{fy_match.group(2)}-{fy_match.group(3)}"
             conditions.append(f"financial_year = '{fy_val}'")
 
-        year_range = re.search(r'FY\s*(\d{4})-(\d{2})', query)
+        year_range = re.search(r"FY\s*(\d{4})-(\d{2})", query)
         if year_range and ("last 3 year" in query_lower or "last three year" in query_lower):
             start_yr = int(year_range.group(1))
             end_suffix_int = int(year_range.group(2))
             next_suffix = f"{end_suffix_int + 1:02d}" if end_suffix_int < 99 else "00"
             conditions.append(
                 f"financial_year IN ('{start_yr}-{year_range.group(2)}', "
-                f"'{start_yr+1}-{next_suffix}', "
-                f"'{start_yr+2}-{(end_suffix_int + 2) % 100:02d}')"
+                f"'{start_yr + 1}-{next_suffix}', "
+                f"'{start_yr + 2}-{(end_suffix_int + 2) % 100:02d}')"
             )
-
-
 
         if "credit" in query_lower and (
             "most intensive" in query_lower
@@ -1151,8 +1321,12 @@ FOLLOW-UP QUERIES:
                 )
 
         if "ratio" in query_lower and "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
-            inst_filter = f"institute LIKE '%{institute_match.group()}%'" if institute_match else "institute IS NOT NULL"
+            institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
+            inst_filter = (
+                f"institute LIKE '%{institute_match.group()}%'"
+                if institute_match
+                else "institute IS NOT NULL"
+            )
             return (
                 f"WITH CourseLevels AS ("
                 f"SELECT institute, level_of_course, COUNT(*) as cnt "
@@ -1166,7 +1340,9 @@ FOLLOW-UP QUERIES:
                 f"FROM CourseLevels GROUP BY institute;"
             )
 
-        if "strategy shift" in query_lower or ("case when" in query_lower and "ug" in query_lower and "phd" in query_lower):
+        if "strategy shift" in query_lower or (
+            "case when" in query_lower and "ug" in query_lower and "phd" in query_lower
+        ):
             inst_cond = institute_filter if institute_filter else "institute IS NOT NULL"
             return (
                 f"WITH YearlyLevels AS ("
@@ -1179,7 +1355,9 @@ FOLLOW-UP QUERIES:
                 f"FROM YearlyLevels GROUP BY financial_year ORDER BY financial_year DESC;"
             )
 
-        if "correlation" in query_lower or ("vs" in query_lower and ("startup" in query_lower or "incubat" in query_lower)):
+        if "correlation" in query_lower or (
+            "vs" in query_lower and ("startup" in query_lower or "incubat" in query_lower)
+        ):
             return (
                 "WITH CourseData AS (SELECT institute, COUNT(*) as course_count "
                 "FROM academic_courses_details GROUP BY institute), "
@@ -1231,12 +1409,16 @@ FOLLOW-UP QUERIES:
             if institute:
                 conditions.append(f"institute LIKE '%{institute}%'")
 
-        fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
+        fy_match = re.search(r"(FY\s*)?(\d{4})-(\d{2})", query, re.IGNORECASE)
         if fy_match:
             fy_val = f"{fy_match.group(2)}-{fy_match.group(3)}"
             conditions.append(f"year_of_receiving = '{fy_val}'")
 
-        if "rising star" in query_lower or "growing funding" in query_lower or self._is_rising_star_query(query_lower):
+        if (
+            "rising star" in query_lower
+            or "growing funding" in query_lower
+            or self._is_rising_star_query(query_lower)
+        ):
             return (
                 "WITH InstFunding AS (SELECT institute, year_of_receiving, SUM(grant_received) as total "
                 "FROM innovation_grant_from_govt GROUP BY institute, year_of_receiving), "
@@ -1247,7 +1429,12 @@ FOLLOW-UP QUERIES:
                 "WHERE i.total > a.avg_total ORDER BY i.total DESC LIMIT 20;"
             )
 
-        if "drop" in query_lower or "declin" in query_lower or "year-over-year" in query_lower or "yoy" in query_lower:
+        if (
+            "drop" in query_lower
+            or "declin" in query_lower
+            or "year-over-year" in query_lower
+            or "yoy" in query_lower
+        ):
             return (
                 "WITH YearlyGrants AS (SELECT institute, year_of_receiving, SUM(grant_received) as total_grant "
                 "FROM innovation_grant_from_govt GROUP BY institute, year_of_receiving), "
@@ -1283,7 +1470,7 @@ FOLLOW-UP QUERIES:
         conditions = []
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
+            institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
             if institute_match:
                 conditions.append(f"institute LIKE '%{institute_match.group()}%'")
 
@@ -1319,7 +1506,7 @@ FOLLOW-UP QUERIES:
         elif "level 4" in query_lower or "lab validation" in query_lower:
             conditions.append("stage_of_technology = 'Level 4'")
         elif "level" in query_lower:
-            level_match = re.search(r'level\s*(\d+)', query_lower)
+            level_match = re.search(r"level\s*(\d+)", query_lower)
             if level_match:
                 lvl = level_match.group(1)
                 conditions.append(f"stage_of_technology = 'Level {lvl}'")
@@ -1342,7 +1529,11 @@ FOLLOW-UP QUERIES:
                 "GROUP BY stage_of_technology ORDER BY cnt DESC;"
             )
 
-        if "pipeline progression" in query_lower or "moving from low trl" in query_lower or "moving to high trl" in query_lower:
+        if (
+            "pipeline progression" in query_lower
+            or "moving from low trl" in query_lower
+            or "moving to high trl" in query_lower
+        ):
             return (
                 "SELECT financial_year, stage_of_technology, COUNT(*) as count "
                 "FROM trl_stages "
@@ -1369,12 +1560,16 @@ FOLLOW-UP QUERIES:
             or "grant received per patent" in query_lower
             or "per granted patent" in query_lower
         ):
-            high_grant_filter = "HAVING SUM(grant_received) > 100000000 " if (
-                "10cr" in query_lower
-                or "10 cr" in query_lower
-                or "10 crore" in query_lower
-                or "10cr" in query_lower.replace("₹", "")
-            ) else ""
+            high_grant_filter = (
+                "HAVING SUM(grant_received) > 100000000 "
+                if (
+                    "10cr" in query_lower
+                    or "10 cr" in query_lower
+                    or "10 crore" in query_lower
+                    or "10cr" in query_lower.replace("₹", "")
+                )
+                else ""
+            )
             return (
                 "WITH GrantData AS (SELECT institute, SUM(grant_received) as total_grant "
                 "FROM innovation_grant_from_govt GROUP BY institute "
@@ -1440,7 +1635,7 @@ FOLLOW-UP QUERIES:
         conditions = []
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
+            institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
             if institute_match:
                 conditions.append(f"institute LIKE '%{institute_match.group()}%'")
 
@@ -1454,20 +1649,29 @@ FOLLOW-UP QUERIES:
         conditions = []
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
+            institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
             if institute_match:
                 conditions.append(f"institute LIKE '%{institute_match.group()}%'")
 
-        fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
+        fy_match = re.search(r"(FY\s*)?(\d{4})-(\d{2})", query, re.IGNORECASE)
         if fy_match:
             fy_val = f"{fy_match.group(2)}-{fy_match.group(3)}"
             conditions.append(f"financial_year = '{fy_val}'")
 
-        if "gap analysis" in query_lower or ("high capital" in query_lower and ("low course" in query_lower or "low innovation" in query_lower)):
-            fy_match = re.search(r'(FY\s*)?(\d{4})-(\d{2})', query, re.IGNORECASE)
-            gap_fy_val: str | None = f"{fy_match.group(2)}-{fy_match.group(3)}" if fy_match else None
-            capex_fy = f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
-            course_fy = f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
+        if "gap analysis" in query_lower or (
+            "high capital" in query_lower
+            and ("low course" in query_lower or "low innovation" in query_lower)
+        ):
+            fy_match = re.search(r"(FY\s*)?(\d{4})-(\d{2})", query, re.IGNORECASE)
+            gap_fy_val: str | None = (
+                f"{fy_match.group(2)}-{fy_match.group(3)}" if fy_match else None
+            )
+            capex_fy = (
+                f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
+            )
+            course_fy = (
+                f"financial_year = '{gap_fy_val}'" if gap_fy_val else "financial_year IS NOT NULL"
+            )
             return (
                 f"WITH CapexData AS (SELECT institute, SUM(capital_assets) as total_capex "
                 f"FROM financial_expenses_capital WHERE {capex_fy} GROUP BY institute), "
@@ -1489,11 +1693,13 @@ FOLLOW-UP QUERIES:
         conditions = []
 
         if "iit" in query_lower:
-            institute_match = re.search(r'IIT\s+\w+', query, re.IGNORECASE)
+            institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
             if institute_match:
                 conditions.append(f"institute LIKE '%{institute_match.group()}%'")
 
-        if "utilization audit" in query_lower or ("high grant" in query_lower and "low expend" in query_lower):
+        if "utilization audit" in query_lower or (
+            "high grant" in query_lower and "low expend" in query_lower
+        ):
             return (
                 "SELECT g.institute, SUM(g.grant_received) as total_grant, "
                 "(SELECT COALESCE(SUM(salaries + maintenance + seminars), 0) "
@@ -1512,7 +1718,9 @@ FOLLOW-UP QUERIES:
             return f"SELECT * FROM financial_expenses_operational WHERE {where_clause} LIMIT 100;"
         return "SELECT * FROM financial_expenses_operational LIMIT 100;"
 
-    def execute(self, user_query: str, user_tier: int = 1, user_id: str = "unknown") -> Dict[str, Any]:
+    def execute(
+        self, user_query: str, user_tier: int = 1, user_id: str = "unknown"
+    ) -> Dict[str, Any]:
         """
         Execute text-to-sql skill with self-correction loop.
 
@@ -1546,10 +1754,17 @@ FOLLOW-UP QUERIES:
                 else:
                     retry_context = conversation_context
 
-                sql = self.generate_sql(user_query, schema_prompt, retry_context)
+                sql = self.generate_sql(
+                    user_query,
+                    schema_prompt,
+                    retry_context,
+                    user_tier=user_tier,
+                )
 
                 with _text_to_sql_span("validation") as validation_span:
-                    is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                    is_complete, issues = self._completeness_validator.validate(
+                        sql, user_query=user_query
+                    )
                     if validation_span is not None:
                         validation_span.set_attribute("cache_hit", False)
                         validation_span.set_attribute("row_count", 0)
@@ -1562,9 +1777,16 @@ FOLLOW-UP QUERIES:
                             f"[RETRY — previous query was incomplete: {'; '.join(issues)}]\n"
                             f"Previous query: {sql}"
                         )
-                        sql = self.generate_sql(user_query, schema_prompt, retry_context)
+                        sql = self.generate_sql(
+                            user_query,
+                            schema_prompt,
+                            retry_context,
+                            user_tier=user_tier,
+                        )
                         with _text_to_sql_span("validation") as validation_span:
-                            is_complete, issues = self._completeness_validator.validate(sql, user_query=user_query)
+                            is_complete, issues = self._completeness_validator.validate(
+                                sql, user_query=user_query
+                            )
                             if validation_span is not None:
                                 validation_span.set_attribute("cache_hit", False)
                                 validation_span.set_attribute("row_count", 0)
@@ -1585,6 +1807,7 @@ FOLLOW-UP QUERIES:
 
                 if not validate_sql_query(sql, user_id=user_id):
                     from src.security.query_allowlist import get_sql_allowlist
+
                     logs = get_sql_allowlist().get_blocked_logs(limit=1)
                     reason = logs[-1]["reason"] if logs else "Query blocked by allowlist"
                     raise PermissionError(f"SQL query blocked: {reason}")
@@ -1595,7 +1818,9 @@ FOLLOW-UP QUERIES:
                     result = self.sandbox.execute_readonly(sql, user_tier)
                     if execution_span is not None:
                         execution_span.set_attribute("cache_hit", False)
-                        execution_span.set_attribute("row_count", int(result.get("row_count", 0) or 0))
+                        execution_span.set_attribute(
+                            "row_count", int(result.get("row_count", 0) or 0)
+                        )
                 semantic_anomaly = detect_semantic_anomaly(user_query, sql, result)
                 if semantic_anomaly["detected"]:
                     warnings = list(result.get("warnings") or [])
@@ -1629,13 +1854,29 @@ FOLLOW-UP QUERIES:
                         logger.warning("Audit log for SQL anomaly failed", exc_info=True)
                 else:
                     result.setdefault("answer_confidence", semantic_anomaly["answer_confidence"])
-                    result.setdefault("answer_confidence_score", semantic_anomaly["confidence_score"])
+                    result.setdefault(
+                        "answer_confidence_score", semantic_anomaly["confidence_score"]
+                    )
                     result.setdefault("sql_anomaly_report", semantic_anomaly["report"])
                 break
 
             except Exception as e:
                 last_error = str(e)
                 logger.warning(f"Text-to-SQL attempt {attempts} failed: {e}")
+                if (
+                    self._last_safe_sql_result is not None
+                    and self._last_safe_sql_result.status == "blocked"
+                ):
+                    result = {
+                        "query": "",
+                        "columns": [],
+                        "results": [],
+                        "row_count": 0,
+                        "error": str(e),
+                        "answer_confidence": "low_clarify",
+                        "answer_confidence_score": 0.05,
+                    }
+                    break
                 if attempts >= MAX_CORRECTION_ATTEMPTS:
                     result = {
                         "query": sql or "",
@@ -1657,6 +1898,9 @@ FOLLOW-UP QUERIES:
         result["audit_logged"] = True
         result["query_complete"] = is_complete if "is_complete" in dir() else True
         result["self_correction_attempts"] = max(0, attempts - 1)
+        if self._last_safe_sql_result is not None:
+            result["safe_sql_builder_used"] = self._last_safe_sql_result.status == "ready"
+            result["safe_sql_plan"] = self._last_safe_sql_result.to_dict()
         if "is_complete" in dir() and issues:
             result["completeness_warnings"] = issues
 
