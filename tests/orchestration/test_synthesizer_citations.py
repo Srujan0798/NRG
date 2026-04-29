@@ -57,3 +57,43 @@ def test_system_prompt_requires_tier_voice_four_part_structure_and_numeric_citat
     assert "why it matters to the user's tier" in prompt
     assert "Every sentence containing a number MUST include" in prompt
     assert "active_domain=publications" in prompt
+
+
+def test_hybrid_fallback_combines_structured_and_document_evidence(monkeypatch):
+    monkeypatch.delenv("CLOUD_SYNTHESIS_ALLOWED", raising=False)
+    monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
+
+    result = synthesizer_module.synthesizer_node(
+        {
+            "user_query": "Find top funding agencies and explain the policy pattern",
+            "sql_results": [
+                {
+                    "gov_organisation_name": "MeitY",
+                    "total_grant": 47338100000,
+                }
+            ],
+            "retrieved_chunks": [
+                {
+                    "publication_id": "DOC-FUNDING-1",
+                    "chunk_id": "ch_0",
+                    "title": "Funding policy note",
+                    "content": "Digital technology programmes concentrate grants around mission-mode agencies.",
+                }
+            ],
+            "user_tier": 2,
+            "conversation_history": [],
+            "intent": "hybrid",
+            "routing_decision": "text_to_sql+rag",
+        }
+    )
+
+    text = result["synthesized_response"]
+    assert "Hybrid Evidence Answer" in text
+    assert "Structured finding" in text
+    assert "Document context" in text
+    assert "Combined answer" in text
+    assert "[cite:structured:0]" in text
+    assert "[cite:DOC-FUNDING-1:ch_0]" in text
+    assert result["provenance"]["synth"] == "rule_based_hybrid"
+    assert result["provenance"]["hybrid_evidence"] == {"sql_rows": 1, "document_chunks": 1}

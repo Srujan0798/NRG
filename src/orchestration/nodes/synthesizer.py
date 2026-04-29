@@ -732,6 +732,43 @@ def _synthesize(
         except Exception as e:
             logger.warning(f"Local LLM failed: {e}")
 
+    if _is_hybrid_evidence(sql_results, chunks, routing_decision):
+        logger.info("Using rule-based hybrid synthesis after cloud and local LLM failures")
+        response = _fallback_hybrid_synthesis(
+            query,
+            sql_results,
+            chunks,
+            context_summary,
+            intent,
+            routing_decision,
+            user_tier,
+            warning="Cloud LLM mesh and local llama.cpp both failed. Using deterministic hybrid synthesis.",
+        )
+        try:
+            log_llm_call(
+                "synthesizer",
+                query,
+                {
+                    "response": response[:500] if response else "",
+                    "mode": "rule_based_hybrid",
+                    "evidence_counts": {
+                        "sql_rows": len(sql_results),
+                        "document_chunks": len(chunks),
+                    },
+                },
+                "rule-based-hybrid",
+            )
+        except Exception:
+            logger.warning("Audit log_llm_call failed for hybrid synthesis", exc_info=True)
+        return response, {
+            "synth": "rule_based_hybrid",
+            "cloud_synthesis_used": False,
+            "hybrid_evidence": {
+                "sql_rows": len(sql_results),
+                "document_chunks": len(chunks),
+            },
+        }
+
     logger.info("Using rule-based synthesis after cloud and local LLM failures")
     response = _fallback_synthesis(query, sql_results, chunks, context_summary, intent, routing_decision, user_tier,
         warning="Cloud LLM mesh and local llama.cpp both failed. Using rule-based template synthesis.",
@@ -756,6 +793,12 @@ def _is_sql_only_fast_path(sql_results: list, chunks: list, routing_decision: st
     if chunks:
         return False
     return routing_decision in ("", "text_to_sql", "sql")
+
+
+def _is_hybrid_evidence(sql_results: list, chunks: list, routing_decision: str = "") -> bool:
+    if not sql_results or not chunks:
+        return False
+    return routing_decision in ("", "text_to_sql+rag", "sql+rag", "hybrid")
 
 
 def _build_context_summary(conversation_history: list) -> str:
@@ -1089,6 +1132,110 @@ def _fallback_synthesis(
     lines.append("─" * 60)
 
     return "\n".join(lines)
+
+
+def _fallback_hybrid_synthesis(
+    query: str,
+    sql_results: list,
+    chunks: list,
+    context_summary: str,
+    intent: str = "",
+    routing_decision: str = "",
+    user_tier: int = 1,
+    warning: str = "",
+) -> str:
+    """Deterministic answer for hybrid evidence when model synthesis is unavailable."""
+    safe_sql = _minimise_sql_results(sql_results)
+    safe_chunks = _minimise_chunks(chunks)
+    structured_finding = _hybrid_structured_finding(safe_sql)
+    document_context = _hybrid_document_context(safe_chunks)
+    document_citation = _citation_for_chunk(chunks[0], 0) if chunks else "[cite:structured:0]"
+
+    lines = []
+    lines.append("═" * 60)
+    lines.append("  NATIONAL RESEARCH GRAPH - Hybrid Evidence Answer")
+    lines.append("═" * 60)
+    lines.append("")
+    lines.append(f"Query: {query}")
+    lines.append("")
+
+    if warning:
+        lines.append("Model synthesis note:")
+        lines.append(f"- {warning}")
+        lines.append("")
+
+    if intent or routing_decision:
+        lines.append("Query Classification")
+        if intent:
+            lines.append(f"- Intent: {intent}")
+        if routing_decision:
+            lines.append(f"- Routed to: {routing_decision}")
+        lines.append("")
+
+    lines.append("Structured finding")
+    lines.append(f"- {structured_finding} [cite:structured:0]")
+    lines.append("")
+    lines.append("Document context")
+    lines.append(f"- {document_context} {document_citation}")
+    lines.append("")
+    lines.append("Combined answer")
+    lines.append(
+        "- The structured data gives the measurable finding, while the retrieved document "
+        f"context explains the surrounding pattern for a tier {user_tier} user "
+        f"[cite:structured:0] {document_citation}"
+    )
+    lines.append("")
+    lines.append("Evidence used")
+    lines.append(f"- Structured rows: {len(sql_results)} [cite:structured:0]")
+    lines.append(f"- Document excerpts: {len(chunks)} {document_citation}")
+
+    if context_summary:
+        lines.append("")
+        lines.append("Session context")
+        lines.append(f"- {context_summary}")
+
+    lines.append("")
+    lines.append("Caveat")
+    lines.append(
+        "- This answer is deterministic and only uses retrieved SQL rows plus retrieved "
+        "document excerpts; it does not infer beyond the supplied evidence "
+        f"[cite:structured:0] {document_citation}"
+    )
+
+    return "\n".join(lines)
+
+
+def _hybrid_structured_finding(safe_sql_results: list) -> str:
+    if not safe_sql_results:
+        return "No structured rows were available"
+    first = safe_sql_results[0]
+    if not isinstance(first, dict):
+        return str(first)[:220]
+    readable = [
+        f"{key}: {value}"
+        for key, value in first.items()
+        if value not in (None, "")
+    ]
+    if not readable:
+        return "Structured retrieval returned rows, but no displayable fields"
+    return "; ".join(readable[:4])
+
+
+def _hybrid_document_context(safe_chunks: list) -> str:
+    if not safe_chunks:
+        return "No document excerpt was available"
+    first = safe_chunks[0]
+    if not isinstance(first, dict):
+        return str(first)[:260]
+    title = first.get("title")
+    excerpt = first.get("excerpt") or ""
+    if title and excerpt:
+        return f"{title}: {excerpt[:260]}"
+    if excerpt:
+        return excerpt[:260]
+    if title:
+        return str(title)[:260]
+    return "Retrieved document evidence is present but has no displayable excerpt"
 
 
 def _is_researcher_results(sql_results: list) -> bool:

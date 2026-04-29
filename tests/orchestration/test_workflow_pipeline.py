@@ -80,10 +80,12 @@ def test_workflow_runs_full_orchestration_pipeline(monkeypatch):
     chunk = result["retrieved_chunks"][0]
     assert chunk["chunk_text"] == "Robotics research in Gujarat is growing rapidly."
     assert result["provenance"] == {
-        "synth": "rule_based",
+        "synth": "rule_based_hybrid",
         "cloud_synthesis_used": False,
+        "hybrid_evidence": {"sql_rows": 1, "document_chunks": 1},
     }
-    assert "Fallback" in result["synthesized_response"] or "Structured summary" in result["synthesized_response"] or "synthesized" in result["synthesized_response"].lower()
+    assert "Hybrid Evidence Answer" in result["synthesized_response"]
+    assert "Combined answer" in result["synthesized_response"]
     assert result["conversation_history"] == [
         {
             "query": "Synthesize robotics researchers and trends in Gujarat",
