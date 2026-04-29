@@ -10,6 +10,7 @@ from pathlib import Path
 @dataclass
 class QueryDAGNode:
     """Single node in a multi-hop query DAG."""
+
     id: str
     subquery: str
     skill: str  # "sql" | "rag" | "hybrid"
@@ -25,6 +26,7 @@ class QueryDAGNode:
 @dataclass
 class QueryDAG:
     """Directed Acyclic Graph for multi-hop query decomposition."""
+
     nodes: list[QueryDAGNode] = field(default_factory=list)
     root_id: str = ""  # ID of the entry node
 
@@ -58,6 +60,10 @@ class NRGState:
     routing_confidence: float = 0.0
     routing_rationale: list = field(default_factory=list)
     context_summary: Optional[str] = None
+    catalog_route: str = ""
+    catalog_confidence: float = 0.0
+    catalog_matches: list[str] = field(default_factory=list)
+    matched_domains: list[str] = field(default_factory=list)
 
     sql_query: Optional[str] = None
     sql_results: list = field(default_factory=list)
@@ -95,7 +101,9 @@ class NRGState:
     last_primary_entity: str = ""  # institute/entity carried into follow-up turns
     previous_domain: str = ""  # tracks domain switches for cross-domain detection
     domain_switch_detected: bool = False  # True if current query switches domain
-    complexity: str = "moderate"  # LLM cost complexity: trivial/simple/moderate/complex/synthesis_heavy
+    complexity: str = (
+        "moderate"  # LLM cost complexity: trivial/simple/moderate/complex/synthesis_heavy
+    )
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 

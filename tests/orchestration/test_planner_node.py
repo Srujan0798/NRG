@@ -43,3 +43,19 @@ def test_planner_node_falls_back_when_no_llm(monkeypatch):
     assert result["plan"] is not None
     assert "subqueries" in result["plan"]
     assert result["planner_metadata"]["mode"] == "heuristic_fallback"
+
+
+def test_planner_fallback_uses_catalog_for_funding_tables(monkeypatch):
+    import src.orchestration.nodes.planner as planner_module
+
+    monkeypatch.setattr(planner_module, "get_llm_client", lambda: None)
+
+    result = planner_module.planner_node(
+        {"user_query": "Top 5 funding agencies by total grant amount"}
+    )
+
+    assert "innovation_grant_from_govt" in result["plan"]["schema_tables"]
+    assert result["plan"]["desired_skills"] == ["sql"]
+    assert result["plan"]["expected_output_shape"] == "ranked_table"
+    assert result["planner_metadata"]["catalog"]["route"] == "text_to_sql"
+    assert "funding" in result["planner_metadata"]["catalog"]["matched_domains"]

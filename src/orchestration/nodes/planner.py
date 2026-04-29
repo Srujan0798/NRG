@@ -14,6 +14,7 @@ from pydantic import BaseModel, Field, ValidationError
 from src.audit import log_llm_call, log_plan
 from src.config.llm_config import get_llm_client
 from src.observability.langfuse_tracer import trace_llm_call
+from src.orchestration.query_catalog import QueryClassification, classify_query, get_catalog
 from src.security.egress.schema_allowlist_loader import get_allowlist
 from src.skills.text_to_sql.sqlite_schema_extractor import SQLiteSchemaExtractor
 
@@ -66,7 +67,17 @@ SKILL_KEYWORDS = {
         "yoy",
         "year-over-year",
     ],
-    "rag": ["explain", "describe", "trend", "advance", "overview", "analysis", "summarize", "what are", "latest"],
+    "rag": [
+        "explain",
+        "describe",
+        "trend",
+        "advance",
+        "overview",
+        "analysis",
+        "summarize",
+        "what are",
+        "latest",
+    ],
 }
 
 TABLE_TO_DOMAIN = {
@@ -103,8 +114,14 @@ def _detect_domain_from_tables(tables: list[str]) -> str:
     if not tables:
         return "unspecified"
     domain_counts: dict[str, int] = {}
+    catalog = get_catalog()
     for table in tables:
-        domain = TABLE_TO_DOMAIN.get(table.lower(), "other")
+        catalog_table = catalog.get_table(table)
+        domain = (
+            catalog_table.domain
+            if catalog_table is not None
+            else TABLE_TO_DOMAIN.get(table.lower(), "other")
+        )
         if domain != "other":
             domain_counts[domain] = domain_counts.get(domain, 0) + 1
     if not domain_counts:
@@ -120,7 +137,9 @@ def _default_assumptions(query: str) -> list[str]:
             "Interpreted ranking as an evidence-backed composite of output, recency, funding, and impact where available."
         )
     if not re.search(r"\b(20\d{2}|last\s+\d+\s+years?|all-time|all time|between)\b", lowered):
-        assumptions.append("Used recent five-year context unless the query or data path specified another range.")
+        assumptions.append(
+            "Used recent five-year context unless the query or data path specified another range."
+        )
     return assumptions
 
 
@@ -147,6 +166,10 @@ def planner_node(state: Any) -> dict:
         last_primary_entity=_state_get(state, "last_primary_entity", ""),
         last_query_type=_state_get(state, "last_query_type", ""),
     )
+    catalog_classification = classify_query(
+        planning_query,
+        user_tier=_state_get(state, "user_tier", 1) or 1,
+    )
 
     client = _get_planner_client()
     schema_prompt = (
@@ -158,9 +181,7 @@ def planner_node(state: Any) -> dict:
     if client is not None:
         system_prompt = _load_prompt()
         user_prompt = (
-            f"{schema_prompt}\n\n"
-            f"User Query: {planning_query}\n\n"
-            "Return the strict JSON plan only."
+            f"{schema_prompt}\n\nUser Query: {planning_query}\n\nReturn the strict JSON plan only."
         )
 
         try:
@@ -180,15 +201,16 @@ def planner_node(state: Any) -> dict:
 
             return {
                 "plan": plan_dict,
-                    "planner_metadata": {
-                        "mode": "llm",
-                        "model": _client_model_name(client),
-                    },
-                    "assumptions": _default_assumptions(planning_query),
-                    "interpreted_question": planning_query,
-                    **_domain_update(plan_dict, previous_domain),
-                    **_context_update(plan_dict, state, planning_query),
-                }
+                "planner_metadata": {
+                    "mode": "llm",
+                    "model": _client_model_name(client),
+                    "catalog": catalog_classification.to_dict(),
+                },
+                "assumptions": _default_assumptions(planning_query),
+                "interpreted_question": planning_query,
+                **_domain_update(plan_dict, previous_domain),
+                **_context_update(plan_dict, state, planning_query),
+            }
         except Exception as first_error:
             logger.warning("Planner failed first parse/call: %s", first_error)
             try:
@@ -205,19 +227,24 @@ def planner_node(state: Any) -> dict:
                     pass
                 return {
                     "plan": plan_dict,
-                        "planner_metadata": {
-                            "mode": "llm_repaired",
-                            "model": _client_model_name(client),
-                        },
-                        "assumptions": _default_assumptions(planning_query),
-                        "interpreted_question": planning_query,
-                        **_domain_update(plan_dict, previous_domain),
-                        **_context_update(plan_dict, state, planning_query),
-                    }
+                    "planner_metadata": {
+                        "mode": "llm_repaired",
+                        "model": _client_model_name(client),
+                        "catalog": catalog_classification.to_dict(),
+                    },
+                    "assumptions": _default_assumptions(planning_query),
+                    "interpreted_question": planning_query,
+                    **_domain_update(plan_dict, previous_domain),
+                    **_context_update(plan_dict, state, planning_query),
+                }
             except Exception:
                 pass
 
-    fallback_plan = _heuristic_decompose(planning_query, schema_prompt)
+    fallback_plan = _heuristic_decompose(
+        planning_query,
+        schema_prompt,
+        catalog_classification,
+    )
     try:
         log_plan(user_id, planning_query, fallback_plan)
     except Exception:
@@ -228,6 +255,7 @@ def planner_node(state: Any) -> dict:
         "planner_metadata": {
             "mode": "heuristic_fallback",
             "reason": "llm_unavailable_or_failed",
+            "catalog": catalog_classification.to_dict(),
         },
         "assumptions": _default_assumptions(planning_query),
         "interpreted_question": planning_query,
@@ -240,9 +268,12 @@ def _domain_update(plan_dict: dict, previous_domain: str) -> dict:
     """Compute domain state updates from a plan's schema_tables."""
     tables = plan_dict.get("schema_tables", [])
     current_domain = _detect_domain_from_tables(tables)
-    domain_switch = bool(previous_domain and previous_domain != "unspecified"
-                         and current_domain != "unspecified"
-                         and current_domain != previous_domain)
+    domain_switch = bool(
+        previous_domain
+        and previous_domain != "unspecified"
+        and current_domain != "unspecified"
+        and current_domain != previous_domain
+    )
     return {
         "previous_domain": previous_domain,
         "active_domain": current_domain,
@@ -322,17 +353,36 @@ def _infer_query_type(query: str) -> str:
     return ""
 
 
-def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
+def _heuristic_decompose(
+    user_query: str,
+    schema_prompt: str,
+    catalog_classification: QueryClassification | None = None,
+) -> dict:
     """Perform heuristic query decomposition producing a DAG when LLM unavailable."""
     import uuid
+
     query_lower = user_query.lower()
+    catalog_classification = catalog_classification or classify_query(user_query)
 
     subqueries = _extract_subqueries(query_lower)
-    tables = _extract_schema_tables(schema_prompt)
-    skills = _determine_skills(query_lower)
-    output_shape = _determine_output_shape(query_lower)
+    tables = _extract_schema_tables(schema_prompt) or list(catalog_classification.matched_tables)
+    skills = _skills_for_catalog_route(catalog_classification.route) or _determine_skills(
+        query_lower
+    )
+    output_shape = catalog_classification.output_shape or _determine_output_shape(query_lower)
 
-    multi_hop_indicators = ["compare", "versus", "vs", "both", "and", "gap", "difference", "between", "synthesis", "integrate"]
+    multi_hop_indicators = [
+        "compare",
+        "versus",
+        "vs",
+        "both",
+        "and",
+        "gap",
+        "difference",
+        "between",
+        "synthesis",
+        "integrate",
+    ]
     true_comparison_indicators = ["compare", "versus", "vs", "difference", "between"]
     if len(subqueries) <= 1:
         is_multi_hop = any(ind in query_lower for ind in multi_hop_indicators)
@@ -340,20 +390,32 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
         if is_multi_hop and len(subqueries) == 1:
             root_id = f"node_{uuid.uuid4().hex[:6]}"
             sq = subqueries[0]
-            dag_nodes = [{"id": root_id, "subquery": sq, "skill": skills[0] if skills else "sql", "depends_on": [], "tables": tables, "output_shape": output_shape, "optional": False}]
+            dag_nodes = [
+                {
+                    "id": root_id,
+                    "subquery": sq,
+                    "skill": skills[0] if skills else "sql",
+                    "depends_on": [],
+                    "tables": tables,
+                    "output_shape": output_shape,
+                    "optional": False,
+                }
+            ]
             if is_true_comparison:
                 comparands = _extract_comparison_entities(query_lower)
                 for entity in comparands:
                     entity_node_id = f"node_{uuid.uuid4().hex[:6]}"
-                    dag_nodes.append({
-                        "id": entity_node_id,
-                        "subquery": f"Query for {entity}: {sq}",
-                        "skill": skills[0] if skills else "sql",
-                        "depends_on": [root_id],
-                        "tables": tables,
-                        "output_shape": output_shape,
-                        "optional": False,
-                    })
+                    dag_nodes.append(
+                        {
+                            "id": entity_node_id,
+                            "subquery": f"Query for {entity}: {sq}",
+                            "skill": skills[0] if skills else "sql",
+                            "depends_on": [root_id],
+                            "tables": tables,
+                            "output_shape": output_shape,
+                            "optional": False,
+                        }
+                    )
             return {
                 "subqueries": subqueries,
                 "schema_tables": tables,
@@ -386,7 +448,18 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
             "is_dag": True,
         }
 
-    multi_hop_indicators = ["compare", "versus", "vs", "both", "and", "gap", "difference", "between", "synthesis", "integrate"]
+    multi_hop_indicators = [
+        "compare",
+        "versus",
+        "vs",
+        "both",
+        "and",
+        "gap",
+        "difference",
+        "between",
+        "synthesis",
+        "integrate",
+    ]
     true_comparison_indicators = ["compare", "versus", "vs", "difference", "between"]
     is_multi_hop = any(ind in query_lower for ind in multi_hop_indicators)
     is_true_comparison = any(ind in query_lower for ind in true_comparison_indicators)
@@ -397,38 +470,45 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
     if is_true_comparison:
         for i, sq in enumerate(subqueries):
             node_id = f"node_{uuid.uuid4().hex[:6]}"
-            dag_nodes.append({
-                "id": node_id,
-                "subquery": sq,
-                "skill": skills[i % len(skills)] if skills else "sql",
-                "depends_on": [root_id],
+            dag_nodes.append(
+                {
+                    "id": node_id,
+                    "subquery": sq,
+                    "skill": skills[i % len(skills)] if skills else "sql",
+                    "depends_on": [root_id],
+                    "tables": tables,
+                    "output_shape": output_shape,
+                    "optional": False,
+                }
+            )
+
+        dag_nodes.insert(
+            0,
+            {
+                "id": root_id,
+                "subquery": user_query,
+                "skill": "sql",
+                "depends_on": [],
                 "tables": tables,
                 "output_shape": output_shape,
                 "optional": False,
-            })
-
-        dag_nodes.insert(0, {
-            "id": root_id,
-            "subquery": user_query,
-            "skill": "sql",
-            "depends_on": [],
-            "tables": tables,
-            "output_shape": output_shape,
-            "optional": False,
-        })
+            },
+        )
     else:
         prev_id = None
         for i, sq in enumerate(subqueries):
             node_id = f"node_{uuid.uuid4().hex[:6]}"
-            dag_nodes.append({
-                "id": node_id,
-                "subquery": sq,
-                "skill": skills[i % len(skills)] if skills else "sql",
-                "depends_on": [prev_id] if prev_id else [],
-                "tables": tables,
-                "output_shape": output_shape,
-                "optional": False,
-            })
+            dag_nodes.append(
+                {
+                    "id": node_id,
+                    "subquery": sq,
+                    "skill": skills[i % len(skills)] if skills else "sql",
+                    "depends_on": [prev_id] if prev_id else [],
+                    "tables": tables,
+                    "output_shape": output_shape,
+                    "optional": False,
+                }
+            )
             prev_id = node_id
         root_id = dag_nodes[0]["id"] if dag_nodes else root_id
 
@@ -445,11 +525,11 @@ def _heuristic_decompose(user_query: str, schema_prompt: str) -> dict:
 
 def _extract_subqueries(query_lower: str) -> list[str]:
     """Extract potential subqueries from the user query using sentence segmentation."""
-    sentences = re.split(r'[?,;]', query_lower)
+    sentences = re.split(r"[?,;]", query_lower)
     subqueries = []
     for sent in sentences:
         sent = sent.strip()
-        if len(sent) > 10 and not sent.startswith(('list', 'find', 'show', 'what', 'how')):
+        if len(sent) > 10 and not sent.startswith(("list", "find", "show", "what", "how")):
             subqueries.append(sent)
     if not subqueries:
         subqueries = [query_lower]
@@ -458,7 +538,7 @@ def _extract_subqueries(query_lower: str) -> list[str]:
 
 def _extract_schema_tables(schema_prompt: str) -> list[str]:
     """Extract table names from schema prompt."""
-    table_pattern = r'(?:table|view):\s*(\w+)'
+    table_pattern = r"(?:table|view):\s*(\w+)"
     tables = re.findall(table_pattern, schema_prompt.lower())
     return list(set(tables)) if tables else []
 
@@ -466,6 +546,10 @@ def _extract_schema_tables(schema_prompt: str) -> list[str]:
 def _build_heuristic_schema_prompt(user_query: str) -> str:
     """Build minimal table-only schema context for no-LLM planning."""
     query_lower = user_query.lower()
+    catalog_matches = classify_query(user_query).matched_tables
+    if catalog_matches:
+        return "\n".join(f"Table: {table}" for table in catalog_matches)
+
     table_keywords = {
         "academic_courses_details": (
             "course",
@@ -551,7 +635,9 @@ def _determine_skills(query_lower: str) -> list[str]:
                 skills.add(skill)
                 break
 
-    if len(skills) == 2 or any(hybrid in query_lower for hybrid in ["synthesize", "combine", "integrate"]):
+    if len(skills) == 2 or any(
+        hybrid in query_lower for hybrid in ["synthesize", "combine", "integrate"]
+    ):
         return ["sql", "rag"]
 
     if "sql" in skills and "rag" not in skills:
@@ -564,8 +650,20 @@ def _determine_skills(query_lower: str) -> list[str]:
     return list(skills) if skills else ["rag"]
 
 
+def _skills_for_catalog_route(route: str) -> list[str]:
+    if route == "text_to_sql":
+        return ["sql"]
+    if route == "rag":
+        return ["rag"]
+    if route == "text_to_sql+rag":
+        return ["sql", "rag"]
+    return []
+
+
 def _determine_output_shape(query_lower: str) -> str:
     """Determine expected output shape based on query patterns."""
+    if any(x in query_lower for x in ["top", "rank", "leading", "highest", "most", "best"]):
+        return "ranked_table"
     if any(x in query_lower for x in ["count", "how many", "number of"]):
         return "numeric_single"
     if any(x in query_lower for x in ["list", "show all", "find all"]):
@@ -576,26 +674,41 @@ def _determine_output_shape(query_lower: str) -> str:
         return "time_series"
     if any(x in query_lower for x in ["compare", "versus", "vs"]):
         return "comparison"
+    if any(x in query_lower for x in ["explain", "summarize", "overview", "what is", "what are"]):
+        return "narrative_summary"
     return "mixed_summary"
 
 
 def _extract_comparison_entities(query_lower: str) -> list[str]:
     """Extract named entities being compared (states, institutions, etc)."""
     known_entities = [
-        "gujarat", "karnataka", "maharashtra", "tamil nadu", "kerala",
-        "delhi", "mumbai", "bangalore", "chennai", "hyderabad",
-        "iit bombay", "iit delhi", "iit madras", "iit kanpur",
-        "india", "usa", "china",
+        "gujarat",
+        "karnataka",
+        "maharashtra",
+        "tamil nadu",
+        "kerala",
+        "delhi",
+        "mumbai",
+        "bangalore",
+        "chennai",
+        "hyderabad",
+        "iit bombay",
+        "iit delhi",
+        "iit madras",
+        "iit kanpur",
+        "india",
+        "usa",
+        "china",
     ]
     found = []
     for entity in known_entities:
         if entity in query_lower:
             found.append(entity)
     if not found:
-        parts = re.split(r'\s+(?:and|vs|versus|compare|with)\s+', query_lower)
+        parts = re.split(r"\s+(?:and|vs|versus|compare|with)\s+", query_lower)
         if len(parts) >= 2:
             for part in parts[1:]:
-                cleaned = re.sub(r'\s+', ' ', part).strip()
+                cleaned = re.sub(r"\s+", " ", part).strip()
                 if len(cleaned) > 2:
                     found.append(cleaned[:30])
     return found[:3]
@@ -605,6 +718,7 @@ def _build_schema_prompt(user_query: str) -> str:
     db_url = os.getenv("DATABASE_URL", "")
     if db_url.startswith("postgresql") or db_url.startswith("postgres"):
         from src.skills.text_to_sql.schema_extractor import SchemaExtractor
+
         extractor = SchemaExtractor(connection_string=db_url)
     else:
         extractor = SQLiteSchemaExtractor()
@@ -678,19 +792,28 @@ def _filter_schema_prompt(schema_prompt: str, allowlist: set) -> str:
     """
 
     # Remove any non-allowlisted table references
-    lines = schema_prompt.split('\n')
+    lines = schema_prompt.split("\n")
     filtered_lines = []
     for line in lines:
         # Skip lines with unlisted table names (but keep headers and structure)
         # Allow any line that doesn't reference a specific table name
-        if any(f'"{tbl}"' in line or f"'{tbl}'" in line or f" {tbl} " in line.lower()
-               for tbl in ["researchers", "publications", "institutions", "labs",
-                          "funding_records", "projects", "patents"]):
+        if any(
+            f'"{tbl}"' in line or f"'{tbl}'" in line or f" {tbl} " in line.lower()
+            for tbl in [
+                "researchers",
+                "publications",
+                "institutions",
+                "labs",
+                "funding_records",
+                "projects",
+                "patents",
+            ]
+        ):
             if not any(tbl in allowlist for tbl in allowlist):
                 continue
         filtered_lines.append(line)
 
-    return '\n'.join(filtered_lines)
+    return "\n".join(filtered_lines)
 
 
 class _SchemaAllowlistingClient:
@@ -709,8 +832,10 @@ class _SchemaAllowlistingClient:
         filtered_system = _filter_schema_prompt(system_prompt, self._allowlist)
 
         # For user prompt, ensure no schema probing
-        if any(phrase in user_prompt.lower() for phrase in
-               ["show tables", "describe", "what columns", "list schema"]):
+        if any(
+            phrase in user_prompt.lower()
+            for phrase in ["show tables", "describe", "what columns", "list schema"]
+        ):
             logger.warning("Schema probing detected in planner user prompt, blocking")
             raise PermissionError("Schema probing blocked in planner")
 

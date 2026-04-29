@@ -106,7 +106,9 @@ class TestRouterConfidenceThresholds:
 
     def test_low_confidence_upgraded_to_hybrid(self):
         """Queries with confidence < 0.6 should be upgraded to hybrid."""
-        with patch("src.orchestration.nodes.router._classify_intent_via_llm", return_value="hybrid"):
+        with patch(
+            "src.orchestration.nodes.router._classify_intent_via_llm", return_value="hybrid"
+        ):
             result = router_node({"user_query": "Who is doing the best research?"})
             assert result["intent"] == "hybrid"
             assert result["routing_confidence"] >= CONFIDENCE_THRESHOLD_LOW
@@ -169,9 +171,7 @@ class TestRouterMultiIntent:
 
     def test_single_intent_not_flagged(self):
         """Single-intent queries should not be flagged as multi-intent."""
-        is_multi, subqueries = _detect_multi_intent(
-            "What are the latest trends in AI?"
-        )
+        is_multi, subqueries = _detect_multi_intent("What are the latest trends in AI?")
         assert is_multi is False or len(subqueries) <= 1
 
 
@@ -198,9 +198,7 @@ class TestRouter2StageRouting:
     def test_high_confidence_skips_llm(self):
         """High confidence queries should skip LLM confirmation."""
         with patch.dict(os.environ, {"ROUTER_ENABLE_2STAGE": "true"}):
-            result = router_node(
-                {"user_query": "List all researchers in Gujarat working on AI"}
-            )
+            result = router_node({"user_query": "List all researchers in Gujarat working on AI"})
             if result["routing_confidence"] >= CONFIDENCE_THRESHOLD_HIGH:
                 assert result["llm_enhanced"] is False or result["is_ambiguous"] is True
 
@@ -231,28 +229,43 @@ class TestRouterPlannerIntegration:
         assert result["routing_decision"] == "rag"
 
 
+class TestRouterCatalogIntegration:
+    """Tests for the deterministic query catalog routing layer."""
+
+    def test_catalog_structured_route_is_used_for_known_tables(self):
+        result = router_node({"user_query": "Top 5 funding agencies by total grant amount"})
+
+        assert result["intent"] == "structured"
+        assert result["routing_decision"] == "text_to_sql"
+        assert result["stage"] == "catalog"
+        assert result["catalog_route"] == "text_to_sql"
+        assert "innovation_grant_from_govt" in result["catalog_matches"]
+
+    def test_catalog_clarification_is_visible_for_vague_query(self):
+        result = router_node({"user_query": "Who is the best?"})
+
+        assert result["routing_decision"] == "clarify"
+        assert result["needs_clarification"] is True
+        assert result["clarification_question"]
+        assert result["catalog_route"] == "clarify"
+
+
 class TestRouterDefaultClarifications:
     """Tests for default clarification application."""
 
     def test_clarification_best(self):
         """'best' should add clarification about most publications."""
-        clarifications = _apply_default_clarifications(
-            "Who is doing the best research in AI?"
-        )
+        clarifications = _apply_default_clarifications("Who is doing the best research in AI?")
         assert any("most publications" in c for c in clarifications)
 
     def test_clarification_compare(self):
         """'compare' should add clarification about comparison criteria."""
-        clarifications = _apply_default_clarifications(
-            "Compare IIT Delhi versus IIT Bombay"
-        )
+        clarifications = _apply_default_clarifications("Compare IIT Delhi versus IIT Bombay")
         assert any("publication count" in c for c in clarifications)
 
     def test_clarification_recent(self):
         """'recent' should add clarification about time window."""
-        clarifications = _apply_default_clarifications(
-            "What are recent trends in AI?"
-        )
+        clarifications = _apply_default_clarifications("What are recent trends in AI?")
         assert any("last 3 years" in c for c in clarifications)
 
 
@@ -436,12 +449,7 @@ class TestRouterEvaluationDataset:
     @pytest.fixture
     def eval_dataset(self):
         """Load the routing evaluation dataset."""
-        dataset_path = (
-            Path(__file__).parent.parent
-            / "fixtures"
-            / "routing"
-            / "routing_eval.json"
-        )
+        dataset_path = Path(__file__).parent.parent / "fixtures" / "routing" / "routing_eval.json"
         with open(dataset_path) as f:
             return json.load(f)
 
@@ -466,17 +474,13 @@ class TestRouterEvaluationDataset:
     def test_dataset_has_sql_injection_cases(self, eval_dataset):
         """Dataset should have SQL injection test cases."""
         sql_injection_cases = [
-            tc
-            for tc in eval_dataset["test_cases"]
-            if tc.get("security_flag") is True
+            tc for tc in eval_dataset["test_cases"] if tc.get("security_flag") is True
         ]
         assert len(sql_injection_cases) >= 3
 
     def test_dataset_has_edge_cases(self, eval_dataset):
         """Dataset should have edge case queries."""
-        edge_cases = [
-            tc for tc in eval_dataset["test_cases"] if tc.get("edge_case") is True
-        ]
+        edge_cases = [tc for tc in eval_dataset["test_cases"] if tc.get("edge_case") is True]
         assert len(edge_cases) >= 3
 
     def test_routing_dataset_structured_queries(self, eval_dataset):
@@ -488,24 +492,18 @@ class TestRouterEvaluationDataset:
         for tc in structured_cases[:3]:
             result = router_node({"user_query": tc["query"]})
             assert result["intent"] == tc["expected_intent"], (
-                f"Query: {tc['query']}\n"
-                f"Expected: {tc['expected_intent']}\n"
-                f"Got: {result['intent']}"
+                f"Query: {tc['query']}\nExpected: {tc['expected_intent']}\nGot: {result['intent']}"
             )
 
     def test_routing_dataset_security_queries(self, eval_dataset):
         """Security-flagged queries should be handled safely."""
         security_cases = [
-            tc
-            for tc in eval_dataset["test_cases"]
-            if tc.get("security_flag") is True
+            tc for tc in eval_dataset["test_cases"] if tc.get("security_flag") is True
         ]
 
         for tc in security_cases:
             result = router_node({"user_query": tc["query"]})
-            assert result["intent"] == "hybrid", (
-                f"SQL injection not handled safely: {tc['query']}"
-            )
+            assert result["intent"] == "hybrid", f"SQL injection not handled safely: {tc['query']}"
             assert result["stage"] == "security"
 
 
@@ -516,12 +514,7 @@ class TestRouterAgainstEvaluationDataset:
     @pytest.fixture
     def eval_dataset(self):
         """Load the routing evaluation dataset."""
-        dataset_path = (
-            Path(__file__).parent.parent
-            / "fixtures"
-            / "routing"
-            / "routing_eval.json"
-        )
+        dataset_path = Path(__file__).parent.parent / "fixtures" / "routing" / "routing_eval.json"
         with open(dataset_path) as f:
             return json.load(f)
 
@@ -555,32 +548,28 @@ class TestRouterAgainstEvaluationDataset:
         if failures:
             print(f"\nRouting failures ({len(failures)}):")
             for f in failures[:5]:
-                print(f"  {f['id']}: {f['query']}... expected={f['expected']} got={f['got']} conf={f['confidence']}")
+                print(
+                    f"  {f['id']}: {f['query']}... expected={f['expected']} got={f['got']} conf={f['confidence']}"
+                )
 
-        assert (
-            accuracy >= target_accuracy
-        ), f"Accuracy {accuracy:.2%} below target {target_accuracy:.0%} ({correct}/{total} correct)"
+        assert accuracy >= target_accuracy, (
+            f"Accuracy {accuracy:.2%} below target {target_accuracy:.0%} ({correct}/{total} correct)"
+        )
 
     def test_security_queries_all_safe(self, eval_dataset):
         """All security-flagged queries should be handled safely."""
         security_cases = [
-            tc
-            for tc in eval_dataset["test_cases"]
-            if tc.get("security_flag") is True
+            tc for tc in eval_dataset["test_cases"] if tc.get("security_flag") is True
         ]
 
         for tc in security_cases:
             result = router_node({"user_query": tc["query"]})
-            assert result["intent"] == "hybrid", (
-                f"Security issue: {tc['id']} not routed safely"
-            )
+            assert result["intent"] == "hybrid", f"Security issue: {tc['id']} not routed safely"
             assert result["routing_confidence"] <= 0.3
 
     def test_edge_cases_handled_gracefully(self, eval_dataset):
         """Edge cases should be handled without crashing."""
-        edge_cases = [
-            tc for tc in eval_dataset["test_cases"] if tc.get("edge_case") is True
-        ]
+        edge_cases = [tc for tc in eval_dataset["test_cases"] if tc.get("edge_case") is True]
 
         for tc in edge_cases:
             try:
@@ -593,9 +582,7 @@ class TestRouterAgainstEvaluationDataset:
     def test_multi_intent_detection(self, eval_dataset):
         """Multi-intent queries should be detected and decomposed."""
         multi_intent_cases = [
-            tc
-            for tc in eval_dataset["test_cases"]
-            if tc.get("multi_intent") is True
+            tc for tc in eval_dataset["test_cases"] if tc.get("multi_intent") is True
         ]
 
         detected = 0
@@ -605,9 +592,9 @@ class TestRouterAgainstEvaluationDataset:
                 detected += 1
 
         detection_rate = detected / len(multi_intent_cases) if multi_intent_cases else 0
-        assert (
-            detection_rate >= 0.7
-        ), f"Multi-intent detection rate {detection_rate:.0%} too low ({detected}/{len(multi_intent_cases)})"
+        assert detection_rate >= 0.7, (
+            f"Multi-intent detection rate {detection_rate:.0%} too low ({detected}/{len(multi_intent_cases)})"
+        )
 
 
 class TestRouterComplexityClassification:
@@ -626,7 +613,9 @@ class TestRouterComplexityClassification:
 
     def test_complex_query_returns_complex_or_synthesis_heavy(self):
         result = router_node(
-            {"user_query": "synthesize research gaps and funding trends across ML and biotechnology"}
+            {
+                "user_query": "synthesize research gaps and funding trends across ML and biotechnology"
+            }
         )
         assert "complexity" in result
         assert result["complexity"] in ("complex", "synthesis_heavy", "moderate")

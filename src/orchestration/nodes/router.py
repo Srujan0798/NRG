@@ -29,6 +29,8 @@ import time as time_module
 from datetime import datetime
 from enum import Enum
 
+from src.orchestration.query_catalog import QueryClassification, classify_query
+
 
 logger = logging.getLogger(__name__)
 
@@ -162,9 +164,6 @@ def _cache_routing_decision(query: str, intent: str, confidence: float, stage: f
     _routing_cache_timestamps[cache_key] = time_module.time()
 
 
-
-
-
 class RoutingMetrics:
     """Self-calibrating routing metrics tracker."""
 
@@ -217,43 +216,37 @@ class RoutingMetrics:
             self.llm_enhancement_count += 1
 
         if ENABLE_SELF_CALIBRATION and was_correct is not None:
-            self.self_calibration_data.append({
-                "timestamp": datetime.now().isoformat(),
-                "intent": intent,
-                "confidence": confidence,
-                "was_correct": was_correct,
-            })
+            self.self_calibration_data.append(
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "intent": intent,
+                    "confidence": confidence,
+                    "was_correct": was_correct,
+                }
+            )
             if len(self.self_calibration_data) > 1000:
                 self.self_calibration_data = self.self_calibration_data[-500:]
 
     def get_metrics(self) -> dict:
         """Get current routing metrics."""
-        avg_confidence = (
-            self.confidence_sum / self.total_routes if self.total_routes > 0 else 0.0
-        )
+        avg_confidence = self.confidence_sum / self.total_routes if self.total_routes > 0 else 0.0
         return {
             "total_routes": self.total_routes,
             "route_distribution": self.route_distribution,
             "avg_confidence": round(avg_confidence, 3),
             "ambiguity_rate": round(self.ambiguity_rate, 3),
-            "llm_enhancement_rate": round(
-                self.llm_enhancement_count / self.total_routes, 3
-            )
+            "llm_enhancement_rate": round(self.llm_enhancement_count / self.total_routes, 3)
             if self.total_routes > 0
             else 0.0,
             "self_calibration_samples": len(self.self_calibration_data),
         }
 
-    def recalibrate_confidence(
-        self, intent: str, observed_accuracy: float
-    ) -> dict[str, float]:
+    def recalibrate_confidence(self, intent: str, observed_accuracy: float) -> dict[str, float]:
         """Recalibrate confidence thresholds based on observed accuracy."""
         if len(self.self_calibration_data) < 10:
             return {}
 
-        recent_data = [
-            d for d in self.self_calibration_data[-100:] if d["intent"] == intent
-        ]
+        recent_data = [d for d in self.self_calibration_data[-100:] if d["intent"] == intent]
         if len(recent_data) < 5:
             return {}
 
@@ -361,18 +354,26 @@ def _classify_intent_with_confidence(query: str) -> tuple[str, float, dict]:
 
     if scores["hybrid"] > 0 and (scores["structured"] > 0 or scores["unstructured"] > 0):
         confidence = min(0.95, 0.5 + (scores["hybrid"] * 0.15))
-        return "hybrid", confidence, {
-            "scores": scores,
-            "matched_patterns": matched_patterns["hybrid"],
-            "reason": "hybrid keywords combined with structured/unstructured",
-        }
+        return (
+            "hybrid",
+            confidence,
+            {
+                "scores": scores,
+                "matched_patterns": matched_patterns["hybrid"],
+                "reason": "hybrid keywords combined with structured/unstructured",
+            },
+        )
 
     if max_score == 0:
-        return "unstructured", 0.5, {
-            "scores": scores,
-            "matched_patterns": [],
-            "reason": "no patterns matched, defaulting to unstructured",
-        }
+        return (
+            "unstructured",
+            0.5,
+            {
+                "scores": scores,
+                "matched_patterns": [],
+                "reason": "no patterns matched, defaulting to unstructured",
+            },
+        )
 
     confidence = min(0.9, 0.4 + (max_score * 0.2) + (total_matches * 0.05))
 
@@ -383,17 +384,25 @@ def _classify_intent_with_confidence(query: str) -> tuple[str, float, dict]:
             break
 
     if tie_winner:
-        return tie_winner, confidence, {
-            "scores": scores,
-            "matched_patterns": matched_patterns[tie_winner],
-            "reason": f"highest score ({max_score}) for {tie_winner}",
-        }
+        return (
+            tie_winner,
+            confidence,
+            {
+                "scores": scores,
+                "matched_patterns": matched_patterns[tie_winner],
+                "reason": f"highest score ({max_score}) for {tie_winner}",
+            },
+        )
 
-    return "unstructured", 0.5, {
-        "scores": scores,
-        "matched_patterns": [],
-        "reason": "fallback",
-    }
+    return (
+        "unstructured",
+        0.5,
+        {
+            "scores": scores,
+            "matched_patterns": [],
+            "reason": "fallback",
+        },
+    )
 
 
 def _route_to_skill(intent: str) -> str:
@@ -564,9 +573,7 @@ def _decompose_intent_via_llm(query: str) -> list[str]:
         try:
             subqueries = json.loads(response)
             if isinstance(subqueries, list) and all(isinstance(q, str) for q in subqueries):
-                logger.info(
-                    "LLM decomposed query into %d sub-queries", len(subqueries)
-                )
+                logger.info("LLM decomposed query into %d sub-queries", len(subqueries))
                 return subqueries
         except json.JSONDecodeError:
             match = re.search(r"\[.*\]", response, re.DOTALL)
@@ -593,13 +600,135 @@ def _apply_default_clarifications(query: str) -> list[str]:
     if "recent" in query_lower or "currently" in query_lower or "lately" in query_lower:
         current_year = datetime.now().year
         years_ago = current_year - 3
-        clarifications.append(
-            f"Assumption: 'recent' = last 3 years ({years_ago}-{current_year})"
-        )
+        clarifications.append(f"Assumption: 'recent' = last 3 years ({years_ago}-{current_year})")
     if "leading" in query_lower or "strongest" in query_lower:
         clarifications.append("Assumption: 'leading' = highest h-index score")
 
     return clarifications
+
+
+def _intent_for_catalog_route(route: str) -> str:
+    if route == "text_to_sql":
+        return "structured"
+    if route == "rag":
+        return "unstructured"
+    return "hybrid"
+
+
+def _catalog_should_short_circuit(classification: QueryClassification) -> bool:
+    if classification.route in {"blocked", "clarify"}:
+        return True
+    return (
+        bool(classification.matched_tables)
+        and classification.confidence >= CONFIDENCE_THRESHOLD_HIGH
+    )
+
+
+def _catalog_routing_result(
+    classification: QueryClassification,
+    user_query: str,
+    user_tier: int,
+) -> dict:
+    detected_ambiguous, detected_issues = _detect_ambiguity(user_query)
+    ambiguity_is_resolved = _catalog_resolves_ambiguity(user_query, detected_issues)
+    intent = _intent_for_catalog_route(classification.route)
+    routing_decision = classification.route
+    if (
+        detected_ambiguous
+        and not ambiguity_is_resolved
+        and classification.route not in {"blocked", "clarify", "text_to_sql+rag"}
+    ):
+        intent = "hybrid"
+        routing_decision = "text_to_sql+rag"
+    confidence = classification.confidence
+    is_ambiguous = classification.needs_clarification or (
+        detected_ambiguous and not ambiguity_is_resolved
+    )
+    ambiguity_issues = ["needs_clarification"] if classification.needs_clarification else []
+    if is_ambiguous:
+        ambiguity_issues.extend(detected_issues)
+    clarifications = []
+    if classification.clarification_question:
+        clarifications.append(classification.clarification_question)
+    if is_ambiguous:
+        clarifications.extend(_apply_default_clarifications(user_query))
+
+    rationale = [
+        "Stage: catalog",
+        f"Intent: {intent}",
+        f"Confidence: {confidence:.2f}",
+        f"Catalog route: {routing_decision}",
+        f"Matched tables: {list(classification.matched_tables)}",
+        f"Matched domains: {list(classification.matched_domains)}",
+    ]
+    rationale.extend(classification.rationale)
+
+    try:
+        from src.orchestration.nodes.complexity_classifier import get_complexity_for_routing
+
+        complexity_result = get_complexity_for_routing(user_query, user_tier)
+        complexity = complexity_result.level.value
+    except Exception:
+        complexity = "moderate"
+
+    complexity, complexity_limit, complexity_limit_applied = _apply_tier_complexity_limit(
+        complexity,
+        user_tier,
+    )
+    if complexity_limit_applied:
+        rationale.append(
+            f"Tier complexity limit: capped to {complexity_limit} for tier {user_tier}"
+        )
+
+    return {
+        "intent": intent,
+        "routing_decision": routing_decision,
+        "routing_confidence": confidence,
+        "routing_rationale": rationale,
+        "routing_reason": "; ".join(classification.rationale)
+        or f"Catalog routed to {routing_decision}",
+        "plan_skills_used": False,
+        "multi_intent": False,
+        "subqueries": [],
+        "is_ambiguous": is_ambiguous,
+        "ambiguity_issues": ambiguity_issues,
+        "clarifications": clarifications,
+        "llm_enhanced": False,
+        "stage": "catalog",
+        "catalog_route": classification.route,
+        "catalog_confidence": classification.confidence,
+        "catalog_matches": list(classification.matched_tables),
+        "matched_domains": list(classification.matched_domains),
+        "needs_clarification": classification.needs_clarification,
+        "clarification_question": classification.clarification_question,
+        "blocked_reason": classification.blocked_reason,
+        "pii_terms": list(classification.pii_terms),
+        "complexity": complexity,
+        "complexity_limit": complexity_limit,
+        "complexity_limit_applied": complexity_limit_applied,
+    }
+
+
+def _catalog_resolves_ambiguity(user_query: str, ambiguity_issues: list[str]) -> bool:
+    if not ambiguity_issues:
+        return True
+    lowered = user_query.lower()
+    ranking_issues = {"best", "top", "leading", "most", "strongest", "greatest"}
+    if set(ambiguity_issues).issubset(ranking_issues):
+        return any(
+            marker in lowered
+            for marker in (
+                " by ",
+                "total ",
+                "amount",
+                "count",
+                "number of",
+                "citation",
+                "grant amount",
+                "year",
+            )
+        )
+    return False
 
 
 def _stage1_regex_classification(
@@ -772,6 +901,12 @@ def router_node(state) -> dict:
     else:
         user_query = ""
 
+    user_tier = 1
+    if isinstance(state, dict):
+        user_tier = state.get("user_tier", 1)
+    elif hasattr(state, "user_tier"):
+        user_tier = state.user_tier
+
     if not user_query or not user_query.strip():
         logger.warning("Empty query received, defaulting to hybrid")
         result = {
@@ -837,6 +972,17 @@ def router_node(state) -> dict:
         metrics.record("unstructured", 0.4, True, False)
         return result
 
+    catalog_classification = classify_query(user_query, user_tier=user_tier)
+    if _catalog_should_short_circuit(catalog_classification):
+        result = _catalog_routing_result(catalog_classification, user_query, user_tier)
+        metrics.record(
+            result["intent"],
+            result["routing_confidence"],
+            result["is_ambiguous"],
+            False,
+        )
+        return result
+
     is_multi_intent, subqueries = _detect_multi_intent(user_query)
 
     intent, confidence, details, is_ambiguous, ambiguity_issues = _stage1_regex_classification(
@@ -844,8 +990,8 @@ def router_node(state) -> dict:
     )
 
     if ENABLE_2STAGE_ROUTING and (is_ambiguous or confidence < CONFIDENCE_THRESHOLD_HIGH):
-        intent, confidence, is_ambiguous, ambiguity_issues, clarifications, llm_enhanced = _stage2_llm_confirmation(
-            user_query, intent, confidence, is_ambiguous, ambiguity_issues
+        intent, confidence, is_ambiguous, ambiguity_issues, clarifications, llm_enhanced = (
+            _stage2_llm_confirmation(user_query, intent, confidence, is_ambiguous, ambiguity_issues)
         )
         details["stage"] = "llm"
     else:
@@ -891,7 +1037,11 @@ def router_node(state) -> dict:
         reasoning_parts.append("Low confidence threshold triggered hybrid fallback")
     reasoning_parts.append(f"Route: {intent} via {routing_decision}")
 
-    routing_reason = "; ".join(reasoning_parts) if reasoning_parts else f"{intent.title()} query routed to {routing_decision}"
+    routing_reason = (
+        "; ".join(reasoning_parts)
+        if reasoning_parts
+        else f"{intent.title()} query routed to {routing_decision}"
+    )
 
     rationale = [
         f"Stage: {details.get('stage', 'unknown')}",
@@ -920,14 +1070,9 @@ def router_node(state) -> dict:
 
     metrics.record(intent, confidence, is_ambiguous, llm_enhanced)
 
-    user_tier = 1
-    if isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
-    elif hasattr(state, "user_tier"):
-        user_tier = state.user_tier
-
     try:
         from src.orchestration.nodes.complexity_classifier import get_complexity_for_routing
+
         complexity_result = get_complexity_for_routing(user_query, user_tier)
         complexity = complexity_result.level.value
     except Exception:
