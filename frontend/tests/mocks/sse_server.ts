@@ -16,7 +16,21 @@ export async function installStreamingQueryMock(page: Page) {
           { delay: 80, type: 'executing', payload: { phase: 'executing', sql: 'SELECT institute, SUM(grant_amount_inr) FROM grants GROUP BY institute ORDER BY 2 DESC LIMIT 5;', retrieved_count: 183 } },
           { delay: 140, type: 'synthesizing', payload: { phase: 'synthesizing', token: 'IIT Madras, IISc Bengaluru, and IIT Bombay lead the renewable energy grant pool. ' } },
           { delay: 220, type: 'synthesizing', payload: { phase: 'synthesizing', token: 'The ranked answer is backed by signed grant and publication records.' } },
-          { delay: 320, type: 'verified', payload: { phase: 'verified', citations: [{ id: 'pub:renewable:001', pub_id: 'pub-renewable-001', chunk_id: '0', title: 'Renewable energy funding summary' }], audit_event_id: 'hmac-renewable-001', signature_bytes: 26 } },
+          {
+            delay: 320,
+            type: 'verified',
+            payload: {
+              phase: 'verified',
+              citations: [{ id: 'pub:renewable:001', pub_id: 'pub-renewable-001', chunk_id: '0', title: 'Renewable energy funding summary' }],
+              audit_event_id: 'hmac-renewable-001',
+              signature_bytes: 26,
+              provenance: {
+                synth: 'rule_based_hybrid',
+                cloud_synthesis_used: false,
+                hybrid_evidence: { sql_rows: 183, document_chunks: 4 },
+              },
+            },
+          },
         ]
 
         for (const event of events) {
@@ -61,7 +75,7 @@ export async function installStreamingQueryMock(page: Page) {
       'data: {"phase":"synthesizing","token":"The ranked answer is backed by signed grant and publication records."}',
       '',
       'event: verified',
-      'data: {"phase":"verified","citations":[{"id":"pub:renewable:001","pub_id":"pub-renewable-001","chunk_id":"0","title":"Renewable energy funding summary"}],"audit_event_id":"hmac-renewable-001","signature_bytes":26}',
+      'data: {"phase":"verified","citations":[{"id":"pub:renewable:001","pub_id":"pub-renewable-001","chunk_id":"0","title":"Renewable energy funding summary"}],"audit_event_id":"hmac-renewable-001","signature_bytes":26,"provenance":{"synth":"rule_based_hybrid","cloud_synthesis_used":false,"hybrid_evidence":{"sql_rows":183,"document_chunks":4}}}',
       '',
     ].join('\n')
 
