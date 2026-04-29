@@ -166,6 +166,56 @@ class TestComputeVerifyBinding:
         assert not valid
         assert "missing" in reason
 
+    def test_binding_verifies_with_historical_expired_salt(self, tmp_path):
+        """Audit verification must use persisted historical salts, not today's salt."""
+        import hashlib
+        import hmac
+        import json
+
+        salt_file = tmp_path / "salts.jsonl"
+        salt_file.write_text(
+            json.dumps(
+                {
+                    "user_id": "user-1",
+                    "salt": "a" * 32,
+                    "expires": "2000-01-01",
+                }
+            )
+            + "\n"
+        )
+        salt_store = RotatingSaltStore(storage_path=str(salt_file))
+        key_manager = PerUserKeyManager(
+            chain_key="test-chain-key-1234",
+            salt_store=salt_store,
+        )
+        chain_hash = "abcd" * 16
+        event_serialized = '{"event_type":"query","user_id":"user-1"}'
+        components = [
+            "test-chain-key-1234",
+            "user=user-1",
+            "kid=kid-abc",
+            f"salt={'a' * 32}",
+            "fp=fp-xyz",
+        ]
+        derived_key = hashlib.sha256("|".join(components).encode()).hexdigest()[:32]
+        binding = hmac.new(
+            derived_key.encode(),
+            f"{derived_key}:{chain_hash}:{event_serialized}".encode(),
+            hashlib.sha256,
+        ).hexdigest()
+
+        valid, reason = key_manager.verify_binding(
+            "user-1",
+            "kid-abc",
+            "fp-xyz",
+            chain_hash,
+            event_serialized,
+            binding,
+        )
+
+        assert valid, reason
+        assert reason == "valid"
+
 
 class TestRotatingSaltStore:
     """Test RotatingSaltStore daily rotation behavior."""

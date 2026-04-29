@@ -41,6 +41,7 @@ class RotatingSaltStore:
         self._path = Path(storage_path)
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._salts: dict[str, str] = {}
+        self._salt_history: dict[str, list[str]] = {}
         self._lock = Lock()
         self._current_salt_date: str = self._today_str()
         self._load_salts()
@@ -55,11 +56,23 @@ class RotatingSaltStore:
             import json
             with open(self._path) as f:
                 for line in f:
+                    if not line.strip():
+                        continue
                     entry = json.loads(line)
+                    user_id = entry.get("user_id")
+                    salt = entry.get("salt")
+                    if not user_id or not salt:
+                        continue
+                    self._remember_salt(user_id, salt)
                     if entry.get("expires", "") >= self._today_str():
-                        self._salts[entry["user_id"]] = entry["salt"]
+                        self._salts[user_id] = salt
         except Exception:
             pass
+
+    def _remember_salt(self, user_id: str, salt: str) -> None:
+        salts = self._salt_history.setdefault(user_id, [])
+        if salt not in salts:
+            salts.append(salt)
 
     def _persist_salt(self, user_id: str, salt: str, expires: str) -> None:
         try:
@@ -81,9 +94,20 @@ class RotatingSaltStore:
                 from datetime import timedelta
                 expires = (datetime.now(UTC).date() + timedelta(days=1)).isoformat()
                 self._salts[user_id] = salt
+                self._remember_salt(user_id, salt)
                 self._persist_salt(user_id, salt, expires)
 
             return self._salts[user_id]
+
+    def get_known_salts(self, user_id: str) -> list[str]:
+        """Return persisted salts for verification without creating a new salt."""
+        with self._lock:
+            salts = list(self._salt_history.get(user_id, ()))
+            current_salt = self._salts.get(user_id)
+
+        if current_salt and current_salt not in salts:
+            salts.append(current_salt)
+        return salts
 
     def _generate_salt(self, user_id: str) -> str:
         raw = f"{user_id}:{self._current_salt_date}:{os.urandom(16).hex()}"
@@ -112,12 +136,31 @@ class PerUserKeyManager:
         """Derive a per-user key bound to JWT identity and request fingerprint."""
         _jwt_kid = "none" if jwt_kid is None else jwt_kid
         _fp = "none" if request_fingerprint is None else request_fingerprint
-        cache_key = f"{user_id}:{_jwt_kid}:{_fp}"
+        salt = self._salt_store.get_salt(user_id)
+        cache_key = f"{user_id}:{_jwt_kid}:{_fp}:{salt}"
         with self._lock:
             if cache_key in self._key_cache:
                 return self._key_cache[cache_key]
 
-        salt = self._salt_store.get_salt(user_id)
+        derived = self._derive_key_with_salt(
+            user_id,
+            jwt_kid,
+            request_fingerprint,
+            salt,
+        )
+
+        with self._lock:
+            self._key_cache[cache_key] = derived
+
+        return derived
+
+    def _derive_key_with_salt(
+        self,
+        user_id: str,
+        jwt_kid: Optional[str],
+        request_fingerprint: Optional[str],
+        salt: str,
+    ) -> str:
         components = [
             self._chain_key,
             f"user={user_id}",
@@ -128,12 +171,7 @@ class PerUserKeyManager:
             components.append(f"fp={request_fingerprint}")
 
         derivation_input = "|".join(components).encode()
-        derived = hashlib.sha256(derivation_input).hexdigest()[:32]
-
-        with self._lock:
-            self._key_cache[cache_key] = derived
-
-        return derived
+        return hashlib.sha256(derivation_input).hexdigest()[:32]
 
     def compute_binding(
         self,
@@ -145,6 +183,19 @@ class PerUserKeyManager:
     ) -> str:
         """Compute the per-user binding HMAC for an audit event."""
         key = self.derive_key(user_id, jwt_kid, request_fingerprint)
+        message = f"{key}:{chain_hash}:{event_serialized}"
+        return hmac.new(key.encode(), message.encode(), hashlib.sha256).hexdigest()
+
+    def _compute_binding_with_salt(
+        self,
+        user_id: str,
+        jwt_kid: Optional[str],
+        request_fingerprint: Optional[str],
+        chain_hash: str,
+        event_serialized: str,
+        salt: str,
+    ) -> str:
+        key = self._derive_key_with_salt(user_id, jwt_kid, request_fingerprint, salt)
         message = f"{key}:{chain_hash}:{event_serialized}"
         return hmac.new(key.encode(), message.encode(), hashlib.sha256).hexdigest()
 
@@ -165,10 +216,25 @@ class PerUserKeyManager:
             return False, "missing per-user binding"
 
         try:
-            computed = self.compute_binding(
-                user_id, jwt_kid, request_fingerprint,
-                chain_hash, event_serialized,
-            )
+            known_salts = self._salt_store.get_known_salts(user_id)
+            computed = None
+            for salt in known_salts:
+                computed = self._compute_binding_with_salt(
+                    user_id,
+                    jwt_kid,
+                    request_fingerprint,
+                    chain_hash,
+                    event_serialized,
+                    salt,
+                )
+                if hmac.compare_digest(computed[:16], stored_binding[:16]):
+                    return True, "valid"
+
+            if computed is None:
+                computed = self.compute_binding(
+                    user_id, jwt_kid, request_fingerprint,
+                    chain_hash, event_serialized,
+                )
             if hmac.compare_digest(computed[:16], stored_binding[:16]):
                 return True, "valid"
             return False, f"binding mismatch: computed={computed[:16]} stored={stored_binding[:16]}"
