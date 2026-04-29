@@ -527,7 +527,7 @@ export function AnswerEngineDashboard({ role, tier, username, onLogout, onPerson
 export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaChange, onNavigate }: SurfaceRouteProps) {
   const [drawer, setDrawer] = useState<'source' | 'audit' | 'citation' | null>(null)
   const [followUp, setFollowUp] = useState('')
-  const query = useMemo(() => sessionStorage.getItem('nrg.lastQuery') || '', [])
+  const [query, setQuery] = useState(() => sessionStorage.getItem('nrg.lastQuery') || '')
   const [blockedQuery, setBlockedQuery] = useState(() => sessionStorage.getItem('nrg.blockedQuery'))
   const [selectedCitation, setSelectedCitation] = useState<string | null>(null)
   const [proof, setProof] = useState<StreamingProofPayload | null>(null)
@@ -535,6 +535,31 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
   useEffect(() => {
     document.title = 'NRG · Answer'
   }, [])
+
+  const submitAnswerQuery = (next: string) => {
+    const trimmed = next.trim()
+    if (!trimmed) return
+
+    sessionStorage.setItem('nrg.lastQuery', trimmed)
+    setProof(null)
+    setSelectedCitation(null)
+    setDrawer(null)
+
+    if (/\b(aadhaar|pan|passport|bank account|gstin)\b/i.test(trimmed)) {
+      sessionStorage.setItem('nrg.blockedQuery', trimmed)
+      setBlockedQuery(trimmed)
+      setQuery('')
+      setFollowUp('')
+      onNavigate('/app/answer/blocked')
+      return
+    }
+
+    sessionStorage.removeItem('nrg.blockedQuery')
+    setBlockedQuery(null)
+    setQuery(trimmed)
+    setFollowUp('')
+    onNavigate('/app/answer/latest')
+  }
 
   const isVerified = Boolean(proof)
   const fullText = proof?.response || ''
@@ -602,18 +627,7 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
             <QueryBox
               value={followUp}
               onChange={setFollowUp}
-              onSubmit={(next) => {
-                sessionStorage.setItem('nrg.lastQuery', next)
-                if (/\b(aadhaar|pan|passport|bank account|gstin)\b/i.test(next)) {
-                  sessionStorage.setItem('nrg.blockedQuery', next)
-                  setBlockedQuery(next)
-                  onNavigate('/app/answer/blocked')
-                  return
-                }
-                sessionStorage.removeItem('nrg.blockedQuery')
-                setBlockedQuery(null)
-                onNavigate('/app/answer/latest')
-              }}
+              onSubmit={submitAnswerQuery}
               compact
             />
           </div>

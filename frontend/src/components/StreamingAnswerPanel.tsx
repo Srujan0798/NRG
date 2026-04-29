@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { Citation, QueryProvenance } from '../services/queryService'
 import { useStreamingQuery } from '../hooks/useStreamingQuery'
 import PhaseHeader from './PhaseHeader/PhaseHeader'
@@ -38,6 +38,8 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   onProofOpen,
   onProofChange,
 }) => {
+  const lastStartedQueryRef = useRef('')
+  const pendingStartRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const {
     isStreaming,
     currentPhase,
@@ -56,7 +58,21 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   } = useStreamingQuery()
 
   useEffect(() => {
-    if (query.trim()) startStream(query)
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery || lastStartedQueryRef.current === trimmedQuery) return
+
+    pendingStartRef.current = setTimeout(() => {
+      lastStartedQueryRef.current = trimmedQuery
+      pendingStartRef.current = null
+      startStream(trimmedQuery)
+    }, 0)
+
+    return () => {
+      if (pendingStartRef.current) {
+        clearTimeout(pendingStartRef.current)
+        pendingStartRef.current = null
+      }
+    }
   }, [query, startStream])
 
   useEffect(() => {

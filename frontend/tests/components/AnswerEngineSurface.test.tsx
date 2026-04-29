@@ -22,6 +22,13 @@ function render(ui: React.ReactElement) {
   return container
 }
 
+async function flushStreamStart() {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    await Promise.resolve()
+  })
+}
+
 afterEach(() => {
   jest.restoreAllMocks()
   for (const { root, container } of roots.splice(0)) {
@@ -140,11 +147,75 @@ describe('AnswerEngine surface', () => {
       />
     )
 
-    await act(async () => {
-      await Promise.resolve()
-      await Promise.resolve()
-    })
+    await flushStreamStart()
 
     expect(streamSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not duplicate the initial answer stream under React StrictMode', async () => {
+    sessionStorage.setItem('nrg.lastQuery', 'Top funding agencies by total grant amount last 5 years')
+    const stream = {
+      addEventListener: jest.fn(),
+      close: jest.fn(),
+      onmessage: null,
+      onerror: null,
+    } as unknown as EventSource
+    const streamSpy = jest.spyOn(queryService, 'streamQuery').mockReturnValue(stream)
+
+    render(
+      <React.StrictMode>
+        <AnswerEngineAnswer
+          role="researcher"
+          tier={1}
+          username="researcher@iitgn.ac.in"
+          onLogout={() => undefined}
+          onNavigate={() => undefined}
+        />
+      </React.StrictMode>
+    )
+
+    await flushStreamStart()
+
+    expect(streamSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it('starts a fresh stream when a follow-up query is submitted on the answer route', async () => {
+    sessionStorage.setItem('nrg.lastQuery', 'Top funding agencies by total grant amount last 5 years')
+    const stream = {
+      addEventListener: jest.fn(),
+      close: jest.fn(),
+      onmessage: null,
+      onerror: null,
+    } as unknown as EventSource
+    const streamSpy = jest.spyOn(queryService, 'streamQuery').mockReturnValue(stream)
+
+    const container = render(
+      <AnswerEngineAnswer
+        role="researcher"
+        tier={1}
+        username="researcher@iitgn.ac.in"
+        onLogout={() => undefined}
+        onNavigate={() => undefined}
+      />
+    )
+
+    await flushStreamStart()
+
+    const input = container.querySelector('[data-testid="answer-engine-query"]') as HTMLInputElement
+    const form = input.closest('form') as HTMLFormElement
+
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set?.call(
+        input,
+        'TRL-9 innovations in clean energy'
+      )
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }))
+    })
+    await flushStreamStart()
+
+    expect(streamSpy).toHaveBeenCalledTimes(2)
+    expect(streamSpy.mock.calls[1][0].query).toBe('TRL-9 innovations in clean energy')
+    expect(container.textContent).toContain('TRL-9 innovations in clean energy')
   })
 })
