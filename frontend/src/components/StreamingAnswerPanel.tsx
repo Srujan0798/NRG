@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from 'react'
-import { Citation } from '../services/queryService'
+import { Citation, QueryProvenance } from '../services/queryService'
 import { useStreamingQuery } from '../hooks/useStreamingQuery'
 import PhaseHeader from './PhaseHeader/PhaseHeader'
 import SqlBlock from './SqlBlock/SqlBlock'
@@ -25,6 +25,7 @@ export interface StreamingProofPayload {
   rowsReturned: number
   auditEventId: string | null
   confidence: 'high' | 'medium' | 'low'
+  provenance?: QueryProvenance
 }
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-IN').format(value)
@@ -47,6 +48,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
     citations,
     auditEventId,
     signatureBytes,
+    provenance,
     error,
     isVerified,
     startStream,
@@ -73,8 +75,9 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
       rowsReturned: retrievedCount,
       auditEventId,
       confidence: 'high',
+      provenance,
     })
-  }, [auditEventId, citations, fullText, isVerified, onProofChange, retrievedCount, sql])
+  }, [auditEventId, citations, fullText, isVerified, onProofChange, provenance, retrievedCount, sql])
 
   const planSteps = useMemo(() => plan?.steps?.length ? plan.steps : defaultPlan, [plan])
   const hasStarted = Boolean(query.trim())
@@ -175,6 +178,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
                 sqlQuery={sql}
                 rowsReturned={retrievedCount}
                 auditEventId={auditEventId}
+                provenance={provenance}
               />
             </div>
           )}

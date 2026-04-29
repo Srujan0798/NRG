@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { authService } from '../services/authService'
-import { Citation, QueryRequest, queryService } from '../services/queryService'
+import { Citation, QueryProvenance, QueryRequest, queryService } from '../services/queryService'
 import { useQueryStore } from '../stores/queryStore'
 import { PlanDAG, StreamPhaseName, StreamQueryEvent } from '../types/api'
 import { errorCopy } from '../i18n/en-IN'
@@ -26,7 +26,7 @@ export interface StreamMeta {
   synthesis_tier: string
   verification_status: boolean
   citations: StreamCitation[]
-  provenance: Record<string, unknown>
+  provenance: QueryProvenance
   query_id: string
   audit_event_id?: string
   signature_bytes?: number
@@ -94,6 +94,15 @@ const normalizeLegacyPhase = (phase: string): StreamPhaseName => {
   return 'planning'
 }
 
+const resolveStreamProvenance = (
+  payloadProvenance: QueryProvenance | undefined,
+  currentProvenance: QueryProvenance
+): QueryProvenance => {
+  if (payloadProvenance && Object.keys(payloadProvenance).length > 0) return payloadProvenance
+  if (Object.keys(currentProvenance).length > 0) return currentProvenance
+  return { verifier: 'hmac' }
+}
+
 export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const [isStreaming, setIsStreaming] = useState(false)
   const [currentPhase, setCurrentPhase] = useState<StreamPhase | null>(null)
@@ -104,6 +113,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const [citations, setCitations] = useState<StreamCitation[]>([])
   const [auditEventId, setAuditEventId] = useState<string | null>(null)
   const [signatureBytes, setSignatureBytes] = useState<number | null>(null)
+  const [provenance, setProvenance] = useState<QueryProvenance>({})
   const [error, setError] = useState<string | null>(null)
   const [isRecoverableError, setIsRecoverableError] = useState(false)
 
@@ -112,6 +122,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fullTextRef = useRef('')
   const citationsRef = useRef<StreamCitation[]>([])
+  const provenanceRef = useRef<QueryProvenance>({})
   const submitStartedAtRef = useRef<number | null>(null)
   const queryTelemetryIdRef = useRef<string | null>(null)
   const personaRef = useRef<string>('anonymous')
@@ -205,10 +216,13 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     clearSilenceTimer()
     terminalEventRef.current = true
     const verifiedCitations = payload.citations.map(toStreamCitation)
+    const finalProvenance = resolveStreamProvenance(payload.provenance, provenanceRef.current)
     citationsRef.current = verifiedCitations
+    provenanceRef.current = finalProvenance
     setCitations(verifiedCitations)
     setAuditEventId(payload.audit_event_id)
     setSignatureBytes(payload.signature_bytes ?? 26)
+    setProvenance(finalProvenance)
     if (submitStartedAtRef.current) {
       emitTelemetry('query.completed', {
         total_ms: Math.round(performance.now() - submitStartedAtRef.current),
@@ -231,7 +245,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
       synthesis_tier: 'stream',
       verification_status: true,
       citations: verifiedCitations,
-      provenance: { verifier: 'hmac' },
+      provenance: finalProvenance,
       query_id: payload.audit_event_id,
       audit_event_id: payload.audit_event_id,
       signature_bytes: payload.signature_bytes ?? 26,
@@ -269,12 +283,17 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
         citationsRef.current = answerCitations
         setCitations(answerCitations)
       }
+      if (parsed.provenance) {
+        provenanceRef.current = parsed.provenance
+        setProvenance(parsed.provenance)
+      }
       setAuditEventId(parsed.audit_event_id || null)
       completeStream({
         phase: 'verified',
         citations: Array.isArray(parsed.citations) ? parsed.citations : [],
         audit_event_id: parsed.audit_event_id || `stream-${Date.now()}`,
         signature_bytes: parsed.signature_bytes ?? 26,
+        provenance: parsed.provenance,
       })
       return
     }
@@ -319,6 +338,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
         citations: parsed.citations || [],
         audit_event_id: parsed.audit_event_id || `stream-${Date.now()}`,
         signature_bytes: parsed.signature_bytes,
+        provenance: parsed.provenance,
       })
       return
     }
@@ -370,6 +390,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     abortStream()
     fullTextRef.current = ''
     citationsRef.current = []
+    provenanceRef.current = {}
     observedPhaseRef.current = new Set()
     terminalEventRef.current = false
     setIsStreaming(true)
@@ -380,6 +401,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     setCitations([])
     setAuditEventId(null)
     setSignatureBytes(null)
+    setProvenance({})
     setError(null)
     setIsRecoverableError(false)
     useQueryStore.getState().setStreaming({
@@ -442,6 +464,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     citations,
     auditEventId,
     signatureBytes,
+    provenance,
     error,
     isRecoverableError,
     isVerified: currentPhase?.phase === 'verified',

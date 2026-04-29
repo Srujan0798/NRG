@@ -289,7 +289,7 @@ export type StreamQueryEvent =
   | { phase: 'planned'; plan: PlanDAG }
   | { phase: 'executing'; sql?: string; retrieved_count?: number }
   | { phase: 'synthesizing'; token: string; citation?: Citation }
-  | { phase: 'verified'; citations: Citation[]; audit_event_id: string; signature_bytes?: number }
+  | { phase: 'verified'; citations: Citation[]; audit_event_id: string; signature_bytes?: number; provenance?: NRGQueryResponse['provenance'] }
   | { phase: 'heartbeat' }
   | { phase: 'error'; message?: string }
 
