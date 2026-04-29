@@ -228,7 +228,9 @@ class TestSchemaParity:
         normalized = re.sub(r"\s+", " ", source)
 
         assert "CREATE OR REPLACE VIEW trl_stages AS" in normalized
+        assert "CREATE OR REPLACE VIEW tech_trl_stages AS" in normalized
         assert "stage_of_technology AS trl_level" in normalized
+        assert "stage_of_technology AS tech_readiness_stage" in normalized
         assert "FROM innovations_at_various_stages_of_technology_readiness_level" in normalized
 
     def test_active_schema_has_trl_stages_view(self, local_alembic_db_url: str):
