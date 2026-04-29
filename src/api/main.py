@@ -172,7 +172,7 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
                 found_types.append(pii_type)
         return result, found_types
 
-    text_fields_to_check = ["response", "warnings"]
+    text_fields_to_check = ["response", "final_answer", "warnings"]
     for fname in text_fields_to_check:
         if fname in redacted_response and isinstance(redacted_response[fname], str):
             redacted_response[fname], found = _redact_text(redacted_response[fname])
@@ -331,6 +331,43 @@ def _apply_tier_response_filter(
         elif tier >= 3:
             filtered["tier3_access_scope"] = "industry_anonymized"
     return filtered
+
+
+def _apply_ai_synthesis_after_tier_filter(
+    payload: dict[str, Any],
+    *,
+    query: str,
+    user_tier: int,
+    user_id: str | None,
+    jwt_kid: str | None,
+    request_fingerprint: str | None,
+    endpoint: str,
+) -> dict[str, Any]:
+    """Optionally rewrite visible answer prose from already tier-safe evidence."""
+    try:
+        from src.api.ai_synthesis import synthesize_payload_with_ai
+
+        synthesized = synthesize_payload_with_ai(payload, query=query, user_tier=user_tier)
+    except Exception:
+        logger.warning("AI synthesis post-filter step failed", exc_info=True)
+        return payload
+
+    if synthesized is payload:
+        return payload
+
+    synthesized, redacted_pii = _redact_pii_from_response(synthesized)
+    if redacted_pii:
+        synthesized["warnings"] = synthesized.get("warnings", []) + [
+            f"PII redaction applied to AI synthesis response: {', '.join(redacted_pii)}"
+        ]
+    return _apply_tier_response_filter(
+        synthesized,
+        user_tier,
+        user_id=user_id,
+        jwt_kid=jwt_kid,
+        request_fingerprint=request_fingerprint,
+        endpoint=endpoint,
+    )
 
 
 def _audit_tier_filter_events(
@@ -3539,6 +3576,15 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            fast_response = _apply_ai_synthesis_after_tier_filter(
+                fast_response,
+                query=request.query,
+                user_tier=user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
             _persist_answer_record(user_id, request.session_id, fast_response)
             _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return fast_response
@@ -3576,6 +3622,15 @@ async def query_with_langgraph(
             follow_up_response = _apply_tier_response_filter(
                 follow_up_response,
                 user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
+            follow_up_response = _apply_ai_synthesis_after_tier_filter(
+                follow_up_response,
+                query=request.query,
+                user_tier=user_tier,
                 user_id=user_id,
                 jwt_kid=token_payload.get("kid"),
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
@@ -3621,6 +3676,15 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            killer_response = _apply_ai_synthesis_after_tier_filter(
+                killer_response,
+                query=request.query,
+                user_tier=user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
             _persist_answer_record(user_id, request.session_id, killer_response)
             _api_cache.set(cache_key, killer_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             _remember_sql_domain_context(
@@ -3656,6 +3720,15 @@ async def query_with_langgraph(
             adversarial_response = _apply_tier_response_filter(
                 adversarial_response,
                 user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
+            )
+            adversarial_response = _apply_ai_synthesis_after_tier_filter(
+                adversarial_response,
+                query=request.query,
+                user_tier=user_tier,
                 user_id=user_id,
                 jwt_kid=token_payload.get("kid"),
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
@@ -3752,6 +3825,15 @@ async def query_with_langgraph(
         response_payload = _apply_tier_response_filter(
             response_payload,
             user_tier,
+            user_id=user_id,
+            jwt_kid=jwt_kid,
+            request_fingerprint=request_fp,
+            endpoint="/query",
+        )
+        response_payload = _apply_ai_synthesis_after_tier_filter(
+            response_payload,
+            query=request.query,
+            user_tier=user_tier,
             user_id=user_id,
             jwt_kid=jwt_kid,
             request_fingerprint=request_fp,

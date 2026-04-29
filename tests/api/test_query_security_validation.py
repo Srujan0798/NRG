@@ -4,6 +4,7 @@ import pytest
 import pytest_asyncio
 from fastapi.testclient import TestClient
 
+import src.api.deps as api_deps
 import src.api.main as api_main
 
 
@@ -160,3 +161,18 @@ def test_query_graph_post_rejects_schema_probe_body(test_client):
 
     assert response.status_code == 400, response.text
     assert "PROMPT_INJECTION" in response.json().get("detail", "")
+
+
+def test_pii_redaction_covers_response_and_final_answer():
+    payload = {
+        "response": "Contact asha.mehta@iit.example",
+        "final_answer": "Call 9876543210",
+        "warnings": "",
+    }
+
+    for redactor in (api_main._redact_pii_from_response, api_deps._redact_pii_from_response):
+        redacted, redacted_types = redactor(payload)
+        assert "asha.mehta@iit.example" not in redacted["response"]
+        assert "9876543210" not in redacted["final_answer"]
+        assert "EMAIL" in redacted_types
+        assert "PHONE" in redacted_types

@@ -63,6 +63,27 @@ def _apply_tier_filter_to_response(payload, user_tier, user_id, jwt_kid, request
     )
 
 
+def _apply_ai_synthesis_after_tier_filter(payload, query, user_tier, user_id, jwt_kid, request_fp):
+    try:
+        from src.api.ai_synthesis import synthesize_payload_with_ai
+
+        synthesized = synthesize_payload_with_ai(payload, query=query, user_tier=user_tier)
+    except Exception:
+        logger.warning("AI synthesis post-filter step failed", exc_info=True)
+        return payload
+
+    if synthesized is payload:
+        return payload
+
+    return _apply_tier_filter_to_response(
+        synthesized,
+        user_tier,
+        user_id,
+        jwt_kid,
+        request_fp,
+    )
+
+
 def _normalise_query_answer_payload(
     request: QueryRequest,
     *,
@@ -209,6 +230,11 @@ async def query_with_langgraph(
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            fast_response = _apply_ai_synthesis_after_tier_filter(
+                fast_response, request.query, user_tier, user_id,
+                token_payload.get("kid"),
+                getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
             _persist_answer_record(user_id, request.session_id, fast_response)
             _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return fast_response
@@ -243,6 +269,11 @@ async def query_with_langgraph(
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            follow_up_response = _apply_ai_synthesis_after_tier_filter(
+                follow_up_response, request.query, user_tier, user_id,
+                token_payload.get("kid"),
+                getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
             _persist_answer_record(user_id, request.session_id, follow_up_response)
             _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return follow_up_response
@@ -272,6 +303,11 @@ async def query_with_langgraph(
             )
             killer_response = _apply_tier_filter_to_response(
                 killer_response, user_tier, user_id,
+                token_payload.get("kid"),
+                getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
+            killer_response = _apply_ai_synthesis_after_tier_filter(
+                killer_response, request.query, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
@@ -309,6 +345,11 @@ async def query_with_langgraph(
             )
             adversarial_response = _apply_tier_filter_to_response(
                 adversarial_response, user_tier, user_id,
+                token_payload.get("kid"),
+                getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
+            adversarial_response = _apply_ai_synthesis_after_tier_filter(
+                adversarial_response, request.query, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
@@ -387,6 +428,9 @@ async def query_with_langgraph(
 
         response_payload = _apply_tier_filter_to_response(
             response_payload, user_tier, user_id, jwt_kid, request_fp,
+        )
+        response_payload = _apply_ai_synthesis_after_tier_filter(
+            response_payload, request.query, user_tier, user_id, jwt_kid, request_fp,
         )
         _persist_answer_record(user_id, request.session_id, response_payload)
         _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)

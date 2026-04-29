@@ -14,6 +14,7 @@ from fastapi import Depends, HTTPException, Request
 from pydantic import BaseModel, Field, model_validator
 from starlette.responses import JSONResponse
 
+from src.api.logging_config import get_logger
 from src.api.response_filter import (
     TierResponseFilterReport,
     apply_k_anonymity_threshold,
@@ -242,7 +243,7 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
                 found_types.append(pii_type)
         return result, found_types
 
-    text_fields_to_check = ["response", "warnings"]
+    text_fields_to_check = ["response", "final_answer", "warnings"]
     for fname in text_fields_to_check:
         if fname in redacted_response and isinstance(redacted_response[fname], str):
             redacted_response[fname], found = _redact_text(redacted_response[fname])
