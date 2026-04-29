@@ -15,7 +15,7 @@ export interface IntelligenceBriefProps {
   provenance?: QueryProvenance
   warnings?: QueryWarning[]
   verification_status?: boolean
-  answer_confidence?: 'high' | 'partial' | 'low_clarify'
+  answer_confidence?: 'high' | 'medium' | 'low' | 'needs_clarification' | 'partial' | 'low_clarify'
   onNodeClick?: (node: GraphNode) => void
   onExportPDF?: () => void
   isStreaming?: boolean
@@ -57,8 +57,9 @@ export const IntelligenceBrief: React.FC<IntelligenceBriefProps> = ({
 
   const confidenceScore = useMemo(() => {
     if (answer_confidence === 'high') return 0.95
-    if (answer_confidence === 'partial') return 0.65
-    if (answer_confidence === 'low_clarify') return 0.25
+    if (answer_confidence === 'medium' || answer_confidence === 'partial') return 0.65
+    if (answer_confidence === 'low') return 0.35
+    if (answer_confidence === 'needs_clarification' || answer_confidence === 'low_clarify') return 0.25
     if (!provenance?.verifier) return 0.5
     const match = provenance.verifier.match(/faithfulness[:\s]*([\d.]+)/i)
     return match ? parseFloat(match[1]) : 0.75

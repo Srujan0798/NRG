@@ -11,6 +11,41 @@ from unittest.mock import MagicMock
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import src.orchestration.nodes.verifier as verifier_module
+from src.orchestration.state import NRGState
+from src.orchestration.nodes.verifier import verifier_node
+
+
+def test_nrg_state_carries_answer_engine_v1_fields():
+    state = NRGState(
+        user_query="Who is best in hydrogen catalysis?",
+        assumptions=["Interpreted best as recent evidence-backed composite score."],
+        caveats=["Citation data is incomplete for 2026."],
+        follow_up_suggestions=["Change time range"],
+        freshness={"database_snapshot": "2026-04-29"},
+    )
+
+    data = state.to_dict()
+
+    assert data["assumptions"]
+    assert data["caveats"]
+    assert data["follow_up_suggestions"] == ["Change time range"]
+    assert data["freshness"]["database_snapshot"] == "2026-04-29"
+
+
+def test_verifier_marks_unsupported_numeric_answer_low_confidence():
+    state = {
+        "user_query": "Top grants",
+        "synthesized_response": "DST disbursed 999 crore [cite:structured:0].",
+        "sql_results": [{"agency": "DST", "total": 10}],
+        "citations": [{"pub_id": "structured", "chunk_id": "0"}],
+        "user_tier": 1,
+    }
+
+    result = verifier_node(state)
+
+    assert result["answer_confidence"] in {"low", "needs_clarification"}
+    assert result["caveats"]
+    assert result["unsupported_claims"]
 
 
 class FakeVerifierClient:

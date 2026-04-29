@@ -373,7 +373,7 @@ def verifier_node(state: Any) -> dict:
             for signal in anomaly_report.get("signals", [])
             if isinstance(signal, dict) and signal.get("name")
         ]
-        return {
+        return _with_evidence_confidence({
             "verification_status": "fail",
             "faithfulness_score": min(float(anomaly_report.get("confidence_score", 0.05) or 0.05), 0.5),
             "score_breakdown": {
@@ -393,7 +393,7 @@ def verifier_node(state: Any) -> dict:
             "answer_confidence": "low_clarify",
             "answer_confidence_score": float(anomaly_report.get("confidence_score", 0.05) or 0.05),
             "sql_anomaly_report": anomaly_report,
-        }
+        })
 
     uncited_numeric_claims = _numeric_claims_without_sentence_citation(response)
     unsupported_numbers = _unsupported_numeric_claims(response, sql_results)
@@ -405,7 +405,7 @@ def verifier_node(state: Any) -> dict:
             "no_fabrication": 0.0,
             "tier_compliance": FAITHFULNESS_WEIGHTS["tier_compliance"],
         }
-        return {
+        return _with_evidence_confidence({
             "verification_status": "fail",
             "faithfulness_score": sum(score_breakdown.values()),
             "score_breakdown": score_breakdown,
@@ -419,7 +419,7 @@ def verifier_node(state: Any) -> dict:
             "synthesized_response": "Insufficient data to support the numeric claims with required citations.",
             "answer_confidence": "low",
             "answer_confidence_score": sum(score_breakdown.values()),
-        }
+        })
 
     score_breakdown = {
         "citation_present": 0.0,
@@ -688,7 +688,35 @@ def verifier_node(state: Any) -> dict:
     result["invalid_citations"] = invalid_citations_out
     result["citations"] = enriched_citations
     result["synthesized_response"] = stripped_response
-    return result
+    return _with_evidence_confidence(result)
+
+
+def _with_evidence_confidence(result: dict) -> dict:
+    faithfulness_score = float(result.get("faithfulness_score", 0.0) or 0.0)
+    unsupported_claims = result.get("unsupported_claims", []) or []
+    caveats = list(result.get("caveats", []) or [])
+    existing_confidence = result.get("answer_confidence")
+
+    if existing_confidence == "low_clarify":
+        answer_confidence = "needs_clarification"
+        if not caveats:
+            caveats.append("The evidence path needs clarification before a safe answer can be produced.")
+    elif unsupported_claims:
+        answer_confidence = "low"
+        if not caveats:
+            caveats.append("Some numeric claims were not supported by retrieved evidence.")
+    elif faithfulness_score < 0.85:
+        answer_confidence = "medium"
+        if not caveats:
+            caveats.append("Answer is supported, but citation or evidence coverage is incomplete.")
+    else:
+        answer_confidence = "high"
+
+    enriched = dict(result)
+    enriched["answer_confidence"] = answer_confidence
+    enriched["answer_confidence_score"] = faithfulness_score
+    enriched["caveats"] = caveats
+    return enriched
 
 
 def _failure_result(

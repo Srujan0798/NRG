@@ -13,6 +13,7 @@ from fastapi import HTTPException, Request, Header
 from starlette.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from src.api.answer_contract import blocked_answer_payload
 from src.security.gateway.prompt_sanitiser import PromptSanitiser
 
 logger = logging.getLogger(__name__)
@@ -250,8 +251,17 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                         f"PromptSanitiserMiddleware rejected: {validation['reason']} - "
                         f"field={field_name} path={request.url.path}"
                     )
+                    if request.url.path == "/query" and validation["reason"] != "RATE_LIMITED":
+                        claims = getattr(request.state, "auth_claims", {}) or {}
+                        blocked = blocked_answer_payload(
+                            question=field_value,
+                            user_tier=int(claims.get("tier", 1) or 1),
+                            audit_event_id=None,
+                            reason=f"Security policy blocked this query: {validation['reason']}",
+                        )
+                        return JSONResponse(status_code=400, content=blocked)
                     return JSONResponse(
-                        status_code=400,
+                        status_code=429 if validation["reason"] == "RATE_LIMITED" else 400,
                         content={"detail": f"Security violation: {validation['reason']}"},
                     )
 

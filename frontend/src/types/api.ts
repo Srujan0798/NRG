@@ -167,6 +167,34 @@ export interface NRGGraphResponse {
 
 // ─── Query ────────────────────────────────────────────────────────────────────
 
+export type AnswerRoute = 'sql' | 'rag' | 'hybrid' | 'clarify' | 'blocked'
+export type AnswerConfidenceLevel = 'high' | 'medium' | 'low' | 'needs_clarification'
+
+export interface AnswerEngineConfidence {
+  level: AnswerConfidenceLevel
+  reason: string
+}
+
+export interface AnswerEngineCitation {
+  id: string
+  source_type: 'sql_row' | 'document_chunk' | 'graph_edge'
+  label: string
+  source_id: string
+  masked?: boolean
+}
+
+export interface AnswerEngineSourceData {
+  sql_query?: string | null
+  rows: Array<Record<string, unknown>>
+  documents: Array<Record<string, unknown>>
+}
+
+export interface AnswerEngineFreshness {
+  database_snapshot?: string | null
+  document_indexed_at?: string | null
+  warning?: string | null
+}
+
 /**
  * Query response from /query.
  *
@@ -174,19 +202,39 @@ export interface NRGGraphResponse {
  */
 export interface NRGQueryResponse {
   query_id: string
+  answer_id?: string
+  audit_event_id?: string
   session_id?: string
   response: string
-  status: 'success' | 'error' | 'partial'
+  status: 'success' | 'error' | 'partial' | 'blocked'
   tier: number
+  question?: string
+  interpreted_question?: string
+  assumptions?: string[]
+  route?: AnswerRoute
+  final_answer?: string
+  confidence?: AnswerEngineConfidence
   intent?: 'structured' | 'unstructured' | 'hybrid'
   routing_decision?: string
   verification_status: boolean
-  answer_confidence?: 'high' | 'partial' | 'low_clarify'
+  answer_confidence?: AnswerConfidenceLevel | 'partial' | 'low_clarify'
   answer_confidence_score?: number
   sql_anomaly_report?: Record<string, unknown>
+  sql_query?: string | null
+  sql_queries?: string[]
+  sql_results?: Array<Record<string, unknown>>
+  source_data?: AnswerEngineSourceData
+  freshness?: AnswerEngineFreshness
+  caveats?: string[]
+  follow_up_suggestions?: string[]
+  query_time_ms?: number
   citations?: Array<{
     id: string
     source: string
+    source_type?: 'sql_row' | 'document_chunk' | 'graph_edge'
+    label?: string
+    source_id?: string
+    masked?: boolean
     pub_id?: string
     chunk_id?: string
     title: string
@@ -220,9 +268,12 @@ export interface PlanDAG {
 }
 
 export type StreamPhaseName =
+  | 'understanding'
   | 'parsing'
   | 'planning'
   | 'planned'
+  | 'searching_records'
+  | 'checking_documents'
   | 'querying'
   | 'executing'
   | 'synthesizing'

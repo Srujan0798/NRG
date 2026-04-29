@@ -59,6 +59,23 @@ def _login(client: TestClient) -> str:
     return response.json()["access_token"]
 
 
+def _assert_blocked_envelope(response, expected_reason: str | None = None) -> dict:
+    assert response.status_code in (200, 400), response.text
+    payload = response.json()
+    if "detail" in payload:
+        pytest.fail(f"Blocked query returned raw detail instead of envelope: {payload}")
+
+    assert payload["route"] == "blocked"
+    assert payload["blocked"] is True
+    assert payload["status"] == "blocked"
+    assert "personal" in payload["final_answer"].lower() or "sensitive" in payload["final_answer"].lower()
+    assert payload["confidence"]["level"] == "needs_clarification"
+    assert payload["source_data"]["rows"] == []
+    if expected_reason:
+        assert expected_reason in payload["confidence"]["reason"]
+    return payload
+
+
 @pytest.mark.parametrize(
     "payload",
     [
@@ -76,8 +93,21 @@ def test_sql_injection_blocked_before_workflow(test_client, payload):
         json={"query": payload},
     )
 
-    assert response.status_code == 400, response.text
-    assert "PROMPT_INJECTION" in response.json().get("detail", "")
+    _assert_blocked_envelope(response, "PROMPT_INJECTION")
+    assert CountingWorkflow.call_count == 0
+
+
+def test_pii_block_returns_answer_engine_envelope(test_client):
+    CountingWorkflow.call_count = 0
+    token = _login(test_client)
+
+    response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"query": "Show all researcher phone numbers in clean energy"},
+    )
+
+    _assert_blocked_envelope(response)
     assert CountingWorkflow.call_count == 0
 
 
@@ -99,8 +129,7 @@ def test_length_bomb_blocked_before_workflow(monkeypatch):
         json={"query": "a" * 10000},
     )
 
-    assert response.status_code == 400, response.text
-    assert "QUERY_TOO_LARGE" in response.json().get("detail", "")
+    _assert_blocked_envelope(response, "QUERY_TOO_LARGE")
     assert CountingWorkflow.call_count == 0
 
 

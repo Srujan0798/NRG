@@ -112,6 +112,18 @@ def _detect_domain_from_tables(tables: list[str]) -> str:
     return max(domain_counts, key=domain_counts.get)
 
 
+def _default_assumptions(query: str) -> list[str]:
+    lowered = query.lower()
+    assumptions: list[str] = []
+    if any(word in lowered for word in ("best", "top", "leading", "strongest")):
+        assumptions.append(
+            "Interpreted ranking as an evidence-backed composite of output, recency, funding, and impact where available."
+        )
+    if not re.search(r"\b(20\d{2}|last\s+\d+\s+years?|all-time|all time|between)\b", lowered):
+        assumptions.append("Used recent five-year context unless the query or data path specified another range.")
+    return assumptions
+
+
 class Plan(BaseModel):
     schema_tables: list[str] = Field(default_factory=list)
     desired_skills: list[str] = Field(default_factory=list)
@@ -168,13 +180,15 @@ def planner_node(state: Any) -> dict:
 
             return {
                 "plan": plan_dict,
-                "planner_metadata": {
-                    "mode": "llm",
-                    "model": _client_model_name(client),
-                },
-                **_domain_update(plan_dict, previous_domain),
-                **_context_update(plan_dict, state, planning_query),
-            }
+                    "planner_metadata": {
+                        "mode": "llm",
+                        "model": _client_model_name(client),
+                    },
+                    "assumptions": _default_assumptions(planning_query),
+                    "interpreted_question": planning_query,
+                    **_domain_update(plan_dict, previous_domain),
+                    **_context_update(plan_dict, state, planning_query),
+                }
         except Exception as first_error:
             logger.warning("Planner failed first parse/call: %s", first_error)
             try:
@@ -191,13 +205,15 @@ def planner_node(state: Any) -> dict:
                     pass
                 return {
                     "plan": plan_dict,
-                    "planner_metadata": {
-                        "mode": "llm_repaired",
-                        "model": _client_model_name(client),
-                    },
-                    **_domain_update(plan_dict, previous_domain),
-                    **_context_update(plan_dict, state, planning_query),
-                }
+                        "planner_metadata": {
+                            "mode": "llm_repaired",
+                            "model": _client_model_name(client),
+                        },
+                        "assumptions": _default_assumptions(planning_query),
+                        "interpreted_question": planning_query,
+                        **_domain_update(plan_dict, previous_domain),
+                        **_context_update(plan_dict, state, planning_query),
+                    }
             except Exception:
                 pass
 
@@ -213,6 +229,8 @@ def planner_node(state: Any) -> dict:
             "mode": "heuristic_fallback",
             "reason": "llm_unavailable_or_failed",
         },
+        "assumptions": _default_assumptions(planning_query),
+        "interpreted_question": planning_query,
         **_domain_update(fallback_plan, previous_domain),
         **_context_update(fallback_plan, state, planning_query),
     }

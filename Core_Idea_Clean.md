@@ -29,15 +29,41 @@ That's the core challenge. Not a chatbot. Not a search engine. A system that **u
 
 ---
 
+## Locked Product Principles
+
+This is the direction locked from the product clarification interview:
+
+> **The user asks like a human. NRG thinks like an analyst. The answer comes back like an audited report.**
+
+- **Product promise**: Ask any research-intelligence question. NRG finds the evidence, explains the answer, and proves where it came from.
+- **Core loop**: Ask -> plan -> retrieve -> synthesize -> verify -> prove.
+- **Architecture rule**: LLM plans. Tools retrieve. Verifier proves. UI explains.
+- **Safety rule**: The model may reason, but only evidence may speak.
+- **UX rule**: Ask like chat. Trust like audit. Use like intelligence software.
+- **Phase 1 milestone**: NRG Answer Engine v1, focused on Ask -> Answer -> Proof.
+- **Retrieval paths**: SQL for exact data, RAG for documents, graph for relationships, model memory after fine-tuning, controlled connectors later.
+- **Answer style**: conversational on top, proof underneath. Show assumptions, citations, confidence, freshness, source data, SQL/computation, and audit event.
+- **Ambiguity behavior**: infer useful defaults first; ask clarification only when answering would be unsafe or misleading.
+- **Scope boundary**: NRG answers what it can prove from approved research data. It does not become a general chatbot.
+- **Tier boundary**: database/API/backend enforce access first; the frontend explains restrictions and never receives forbidden data.
+- **Roadmap**: Answer Engine v1 -> Graph Intelligence v2 -> Multilingual + Policy Reports v3 -> Sovereign Model v4 -> Production Sovereign Platform v5.
+
+Canonical strategy/spec files:
+
+- `docs/specs/NRG_PRODUCT_STRATEGY_LOCKED.md`
+- `docs/specs/NRG_ANSWER_ENGINE_V1_SPEC.md`
+
+---
+
 ## The 3 Users
 
 The same database serves three audiences. Each sees only what they're allowed to see — like three windows into the same room.
 
 | Persona | What they ask | What they see |
 |---------|--------------|---------------|
-| **Researcher** (Tier 1) | "Show me peers in my field, their papers, contact info" | Full details — names, emails, publications, lab info |
-| **Government** (Tier 2) | "State-wise research trends, funding gaps, institutional capacity" | Aggregated stats, anonymized summaries, policy-ready reports |
-| **Industry** (Tier 3) | "Who has capability in X for partnership?" | Names and research areas only — no personal info, licensed access |
+| **Researcher** (Tier 1) | "Show me peers in my field, their papers, labs, collaborations" | Research details, publications, labs, collaborations, and limited contact details only when policy allows |
+| **Government** (Tier 2) | "State-wise research trends, funding gaps, institutional capacity" | Aggregated stats, named institutions/labs, anonymized summaries, policy-ready reports |
+| **Industry** (Tier 3) | "Who has capability in X for partnership?" | Institution/lab capability, partnership signals, official contact route; researcher names/emails only if licensed or allowed |
 
 ---
 
@@ -67,7 +93,7 @@ Two parallel paths:
 
 ### Step 5 — Writing the Answer
 Three-tier cascade — tries the best option, falls back gracefully:
-1. **Cloud LLM** (Gemini/Claude) — natural language synthesis (data never leaves, only retrieved facts go out)
+1. **Cloud LLM** (Gemini/Claude) — optional assisted synthesis using only approved, tier-filtered, non-PII evidence snippets through an egress guard
 2. **Local SLM** (Llama 3 8B on our own machine) — simpler but fully offline
 3. **Rule-based formatting** — organized tables, always works, no AI needed
 
@@ -89,7 +115,8 @@ A verification step cross-references the answer against source data to catch hal
 │  LAYER 4: REASONING                                     │
 │  LLM synthesis (cloud or local) — interprets data,      │
 │  writes answers, verifies claims against evidence        │
-│  ⚠️ NO raw data sent to cloud — only retrieved facts    │
+│  Strict mode sends nothing outside; optional cloud mode  │
+│  sends only redacted, approved evidence snippets         │
 └────────────────────────────┬────────────────────────────┘
                              │
 ┌────────────────────────────▼────────────────────────────┐
@@ -120,7 +147,7 @@ A verification step cross-references the answer against source data to catch hal
 
 ## Security Model: Zero-Data-Leakage
 
-The core principle: **"The 600GB repository resides exclusively on Indian servers. The system is architecturally incapable of uploading data to the internet."**
+The core principle: **"The 600GB repository resides exclusively on Indian servers. Raw data, PII, unrestricted document chunks, schemas, and audit material never leave controlled infrastructure."**
 
 Think of it like a government building:
 
@@ -130,18 +157,23 @@ Think of it like a government building:
 | **Bag scan** | PII detection + prompt injection blocking | Security screening |
 | **Floor access** | RBAC — tier 1/2/3 see different data | Badge color decides which floors you enter |
 | **CCTV** | HMAC-chained audit log — every action recorded, tamper-proof | Every door you open is logged |
-| **Data vault** | Data never leaves local servers — cloud LLM gets only retrieved facts, not raw data | Vault stays locked, you get photocopies |
+| **Data vault** | Raw data stays local; optional cloud synthesis receives only an approved redacted evidence pack | Vault stays locked, you get stamped extracts |
 
 ### What NEVER leaves the local boundary:
 - The 600GB research database
-- Retrieved facts and document chunks
-- Synthesized content
+- Raw retrieved rows, full document chunks, unrestricted source records, and database schemas
+- Stored answer history and audit records
 - Researcher PII (Aadhaar, phone, email)
 
-### What goes to cloud LLM (when used):
-- Only: the user's question + retrieved facts for synthesis
-- NOT: raw database, schemas, or sensitive metadata
-- The local SLM option sends nothing outside at all
+### What can go to a cloud LLM (only if explicitly enabled):
+- The user's question
+- A minimal, tier-filtered, non-PII evidence pack approved by the egress guard
+- No raw database, no unrestricted schema, no full document corpus, no researcher PII, no audit secrets
+
+### Strict sovereign mode:
+- Uses local SLM/rule-based synthesis only
+- Sends nothing outside the deployment boundary
+- Is the required mode for sensitive or production-sovereign deployments
 
 ### Regulatory compliance:
 - DPDP Act 2023 (Digital Personal Data Protection)

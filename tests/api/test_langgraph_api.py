@@ -87,6 +87,16 @@ def test_query_endpoint_passes_session_id_to_workflow(monkeypatch):
         assert payload["sql_query"] == "SELECT name FROM researchers LIMIT 5"
         assert payload["sql_results"] == [{"name": "A. Researcher"}]
         assert payload["retrieval_sources"] == ["structured"]
+        assert payload["answer_id"]
+        assert payload["question"] == "Summarize sovereign readiness signals"
+        assert payload["interpreted_question"]
+        assert payload["route"] == "sql"
+        assert payload["final_answer"] == "orchestrated answer"
+        assert payload["confidence"]["level"] == "high"
+        assert payload["source_data"]["sql_query"] == "SELECT name FROM researchers LIMIT 5"
+        assert payload["source_data"]["rows"] == [{"name": "A. Researcher"}]
+        assert "freshness" in payload
+        assert "follow_up_suggestions" in payload
         assert len(stub_workflow.calls) == 1
         call = stub_workflow.calls[0]
         assert call["query"] == "Summarize sovereign readiness signals"
@@ -343,5 +353,5 @@ def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
         headers=_auth_headers(client),
     )
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Security violation: RATE_LIMITED"
+    assert response.status_code == 429
+    assert response.json()["detail"] == "Rate limit exceeded"

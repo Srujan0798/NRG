@@ -11,6 +11,10 @@ export interface QueryRequest {
 export interface Citation {
   id: string;
   source?: string;
+  source_type?: 'sql_row' | 'document_chunk' | 'graph_edge';
+  source_id?: string;
+  label?: string;
+  masked?: boolean;
   pub_id?: string;
   chunk_id?: string;
   audit_event_id?: string;
@@ -44,20 +48,43 @@ export interface QueryProvenance {
 
 export interface QueryResponse {
   query_id: string;
+  answer_id?: string;
   audit_event_id?: string;
   session_id?: string;
   response: string;
   status: string;
   tier: number;
+  question?: string;
+  interpreted_question?: string;
+  assumptions?: string[];
+  route?: 'sql' | 'rag' | 'hybrid' | 'clarify' | 'blocked';
+  final_answer?: string;
+  confidence?: {
+    level: 'high' | 'medium' | 'low' | 'needs_clarification';
+    reason: string;
+  };
   intent?: string;
   routing_decision?: string;
   verification_status: boolean;
-  answer_confidence?: 'high' | 'partial' | 'low_clarify';
+  answer_confidence?: 'high' | 'medium' | 'low' | 'needs_clarification' | 'partial' | 'low_clarify';
   answer_confidence_score?: number;
   sql_anomaly_report?: Record<string, unknown>;
   sql_query?: string | null;
   sql_queries?: string[];
   sql_results?: Array<Record<string, unknown>>;
+  source_data?: {
+    sql_query?: string | null;
+    rows: Array<Record<string, unknown>>;
+    documents: Array<Record<string, unknown>>;
+  };
+  freshness?: {
+    database_snapshot?: string | null;
+    document_indexed_at?: string | null;
+    warning?: string | null;
+  };
+  caveats?: string[];
+  follow_up_suggestions?: string[];
+  query_time_ms?: number;
   citation_validity?: number;
   citations?: Citation[];
   warnings?: QueryWarning[];
@@ -300,14 +327,18 @@ function sanitizeCitationsForTier(citations: Citation[], tier: number): Citation
 }
 
 function normalizeCitation(raw: any, index: number): Citation {
-  const id = String(raw?.id || raw?.pub_id || raw?.source || `source-${index + 1}`);
+  const id = String(raw?.id || raw?.pub_id || raw?.source_id || raw?.source || `source-${index + 1}`);
   return {
     id,
     source: raw?.source,
+    source_type: raw?.source_type,
+    source_id: raw?.source_id,
+    label: raw?.label,
+    masked: Boolean(raw?.masked),
     pub_id: raw?.pub_id || id,
     chunk_id: raw?.chunk_id || '0',
     audit_event_id: raw?.audit_event_id,
-    title: raw?.title || raw?.source || `Source ${index + 1}`,
+    title: raw?.title || raw?.label || raw?.source || `Source ${index + 1}`,
     authors: Array.isArray(raw?.authors) ? raw.authors : typeof raw?.authors === 'string' ? raw.authors.split(',').map((item: string) => item.trim()).filter(Boolean) : undefined,
     year: typeof raw?.year === 'number' ? raw.year : undefined,
     relevance_score: typeof raw?.relevance_score === 'number' ? raw.relevance_score : undefined,
@@ -322,18 +353,32 @@ function normalizeCitation(raw: any, index: number): Citation {
 }
 
 export function normalizeQueryResponse(raw: any): QueryResponse {
-  const responseText = String(raw?.response || raw?.answer || raw?.message || 'NRG returned no answer text for this request.');
+  const responseText = String(raw?.final_answer || raw?.response || raw?.answer || raw?.message || 'NRG returned no answer text for this request.');
   const tier = Number(raw?.tier || authService.getStoredSession()?.user?.tier || 1);
   const citations = Array.isArray(raw?.citations) ? raw.citations.map(normalizeCitation) : [];
   const sqlResults = Array.isArray(raw?.sql_results) ? raw.sql_results : [];
+  const sourceData = raw?.source_data || {
+    sql_query: raw?.sql_query ?? null,
+    rows: sqlResults,
+    documents: Array.isArray(raw?.retrieved_chunks) ? raw.retrieved_chunks : [],
+  };
+  const sourceRows = Array.isArray(sourceData?.rows) ? sourceData.rows : [];
+  const sourceDocuments = Array.isArray(sourceData?.documents) ? sourceData.documents : [];
 
   return {
     query_id: String(raw?.query_id || raw?.id || `query-${Date.now()}`),
+    answer_id: raw?.answer_id,
     audit_event_id: raw?.audit_event_id,
     session_id: raw?.session_id,
     response: responseText,
     status: String(raw?.status || 'success'),
     tier,
+    question: raw?.question,
+    interpreted_question: raw?.interpreted_question,
+    assumptions: Array.isArray(raw?.assumptions) ? raw.assumptions : [],
+    route: raw?.route,
+    final_answer: responseText,
+    confidence: raw?.confidence,
     intent: raw?.intent,
     routing_decision: raw?.routing_decision,
     verification_status: Boolean(raw?.verification_status ?? raw?.verified ?? false),
@@ -343,6 +388,15 @@ export function normalizeQueryResponse(raw: any): QueryResponse {
     sql_query: raw?.sql_query ?? null,
     sql_queries: Array.isArray(raw?.sql_queries) ? raw.sql_queries : undefined,
     sql_results: sanitizeSqlRowsForTier(sqlResults, tier),
+    source_data: {
+      sql_query: sourceData?.sql_query ?? raw?.sql_query ?? null,
+      rows: sanitizeSqlRowsForTier(sourceRows, tier),
+      documents: sourceDocuments,
+    },
+    freshness: raw?.freshness,
+    caveats: Array.isArray(raw?.caveats) ? raw.caveats : [],
+    follow_up_suggestions: Array.isArray(raw?.follow_up_suggestions) ? raw.follow_up_suggestions : [],
+    query_time_ms: typeof raw?.query_time_ms === 'number' ? raw.query_time_ms : undefined,
     citation_validity: typeof raw?.citation_validity === 'number' ? raw.citation_validity : undefined,
     citations: sanitizeCitationsForTier(citations, tier),
     warnings: Array.isArray(raw?.warnings) ? raw.warnings : [],

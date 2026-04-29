@@ -7,7 +7,7 @@ import json
 import re
 import time
 import uuid
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
@@ -27,6 +27,7 @@ from src.api.deps import (
     get_db,
     QUERY_RESULT_CACHE_TTL_SECONDS,
 )
+from src.api.answer_contract import blocked_answer_payload, normalize_workflow_result
 from src.api.logging_config import get_logger
 from src.api.middleware.security import IPAllowlist
 from src.api.query_helpers import (
@@ -40,6 +41,7 @@ from src.audit import log_query as audit_log_query
 from src.observability.metrics import get_slo_tracker
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.services.consent import get_consent_service
+from src.services.answer_records import get_answer_record_store
 
 router = APIRouter(prefix="", tags=["query"])
 logger = get_logger(__name__)
@@ -59,6 +61,46 @@ def _apply_tier_filter_to_response(payload, user_tier, user_id, jwt_kid, request
         request_fingerprint=request_fp,
         endpoint="/query",
     )
+
+
+def _normalise_query_answer_payload(
+    request: QueryRequest,
+    *,
+    user_tier: int,
+    audit_event_id: str | None,
+    elapsed_ms: float,
+    result: dict[str, Any],
+    default_routing: str = "text_to_sql",
+    default_verification: bool = True,
+) -> dict[str, Any]:
+    normalized_result = {
+        **result,
+        "query_id": result.get("query_id", str(uuid.uuid4())),
+        "session_id": result.get("session_id", request.session_id),
+        "synthesized_response": result.get("synthesized_response") or result.get("response", ""),
+        "routing_decision": result.get("routing_decision", default_routing),
+        "verification_status": result.get("verification_status", default_verification),
+    }
+    return normalize_workflow_result(
+        question=request.query,
+        tier=user_tier,
+        audit_event_id=audit_event_id,
+        elapsed_ms=elapsed_ms,
+        result=normalized_result,
+    )
+
+
+def _persist_answer_record(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
+    if payload.get("status") != "success" or not payload.get("answer_id"):
+        return
+    try:
+        get_answer_record_store().save(
+            user_id=user_id,
+            session_id=session_id,
+            payload=payload,
+        )
+    except Exception:
+        logger.warning("Answer record persistence failed", exc_info=True)
 
 
 @router.post("/query")
@@ -96,6 +138,8 @@ async def query_with_langgraph(
         validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
+            if validation["reason"] == "RATE_LIMITED":
+                raise HTTPException(status_code=429, detail="Rate limit exceeded")
             if validation["reason"] != "RATE_LIMITED":
                 try:
                     from src.audit import log_anomaly
@@ -112,7 +156,19 @@ async def query_with_langgraph(
                     )
                 except Exception:
                     logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
-            raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
+            blocked = blocked_answer_payload(
+                question=request.query,
+                user_tier=user_tier,
+                audit_event_id=None,
+                reason=f"Security policy blocked this query: {validation['reason']}",
+            )
+            return _apply_tier_filter_to_response(
+                blocked,
+                user_tier,
+                user_id,
+                token_payload.get("kid"),
+                getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+            )
 
         consent_service = get_consent_service()
         if not consent_service.has_consent(user_id, "research_access"):
@@ -141,11 +197,19 @@ async def query_with_langgraph(
         )
         if fast_response is not None:
             fast_response["audit_event_id"] = "fast_path_ui_audit"
+            fast_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=fast_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=fast_response,
+            )
             fast_response = _apply_tier_filter_to_response(
                 fast_response, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            _persist_answer_record(user_id, request.session_id, fast_response)
             _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return fast_response
 
@@ -167,11 +231,19 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for SQL follow-up fast path", exc_info=True)
                 follow_up_response["audit_event_id"] = "audit_unavailable"
+            follow_up_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=follow_up_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=follow_up_response,
+            )
             follow_up_response = _apply_tier_filter_to_response(
                 follow_up_response, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            _persist_answer_record(user_id, request.session_id, follow_up_response)
             _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return follow_up_response
 
@@ -191,11 +263,19 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for killer query fast path", exc_info=True)
                 killer_response["audit_event_id"] = "audit_unavailable"
+            killer_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=killer_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=killer_response,
+            )
             killer_response = _apply_tier_filter_to_response(
                 killer_response, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            _persist_answer_record(user_id, request.session_id, killer_response)
             _api_cache.set(cache_key, killer_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             _remember_sql_domain_context(
                 _sql_context_key(user_id, request.session_id),
@@ -220,11 +300,19 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for adversarial SQL pattern", exc_info=True)
                 adversarial_response["audit_event_id"] = "audit_unavailable"
+            adversarial_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=adversarial_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=adversarial_response,
+            )
             adversarial_response = _apply_tier_filter_to_response(
                 adversarial_response, user_tier, user_id,
                 token_payload.get("kid"),
                 getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
+            _persist_answer_record(user_id, request.session_id, adversarial_response)
             _api_cache.set(cache_key, adversarial_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return adversarial_response
 
@@ -279,40 +367,28 @@ async def query_with_langgraph(
             provenance["synth"] = synthesis_method if synthesis_method != "unknown" else "rule_based"
         provenance.setdefault("cloud_synthesis_used", "cloud" in str(provenance.get("synth", "")))
 
-        response_payload = {
-            "query_id": result.get("query_id", str(uuid.uuid4())),
-            "audit_event_id": audit_event_id,
-            "session_id": result.get("session_id"),
-            "response": result.get("synthesized_response", ""),
-            "status": "success",
-            "tier": user_tier,
-            "intent": result.get("intent"),
-            "routing_decision": result.get("routing_decision"),
-            "verification_status": result.get("verification_status", False),
-            "citation_validity": result.get("citation_validity", 1.0),
-            "plan": result.get("plan"),
-            "planner_metadata": result.get("planner_metadata", {}),
-            "citations": result.get("citations", []),
-            "warnings": result.get("warnings", result.get("errors", [])),
-            "answer_confidence": _answer_confidence_from_verification(result.get("verification_status", False)),
-            "answer_confidence_score": result.get(
-                "answer_confidence_score",
-                result.get("faithfulness_score", 0.95 if result.get("verification_status", False) else 0.45),
-            ),
-            "sql_anomaly_report": result.get("sql_anomaly_report", {}),
-            "sql_query": result.get("sql_query"),
-            "sql_queries": result.get("sql_queries", []),
-            "sql_results": result.get("sql_results", []),
-            "retrieval_sources": result.get("retrieval_sources", []),
-            "provenance": provenance,
-            "synthesis_method": synthesis_method,
-            "conversation_history": result.get("conversation_history", []),
-            "node_timings": result.get("node_timings", {}),
-        }
+        response_payload = _normalise_query_answer_payload(
+            request,
+            user_tier=user_tier,
+            audit_event_id=audit_event_id,
+            elapsed_ms=latency_ms,
+            result={
+                **result,
+                "warnings": result.get("warnings", result.get("errors", [])),
+                "provenance": provenance,
+                "synthesis_method": synthesis_method,
+                "answer_confidence": result.get(
+                    "answer_confidence",
+                    _answer_confidence_from_verification(result.get("verification_status", False)),
+                ),
+            },
+            default_verification=False,
+        )
 
         response_payload = _apply_tier_filter_to_response(
             response_payload, user_tier, user_id, jwt_kid, request_fp,
         )
+        _persist_answer_record(user_id, request.session_id, response_payload)
         _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
         _remember_sql_domain_context(
             _sql_context_key(user_id, request.session_id),
@@ -346,7 +422,22 @@ async def query_stream(
 
     validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
     if not validation["valid"]:
-        raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
+        if validation["reason"] == "RATE_LIMITED":
+            raise HTTPException(status_code=429, detail="Rate limit exceeded")
+
+        async def blocked_events():
+            blocked = blocked_answer_payload(
+                question=request.query,
+                user_tier=user_tier,
+                audit_event_id=None,
+                reason=f"Security policy blocked this query: {validation['reason']}",
+                query_id=query_id,
+            )
+            yield "event: phase\ndata: {\"phase\": \"blocked\", \"label\": \"Blocked by safety policy\", \"progress\": 1.0}\n\n"
+            yield f"event: meta\ndata: {json.dumps(blocked, default=str)}\n\n"
+            yield "event: done\ndata: \n\n"
+
+        return StreamingResponse(blocked_events(), media_type="text/event-stream")
 
     consent_service = get_consent_service()
     if not consent_service.has_consent(user_id, "research_access"):

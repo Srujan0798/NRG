@@ -14,6 +14,17 @@ interface StreamingAnswerPanelProps {
   onCitationClick?: (citation: Citation) => void
   onDrawerOpen?: (citation: Citation) => void
   onProofOpen?: (auditEventId: string) => void
+  onProofChange?: (payload: StreamingProofPayload) => void
+}
+
+export interface StreamingProofPayload {
+  response: string
+  citations: Citation[]
+  sqlQuery: string
+  sqlResults: Array<Record<string, unknown>>
+  rowsReturned: number
+  auditEventId: string | null
+  confidence: 'high' | 'medium' | 'low'
 }
 
 const formatNumber = (value: number) => new Intl.NumberFormat('en-IN').format(value)
@@ -24,6 +35,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   query,
   onCitationClick,
   onProofOpen,
+  onProofChange,
 }) => {
   const {
     isStreaming,
@@ -44,6 +56,25 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   useEffect(() => {
     if (query.trim()) startStream(query)
   }, [query, startStream])
+
+  useEffect(() => {
+    if (!isVerified) return
+    onProofChange?.({
+      response: fullText,
+      citations: citations.map((citation) => ({
+        id: citation.id,
+        pub_id: citation.pub_id,
+        chunk_id: citation.chunk_id,
+        title: citation.title || citation.pub_id,
+        audit_event_id: citation.audit_event_id || auditEventId || undefined,
+      })),
+      sqlQuery: sql,
+      sqlResults: [],
+      rowsReturned: retrievedCount,
+      auditEventId,
+      confidence: 'high',
+    })
+  }, [auditEventId, citations, fullText, isVerified, onProofChange, retrievedCount, sql])
 
   const planSteps = useMemo(() => plan?.steps?.length ? plan.steps : defaultPlan, [plan])
   const hasStarted = Boolean(query.trim())

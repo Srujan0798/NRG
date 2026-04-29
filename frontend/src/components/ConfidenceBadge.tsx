@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-export type ConfidenceLevel = 'high' | 'partial' | 'low_clarify'
+export type ConfidenceLevel = 'high' | 'medium' | 'low' | 'needs_clarification' | 'partial' | 'low_clarify'
 
 interface ConfidenceBadgeProps {
   level: ConfidenceLevel
@@ -32,7 +32,31 @@ const CONFIG: Record<ConfidenceLevel, {
     dot: 'bg-amber-500',
     tooltipTitle: 'Some claims need review',
   },
+  medium: {
+    label: 'Partially verified',
+    bg: 'bg-amber-50',
+    text: 'text-amber-800',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
+    tooltipTitle: 'Some claims need review',
+  },
+  low: {
+    label: 'Low confidence',
+    bg: 'bg-rose-50',
+    text: 'text-rose-800',
+    border: 'border-rose-200',
+    dot: 'bg-rose-500',
+    tooltipTitle: 'Evidence support is weak',
+  },
   low_clarify: {
+    label: 'Needs clarification',
+    bg: 'bg-rose-50',
+    text: 'text-rose-800',
+    border: 'border-rose-200',
+    dot: 'bg-rose-500',
+    tooltipTitle: 'More detail is needed',
+  },
+  needs_clarification: {
     label: 'Needs clarification',
     bg: 'bg-rose-50',
     text: 'text-rose-800',

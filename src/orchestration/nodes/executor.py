@@ -185,6 +185,24 @@ def _copy_sql_confidence(target: dict[str, Any], source: dict[str, Any]) -> None
             target[key] = source[key]
 
 
+def _with_answer_engine_evidence(result: dict[str, Any]) -> dict[str, Any]:
+    enriched = dict(result)
+    enriched.setdefault(
+        "freshness",
+        {
+            "database_snapshot": None,
+            "document_indexed_at": None,
+            "warning": None,
+        },
+    )
+    enriched["source_data"] = {
+        "sql_query": enriched.get("sql_query"),
+        "rows": enriched.get("sql_results", []),
+        "documents": enriched.get("retrieved_chunks", []),
+    }
+    return enriched
+
+
 def _common_c4_fast_path(user_query: str) -> dict[str, Any] | None:
     query = user_query.lower()
     shapes: list[tuple[tuple[str, ...], list[dict[str, Any]], str]] = [
@@ -270,10 +288,10 @@ def executor_node(state) -> dict:
 
     fast_path = _common_c4_fast_path(user_query)
     if fast_path is not None:
-        return fast_path
+        return _with_answer_engine_evidence(fast_path)
 
     if plan.get("is_dag") and plan.get("dag_nodes"):
-        return _execute_dag(plan.get("dag_nodes", []), plan.get("dag_root_id", ""), user_tier)
+        return _with_answer_engine_evidence(_execute_dag(plan.get("dag_nodes", []), plan.get("dag_root_id", ""), user_tier))
 
     needs_sql = routing in ("text_to_sql", "text_to_sql+rag")
     needs_rag = routing in ("rag", "text_to_sql+rag")
@@ -285,14 +303,14 @@ def executor_node(state) -> dict:
     elif needs_rag:
         return _execute_rag_only(user_query, user_tier)
     else:
-        return {
+        return _with_answer_engine_evidence({
             "sql_results": [],
             "retrieved_chunks": [],
             "retrieval_metadata": [],
             "errors": [],
             "warnings": [],
             "retrieval_sources": [],
-        }
+        })
 
 
 def _execute_parallel(user_query: str, user_tier: int) -> dict:
@@ -334,7 +352,7 @@ def _execute_parallel(user_query: str, user_tier: int) -> dict:
         max(sql_time, rag_time) - min(sql_time, rag_time),
     )
 
-    return results
+    return _with_answer_engine_evidence(results)
 
 
 def _execute_sql_only(user_query: str, user_tier: int) -> dict:
@@ -356,14 +374,14 @@ def _execute_sql_only(user_query: str, user_tier: int) -> dict:
     if results["sql_results"]:
         results["retrieval_sources"].append("structured")
 
-    return results
+    return _with_answer_engine_evidence(results)
 
 
 def _execute_rag_only(user_query: str, user_tier: int) -> dict:
     """Execute RAG only."""
     result, exec_time = _execute_rag(user_query, user_tier)
 
-    return {
+    return _with_answer_engine_evidence({
         "sql_results": [],
         "sql_query": None,
         "retrieved_chunks": result.get("retrieved_chunks", []),
@@ -372,7 +390,7 @@ def _execute_rag_only(user_query: str, user_tier: int) -> dict:
         "warnings": result.get("warnings", []),
         "retrieval_sources": result.get("retrieval_sources", []),
         "execution_time_ms": {"rag": exec_time, "total": exec_time},
-    }
+    })
 
 
 def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
@@ -407,14 +425,14 @@ def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
 def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
     """Execute DAG nodes in topological order, passing parent results as context."""
     if not dag_nodes:
-        return {
+        return _with_answer_engine_evidence({
             "sql_results": [],
             "retrieved_chunks": [],
             "retrieval_metadata": [],
             "errors": [],
             "warnings": [],
             "retrieval_sources": [],
-        }
+        })
 
     node_map, exec_order = _build_dag(dag_nodes)
     results_map: dict[str, dict] = {}
@@ -493,4 +511,4 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         "dag_root_id": root_id,
     }
     response.update(sql_confidence)
-    return response
+    return _with_answer_engine_evidence(response)

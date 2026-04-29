@@ -49,9 +49,12 @@ export interface UseStreamingQueryOptions {
 }
 
 const PHASES: Record<StreamPhaseName, StreamPhase> = {
+  understanding: { phase: 'understanding', label: 'Understanding your question', progress: 0.08 },
   parsing: { phase: 'parsing', label: 'Parsing your question...', progress: 0.08 },
   planning: { phase: 'planning', label: 'Planning a multi-hop strategy...', progress: 0.1 },
   planned: { phase: 'planned', label: 'Evidence plan ready', progress: 0.25 },
+  searching_records: { phase: 'searching_records', label: 'Searching research records', progress: 0.42 },
+  checking_documents: { phase: 'checking_documents', label: 'Checking documents', progress: 0.58 },
   querying: { phase: 'querying', label: 'Querying 58 research tables...', progress: 0.55 },
   executing: { phase: 'executing', label: 'Retrieving signed records', progress: 0.55 },
   synthesizing: { phase: 'synthesizing', label: 'Synthesizing the answer...', progress: 0.8 },
@@ -65,9 +68,9 @@ const CONNECTION_ERROR = errorCopy.generic
 
 const toStreamCitation = (citation: Citation | StreamCitation): StreamCitation => ({
   id: citation.id,
-  pub_id: citation.pub_id || ('source' in citation ? citation.source : undefined) || citation.id,
+  pub_id: citation.pub_id || ('source_id' in citation ? citation.source_id : undefined) || ('source' in citation ? citation.source : undefined) || citation.id,
   chunk_id: citation.chunk_id || '0',
-  title: citation.title,
+  title: citation.title || ('label' in citation ? citation.label : undefined),
   audit_event_id: citation.audit_event_id,
 })
 
@@ -254,12 +257,13 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     if (phaseName === 'heartbeat') return
 
     if (phaseName === 'answer') {
-      const answerText = String(parsed.response || parsed.answer || '')
+      const answerText = String(parsed.final_answer || parsed.response || parsed.answer || '')
       fullTextRef.current = answerText
       setFullText(answerText)
       useQueryStore.getState().setStreaming({ answer: answerText })
-      setSql(parsed.sql_query || parsed.sql_queries?.[0] || '')
-      if (Array.isArray(parsed.sql_results)) setRetrievedCount(parsed.sql_results.length)
+      setSql(parsed.source_data?.sql_query || parsed.sql_query || parsed.sql_queries?.[0] || '')
+      if (Array.isArray(parsed.source_data?.rows)) setRetrievedCount(parsed.source_data.rows.length)
+      else if (Array.isArray(parsed.sql_results)) setRetrievedCount(parsed.sql_results.length)
       if (Array.isArray(parsed.citations)) {
         const answerCitations = parsed.citations.map(toStreamCitation)
         citationsRef.current = answerCitations

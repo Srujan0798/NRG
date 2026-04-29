@@ -16,7 +16,7 @@ interface AnswerPanelProps {
   provenance?: QueryProvenance
   warnings?: QueryWarning[]
   verification_status?: boolean
-  answer_confidence?: 'high' | 'partial' | 'low_clarify'
+  answer_confidence?: 'high' | 'medium' | 'low' | 'needs_clarification' | 'partial' | 'low_clarify'
   answer_confidence_score?: number
   sqlQuery?: string | null
   sqlResults?: Array<Record<string, unknown>>
@@ -40,7 +40,7 @@ const SourceIcon: React.FC<{ source?: string }> = ({ source }) => {
 
 const ConfidenceMeter: React.FC<{
   status: boolean | undefined
-  answerConfidence?: 'high' | 'partial' | 'low_clarify'
+  answerConfidence?: 'high' | 'medium' | 'low' | 'needs_clarification' | 'partial' | 'low_clarify'
   answerConfidenceScore?: number
   warnings?: QueryWarning[]
 }> = ({ status, answerConfidence, answerConfidenceScore, warnings }) => {

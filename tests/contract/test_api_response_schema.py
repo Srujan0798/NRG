@@ -16,12 +16,37 @@ import src.api.main as api_main
 
 QUERY_RESPONSE_SCHEMA = {
     "type": "object",
-    "required": ["query_id", "status", "tier"],
+    "required": [
+        "query_id",
+        "answer_id",
+        "status",
+        "tier",
+        "question",
+        "interpreted_question",
+        "route",
+        "final_answer",
+        "confidence",
+        "source_data",
+        "freshness",
+    ],
     "properties": {
         "query_id": {"type": "string"},
         "session_id": {"type": ["string", "null"]},
         "status": {"type": "string", "enum": ["success", "error"]},
         "tier": {"type": "integer"},
+        "answer_id": {"type": "string"},
+        "audit_event_id": {"type": ["string", "null"]},
+        "question": {"type": "string"},
+        "interpreted_question": {"type": "string"},
+        "assumptions": {"type": "array"},
+        "route": {"type": "string"},
+        "final_answer": {"type": "string"},
+        "confidence": {"type": "object"},
+        "source_data": {"type": "object"},
+        "freshness": {"type": "object"},
+        "caveats": {"type": "array"},
+        "follow_up_suggestions": {"type": "array"},
+        "query_time_ms": {"type": "integer"},
         "response": {"type": "string"},
         "synthesized_response": {"type": ["string", "null"]},
         "intent": {"type": ["string", "null"]},
@@ -139,7 +164,13 @@ class TestAPIResponseSchema:
 
         data = response.json()
 
-        for field in ["citations", "warnings", "retrieval_sources", "conversation_history"]:
+        for field in [
+            "citations",
+            "warnings",
+            "retrieval_sources",
+            "conversation_history",
+            "follow_up_suggestions",
+        ]:
             assert field in data, f"Optional field '{field}' should be present in response"
 
     def test_tier_field_is_integer(self, client):
@@ -182,8 +213,11 @@ class TestAPIResponseSchema:
         data = response.json()
 
         assert "query_id" in data, "query_id is required"
+        assert "answer_id" in data, "answer_id is required"
         assert "status" in data, "status is required"
         assert "tier" in data, "tier is required"
+        assert "final_answer" in data, "final_answer is required"
+        assert "source_data" in data, "source_data is required"
 
     def test_query_response_with_citations(self, client):
         """Query response with citations should have valid citation structure."""
@@ -199,8 +233,9 @@ class TestAPIResponseSchema:
         citations = data.get("citations", [])
 
         for citation in citations:
-            assert "paper_id" in citation or "title" in citation, \
-                "Each citation should have paper_id or title"
+            assert "label" in citation, "Each citation should have a display label"
+            assert "source_id" in citation, "Each citation should identify its source"
+            assert "source_type" in citation, "Each citation should identify its source type"
 
     def test_query_response_with_session_id(self, client):
         """Query response with session_id should pass schema validation."""

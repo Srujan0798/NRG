@@ -43,7 +43,14 @@ class NRGState:
     query_id: str = ""
     session_id: str = ""
     user_query: str = ""
+    interpreted_question: str = ""
     conversation_history: list = field(default_factory=list)
+    assumptions: list[str] = field(default_factory=list)
+    caveats: list[str] = field(default_factory=list)
+    follow_up_suggestions: list[str] = field(default_factory=list)
+    freshness: dict = field(default_factory=dict)
+    source_data: dict = field(default_factory=dict)
+    answer_id: str = ""
     intent: str = ""
     plan: Optional[dict] = None
     planner_metadata: dict = field(default_factory=dict)

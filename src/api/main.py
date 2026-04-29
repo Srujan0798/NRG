@@ -28,6 +28,7 @@ from starlette.responses import JSONResponse, Response, StreamingResponse
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
+from src.api.answer_contract import blocked_answer_payload, normalize_workflow_result
 from src.api.middleware.security import (
     SecurityHeadersMiddleware,
     PromptSanitiserMiddleware,
@@ -52,6 +53,7 @@ from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate
 from src.audit import log_query as audit_log_query
 from src.observability.health_checks import get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app, get_metrics_content_type
+from src.services.answer_records import get_answer_record_store
 from qdrant_client import QdrantClient
 
 if TYPE_CHECKING:
@@ -290,8 +292,10 @@ def _answer_confidence_from_verification(verification_status: Any) -> str:
     if verification_status in (True, "ok", "pass"):
         return "high"
     if verification_status == "retry":
-        return "partial"
-    return "low_clarify"
+        return "medium"
+    if verification_status in ("needs_clarification", "low_clarify"):
+        return "needs_clarification"
+    return "low"
 
 
 def _apply_tier_response_filter(
@@ -2913,37 +2917,63 @@ def _normalise_stream_answer_payload(
     user_tier: int,
     audit_event_id: str | None,
 ) -> dict[str, Any]:
-    response_text = result.get("response") or result.get("synthesized_response") or ""
     verification = result.get("verification_status", True)
-    return {
+    return normalize_workflow_result(
+        question=request.query,
+        tier=user_tier,
+        audit_event_id=result.get("audit_event_id", audit_event_id),
+        elapsed_ms=0,
+        result={
+            **result,
+            "query_id": result.get("query_id", str(uuid.uuid4())),
+            "session_id": result.get("session_id", request.session_id),
+            "synthesized_response": result.get("synthesized_response") or result.get("response", ""),
+            "routing_decision": result.get("routing_decision", "text_to_sql"),
+            "verification_status": verification,
+            "answer_confidence": result.get("answer_confidence", _answer_confidence_from_verification(verification)),
+            "provenance": result.get("provenance", {"synth": "critical_path_stream"}),
+        },
+    )
+
+
+def _normalise_query_answer_payload(
+    request: QueryRequest,
+    *,
+    user_tier: int,
+    audit_event_id: str | None,
+    elapsed_ms: float,
+    result: dict[str, Any],
+    default_routing: str = "text_to_sql",
+    default_verification: bool = True,
+) -> dict[str, Any]:
+    normalized_result = {
+        **result,
         "query_id": result.get("query_id", str(uuid.uuid4())),
-        "audit_event_id": result.get("audit_event_id", audit_event_id),
         "session_id": result.get("session_id", request.session_id),
-        "response": response_text,
-        "status": result.get("status", "success"),
-        "tier": result.get("tier", user_tier),
-        "intent": result.get("intent", "structured"),
-        "routing_decision": result.get("routing_decision", "text_to_sql"),
-        "verification_status": verification,
-        "answer_confidence": result.get("answer_confidence", _answer_confidence_from_verification(verification)),
-        "answer_confidence_score": result.get("answer_confidence_score", 0.95 if verification else 0.45),
-        "citation_validity": result.get("citation_validity", 1.0 if verification else 0.5),
-        "citations": result.get("citations") or [
-            {
-                "id": "nrg-source-1",
-                "title": "National Research Graph source rows",
-                "source": "SQL",
-                "audit_event_id": result.get("audit_event_id", audit_event_id),
-            }
-        ],
-        "warnings": result.get("warnings", []),
-        "sql_query": result.get("sql_query"),
-        "sql_queries": result.get("sql_queries", []),
-        "sql_results": result.get("sql_results", []),
-        "retrieval_sources": result.get("retrieval_sources", []),
-        "provenance": result.get("provenance", {"synth": "critical_path_stream"}),
-        "conversation_history": result.get("conversation_history", []),
+        "synthesized_response": result.get("synthesized_response") or result.get("response", ""),
+        "routing_decision": result.get("routing_decision", default_routing),
+        "verification_status": result.get("verification_status", default_verification),
     }
+    return normalize_workflow_result(
+        question=request.query,
+        tier=user_tier,
+        audit_event_id=audit_event_id,
+        elapsed_ms=elapsed_ms,
+        result=normalized_result,
+    )
+
+
+def _persist_answer_record(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
+    if payload.get("status") != "success" or not payload.get("answer_id"):
+        return
+    try:
+        get_answer_record_store().save(
+            user_id=user_id,
+            session_id=session_id,
+            payload=payload,
+        )
+    except Exception:
+        logger.warning("Answer record persistence failed", exc_info=True)
 
 
 def _build_stream_answer_payload(
@@ -3016,6 +3046,7 @@ def _build_stream_answer_payload(
         request_fingerprint=request_fp,
         endpoint="/api/query/stream",
     )
+    _persist_answer_record(user_id, request.session_id, response_payload)
     _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
     _remember_sql_domain_context(context_key, request.query, response_payload.get("sql_query"))
     return response_payload
@@ -3053,27 +3084,25 @@ async def _query_stream_response(
             }
 
         validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
+        yield _sse("phase", phase_payload("understanding", "Understanding your question", 0.08))
         yield _sse("phase", phase_payload("parsing", "Parsing your question...", 0.08))
         await asyncio.sleep(0.02)
         if not validation["valid"]:
-            yield _sse(
-                "error",
-                {
-                    "phase": "error",
-                    "code": validation["reason"],
-                    "message": "This query contains sensitive information that cannot be processed.",
-                    "safe_rephrasings": [
-                        "Show privacy-safe aggregate counts by state.",
-                        "Summarize research capacity without personal identifiers.",
-                    ],
-                },
+            blocked = blocked_answer_payload(
+                question=request.query,
+                user_tier=user_tier,
+                audit_event_id=None,
+                reason=f"Security policy blocked this query: {validation['reason']}",
             )
+            yield _sse("phase", phase_payload("blocked", "Blocked by safety policy", 1.0))
+            yield _sse("meta", blocked)
             yield _sse("done", "")
             return
 
         try:
-            yield _sse("phase", phase_payload("planning", "Planning a multi-hop strategy...", 0.24))
+            yield _sse("phase", phase_payload("planning", "Planning retrieval", 0.18))
             await asyncio.sleep(0.02)
+            yield _sse("phase", phase_payload("searching_records", "Searching research records", 0.42))
             yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.52))
             answer_task = asyncio.create_task(
                 asyncio.to_thread(
@@ -3094,11 +3123,12 @@ async def _query_stream_response(
                 await asyncio.sleep(1)
             answer_payload = await answer_task
             row_count = len(answer_payload.get("sql_results") or [])
+            yield _sse("phase", phase_payload("checking_documents", "Checking documents", 0.58, row_count=row_count))
             yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.62, row_count=row_count))
             await asyncio.sleep(0.02)
-            yield _sse("phase", phase_payload("synthesizing", "Synthesizing the answer...", 0.82))
+            yield _sse("phase", phase_payload("synthesizing", "Synthesizing answer", 0.78))
             await asyncio.sleep(0.02)
-            yield _sse("phase", phase_payload("verifying", "Verifying citations...", 0.94))
+            yield _sse("phase", phase_payload("verifying", "Verifying sources", 0.92))
             await asyncio.sleep(0.02)
             answer_payload["elapsed_ms"] = int((time.time() - started_at) * 1000)
             yield _sse("answer", answer_payload)
@@ -3206,6 +3236,8 @@ async def query_with_langgraph(
         validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
+            if validation["reason"] == "RATE_LIMITED":
+                raise HTTPException(status_code=429, detail="Rate limit exceeded")
             if validation["reason"] != "RATE_LIMITED":
                 try:
                     from src.audit import log_anomaly
@@ -3221,9 +3253,19 @@ async def query_with_langgraph(
                     )
                 except Exception:
                     logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
-            raise HTTPException(
-                status_code=400,
-                detail=f"Security violation: {validation['reason']}"
+            blocked = blocked_answer_payload(
+                question=request.query,
+                user_tier=user_tier,
+                audit_event_id=None,
+                reason=f"Security policy blocked this query: {validation['reason']}",
+            )
+            return _apply_tier_response_filter(
+                blocked,
+                user_tier,
+                user_id=user_id,
+                jwt_kid=token_payload.get("kid"),
+                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                endpoint="/query",
             )
 
         from src.services.consent import get_consent_service
@@ -3267,6 +3309,13 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for query fast path", exc_info=True)
                 fast_response["audit_event_id"] = "audit_unavailable"
+            fast_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=fast_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=fast_response,
+            )
             fast_response, redacted_pii = _redact_pii_from_response(fast_response)
             if redacted_pii:
                 fast_response["warnings"] = fast_response.get("warnings", []) + [
@@ -3280,6 +3329,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            _persist_answer_record(user_id, request.session_id, fast_response)
             _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return fast_response
 
@@ -3301,6 +3351,13 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for SQL follow-up fast path", exc_info=True)
                 follow_up_response["audit_event_id"] = "audit_unavailable"
+            follow_up_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=follow_up_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=follow_up_response,
+            )
             follow_up_response, redacted_pii = _redact_pii_from_response(follow_up_response)
             if redacted_pii:
                 follow_up_response["warnings"] = follow_up_response.get("warnings", []) + [
@@ -3314,6 +3371,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            _persist_answer_record(user_id, request.session_id, follow_up_response)
             _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return follow_up_response
 
@@ -3333,6 +3391,13 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for killer query fast path", exc_info=True)
                 killer_response["audit_event_id"] = "audit_unavailable"
+            killer_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=killer_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=killer_response,
+            )
             killer_response, redacted_pii = _redact_pii_from_response(killer_response)
             if redacted_pii:
                 killer_response["warnings"] = killer_response.get("warnings", []) + [
@@ -3346,6 +3411,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            _persist_answer_record(user_id, request.session_id, killer_response)
             _api_cache.set(cache_key, killer_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             _remember_sql_domain_context(
                 _sql_context_key(user_id, request.session_id),
@@ -3370,6 +3436,13 @@ async def query_with_langgraph(
             except Exception:
                 logger.warning("Audit log_query failed for adversarial SQL pattern", exc_info=True)
                 adversarial_response["audit_event_id"] = "audit_unavailable"
+            adversarial_response = _normalise_query_answer_payload(
+                request,
+                user_tier=user_tier,
+                audit_event_id=adversarial_response.get("audit_event_id"),
+                elapsed_ms=0,
+                result=adversarial_response,
+            )
             adversarial_response = _apply_tier_response_filter(
                 adversarial_response,
                 user_tier,
@@ -3378,6 +3451,7 @@ async def query_with_langgraph(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            _persist_answer_record(user_id, request.session_id, adversarial_response)
             _api_cache.set(cache_key, adversarial_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
             return adversarial_response
 
@@ -3442,39 +3516,23 @@ async def query_with_langgraph(
             provenance["synth"] = synthesis_method if synthesis_method != "unknown" else "rule_based"
         provenance.setdefault("cloud_synthesis_used", "cloud" in str(provenance.get("synth", "")))
 
-        response_payload = {
-            "query_id": result.get("query_id", str(uuid.uuid4())),
-            "audit_event_id": audit_event_id,
-            "session_id": result.get("session_id"),
-            "response": result.get("synthesized_response", ""),
-            "status": "success",
-            "tier": user_tier,
-            "intent": result.get("intent"),
-            "routing_decision": result.get("routing_decision"),
-            "verification_status": result.get("verification_status", False),
-            "citation_validity": result.get("citation_validity", 1.0),
-            "plan": result.get("plan"),
-            "planner_metadata": result.get("planner_metadata", {}),
-            "citations": result.get("citations", []),
-            "warnings": result.get("warnings", result.get("errors", [])),
-            "answer_confidence": result.get(
-                "answer_confidence",
-                _answer_confidence_from_verification(result.get("verification_status", False)),
-            ),
-            "answer_confidence_score": result.get(
-                "answer_confidence_score",
-                result.get("faithfulness_score", 0.95 if result.get("verification_status", False) else 0.45),
-            ),
-            "sql_anomaly_report": result.get("sql_anomaly_report", {}),
-            "sql_query": result.get("sql_query"),
-            "sql_queries": result.get("sql_queries", []),
-            "sql_results": result.get("sql_results", []),
-            "retrieval_sources": result.get("retrieval_sources", []),
-            "provenance": provenance,
-            "synthesis_method": synthesis_method,
-            "conversation_history": result.get("conversation_history", []),
-            "node_timings": result.get("node_timings", {}),
-        }
+        response_payload = _normalise_query_answer_payload(
+            request,
+            user_tier=user_tier,
+            audit_event_id=audit_event_id,
+            elapsed_ms=latency_ms,
+            result={
+                **result,
+                "warnings": result.get("warnings", result.get("errors", [])),
+                "provenance": provenance,
+                "synthesis_method": synthesis_method,
+                "answer_confidence": result.get(
+                    "answer_confidence",
+                    _answer_confidence_from_verification(result.get("verification_status", False)),
+                ),
+            },
+            default_verification=False,
+        )
 
         response_payload, redacted_pii = _redact_pii_from_response(response_payload)
         if redacted_pii:
@@ -3490,6 +3548,7 @@ async def query_with_langgraph(
             endpoint="/query",
         )
 
+        _persist_answer_record(user_id, request.session_id, response_payload)
         _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
         _remember_sql_domain_context(
             _sql_context_key(user_id, request.session_id),

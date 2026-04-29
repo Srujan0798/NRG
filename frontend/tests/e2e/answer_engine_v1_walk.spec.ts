@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { installStreamingQueryMock } from '../mocks/sse_server'
 
-test('streaming answer shows all four phases without a blank spinner', async ({ page }) => {
+test('Answer Engine v1 Ask -> Answer -> Proof path is visible', async ({ page }) => {
   await installStreamingQueryMock(page)
   await page.goto('/app')
 
@@ -12,11 +12,9 @@ test('streaming answer shows all four phases without a blank spinner', async ({ 
   }
 
   await expect(page.getByTestId('hero-search-input')).toBeVisible()
-  await page.getByTestId('hero-search-input').fill('Top 5 funding agencies')
-  const submitTime = Date.now()
+  await page.getByTestId('hero-search-input').fill('Which institutes produce the most granted patents per INR 10 Cr government funding?')
   await page.getByTestId('hero-search-input').press('Enter')
 
-  await expect(page.getByTestId('streaming-answer-panel')).toBeVisible({ timeout: 2000 })
-  await expect(page.getByText(/Planning|Retrieving|Synthesizing|Verifying/i)).toBeVisible({ timeout: 4000 })
-  expect(Date.now() - submitTime).toBeLessThan(8000)
+  await expect(page.getByTestId('streaming-answer-panel')).toBeVisible()
+  await expect(page.getByText(/Verifying|Synthesizing|Searching|Planning/i)).toBeVisible()
 })

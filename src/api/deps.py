@@ -205,8 +205,10 @@ def _answer_confidence_from_verification(verification_status: Any) -> str:
     if verification_status in (True, "ok", "pass"):
         return "high"
     if verification_status == "retry":
-        return "partial"
-    return "low_clarify"
+        return "medium"
+    if verification_status in ("needs_clarification", "low_clarify"):
+        return "needs_clarification"
+    return "low"
 
 
 def _format_inr_crores(value: float | int | None) -> str:
