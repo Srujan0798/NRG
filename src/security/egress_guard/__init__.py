@@ -52,12 +52,17 @@ class EgressGuard:
 
     def _load_allowlist(self) -> None:
         if not self._path.exists():
-            logger.warning("Egress allowlist not found at %s — egress guard in permissive mode", self._path)
-            self._allowlist = {"tables": {}, "columns": {}, "patterns_block": []}
-            return
+            raise EgressSecurityError(
+                f"Egress allowlist not found at {self._path}; refusing cloud LLM egress"
+            )
 
         with open(self._path) as f:
-            self._allowlist = yaml.safe_load(f)
+            self._allowlist = yaml.safe_load(f) or {}
+
+        if not self._allowlist.get("tables"):
+            raise EgressSecurityError(
+                f"Egress allowlist at {self._path} does not define any allowlisted tables"
+            )
 
         logger.info("Egress allowlist loaded from %s", self._path)
 

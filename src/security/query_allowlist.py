@@ -52,6 +52,32 @@ ALLOWED_PATTERN = re.compile(
 
 BLOCKED_QUERY_LOG: list[dict] = []
 
+SENSITIVE_LITERAL_PATTERNS = (
+    (re.compile(r"\b[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}\b"), "[EMAIL_REDACTED]"),
+    (
+        re.compile(r"\b[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b"),
+        "[TOKEN_REDACTED]",
+    ),
+    (
+        re.compile(
+            r"\b\d{2}[A-Z]{5}\d{4}[A-Z][A-Z0-9]Z[A-Z0-9]\b",
+            re.IGNORECASE,
+        ),
+        "[GSTIN_REDACTED]",
+    ),
+    (re.compile(r"\b[A-Z]{5}\d{4}[A-Z]\b", re.IGNORECASE), "[PAN_REDACTED]"),
+    (re.compile(r"\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b"), "[AADHAAR_REDACTED]"),
+    (re.compile(r"(?<!\d)(?:\+91[\s-]?)?[6-9]\d{9}(?!\d)"), "[PHONE_REDACTED]"),
+)
+
+
+def _redact_sensitive_literals(query: str) -> str:
+    """Mask sensitive literals before a blocked query enters diagnostics."""
+    redacted = query or ""
+    for pattern, replacement in SENSITIVE_LITERAL_PATTERNS:
+        redacted = pattern.sub(replacement, redacted)
+    return redacted
+
 
 def log_blocked_query(
     query: str,
@@ -60,11 +86,13 @@ def log_blocked_query(
     session_id: Optional[str] = None,
 ) -> None:
     """Log all blocked SQL query attempts."""
+    redacted_query = _redact_sensitive_literals(query)
+    query_preview = redacted_query[:200] if redacted_query else ""
     entry = {
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "user_id": user_id,
         "session_id": session_id,
-        "query_preview": query[:200] if query else "",
+        "query_preview": query_preview,
         "reason": reason,
         "blocked": True,
     }
@@ -73,7 +101,7 @@ def log_blocked_query(
         "SQL QUERY BLOCKED: user=%s reason=%s query=%s",
         user_id,
         reason,
-        query[:200],
+        query_preview,
     )
 
 

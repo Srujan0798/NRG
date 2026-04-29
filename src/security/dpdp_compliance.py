@@ -5,6 +5,7 @@
 - Audit trail of all deletions
 """
 
+import hashlib
 import logging
 import os
 from datetime import datetime, timezone, timedelta
@@ -68,37 +69,41 @@ class DPDPCompliance:
         conn = get_sqlite_connection(str(self.db_path))
         results = {}
 
-        cursor = conn.execute(
-            "DELETE FROM consent_ledger WHERE user_id = ?",
-            (user_id,),
-        )
-        results["consents_deleted"] = cursor.rowcount
+        try:
+            cursor = conn.execute(
+                "DELETE FROM consent_ledger WHERE user_id = ?",
+                (user_id,),
+            )
+            results["consents_deleted"] = cursor.rowcount
 
-        cursor = conn.execute(
-            """
-            UPDATE audit_events
-            SET user_id = 'DELETED', query = '[REDACTED]', action = 'USER_DATA_DELETED'
-            WHERE user_id = ?
-            """,
-            (user_id,),
-        )
-        results["audit_events_anonymized"] = cursor.rowcount
+            cursor = conn.execute(
+                """
+                UPDATE audit_events
+                SET user_id = 'DELETED', query = '[REDACTED]', action = 'USER_DATA_DELETED'
+                WHERE user_id = ?
+                """,
+                (user_id,),
+            )
+            results["audit_events_anonymized"] = cursor.rowcount
 
-        cursor = conn.execute(
-            "DELETE FROM refresh_tokens WHERE user_id = ?",
-            (user_id,),
-        )
-        results["refresh_tokens_revoked"] = cursor.rowcount
+            cursor = conn.execute(
+                "DELETE FROM refresh_tokens WHERE user_id = ?",
+                (user_id,),
+            )
+            results["refresh_tokens_revoked"] = cursor.rowcount
 
-        conn.commit()
-        conn.close()
-
-        log_deletion(
-            user_id=user_id,
-            data_type="user_pii",
-            records_deleted=sum(results.values()),
-            reason=f"{reason}_deletion",
-        )
+            log_deletion(
+                user_id=user_id,
+                data_type="user_pii",
+                records_deleted=sum(results.values()),
+                reason=f"{reason}_deletion",
+            )
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
 
         return results
 

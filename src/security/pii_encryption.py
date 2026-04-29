@@ -22,23 +22,27 @@ PII_FIELDS = frozenset({"email", "phone", "orcid"})
 _cipher_cache: Optional[AESGCM] = None
 
 
+class PIIEncryptionConfigError(RuntimeError):
+    """Raised when PII encryption cannot be safely configured."""
+
+
 def get_encryption_key() -> bytes:
     key_b64 = os.getenv("NRG_PII_ENCRYPTION_KEY")
     if not key_b64:
-        logger.warning(
-            "NRG_PII_ENCRYPTION_KEY not set - PII encryption DISABLED. "
-            "DO NOT use in production!"
+        raise PIIEncryptionConfigError(
+            "NRG_PII_ENCRYPTION_KEY must be set before encrypting PII"
         )
-        return b"\x00" * KEY_SIZE
 
     try:
-        key = base64.b64decode(key_b64)
+        key = base64.b64decode(key_b64, validate=True)
         if len(key) != KEY_SIZE:
             raise ValueError(f"Key must be {KEY_SIZE} bytes, got {len(key)}")
         return key
     except Exception as e:
         logger.error("Invalid NRG_PII_ENCRYPTION_KEY: %s", e)
-        return b"\x00" * KEY_SIZE
+        raise PIIEncryptionConfigError(
+            "NRG_PII_ENCRYPTION_KEY must be valid base64-encoded 32-byte key material"
+        ) from e
 
 
 def _get_cipher() -> AESGCM:
@@ -53,11 +57,6 @@ def encrypt(plaintext: str) -> str:
     if not plaintext:
         return ""
 
-    key = get_encryption_key()
-    if key == b"\x00" * KEY_SIZE:
-        logger.warning("PII encryption key not configured - storing plaintext")
-        return plaintext
-
     cipher = _get_cipher()
     nonce = os.urandom(NONCE_SIZE)
     ciphertext = cipher.encrypt(nonce, plaintext.encode("utf-8"), None)
@@ -68,11 +67,6 @@ def decrypt(ciphertext: str) -> str:
     """Decrypt ciphertext. Returns plaintext."""
     if not ciphertext:
         return ""
-
-    key = get_encryption_key()
-    if key == b"\x00" * KEY_SIZE:
-        logger.warning("PII encryption key not configured - returning ciphertext as-is")
-        return ciphertext
 
     try:
         data = base64.b64decode(ciphertext.encode("utf-8"))
