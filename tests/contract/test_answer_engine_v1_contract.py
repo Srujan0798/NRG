@@ -3,6 +3,8 @@ from src.api.answer_contract import (
     AnswerEngineResponse,
     CitationRef,
     FreshnessInfo,
+    HybridEvidence,
+    ProvenanceInfo,
     SourceData,
     blocked_answer_payload,
     normalize_workflow_result,
@@ -23,6 +25,11 @@ def test_answer_engine_response_requires_v1_fields():
         confidence=AnswerConfidence(level="high", reason="Evidence and citations passed verification."),
         citations=[CitationRef(id="1", source_type="sql_row", label="researchers row", source_id="researchers:1")],
         source_data=SourceData(sql_query="SELECT 1", rows=[{"rank": 1}], documents=[]),
+        provenance=ProvenanceInfo(
+            synth="rule_based_hybrid",
+            cloud_synthesis_used=False,
+            hybrid_evidence=HybridEvidence(sql_rows=1, document_chunks=2),
+        ),
         freshness=FreshnessInfo(database_snapshot=None, document_indexed_at=None, warning=None),
         caveats=[],
         follow_up_suggestions=["Change time range"],
@@ -35,6 +42,8 @@ def test_answer_engine_response_requires_v1_fields():
     assert payload["blocked"] is False
     assert payload["confidence"]["level"] == "high"
     assert payload["source_data"]["rows"] == [{"rank": 1}]
+    assert payload["provenance"]["synth"] == "rule_based_hybrid"
+    assert payload["provenance"]["hybrid_evidence"] == {"sql_rows": 1, "document_chunks": 2}
 
 
 def test_normalize_workflow_result_maps_legacy_fields():

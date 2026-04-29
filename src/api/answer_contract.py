@@ -36,6 +36,19 @@ class FreshnessInfo(BaseModel):
     warning: str | None = None
 
 
+class HybridEvidence(BaseModel):
+    sql_rows: int = 0
+    document_chunks: int = 0
+
+
+class ProvenanceInfo(BaseModel):
+    planner: str | None = None
+    synth: str | None = None
+    verifier: str | None = None
+    cloud_synthesis_used: bool = False
+    hybrid_evidence: HybridEvidence | None = None
+
+
 class AnswerEngineResponse(BaseModel):
     query_id: str
     answer_id: str
@@ -50,6 +63,7 @@ class AnswerEngineResponse(BaseModel):
     confidence: AnswerConfidence
     citations: list[CitationRef] = Field(default_factory=list)
     source_data: SourceData = Field(default_factory=SourceData)
+    provenance: ProvenanceInfo = Field(default_factory=ProvenanceInfo)
     freshness: FreshnessInfo = Field(default_factory=FreshnessInfo)
     caveats: list[str] = Field(default_factory=list)
     follow_up_suggestions: list[str] = Field(default_factory=list)
@@ -192,6 +206,7 @@ def normalize_workflow_result(
             rows=list(result.get("sql_results") or []),
             documents=list(result.get("retrieved_chunks") or []),
         ),
+        provenance=ProvenanceInfo(**dict(result.get("provenance") or {})),
         freshness=FreshnessInfo(**dict(result.get("freshness") or {})),
         caveats=_string_list(result.get("caveats") or result.get("warnings") or []),
         follow_up_suggestions=_string_list(result.get("follow_up_suggestions") or []),
