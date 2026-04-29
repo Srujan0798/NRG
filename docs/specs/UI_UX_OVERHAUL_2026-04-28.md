@@ -48,7 +48,7 @@ FILES (every visible file in frontend/):
   frontend/src/styles/typography.css                   — NEW (font-face self-hosted)
   frontend/src/components/ui/                           — NEW (12 atoms, see §3)
   frontend/src/components/Login.tsx                    — REWRITE
-  frontend/src/views/Hero.tsx                          — REWRITE
+  frontend/src/views/AnswerEngine.tsx                  — REWRITE
   frontend/src/components/SearchBar.tsx                — REWRITE (command-bar feel)
   frontend/src/components/SuggestionChips/             — REWRITE
   frontend/src/components/StreamingAnswerPanel.tsx     — REWRITE (4-phase progress)
@@ -89,7 +89,7 @@ ACTION (3 phases, in order):
           --text-md: 16px; --text-lg: 20px; --text-xl: 28px;
           --text-2xl: 40px;
           --leading-tight: 1.2; --leading-normal: 1.5;
-          --tracking-tight: -0.01em;
+          --tracking-tight: 0;
 
           /* spacing — 4 px scale */
           --space-1: 4px; --space-2: 8px; --space-3: 12px;

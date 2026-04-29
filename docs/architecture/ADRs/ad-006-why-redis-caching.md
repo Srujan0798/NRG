@@ -207,7 +207,7 @@ def get_redis():
 
 - [Observability Setup](docs/OBSERVABILITY.md)
 - [Rate Limiting Implementation](docs/ops/dr_runbook.md)
-- [Ops Runbook](docs/RUNBOOK.md)
+- [Ops Runbook](../OPERATIONS_RUNBOOK.md)
 
 ---
 

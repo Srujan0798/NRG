@@ -59,6 +59,30 @@ Full constraint spec: `.claude/quality-bar.md`
 
 ---
 
+## Agent Loop Safety
+
+Use these rules for any task involving agents, tools, planners, dispatchers,
+memory, retries, or autonomous execution:
+
+- Set an explicit max iteration, retry, step, or budget limit.
+- If a tool fails, surface the failure in your report with tool name, input
+  summary, error class, and recovery action. Do not hide it behind a generic
+  "handled" note.
+- Keep tool access focused. If the task seems to need more than 5-7 tools,
+  split the task or ask Guru for a supervisor protocol.
+- Custom tools need clear descriptions, required inputs, examples, output
+  shape, and failure behavior.
+- Persist only durable memory: decisions, bug patterns, evidence paths, and
+  reusable rules. Do not store raw scratch context or duplicate prompt text.
+- Use multi-agent/supervisor patterns only for independent subtasks, distinct
+  expertise, parallel work, or explicit review. Otherwise keep the solution
+  simpler.
+- When agent behavior is wrong, debug in this order: iteration count, tool
+  calls, available memory, reasoning trace where visible, then each tool in
+  isolation.
+
+---
+
 ## Evidence Standard
 
 **Full audit cycle** (use for milestone/LB tasks): 20 files per `.claude/rules/audit/protocol.md §2.1`

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "description": "NRG Text-to-SQL Accuracy Evaluation Dataset — based on Dhairya's 17-query audit",
-  "generated_from": "docs/reports/sql_audit_dhairya.md",
+  "generated_from": "docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md",
   "target_accuracy": 12,
   "total_queries": 17,
   "queries": [

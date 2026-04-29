@@ -167,6 +167,10 @@ AGENT INSTRUCTIONS (include this VERBATIM in every task):
   - If your task touches Text-to-SQL accuracy: read docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md (17-query benchmark)
   - Don't do the minimum — expand toward the best possible solution
   - Structure your work as: Fortify → Elevate → Immortalize
+  - For any agent loop, tool-calling path, planner, worker dispatcher, or memory system: set an explicit iteration/step limit, surface tool errors as observations, log trace IDs, and return a safe partial result or blocker instead of looping silently
+  - Keep tool sets focused: assign only the tools needed for the task, with clear descriptions, inputs, examples, and failure behavior
+  - Use supervisor/multi-agent patterns only when the work has independent subtasks or distinct expertise boundaries; otherwise keep the workflow single-agent and simpler
+  - Use selective memory: persist only durable decisions, bug patterns, evidence pointers, and reusable rules; do not hoard raw conversation or transient scratch context
   - Document what you upgraded beyond the original task
   - Extract any new reusable skill or pattern you discovered
   - Run /pre-commit before committing (see .agents/skills/pre-commit/SKILL.md)
@@ -179,6 +183,33 @@ DEPENDS ON: [other tasks, or "none"]
 ---
 
 ## 4. THE EVOLUTION LOOP
+
+### 4.1 AGENT LOOP SAFETY
+
+Any NRG autonomous agent, tool-calling workflow, planner, executor, or worker
+orchestrator must be bounded, observable, and recoverable.
+
+Required rules:
+
+1. **Bounded loops** — every agent loop has a maximum iteration, step, retry, or
+   budget limit. On limit reached, return a safe partial result, evidence of
+   what was attempted, and the exact next action.
+2. **Visible tool failures** — tool errors are captured as observations with the
+   tool name, input summary, error class, and recovery decision. Silent failure
+   is treated as a correctness bug.
+3. **Focused tool access** — assign only task-relevant tools. If more than 5-7
+   tools seem necessary, split the task or add a supervisor protocol.
+4. **Clear tool schemas** — every custom tool needs a precise description,
+   required parameters, examples, output shape, and failure behavior.
+5. **Selective memory** — store durable decisions, bug patterns, test evidence,
+   and reusable rules. Do not persist scratch reasoning, raw transient logs, or
+   duplicate context.
+6. **Justified orchestration** — multi-agent/supervisor patterns require a real
+   boundary: independent subtasks, separate expertise, parallelism, or explicit
+   review. Do not add orchestration for work one agent can do safely.
+7. **Debug trace** — when an agent misbehaves, inspect iteration count, tool
+   calls, available memory, reasoning trace where visible, and each tool in
+   isolation before changing architecture.
 
 ```
     ┌──── SPRINT START ────────────────────────────┐

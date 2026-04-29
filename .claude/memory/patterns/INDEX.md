@@ -7,6 +7,7 @@ Permanent learnings from user feedback, architectural decisions, and operational
 | Pattern | Source | Key Rule |
 |---------|--------|----------|
 | [acceptance-path-discipline](acceptance-path-discipline.md) | Founder | Feature-flag every UI surface that depends on an unmet Quality Bar constraint |
+| [export-data-integrity](export-data-integrity.md) | MiniMax | CSV/XLSX exports must match tier-filtered rendered rows and preserve dates, IDs, row counts, and audit trace |
 | [intent-aware-pii](intent-aware-pii.md) | Founder | PII regex misses schema-aware extraction intent; add intent classifier above sanitiser |
 | [k-anonymity-threshold](k-anonymity-threshold.md) | Founder | Reject Tier 2/3 queries whose cohort < k=5 (DPDP §8) |
 | [network-policy-worm-logs](network-policy-worm-logs.md) | Founder | Pod-to-pod zero-trust + WORM-locked object storage for audit chain |
@@ -20,21 +21,29 @@ Permanent learnings from user feedback, architectural decisions, and operational
 | [db-layer-defence](db-layer-defence.md) | Founder | Third defence layer: pg_anonymizer dynamic masking + PL/pgSQL HMAC trigger |
 | [partitioning-pitr](partitioning-pitr.md) | Founder | Range-partition by year for >50M-row tables; quarterly DR drill with WAL replay |
 | [pii-test-performance-budget](pii-test-performance-budget.md) | Founder | Fast PII tests are security gates; keep regex unit path under 10s and mark real NLP integrations slow |
+| [result-visualization-discipline](result-visualization-discipline.md) | MiniMax | In-app visuals must explain verified answers, match data shape, preserve tier safety, and pass browser QA |
 | [tier-shape-boundary](tier-shape-boundary.md) | Founder | RBAC enforced at API response-shape layer AND SQL boundary |
 
 ## Quality & Process
 
 | Pattern | Source | Key Rule |
 |---------|--------|----------|
+| [analytical-answer-contract](analytical-answer-contract.md) | MiniMax | Analytical answers must expose metric contract, baseline, counts, confidence, caveat, and safe interpretation |
 | [audit-reliability-check](audit-reliability-check.md) | Founder | When two same-day self-audits disagree by ≥3 points, reconcile before any external session |
 | [live-evidence-requirement](live-evidence-requirement.md) | Founder | Every Quality Bar PASS needs evidence against running stack with ≥50k seed rows |
+| [llm-pipeline-boundary](llm-pipeline-boundary.md) | MiniMax | LLM-heavy features must separate deterministic policy/calculation stages from model synthesis with schema parsing and traceability |
+| [prompt-contract-discipline](prompt-contract-discipline.md) | MiniMax | Production-path prompt changes need task/input/schema/constraint contracts plus parser behavior and regression evidence |
+| [agentic-execution-plan-contract](agentic-execution-plan-contract.md) | MiniMax | Multi-task agentic work needs task ids, dependencies, file ownership, test/verify commands, disjoint write scopes, review gates, and human approval for destructive actions |
+| [guided-intake-scenario-planning](guided-intake-scenario-planning.md) | MiniMax | Recommendation and planning answers need structured intake, explicit assumptions, evidence-backed scenarios, gaps, risks, limitations, and a next validation action |
 | [real-audience](real-audience.md) | Founder | First audience is the professor's assistant clicking on a laptop, not formal UAT |
+| [source-verification-discipline](source-verification-discipline.md) | MiniMax | Cited claims must expose source type, freshness, independent confirmation, confidence, and disputed status |
 | [storage-location](storage-location.md) | Founder | NEVER store in local `~/.claude/`; ALWAYS in repo `.claude/memory/` |
 
 ## Workflow
 
 | Pattern | Source | Key Rule |
 |---------|--------|----------|
+| [agent-loop-safety](agent-loop-safety.md) | MiniMax | Agent/tool/memory loops must be bounded, observable, selective, and justified |
 | [guru-protocol-enforcement](guru-protocol-enforcement.md) | Founder | NEVER give simple fix tasks; use full ═══ format with Shishya framework |
 | [workflow](workflow.md) | Founder | Guru mode: don't implement, give task protocols with skill + shishya assignments |
 

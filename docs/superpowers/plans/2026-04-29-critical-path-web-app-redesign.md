@@ -26,7 +26,7 @@ Create:
 
 Modify:
 
-- `frontend/src/views/Hero.tsx` - become the `/app` workbench host using new shell.
+- `frontend/src/views/AnswerEngine.tsx` - host the `/app` answer-engine views using the new shell.
 - `frontend/src/components/StreamingAnswerPanel.tsx` - expose stable answer/proof test IDs and inspector callbacks if missing.
 - `frontend/src/components/AnswerPanel/AnswerPanel.tsx` - keep answer/table rendering but stop owning proof layout.
 - `frontend/src/components/AnswerTrustActions/AnswerTrustActions.tsx` - keep compatibility or delegate to `TrustToolbar`.
@@ -642,7 +642,7 @@ git commit -m "feat: add answer proof inspector"
 
 **Files:**
 - Create: `frontend/src/components/QueryWorkbench/QueryWorkbench.tsx`
-- Modify: `frontend/src/views/Hero.tsx`
+- Modify: `frontend/src/views/AnswerEngine.tsx`
 - Modify: `frontend/src/App.tsx`
 - Test: `frontend/e2e/acceptance_walk.spec.ts`
 
@@ -732,7 +732,7 @@ export default QueryWorkbench
 
 - [ ] **Step 2: Replace `Hero` internals with shell composition**
 
-Modify `frontend/src/views/Hero.tsx` so the exported component returns:
+Modify `frontend/src/views/AnswerEngine.tsx` so the exported `/app` view returns:
 
 ```tsx
 import React, { useEffect } from 'react'
@@ -798,7 +798,7 @@ Expected: all selected tests and build pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add frontend/src/components/QueryWorkbench frontend/src/views/Hero.tsx frontend/src/App.tsx
+git add frontend/src/components/QueryWorkbench frontend/src/views/AnswerEngine.tsx frontend/src/App.tsx
 git commit -m "feat: move app route into operations console"
 ```
 
@@ -849,9 +849,9 @@ onProofChange?.({
 })
 ```
 
-- [ ] **Step 2: Lift proof state into `Hero`**
+- [ ] **Step 2: Lift proof state into `AnswerEngine`**
 
-In `frontend/src/views/Hero.tsx`, add:
+In `frontend/src/views/AnswerEngine.tsx`, add:
 
 ```tsx
 const [proof, setProof] = React.useState<StreamingProofPayload | null>(null)
@@ -916,7 +916,7 @@ Expected: tests and build pass.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add frontend/src/components/StreamingAnswerPanel.tsx frontend/src/components/QueryWorkbench/QueryWorkbench.tsx frontend/src/components/ProofInspector/ProofInspector.tsx frontend/src/views/Hero.tsx
+git add frontend/src/components/StreamingAnswerPanel.tsx frontend/src/components/QueryWorkbench/QueryWorkbench.tsx frontend/src/components/ProofInspector/ProofInspector.tsx frontend/src/views/AnswerEngine.tsx
 git commit -m "feat: wire answer proof into operations inspector"
 ```
 

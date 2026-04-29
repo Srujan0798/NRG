@@ -114,7 +114,7 @@ At 375 px:
 
 | Existing File | Change |
 |---|---|
-| `frontend/src/views/Hero.tsx` | Rename behaviorally through exports or replace internals with `QueryWorkbench` inside `OperationsShell`. |
+| `frontend/src/views/AnswerEngine.tsx` | Host the `/app` answer-engine views using `QueryWorkbench` inside `OperationsShell`. |
 | `frontend/src/components/StreamingAnswerPanel.tsx` | Keep SSE contract; move visual progress into workbench-friendly phase rail. |
 | `frontend/src/components/AnswerPanel/AnswerPanel.tsx` | Keep parser/table logic; remove layout responsibility that belongs to shell/inspector. |
 | `frontend/src/components/AnswerTrustActions/AnswerTrustActions.tsx` | Fold into `TrustToolbar` and `ProofInspector`. |

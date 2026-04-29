@@ -106,7 +106,7 @@ PRIORITY: P0-blocker (first impression)
 ═══════════════════════════════════════════════════════════════
 
 FILES:
-  frontend/src/views/Hero.tsx · frontend/src/views/MetricsDashboard.tsx
+  frontend/src/views/AnswerEngine.tsx · frontend/src/views/MetricsDashboard.tsx
   frontend/src/components/SearchBar.tsx
   frontend/src/components/SuggestionChips/SuggestionChips.tsx
   frontend/src/components/ScaleStrip/ScaleStrip.tsx
