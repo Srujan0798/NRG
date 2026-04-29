@@ -1,3 +1,0 @@
-COMMAND: bash scripts/forbidden_vocab_check.sh --all
-stdout: <empty on success>
-exit_code: 0

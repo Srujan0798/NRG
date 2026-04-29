@@ -1,6 +1,0 @@
-{
-  "status": "dry_run",
-  "interval_seconds": 60,
-  "cosine_shift_threshold": 0.05,
-  "reindex_endpoint": "/api/reindex"
-}
