@@ -7,6 +7,7 @@ EVIDENCE_DIR="${ROOT_DIR}/evidence/${EVIDENCE_DATE}/critical_path"
 API_BASE="${API_BASE:-http://localhost:8000}"
 FRONTEND_BASE="${FRONTEND_BASE:-http://localhost:5173}"
 APP_ENV_VALUE="${APP_ENV:-dev}"
+CRITICAL_PATH_UVICORN_WORKERS="${CRITICAL_PATH_UVICORN_WORKERS:-1}"
 STRICT=0
 RESET=0
 WALK=0
@@ -49,7 +50,7 @@ require_cmd() {
 }
 
 compose() {
-  APP_ENV="${APP_ENV_VALUE}" FRONTEND_PORT=5173 docker compose \
+  APP_ENV="${APP_ENV_VALUE}" FRONTEND_PORT=5173 UVICORN_WORKERS="${CRITICAL_PATH_UVICORN_WORKERS}" docker compose \
     -f docker-compose.yml \
     -f docker-compose.prod.yml \
     "$@"
@@ -231,6 +232,11 @@ wait_http "${FRONTEND_BASE}" "Frontend" 120
 
 log "Migrate"
 if [[ "${SKIP_DOCKER}" -eq 0 ]]; then
+  if ! compose exec -T api /app/venv/bin/alembic -c alembic.ini upgrade head; then
+    [[ "${STRICT}" -eq 1 ]] && fail "alembic migration failed"
+    warn "alembic migration failed; continuing because --strict was not set"
+  fi
+elif command -v docker >/dev/null 2>&1 && docker ps --format '{{.Names}}' | grep -qx 'nrg-api'; then
   if ! compose exec -T api /app/venv/bin/alembic -c alembic.ini upgrade head; then
     [[ "${STRICT}" -eq 1 ]] && fail "alembic migration failed"
     warn "alembic migration failed; continuing because --strict was not set"
