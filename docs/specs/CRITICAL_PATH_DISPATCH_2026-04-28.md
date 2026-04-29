@@ -225,7 +225,8 @@ FILES:
   frontend/src/components/AnswerPanel/AnswerPanel.tsx
   frontend/src/components/AnswerTrustActions/AnswerTrustActions.tsx
   frontend/src/components/CitationDrawer/*
-  frontend/src/components/AuditEventList/*
+  frontend/src/views/AnswerEngine.tsx
+  frontend/src/pages/AuditEvent.tsx
   frontend/src/lib/parseCitations.ts
   evidence/2026-04-28/critical_path/cp4_answer_*.png
 

@@ -21,34 +21,33 @@ You are auditing the **National Research Graph (NRG)** project — a sovereign A
 
 Read ALL of these before producing any output:
 1. `Core_Idea_Clean.md` — the vision (5-layer architecture)
-2. `docs/archive/Sovereign_AI_Protocols_Clean.md` — three-layer technical blueprint
-3. `docs/archive/Sovereign_Infrastructure_Blueprint.md` — full implementation plan (8-month roadmap)
-4. `docs/architecture/ARCHITECTURE.md` — canonical architecture spec
-5. `docs/reports/FINAL_STATUS_REPORT.md` — current honest status
-6. `src/api/main.py` — the FastAPI server
-7. `src/orchestration/graph.py` — the LangGraph workflow
-8. `src/orchestration/nodes/executor.py` — how skills get executed
-9. `src/orchestration/nodes/synthesizer.py` — how responses get generated
-10. `src/skills/text_to_sql/skill.py` — the Text-to-SQL skill
-11. `src/skills/rag/skill.py` — the RAG skill
-12. `src/skills/rag/embedder.py` — embedding generation
-13. `src/config/llm_config.py` — LLM provider mesh (OpenAI/Anthropic/Gemini/Azure)
-14. `src/data/database.py` — SQLite database manager
-15. `src/security/gateway/prompt_sanitiser.py` — PII + injection detection
-16. `src/security/pii/tokenizer.py` — PII tokenization engine
-17. `src/audit/__init__.py` — HMAC-chained immutable audit log
-18. `src/auth/jwt_handler.py` — JWT auth with RS256
-19. `src/auth/middleware.py` — RBAC filtering per tier
-20. `src/caching/redis_layer.py` — Redis caching layer
-21. `docker-compose.yml` — service definitions
-22. `pyproject.toml` — dependencies
-23. `.env` — current environment config
-24. `.env.example` — reference config
-25. `frontend/src/App.tsx` — frontend entry
-26. `frontend/src/components/Login.tsx` — login component
-27. `frontend/src/services/authService.ts` — auth API client
-28. `frontend/src/services/queryService.ts` — query API client
-29. `frontend/vite.config.ts` — Vite proxy config
+2. `docs/architecture/ARCHITECTURE.md` — canonical architecture summary
+3. `docs/handover/ARCHITECTURE.md` — signed technical handoff architecture
+4. `docs/reports/FINAL_STATUS_REPORT.md` — current honest status
+5. `src/api/main.py` — the FastAPI server
+6. `src/orchestration/graph.py` — the LangGraph workflow
+7. `src/orchestration/nodes/executor.py` — how skills get executed
+8. `src/orchestration/nodes/synthesizer.py` — how responses get generated
+9. `src/skills/text_to_sql/skill.py` — the Text-to-SQL skill
+10. `src/skills/rag/skill.py` — the RAG skill
+11. `src/skills/rag/embedder.py` — embedding generation
+12. `src/config/llm_config.py` — LLM provider mesh (OpenAI/Anthropic/Gemini/Azure)
+13. `src/data/database.py` — SQLite database manager
+14. `src/security/gateway/prompt_sanitiser.py` — PII + injection detection
+15. `src/security/pii/tokenizer.py` — PII tokenization engine
+16. `src/audit/__init__.py` — HMAC-chained immutable audit log
+17. `src/auth/jwt_handler.py` — JWT auth with RS256
+18. `src/auth/middleware.py` — RBAC filtering per tier
+19. `src/caching/redis_layer.py` — Redis caching layer
+20. `docker-compose.yml` — service definitions
+21. `pyproject.toml` — dependencies
+22. `.env` — current environment config
+23. `.env.example` — reference config
+24. `frontend/src/App.tsx` — frontend entry
+25. `frontend/src/components/Login.tsx` — login component
+26. `frontend/src/services/authService.ts` — auth API client
+27. `frontend/src/services/queryService.ts` — query API client
+28. `frontend/vite.config.ts` — Vite proxy config
 
 ## What Has Already Been Fixed (do NOT redo these)
 

@@ -55,7 +55,8 @@ FILES (every visible file in frontend/):
   frontend/src/components/AnswerPanel/AnswerPanel.tsx  — REWRITE
   frontend/src/components/AnswerTrustActions/          — REWRITE
   frontend/src/components/CitationDrawer/              — REWRITE
-  frontend/src/components/AuditEventList/              — REWRITE
+  frontend/src/pages/AuditEvent.tsx                    — REWRITE
+  frontend/src/views/AnswerEngine.tsx                  — REWRITE audit view
   frontend/src/components/PersonaToggle.tsx            — REWRITE
   frontend/src/components/EmptyState/                  — REWRITE (one component, friendly copy)
   frontend/src/components/ErrorState/                  — REWRITE (no stack traces)
