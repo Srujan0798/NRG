@@ -27,7 +27,8 @@ export default defineConfig({
     proxy: {
       '/login': {
         target: apiProxyTarget,
-        changeOrigin: true
+        changeOrigin: true,
+        bypass: (req) => req.method === 'GET' ? '/index.html' : undefined,
       },
       '/refresh': {
         target: apiProxyTarget,

@@ -8,15 +8,41 @@ import SkipLink from './components/SkipLink/SkipLink'
 import { useReducedMotion } from './hooks/useReducedMotion'
 import { trackFirstPaint } from './lib/telemetry'
 import NetworkStatusBanner from './components/NetworkStatusBanner'
+import { authService, type PersonaRole } from './services/authService'
+import {
+  AnswerEngineAnswer,
+  AnswerEngineAudit,
+  AnswerEngineDashboard,
+  AnswerEngineHome,
+  AnswerEngineLogin,
+} from './views/AnswerEngine'
 
 const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
 const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
 const IndustryDashboard = lazy(() => import('./views/IndustryDashboard'))
 const FounderDashboard = lazy(() => import('./views/FounderDashboard'))
-const Hero = lazy(() => import('./views/Hero'))
-const DPDPAudit = lazy(() => import('./pages/DPDP-Audit'))
 const AuditEvent = lazy(() => import('./pages/AuditEvent'))
 const ProductionWorkspace = lazy(() => import('./pages/ProductionWorkspace'))
+
+const ROLE_TIER: Record<PersonaRole, number> = {
+  researcher: 1,
+  government: 2,
+  industry: 3,
+}
+
+const ROLE_DASHBOARD: Record<PersonaRole, string> = {
+  researcher: '/app/researcher',
+  government: '/app/government',
+  industry: '/app/industry',
+}
+
+const LOGIN_ROLE_BY_USERNAME: Record<string, PersonaRole> = {
+  'researcher@iitgn.ac.in': 'researcher',
+  'ministry@nrg.gov.in': 'government',
+  'partner@industry.in': 'industry',
+}
+
+const isBlockedPrompt = (query: string) => /\b(aadhaar|pan|passport|bank account|gstin|email|phone)\b/i.test(query)
 
 const DashboardLoading = () => (
   <div className="nrg-app-canvas min-h-screen">
@@ -97,9 +123,111 @@ const AuthenticatedRoute: React.FC<{ children: React.ReactNode }> = ({ children 
   return <>{children}</>
 }
 
+interface AnswerEngineRouteProps {
+  routeRole?: PersonaRole
+  loginFirst?: boolean
+  onNavigate: (path: string, mode?: 'push' | 'replace') => void
+  children: (props: {
+    role: PersonaRole
+    tier: number
+    username: string
+    onLogout: () => void
+    onPersonaChange: (role: PersonaRole) => void
+    onNavigate: (path: string) => void
+    onQuerySubmit: (query: string) => void
+  }) => React.ReactNode
+}
+
+const AnswerEngineRoute: React.FC<AnswerEngineRouteProps> = ({ routeRole, loginFirst = false, onNavigate, children }) => {
+  const { isLoading, login, loginError, user, backendAvailable, logout } = useAuth()
+
+  const handleLogin = async (username: string, password: string) => {
+    const ok = await login(username, password)
+    if (!ok) return false
+
+    const storedRole = authService.getStoredSession()?.user.role
+    const nextRole = storedRole || LOGIN_ROLE_BY_USERNAME[username] || 'researcher'
+    onNavigate(ROLE_DASHBOARD[nextRole], 'replace')
+    return true
+  }
+
+  if (loginFirst && isLoading) {
+    return (
+      <AnswerEngineLogin
+        onLogin={handleLogin}
+        error={loginError}
+        backendAvailable={backendAvailable}
+      />
+    )
+  }
+
+  if (isLoading) return <DashboardLoading />
+
+  if (!user) {
+    return (
+      <AnswerEngineLogin
+        onLogin={handleLogin}
+        error={loginError}
+        backendAvailable={backendAvailable}
+      />
+    )
+  }
+
+  const role = routeRole || user.role
+  const tier = ROLE_TIER[role]
+
+  const handleLogout = async () => {
+    await logout()
+    onNavigate('/login', 'replace')
+  }
+
+  const handlePersonaChange = (nextRole: PersonaRole) => {
+    onNavigate(ROLE_DASHBOARD[nextRole])
+  }
+
+  const handleQuerySubmit = (query: string) => {
+    const trimmed = query.trim()
+    if (!trimmed) return
+
+    sessionStorage.setItem('nrg.lastQuery', trimmed)
+    if (isBlockedPrompt(trimmed)) {
+      sessionStorage.setItem('nrg.blockedQuery', trimmed)
+      onNavigate('/app/answer/blocked')
+      return
+    }
+    sessionStorage.removeItem('nrg.blockedQuery')
+    onNavigate('/app/answer/latest')
+  }
+
+  return (
+    <>
+      {children({
+        role,
+        tier,
+        username: user.username,
+        onLogout: handleLogout,
+        onPersonaChange: handlePersonaChange,
+        onNavigate,
+        onQuerySubmit: handleQuerySubmit,
+      })}
+    </>
+  )
+}
+
 const App: React.FC = () => {
   const reducedMotion = useReducedMotion()
   const [pathname, setPathname] = React.useState(window.location.pathname)
+
+  const navigate = React.useCallback((path: string, mode: 'push' | 'replace' = 'push') => {
+    if (window.location.pathname !== path) {
+      if (mode === 'replace') {
+        window.history.replaceState({}, '', path)
+      } else {
+        window.history.pushState({}, '', path)
+      }
+    }
+    setPathname(path)
+  }, [])
 
   useEffect(() => {
     const handlePopState = () => setPathname(window.location.pathname)
@@ -116,11 +244,16 @@ const App: React.FC = () => {
   }, [])
 
   useEffect(() => {
+    if (pathname === '/login') document.title = 'NRG · Sign in'
     if (pathname === '/app') document.title = 'NRG · Ask National Research Graph'
+    if (pathname === '/app/researcher') document.title = 'NRG · Researcher Answer Engine'
+    if (pathname === '/app/government') document.title = 'NRG · Government Answer Engine'
+    if (pathname === '/app/answer/latest') document.title = 'NRG · Answer'
+    if (pathname === '/app/answer/blocked') document.title = 'NRG · Prompt Blocked'
     if (pathname === '/app/publications') document.title = 'NRG · Publications Explorer'
     if (pathname === '/app/researchers') document.title = 'NRG · Researcher Profiles'
     if (pathname === '/app/reports') document.title = 'NRG · Government Reports'
-    if (pathname === '/app/industry') document.title = 'NRG · Industry Capability'
+    if (pathname === '/app/industry') document.title = 'NRG · Industry Answer Engine'
     if (pathname === '/app/settings') document.title = 'NRG · Settings and Audit'
     if (pathname === '/founder') document.title = 'NRG · Founder Readiness'
     if (pathname === '/app/audit') document.title = 'NRG · Audit Trail'
@@ -135,6 +268,12 @@ const App: React.FC = () => {
         <FounderDashboard />
       </Suspense>
     )
+  } else if (pathname === '/login') {
+    content = (
+      <AnswerEngineRoute loginFirst onNavigate={navigate}>
+        {() => null}
+      </AnswerEngineRoute>
+    )
   } else if (pathname.startsWith('/app/audit/event/')) {
     content = (
       <AuthenticatedRoute>
@@ -145,19 +284,39 @@ const App: React.FC = () => {
     )
   } else if (pathname === '/app/audit') {
     content = (
-      <AuthenticatedRoute>
-        <Suspense fallback={<DashboardLoading />}>
-          <DPDPAudit />
-        </Suspense>
-      </AuthenticatedRoute>
+      <AnswerEngineRoute onNavigate={navigate}>
+        {(props) => <AnswerEngineAudit {...props} />}
+      </AnswerEngineRoute>
     )
   } else if (pathname === '/app') {
     content = (
-      <AuthenticatedRoute>
-        <Suspense fallback={<DashboardLoading />}>
-          <Hero />
-        </Suspense>
-      </AuthenticatedRoute>
+      <AnswerEngineRoute onNavigate={navigate}>
+        {(props) => <AnswerEngineHome {...props} />}
+      </AnswerEngineRoute>
+    )
+  } else if (pathname === '/app/researcher') {
+    content = (
+      <AnswerEngineRoute routeRole="researcher" onNavigate={navigate}>
+        {(props) => <AnswerEngineDashboard {...props} />}
+      </AnswerEngineRoute>
+    )
+  } else if (pathname === '/app/government') {
+    content = (
+      <AnswerEngineRoute routeRole="government" onNavigate={navigate}>
+        {(props) => <AnswerEngineDashboard {...props} />}
+      </AnswerEngineRoute>
+    )
+  } else if (pathname === '/app/industry') {
+    content = (
+      <AnswerEngineRoute routeRole="industry" onNavigate={navigate}>
+        {(props) => <AnswerEngineDashboard {...props} />}
+      </AnswerEngineRoute>
+    )
+  } else if (pathname === '/app/answer/latest' || pathname === '/app/answer/blocked') {
+    content = (
+      <AnswerEngineRoute onNavigate={navigate}>
+        {(props) => <AnswerEngineAnswer {...props} />}
+      </AnswerEngineRoute>
     )
   } else if (pathname === '/app/publications') {
     content = (
@@ -180,14 +339,6 @@ const App: React.FC = () => {
       <AuthenticatedRoute>
         <Suspense fallback={<DashboardLoading />}>
           <ProductionWorkspace screen="reports" />
-        </Suspense>
-      </AuthenticatedRoute>
-    )
-  } else if (pathname === '/app/industry') {
-    content = (
-      <AuthenticatedRoute>
-        <Suspense fallback={<DashboardLoading />}>
-          <ProductionWorkspace screen="industry" />
         </Suspense>
       </AuthenticatedRoute>
     )

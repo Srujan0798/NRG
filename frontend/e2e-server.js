@@ -48,8 +48,11 @@ const API_PATHS = [
   '/me', '/me/', '/audit', '/audit/', '/api/query/stream', '/api/telemetry',
 ];
 
-function isApiPath(urlPath) {
+function isApiPath(urlPath, method) {
   const pathname = new URL(urlPath, 'http://localhost').pathname;
+  if (pathname === '/login' && method === 'GET') {
+    return false;
+  }
   return API_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'));
 }
 
@@ -176,7 +179,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  if (isApiPath(req.url)) {
+  if (isApiPath(req.url, req.method)) {
     proxyRequest(req, res);
   } else {
     serveStatic(req, res);

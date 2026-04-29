@@ -69,6 +69,20 @@
     --nrg-grade-gold: #FFD700;
     --nrg-grade-silver: #C0C0C0;
     --nrg-grade-bronze: #CD7F32;
+    --color-bg: 247 248 245;
+    --color-bg-elevated: 255 255 255;
+    --color-bg-subtle: 237 241 238;
+    --color-fg: 17 24 39;
+    --color-fg-muted: 75 85 99;
+    --color-fg-subtle: 148 163 184;
+    --color-border: 209 213 219;
+    --color-ring: 10 95 89;
+    --color-accent: 10 95 89;
+    --color-accent-hover: 15 118 110;
+    --color-accent-fg: 255 255 255;
+    --color-success: 4 120 87;
+    --color-warning: 180 83 9;
+    --color-danger: 185 28 28;
     --nrg-founder-paper: #F5F1E8;
     --nrg-founder-ink: #08111F;
     --nrg-saffron-intensity-low: rgba(255, 107, 53, 0.3);
@@ -188,6 +202,20 @@
     --nrg-tier-1: #60A5FA;
     --nrg-tier-2: #34D399;
     --nrg-tier-3: #FFB366;
+    --color-bg: 9 13 22;
+    --color-bg-elevated: 16 22 36;
+    --color-bg-subtle: 27 35 52;
+    --color-fg: 245 247 250;
+    --color-fg-muted: 156 163 175;
+    --color-fg-subtle: 107 114 128;
+    --color-border: 55 65 81;
+    --color-ring: 45 212 191;
+    --color-accent: 45 212 191;
+    --color-accent-hover: 94 234 212;
+    --color-accent-fg: 8 12 22;
+    --color-success: 52 211 153;
+    --color-warning: 245 158 11;
+    --color-danger: 248 113 113;
 
     --nrg-bg:        #080c16;
     --nrg-surface:   #101624;
@@ -199,6 +227,18 @@
     --glass-bg:     rgba(8, 12, 22, 0.68);
     --glass-border: rgba(255, 255, 255, 0.08);
     --glass-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  }
+
+  :root[data-tier="t2"] {
+    --color-accent: 180 83 9;
+    --color-accent-hover: 146 64 14;
+    --color-ring: 180 83 9;
+  }
+
+  :root[data-tier="t3"] {
+    --color-accent: 55 65 81;
+    --color-accent-hover: 31 41 55;
+    --color-ring: 55 65 81;
   }
 
   * {

@@ -1,4 +1,4 @@
-import React, { createContext, startTransition, useContext, useEffect, useState } from 'react'
+import React, { createContext, startTransition, useContext, useEffect, useRef, useState } from 'react'
 import { AuthSession, AuthUser, authService } from '../services/authService'
 
 interface AuthContextType {
@@ -29,14 +29,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loginError, setLoginError] = useState<string | null>(null)
   const [backendAvailable, setBackendAvailable] = useState(true)
   const [_consecutiveFailures, setConsecutiveFailures] = useState(0)
+  const authRevisionRef = useRef(0)
 
   useEffect(() => {
     let mounted = true
+    const restoreRevision = authRevisionRef.current
+    const restoreStillCurrent = () => mounted && authRevisionRef.current === restoreRevision
+
     const restoreSession = async () => {
       const storedSession = authService.getStoredSession()
+      if (window.location.pathname === '/login' && !storedSession) {
+        startTransition(() => {
+          if (!restoreStillCurrent()) return
+          setSession(null)
+          setIsLoading(false)
+        })
+        return
+      }
+
       if (storedSession) {
         startTransition(() => {
-          if (!mounted) return
+          if (!restoreStillCurrent()) return
           setSession(storedSession)
           setIsLoading(false)
         })
@@ -46,13 +59,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const cookieSession = await authService.fetchSession()
         startTransition(() => {
-          if (!mounted) return
+          if (!restoreStillCurrent()) return
           setSession(cookieSession)
           setIsLoading(false)
         })
       } catch {
         startTransition(() => {
-          if (!mounted) return
+          if (!restoreStillCurrent()) return
           setSession(null)
           setIsLoading(false)
         })
@@ -104,12 +117,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const login = async (username: string, password: string): Promise<boolean> => {
+    authRevisionRef.current += 1
     setLoginError(null)
 
     try {
       const nextSession = await authService.login(username, password)
       startTransition(() => {
         setSession(nextSession)
+        setIsLoading(false)
       })
       return true
     } catch (error: any) {
@@ -121,23 +136,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           ? 'Too many login attempts. Please wait a moment and try again.'
           : detail || 'Unable to sign in. Please check the API server and try again.'
       setLoginError(message)
+      setIsLoading(false)
       return false
     }
   }
 
   const logout = async (): Promise<void> => {
+    authRevisionRef.current += 1
     await authService.logout(session)
     startTransition(() => {
       setSession(null)
       setLoginError(null)
+      setIsLoading(false)
     })
   }
 
   const refreshSession = async (): Promise<AuthSession | null> => {
     try {
       const nextSession = await authService.refreshSession(session?.refreshToken)
+      authRevisionRef.current += 1
       startTransition(() => {
         setSession(nextSession)
+        setIsLoading(false)
       })
       return nextSession
     } catch (_error) {

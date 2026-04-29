@@ -16,6 +16,23 @@ module.exports = {
         '2xl': '1536px',
       },
       colors: {
+        bg: 'rgb(var(--color-bg) / <alpha-value>)',
+        'bg-elevated': 'rgb(var(--color-bg-elevated) / <alpha-value>)',
+        'bg-subtle': 'rgb(var(--color-bg-subtle) / <alpha-value>)',
+        surface: 'rgb(var(--color-bg-elevated) / <alpha-value>)',
+        fg: 'rgb(var(--color-fg) / <alpha-value>)',
+        'fg-muted': 'rgb(var(--color-fg-muted) / <alpha-value>)',
+        'fg-subtle': 'rgb(var(--color-fg-subtle) / <alpha-value>)',
+        border: 'rgb(var(--color-border) / <alpha-value>)',
+        ring: 'rgb(var(--color-ring) / <alpha-value>)',
+        accent: {
+          DEFAULT: 'rgb(var(--color-accent) / <alpha-value>)',
+          hover: 'rgb(var(--color-accent-hover) / <alpha-value>)',
+          fg: 'rgb(var(--color-accent-fg) / <alpha-value>)',
+        },
+        success: 'rgb(var(--color-success) / <alpha-value>)',
+        warning: 'rgb(var(--color-warning) / <alpha-value>)',
+        danger: 'rgb(var(--color-danger) / <alpha-value>)',
         nrg: {
           navy: {
             50:  '#e8edf5',
@@ -120,6 +137,15 @@ module.exports = {
         devanagari: ['"Tiro Devanagari Hindi"', 'system-ui', 'sans-serif'],
         sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'Menlo', 'monospace'],
+      },
+      borderRadius: {
+        pill: '9999px',
+      },
+      transitionDuration: {
+        fast: '120ms',
+      },
+      transitionTimingFunction: {
+        standard: 'cubic-bezier(0.2, 0, 0, 1)',
       },
       animation: {
         'shimmer': 'shimmer 2s ease-in-out infinite',
