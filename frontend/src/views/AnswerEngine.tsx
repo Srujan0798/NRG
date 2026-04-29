@@ -20,7 +20,7 @@ import { Button, Card, Drawer, Input, Pill, Select, Skeleton } from '../componen
 import { StreamingAnswerPanel, type StreamingProofPayload } from '../components/StreamingAnswerPanel'
 
 type SurfaceRole = PersonaRole
-type Confidence = 'high' | 'medium' | 'low'
+type Confidence = 'high' | 'medium' | 'low' | 'needs_clarification'
 const cx = (...classes: Array<string | false | null | void>) => classes.filter(Boolean).join(' ')
 
 interface ChromeProps {
@@ -570,6 +570,7 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
   const signatureBytes = auditEventId ? 26 : null
   const confidence: Confidence = !query ? 'low' : proof?.confidence || 'medium'
   const confidenceTone: 'success' | 'warning' | 'neutral' = confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'neutral'
+  const confidenceLabel = confidence === 'needs_clarification' ? 'needs clarification' : confidence
 
   const citationMap = useMemo(() => {
     const map: Record<string, Record<string, any>> = {}
@@ -583,7 +584,7 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button variant="ghost" onClick={() => onNavigate('/app')}><ArrowLeft className="h-4 w-4" />Back</Button>
           <div className="flex items-center gap-2">
-            <Pill tone={confidenceTone}>{confidence === 'low' ? 'no query' : `confidence: ${confidence}`}</Pill>
+            <Pill tone={confidenceTone}>{!query ? 'no query' : `confidence: ${confidenceLabel}`}</Pill>
           </div>
         </div>
 

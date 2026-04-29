@@ -122,4 +122,23 @@ describe('useStreamingQuery', () => {
     expect(hook.latest().error).toBe('This is taking longer than usual. Please try again.')
     expect(source.closed).toBe(true)
   })
+
+  it('preserves low confidence from streamed answer payloads', () => {
+    const source = new FakeEventSource()
+    const hook = renderHook(source)
+
+    act(() => {
+      hook.latest().startStream('unclear AI query')
+      source.emit('answer', {
+        phase: 'answer',
+        response: 'Please ask a clearer research question.',
+        answer_confidence: 'needs_clarification',
+        citations: [],
+        sql_results: [],
+      })
+    })
+
+    expect(hook.latest().answerConfidence).toBe('needs_clarification')
+    expect(hook.latest().isVerified).toBe(true)
+  })
 })

@@ -30,7 +30,10 @@ export interface StreamMeta {
   query_id: string
   audit_event_id?: string
   signature_bytes?: number
+  answer_confidence?: StreamAnswerConfidence
 }
+
+export type StreamAnswerConfidence = 'high' | 'medium' | 'low' | 'needs_clarification'
 
 export interface EventSourceLike {
   addEventListener: EventSource['addEventListener']
@@ -94,6 +97,13 @@ const normalizeLegacyPhase = (phase: string): StreamPhaseName => {
   return 'planning'
 }
 
+const normalizeAnswerConfidence = (value: unknown): StreamAnswerConfidence => {
+  if (value === 'needs_clarification' || value === 'low_clarify') return 'needs_clarification'
+  if (value === 'low') return 'low'
+  if (value === 'medium' || value === 'partial') return 'medium'
+  return 'high'
+}
+
 const resolveStreamProvenance = (
   payloadProvenance: QueryProvenance | undefined,
   currentProvenance: QueryProvenance
@@ -114,6 +124,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
   const [auditEventId, setAuditEventId] = useState<string | null>(null)
   const [signatureBytes, setSignatureBytes] = useState<number | null>(null)
   const [provenance, setProvenance] = useState<QueryProvenance>({})
+  const [answerConfidence, setAnswerConfidence] = useState<StreamAnswerConfidence>('medium')
   const [error, setError] = useState<string | null>(null)
   const [isRecoverableError, setIsRecoverableError] = useState(false)
 
@@ -211,18 +222,25 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     })
   }, [])
 
-  const completeStream = useCallback((payload: Extract<StreamQueryEvent, { phase: 'verified' }>) => {
+  const completeStream = useCallback((
+    payload: Extract<StreamQueryEvent, { phase: 'verified' }> & {
+      answer_confidence?: unknown
+      confidence?: { level?: unknown }
+    }
+  ) => {
     closeSource()
     clearSilenceTimer()
     terminalEventRef.current = true
     const verifiedCitations = payload.citations.map(toStreamCitation)
     const finalProvenance = resolveStreamProvenance(payload.provenance, provenanceRef.current)
+    const finalConfidence = normalizeAnswerConfidence(payload.answer_confidence ?? payload.confidence?.level)
     citationsRef.current = verifiedCitations
     provenanceRef.current = finalProvenance
     setCitations(verifiedCitations)
     setAuditEventId(payload.audit_event_id)
     setSignatureBytes(payload.signature_bytes ?? 26)
     setProvenance(finalProvenance)
+    setAnswerConfidence(finalConfidence)
     if (submitStartedAtRef.current) {
       emitTelemetry('query.completed', {
         total_ms: Math.round(performance.now() - submitStartedAtRef.current),
@@ -249,6 +267,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
       query_id: payload.audit_event_id,
       audit_event_id: payload.audit_event_id,
       signature_bytes: payload.signature_bytes ?? 26,
+      answer_confidence: finalConfidence,
     }, fullTextRef.current)
   }, [clearSilenceTimer, closeSource, setPhase])
 
@@ -287,6 +306,8 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
         provenanceRef.current = parsed.provenance
         setProvenance(parsed.provenance)
       }
+      const answerConfidence = normalizeAnswerConfidence(parsed.answer_confidence || parsed.confidence?.level)
+      setAnswerConfidence(answerConfidence)
       setAuditEventId(parsed.audit_event_id || null)
       completeStream({
         phase: 'verified',
@@ -294,6 +315,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
         audit_event_id: parsed.audit_event_id || `stream-${Date.now()}`,
         signature_bytes: parsed.signature_bytes ?? 26,
         provenance: parsed.provenance,
+        answer_confidence: answerConfidence,
       })
       return
     }
@@ -402,6 +424,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     setAuditEventId(null)
     setSignatureBytes(null)
     setProvenance({})
+    setAnswerConfidence('medium')
     setError(null)
     setIsRecoverableError(false)
     useQueryStore.getState().setStreaming({
@@ -465,6 +488,7 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
     auditEventId,
     signatureBytes,
     provenance,
+    answerConfidence,
     error,
     isRecoverableError,
     isVerified: currentPhase?.phase === 'verified',

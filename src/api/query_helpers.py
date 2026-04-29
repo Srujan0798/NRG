@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
 import time
@@ -100,8 +101,85 @@ def _local_research_db_path() -> Path | None:
     return None
 
 
+_AGGREGATE_TOPIC_TERMS = (
+    "aggregate", "aggregated", "capacity", "funding", "grant", "grants",
+    "crore", "institution", "institutions", "highest", "compare",
+    "publication", "publications", "citation", "citations",
+)
+_FOLLOW_UP_TOPIC_TERMS = (
+    "same for", "same as", "compare that", "compare it",
+    "compare to previous", "last year", "previous",
+)
+_RESEARCHER_QUERY_TERMS = (
+    "researcher", "researchers", "scientist", "scientists", "expert", "experts",
+    "faculty", "professor", "professors", "who works", "working on",
+)
+_RESEARCHER_RANKING_TERMS = (
+    "best", "top", "leading", "highest", "h-index", "h index", "most cited", "rank", "ranked",
+)
+
+
+def _has_aggregate_topic_intent(query_lower: str) -> bool:
+    return any(term in query_lower for term in _AGGREGATE_TOPIC_TERMS) or bool(re.search(r"\btop\s+\d+\b", query_lower))
+
+
+def _has_follow_up_topic_intent(query_lower: str) -> bool:
+    return any(term in query_lower for term in _FOLLOW_UP_TOPIC_TERMS)
+
+
+def _needs_query_clarification(query: str) -> bool:
+    query_lower = query.lower()
+    if re.search(r"\b(fuck|fucking|shit|bullshit|porn|porno|sex|sexual|nude|nudes|xxx)\b", query_lower):
+        return True
+    words = re.findall(r"[a-z0-9]+", query_lower)
+    return len(words) < 3 and not any(term in query_lower for term in ("ai", "ml", "cs"))
+
+
+def _clarification_fast_response(query: str, *, user_tier: int, session_id: str | None) -> dict[str, Any] | None:
+    if not _needs_query_clarification(query):
+        return None
+    return {
+        "query_id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "response": (
+            "I can help with AI research, researchers, publications, patents, labs, institutions, "
+            "TRL, and policy evidence, but this is not a clear research question. "
+            "Try a concrete request such as: \"top AI researchers by h-index\", "
+            "\"recent AI publications with citations\", or \"AI institutions in Gujarat\"."
+        ),
+        "status": "success",
+        "tier": user_tier,
+        "intent": "needs_clarification",
+        "routing_decision": "clarify",
+        "verification_status": "needs_clarification",
+        "citation_validity": 0.0,
+        "citations": [],
+        "warnings": [{"message": "Query needs clarification before retrieval."}],
+        "answer_confidence": "needs_clarification",
+        "answer_confidence_score": 0.2,
+        "sql_anomaly_report": {},
+        "sql_query": None,
+        "sql_queries": [],
+        "sql_results": [],
+        "retrieval_sources": [],
+        "provenance": {
+            "planner": "query_clarification_guard",
+            "synth": "rule_based",
+            "verifier": "no_retrieval_without_clear_intent",
+            "cloud_synthesis_used": False,
+        },
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+    }
+
+
 def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tuple[str, list[str]] | None:
     query_lower = query.lower()
+    has_aggregate_intent = _has_aggregate_topic_intent(query_lower)
+    has_follow_up_intent = _has_follow_up_topic_intent(query_lower)
+    if not has_aggregate_intent and not has_follow_up_intent:
+        return None
+
     cs_terms = re.compile(r"\b(computer science|computer|cs\b|software|ai\b|machine learning)\b")
     if cs_terms.search(query_lower):
         return (
@@ -114,18 +192,221 @@ def _fast_topic_for_query(query: str, previous_topic: str | None = None) -> tupl
             "Renewable Energy",
             ["%renewable%", "%sustainable energy%", "%hydrogen%", "%wind%", "%solar%", "%battery%", "%energy%"],
         )
-    aggregate_terms = re.compile(
-        r"\b(aggregate|aggregated|capacity|funding|grant|grants|crore|institution|institutions|top\s+\d+|highest|compare|publications?|citations?)\b"
-    )
-    if not aggregate_terms.search(query_lower):
-        follow_up_terms = [
-            "same for", "same as", "compare that", "compare it",
-            "compare to previous", "last year", "previous",
-        ]
-        if previous_topic and any(term in query_lower for term in follow_up_terms):
-            return (previous_topic, ["%" + previous_topic.lower() + "%"])
-        return None
+    if previous_topic and has_follow_up_intent:
+        return (previous_topic, ["%" + previous_topic.lower() + "%"])
     return None
+
+
+def _research_topic_for_query(query: str) -> tuple[str, list[str]] | None:
+    query_lower = query.lower()
+    topics: list[tuple[str, tuple[str, ...], list[str]]] = [
+        ("Quantum Computing", ("quantum", "qubit", "qkd"), ["%quantum%", "%qubit%", "%qkd%"]),
+        (
+            "Artificial Intelligence",
+            ("artificial intelligence", "ai", "machine learning", "deep learning", "computer vision", "nlp"),
+            ["%artificial intelligence%", "%AI/ML%", "%machine learning%", "%deep learning%", "%computer vision%", "%NLP%", "%ai%"],
+        ),
+        ("Renewable Energy", ("renewable", "solar", "wind", "hydrogen", "battery", "clean energy"), ["%renewable%", "%solar%", "%wind%", "%hydrogen%", "%battery%", "%clean energy%"]),
+        ("Biotechnology", ("biotech", "biotechnology", "genomics", "drug discovery"), ["%biotech%", "%biotechnology%", "%genomics%", "%drug discovery%"]),
+        ("Semiconductor Design", ("semiconductor", "vlsi", "chip"), ["%semiconductor%", "%VLSI%", "%chip%"]),
+        ("Robotics", ("robotics", "robot"), ["%robotics%", "%robot%"]),
+    ]
+    for topic, terms, patterns in topics:
+        if any(term in query_lower for term in terms):
+            return topic, patterns
+    return None
+
+
+def _is_researcher_query(query: str) -> bool:
+    query_lower = query.lower()
+    return any(term in query_lower for term in _RESEARCHER_QUERY_TERMS)
+
+
+def _display_research_area(row: dict[str, Any], topic: str) -> str:
+    topic_tokens = [token for token in re.findall(r"[a-z0-9]+", topic.lower()) if len(token) > 3]
+    primary = str(row.get("research_area") or "")
+    secondary = str(row.get("secondary_research_areas") or "")
+    for value in (primary, secondary):
+        for part in re.split(r"[|,;/]", value):
+            cleaned = part.strip()
+            if cleaned and any(token in cleaned.lower() for token in topic_tokens):
+                return cleaned
+    return primary or secondary or topic
+
+
+def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, list[dict[str, Any]]]:
+    ors = " OR ".join(
+        [
+            f"lower(coalesce(r.research_area, '')) LIKE lower(:pattern_{idx}) "
+            f"OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(:pattern_{idx}) "
+            f"OR lower(coalesce(r.department, '')) LIKE lower(:pattern_{idx})"
+            for idx, _ in enumerate(patterns)
+        ]
+    )
+    params = {f"pattern_{idx}": pattern for idx, pattern in enumerate(patterns)}
+    sql = f"""
+        SELECT
+            r.researcher_id AS researcher_id,
+            r.name AS name,
+            coalesce(i.name, r.institution_id) AS institution,
+            r.state AS state,
+            r.department AS department,
+            r.research_area AS research_area,
+            r.secondary_research_areas AS secondary_research_areas,
+            coalesce(r.h_index, 0) AS h_index,
+            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
+            r.email AS email
+        FROM researchers r
+        LEFT JOIN institutions i ON i.institution_id = r.institution_id
+        WHERE {ors}
+        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
+        LIMIT 5
+    """
+    try:
+        rows = _get_db().execute(sql, params)
+        normalized_rows = [dict(row) for row in rows]
+        if normalized_rows:
+            return " ".join(sql.split()), normalized_rows
+    except Exception as exc:
+        logger.warning("Researcher ranking runtime query failed; trying local catalogue", error=str(exc), topic=topic)
+
+    local_db = _local_research_db_path()
+    if local_db is None:
+        return " ".join(sql.split()), []
+
+    local_ors = " OR ".join(
+        [
+            "lower(coalesce(r.research_area, '')) LIKE lower(?) "
+            "OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) "
+            "OR lower(coalesce(r.department, '')) LIKE lower(?)"
+            for _ in patterns
+        ]
+    )
+    local_params = tuple(pattern for pattern in patterns for _ in range(3))
+    local_sql = f"""
+        SELECT
+            r.researcher_id AS researcher_id,
+            r.name AS name,
+            coalesce(i.name, r.institution_id) AS institution,
+            r.state AS state,
+            r.department AS department,
+            r.research_area AS research_area,
+            r.secondary_research_areas AS secondary_research_areas,
+            coalesce(r.h_index, 0) AS h_index,
+            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
+            r.email AS email
+        FROM researchers r
+        LEFT JOIN institutions i ON i.institution_id = r.institution_id
+        WHERE {local_ors}
+        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
+        LIMIT 5
+    """
+    try:
+        with sqlite3.connect(f"file:{local_db}?mode=ro", uri=True) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(local_sql, local_params).fetchall()
+        return " ".join(local_sql.split()), [dict(row) for row in rows]
+    except sqlite3.Error as exc:
+        logger.warning("Researcher ranking local catalogue fallback failed", error=str(exc), topic=topic)
+        return " ".join(local_sql.split()), []
+
+
+def _researcher_lookup_fast_response(query: str, *, user_tier: int, session_id: str | None) -> dict[str, Any] | None:
+    if not _is_researcher_query(query):
+        return None
+    topic_match = _research_topic_for_query(query)
+    if topic_match is None:
+        return None
+
+    topic, patterns = topic_match
+    sql_query, rows = _query_researchers_for_topic(topic, patterns)
+    if not rows:
+        return {
+            "query_id": str(uuid.uuid4()),
+            "session_id": session_id,
+            "response": f"No researcher records found for {topic}. Try a broader research area or institution filter.",
+            "status": "success",
+            "tier": user_tier,
+            "intent": "no_results",
+            "routing_decision": "fast_path",
+            "verification_status": True,
+            "citation_validity": 1.0,
+            "citations": [],
+            "warnings": [],
+            "answer_confidence": "low_clarify",
+            "answer_confidence_score": 0.1,
+            "sql_query": sql_query,
+            "sql_queries": [sql_query],
+            "sql_results": [],
+            "retrieval_sources": ["researchers", "institutions"],
+            "provenance": {"planner": "researcher_lookup_fast_path", "synth": "rule_based", "verifier": "no_rows", "cloud_synthesis_used": False},
+            "synthesis_method": "rule_based",
+            "conversation_history": [],
+        }
+
+    ranked = any(term in query.lower() for term in _RESEARCHER_RANKING_TERMS)
+    visible_rows = rows if user_tier <= 1 else [
+        {**row, "name": f"Researcher {index}", "email": None}
+        for index, row in enumerate(rows, start=1)
+    ]
+    lines = [
+        f"Top matching {topic} researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:{topic.lower().replace(' ', '-')}]",
+        "",
+        "| Rank | Researcher | Institution | State | Area | h-index | Funding |",
+        "| --- | --- | --- | --- | --- | ---: | ---: |",
+    ]
+    for index, row in enumerate(visible_rows, start=1):
+        area = _display_research_area(row, topic)
+        lines.append(
+            f"| {index} | {row.get('name', f'Researcher {index}')} | {row.get('institution', 'Unknown institution')} | "
+            f"{row.get('state', 'Unknown')} | {area} | {int(row.get('h_index') or 0)} | {_format_inr_crores(row.get('funding_cr'))} |"
+        )
+    if user_tier <= 1 and rows[0].get("email"):
+        lines.extend(["", f"Top contact shown for Tier 1 researcher access: {rows[0]['email']}"])
+    elif user_tier >= 3:
+        lines.extend(["", "Access restricted: lower tiers show anonymized researcher labels and no direct contact details."])
+
+    return {
+        "query_id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "response": "\n".join(lines),
+        "status": "success",
+        "tier": user_tier,
+        "intent": "researcher_ranking" if ranked else "researcher_lookup",
+        "routing_decision": "fast_path",
+        "verification_status": True,
+        "citation_validity": 1.0,
+        "citations": [
+            {
+                "id": f"nrg-researchers:{topic.lower().replace(' ', '-')}",
+                "pub_id": "nrg-researchers",
+                "paper_id": "nrg-researchers",
+                "chunk_id": topic.lower().replace(" ", "-"),
+                "title": f"NRG researcher catalogue: {topic}",
+                "authors": ["National Research Graph"],
+                "year": 2026,
+                "source": "researchers",
+                "chunk_text": f"Researcher rows filtered by {topic} and ranked by h-index and funding.",
+                "relevance_score": 1.0,
+            }
+        ],
+        "warnings": [{"message": "Fast bounded synthesis used for researcher ranking query."}],
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": sql_query,
+        "sql_queries": [sql_query],
+        "sql_results": rows,
+        "retrieval_sources": ["researchers", "institutions"],
+        "provenance": {
+            "planner": "researcher_lookup_fast_path",
+            "synth": "rule_based",
+            "verifier": "row_count_and_citation",
+            "cloud_synthesis_used": False,
+        },
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+    }
 
 
 def _query_institution_funding(topic: str, patterns: list[str]) -> list[dict[str, Any]]:
@@ -394,6 +675,13 @@ def _fast_query_response(
 ) -> dict[str, Any] | None:
     query_lower = query.lower()
     context_key = session_id or user_id
+    clarification_response = _clarification_fast_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+    )
+    if clarification_response is not None:
+        return clarification_response
     publication_count = _publication_count_fast_response(
         query, user_tier=user_tier, session_id=session_id,
     )
@@ -402,6 +690,13 @@ def _fast_query_response(
 
     previous_topic = _fast_query_context.get(context_key, {}).get("topic")
     topic_match = _fast_topic_for_query(query, previous_topic)
+    researcher_lookup_response = _researcher_lookup_fast_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+    )
+    if researcher_lookup_response is not None:
+        return researcher_lookup_response
 
     if not topic_match:
         if any(term in query_lower for term in ["no results", "zzzz", "unknown institute", "nonexistent"]):

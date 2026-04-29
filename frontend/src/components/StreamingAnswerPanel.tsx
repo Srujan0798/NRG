@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react'
 import { Citation, QueryProvenance } from '../services/queryService'
-import { useStreamingQuery } from '../hooks/useStreamingQuery'
+import { useStreamingQuery, type StreamAnswerConfidence } from '../hooks/useStreamingQuery'
 import PhaseHeader from './PhaseHeader/PhaseHeader'
 import SqlBlock from './SqlBlock/SqlBlock'
 import TokenStream from './TokenStream/TokenStream'
@@ -24,7 +24,7 @@ export interface StreamingProofPayload {
   sqlResults: Array<Record<string, unknown>>
   rowsReturned: number
   auditEventId: string | null
-  confidence: 'high' | 'medium' | 'low'
+  confidence: StreamAnswerConfidence
   provenance?: QueryProvenance
 }
 
@@ -51,6 +51,7 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
     auditEventId,
     signatureBytes,
     provenance,
+    answerConfidence,
     error,
     isVerified,
     startStream,
@@ -90,10 +91,10 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
       sqlResults: [],
       rowsReturned: retrievedCount,
       auditEventId,
-      confidence: 'high',
+      confidence: answerConfidence,
       provenance,
     })
-  }, [auditEventId, citations, fullText, isVerified, onProofChange, provenance, retrievedCount, sql])
+  }, [answerConfidence, auditEventId, citations, fullText, isVerified, onProofChange, provenance, retrievedCount, sql])
 
   const planSteps = useMemo(() => plan?.steps?.length ? plan.steps : defaultPlan, [plan])
   const hasStarted = Boolean(query.trim())

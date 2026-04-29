@@ -157,6 +157,82 @@ def test_fast_topic_does_not_treat_same_state_as_follow_up():
     assert topic is None
 
 
+def test_fast_topic_does_not_turn_arbitrary_ai_text_into_funding_answer():
+    topic = api_main._fast_topic_for_query("best ai for fucking")
+
+    assert topic is None
+
+
+def test_fast_query_clarifies_profane_non_research_ai_prompt():
+    payload = api_main._fast_query_response(
+        "best ai for fucking",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="clarify-session",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "needs_clarification"
+    assert payload["answer_confidence"] == "needs_clarification"
+    assert payload["sql_results"] == []
+    assert "IIT Madras" not in payload["response"]
+    assert "funding" not in payload["response"].lower()
+    assert "AI research" in payload["response"]
+
+
+def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
+    rows = [
+        {
+            "researcher_id": "res-q1",
+            "name": "Dr. Ananya Rao",
+            "institution": "IISc Bengaluru",
+            "state": "Karnataka",
+            "department": "Physics",
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": "Quantum Information Science",
+            "h_index": 71,
+            "funding_cr": 12.4,
+            "email": "ananya.rao@example.edu",
+        },
+        {
+            "researcher_id": "res-q2",
+            "name": "Prof. Vikram Iyer",
+            "institution": "IIT Bombay",
+            "state": "Maharashtra",
+            "department": "Computer Science",
+            "research_area": "Quantum Information Science",
+            "secondary_research_areas": "Quantum Computing",
+            "h_index": 68,
+            "funding_cr": 9.8,
+            "email": "vikram.iyer@example.edu",
+        },
+    ]
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            assert "FROM researchers" in query
+            assert params["pattern_0"] == "%quantum%"
+            return rows
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+
+    payload = api_main._fast_query_response(
+        "best quantum researchers",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="quantum-session",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "researcher_ranking"
+    assert payload["answer_confidence"] == "high"
+    assert payload["sql_results"] == rows
+    assert "Dr. Ananya Rao" in payload["response"]
+    assert "IISc Bengaluru" in payload["response"]
+    assert "Quantum Computing" in payload["response"]
+    assert payload["sql_query"]
+
+
 def test_fast_query_release_seed_fallback_covers_audit_walkthrough():
     api_main._fast_query_context.clear()
 
