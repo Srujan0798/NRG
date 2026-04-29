@@ -1,6 +1,0 @@
-..sss..ssss...........                                                   [100%]
-15 passed, 7 skipped in 0.57s
-schema_parity=58/58
-fingerprint=fa39e31d527f8040
-migration_table_parity=58/58
-active_alembic_head=lb6_indexes_rls_001
