@@ -1,6 +1,7 @@
 import React, { act } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import {
+  AnswerEngineAnswer,
   AnswerEngineAudit,
   AnswerEngineDashboard,
   AnswerEngineHome,
@@ -117,5 +118,33 @@ describe('AnswerEngine surface', () => {
     expect(container.querySelectorAll('[data-testid="audit-row"]').length).toBeGreaterThan(10)
     expect(container.textContent).toContain('Chain intact')
     expect(container.textContent).toContain('Filter by user')
+  })
+
+  it('starts only one stream for the answer route query', async () => {
+    sessionStorage.setItem('nrg.lastQuery', 'Top funding agencies by total grant amount last 5 years')
+    const stream = {
+      addEventListener: jest.fn(),
+      close: jest.fn(),
+      onmessage: null,
+      onerror: null,
+    } as unknown as EventSource
+    const streamSpy = jest.spyOn(queryService, 'streamQuery').mockReturnValue(stream)
+
+    render(
+      <AnswerEngineAnswer
+        role="researcher"
+        tier={1}
+        username="researcher@iitgn.ac.in"
+        onLogout={() => undefined}
+        onNavigate={() => undefined}
+      />
+    )
+
+    await act(async () => {
+      await Promise.resolve()
+      await Promise.resolve()
+    })
+
+    expect(streamSpy).toHaveBeenCalledTimes(1)
   })
 })

@@ -17,8 +17,7 @@ import {
 import type { PersonaRole } from '../services/authService'
 import { queryService } from '../services/queryService'
 import { Button, Card, Drawer, Input, Pill, Select, Skeleton } from '../components/ui'
-import { StreamingAnswerPanel } from '../components/StreamingAnswerPanel'
-import { useStreamingQuery } from '../hooks/useStreamingQuery'
+import { StreamingAnswerPanel, type StreamingProofPayload } from '../components/StreamingAnswerPanel'
 
 type SurfaceRole = PersonaRole
 type Confidence = 'high' | 'medium' | 'low'
@@ -531,33 +530,20 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
   const query = useMemo(() => sessionStorage.getItem('nrg.lastQuery') || '', [])
   const [blockedQuery, setBlockedQuery] = useState(() => sessionStorage.getItem('nrg.blockedQuery'))
   const [selectedCitation, setSelectedCitation] = useState<string | null>(null)
-
-  const {
-    isStreaming,
-    currentPhase,
-    fullText,
-    sql,
-    retrievedCount,
-    citations,
-    auditEventId,
-    signatureBytes,
-    error,
-    isVerified,
-    startStream,
-    abortStream,
-  } = useStreamingQuery()
+  const [proof, setProof] = useState<StreamingProofPayload | null>(null)
 
   useEffect(() => {
     document.title = 'NRG · Answer'
   }, [])
 
-  useEffect(() => {
-    if (query && !blockedQuery) {
-      startStream(query)
-    }
-  }, [query, blockedQuery]) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const confidence: Confidence = !query ? 'low' : isVerified ? 'high' : isStreaming ? 'medium' : 'low'
+  const isVerified = Boolean(proof)
+  const fullText = proof?.response || ''
+  const sql = proof?.sqlQuery || ''
+  const retrievedCount = proof?.rowsReturned || 0
+  const citations = proof?.citations || []
+  const auditEventId = proof?.auditEventId || null
+  const signatureBytes = auditEventId ? 26 : null
+  const confidence: Confidence = !query ? 'low' : proof?.confidence || 'medium'
   const confidenceTone: 'success' | 'warning' | 'neutral' = confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'neutral'
 
   const citationMap = useMemo(() => {
@@ -572,9 +558,6 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Button variant="ghost" onClick={() => onNavigate('/app')}><ArrowLeft className="h-4 w-4" />Back</Button>
           <div className="flex items-center gap-2">
-            {isStreaming && (
-              <Button variant="ghost" size="sm" onClick={abortStream}>Stop</Button>
-            )}
             <Pill tone={confidenceTone}>{confidence === 'low' ? 'no query' : `confidence: ${confidence}`}</Pill>
           </div>
         </div>
@@ -603,9 +586,10 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
               setSelectedCitation(citation.id)
               setDrawer('citation')
             }}
-            onProofOpen={(id) => {
+            onProofOpen={() => {
               setDrawer('audit')
             }}
+            onProofChange={setProof}
           />
           {isVerified && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
