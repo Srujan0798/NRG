@@ -80,7 +80,7 @@ describe('QueryWorkbench', () => {
 
     await act(async () => {
       suggestion.dispatchEvent(new MouseEvent('click', { bubbles: true }))
-      jest.advanceTimersByTime(250)
+      jest.advanceTimersByTime(700)
       await Promise.resolve()
       await Promise.resolve()
     })
