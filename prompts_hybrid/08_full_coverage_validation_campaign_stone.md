@@ -43,6 +43,21 @@ Treat those sources as coverage generators: query examples, workflows,
 interactions, states, security probes, and evidence ideas. Do not treat them as
 canonical replacements for NRG code, schema, auth, query logic, or audit proof.
 
+When the external source is a generic app-builder prompt, UI/UX guide, or
+combined old prompt pack, convert it this way:
+
+- process guidance -> NRG task surface map covering data, backend,
+  orchestration, frontend, auth/tier, audit, evidence, rollback, and tests
+- UI guidance -> NRG browser checks covering contrast, focus, touch targets,
+  loading skeletons, mobile overflow, chart integrity, copy/export, source
+  drawers, and audit drawers
+- huge validation counts -> campaign mode plus distinct-risk matrix; repeated
+  screenshots or repeated assertions do not count as new proof
+- old NRG prompt material -> deduplicate against current source truth and keep
+  only stronger acceptance gates, query classes, or evidence requirements
+- stack, auth, database, deployment, or routing defaults -> reject as direct
+  replacements unless an explicit migration plan and rollback gate exists
+
 ## Current Truth Boundary
 
 - NRG is locally show-ready only when the verified answer-engine path still

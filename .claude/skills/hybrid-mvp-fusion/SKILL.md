@@ -38,6 +38,14 @@ mining it for reusable value. Useful value can appear as source code, UI
 layout, copy, interaction behavior, query examples, test cases, screenshots,
 state handling, API ideas, or evidence structure.
 
+External prompt packs and generic application-builder guides are also valid
+value sources. Even when their stack, scope, or language does not fit NRG, mine
+them for requirement-mapping patterns, recovery loops, UX state coverage,
+accessibility checks, chart-selection rules, query-corpus ideas, red-team probe
+classes, evidence structures, and agent-operating constraints. The useful
+thinking should be transformed into NRG-native instructions, tests, evidence, or
+backlog items instead of copied as a new product frame.
+
 For every external app, inspect and summarize:
 
 - login, role/persona, tier, and session flow
@@ -61,6 +69,27 @@ Convert it into one of these outputs:
 - evidence checklist
 - handover/workflow note
 - backlog item with exact acceptance gate
+
+## External Prompt Conversion Rules
+
+When the source is a normal app-maker prompt, broad validation prompt, UI/UX
+guide, or combined old NRG prompt pack, apply these conversions:
+
+- generic stack/scaffold advice -> NRG surface map: data, API,
+  orchestration, frontend, auth/tier, audit, evidence, and rollback impact
+- generic design guidance -> NRG design-system checks: contrast, focus, touch
+  target, responsive overflow, loading skeletons, chart integrity, and readable
+  answer/proof layout
+- huge-count validation demands -> campaign modes and useful step definitions;
+  count only distinct risks, tiers, query classes, states, or workflows
+- old NRG prompt packs -> deduplicate against current source-truth files, keep
+  stronger acceptance gates, and reject stale paths or stale claims
+- API examples -> response-contract or adapter tests only when they preserve
+  `audit_event_id`, citations, source rows, tier, timing, and verification
+
+Directly reject external defaults for stack, auth provider, database provider,
+query schema, role model, or audit behavior unless a separate migration decision
+and rollback plan already exists.
 
 ## Fusion Rule
 

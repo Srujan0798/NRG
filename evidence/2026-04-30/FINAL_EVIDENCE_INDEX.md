@@ -215,6 +215,8 @@ Calibration result:
 - `evidence/2026-04-30/minimax_fusion_acceptance.md`
 - `evidence/2026-04-30/minimax_fusion_pass2_answer_context.md`
 - `evidence/2026-04-30/external_fusion_workflow_update.md`
+- `evidence/2026-05-01/minimax_fusion_pass3_query_validation.md`
+- `evidence/2026-05-01/external_fusion_validation_matrix.csv`
 
 Selective fusion result:
 
@@ -230,6 +232,9 @@ Workflow update:
 - Fusion skill now requires external value extraction before direct-merge rejection.
 - Source map and prompt stones now point to `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`.
 - Evidence acceptance now includes an external fusion matrix gate.
+- May 1 pass restored the missing validation-campaign integration evidence link
+  and converted generic external app-builder/UI guidance into a NRG-native
+  query, workflow, UI, security, and performance validation matrix.
 
 ## Not Yet Final
 

@@ -1,6 +1,6 @@
 # NRG — Current Sprint State
 > **Update this file at the end of every session.** Agents read this instead of BACKLOG.md for current priorities.
-> Last updated: 2026-04-30
+> Last updated: 2026-05-01
 
 ---
 
@@ -87,6 +87,9 @@
 | `evidence/2026-04-30/prompts_hybrid_freshness_pass.md` | Prompt-stone freshness pass aligning agent instructions with local C4 pass, cluster blocker, evidence-backed release query, and final-report gates. |
 | `evidence/2026-04-30/validation_campaign_stone_integration.md` | Integration note for new `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` plus `.agents`/`.claude` skill wrappers, distilling broad validation strategy into NRG-safe campaign modes and evidence matrices. |
 | `evidence/2026-04-30/validation_campaign_calibration/VALIDATION_CAMPAIGN_REPORT.md` | First calibration run using the validation campaign workflow: targeted backend tests passed, API/tier/security calibration passed, frontend build passed, live browser proof passed after changing login health polling to `/health/db`; slow RAG/root-health paths remain documented findings. |
+| `evidence/2026-05-01/00_current_state.md` | May 1 state lock before external input fusion pass 3; records clean starting tree, source-truth files read, corpus sync, and current blockers. |
+| `evidence/2026-05-01/minimax_fusion_pass3_query_validation.md` | External input fusion pass 3: converted generic app-builder/UI/prompt-pack value into NRG-native query, workflow, security, UI, and performance validation material. |
+| `evidence/2026-05-01/external_fusion_validation_matrix.csv` | Thirty-two-row seed matrix for future validation campaigns covering queries, tiers, workflows, UI states, security probes, and performance boundaries. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
