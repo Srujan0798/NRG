@@ -69,6 +69,7 @@ def test_common_c4_query_shapes_use_bounded_fast_path():
         "labs working on renewable energy",
         "funding agencies for electronics research",
         "publication counts by institution",
+        "List institutions in Gujarat",
         "technology transfer candidates",
     ]
 

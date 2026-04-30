@@ -1,0 +1,165 @@
+{
+  "generated_at": "2026-04-30",
+  "profile": "local TestClient 100 concurrent /query requests",
+  "environment": {
+    "NRG_QUOTA_DISABLED": "1",
+    "CLOUD_SYNTHESIS_ALLOWED": "false",
+    "NRG_AI_SYNTHESIZE_FAST_PATHS": "false"
+  },
+  "total_requests": 100,
+  "successful_requests": 100,
+  "error_count": 0,
+  "total_wall_ms": 15970.11,
+  "throughput_qps": 6.26,
+  "latency_ms": {
+    "mean": 9171.88,
+    "p50": 10089.34,
+    "p95": 15688.97,
+    "p99": 15854.71,
+    "max": 15854.71
+  },
+  "status_counts": {
+    "200": 100
+  },
+  "route_counts": {
+    "sql": 100
+  },
+  "synthesis_counts": {
+    "rule_based": 86,
+    "rule_based_sql_fast_path": 14
+  },
+  "all_have_audit_event_id": false,
+  "results_sample": [
+    {
+      "index": 8,
+      "status_code": 200,
+      "elapsed_ms": 1306.5,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 13,
+      "status_code": 200,
+      "elapsed_ms": 1300.34,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 18,
+      "status_code": 200,
+      "elapsed_ms": 1291.83,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 3,
+      "status_code": 200,
+      "elapsed_ms": 1324.86,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 23,
+      "status_code": 200,
+      "elapsed_ms": 1345.79,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 33,
+      "status_code": 200,
+      "elapsed_ms": 1401.88,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 43,
+      "status_code": 200,
+      "elapsed_ms": 1360.4,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 38,
+      "status_code": 200,
+      "elapsed_ms": 1393.65,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 28,
+      "status_code": 200,
+      "elapsed_ms": 1436.07,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 53,
+      "status_code": 200,
+      "elapsed_ms": 1294.75,
+      "query": "How many IIT papers were published in 2024?",
+      "route": "sql",
+      "intent": "publication_count",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 1,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    }
+  ],
+  "errors": []
+}

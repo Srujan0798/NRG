@@ -103,6 +103,14 @@ def test_ai_synthesis_requires_explicit_fast_path_opt_in(monkeypatch):
     assert result["synthesis_method"] == "rule_based"
 
 
+def test_ai_synthesis_default_timeout_is_short_for_fast_paths(monkeypatch):
+    from src.api import ai_synthesis
+
+    monkeypatch.delenv("NRG_AI_SYNTHESIS_TIMEOUT_SECONDS", raising=False)
+
+    assert ai_synthesis._timeout_seconds() == 2.0
+
+
 class _WorkflowWithEvidence:
     def run(self, query: str, user_tier: int = 1, session_id=None, user_id=None):
         return {

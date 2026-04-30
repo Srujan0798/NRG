@@ -1,0 +1,196 @@
+{
+  "generated_at": "2026-04-30",
+  "profile": "local TestClient 100 concurrent /query requests",
+  "environment": {
+    "NRG_QUOTA_DISABLED": "1",
+    "CLOUD_SYNTHESIS_ALLOWED": "false",
+    "NRG_AI_SYNTHESIZE_FAST_PATHS": "false"
+  },
+  "total_requests": 100,
+  "successful_requests": 100,
+  "error_count": 0,
+  "total_wall_ms": 7135.25,
+  "throughput_qps": 14.01,
+  "latency_ms": {
+    "mean": 3542.37,
+    "p50": 3543.42,
+    "p95": 6762.56,
+    "p99": 7050.94,
+    "max": 7050.94
+  },
+  "status_counts": {
+    "200": 100
+  },
+  "route_counts": {
+    "sql": 100
+  },
+  "synthesis_counts": {
+    "rule_based": 100
+  },
+  "all_have_audit_event_id": true,
+  "by_query": {
+    "Which institutions have the highest computer science funding?": {
+      "count": 20,
+      "p50_ms": 3543.42,
+      "p95_ms": 5540.55,
+      "max_ms": 5540.55
+    },
+    "best quantum researchers": {
+      "count": 20,
+      "p50_ms": 5793.21,
+      "p95_ms": 6871.09,
+      "max_ms": 6871.09
+    },
+    "AI researchers in Gujarat": {
+      "count": 20,
+      "p50_ms": 6392.81,
+      "p95_ms": 7050.94,
+      "max_ms": 7050.94
+    },
+    "How many IIT papers were published in 2024?": {
+      "count": 20,
+      "p50_ms": 1479.03,
+      "p95_ms": 1580.32,
+      "max_ms": 1580.32
+    },
+    "List institutions in Gujarat": {
+      "count": 20,
+      "p50_ms": 249.04,
+      "p95_ms": 661.26,
+      "max_ms": 661.26
+    }
+  },
+  "results_sample": [
+    {
+      "index": 14,
+      "status_code": 200,
+      "elapsed_ms": 268.81,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 19,
+      "status_code": 200,
+      "elapsed_ms": 263.64,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 4,
+      "status_code": 200,
+      "elapsed_ms": 325.92,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 24,
+      "status_code": 200,
+      "elapsed_ms": 298.32,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 29,
+      "status_code": 200,
+      "elapsed_ms": 298.6,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 34,
+      "status_code": 200,
+      "elapsed_ms": 288.6,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 39,
+      "status_code": 200,
+      "elapsed_ms": 273.29,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 44,
+      "status_code": 200,
+      "elapsed_ms": 277.86,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 49,
+      "status_code": 200,
+      "elapsed_ms": 209.53,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    },
+    {
+      "index": 54,
+      "status_code": 200,
+      "elapsed_ms": 187.81,
+      "query": "List institutions in Gujarat",
+      "route": "sql",
+      "intent": "institution_aggregate",
+      "query_time_ms": 0,
+      "audit_event_id_present": true,
+      "citation_count": 2,
+      "synthesis_method": "rule_based",
+      "cloud_synthesis_used": false
+    }
+  ],
+  "errors": []
+}

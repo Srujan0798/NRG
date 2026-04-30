@@ -24,9 +24,9 @@ def _enabled() -> bool:
 
 def _timeout_seconds() -> float:
     try:
-        return max(1.0, float(os.getenv("NRG_AI_SYNTHESIS_TIMEOUT_SECONDS", "30")))
+        return max(1.0, float(os.getenv("NRG_AI_SYNTHESIS_TIMEOUT_SECONDS", "2")))
     except ValueError:
-        return 30.0
+        return 2.0
 
 
 def _tier_voice(user_tier: int) -> str:

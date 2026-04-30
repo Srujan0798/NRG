@@ -276,6 +276,8 @@ class _APIMemoryCache:
 
 _api_cache = _APIMemoryCache(default_ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
 _publication_count_cache: dict[tuple[int, bool], int] = {}
+_researcher_topic_cache_lock = threading.Lock()
+_researcher_topic_cache: dict[tuple[str, tuple[str, ...]], tuple[str, list[dict[str, Any]]]] = {}
 _tier_response_history: dict[int, deque[dict[str, Any]]] = {
     1: deque(maxlen=100),
     2: deque(maxlen=100),
@@ -697,6 +699,19 @@ def _display_research_area(row: dict[str, Any], topic: str) -> str:
 
 
 def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, list[dict[str, Any]]]:
+    cache_key = (topic, tuple(patterns))
+    with _researcher_topic_cache_lock:
+        cached = _researcher_topic_cache.get(cache_key)
+        if cached is not None:
+            cached_sql, cached_rows = cached
+            return cached_sql, [dict(row) for row in cached_rows]
+
+        sql_query, rows = _query_researchers_for_topic_uncached(topic, patterns)
+        _researcher_topic_cache[cache_key] = (sql_query, [dict(row) for row in rows])
+        return sql_query, rows
+
+
+def _query_researchers_for_topic_uncached(topic: str, patterns: list[str]) -> tuple[str, list[dict[str, Any]]]:
     import sqlite3
 
     ors = " OR ".join(
@@ -708,6 +723,31 @@ def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, 
         ]
     )
     params = {f"pattern_{idx}": pattern for idx, pattern in enumerate(patterns)}
+    live_schema_sql = f"""
+        SELECT
+            r.researcher_id AS researcher_id,
+            r.name AS name,
+            r.institution AS institution,
+            r.state AS state,
+            r.department AS department,
+            r.research_area AS research_area,
+            r.secondary_research_areas AS secondary_research_areas,
+            coalesce(r.h_index, 0) AS h_index,
+            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
+            r.email AS email
+        FROM researchers r
+        WHERE {ors}
+        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
+        LIMIT 5
+    """
+    try:
+        rows = _get_db().execute(live_schema_sql, params)
+        normalized_rows = [dict(row) for row in rows]
+        if normalized_rows:
+            return " ".join(live_schema_sql.split()), normalized_rows
+    except Exception as exc:
+        logger.info("Researcher ranking institution-column query failed; trying canonical schema", error=str(exc), topic=topic)
+
     sql = f"""
         SELECT
             r.researcher_id AS researcher_id,
@@ -732,32 +772,7 @@ def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, 
         if normalized_rows:
             return " ".join(sql.split()), normalized_rows
     except Exception as exc:
-        logger.info("Researcher ranking canonical-schema query failed; trying alternate schema", error=str(exc), topic=topic)
-
-    live_schema_sql = f"""
-        SELECT
-            r.researcher_id AS researcher_id,
-            r.name AS name,
-            r.institution AS institution,
-            r.state AS state,
-            r.department AS department,
-            r.research_area AS research_area,
-            r.secondary_research_areas AS secondary_research_areas,
-            coalesce(r.h_index, 0) AS h_index,
-            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
-            r.email AS email
-        FROM researchers r
-        WHERE {ors}
-        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
-        LIMIT 5
-    """
-    try:
-        rows = _get_db().execute(live_schema_sql, params)
-        normalized_rows = [dict(row) for row in rows]
-        if normalized_rows:
-            return " ".join(live_schema_sql.split()), normalized_rows
-    except Exception as exc:
-        logger.info("Researcher ranking institution-column query failed; trying sparse schema", error=str(exc), topic=topic)
+        logger.info("Researcher ranking canonical-schema query failed; trying sparse schema", error=str(exc), topic=topic)
 
     sparse_ors = " OR ".join(
         [
@@ -2210,7 +2225,7 @@ def _bounded_local_query_fast_response(
         ),
         (
             "institution_aggregate",
-            ("state-wise", "by state", "by institution", "institution type", "breakdown", "statistics"),
+            ("state-wise", "by state", "by institution", "institution", "institutions", "institution type", "breakdown", "statistics"),
             ["researchers", "institutions"],
             "Institution-level aggregates are available from local NRG metadata and are returned without personal identifiers.",
         ),

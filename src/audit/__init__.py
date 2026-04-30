@@ -683,8 +683,8 @@ class ImmutableAuditLog:
         event.user_key_hash = event.compute_user_key_hash(user_key)
 
         try:
-            with self._file_lock.hold():
-                with self._lock:
+            with self._lock:
+                with self._file_lock.hold():
                     self.last_hash = self._read_last_chain_hash()
                     new_hash = self._compute_hash(self.last_hash, event)
 
