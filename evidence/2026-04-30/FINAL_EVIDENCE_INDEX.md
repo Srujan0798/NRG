@@ -217,6 +217,7 @@ Calibration result:
 - `evidence/2026-04-30/external_fusion_workflow_update.md`
 - `evidence/2026-05-01/minimax_fusion_pass3_query_validation.md`
 - `evidence/2026-05-01/external_fusion_validation_matrix.csv`
+- `evidence/2026-05-01/minimax_fusion_final_inventory_review.md`
 
 Selective fusion result:
 
@@ -235,6 +236,10 @@ Workflow update:
 - May 1 pass restored the missing validation-campaign integration evidence link
   and converted generic external app-builder/UI guidance into a NRG-native
   query, workflow, UI, security, and performance validation matrix.
+- May 1 final inventory pass accounted for all current files under the external
+  bundle: 84 files found, 27 ignored as generated/binary/local artifacts, 57
+  reviewable text files covered by earlier evidence or the final inventory
+  review.
 
 ## Not Yet Final
 
