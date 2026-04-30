@@ -8,6 +8,17 @@ from src.skills.text_to_sql.skill import TextToSQLSkill
 from src.skills.text_to_sql.sqlite_schema_extractor import extract_schema
 
 QUERY_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "queries"
+DIRECT_PII_REQUEST_TERMS = (
+    "aadhaar",
+    "aadhar",
+    "pan",
+    "passport",
+    "email",
+    "phone",
+    "mobile",
+    "contact details",
+    "contact detail",
+)
 
 
 def _load_queries(filename: str, limit: int = 10) -> list[dict]:
@@ -24,6 +35,31 @@ def _run_queries(filename: str, user_tier: int, limit: int = 10) -> list[dict]:
     finally:
         skill.close()
     return results
+
+
+def _is_direct_pii_request(query: str) -> bool:
+    lowered = query.lower()
+    return any(term in lowered for term in DIRECT_PII_REQUEST_TERMS)
+
+
+def _assert_direct_pii_blocked(item: dict) -> bool:
+    """Return True when a fixture is intentionally blocked for direct PII.
+
+    Real-query fixtures include a few researcher-contact requests. Those must
+    fail closed instead of forcing Text-to-SQL to emit email/phone columns.
+    """
+    if not _is_direct_pii_request(item["query"]["natural_language_query"]):
+        return False
+
+    result = item["result"]
+    error = result.get("error", "").lower()
+    if "pii" not in error and "personal data" not in error:
+        return False
+
+    assert result.get("query", "") == ""
+    assert result.get("columns", []) == []
+    assert result.get("results", []) == []
+    return True
 
 
 def test_schema_extractor_outputs_full_nrg_schema():
@@ -58,6 +94,8 @@ def test_tier1_real_queries_generate_executable_sql():
 
     assert len(results) == 10
     for item in results:
+        if _assert_direct_pii_blocked(item):
+            continue
         result = item["result"]
         query = result["query"].strip().upper()
         assert query.startswith("SELECT") or query.startswith("WITH"), f"Invalid SQL: {result['query'][:50]}"
@@ -71,6 +109,8 @@ def test_tier2_real_queries_generate_executable_sql_without_pii():
 
     assert len(results) == 10
     for item in results:
+        if _assert_direct_pii_blocked(item):
+            continue
         result = item["result"]
         query = result["query"].strip().upper()
         assert query.startswith("SELECT") or query.startswith("WITH"), f"Invalid SQL: {result['query'][:50]}"
@@ -85,6 +125,8 @@ def test_tier3_real_queries_generate_executable_sql_without_pii():
 
     assert len(results) == 10
     for item in results:
+        if _assert_direct_pii_blocked(item):
+            continue
         result = item["result"]
         query = result["query"].strip().upper()
         assert query.startswith("SELECT") or query.startswith("WITH"), f"Invalid SQL: {result['query'][:50]}"

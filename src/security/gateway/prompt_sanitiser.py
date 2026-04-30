@@ -352,6 +352,22 @@ class PromptSanitiser:
                 re.compile(r"\bembedding\s+vector\b.*\ball\s+zeros\b|\ball\s+zeros\b.*\bembedding\s+vector\b"),
             ),
             _Rule(
+                "membership_inference",
+                re.compile(
+                    r"\b(?:was|is|were|are)\b.{0,80}\b(?:part\s+of|included\s+in|used\s+in)\b.{0,80}"
+                    r"\b(?:training\s+data|model\s+training|embedding\s+model)\b",
+                    re.IGNORECASE,
+                ),
+            ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"\bpresigned\s+url\b|\bs3://[^\s]+", re.IGNORECASE),
+            ),
+            _Rule(
+                "egress_exfiltration",
+                re.compile(r"\binvoke\s+lambda\b|\barn:aws:lambda\b", re.IGNORECASE),
+            ),
+            _Rule(
                 "egress_exfiltration",
                 re.compile(r"\b(?:dns|txt\s+records?|attacker\.com)\b.*\b(?:exfil|embedded\s+data|attacker\.com|txt\s+records?)\b"),
             ),

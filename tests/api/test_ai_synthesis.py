@@ -135,6 +135,7 @@ def _auth_headers(client: TestClient) -> dict[str, str]:
 
 
 def test_query_endpoint_applies_ai_synthesis_after_tier_filter(monkeypatch):
+    query = "Synthesis contract probe"
     monkeypatch.setenv("CLOUD_SYNTHESIS_ALLOWED", "true")
     monkeypatch.setenv("NRG_AI_SYNTHESIZE_FAST_PATHS", "true")
     monkeypatch.setenv("NRG_AI_SYNTHESIS_TIMEOUT_SECONDS", "2")
@@ -154,7 +155,7 @@ def test_query_endpoint_applies_ai_synthesis_after_tier_filter(monkeypatch):
         client = TestClient(api_main.app)
         response = client.post(
             "/query",
-            json={"query": "Top funding agencies"},
+            json={"query": query},
             headers=_auth_headers(client),
         )
     finally:

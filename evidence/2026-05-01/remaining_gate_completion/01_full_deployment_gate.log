@@ -1,0 +1,36 @@
+
+============================================================
+NRG Deployment Gate
+Environment: production
+============================================================
+
+  ℹ️ Running test suite...
+  ℹ️ Checking schema synchronization...
+  ℹ️ Validating RBAC policies...
+  ℹ️ Checking Docker build...
+  ℹ️ Checking health endpoints...
+  ℹ️ Running security scan...
+
+------------------------------------------------------------
+Results:
+------------------------------------------------------------
+
+  ❌ [FAIL] Test Suite: Tests failed with exit code 1
+      Duration: 12869ms
+      last_output: dist-3.8.0, langsmith-0.7.32, asyncio-1.3.0, hypothesis-6.152.2, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[
+  ✅ [PASS] Schema Sync: Canonical schema check passed
+      Duration: 2971ms
+  ✅ [PASS] RBAC Policies: RBAC policies are valid
+      Duration: 95ms
+  ✅ [PASS] Docker Build: Docker configuration is valid
+      Duration: 1041ms
+  ✅ [PASS] Health Endpoints: Health endpoint responsive at http://localhost:8000
+      Duration: 2629ms
+  ✅ [PASS] Security Scan: No obvious security issues detected
+      Duration: 7ms
+
+============================================================
+❌ DEPLOYMENT BLOCKED — 1 check(s) failed: Test Suite
+============================================================

@@ -1,0 +1,47 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: Faker-40.15.0, cov-7.1.0, locust-2.43.4, xdist-3.8.0, langsmith-0.7.32, asyncio-1.3.0, hypothesis-6.152.2, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2062 items / 257 deselected / 1805 selected
+
+tests/api/test_ai_synthesis.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                     [  0%][0m
+tests/api/test_answer_records_api.py [32m.[0m[33m                                   [  0%][0m
+tests/api/test_auth_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_c4_read_model.py [32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_critical_path_stream.py [32m.[0m[32m.[0m[32m.[0m[33m                               [  1%][0m
+tests/api/test_final_golden_fast_paths.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [  1%][0m
+tests/api/test_health_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                   [  2%][0m
+tests/api/test_k4_publication_count_fast_path.py [32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_k_anonymity_response_boundary.py [32m.[0m[32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_langgraph_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m______ test_fast_query_messy_acceptance_set_has_relevant_distinct_routes _______[0m
+[1m[31mtests/api/test_langgraph_api.py[0m:377: in test_fast_query_messy_acceptance_set_has_relevant_distinct_routes
+    [0m[94massert[39;49;00m payload[[33m"[39;49;00m[33mintent[39;49;00m[33m"[39;49;00m] == expected_intent, query[90m[39;49;00m
+[1m[31mE   AssertionError: which institutes have highest grant amount in renewable energy??[0m
+[1m[31mE   assert 'top_funded_research_areas' == 'funding_aggregate'[0m
+[1m[31mE     [0m
+[1m[31mE     [0m[91m- funding_aggregate[39;49;00m[90m[39;49;00m[0m
+[1m[31mE     [92m+ top_funded_research_areas[39;49;00m[90m[39;49;00m[0m
+[33m=============================== warnings summary ===============================[0m
+../../../../Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+tests/api/test_auth_api.py::test_refresh_and_logout_revoke_tokens
+tests/api/test_health_endpoints.py::test_root_health_times_out_slow_audit_check
+tests/api/test_health_endpoints.py::test_root_health_reports_broken_audit_lineage_as_critical
+tests/api/test_health_endpoints.py::test_health_fails_when_qdrant_empty
+tests/api/test_health_endpoints.py::test_root_health_reports_explicit_rag_status_when_qdrant_unavailable
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_expires
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+    show_warning(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/api/test_langgraph_api.py::[1mtest_fast_query_messy_acceptance_set_has_relevant_distinct_routes[0m - AssertionError: which institutes have highest grant amount in renewable ene...
+[31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
+[31m=========== [31m[1m1 failed[0m, [32m58 passed[0m, [33m257 deselected[0m, [33m7 warnings[0m[31m in 9.06s[0m[31m ===========[0m

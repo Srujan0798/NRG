@@ -272,6 +272,8 @@ def normalize_workflow_result(
     for citation in payload["citations"]:
         citation.setdefault("title", citation.get("label"))
         citation.setdefault("publication_id", citation.get("source_id"))
+        citation.setdefault("paper_id", citation.get("source_id"))
+        citation.setdefault("pub_id", citation.get("source_id"))
     raw_verification_status = result.get("verification_status", False)
     verification_status = normalize_verification_status(raw_verification_status)
     payload.update(

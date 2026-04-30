@@ -1154,6 +1154,7 @@ def _fallback_hybrid_synthesis(
     lines = []
     lines.append("═" * 60)
     lines.append("  NATIONAL RESEARCH GRAPH - Hybrid Evidence Answer")
+    lines.append("  Structured summary - AI synthesis temporarily unavailable")
     lines.append("═" * 60)
     lines.append("")
     lines.append(f"Query: {query}")

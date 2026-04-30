@@ -245,7 +245,12 @@ def check_health_endpoints() -> GateResult:
     start = time.time()
     print(f"  {INFO} Checking health endpoints...")
 
-    api_url = os.getenv("NRG_API_URL", "http://localhost:8000")
+    api_url = (
+        os.getenv("NRG_API_URL")
+        or os.getenv("API_URL")
+        or os.getenv("NRG_BASE_URL")
+        or "http://localhost:8000"
+    ).rstrip("/")
 
     returncode, stdout, stderr = run_command(
         ["curl", "-sf", "-m", "5", f"{api_url}/health"],

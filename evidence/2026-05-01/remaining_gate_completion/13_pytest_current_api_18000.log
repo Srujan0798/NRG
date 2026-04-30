@@ -1,0 +1,135 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: Faker-40.15.0, cov-7.1.0, locust-2.43.4, xdist-3.8.0, langsmith-0.7.32, asyncio-1.3.0, hypothesis-6.152.2, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2062 items / 257 deselected / 1805 selected
+
+tests/api/test_ai_synthesis.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                     [  0%][0m
+tests/api/test_answer_records_api.py [32m.[0m[33m                                   [  0%][0m
+tests/api/test_auth_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_c4_read_model.py [32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_critical_path_stream.py [32m.[0m[32m.[0m[32m.[0m[33m                               [  1%][0m
+tests/api/test_final_golden_fast_paths.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [  1%][0m
+tests/api/test_health_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                   [  2%][0m
+tests/api/test_k4_publication_count_fast_path.py [32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_k_anonymity_response_boundary.py [32m.[0m[32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_langgraph_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                   [  3%][0m
+tests/api/test_lifespan_startup.py [32m.[0m[33m                                     [  3%][0m
+tests/api/test_live_hybrid_stream.py [32m.[0m[33m                                   [  3%][0m
+tests/api/test_metrics_fast_path.py [32m.[0m[33m                                    [  4%][0m
+tests/api/test_new_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  4%][0m
+tests/api/test_query_security_validation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [  5%][0m
+tests/api/test_request_logging_middleware.py [32m.[0m[32m.[0m[33m                          [  5%][0m
+tests/api/test_researchers_endpoint_limits.py [32m.[0m[33m                          [  5%][0m
+tests/api/test_tier_isolation_live.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  5%][0m
+tests/api/test_tier_isolation_property.py [32m.[0m[33m                              [  5%][0m
+tests/api/test_tier_response_filtering.py [32m.[0m[32m.[0m[33m                             [  5%][0m
+tests/audit/test_audit_singleton_reset.py [32m.[0m[32m.[0m[32m.[0m[33m                            [  5%][0m
+tests/audit/test_chain_integrity.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                  [  7%][0m
+tests/audit/test_db_cosign.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [  8%][0m
+tests/auth/test_jwt_handler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  8%][0m
+tests/auth/test_jwt_secret_config.py [32m.[0m[33m                                   [  8%][0m
+tests/benchmarks/test_dhairya_adversarial.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                  [  9%][0m
+tests/benchmarks/test_dhairya_regression.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 11%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                          [ 11%][0m
+tests/benchmarks/test_text_to_sql_prompt_hardening.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m               [ 12%][0m
+tests/config/test_cost_guard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 14%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 14%][0m
+tests/config/test_docker_compose_pgbouncer.py [32m.[0m[32m.[0m[33m                         [ 14%][0m
+tests/config/test_helm_vector_drift_cronjobs.py [32m.[0m[32m.[0m[33m                       [ 14%][0m
+tests/config/test_llm_config.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                       [ 15%][0m
+tests/config/test_llm_egress_guard.py [32m.[0m[33m                                  [ 15%][0m
+tests/config/test_locustfile_contract.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 16%][0m
+tests/config/test_trl_safe_views.py [32m.[0m[32m.[0m[32m.[0m[33m                                  [ 16%][0m
+tests/contract/test_answer_engine_v1_contract.py [32m.[0m[32m.[0m[32m.[0m[33m                     [ 16%][0m
+tests/contract/test_api_response_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 16%][0m
+tests/contract/test_api_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 17%][0m
+tests/contract/test_pipeline_contracts.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 18%][0m
+tests/contract/test_query_endpoint.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                       [ 19%][0m
+tests/data/test_data_quality.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                    [ 19%][0m
+tests/data/test_database_v2.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 20%][0m
+tests/data/test_database_v2_schema_drift.py [32m.[0m[33m                            [ 20%][0m
+tests/data/test_failed_queries_hall_of_shame.py [32m.[0m[33m                        [ 20%][0m
+tests/data/test_rls_policies.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                   [ 20%][0m
+tests/data/test_schema_indexes.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                   [ 20%][0m
+tests/data/test_schema_parity.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 21%][0m
+tests/db/test_trl_view.py [32m.[0m[32m.[0m[32m.[0m[33m                                            [ 21%][0m
+tests/evals/test_quality_gates.py [33ms[0m[32m.[0m[32m.[0m[33ms[0m[33m                                   [ 22%][0m
+tests/evals/test_sql_accuracy.py [33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[33m                                  [ 22%][0m
+tests/frontend/test_login_presets.py [32m.[0m[33m                                   [ 22%][0m
+tests/ingestion/test_vector_pipeline.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [ 22%][0m
+tests/integration/test_api_gateway.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m                           [ 23%][0m
+tests/integration/test_pipeline_e2e.py [31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m_________________ test_pipeline_sql_path_number_with_citation __________________[0m
+[1m[31mtests/integration/test_pipeline_e2e.py[0m:68: in test_pipeline_sql_path_number_with_citation
+    [0m_assert_has_citation(response)[90m[39;49;00m
+[1m[31mtests/integration/test_pipeline_e2e.py[0m:49: in _assert_has_citation
+    [0m[94massert[39;49;00m [33m"[39;49;00m[33m[cite:[39;49;00m[33m"[39;49;00m [95min[39;49;00m response[90m[39;49;00m
+[1m[31mE   AssertionError: assert '[cite:' in 'Insufficient data to support the numeric claims with required citations.'[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-04-30T22:07:02.202262+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "_receiver_wrapper", "line": 180, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "receiver", "duration_ms": 0.01, "budget_ms": 25}}
+{"timestamp": "2026-04-30T22:07:02.211426+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "wrapper", "line": 68, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "planner", "duration_ms": 8.76, "budget_ms": 250}}
+{"timestamp": "2026-04-30T22:07:02.211804+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "wrapper", "line": 68, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "router", "duration_ms": 0.02, "budget_ms": 75}}
+{"timestamp": "2026-04-30T22:07:02.212427+00:00", "level": "INFO", "logger": "src.skills.text_to_sql.skill", "message": "Initialized TextToSQLSkill with sqlite backend", "module": "skill", "function": "_initialize_backend", "line": 626, "process_id": 30097, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:07:02.231259+00:00", "level": "INFO", "logger": "src.orchestration.nodes.executor", "message": "DAG execution completed: 1 nodes, 19 total ms, 0 errors", "module": "executor", "function": "_execute_dag", "line": 493, "process_id": 30097, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:07:02.231361+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "wrapper", "line": 68, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "executor", "duration_ms": 19.25, "budget_ms": 1200}}
+{"timestamp": "2026-04-30T22:07:02.232477+00:00", "level": "INFO", "logger": "src.orchestration.nodes.synthesizer", "message": "Using SovereignLLMMesh for synthesis (complexity=moderate, 5.0s timeout, health-weighted)", "module": "synthesizer", "function": "_synthesize", "line": 646, "process_id": 30097, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:07:02.232563+00:00", "level": "WARNING", "logger": "src.orchestration.nodes.synthesizer", "message": "Cloud LLM mesh failed: 'NoneType' object has no attribute 'generate', trying local LLM", "module": "synthesizer", "function": "_synthesize", "line": 696, "process_id": 30097, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:07:02.232629+00:00", "level": "INFO", "logger": "src.orchestration.nodes.synthesizer", "message": "Using rule-based synthesis after cloud and local LLM failures", "module": "synthesizer", "function": "_synthesize", "line": 772, "process_id": 30097, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:07:02.233527+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "wrapper", "line": 68, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "synthesizer", "duration_ms": 1.73, "budget_ms": 1200}}
+{"timestamp": "2026-04-30T22:07:02.234523+00:00", "level": "INFO", "logger": "src.orchestration.graph", "message": "pipeline node completed", "module": "graph", "function": "wrapper", "line": 68, "process_id": 30097, "thread_id": 8413098240, "extra": {"node": "verifier", "duration_ms": 0.67, "budget_ms": 250}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m src.orchestration.graph:graph.py:180 pipeline node completed
+[32mINFO    [0m src.orchestration.graph:graph.py:68 pipeline node completed
+[32mINFO    [0m src.orchestration.graph:graph.py:68 pipeline node completed
+[32mINFO    [0m src.skills.text_to_sql.skill:skill.py:626 Initialized TextToSQLSkill with sqlite backend
+[32mINFO    [0m src.orchestration.nodes.executor:executor.py:493 DAG execution completed: 1 nodes, 19 total ms, 0 errors
+[32mINFO    [0m src.orchestration.graph:graph.py:68 pipeline node completed
+[32mINFO    [0m src.orchestration.nodes.synthesizer:synthesizer.py:646 Using SovereignLLMMesh for synthesis (complexity=moderate, 5.0s timeout, health-weighted)
+[33mWARNING [0m src.orchestration.nodes.synthesizer:synthesizer.py:696 Cloud LLM mesh failed: 'NoneType' object has no attribute 'generate', trying local LLM
+[32mINFO    [0m src.orchestration.nodes.synthesizer:synthesizer.py:772 Using rule-based synthesis after cloud and local LLM failures
+[32mINFO    [0m src.orchestration.graph:graph.py:68 pipeline node completed
+[32mINFO    [0m src.orchestration.graph:graph.py:68 pipeline node completed
+[33m=============================== warnings summary ===============================[0m
+../../../../Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+tests/api/test_auth_api.py::test_refresh_and_logout_revoke_tokens
+tests/api/test_health_endpoints.py::test_root_health_reports_table_count_and_fast_audit_status
+tests/api/test_health_endpoints.py::test_root_health_reports_audit_lineage_repair_required_as_unhealthy
+tests/api/test_health_endpoints.py::test_health_fails_when_qdrant_empty
+tests/api/test_health_endpoints.py::test_root_health_reports_explicit_rag_status_when_qdrant_unavailable
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_expires
+tests/contract/test_api_schema.py::TestHealthContract::test_health_all_response_structure
+tests/contract/test_api_schema.py::TestContractSchemaStability::test_login_schema_stability
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+    show_warning(
+
+tests/api/test_request_logging_middleware.py::test_fast_requests_do_not_emit_high_volume_info_logs_by_default
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/fastapi/openapi/utils.py:252: UserWarning: Duplicate Operation ID metrics_metrics_get for function metrics at /Users/srujansai/Desktop/NRG/src/api/main.py
+    warnings.warn(message, stacklevel=1)
+
+tests/auth/test_jwt_handler.py::test_access_token_verification_reuses_same_ip_decode_cache
+tests/auth/test_jwt_handler.py::test_cached_access_token_still_detects_replay_from_new_ip
+tests/auth/test_jwt_handler.py::test_refresh_token_survives_handler_restart_with_store
+tests/auth/test_jwt_handler.py::test_logout_revokes_refresh_token_in_store
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 11 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/auth/test_jwt_handler.py::test_access_token_verification_reuses_same_ip_decode_cache
+tests/auth/test_jwt_handler.py::test_cached_access_token_still_detects_replay_from_new_ip
+tests/auth/test_jwt_handler.py::test_refresh_token_survives_handler_restart_with_store
+tests/auth/test_jwt_handler.py::test_logout_revokes_refresh_token_in_store
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 11 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/integration/test_pipeline_e2e.py::[1mtest_pipeline_sql_path_number_with_citation[0m - AssertionError: assert '[cite:' in 'Insufficient data to support the numeri...
+[31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
+[31m=== [31m[1m1 failed[0m, [32m407 passed[0m, [33m12 skipped[0m, [33m257 deselected[0m, [33m18 warnings[0m[31m in 18.57s[0m[31m ====[0m

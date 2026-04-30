@@ -1,0 +1,47 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: Faker-40.15.0, cov-7.1.0, locust-2.43.4, xdist-3.8.0, langsmith-0.7.32, asyncio-1.3.0, hypothesis-6.152.2, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2062 items / 257 deselected / 1805 selected
+
+tests/api/test_ai_synthesis.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                     [  0%][0m
+tests/api/test_answer_records_api.py [32m.[0m[33m                                   [  0%][0m
+tests/api/test_auth_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_c4_read_model.py [32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_critical_path_stream.py [32m.[0m[32m.[0m[32m.[0m[33m                               [  1%][0m
+tests/api/test_final_golden_fast_paths.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [  1%][0m
+tests/api/test_health_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                   [  2%][0m
+tests/api/test_k4_publication_count_fast_path.py [32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_k_anonymity_response_boundary.py [32m.[0m[32m.[0m[32m.[0m[33m                      [  2%][0m
+tests/api/test_langgraph_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m________ test_fast_query_release_seed_fallback_covers_audit_walkthrough ________[0m
+[1m[31mtests/api/test_langgraph_api.py[0m:661: in test_fast_query_release_seed_fallback_covers_audit_walkthrough
+    [0m[94massert[39;49;00m [33m"[39;49;00m[33mIIT Gandhinagar[39;49;00m[33m"[39;49;00m [95min[39;49;00m first[[33m"[39;49;00m[33mresponse[39;49;00m[33m"[39;49;00m][90m[39;49;00m
+[1m[31mE   AssertionError: assert 'IIT Gandhinagar' in 'Institution-level grant evidence is led by IIT Madras with ₹3,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]'[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-04-30T22:04:30.604811+00:00", "level": "WARNING", "logger": "src.api.main", "message": "Institution funding fast-path query failed; using release seed fallback", "module": "logging_config", "function": "_log", "line": 68, "process_id": 28855, "thread_id": 8413098240, "extra": {"error": "(sqlite3.OperationalError) no such table: funding\n[SQL: \n            SELECT\n                i.name AS institution,\n                i.state AS state,\n                COUNT(DISTINCT coalesce(CAST(f.researcher_id AS TEXT), CAST(f.funding_id AS TEXT))) AS researcher_count,\n                SUM(coalesce(f.amount, 0)) AS funding_cr,\n                0 AS avg_h_index\n            FROM funding f\n            JOIN institutions i ON i.institution_id = f.institution_id\n            WHERE lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?)) OR lower(coalesce(f.title, '')) LIKE lower(?) OR lower(coalesce(f.agency, '')) LIKE lower(?) OR EXISTS (SELECT 1 FROM labs l WHERE l.institution_id = f.institution_id AND lower(coalesce(l.research_area, '')) LIKE lower(?))\n            GROUP BY i.institution_id, i.name, i.state\n            ORDER BY funding_cr DESC\n            LIMIT 5\n            ]\n[parameters: ('%computer%', '%computer%', '%computer%', '%AI/ML%', '%AI/ML%', '%AI/ML%', '%machine learning%', '%machine learning%', '%machine learning%', '%cybersecurity%', '%cybersecurity%', '%cybersecurity%', '%software%', '%software%', '%software%', '%NLP%', '%NLP%', '%NLP%', '%computer vision%', '%computer vision%', '%computer vision%')]\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"}}
+------------------------------ Captured log call -------------------------------
+[33mWARNING [0m src.api.main:logging_config.py:68 Institution funding fast-path query failed; using release seed fallback
+[33m=============================== warnings summary ===============================[0m
+../../../../Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+tests/api/test_auth_api.py::test_refresh_and_logout_revoke_tokens
+tests/api/test_health_endpoints.py::test_root_health_times_out_slow_audit_check
+tests/api/test_health_endpoints.py::test_root_health_reports_broken_audit_lineage_as_critical
+tests/api/test_health_endpoints.py::test_health_fails_when_qdrant_empty
+tests/api/test_health_endpoints.py::test_query_result_cache_ttl_is_long_enough_for_load_review
+tests/api/test_health_endpoints.py::TestAPIMemoryCache::test_cache_expires
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+    show_warning(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/api/test_langgraph_api.py::[1mtest_fast_query_release_seed_fallback_covers_audit_walkthrough[0m - AssertionError: assert 'IIT Gandhinagar' in 'Institution-level grant eviden...
+[31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
+[31m=========== [31m[1m1 failed[0m, [32m63 passed[0m, [33m257 deselected[0m, [33m7 warnings[0m[31m in 8.99s[0m[31m ===========[0m

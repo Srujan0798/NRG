@@ -1,0 +1,36 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini (WARNING: ignoring pytest config in pyproject.toml!)
+plugins: Faker-40.15.0, cov-7.1.0, locust-2.43.4, xdist-3.8.0, langsmith-0.7.32, asyncio-1.3.0, hypothesis-6.152.2, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2062 items / 257 deselected / 1805 selected
+
+tests/api/test_ai_synthesis.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m__________ test_query_endpoint_applies_ai_synthesis_after_tier_filter __________[0m
+[1m[31mtests/api/test_ai_synthesis.py[0m:165: in test_query_endpoint_applies_ai_synthesis_after_tier_filter
+    [0m[94massert[39;49;00m payload[[33m"[39;49;00m[33msynthesis_method[39;49;00m[33m"[39;49;00m] == [33m"[39;49;00m[33mcloud_llm_fast_path[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: assert 'rule_based_read_model' == 'cloud_llm_fast_path'[0m
+[1m[31mE     [0m
+[1m[31mE     [0m[91m- cloud_llm_fast_path[39;49;00m[90m[39;49;00m[0m
+[1m[31mE     [92m+ rule_based_read_model[39;49;00m[90m[39;49;00m[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-04-30T22:02:11.473587+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 27422, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T22:02:12.689510+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 27422, "thread_id": 6197342208, "extra": {}}
+{"timestamp": "2026-04-30T22:02:12.698934+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 27422, "thread_id": 8413098240, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m src.api.main:logging_config.py:68 request completed
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[33m=============================== warnings summary ===============================[0m
+../../../../Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25
+  /Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+    from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/api/test_ai_synthesis.py::[1mtest_query_endpoint_applies_ai_synthesis_after_tier_filter[0m - AssertionError: assert 'rule_based_read_model' == 'cloud_llm_fast_path'
+[31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
+[31m=========== [31m[1m1 failed[0m, [32m4 passed[0m, [33m257 deselected[0m, [33m1 warning[0m[31m in 16.30s[0m[31m ============[0m

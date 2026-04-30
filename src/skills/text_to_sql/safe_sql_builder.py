@@ -302,6 +302,11 @@ def _funding_sql(query_lower: str) -> str:
 
 def _researchers_sql(query_lower: str) -> str:
     limit = _requested_limit(query_lower)
+    state = _state_filter(query_lower)
+    if "count" in query_lower or "how many" in query_lower:
+        predicate = f" WHERE lower(state) = '{state}'" if state else ""
+        return f"SELECT COUNT(*) AS count FROM researchers{predicate} LIMIT 1"
+
     columns = (
         "name",
         "state",
@@ -319,12 +324,15 @@ def _researchers_sql(query_lower: str) -> str:
 
 def _publications_sql(query_lower: str) -> str:
     limit = _requested_limit(query_lower)
-    columns = ("title", "authors", "venue", "year", "citations", "research_area")
-    order_by = (
-        " ORDER BY citations DESC"
-        if any(term in query_lower for term in ("citation", "citations", "top", "most"))
-        else " ORDER BY year DESC"
-    )
+    if "count" in query_lower or "counts" in query_lower or "how many" in query_lower:
+        return "SELECT COUNT(*) AS publication_count FROM publications LIMIT 1"
+
+    if "citation" in query_lower or "citations" in query_lower:
+        columns = ("title", "venue", "year", "citations")
+        order_by = " ORDER BY citations DESC"
+    else:
+        columns = ("title", "venue", "year")
+        order_by = " ORDER BY year DESC"
     return f"SELECT {', '.join(columns)} FROM publications{order_by} LIMIT {limit}"
 
 
@@ -409,7 +417,9 @@ def _validate_builder_sql(sql: str) -> None:
     if unknown_tables:
         raise ValueError(f"Safe SQL builder emitted unknown tables: {sorted(unknown_tables)}")
 
-    if list(parsed.find_all(exp.Star)):
+    for star in parsed.find_all(exp.Star):
+        if isinstance(star.parent, exp.Count):
+            continue
         raise ValueError("Safe SQL builder must not emit SELECT *")
 
     allowed_columns = set().union(*(SAFE_COLUMNS_BY_TABLE[table] for table in tables))

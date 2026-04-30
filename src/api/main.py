@@ -1020,6 +1020,9 @@ def _researcher_lookup_fast_response(
     query_lower = query.lower()
     ranked = any(term in query_lower for term in _RESEARCHER_RANKING_TERMS)
     sparse_schema_match = any(row.get("ranking_basis") == "match_only_sparse_schema" for row in rows)
+    topic_slug = topic.lower().replace(" ", "-")
+    researcher_citation_id = f"nrg-researchers:{topic_slug}"
+    institution_citation_id = f"nrg-institutions:{topic_slug}"
     visible_rows = rows if user_tier <= 1 else [
         {**row, "name": f"Researcher {index}", "email": None}
         for index, row in enumerate(rows, start=1)
@@ -1027,9 +1030,12 @@ def _researcher_lookup_fast_response(
     lead = (
         f"Matching {topic} researchers were found in the live NRG catalogue. "
         "The live schema does not expose ranking metrics, so this is a relevance match rather than a claimed best ranking. "
-        f"[cite:nrg-researchers:{topic.lower().replace(' ', '-')}]"
+        f"[cite:{researcher_citation_id}] [cite:{institution_citation_id}]"
         if sparse_schema_match
-        else f"Top matching {topic} researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:{topic.lower().replace(' ', '-')}]"
+        else (
+            f"Top matching {topic} researchers in the NRG catalogue, ranked by h-index and then disclosed funding. "
+            f"[cite:{researcher_citation_id}] [cite:{institution_citation_id}]"
+        )
     )
     lines = [
         lead,
@@ -1070,15 +1076,27 @@ def _researcher_lookup_fast_response(
         "citation_validity": 1.0,
         "citations": [
             {
-                "id": f"nrg-researchers:{topic.lower().replace(' ', '-')}",
+                "id": researcher_citation_id,
                 "pub_id": "nrg-researchers",
-                "paper_id": "nrg-researchers",
-                "chunk_id": topic.lower().replace(" ", "-"),
+                "paper_id": researcher_citation_id,
+                "chunk_id": topic_slug,
                 "title": f"NRG researcher catalogue: {topic}",
                 "authors": ["National Research Graph"],
                 "year": 2026,
                 "source": "researchers",
                 "chunk_text": f"Researcher rows filtered by {topic} and ranked by h-index and funding.",
+                "relevance_score": 1.0,
+            },
+            {
+                "id": institution_citation_id,
+                "pub_id": "nrg-institutions",
+                "paper_id": institution_citation_id,
+                "chunk_id": topic_slug,
+                "title": f"NRG institution metadata supporting {topic}",
+                "authors": ["National Research Graph"],
+                "year": 2026,
+                "source": "institutions",
+                "chunk_text": "Institution names and state context used to render researcher rows.",
                 "relevance_score": 1.0,
             }
         ],
@@ -1095,6 +1113,8 @@ def _researcher_lookup_fast_response(
             "synth": "rule_based",
             "verifier": "row_count_sparse_schema" if sparse_schema_match else "row_count_and_citation",
             "cloud_synthesis_used": False,
+            researcher_citation_id: {"found_in": "researchers", "chunk_id": topic_slug},
+            institution_citation_id: {"found_in": "institutions", "chunk_id": topic_slug},
         },
         "synthesis_method": "rule_based",
         "conversation_history": [],
@@ -2477,6 +2497,11 @@ def _c4_read_model_response(
             answer = f"IIT Bombay funding evidence is returned at project/institute aggregate level with {_format_inr_crores(rows[0]['funding_cr'])} visible in the read-model slice."
             sql = "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model WHERE institute='IIT Bombay'"
             intent = "institution_funding_lookup"
+        elif any(term in query_lower for term in ("institute", "institutes", "institution", "institutions")):
+            rows = snapshot.get("funding_by_institute", [])[:5]
+            answer = f"Institution-level grant evidence is led by {rows[0]['institute']} with {_format_inr_crores(rows[0]['funding_cr'])} across {int(rows[0]['grant_count']):,} grant rows in the read model."
+            sql = "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5"
+            intent = "funding_aggregate"
         else:
             rows = snapshot.get("research_area_funding", [])[:5]
             answer = f"Top funded research areas are led by {rows[0]['research_area']} with {_format_inr_crores(rows[0]['funding_cr'])} across {int(rows[0]['researcher_count']):,} researcher rows."
@@ -3194,13 +3219,6 @@ def _fast_query_response(
             user_tier=user_tier,
             session_id=session_id,
         )
-    c4_read_model = _c4_read_model_response(
-        query,
-        user_tier=user_tier,
-        session_id=session_id,
-    )
-    if c4_read_model is not None:
-        return c4_read_model
     publication_count = _publication_count_fast_response(
         query,
         user_tier=user_tier,
@@ -3210,6 +3228,19 @@ def _fast_query_response(
         return publication_count
     previous_topic = _fast_query_context.get(context_key, {}).get("topic")
     topic_match = _fast_topic_for_query(query, previous_topic)
+    topic_funding_query = topic_match is not None and any(
+        term in query_lower
+        for term in ("grant", "funding", "highest", "top", "same for", "same as", "compare")
+    )
+    funding_ranking_query = _is_funding_ranking_query(query)
+    if not topic_funding_query:
+        c4_read_model = _c4_read_model_response(
+            query,
+            user_tier=user_tier,
+            session_id=session_id,
+        )
+        if c4_read_model is not None:
+            return c4_read_model
     researcher_lookup_response = _researcher_lookup_fast_response(
         query,
         user_tier=user_tier,
@@ -3224,11 +3255,6 @@ def _fast_query_response(
     )
     if unsupported_researcher_topic is not None:
         return unsupported_researcher_topic
-    topic_funding_query = topic_match is not None and any(
-        term in query_lower
-        for term in ("grant", "funding", "highest", "top", "same for", "same as", "compare")
-    )
-    funding_ranking_query = _is_funding_ranking_query(query)
     researcher_query_without_topic = _is_researcher_query(query) and _research_topic_for_query(query) is None
     skip_bounded_researcher = (
         researcher_query_without_topic

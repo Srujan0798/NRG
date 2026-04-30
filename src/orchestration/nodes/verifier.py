@@ -698,7 +698,7 @@ def _with_evidence_confidence(result: dict) -> dict:
     existing_confidence = result.get("answer_confidence")
 
     if existing_confidence == "low_clarify":
-        answer_confidence = "needs_clarification"
+        answer_confidence = "low_clarify"
         if not caveats:
             caveats.append("The evidence path needs clarification before a safe answer can be produced.")
     elif unsupported_claims:
