@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from src.api.deps import get_db, REPO_ROOT, DEFAULT_VECTOR_DRIFT_STATUS_FILE, DEFAULT_DATA_QUALITY_SCORECARD_FILE
 from src.api.logging_config import get_logger
 from src.auth.jwt_handler import JWTHandler
-from src.observability.health_checks import get_qdrant_vector_count_health
+from src.observability.health_checks import build_rag_health, get_qdrant_vector_count_health
 
 router = APIRouter(tags=["health"])
 logger = get_logger(__name__)
@@ -212,6 +212,7 @@ async def health_check():
     qdrant_health = _get_qdrant_vector_count_health()
     if qdrant_health.get("status") == "CRITICAL":
         overall = "CRITICAL"
+    rag_health = build_rag_health(qdrant_health, retriever_health)
 
     payload = {
         "status": overall,
@@ -219,6 +220,7 @@ async def health_check():
         "consent_service": "operational",
         "retriever": retriever_health,
         "qdrant": qdrant_health,
+        "rag": rag_health,
         "vector_drift": vector_drift_health,
         "data_quality": data_quality_health,
         "database": db_health,

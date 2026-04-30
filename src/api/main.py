@@ -51,7 +51,7 @@ from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
-from src.observability.health_checks import get_qdrant_vector_count_health
+from src.observability.health_checks import build_rag_health, get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app, get_metrics_content_type
 from src.services.answer_records import get_answer_record_store
 from qdrant_client import QdrantClient
@@ -4511,6 +4511,7 @@ async def health_check():
     qdrant_health = _get_qdrant_vector_count_health()
     if qdrant_health.get("status") == "CRITICAL":
         overall = "CRITICAL"
+    rag_health = build_rag_health(qdrant_health, retriever_health)
 
     payload = {
         "status": overall,
@@ -4518,6 +4519,7 @@ async def health_check():
         "consent_service": "operational",
         "retriever": retriever_health,
         "qdrant": qdrant_health,
+        "rag": rag_health,
         "vector_drift": vector_drift_health,
         "data_quality": data_quality_health,
         "database": db_health,

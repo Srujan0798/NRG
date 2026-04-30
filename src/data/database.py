@@ -63,7 +63,7 @@ class NRGDatabase:
 
     def initialize_schema(self) -> None:
         """Initialize the database schema."""
-        schema_path = Path(__file__).parent / "schema" / "optimized_schema.sql"
+        schema_path = Path(__file__).parent / "schema" / "nrg_full_schema.sql"
 
         with self.connect() as conn:
             with open(schema_path, "r") as f:

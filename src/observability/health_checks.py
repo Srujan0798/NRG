@@ -77,3 +77,51 @@ def get_qdrant_vector_count_health(
         "collection": resolved_collection,
         "vectors": vector_count,
     }
+
+
+def build_rag_health(
+    qdrant_health: dict[str, Any],
+    retriever_health: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Summarize whether RAG retrieval can honestly serve answer evidence."""
+    retriever_health = retriever_health or {}
+    qdrant_status = str(qdrant_health.get("status") or "unknown")
+    retriever_status = str(retriever_health.get("status") or "not_checked")
+    collection = qdrant_health.get("collection") or retriever_health.get("collection")
+    vectors = qdrant_health.get("vectors")
+
+    status = "ready"
+    retrieval_enabled = True
+    warning = None
+
+    if qdrant_status == "CRITICAL":
+        status = "critical"
+        retrieval_enabled = False
+        warning = "RAG retrieval is disabled because the Qdrant collection is empty; run ingestion before using RAG evidence."
+    elif qdrant_status == "unavailable":
+        status = "degraded"
+        retrieval_enabled = False
+        message = qdrant_health.get("message") or "Qdrant is unavailable."
+        warning = f"RAG retrieval is disabled because {message}"
+    elif qdrant_status != "healthy":
+        status = "degraded"
+        retrieval_enabled = False
+        warning = f"RAG retrieval status is uncertain because Qdrant status is {qdrant_status}."
+
+    if retriever_status in {"critical", "unhealthy", "error", "timeout"}:
+        status = "critical" if retriever_status == "critical" else "degraded"
+        retrieval_enabled = False
+        warning = (
+            retriever_health.get("message")
+            or "RAG retrieval is disabled because the retriever health check failed."
+        )
+
+    return {
+        "status": status,
+        "retrieval_enabled": retrieval_enabled,
+        "collection": collection,
+        "vectors": vectors,
+        "qdrant_status": qdrant_status,
+        "retriever_status": retriever_status,
+        "warning": warning,
+    }

@@ -33,6 +33,30 @@ def test_clamps_requested_rank_limit_and_uses_safe_researcher_columns():
     assert "order by h_index desc" in sql
 
 
+def test_builds_institution_lookup_from_catalog():
+    result = build_safe_sql("List institutions in Gujarat")
+
+    assert result.status == "ready"
+    assert result.table == "institutions"
+    assert result.sql is not None
+    sql = result.sql.lower()
+    assert "select name, type, state, country, founded_year from institutions" in sql
+    assert "where lower(state) = 'gujarat'" in sql
+    assert "limit 100" in sql
+
+
+def test_builds_publication_ranking_from_catalog():
+    result = build_safe_sql("Top 10 publications by citations")
+
+    assert result.status == "ready"
+    assert result.table == "publications"
+    assert result.sql is not None
+    sql = result.sql.lower()
+    assert "from publications" in sql
+    assert "order by citations desc" in sql
+    assert "limit 10" in sql
+
+
 def test_blocks_direct_pii_request_before_sql_generation():
     result = build_safe_sql("Give researcher emails and phone numbers for AI labs")
 

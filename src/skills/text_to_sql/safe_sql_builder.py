@@ -61,6 +61,14 @@ SAFE_COLUMNS_BY_TABLE: dict[str, set[str]] = {
         "established_year",
         "location_state",
     },
+    "institutions": {
+        "name",
+        "type",
+        "state",
+        "country",
+        "founded_year",
+        "access_tier",
+    },
     "academic_courses_details": {
         "financial_year",
         "title_of_course",
@@ -162,6 +170,8 @@ def _build_sql_for_classification(
             ("name", "research_area", "research_focus_areas", "location_state"),
             _requested_limit(query_lower),
         )
+    if "institutions" in tables:
+        return _institutions_sql(query_lower)
     if "academic_courses_details" in tables:
         return _simple_list_sql(
             "academic_courses_details",
@@ -235,8 +245,53 @@ def _publications_sql(query_lower: str) -> str:
     return f"SELECT {', '.join(columns)} FROM publications{order_by} LIMIT {limit}"
 
 
+def _institutions_sql(query_lower: str) -> str:
+    limit = _requested_limit(query_lower)
+    columns = ("name", "type", "state", "country", "founded_year")
+    where = ""
+    state = _state_filter(query_lower)
+    if state:
+        where = f" WHERE lower(state) = '{state}'"
+    return f"SELECT {', '.join(columns)} FROM institutions{where} ORDER BY name ASC LIMIT {limit}"
+
+
 def _simple_list_sql(table: str, columns: tuple[str, ...], limit: int) -> str:
     return f"SELECT {', '.join(columns)} FROM {table} LIMIT {limit}"
+
+
+def _state_filter(query_lower: str) -> str | None:
+    states = (
+        "andhra pradesh",
+        "arunachal pradesh",
+        "assam",
+        "bihar",
+        "chhattisgarh",
+        "delhi",
+        "goa",
+        "gujarat",
+        "haryana",
+        "himachal pradesh",
+        "jharkhand",
+        "karnataka",
+        "kerala",
+        "madhya pradesh",
+        "maharashtra",
+        "manipur",
+        "meghalaya",
+        "mizoram",
+        "nagaland",
+        "odisha",
+        "punjab",
+        "rajasthan",
+        "sikkim",
+        "tamil nadu",
+        "telangana",
+        "tripura",
+        "uttar pradesh",
+        "uttarakhand",
+        "west bengal",
+    )
+    return next((state for state in states if state in query_lower), None)
 
 
 def _requested_limit(query_lower: str) -> int:

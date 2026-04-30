@@ -9,12 +9,13 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Wave 0 state lock is the active change set; `evidence/2026-04-29/p0_backend_security_and_query_closure.md` preserved as useful P0 evidence |
+| Working tree | Wave 1 and Wave 4 backend/retrieval fixes are committed; unrelated cleanup deletions and new ADR files remain uncommitted |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
 | Targeted recent checks | 48 Python cleanup-safety tests and 7 frontend component tests passed after cleanup |
 | Audit chain | Last known valid from prior evidence; rerun `scripts/audit_investigate.py` before any fresh audit claim |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
+| Latest committed wave | Wave 4 retrieval/schema health (current commit); `659ded4` Wave 1 messy query routing |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
 ---
@@ -23,11 +24,11 @@
 
 | ID | Task | Assigned? | Blocker |
 |----|------|-----------|---------|
-| W0 | State lock and evidence commit | In progress | None |
-| W1 | Backend answer-engine hardening for messy queries | Next | Must preserve stable response contract |
+| W0 | State lock and evidence commit | Done | Committed `ff975b6` |
+| W1 | Backend answer-engine hardening for messy queries | Done | Committed `659ded4` |
 | W2 | Frontend main-flow polish and contract adapter verification | Pending W1 | Needs stable backend response |
 | W3 | Security, tier, and audit proof | Pending W1 | Needs audit IDs on query responses |
-| W4 | SQL/RAG retrieval truth and regression coverage | Can run with W1 only with disjoint ownership | Qdrant population may be environment-dependent |
+| W4 | SQL/RAG retrieval truth and regression coverage | Done locally | Committed in current Wave 4 commit; live Qdrant/PostgreSQL proof remains environment-dependent |
 | W5 | C4 concurrent query/load performance closure | Pending W1 backend path | Last known 100-user evidence failed |
 | W6 | Final handover package | Last | Requires evidence from W1-W5 |
 | K-6 | GPG signatures for handover | FOUNDER ONLY | Founder private key |
@@ -60,7 +61,8 @@
 |----------|--------|
 | `evidence/2026-04-29/p0_backend_security_and_query_closure.md` | Preserved; contains P0 security/query closure commands and results |
 | `evidence/2026-04-30/00_current_state.md` | Current state lock for the next agent wave |
-| `d207b54` | Last committed backend messy-query fix |
+| `659ded4` | Latest committed backend messy-query routing and stable response-contract fix |
+| `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
 | `6d0ac3a` | Tracked test-run metadata removal |
 

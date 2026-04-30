@@ -326,6 +326,40 @@ def test_root_health_reports_zero_vectors_from_collection_metadata_as_critical(m
     assert payload["qdrant"]["vectors"] == 0
 
 
+def test_root_health_reports_explicit_rag_status_when_qdrant_unavailable(monkeypatch):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    class UnavailableQdrantClient:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("qdrant offline")
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", UnavailableQdrantClient)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda **_: {"chain_valid": True, "chain_length": 1, "valid_events": 1, "error_count": 0},
+    )
+    client = TestClient(api_main.app)
+
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["qdrant"]["status"] == "unavailable"
+    assert payload["rag"]["status"] == "degraded"
+    assert payload["rag"]["retrieval_enabled"] is False
+    assert payload["rag"]["collection"] == "nrg_research"
+    assert "RAG retrieval is disabled" in payload["rag"]["warning"]
+
+
 def test_query_result_cache_ttl_is_long_enough_for_load_review():
     assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 300
 
