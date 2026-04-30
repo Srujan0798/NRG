@@ -32,6 +32,58 @@ const formatNumber = (value: number) => new Intl.NumberFormat('en-IN').format(va
 
 const defaultPlan = ['Classify research intent', 'Retrieve matching evidence', 'Prepare verified answer']
 
+const CONTEXT_COPY = {
+  title: 'Answer context',
+  sourceRows: 'Source rows',
+  citations: 'Citations',
+  synthesis: 'Synthesis',
+  auditState: 'Audit state',
+  localDatabase: 'Local database',
+  cloudSynthesis: 'Cloud synthesis',
+  hmacBound: 'HMAC-bound',
+  pending: 'Pending',
+}
+
+const formatSynthesis = (provenance?: QueryProvenance) => {
+  if (provenance?.cloud_synthesis_used) return CONTEXT_COPY.cloudSynthesis
+  if (provenance?.synth) return provenance.synth.replace(/_/g, ' ')
+  return CONTEXT_COPY.localDatabase
+}
+
+const AnswerContextGrid: React.FC<{
+  rowsReturned: number
+  citations: Citation[]
+  auditEventId: string | null
+  provenance?: QueryProvenance
+}> = ({ rowsReturned, citations, auditEventId, provenance }) => {
+  const items = [
+    { label: CONTEXT_COPY.sourceRows, value: formatNumber(rowsReturned) },
+    { label: CONTEXT_COPY.citations, value: formatNumber(citations.length) },
+    { label: CONTEXT_COPY.synthesis, value: formatSynthesis(provenance) },
+    { label: CONTEXT_COPY.auditState, value: auditEventId ? CONTEXT_COPY.hmacBound : CONTEXT_COPY.pending },
+  ]
+
+  return (
+    <section
+      data-testid="answer-context-grid"
+      className="rounded-lg border border-nrg-border bg-[var(--nrg-surface-2)] p-4"
+      aria-label={CONTEXT_COPY.title}
+    >
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-nrg-muted">
+        {CONTEXT_COPY.title}
+      </p>
+      <dl className="grid gap-3 sm:grid-cols-4">
+        {items.map((item) => (
+          <div key={item.label} className="rounded-md border border-nrg-border bg-[var(--nrg-surface-1)] p-3">
+            <dt className="text-xs font-medium text-nrg-muted">{item.label}</dt>
+            <dd className="mt-1 break-words text-sm font-semibold text-nrg-text">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
+
 export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
   query,
   onCitationClick,
@@ -168,6 +220,21 @@ export const StreamingAnswerPanel: React.FC<StreamingAnswerPanelProps> = ({
             <div data-testid="phase-synthesizing" className="space-y-3">
               <h2 className="text-sm font-semibold text-nrg-text">{t("auto.components.StreamingAnswerPanel.6")}</h2>
               <TokenStream text={fullText} isStreaming={isStreaming && currentPhase?.phase === 'synthesizing'} />
+
+              {isVerified && (
+                <AnswerContextGrid
+                  rowsReturned={retrievedCount}
+                  citations={citations.map((citation) => ({
+                    id: citation.id,
+                    pub_id: citation.pub_id,
+                    chunk_id: citation.chunk_id,
+                    title: citation.title || citation.pub_id,
+                    audit_event_id: citation.audit_event_id || auditEventId || undefined,
+                  }))}
+                  auditEventId={auditEventId}
+                  provenance={provenance}
+                />
+              )}
 
               {citations.length > 0 && (
                 <div className="flex flex-wrap gap-2">

@@ -67,5 +67,17 @@ describe('StreamingAnswerPanel', () => {
     expect(sourcePanel.textContent).toContain('Evidence mix')
     expect(sourcePanel.textContent).toContain('Structured SQL rows')
     expect(sourcePanel.textContent).toContain('Document excerpts')
+
+    const contextGrid = container.querySelector('[data-testid="answer-context-grid"]') as HTMLElement
+    expect(contextGrid).not.toBeNull()
+    expect(contextGrid.textContent).toContain('Answer context')
+    expect(contextGrid.textContent).toContain('Source rows')
+    expect(contextGrid.textContent).toContain('7')
+    expect(contextGrid.textContent).toContain('Citations')
+    expect(contextGrid.textContent).toContain('0')
+    expect(contextGrid.textContent).toContain('Synthesis')
+    expect(contextGrid.textContent).toContain('rule based hybrid')
+    expect(contextGrid.textContent).toContain('Audit state')
+    expect(contextGrid.textContent).toContain('HMAC-bound')
   })
 })

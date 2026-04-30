@@ -213,11 +213,13 @@ Calibration result:
 ## External Minimax Fusion Evidence
 
 - `evidence/2026-04-30/minimax_fusion_acceptance.md`
+- `evidence/2026-04-30/minimax_fusion_pass2_answer_context.md`
 - `evidence/2026-04-30/external_fusion_workflow_update.md`
 
 Selective fusion result:
 
 - Accepted role-aware starter questions into the existing NRG answer-engine surface.
+- Accepted compact answer-context proof cards into the streaming answer panel.
 - Rejected backend, schema, auth, static analytics, and alternate response-contract replacement.
 - Frontend component test passed.
 - Frontend build passed.
