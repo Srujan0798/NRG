@@ -1,7 +1,0 @@
-{
-  "executor_to_synthesizer": "1.0.0",
-  "planner_to_router": "1.0.0",
-  "receiver_to_planner": "1.0.0",
-  "router_to_executor": "1.0.0",
-  "synthesizer_to_verifier": "1.0.0"
-}
