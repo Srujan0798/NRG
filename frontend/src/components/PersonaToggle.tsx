@@ -2,7 +2,6 @@ import React, { useState, useRef, useCallback } from 'react'
 import { authService, PersonaRole } from '../services/authService'
 import { useAuth } from '../hooks/useAuth'
 import { t } from '../i18n'
-import PersonaSheet from './PersonaSheet/PersonaSheet'
 import { emitTelemetry } from '../lib/telemetry'
 import { useQueryStore } from '../stores/queryStore'
 
@@ -83,13 +82,22 @@ export function PersonaToggle() {
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="w-full sm:hidden">
-        <PersonaSheet
-          personas={PERSONAS}
-          activeRole={user?.role}
-          switchingRole={switchingRole}
-          switchError={switchError}
-          onSwitch={switchPersona}
-        />
+        <label className="sr-only" htmlFor="nrg-persona-switcher">
+          {t("auto.components.PersonaToggle.1")}
+        </label>
+        <select
+          id="nrg-persona-switcher"
+          value={user?.role || 'researcher'}
+          disabled={Boolean(switchingRole)}
+          onChange={(event) => void switchPersona(event.target.value as PersonaRole)}
+          className="min-h-10 w-full rounded-full border border-nrg-border bg-[var(--nrg-surface)] px-3 text-sm font-semibold text-nrg-text shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--nrg-accent)] disabled:cursor-wait disabled:opacity-70"
+        >
+          {PERSONAS.map((persona) => (
+            <option key={persona.role} value={persona.role}>
+              {switchingRole === persona.role ? 'Switching...' : persona.label}
+            </option>
+          ))}
+        </select>
       </div>
       <div
         ref={tabListRef}
