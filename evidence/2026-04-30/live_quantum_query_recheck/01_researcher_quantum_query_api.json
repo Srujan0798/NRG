@@ -1,7 +1,7 @@
 {
-  "query_id": "9cc4d5ee-114f-4fa8-a068-7239474a53cd",
-  "answer_id": "bd8eaff3-5d8c-4cc4-b433-ca1df7939e4b",
-  "audit_event_id": "f4c4bd6164b6c669e0661db81581766babfa21af5db1e4f775253eb771facf6e",
+  "query_id": "a3deb35b-61d6-4622-a3a0-e7084bf4641b",
+  "answer_id": "812b33af-218d-40ef-9a52-91f693f4179e",
+  "audit_event_id": "c1acbb4a48514caf6e482e08fe08dd3810458b3d831b4301a863632d3c9592fe",
   "tier": 1,
   "question": "best quantum researchers....",
   "interpreted_question": "best quantum researchers....",
@@ -119,7 +119,7 @@
       "reason": "Evidence and citations passed verification."
     },
     "citation_validity": 1,
-    "audit_event_id": "f4c4bd6164b6c669e0661db81581766babfa21af5db1e4f775253eb771facf6e"
+    "audit_event_id": "c1acbb4a48514caf6e482e08fe08dd3810458b3d831b4301a863632d3c9592fe"
   },
   "citation_validity": 1,
   "plan": null,
@@ -213,6 +213,5 @@
     },
     "PII redaction applied to response: EMAIL"
   ],
-  "tier1_access_scope": "full_detail",
-  "cached": true
+  "tier1_access_scope": "full_detail"
 }

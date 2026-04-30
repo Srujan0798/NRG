@@ -71,6 +71,9 @@ def test_common_c4_query_shapes_use_bounded_fast_path():
         "publication counts by institution",
         "List institutions in Gujarat",
         "technology transfer candidates",
+        "researchers with h_index > 50 in computer science",
+        "total researchers by state",
+        "researchers open to collaboration",
     ]
 
     for query in queries:
@@ -83,6 +86,6 @@ def test_common_c4_query_shapes_use_bounded_fast_path():
 
         assert response is not None, query
         assert response["routing_decision"] == "fast_path"
-        assert response["synthesis_method"] == "rule_based"
+        assert response["synthesis_method"] in {"rule_based", "rule_based_read_model"}
         assert response["citations"]
         assert response["node_timings"]["executor"] == 0.0

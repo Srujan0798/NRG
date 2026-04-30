@@ -1,0 +1,153 @@
+{
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.96,
+  "answer_id": "e81ff3d3-1319-4d3d-ae00-d532fb41efb8",
+  "assumptions": [],
+  "audit_event_id": "e6ef854762ee79a0cc455bb8079af8b6937360a2a7a13660c53adea7f2fcc2fc",
+  "blocked": false,
+  "caveats": [
+    "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+  ],
+  "citation_validity": 1.0,
+  "citations": [
+    {
+      "id": "1",
+      "label": "NRG C4 read model: innovation_grant_from_govt",
+      "masked": false,
+      "source_id": "innovation_grant_from_govt:c4-read-model",
+      "source_type": "document_chunk"
+    },
+    {
+      "id": "2",
+      "label": "NRG C4 read model: researchers",
+      "masked": false,
+      "source_id": "researchers:c4-read-model",
+      "source_type": "document_chunk"
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "conversation_history": [],
+  "final_answer": "Top funded research areas are led by AI/ML with \u20b93,060.92 Cr across 239 researcher rows. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "top_funded_research_areas",
+  "interpreted_question": "top computer science institutions by funding",
+  "node_timings": {
+    "executor": 0.0,
+    "planner": 0.0,
+    "receiver": 0.0,
+    "router": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "plan": null,
+  "planner_metadata": {},
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "planner": "c4_read_model",
+    "synth": "rule_based_read_model",
+    "verifier": "row_count_and_citation"
+  },
+  "query": "top computer science institutions by funding",
+  "query_id": "fa9d9c08-8116-45ca-b255-0ccdf662db0b",
+  "query_time_ms": 0,
+  "question": "top computer science institutions by funding",
+  "response": "Top funded research areas are led by AI/ML with \u20b93,060.92 Cr across 239 researcher rows. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+  "retrieval_sources": [
+    "innovation_grant_from_govt",
+    "researchers"
+  ],
+  "route": "sql",
+  "routing_decision": "fast_path",
+  "session_id": "validation-campaign-vc-api-008",
+  "source_data": {
+    "documents": [],
+    "rows": [
+      {
+        "funding_cr": 3060.92,
+        "research_area": "AI/ML",
+        "researcher_count": 239
+      },
+      {
+        "funding_cr": 2291.8,
+        "research_area": "Sustainable Energy",
+        "researcher_count": 224
+      },
+      {
+        "funding_cr": 2157.66,
+        "research_area": "Biotechnology",
+        "researcher_count": 192
+      },
+      {
+        "funding_cr": 1924.87,
+        "research_area": "Robotics",
+        "researcher_count": 209
+      },
+      {
+        "funding_cr": 1823.0,
+        "research_area": "Advanced Materials",
+        "researcher_count": 198
+      }
+    ],
+    "sql_query": "SELECT research_area, researcher_count, funding_cr FROM c4_research_area_funding_read_model ORDER BY funding_cr DESC LIMIT 5"
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [
+    "SELECT research_area, researcher_count, funding_cr FROM c4_research_area_funding_read_model ORDER BY funding_cr DESC LIMIT 5"
+  ],
+  "sql_query": "SELECT research_area, researcher_count, funding_cr FROM c4_research_area_funding_read_model ORDER BY funding_cr DESC LIMIT 5",
+  "sql_results": [
+    {
+      "funding_cr": 3060.92,
+      "research_area": "AI/ML",
+      "researcher_count": 239
+    },
+    {
+      "funding_cr": 2291.8,
+      "research_area": "Sustainable Energy",
+      "researcher_count": 224
+    },
+    {
+      "funding_cr": 2157.66,
+      "research_area": "Biotechnology",
+      "researcher_count": 192
+    },
+    {
+      "funding_cr": 1924.87,
+      "research_area": "Robotics",
+      "researcher_count": 209
+    },
+    {
+      "funding_cr": 1823.0,
+      "research_area": "Advanced Materials",
+      "researcher_count": 198
+    }
+  ],
+  "status": "success",
+  "synthesis_method": "rule_based_read_model",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "e6ef854762ee79a0cc455bb8079af8b6937360a2a7a13660c53adea7f2fcc2fc",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "safe_to_trust": true,
+    "status": true
+  },
+  "verification_status": true,
+  "warnings": [
+    {
+      "message": "C4 bounded read model used; no executor/RAG call required."
+    }
+  ]
+}

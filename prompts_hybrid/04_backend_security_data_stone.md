@@ -11,9 +11,12 @@ QA Lead for NRG.
 ## Read First
 
 - `Core_Idea_Clean.md`
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
 - `db_struct.sql`
 - `BACKLOG.md`
-- `SQL_AUDIT_REPORT_DHAIRYA.md` if present
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present
+- latest relevant `evidence/2026-04-30/` report
 - `src/api/`
 - `src/orchestration/`
 - `src/skills/`
@@ -34,6 +37,9 @@ The backend is acceptable only when:
 - Audit chain verifies across restart.
 - Red-team checks run against the live API.
 - Performance claims include actual timings.
+- Current local C4 truth is respected: local 100-user C4 has passed with
+  read-model/single-flight evidence, while production-grade C4 still requires
+  the 1000-user sovereign-cluster run.
 
 ## Architecture And Service Boundaries
 
@@ -324,6 +330,19 @@ Use the simplest integration pattern that satisfies the product behavior.
 - Caches are never authoritative state. Every cache key must encode tenant/tier
   and relevant filters, every value needs a TTL, and writes that affect cached
   data must invalidate or version the key.
+- Query-answer caches must not bypass security. If a response is cached after
+  tier filtering, the cache key must include the tier and the payload must be
+  safe to return directly for that tier only. If a response is cached before
+  tier filtering, the API must reapply tier filtering before serialization.
+- Internal cache markers, debug flags, prompt traces, raw model outputs, and
+  private tier-filter state must never appear in public JSON responses.
+- Decide explicitly whether cache hits create a fresh lightweight audit event
+  or reuse the original answer audit ID. Either behavior must be documented and
+  tested; do not let cache hits silently remove traceability.
+- C4 read-model or materialized-view paths must document refresh behavior,
+  source tables, tier-filter position, TTL/invalidation, and the exact query
+  shapes they own. They must fall back to clarification or safe failure, not
+  fabricated no-data answers, when their source data is missing.
 - Uploads and generated exports must validate type, size, path, name, and tier.
   For large direct-to-storage upload flows, use presigned URLs only when the
   storage backend, expiry, content type, and post-upload record validation are
@@ -464,6 +483,10 @@ Verify:
   pagination, and tier/tenant filters.
 - denormalized fields, materialized views, or JSON snapshots are justified by
   measured query evidence and include consistency or refresh behavior.
+- local C4 smoke and production C4 proof are separate gates:
+  - local proof: `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`
+  - production proof: 1000-user sovereign-cluster/deployed run with fresh
+    Locust CSV/HTML and audit verification after load
 - graceful shutdown closes HTTP intake, drains in-flight work where possible,
   and closes database/cache clients cleanly.
 
@@ -493,6 +516,9 @@ Evidence to save:
 - migration backfill, rollback, live-index, or constraint evidence for risky
   schema changes
 - load test output with request count > 0
+- for performance work, exact Locust command, environment variables, CSV/HTML
+  paths, P50/P95/P99, failure rate, and whether the run is laptop-local or
+  deployment/cluster
 
 ## Final Report
 
@@ -504,3 +530,4 @@ Report:
 - commands run
 - exact evidence paths
 - risks still open
+- commit SHA if committed, or `not committed`

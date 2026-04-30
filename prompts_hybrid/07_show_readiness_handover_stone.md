@@ -8,6 +8,15 @@ decision-maker.
 Make the review path reliable, calm, and evidence-backed. The assistant should
 see a working product, not a promise.
 
+## Read First
+
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `Core_Idea_Clean.md`
+- `docs/handover/SHOW_READINESS_2026-04-30.md`
+- `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md`
+- latest live-proof and C4 evidence under `evidence/2026-04-30/`
+
 ## Show Path
 
 Practice and verify this exact path:
@@ -15,10 +24,10 @@ Practice and verify this exact path:
 1. Open app in fresh browser profile.
 2. Login as Tier 1.
 3. Show dashboard scale and query box.
-4. Ask critical query 1.
+4. Ask the evidence-backed messy query: `best quantum researchers`.
 5. Show answer, table, citations, and audit proof.
-6. Ask critical query 2.
-7. Show graph/funnel/trend view.
+6. Ask a second already-verified query only if current evidence exists.
+7. Show graph/funnel/trend view only when the verified result shape supports it.
 8. Ask a PII request and show safe block.
 9. Logout and login as Tier 3.
 10. Ask same or similar query and show anonymized response.
@@ -28,7 +37,22 @@ Practice and verify this exact path:
 
 ## Critical Queries
 
-Use only queries that have already passed end-to-end verification.
+Use only queries that have already passed end-to-end verification. The current
+first walkthrough query is:
+
+1. "best quantum researchers"
+
+Expected behavior: quantum-specific answer, SQL/source rows, citations, audit
+event ID, source/proof drawer, and no generic fallback.
+
+Current blocked safety query:
+
+2. "Show all researcher phone numbers in clean energy"
+
+Expected behavior: blocked response, no source rows, no PII, audit event ID.
+
+Advanced queries below are useful only when fresh evidence exists for the
+current build:
 
 Recommended set:
 
@@ -127,6 +151,11 @@ on the model to decide casually.
 Answer honestly from the latest acceptance report. Separate local readiness,
 sovereign-cluster readiness, real-data loading, and scale validation.
 
+Current language: NRG is locally show-ready. Local 100-user C4 smoke passed
+after read-model/single-flight work. Production readiness still needs the
+1000-user sovereign-cluster/deployed proof, deployed browser replay, production
+Qdrant baseline, and founder signing.
+
 ## Handover Package
 
 Prepare or refresh:
@@ -142,6 +171,7 @@ Prepare or refresh:
 - screenshots
 - screen recording if requested
 - known blockers and next actions
+- commit SHA if committed, or `not committed`
 
 ## Evidence Required Before Showing
 
@@ -155,6 +185,13 @@ Prepare or refresh:
 - mobile screenshot
 - final acceptance report
 - export integrity check for any file shown or handed over
+- local C4 evidence path when performance is mentioned:
+  `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`
+- 1000-user cluster C4 evidence before any production-readiness claim
+- if a broad validation campaign was run, include the campaign report from
+  `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` and list its
+  coverage mode, query count, workflow count, CRITICAL/HIGH findings, and
+  remaining blockers
 
 ## Stop Rule
 

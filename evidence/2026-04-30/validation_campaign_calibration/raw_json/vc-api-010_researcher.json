@@ -1,0 +1,1349 @@
+{
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.95,
+  "answer_id": "687adaaf-44ac-4ba6-9c92-6a603ccea9ed",
+  "assumptions": [
+    "Used recent five-year context unless the query or data path specified another range."
+  ],
+  "audit_event_id": "cdb1a0c49f5acc8fd3f1bb50049d3f949ef0c5cf74999d8b38c99a6b93edf48e",
+  "blocked": false,
+  "caveats": [],
+  "citation_validity": 1.0,
+  "citations": [
+    {
+      "id": "1",
+      "label": "Source 1",
+      "masked": false,
+      "source_id": "structured",
+      "source_type": "document_chunk"
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "conversation_history": [
+    {
+      "query": "which projects are closest to TRL 7 in clean energy",
+      "response": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: which projects are closest to TRL 7 in clean energy \u250c\u2500 \u26a0\ufe0f AI Synthesis Unavailable\n\u2502 SQL-only analytical response formatted without LLM to meet latency SLO.\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Structured Data Results\n\u2502 Found 100 research records [cite:structured:0]\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 1. innovation_name: NRG Local Technology 0 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Madras 2. innovation_name: NRG Local Technology 1 | stage_of_technology: Level 2 | financial_year: 2020-21 | institute: IIT Madras 3. innovation_name: NRG Local Technology 2 | stage_of_technology: Level 3 | financial_year: 2020-21 | institute: IIT Delhi 4. innovation_name: NRG Local Technology 3 | stage_of_technology: Level 4 | financial_year: 2020-21 | institute: IIT Gandhinagar 5. innovation_name: NRG Local Technology 4 | stage_of_technology: Level 5 | financial_year: 2020-21 | institute: IIT Kanpur 6. innovation_name: NRG Local Technology 5 | stage_of_technology: Level 6 | financial_year: 2020-21 | institute: IIT Madras 7. innovation_name: NRG Local Technology 6 | stage_of_technology: Level 7 | financial_year: 2020-21 | institute: IIT Hyderabad 8. innovation_name: NRG Local Technology 7 | stage_of_technology: Level 8 | financial_year: 2020-21 | institute: IIT Roorkee 9. innovation_name: NRG Local Technology 8 | stage_of_technology: Level 9 | financial_year: 2020-21 | institute: IIT Guwahati 10. innovation_name: NRG Local Technology 9 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Ropar 11. innovation_name: NRG Local Technology 10 | stage_of_technology: Level 2 | financial_year: 2021-22 | institute: IIT Madras 12. innovation_name: NRG Local Technology 11 | stage_of_technology: Level 3 | financial_year: 2021-22 | institute: IIT Madras 13. innovation_name: NRG Local Technology 12 | stage_of_technology: Level 4 | financial_year: 2021-22 | institute: IIT Delhi 14. innovation_name: NRG Local Technology 13 | stage_of_technology: Level 5 | financial_year: 2021-22 | institute: IIT Gandhinagar 15. innovation_name: NRG Local Technology 14 | stage_of_technology: Level 6 | financial_year: 2021-22 | institute: IIT Kanpur ... and 85 more records \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [Note: Structured summary \u2014 AI synthesis temporarily unavailable] \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+    }
+  ],
+  "final_answer": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: which projects are closest to TRL 7 in clean energy \u250c\u2500 \u26a0\ufe0f AI Synthesis Unavailable\n\u2502 SQL-only analytical response formatted without LLM to meet latency SLO.\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Structured Data Results\n\u2502 Found 100 research records [cite:structured:0]\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 1. innovation_name: NRG Local Technology 0 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Madras 2. innovation_name: NRG Local Technology 1 | stage_of_technology: Level 2 | financial_year: 2020-21 | institute: IIT Madras 3. innovation_name: NRG Local Technology 2 | stage_of_technology: Level 3 | financial_year: 2020-21 | institute: IIT Delhi 4. innovation_name: NRG Local Technology 3 | stage_of_technology: Level 4 | financial_year: 2020-21 | institute: IIT Gandhinagar 5. innovation_name: NRG Local Technology 4 | stage_of_technology: Level 5 | financial_year: 2020-21 | institute: IIT Kanpur 6. innovation_name: NRG Local Technology 5 | stage_of_technology: Level 6 | financial_year: 2020-21 | institute: IIT Madras 7. innovation_name: NRG Local Technology 6 | stage_of_technology: Level 7 | financial_year: 2020-21 | institute: IIT Hyderabad 8. innovation_name: NRG Local Technology 7 | stage_of_technology: Level 8 | financial_year: 2020-21 | institute: IIT Roorkee 9. innovation_name: NRG Local Technology 8 | stage_of_technology: Level 9 | financial_year: 2020-21 | institute: IIT Guwahati 10. innovation_name: NRG Local Technology 9 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Ropar 11. innovation_name: NRG Local Technology 10 | stage_of_technology: Level 2 | financial_year: 2021-22 | institute: IIT Madras 12. innovation_name: NRG Local Technology 11 | stage_of_technology: Level 3 | financial_year: 2021-22 | institute: IIT Madras 13. innovation_name: NRG Local Technology 12 | stage_of_technology: Level 4 | financial_year: 2021-22 | institute: IIT Delhi 14. innovation_name: NRG Local Technology 13 | stage_of_technology: Level 5 | financial_year: 2021-22 | institute: IIT Gandhinagar 15. innovation_name: NRG Local Technology 14 | stage_of_technology: Level 6 | financial_year: 2021-22 | institute: IIT Kanpur ... and 85 more records \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [Note: Structured summary \u2014 AI synthesis temporarily unavailable] \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "structured",
+  "interpreted_question": "which projects are closest to TRL 7 in clean energy",
+  "node_timings": {
+    "executor": 6044.17,
+    "planner": 60.17,
+    "receiver": 0.03,
+    "router": 1.4,
+    "synthesizer": 30.45,
+    "verifier": 51.45
+  },
+  "plan": {
+    "dag_nodes": [
+      {
+        "depends_on": [],
+        "id": "node_e7a725",
+        "optional": false,
+        "output_shape": "mixed_summary",
+        "skill": "sql",
+        "subquery": "which projects are closest to trl 7 in clean energy",
+        "tables": [
+          "trl_stages"
+        ]
+      }
+    ],
+    "dag_root_id": "node_e7a725",
+    "desired_skills": [
+      "sql"
+    ],
+    "expected_output_shape": "mixed_summary",
+    "is_dag": true,
+    "schema_tables": [
+      "trl_stages"
+    ],
+    "subqueries": [
+      "which projects are closest to trl 7 in clean energy"
+    ]
+  },
+  "planner_metadata": {
+    "catalog": {
+      "assumptions": [
+        "Use recent five-year context unless the data path or user query specifies another range."
+      ],
+      "blocked_reason": null,
+      "clarification_question": null,
+      "confidence": 0.9,
+      "matched_domains": [
+        "technology_readiness"
+      ],
+      "matched_tables": [
+        "trl_stages"
+      ],
+      "needs_clarification": false,
+      "output_shape": "mixed_summary",
+      "pii_terms": [],
+      "rationale": [
+        "Known structured table/domain matched with aggregate or lookup language."
+      ],
+      "route": "text_to_sql"
+    },
+    "mode": "heuristic_fallback",
+    "reason": "llm_unavailable_or_failed"
+  },
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "synth": "rule_based_sql_fast_path"
+  },
+  "query": "which projects are closest to TRL 7 in clean energy",
+  "query_id": "30bf8b36-5734-40ab-ac49-8ff6c769f5e1",
+  "query_time_ms": 8529,
+  "question": "which projects are closest to TRL 7 in clean energy",
+  "response": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: which projects are closest to TRL 7 in clean energy \u250c\u2500 \u26a0\ufe0f AI Synthesis Unavailable\n\u2502 SQL-only analytical response formatted without LLM to meet latency SLO.\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Structured Data Results\n\u2502 Found 100 research records [cite:structured:0]\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 1. innovation_name: NRG Local Technology 0 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Madras 2. innovation_name: NRG Local Technology 1 | stage_of_technology: Level 2 | financial_year: 2020-21 | institute: IIT Madras 3. innovation_name: NRG Local Technology 2 | stage_of_technology: Level 3 | financial_year: 2020-21 | institute: IIT Delhi 4. innovation_name: NRG Local Technology 3 | stage_of_technology: Level 4 | financial_year: 2020-21 | institute: IIT Gandhinagar 5. innovation_name: NRG Local Technology 4 | stage_of_technology: Level 5 | financial_year: 2020-21 | institute: IIT Kanpur 6. innovation_name: NRG Local Technology 5 | stage_of_technology: Level 6 | financial_year: 2020-21 | institute: IIT Madras 7. innovation_name: NRG Local Technology 6 | stage_of_technology: Level 7 | financial_year: 2020-21 | institute: IIT Hyderabad 8. innovation_name: NRG Local Technology 7 | stage_of_technology: Level 8 | financial_year: 2020-21 | institute: IIT Roorkee 9. innovation_name: NRG Local Technology 8 | stage_of_technology: Level 9 | financial_year: 2020-21 | institute: IIT Guwahati 10. innovation_name: NRG Local Technology 9 | stage_of_technology: Level 1 | financial_year: 2020-21 | institute: IIT Ropar 11. innovation_name: NRG Local Technology 10 | stage_of_technology: Level 2 | financial_year: 2021-22 | institute: IIT Madras 12. innovation_name: NRG Local Technology 11 | stage_of_technology: Level 3 | financial_year: 2021-22 | institute: IIT Madras 13. innovation_name: NRG Local Technology 12 | stage_of_technology: Level 4 | financial_year: 2021-22 | institute: IIT Delhi 14. innovation_name: NRG Local Technology 13 | stage_of_technology: Level 5 | financial_year: 2021-22 | institute: IIT Gandhinagar 15. innovation_name: NRG Local Technology 14 | stage_of_technology: Level 6 | financial_year: 2021-22 | institute: IIT Kanpur ... and 85 more records \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 [Note: Structured summary \u2014 AI synthesis temporarily unavailable] \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+  "retrieval_sources": [],
+  "route": "sql",
+  "routing_decision": "text_to_sql",
+  "session_id": "validation-campaign-vc-api-010",
+  "source_data": {
+    "documents": [],
+    "rows": [
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 0",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 1",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 2",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 3",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 4",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 5",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 6",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 7",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 8",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 9",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 10",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 11",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 12",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 13",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 14",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 15",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 16",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 17",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 18",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 19",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 20",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 21",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 22",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 23",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 24",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 25",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 26",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 27",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 28",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 29",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 30",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 31",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 32",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 33",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 34",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 35",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 36",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 37",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 38",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 39",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 40",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 41",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 42",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 43",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 44",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 45",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 46",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 47",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 48",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 49",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 50",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 51",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 52",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 53",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 54",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 55",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 56",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 57",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 58",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2020-21",
+        "innovation_name": "NRG Local Technology 59",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 60",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 61",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 62",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 63",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 64",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 65",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 66",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 67",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 68",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2021-22",
+        "innovation_name": "NRG Local Technology 69",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 70",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 71",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 72",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 1"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 73",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 74",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 75",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 76",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 77",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 78",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2022-23",
+        "innovation_name": "NRG Local Technology 79",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 80",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 81",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 82",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 2"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 83",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 84",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 85",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 86",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 6"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 87",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 88",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2023-24",
+        "innovation_name": "NRG Local Technology 89",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 90",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 91",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 92",
+        "institute": "IIT Delhi",
+        "stage_of_technology": "Level 3"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 93",
+        "institute": "IIT Gandhinagar",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 94",
+        "institute": "IIT Kanpur",
+        "stage_of_technology": "Level 5"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 95",
+        "institute": "IIT Madras",
+        "stage_of_technology": "Level 4"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 96",
+        "institute": "IIT Hyderabad",
+        "stage_of_technology": "Level 7"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 97",
+        "institute": "IIT Roorkee",
+        "stage_of_technology": "Level 8"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 98",
+        "institute": "IIT Guwahati",
+        "stage_of_technology": "Level 9"
+      },
+      {
+        "financial_year": "2024-25",
+        "innovation_name": "NRG Local Technology 99",
+        "institute": "IIT Ropar",
+        "stage_of_technology": "Level 1"
+      }
+    ],
+    "sql_query": "SELECT innovation_name, stage_of_technology, financial_year, institute FROM trl_stages LIMIT 100"
+  },
+  "sql_anomaly_report": {
+    "answer_confidence": "high",
+    "clarification_question": null,
+    "confidence_score": 0.95,
+    "corrective_hints": [],
+    "detected": false,
+    "needs_clarification": false,
+    "signal_names": [],
+    "signals": []
+  },
+  "sql_queries": [],
+  "sql_query": "SELECT innovation_name, stage_of_technology, financial_year, institute FROM trl_stages LIMIT 100",
+  "sql_results": [
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 0",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 1",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 2",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 3",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 4",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 5",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 6",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 7",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 8",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 9",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 10",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 11",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 12",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 13",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 14",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 15",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 16",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 17",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 18",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 19",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 20",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 21",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 22",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 23",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 24",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 25",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 26",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 27",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 28",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 29",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 30",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 31",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 32",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 33",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 34",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 35",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 36",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 37",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 38",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 39",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 40",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 41",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 42",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 43",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 44",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 45",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 46",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 47",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 48",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 49",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 50",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 51",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 52",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 53",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 54",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 55",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 56",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 57",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 58",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2020-21",
+      "innovation_name": "NRG Local Technology 59",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 60",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 61",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 62",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 63",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 64",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 65",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 66",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 67",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 68",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2021-22",
+      "innovation_name": "NRG Local Technology 69",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 70",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 71",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 72",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 1"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 73",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 74",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 75",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 76",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 77",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 78",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2022-23",
+      "innovation_name": "NRG Local Technology 79",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 80",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 81",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 82",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 2"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 83",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 84",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 85",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 86",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 6"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 87",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 88",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2023-24",
+      "innovation_name": "NRG Local Technology 89",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 90",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 91",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 92",
+      "institute": "IIT Delhi",
+      "stage_of_technology": "Level 3"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 93",
+      "institute": "IIT Gandhinagar",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 94",
+      "institute": "IIT Kanpur",
+      "stage_of_technology": "Level 5"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 95",
+      "institute": "IIT Madras",
+      "stage_of_technology": "Level 4"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 96",
+      "institute": "IIT Hyderabad",
+      "stage_of_technology": "Level 7"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 97",
+      "institute": "IIT Roorkee",
+      "stage_of_technology": "Level 8"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 98",
+      "institute": "IIT Guwahati",
+      "stage_of_technology": "Level 9"
+    },
+    {
+      "financial_year": "2024-25",
+      "innovation_name": "NRG Local Technology 99",
+      "institute": "IIT Ropar",
+      "stage_of_technology": "Level 1"
+    }
+  ],
+  "status": "success",
+  "synthesis_method": "rule_based_sql_fast_path",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "cdb1a0c49f5acc8fd3f1bb50049d3f949ef0c5cf74999d8b38c99a6b93edf48e",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "safe_to_trust": false,
+    "status": "retry"
+  },
+  "verification_status": "retry",
+  "warnings": []
+}

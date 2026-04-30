@@ -16,9 +16,11 @@ claims and reality.
 Read every word of:
 
 - `Core_Idea_Clean.md`
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
 - `db_struct.sql`
 - `BACKLOG.md`
-- `SQL_AUDIT_REPORT_DHAIRYA.md` if present
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present
 - latest self-audit or production-readiness report
 - current code relevant to the claim being audited
 - latest evidence folder
@@ -44,10 +46,14 @@ If a required input is missing, mark affected findings as `UNKNOWN`, not pass.
 4. Red team run only in unit tests, not live API.
 5. `total_credit_score` fix exists only in tests, not production prompt/validator.
 6. Load test issued zero HTTP requests or used invalid auth.
-7. Vector drift score is suspiciously perfect or threshold direction is inverted.
+7. Vector drift score is suspiciously exact or threshold direction is inverted.
 8. Audit chain corrupts across restart or multiple singleton instances.
 9. No k-anonymity/small-cohort privacy guard.
 10. Verifier uses string containment instead of evidence-backed verification.
+11. Local 100-user C4 evidence is incorrectly presented as production or
+    sovereign-cluster readiness.
+12. Cache/read-model responses bypass tier filtering, expose internal markers,
+    or lose audit traceability on cache hits.
 
 ## Required Deliverables
 
@@ -160,6 +166,7 @@ Most embarrassing likely failure:
 
 Evidence reviewed:
 Unknowns:
+Commit SHA if committed:
 ```
 
 ### 9. Immediate Action List
@@ -189,3 +196,14 @@ Run or specify live tests for:
 ## Final Rule
 
 If evidence is absent, say `UNKNOWN`. Do not promote unknown to pass.
+
+## Minimum Final Report Fields
+
+Every audit response must include:
+
+- files reviewed or changed
+- commands run
+- evidence paths reviewed or created
+- CRITICAL/HIGH blockers
+- production-readiness claim status
+- commit SHA if committed, or `not committed`

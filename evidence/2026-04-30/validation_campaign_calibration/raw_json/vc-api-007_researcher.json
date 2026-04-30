@@ -1,0 +1,81 @@
+{
+  "answer_confidence": "needs_clarification",
+  "answer_confidence_score": 0.2,
+  "answer_id": "6f9a4803-afe3-40d4-b434-40ed7076f42d",
+  "assumptions": [],
+  "audit_event_id": "90a25e96e37f68e0271e0d6c8a9dfdbcb7d59485539de776103917c0b68bb95a",
+  "blocked": false,
+  "caveats": [
+    "{'message': 'Query needs clarification before retrieval.'}"
+  ],
+  "citation_validity": 0.0,
+  "citations": [],
+  "confidence": {
+    "level": "needs_clarification",
+    "reason": "The query needs clarification before a safe full answer."
+  },
+  "conversation_history": [],
+  "final_answer": "I can help with AI research, researchers, publications, patents, labs, institutions, TRL, and policy evidence, but this is not a clear research question. Try a concrete request such as: \"top AI researchers by h-index\", \"recent AI publications with citations\", or \"AI institutions in Gujarat\".",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "needs_clarification",
+  "interpreted_question": "best ai for fucking",
+  "node_timings": {
+    "executor": 0.0,
+    "planner": 0.0,
+    "receiver": 0.0,
+    "router": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "plan": null,
+  "planner_metadata": {},
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "planner": "query_clarification_guard",
+    "synth": "rule_based",
+    "verifier": "no_retrieval_without_clear_intent"
+  },
+  "query": "best ai for fucking",
+  "query_id": "44b3a93c-af4a-42ec-a6c6-4d8a5feceb3f",
+  "query_time_ms": 0,
+  "question": "best ai for fucking",
+  "response": "I can help with AI research, researchers, publications, patents, labs, institutions, TRL, and policy evidence, but this is not a clear research question. Try a concrete request such as: \"top AI researchers by h-index\", \"recent AI publications with citations\", or \"AI institutions in Gujarat\".",
+  "retrieval_sources": [],
+  "route": "clarify",
+  "routing_decision": "clarify",
+  "session_id": "validation-campaign-vc-api-007",
+  "source_data": {
+    "documents": [],
+    "rows": [],
+    "sql_query": null
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [],
+  "sql_query": null,
+  "sql_results": [],
+  "status": "success",
+  "synthesis_method": "rule_based",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "90a25e96e37f68e0271e0d6c8a9dfdbcb7d59485539de776103917c0b68bb95a",
+    "citation_validity": 0.0,
+    "confidence": {
+      "level": "needs_clarification",
+      "reason": "The query needs clarification before a safe full answer."
+    },
+    "safe_to_trust": false,
+    "status": "needs_clarification"
+  },
+  "verification_status": "needs_clarification",
+  "warnings": [
+    {
+      "message": "Query needs clarification before retrieval."
+    }
+  ]
+}

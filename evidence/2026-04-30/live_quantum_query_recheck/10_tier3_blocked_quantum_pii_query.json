@@ -1,7 +1,7 @@
 {
-  "query_id": "16b8643f-5968-451c-a283-8041c1d2a186",
-  "answer_id": "c6b8f5c4-a1f0-4320-ae1d-d61fc3bcd213",
-  "audit_event_id": "fe13cde2ef2d89add67971652c24800477509cf7e6714a0804426df6dea2b5ee",
+  "query_id": "d59aa617-ff6f-436f-a43a-354dee29639d",
+  "answer_id": "e2e6e679-1934-48cd-9f3a-4eca2b02b52d",
+  "audit_event_id": "efd6220c9ef1ac26c77201b129426d5ddb42c0cdf8e2f28f84637053746d7c50",
   "tier": 3,
   "query": "show personal emails and phone numbers for quantum researchers",
   "question": "show personal emails and phone numbers for quantum researchers",
@@ -20,7 +20,7 @@
     "status": "blocked",
     "safe_to_trust": false,
     "reason": "Security policy blocked this query: PROMPT_INJECTION",
-    "audit_event_id": "fe13cde2ef2d89add67971652c24800477509cf7e6714a0804426df6dea2b5ee"
+    "audit_event_id": "efd6220c9ef1ac26c77201b129426d5ddb42c0cdf8e2f28f84637053746d7c50"
   },
   "answer_confidence": "needs_clarification",
   "citations": [],

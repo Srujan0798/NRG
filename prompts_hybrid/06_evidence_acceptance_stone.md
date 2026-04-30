@@ -11,6 +11,31 @@ You are the release acceptance engineer. You accept only evidence, not claims.
 
 No completion claim is valid without fresh verification from this session.
 
+## Minimum Acceptance Gate
+
+Before accepting any NRG claim, require these ten facts or mark the claim
+`UNKNOWN`/`FAILED`:
+
+1. Exact scope and files changed.
+2. Exact commands run and their result.
+3. Evidence paths saved under the current date.
+4. Raw API JSON for any backend/tier claim.
+5. Browser screenshot or E2E proof for any UI claim.
+6. Audit event ID or request ID for the tested flow.
+7. Tier 3 no-PII proof when role/tier behavior is touched.
+8. Fresh audit-chain verification when audit/query/load behavior is touched.
+9. Performance numbers with request count, P50/P95/P99, and failure rate when
+   latency or scale is claimed.
+10. Commit SHA if committed, or the words `not committed`.
+
+Current performance truth: local 100-user C4 smoke passed in
+`evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`; production
+readiness still needs the 1000-user sovereign-cluster/deployed proof.
+
+For broad validation assignments, require
+`prompts_hybrid/08_full_coverage_validation_campaign_stone.md` and accept only
+the declared coverage matrix, not vague "all possible cases" claims.
+
 ## Evidence Standard
 
 | Claim | Required evidence |
@@ -45,7 +70,9 @@ No completion claim is valid without fresh verification from this session.
 | agent/tool workflow is safe | agent/stage responsibility map, autonomy budgets, allowed tool schemas, argument/result validation evidence, trace output, fallback behavior, memory policy, and escalation rule |
 | memory update is valid | repo memory diff showing trigger/source, rule learned, reason, application, and no duplicate scratch content |
 | bug/correction memory is valid | attempted task, observed failure or correction, evidence, root cause, fix, prevention rule, and regression or acceptance check |
-| performance met | measured timings, not estimates |
+| local C4 smoke met | final local Locust output from `live_c4_local_smoke_after_read_model_final/` or newer, with request count, P50/P95/P99, failure rate, and audit verification after load |
+| production C4 met | 1000-user sovereign-cluster/deployed Locust CSV/HTML, request count, P50/P95/P99, failure rate, worker/logging settings, and audit verification after load |
+| performance met | measured timings, not estimates, with local-vs-cluster scope stated |
 | frontend polished | screenshots and console/network check |
 | visual design review is fixed | target URL, framework/styling/source target, issue priority, changed file, before/after screenshots at affected viewports, and console/network check |
 | browser automation/E2E is valid | command output, target URL, browser or viewport coverage, clean context/auth fixture, stable locator strategy, assertions, screenshots or trace/video artifacts when produced, console/network findings, API/audit evidence for the same flow, and documented mock boundaries |
@@ -56,6 +83,7 @@ No completion claim is valid without fresh verification from this session.
 | frontend type/data safety is proven | TypeScript build output plus typed API/state evidence for changed frontend paths |
 | frontend performance is measured | Lighthouse/Web Vitals output or equivalent timing evidence for changed major screens |
 | UX flow is coherent | screen/task map showing role, task, entry path, next action, success state, failure state, and screenshots |
+| validation campaign is credible | declared campaign mode, query corpus, tier matrix, workflow matrix, security probes, performance scope, structured step log, and findings/fixes report |
 | mobile works | mobile viewport screenshots or device recording |
 | tests pass | exact command output |
 | handover ready | file list and freshness check |
@@ -383,6 +411,9 @@ must remain visible.
 - query latency measured
 - critical query latency measured
 - load test request count greater than zero if load test is claimed
+- local C4 and production C4 are not interchangeable; local C4 may be accepted
+  from the read-model evidence, but production readiness requires the
+  1000-user cluster/deployed run
 - schema changes prove migration execution on a fresh database and document
   additive/backfill/rollback behavior for risky changes
 - new indexes, constraints, or denormalized data are tied to measured access
@@ -434,6 +465,8 @@ Required next actions:
 1.
 2.
 3.
+
+Commit SHA if committed, or not committed:
 ```
 
 ## Failure Rule

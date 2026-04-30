@@ -199,6 +199,7 @@ class JWTHandler:
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids: set[str] = {self._signing_key_id}
         self._jti_ip_registry: dict[str, tuple[str, str, float]] = {}
+        self._access_claims_cache: dict[tuple[str, str | None], tuple[dict[str, Any], float]] = {}
         # NOTE: This in-process registry does not survive restarts and is not
         # shared across gunicorn workers. For multi-worker deployments, replace
         # with a Redis-backed store keyed by jti. See issue: token replay can bypass
@@ -247,6 +248,7 @@ class JWTHandler:
             self._private_key_obj = serialization.load_pem_private_key(
                 self.private_key.encode(),
                 password=None,
+                unsafe_skip_rsa_key_validation=True,
             )
             self._public_key_obj = serialization.load_pem_public_key(
                 self.public_key.encode(),
@@ -308,6 +310,15 @@ class JWTHandler:
 
     def verify_access_token(self, token: str, client_ip: Optional[str] = None) -> dict[str, Any]:
         """Verify access token, optionally checking for token replay across IPs."""
+        cache_key = self._access_cache_key(token, client_ip)
+        cached = self._access_claims_cache.get(cache_key)
+        now_ts = datetime.now(UTC).timestamp()
+        if cached is not None:
+            cached_claims, cached_exp = cached
+            if cached_exp > now_ts and cached_claims.get("jti") not in self.revoked_jtis:
+                return dict(cached_claims)
+            self._access_claims_cache.pop(cache_key, None)
+
         claims = self._decode_token(token)
         self._validate_token_type(claims, "access")
 
@@ -317,7 +328,29 @@ class JWTHandler:
             exp = claims["exp"]
             self._check_token_replay(jti, user_id, client_ip, exp, token)
 
+        try:
+            exp = float(claims["exp"])
+        except (TypeError, ValueError):
+            exp = now_ts
+        if exp > now_ts:
+            self._access_claims_cache[cache_key] = (dict(claims), exp)
+
         return dict(claims)  # type: ignore[no-any-return]
+
+    @staticmethod
+    def _access_cache_key(token: str, client_ip: str | None) -> tuple[str, str | None]:
+        return hashlib.sha256(token.encode("utf-8")).hexdigest(), client_ip
+
+    def _purge_access_cache_for_token(self, token: str) -> None:
+        token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        for key in list(self._access_claims_cache):
+            if key[0] == token_hash:
+                self._access_claims_cache.pop(key, None)
+
+    def _purge_access_cache_for_jti(self, jti: str) -> None:
+        for key, (claims, _exp) in list(self._access_claims_cache.items()):
+            if claims.get("jti") == jti:
+                self._access_claims_cache.pop(key, None)
 
     def _check_token_replay(
         self, jti: str, user_id: str, client_ip: str, exp: float, token: str
@@ -344,6 +377,7 @@ class JWTHandler:
                     )
                 except Exception:
                     pass
+                self._purge_access_cache_for_jti(jti)
                 raise AuthError("Token replay detected: same token used from multiple IPs")
         else:
             self._jti_ip_registry[jti] = (user_id, client_ip, exp)
@@ -378,6 +412,7 @@ class JWTHandler:
     def revoke_token(self, token: str) -> None:
         claims = self._decode_token(token, verify_exp=False)
         self.revoked_jtis.add(claims["jti"])
+        self._purge_access_cache_for_token(token)
         if claims.get("token_type") == "refresh":
             self.refresh_store.revoke(token)
             self.active_refresh_tokens.pop(claims["sub"], None)
@@ -392,6 +427,7 @@ class JWTHandler:
         self._private_key_obj = serialization.load_pem_private_key(
             new_private_key.encode(),
             password=None,
+            unsafe_skip_rsa_key_validation=True,
         )
         self._public_key_obj = serialization.load_pem_public_key(
             new_public_key.encode(),

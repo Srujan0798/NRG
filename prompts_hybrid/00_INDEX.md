@@ -7,10 +7,29 @@ Use these as command protocols for focused work. Do not paste all of them at
 once. Pick the stone that matches the task, attach the required project files,
 and require evidence before accepting any completion claim.
 
+## Current Operating Truth
+
+Before assigning any stone, attach or tell the agent to read:
+
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `Core_Idea_Clean.md`
+- the latest relevant folder under `evidence/2026-04-30/`
+
+Current project stance:
+
+- NRG is locally show-ready for the verified answer-engine path.
+- Local 100-user C4 smoke passed after the read-model/single-flight work:
+  `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`.
+- Production readiness is still blocked on 1000-user sovereign-cluster proof,
+  deployed browser replay, production Qdrant baseline, and founder signing.
+- Do not restart broad cleanup unless a dead file blocks the product path.
+
 ## Recommended Use
 
 1. Use `01_master_execution_stone.md` when starting or restarting the full
-   production push.
+   production-path push or when a single agent must coordinate all remaining
+   gates.
 2. Use `02_main_flow_stone.md` when the only thing that matters is login,
    role selection, query, answer, proof, and polish.
 3. Use `03_frontend_zero_flaw_stone.md` when the web app exists but feels
@@ -23,6 +42,24 @@ and require evidence before accepting any completion claim.
    "done".
 7. Use `07_show_readiness_handover_stone.md` for professor-assistant readiness,
    walkthrough, screenshots, critical queries, and handover package.
+8. Use `08_full_coverage_validation_campaign_stone.md` when the task is broad
+   validation across many queries, workflows, tiers, UI states, security probes,
+   audit proof, and performance evidence.
+
+## Current Wave Map
+
+Use this order unless `.claude/CURRENT_STATE.md` says otherwise:
+
+1. Backend answer correctness and stable `/query` contract.
+2. SQL/RAG retrieval truth and health honesty.
+3. Frontend main-flow proof.
+4. Security, tier, and audit proof.
+5. Deployment-grade performance proof, especially the 1000-user cluster C4 run.
+6. Full-coverage validation campaign when broad confidence is needed.
+7. Handover evidence and walkthrough refresh.
+
+The local C4 read-model pass is complete. The next performance assignment is
+not to rebuild the read model again; it is to prove it in the target deployment.
 
 ## Hybrid Map
 
@@ -35,6 +72,7 @@ and require evidence before accepting any completion claim.
 | `05_audit_red_team_stone.md` | `6`, `d`, `g`, `k`, `m`, `q`, `z` |
 | `06_evidence_acceptance_stone.md` | evidence gates from `1`, `2`, `7`, `19`, `6`, `k`, `m`, selected `ui-ux-pro-max`, `fullstack-dev`, and spreadsheet/export gates |
 | `07_show_readiness_handover_stone.md` | show script and readiness parts from `3`, `4`, `7`, `q`, `m` |
+| `08_full_coverage_validation_campaign_stone.md` | broad coverage strategy distilled from external validation prompts, merged with NRG-specific evidence, tier, UI, query, audit, and performance gates |
 
 ## What Changed
 
@@ -56,3 +94,6 @@ when it forces this loop:
 4. Run fresh verification.
 5. Save evidence.
 6. Report only what is proven.
+
+Every agent final response must include files changed, tests or commands run,
+evidence paths, blockers, and commit SHA if committed or `not committed`.

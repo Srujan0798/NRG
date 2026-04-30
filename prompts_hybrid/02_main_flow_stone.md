@@ -14,6 +14,9 @@ Everything else is secondary until this path works cleanly.
 ## Required Reading
 
 - `Core_Idea_Clean.md`
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- latest relevant `evidence/2026-04-30/` report
 - current `frontend/`
 - current API routes under `src/api/`
 - current query/orchestration code under `src/orchestration/` and `src/skills/`
@@ -22,6 +25,14 @@ Everything else is secondary until this path works cleanly.
 ## Main Flow Acceptance Contract
 
 The flow must work for Tier 1, Tier 2, and Tier 3.
+
+Use evidence-backed queries first. The current safe walkthrough query is:
+
+- `best quantum researchers`
+
+The expected behavior is a quantum-specific answer with SQL/source evidence,
+citations, and an audit event ID. Do not use advanced TRL/funding/patent walkthrough
+queries unless fresh evidence proves them end to end.
 
 ### 1. Login
 
@@ -204,11 +215,15 @@ Run or create the equivalent checks:
 - frontend main flow test
 - mobile viewport screenshot
 - browser console check with zero errors during normal flow
+- local C4 status is not a frontend blocker if
+  `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/` remains the
+  latest proof; production-scale C4 still needs cluster evidence
 
 ## Final Response Format
 
 Report only evidence-backed status:
 
+- files changed
 - start command used
 - credentials or test roles used, if safe to share
 - exact query tested
@@ -216,3 +231,4 @@ Report only evidence-backed status:
 - screenshot paths
 - tests run
 - blockers remaining
+- commit SHA if committed, or `not committed`

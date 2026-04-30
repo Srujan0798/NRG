@@ -1,0 +1,115 @@
+{
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.96,
+  "answer_id": "06ade0da-c9e1-4d99-80a3-9ade36e7d92c",
+  "assumptions": [],
+  "audit_event_id": "9195456190065833db9447fc47cd33bc1b0478feec6a7f6dace327598a59a5a2",
+  "blocked": false,
+  "caveats": [
+    "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+  ],
+  "citation_validity": 1.0,
+  "citations": [
+    {
+      "id": "1",
+      "label": "NRG C4 read model: patents",
+      "masked": false,
+      "source_id": "patents:c4-read-model",
+      "source_type": "document_chunk"
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "conversation_history": [],
+  "final_answer": "Patent opportunities in Artificial Intelligence are summarized by patent area; Computer Vision is the top visible opportunity cluster. [cite:patents:c4-read-model]",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "patent_opportunity_lookup",
+  "interpreted_question": "show patents for quantum computing from IITs",
+  "node_timings": {
+    "executor": 0.0,
+    "planner": 0.0,
+    "receiver": 0.0,
+    "router": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "plan": null,
+  "planner_metadata": {},
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "planner": "c4_read_model",
+    "synth": "rule_based_read_model",
+    "verifier": "row_count_and_citation"
+  },
+  "query": "show patents for quantum computing from IITs",
+  "query_id": "6b928be5-99f9-4f10-8ab3-edde5b06164d",
+  "query_time_ms": 0,
+  "question": "show patents for quantum computing from IITs",
+  "response": "Patent opportunities in Artificial Intelligence are summarized by patent area; Computer Vision is the top visible opportunity cluster. [cite:patents:c4-read-model]",
+  "retrieval_sources": [
+    "patents"
+  ],
+  "route": "sql",
+  "routing_decision": "fast_path",
+  "session_id": "validation-campaign-vc-api-011",
+  "source_data": {
+    "documents": [],
+    "rows": [
+      {
+        "claims": 2438,
+        "patent_count": 92,
+        "research_area": "Computer Vision"
+      },
+      {
+        "claims": 1721,
+        "patent_count": 77,
+        "research_area": "Deep Learning"
+      }
+    ],
+    "sql_query": "SELECT research_area, patent_count, claims FROM c4_patent_area_read_model WHERE topic='Artificial Intelligence' ORDER BY patent_count DESC LIMIT 5"
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [
+    "SELECT research_area, patent_count, claims FROM c4_patent_area_read_model WHERE topic='Artificial Intelligence' ORDER BY patent_count DESC LIMIT 5"
+  ],
+  "sql_query": "SELECT research_area, patent_count, claims FROM c4_patent_area_read_model WHERE topic='Artificial Intelligence' ORDER BY patent_count DESC LIMIT 5",
+  "sql_results": [
+    {
+      "claims": 2438,
+      "patent_count": 92,
+      "research_area": "Computer Vision"
+    },
+    {
+      "claims": 1721,
+      "patent_count": 77,
+      "research_area": "Deep Learning"
+    }
+  ],
+  "status": "success",
+  "synthesis_method": "rule_based_read_model",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "9195456190065833db9447fc47cd33bc1b0478feec6a7f6dace327598a59a5a2",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "safe_to_trust": true,
+    "status": true
+  },
+  "verification_status": true,
+  "warnings": [
+    {
+      "message": "C4 bounded read model used; no executor/RAG call required."
+    }
+  ]
+}

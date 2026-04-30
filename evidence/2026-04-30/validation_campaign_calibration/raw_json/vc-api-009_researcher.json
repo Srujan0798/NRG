@@ -1,0 +1,143 @@
+{
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.96,
+  "answer_id": "55a17230-32e1-4795-be57-9483ebd9bccb",
+  "assumptions": [],
+  "audit_event_id": "cbaf466f20c6e642054dbe411f12c077fd3dcd857a5e91be288c32e9b8233633",
+  "blocked": false,
+  "caveats": [
+    "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+  ],
+  "citation_validity": 1.0,
+  "citations": [
+    {
+      "id": "1",
+      "label": "NRG C4 read model: publications",
+      "masked": false,
+      "source_id": "publications:c4-read-model",
+      "source_type": "document_chunk"
+    },
+    {
+      "id": "2",
+      "label": "NRG C4 read model: institutions",
+      "masked": false,
+      "source_id": "institutions:c4-read-model",
+      "source_type": "document_chunk"
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "conversation_history": [],
+  "final_answer": "Research output by year is available; the latest visible year is 2026 with 1,678 publications. [cite:publications:c4-read-model] [cite:institutions:c4-read-model]",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "research_output_by_year",
+  "interpreted_question": "publication count for IIT Madras in 2023",
+  "node_timings": {
+    "executor": 0.0,
+    "planner": 0.0,
+    "receiver": 0.0,
+    "router": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "plan": null,
+  "planner_metadata": {},
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "planner": "c4_read_model",
+    "synth": "rule_based_read_model",
+    "verifier": "row_count_and_citation"
+  },
+  "query": "publication count for IIT Madras in 2023",
+  "query_id": "a3724891-a86f-4c99-a92e-89fe87ff539d",
+  "query_time_ms": 0,
+  "question": "publication count for IIT Madras in 2023",
+  "response": "Research output by year is available; the latest visible year is 2026 with 1,678 publications. [cite:publications:c4-read-model] [cite:institutions:c4-read-model]",
+  "retrieval_sources": [
+    "publications",
+    "institutions"
+  ],
+  "route": "sql",
+  "routing_decision": "fast_path",
+  "session_id": "validation-campaign-vc-api-009",
+  "source_data": {
+    "documents": [],
+    "rows": [
+      {
+        "publication_count": 1678,
+        "year": 2026
+      },
+      {
+        "publication_count": 16407,
+        "year": 2025
+      },
+      {
+        "publication_count": 16375,
+        "year": 2024
+      },
+      {
+        "publication_count": 16427,
+        "year": 2023
+      },
+      {
+        "publication_count": 16362,
+        "year": 2022
+      }
+    ],
+    "sql_query": "SELECT year, publication_count FROM c4_publication_year_read_model ORDER BY year DESC LIMIT 5"
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [
+    "SELECT year, publication_count FROM c4_publication_year_read_model ORDER BY year DESC LIMIT 5"
+  ],
+  "sql_query": "SELECT year, publication_count FROM c4_publication_year_read_model ORDER BY year DESC LIMIT 5",
+  "sql_results": [
+    {
+      "publication_count": 1678,
+      "year": 2026
+    },
+    {
+      "publication_count": 16407,
+      "year": 2025
+    },
+    {
+      "publication_count": 16375,
+      "year": 2024
+    },
+    {
+      "publication_count": 16427,
+      "year": 2023
+    },
+    {
+      "publication_count": 16362,
+      "year": 2022
+    }
+  ],
+  "status": "success",
+  "synthesis_method": "rule_based_read_model",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "cbaf466f20c6e642054dbe411f12c077fd3dcd857a5e91be288c32e9b8233633",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "safe_to_trust": true,
+    "status": true
+  },
+  "verification_status": true,
+  "warnings": [
+    {
+      "message": "C4 bounded read model used; no executor/RAG call required."
+    }
+  ]
+}

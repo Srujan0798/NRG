@@ -15,10 +15,15 @@ break under impatient real use.
 ## Read First
 
 - `Core_Idea_Clean.md`
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- latest relevant `evidence/2026-04-30/` UI or live-proof report
 - all files in `frontend/`
 - current API contract and mocks
 - existing screenshots, Playwright tests, and component tests
 - backend response shape for `/query`
+- current evidence-backed walkthrough query and blocked query from the latest handover
+  report
 
 NRG frontend stack is React 18, Vite, TypeScript, Tailwind, TanStack Query, and
 Zustand. Do not introduce Next.js, SSR/App Router conventions, shadcn, or a new
@@ -448,6 +453,9 @@ On mobile:
   with smoke evidence for changed routes.
 - Do not treat a generated archive, scaffold, or deploy-tool success message as
   evidence that the NRG app works.
+- If performance status is mentioned, use the current distinction: local
+  100-user C4 smoke passed after read-model/single-flight work, but production
+  readiness still needs 1000-user cluster proof.
 
 ## Deliverables
 
@@ -456,3 +464,4 @@ On mobile:
 - screenshots of login, dashboards, query, results, proof modal, mobile
 - test command outputs
 - known remaining UI risks, if any
+- commit SHA if committed, or `not committed`

@@ -95,6 +95,50 @@ def test_revoked_access_token_is_rejected(jwt_handler):
         jwt_handler.verify_access_token(tokens["access_token"])
 
 
+def test_access_token_verification_reuses_same_ip_decode_cache(monkeypatch):
+    handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
+    user = {
+        "user_id": "cached-user",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    token = handler.issue_token_pair(user)["access_token"]
+
+    original_decode = jwt_handler_module.jwt.decode
+    calls = {"decode": 0}
+
+    def counting_decode(*args, **kwargs):
+        calls["decode"] += 1
+        return original_decode(*args, **kwargs)
+
+    monkeypatch.setattr(jwt_handler_module.jwt, "decode", counting_decode)
+
+    first = handler.verify_access_token(token, client_ip="10.0.0.1")
+    second = handler.verify_access_token(token, client_ip="10.0.0.1")
+
+    assert first["sub"] == "cached-user"
+    assert second["sub"] == "cached-user"
+    assert calls["decode"] == 1
+
+
+def test_cached_access_token_still_detects_replay_from_new_ip():
+    handler = JWTHandler(algorithm="HS256", secret_key="test-secret", users={})
+    user = {
+        "user_id": "replay-cached-user",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    token = handler.issue_token_pair(user)["access_token"]
+
+    handler.verify_access_token(token, client_ip="10.0.0.1")
+    handler.verify_access_token(token, client_ip="10.0.0.1")
+
+    with pytest.raises(AuthError):
+        handler.verify_access_token(token, client_ip="10.0.0.2")
+
+
 def test_production_password_environment_names_are_supported(monkeypatch):
     monkeypatch.delenv("RESEARCHER_PASSWORD", raising=False)
     monkeypatch.delenv("GOV_PASSWORD", raising=False)
@@ -122,6 +166,44 @@ def test_auth_code_does_not_support_forbidden_password_aliases():
     source = Path("src/auth/jwt_handler.py").read_text()
 
     assert "DEMO_" not in source
+
+
+def test_rsa_key_loading_skips_expensive_private_key_validation(tmp_path, monkeypatch):
+    private_key_path = tmp_path / "jwt_rsa.key"
+    public_key_path = tmp_path / "jwt_rsa.pub"
+    private_key_path.write_text("-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----\n")
+    public_key_path.write_text("-----BEGIN PUBLIC KEY-----\ntest\n-----END PUBLIC KEY-----\n")
+
+    from cryptography.hazmat.primitives import serialization
+
+    calls = {}
+
+    def fake_load_private_key(data, password, **kwargs):
+        calls["private"] = {
+            "data": data,
+            "password": password,
+            "unsafe_skip": kwargs.get("unsafe_skip_rsa_key_validation"),
+        }
+        return "parsed-private-key"
+
+    def fake_load_public_key(data, **kwargs):
+        calls["public"] = {"data": data, "kwargs": kwargs}
+        return "parsed-public-key"
+
+    monkeypatch.setattr(serialization, "load_pem_private_key", fake_load_private_key)
+    monkeypatch.setattr(serialization, "load_pem_public_key", fake_load_public_key)
+
+    handler = JWTHandler(
+        algorithm="RS256",
+        private_key_path=str(private_key_path),
+        public_key_path=str(public_key_path),
+        users={},
+    )
+
+    assert handler._private_key_obj == "parsed-private-key"
+    assert handler._public_key_obj == "parsed-public-key"
+    assert calls["private"]["password"] is None
+    assert calls["private"]["unsafe_skip"] is True
 
 
 def test_refresh_token_survives_handler_restart_with_store(tmp_path, monkeypatch):

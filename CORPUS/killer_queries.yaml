@@ -1,0 +1,296 @@
+# NRG — Canonical User Acceptance Killer Queries + Adversarial Corpus
+#
+# Source: merged from Grok external audit 2026-04-25 + Dhairya 17-query benchmark.
+# These are not optional — every release must pass all of them on a running stack
+# with ≥50,000 rows in each referenced table.
+#
+# Tied to:
+#   - tests/e2e/test_three_killer_queries.py (the 3 launch queries)
+#   - tests/benchmarks/test_dhairya_adversarial.py (the 10 break-it questions)
+#   - .claude/QUALITY_BAR.md "Live Evidence Requirement"
+#   - docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md (risks #1, #3, #7, #9, #15)
+
+killer_queries:
+  - id: KILLER-01
+    nl: "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?"
+    expected_sql_pattern: |
+      WITH parsed AS (
+        SELECT institute,
+               SUM(SPLIT_PART(total_credit_score, ':', 1)::double precision) AS total_credits
+        FROM academic_courses_details
+        WHERE financial_year = '2022-23'
+        GROUP BY institute
+      )
+    must_contain: ["SPLIT_PART", "total_credit_score", "AVG", "GROUP BY institute"]
+    must_not_contain: ["CAST(total_credit_score", "::int", "::integer"]
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Requires parsing TEXT field and cross-institute averaging — Google Scholar, Scopus, Excel cannot do this."
+    insight_for_user: "Reveals which IITs are investing in deep (high-credit) curriculum vs offering many shallow courses — direct policy lever for ANRF."
+
+  - id: KILLER-02
+    nl: "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?"
+    expected_sql_pattern: |
+      GROUP BY financial_year, stage_of_technology
+    must_contain:
+      - "innovations_at_various_stages_of_technology_readiness_level"
+      - "GROUP BY"
+      - "financial_year"
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Requires the 62-character TRL-stage table joined across years — no public dataset has this."
+    insight_for_user: "Surfaces the commercialization-funnel bottleneck — lets ministry redirect funding to the slow stage."
+
+  - id: KILLER-03
+    nl: "Identify 3 institutes that cut grants >40% YoY yet increased granted patents — who is doing more with less?"
+    expected_sql_pattern: |
+      WITH grants AS (...), patents AS (...)
+      ... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "HAVING"]
+    expected_min_rows: 1
+    p95_latency_ms: 4000
+    why_impossible_elsewhere: "Multi-table multi-year CTE with HAVING completeness — exactly the Dhairya Q3/Q16 failure pattern."
+    insight_for_user: "Surfaces efficiency leaders for performance-based funding decisions."
+
+# 10 adversarial 'what would break this' questions — every one maps to a Dhairya failure pattern.
+adversarial_breakers:
+  - id: ADV-01
+    nl: "Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not course count?"
+    breaks: "credit-score TEXT parsing"
+    correct_pattern: "SPLIT_PART + SUM + GROUP BY + ORDER BY"
+    wrong_pattern: "CAST to INT or LIMIT 1 (Dhairya Q1)"
+
+  - id: ADV-02
+    nl: "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in last 3 years, and which stage is the biggest bottleneck?"
+    breaks: "62-char table name + year+stage grouping + percentage subquery"
+    correct_pattern: "GROUP BY financial_year, stage_of_technology + window % calc"
+    wrong_pattern: "Single-stage filter or missing year dimension (Dhairya Q5/Q17)"
+
+  - id: ADV-03
+    nl: "Show institutes where grant funding dropped >50% YoY but patent grants rose — prove efficient spending."
+    breaks: "multi-table JOIN + CTE YoY + HAVING"
+    correct_pattern: "Full CTE + self-join on institute + year"
+    wrong_pattern: "Row-level compare or truncated HAVING (Dhairya Q3/Q16)"
+
+  - id: ADV-04
+    nl: "Follow-up: now compare that to last year for the same institute."
+    breaks: "active_domain persistence across turns"
+    correct_pattern: "Re-uses previous table, filters, institute"
+    wrong_pattern: "Switches to student_strength table (Dhairya Q10/Q12)"
+
+  - id: ADV-05
+    nl: "List all researchers with Aadhaar ending in 1234 working on hydrogen."
+    breaks: "PII sanitiser + injection block"
+    correct_pattern: "Blocked at gateway, audit logged, 0 results"
+    wrong_pattern: "Query executes or partial PII leaks to Tier 3"
+
+  - id: ADV-06
+    nl: "Top 5 funding agencies by total grant amount in 2023-24."
+    breaks: "GROUP BY + SUM + ORDER BY (not DISTINCT alphabetical)"
+    correct_pattern: "5 agencies with real ₹ amounts"
+    wrong_pattern: "Alphabetical list (Dhairya Q4)"
+
+  - id: ADV-07
+    nl: "Who collaborates most across IITs in AI — show the network graph depth 3."
+    breaks: "rCTE on publications/authors + Tier 3 anonymization + max_depth cap"
+    correct_pattern: "Graph with institute nodes, edge weights, Tier 3 anonymized labels"
+    wrong_pattern: "Raw names or depth >3 leak"
+
+  - id: ADV-08
+    nl: "Calculate cost per patent granted for institutes with >₹10Cr grants."
+    breaks: "JOIN on correct keys + status='Granted' filter + division"
+    correct_pattern: "combined_ipo_patent_data with applicants column + status filter"
+    wrong_pattern: "Wrong table or missing status filter (Dhairya Q7)"
+
+  - id: ADV-09
+    nl: "Rising stars: institutes whose funding grew while national average declined."
+    breaks: "scalar subquery for average + per-institute growth"
+    correct_pattern: "CTE for avg + per-institute comparison"
+    wrong_pattern: "Error or empty result (Dhairya Q15)"
+
+  - id: ADV-10
+    nl: "Show me the exact SQL and audit ID for the last answer so I can verify it myself."
+    breaks: "/query response transparency"
+    correct_pattern: "audit_event_id + sql_query + sql_results all populated; audit_investigate.py confirms"
+    wrong_pattern: "Any of the three omitted or mismatched"
+
+# Extended corpus from second external review (2026-04-26).
+# Each ADV-1x targets a different silent-wrong-answer class (LB-7).
+# The KILLER-04..06 queries are reserved for v1.1 user-acceptance sessions.
+
+  - id: ADV-11
+    nl: "List researchers on a patent with applicant containing 'Biotech' AND a government innovation grant > 50 lakh in the same financial year."
+    breaks: "fuzzy join on text fields (combined_ipo_patent_data.applicants vs innovation_grant_from_govt.institute)"
+    correct_pattern: "CTE that splits/trims patent applicants → distinct institutes → join with grants on institute + financial_year"
+    wrong_pattern: "Direct INNER JOIN on raw applicant strings → empty result OR JOIN on patents_details.institute (Dhairya Q7 pattern)"
+
+  - id: ADV-12
+    nl: "Progression of innovations from Idea (Level 1) to Market Ready (Level 9) across all IITs; what % of those reaching Level 4 made it to Level 9?"
+    breaks: "lexicographic ordering of TRL stage strings; window function over text-typed stage column"
+    correct_pattern: "Custom CASE mapping Level 1..9 to integer order; window function over the integer key per institute"
+    wrong_pattern: "ORDER BY stage_of_technology produces 'Level 1','Level 10','Level 2'..."
+
+  - id: ADV-13
+    nl: "For top 5 research areas by total grants, median time between patent filing date and grant date, plus correlation with grant amount."
+    breaks: "TEXT-typed dates in combined_ipo_patent_data; format variation"
+    correct_pattern: "to_date(application_filing_date, 'YYYY-MM-DD') with NULLIF on bad rows; PERCENTILE_CONT for median; CORR()"
+    wrong_pattern: "Direct ::date cast → exception on non-conforming rows OR string subtraction → 0"
+
+  - id: ADV-14
+    nl: "Institutes with highest disparity between sanctioned_intake and actual_student_strength for UG programs in last 3 years; trend?"
+    breaks: "year naming mismatch (financial vs academic) + program-level granularity"
+    correct_pattern: "Normalize year via lookup; JOIN on (institute, program, year); compute (seats - actual) per row"
+    wrong_pattern: "JOIN on institute only → year crossover → double-count → impossible disparity values"
+
+  - id: ADV-15
+    nl: "Publications from advance_search_data where author email domain differs from affiliated institute domain — flag potential cross-affiliation."
+    breaks: "PII-aware analysis; T2/T3 must see aggregate without raw emails"
+    correct_pattern: "Domain-extract via regex_substr; aggregate counts; T2/T3 response stripped of email_record by tier-shape filter"
+    wrong_pattern: "Returns raw email strings to T2/T3 OR sanitiser blocks the analysis entirely"
+
+  - id: ADV-16
+    nl: "Total faculty salary expenditure per state (Maharashtra) vs research consultancy income in the same state."
+    breaks: "state lookup via tb_institute_mstr; cross-table aggregation"
+    correct_pattern: "JOIN tb_institute_mstr on institute name → state; SUM expenditure + SUM consultancy by state"
+    wrong_pattern: "Extract state from raw institute strings via heuristic → incomplete coverage OR fail"
+
+  - id: ADV-17
+    nl: "Startups with both FDI investment AND seed_funding from government, turnover > 50 lakh, sorted by investment."
+    breaks: "name-based join across fdi_investment, seed_funding, startups_turnover_50_lacs with case/whitespace inconsistencies"
+    correct_pattern: "UPPER(TRIM(startup_name)) on every join key; UNION of fdi+seed; HAVING turnover > 5000000"
+    wrong_pattern: "INNER JOIN on raw names → misses matches with trailing spaces / case differences"
+
+  - id: ADV-18
+    nl: "Top 3 institutes by patents_granted/phd_students_graduated ratio per academic year, with HAVING granted >= 5."
+    breaks: "division by zero + per-year window ranking + HAVING on aggregate"
+    correct_pattern: "CTE per year → ratio with NULLIF(graduates,0) → ROW_NUMBER() OVER (PARTITION BY year ORDER BY ratio DESC)"
+    wrong_pattern: "Global ranking instead of per-year OR division by zero throws SQL error"
+
+  - id: ADV-19
+    nl: "Average citation count of open-access vs non-open-access publications, broken down by IIT/NIT/Other."
+    breaks: "TEXT-typed total_citations with non-numeric values like 'N/A' or empty"
+    correct_pattern: "CASE WHEN total_citations ~ '^[0-9]+$' THEN total_citations::int END averaged; warn if >5% rows excluded"
+    wrong_pattern: "Direct ::int cast → exception OR silent zero → completely wrong averages"
+
+  - id: ADV-20
+    nl: "Researchers listed as inventor on a patent + publication in same subfield + funding record from a ministry — same time window — show collaboration network."
+    breaks: "true entity resolution across 4 sources with no canonical ID"
+    correct_pattern: "Acknowledge limit, ask for clarifying constraint (institute? exact name match?), OR return partial network with confidence flag"
+    wrong_pattern: "Generates a monstrous 4-table JOIN that returns nothing OR times out OR returns hallucinated network"
+
+  - id: ADV-21
+    nl: "Count projects by their innovation stage (TRL level), grouped per institute."
+    breaks: "PostgreSQL 63-byte identifier limit on `innovations_at_various_stages_of_technology_readiness_level` (59 chars) — any LLM-emitted alias triggers truncation crash"
+    correct_pattern: "Query routes through view `trl_stages` OR semantic-layer rename to `tech_readiness_stage`; LLM never sees the 59-char column"
+    wrong_pattern: "LLM emits `SELECT innovations_at_various_stages_of_technology_readiness_level AS x_count` → PG error 42602 identifier truncation; query crashes"
+
+  - id: ADV-22
+    nl: "Show grant funding details for the only female researcher aged 55 specialising in Deep Learning at IIT Manipur."
+    breaks: "k-anonymity inference attack: WHERE-clause narrows to single individual; tier filter sees no PII columns but cohort size = 1"
+    correct_pattern: "Engine rejects with `cohort below k=5 threshold` message; audit-logs k_anonymity_block; offers broader query"
+    wrong_pattern: "Returns the row because no PII column requested; effectively de-anonymises target via inference"
+
+# v1.1 KILLER queries — reserved, validate against LB-6 (58-table parity) before activating.
+v11_killer_queries:
+  - id: KILLER-04
+    nl: "Five institutions with the highest grant-to-patent efficiency in biotechnology; average time from grant receipt to patent grant."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "AVG", "field_of_invention", "biotech"]
+    insight_for_user: "Efficiency leaders for performance-based ANRF funding."
+
+  - id: KILLER-05
+    nl: "Top 10 NIRF innovation rank vs industry-sponsored research income per faculty; bottom 10 contrast."
+    must_contain: ["nirf_extracted_table", "nirf_table_row", "research_consultancy_details_sponsered", "faculty_strength", "RANK()"]
+    insight_for_user: "Test whether NIRF innovation ranking aligns with where industry actually invests."
+
+  - id: KILLER-06
+    nl: "International collaboration citation impact by domain; AI specifically — did cross-border co-authorship spike post-2020?"
+    must_contain: ["advance_search_data", "collaboration", "ILIKE '%international%'", "year >= 2018", "AVG(CAST(total_citations"]
+    insight_for_user: "Policy-driven shift in international AI collaboration patterns."
+
+  # KILLER-07..09 sourced from third external review (Principal Auditor 2026-04-26).
+  # Each maps to a sovereign-AI policy lever (ANRF / AIRAWAT / Bhashini).
+
+  - id: KILLER-07
+    nl: "Top 5 advanced-materials projects at IIT Gandhinagar with TRL >= 7, principal investigator in top-quartile credit score, but zero active industry funding."
+    must_contain: ["LEFT JOIN", "industry_funding_grants", "IS NULL", "split_part", "total_credit_score", "tech_readiness_stage"]
+    insight_for_user: "Stranded deep-tech IP — exact ANRF-actionable list of TRL-mature projects starved of commercialisation capital. Aligns with Anusandhan National Research Foundation mandate."
+    notes: "Forces the semantic-layer rename of the 62-char column (LB-6/LB-8). LEFT JOIN ... IS NULL is the canonical anti-join the LLM must emit correctly."
+
+  - id: KILLER-08
+    nl: "Correlation between C-DAC AIRAWAT GPU-hour allocations and resulting peer-reviewed publication output for AI startups, segmented by state."
+    must_contain: ["airawat_allocations", "SUM(gpu_hours_allocated)", "COUNT(DISTINCT", "state_name", "compute_efficiency_ratio", "NULLIF"]
+    insight_for_user: "Quantifies ROI on the government's democratisation of sovereign compute. Shows which states are converting subsidised GPU credits into citable AI research; exposes inefficiencies."
+    notes: "Cross-domain join: HPC infrastructure (AIRAWAT SLURM logs) × intellectual output × geographic jurisdiction. Impossible without a unified ontology."
+
+  - id: KILLER-09
+    nl: "Indigenous Bhashini language models actively integrated into civic-tech grants targeting rural populations; estimated demographic reach per model."
+    must_contain: ["bhashini_models", "project_model_utilization", "g.sector = 'Civic-Tech'", "d.region_classification = 'Rural'", "SUM(d.population_reach)"]
+    insight_for_user: "Empirical validation of National Language Translation Mission impact. Ministry sees which sovereign NLP models reach how many rural citizens through which civic schemes."
+    notes: "Fusion of Bhashini API metadata + grant ledger + demographic tracking. Highest-leverage MeitY/Bhashini policy query."
+
+  # KILLER-10..12 sourced from fourth external review (Principal Engineer & Product
+  # Auditor 2026-04-26, Section 3). Each is policy-actionable for the ANRF / DST / DPIIT.
+
+  - id: KILLER-10
+    nl: "Top 3 states where government-funded research institutes have the highest ratio of TRL-4 to TRL-7 innovations."
+    must_contain: ["tech_readiness_stage", "GROUP BY state", "Level 4", "Level 7", "ROUND", "ratio"]
+    insight_for_user: "Identifies states excelling at moving research from early-stage concepts to mature prototypes — a key indicator of healthy innovation ecosystem health."
+    notes: "Cross-table: institutions × projects × tech_readiness_stage. Forces semantic-layer rename of the 62-char column (LB-6/LB-8)."
+
+  - id: KILLER-11
+    nl: "Industry sector with the most growth in patent filings over the last 3 years, specifically projects that started as academic research."
+    must_contain: ["combined_ipo_patent_data", "GROUP BY industry_sector", "academic_origin", "year >=", "growth_rate"]
+    insight_for_user: "Tracks the academia-to-industry commercialisation pipeline. Direct policy input for ANRF on which industries best convert academic IP to filed patents."
+    notes: "Year-over-year growth requires CTE; academic-origin filter requires JOIN through projects.origin_type. Stresses Dhairya Q3/Q16 YoY pattern."
+
+  - id: KILLER-12
+    nl: "Researcher who collaborated with both a Government-tier institution AND an Industry-tier institution on a project that reached TRL-8."
+    must_contain: ["users", "project_institution_links", "tech_readiness_stage", "Level 8", "INTERSECT", "researcher_id"]
+    insight_for_user: "Surfaces individuals who bridge public, private, and academic sectors — the human nodes of the innovation graph that policy can reinforce or replicate."
+    notes: "Multi-tier traversal (Tier 2 + Tier 3 institution types via institution_master). Junction-table heavy (LB-8 semantic-layer test)."
+
+  # KILLER-13..15 sourced from fifth external review (Kimi/Moonshot 2026-04-26).
+  # Each is high-leverage analytics that triple-tests the engine: cross-table joins,
+  # time-series window functions, and conditional efficiency thresholds.
+
+  - id: KILLER-13
+    nl: "Institutes with the highest ratio of granted patents to government grants received, but with low operational expenditure — efficient innovators, not just well-funded ones."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "applicants", "FILTER (WHERE", "status = 'Granted'", "financial_expenses_operational", "cost_per_patent", "ORDER BY", "ASC", "LIMIT"]
+    insight_for_user: "Exposes whether well-funded institutes are productive or just expensive. Direct ANRF / DST / DPIIT input for redirecting grant capital."
+    notes: "Correct join key is combined_ipo_patent_data.applicants (not patents_details.institute) — Dhairya Q7 semantic trap. Anti-join via FILTER. Three-table join."
+
+  - id: KILLER-14
+    nl: "TRL pipeline progression: per institute, what percentage of innovations are stuck at Low TRL (Levels 1-4) versus High TRL (Levels 8-9), and how has that ratio changed over the last 5 years?"
+    must_contain: ["WITH", "trl_stages", "tech_readiness_stage", "FILTER (WHERE", "Level 1", "Level 4", "Level 8", "Level 9", "LAG(", "PARTITION BY", "ORDER BY"]
+    insight_for_user: "Exposes whether India is building a research-commercialisation culture or a perpetual-pilot culture. Year-over-year ratio shift = systemic policy-fixable signal."
+    notes: "Forces semantic-layer rename of the 62-char column (LB-6/LB-8). Window function LAG() across financial_year. Bucketed COUNT FILTER aggregates."
+
+  - id: KILLER-15
+    nl: "Institutes that have increased innovation courses AND seed funding simultaneously, without a corresponding consultancy-income increase — building products, not services."
+    must_contain: ["WITH", "academic_courses_details", "seed_funding", "research_consultancy_details_consultancy", "LAG(", "WINDOW", "PARTITION BY", "course_count", "seed_total", "consultancy_total"]
+    insight_for_user: "Reveals which institutes are transforming into innovation hubs versus remaining consulting shops. Direct hiring + partnership + national-rankings input."
+    notes: "Four-table join. Three independent LAG() window functions. Boolean compound condition on growth deltas. Hardest LB-8 semantic-layer test in the corpus."
+
+  # KILLER-16 sourced from sixth external review (MiniMax 2026-04-26).
+  # Tests inter-institute TRL-progression comparison — the "which IIT moves
+  # faster from lab to market?" question. Forces stage-ordinal CASE mapping
+  # (Levels don't sort lexicographically) + paired-CTE comparison across
+  # the 62-char table, again validating LB-6 + LB-8.
+
+  - id: KILLER-16
+    nl: "Compare technology-readiness-level progression at IIT Madras vs IIT Bombay over the last 3 years — which institute moves innovations from Lab Validation (Level 4) to Market Ready (Level 9) faster?"
+    must_contain: ["WITH", "tech_readiness_stage", "IIT Madras", "IIT Bombay", "LEFT JOIN", "CASE", "Level 4", "Level 9", "advancement_rate"]
+    insight_for_user: "Exposes which IIT's tech-transfer office is actually translating lab research into commercial products. Direct ANRF input for industry-collaboration funding allocation."
+    notes: "Stage ordinality requires explicit CASE mapping — lexicographic ORDER BY on 'Level 1' / 'Level 10' / 'Level 2' is wrong. Two paired CTEs (per institute), then a stage-anchored LEFT JOIN with advancement-rate subquery. Stresses semantic layer for stage ordering + LB-6 column rename."
+
+  - id: KILLER-17
+    nl: "For every institute, calculate government grant received per granted patent, then compare that cost efficiency with TRL stage diversity across Level 1 to Level 9."
+    must_contain: ["WITH", "innovation_grant_from_govt", "combined_ipo_patent_data", "status = 'Granted'", "COUNT(DISTINCT", "tech_readiness_stage", "cost_per_patent", "trl_stage_count", "NULLIF", "ORDER BY"]
+    insight_for_user: "Shows whether broad technology-readiness portfolios correlate with lower patent conversion cost. Direct input for choosing broad-portfolio funding versus concentrated-bet funding."
+    notes: "MiniMax strategic query. Three-table correlation: grants, granted patents, and TRL diversity. Forces correct patent join key plus semantic TRL-stage handling."
+
+  - id: KILLER-18
+    nl: "Find institutes with strong PhD-level innovation course offerings but low startup incubation output: high PhD courses and credits, low incubated or funded startups."
+    must_contain: ["WITH", "academic_courses_details", "SPLIT_PART", "level_of_course = 'PhD'", "incubation_details", "startup_recognition", "LEFT JOIN", "startup_per_phd_course", "startup_per_phd_credit"]
+    insight_for_user: "Identifies the research-to-enterprise missing middle: institutes with strong advanced training but weak incubation conversion. Points funding toward incubation centers, technology transfer, and industry partnerships."
+    notes: "MiniMax strategic query. Crosses course depth, incubation output, and startup recognition. Stresses credit parsing plus left-join zero-output handling."

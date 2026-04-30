@@ -248,7 +248,7 @@ class TrainingDataCollector:
                 ),
             )
             conn.commit()
-            logger.info(f"Training pair captured: {pair_id} grade={quality_grade}")
+            logger.debug(f"Training pair captured: {pair_id} grade={quality_grade}")
             return pair_id
         except Exception as e:
             logger.error(f"Failed to capture training pair: {e}")

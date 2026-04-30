@@ -1,0 +1,27 @@
+Command: cd frontend && npm run build
+Result: PASS
+
+Output summary:
+- `tsc` completed.
+- `vite build --emptyOutDir` completed.
+- Modules transformed: 2636
+- Build duration: 8m 11s
+- Output directory: `dist/frontend`
+
+Largest generated chunks:
+- `vendor-recharts-9f20f374.js`: 369.30 kB, gzip 102.89 kB
+- `App-14827737.js`: 205.62 kB, gzip 60.59 kB
+- `vendor-react-601f19e2.js`: 141.18 kB, gzip 45.21 kB
+- `vendor-motion-0cec850f.js`: 114.50 kB, gzip 36.71 kB
+
+Campaign interpretation:
+- Production frontend build is valid.
+- Build time is high for a calibration loop, but not a user-facing blocker.
+
+Post-fix rerun:
+- Reason: changed frontend backend availability poll from root `/health` to lightweight `/health/db`.
+- Command: `cd frontend && npm run build`
+- Result: PASS
+- Modules transformed: 2636
+- Build duration: 2m 57s
+- Current `dist/frontend` contains the post-fix bundle.

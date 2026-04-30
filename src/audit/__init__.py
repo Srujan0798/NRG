@@ -351,33 +351,38 @@ class ImmutableAuditLog:
         if storage_path == ".audit":
             configured_path = os.environ.get("NRG_AUDIT_DIR", storage_path)
         new_path = Path(configured_path)
-        if "_initialized" in self.__dict__ and self.__dict__.get("_initialized") is True and self.__dict__.get("storage_path") == new_path:
-            return
-        self.__dict__["_initialized"] = True
-        self.CHAIN_KEY = _configured_chain_key_text()
-        self.storage_path = new_path
-        self.storage_path.mkdir(exist_ok=True)
-        self.chain_file = self.storage_path / "chain.jsonl"
-        self.merkle_file = self.storage_path / "merkle_root.json"
-        self.merkle_roots_file = self.storage_path / "merkle_roots.jsonl"
-        self.last_hash_file = self.storage_path / ".last_hash"
-        self.genesis_pin_file = self.storage_path / "genesis_hash.pin"
-        self.integrity_alerts_file = self.storage_path / "integrity_alerts.jsonl"
-        self.witness_file = self.storage_path / "witness_replicas.jsonl"
-        self.revocation_file = self.storage_path / "revoked_tokens.jsonl"
-        self._key_history: list[dict] = []
-        self._user_key_cache: dict[str, str] = {}
-        self.last_hash = self._load_last_hash()
-        self.event_count = self._count_events()
-        if os.environ.get("AUDIT_PERSIST_MERKLE_ON_INIT", "").lower() in {"1", "true", "yes", "on"}:
-            self._persist_merkle_root()
+        with type(self)._lock:
+            if (
+                "_initialized" in self.__dict__
+                and self.__dict__.get("_initialized") is True
+                and self.__dict__.get("storage_path") == new_path
+            ):
+                return
+            self.CHAIN_KEY = _configured_chain_key_text()
+            self.storage_path = new_path
+            self.storage_path.mkdir(exist_ok=True)
+            self.chain_file = self.storage_path / "chain.jsonl"
+            self.merkle_file = self.storage_path / "merkle_root.json"
+            self.merkle_roots_file = self.storage_path / "merkle_roots.jsonl"
+            self.last_hash_file = self.storage_path / ".last_hash"
+            self.genesis_pin_file = self.storage_path / "genesis_hash.pin"
+            self.integrity_alerts_file = self.storage_path / "integrity_alerts.jsonl"
+            self.witness_file = self.storage_path / "witness_replicas.jsonl"
+            self.revocation_file = self.storage_path / "revoked_tokens.jsonl"
+            self._key_history: list[dict] = []
+            self._user_key_cache: dict[str, str] = {}
+            self.last_hash = self._load_last_hash()
+            self.event_count = self._count_events()
+            if os.environ.get("AUDIT_PERSIST_MERKLE_ON_INIT", "").lower() in {"1", "true", "yes", "on"}:
+                self._persist_merkle_root()
 
-        from src.audit.per_user_keys import get_per_user_key_manager
-        self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
-        self._file_lock = AuditChainLock(
-            self.storage_path / ".chain.lock",
-            timeout=AUDIT_LOCK_TIMEOUT,
-        )
+            from src.audit.per_user_keys import get_per_user_key_manager
+            self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
+            self._file_lock = AuditChainLock(
+                self.storage_path / ".chain.lock",
+                timeout=AUDIT_LOCK_TIMEOUT,
+            )
+            self.__dict__["_initialized"] = True
 
     def _derive_user_key(self, user_id: str) -> str:
         """

@@ -1,0 +1,139 @@
+{
+  "answer_confidence": "low",
+  "answer_confidence_score": 0.4,
+  "answer_id": "c5921f76-ecb6-4c8a-9b3a-e431a7f2f4f0",
+  "assumptions": [
+    "Used recent five-year context unless the query or data path specified another range."
+  ],
+  "audit_event_id": "bf79cb51c062504f32ad101db2eb38aa38123e140f9a546305f522953df53a4a",
+  "blocked": false,
+  "caveats": [
+    "{'node': 'executor', 'skill': 'rag', 'error_type': 'RetrieverUnavailable', 'message': 'Qdrant search failed: timed out'}"
+  ],
+  "citation_validity": 1.0,
+  "citations": [],
+  "confidence": {
+    "level": "low",
+    "reason": "Only partial evidence is available."
+  },
+  "conversation_history": [
+    {
+      "query": "who will win the next cricket world cup",
+      "response": "No data found for your query: 'who will win the next cricket world cup'.\n\n**Search suggestions:**\n\u2022 Try broader terms: who or will or win\n\u2022 Use partial matches: 'who*'\n\u2022 Search by author name or institution"
+    }
+  ],
+  "final_answer": "No data found for your query: 'who will win the next cricket world cup'.\n\n**Search suggestions:**\n\u2022 Try broader terms: who or will or win\n\u2022 Use partial matches: 'who*'\n\u2022 Search by author name or institution",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "unstructured",
+  "interpreted_question": "who will win the next cricket world cup",
+  "node_timings": {
+    "executor": 362603.9,
+    "planner": 14.52,
+    "receiver": 0.05,
+    "router": 0.25,
+    "synthesizer": 1060.67,
+    "verifier": 299.95
+  },
+  "plan": {
+    "dag_nodes": [
+      {
+        "depends_on": [],
+        "id": "node_23d74b",
+        "optional": false,
+        "output_shape": "narrative_summary",
+        "skill": "rag",
+        "subquery": "who will win the next cricket world cup",
+        "tables": [
+          "institutions",
+          "publications",
+          "researchers"
+        ]
+      }
+    ],
+    "dag_root_id": "node_23d74b",
+    "desired_skills": [
+      "rag"
+    ],
+    "expected_output_shape": "narrative_summary",
+    "is_dag": true,
+    "schema_tables": [
+      "institutions",
+      "publications",
+      "researchers"
+    ],
+    "subqueries": [
+      "who will win the next cricket world cup"
+    ]
+  },
+  "planner_metadata": {
+    "catalog": {
+      "assumptions": [
+        "Use recent five-year context unless the data path or user query specifies another range."
+      ],
+      "blocked_reason": null,
+      "clarification_question": null,
+      "confidence": 0.55,
+      "matched_domains": [],
+      "matched_tables": [],
+      "needs_clarification": false,
+      "output_shape": "narrative_summary",
+      "pii_terms": [],
+      "rationale": [
+        "No strong catalog match; use broad document retrieval unless planner adds context."
+      ],
+      "route": "rag"
+    },
+    "mode": "heuristic_fallback",
+    "reason": "llm_unavailable_or_failed"
+  },
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "synth": "rule_based"
+  },
+  "query": "who will win the next cricket world cup",
+  "query_id": "d330f338-bf1b-4633-9893-0a98269e4f4e",
+  "query_time_ms": 370638,
+  "question": "who will win the next cricket world cup",
+  "response": "No data found for your query: 'who will win the next cricket world cup'.\n\n**Search suggestions:**\n\u2022 Try broader terms: who or will or win\n\u2022 Use partial matches: 'who*'\n\u2022 Search by author name or institution",
+  "retrieval_sources": [],
+  "route": "rag",
+  "routing_decision": "rag",
+  "session_id": "validation-campaign-vc-api-013",
+  "source_data": {
+    "documents": [],
+    "rows": [],
+    "sql_query": null
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [],
+  "sql_query": null,
+  "sql_results": [],
+  "status": "success",
+  "synthesis_method": "rule_based",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "bf79cb51c062504f32ad101db2eb38aa38123e140f9a546305f522953df53a4a",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "low",
+      "reason": "Only partial evidence is available."
+    },
+    "safe_to_trust": false,
+    "status": "fail"
+  },
+  "verification_status": "fail",
+  "warnings": [
+    {
+      "error_type": "RetrieverUnavailable",
+      "message": "Qdrant search failed: timed out",
+      "node": "executor",
+      "skill": "rag"
+    }
+  ]
+}

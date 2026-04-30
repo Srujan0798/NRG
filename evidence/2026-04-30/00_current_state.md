@@ -17,7 +17,8 @@ Generated: 2026-04-30
 - The repo is structurally cleaner: stale tracked docs, dead frontend components, one-off scripts, and tracked test-run metadata were removed in recent commits.
 - The next highest-value work is answer-engine hardening, not more cleanup.
 - Current known product risk: messy natural-language queries can still route to weak/generic behavior unless the backend classification/retrieval path is hardened and covered by tests.
-- Current known release risk: C4/load readiness is not fresh. Prior evidence showed the 100-user load bar failed; Wave 5 must rerun and report current numbers.
+- Current C4 status: local 100-user smoke now passes after the read-model/single-flight cache pass. Final local evidence is in `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/locust_output.txt` with 8522 requests, 0 failures, aggregate P99 313.2ms, and `/query` P99 170ms.
+- Current known release risk: the local 100-user C4 bar is closed, but the 1000-user sovereign-cluster proof has not been rerun in the deployment target.
 
 ## Agent Wave Order
 
@@ -38,12 +39,9 @@ Generated: 2026-04-30
 
 ## Immediate Next Step
 
-Start Wave 1: harden `/query` and any stream path so messy user text goes through a stable flow:
+Move to deployment-grade verification:
 
-`sanitize -> intent classify -> clarify if needed -> SQL/RAG/hybrid retrieval -> deterministic verification -> synthesis -> audit`.
-
-Minimum Wave 1 evidence:
-
-- Targeted backend tests for messy/noisy questions.
-- At least 10 test-client JSON responses showing distinct relevant behavior.
-- Each successful answer includes citations and `audit_event_id`.
+- Run the same C4 profile in the target deployment with production worker/logging settings.
+- Keep read-model cache behavior on for the C4 query set.
+- Do not restart broad cleanup work.
+- Preserve the final handover evidence path and update it only with fresh command output.

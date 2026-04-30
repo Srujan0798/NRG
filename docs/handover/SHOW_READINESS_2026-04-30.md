@@ -10,7 +10,7 @@ NRG is ready for a local technical walkthrough of the answer-engine path:
 
 login -> persona -> dashboard -> messy query -> streaming answer -> citations -> source rows -> audit proof -> Tier 1 vs Tier 3 comparison -> blocked sensitive request.
 
-Do not present this as full sovereign-cluster production readiness. The strict C4 load target and deployed-environment replay still need the intended deployment/cluster.
+Do not present this as full sovereign-cluster production readiness. The local 100-user C4 smoke now passes, but the 1000-user cluster proof and deployed-environment replay still need the intended deployment/cluster.
 
 ## 90-Second Walkthrough
 
@@ -63,6 +63,7 @@ Do not present this as full sovereign-cluster production readiness. The strict C
    - Show audit list and proof language.
    - Screenshot: `evidence/2026-04-30/ui_ux/after/audit_list_1366.png`
    - Final audit verification: `scripts/audit_investigate.py` returned `ok=true`, `events_checked=39036`.
+   - Latest post-C4 health check: `chain_valid=True`, `chain_length=42085`, `error_count=0`.
 
 ## Passed Gates
 
@@ -73,7 +74,7 @@ Do not present this as full sovereign-cluster production readiness. The strict C
 | SQL/RAG/schema truth | `evidence/2026-04-30/wave4_retrieval_sql_rag_acceptance.md` |
 | Frontend main flow | `evidence/2026-04-30/wave2_frontend_main_flow_build.md` |
 | Tier/security/audit proof | `evidence/2026-04-30/wave3_security_tier_audit_acceptance.md` |
-| Local performance/load profile | `evidence/2026-04-30/wave5_performance_load_acceptance.md` |
+| Local performance/load profile | `evidence/2026-04-30/c4_read_model_singleflight_closure.md` |
 | Tier 1 raw JSON | `evidence/2026-04-30/09_tier1_query_response.json` |
 | Tier 2 raw JSON | `evidence/2026-04-30/10_tier2_query_response.json` |
 | Tier 3 raw JSON | `evidence/2026-04-30/11_tier3_query_response.json` |
@@ -115,6 +116,9 @@ Load/performance:
 ```bash
 SLO_ENV=prod .venv/bin/python -m pytest tests/load/test_slo_under_load.py -q -m load
 .venv/bin/python -m pytest tests/load/test_concurrent_queries.py -q -m load
+python3 -m compileall -q src/api/main.py
+python3 -m pytest tests/api/test_c4_read_model.py tests/api/test_k4_publication_count_fast_path.py tests/api/test_query_security_validation.py tests/api/test_request_logging_middleware.py tests/api/test_health_endpoints.py -q
+LOG_LEVEL=ERROR REQUEST_LOG_MIN_MS=100000 NRG_REQUEST_LOG_ENABLED=0 NRG_SECURITY_VERBOSE_LOGGING=0 python3 -m locust -f tests/load/locustfile_c4.py --headless --users 100 --spawn-rate 20 --run-time 60s --host http://127.0.0.1:8001 --csv evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/locust --html evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/report.html
 ```
 
 ## Current Commit Ladder
@@ -135,15 +139,15 @@ SLO_ENV=prod .venv/bin/python -m pytest tests/load/test_slo_under_load.py -q -m 
 
 | Blocker | Status | Next Action |
 |---------|--------|-------------|
-| Strict C4 500ms/1000-user proof | Not passed locally | Run `python scripts/run_load_test.py --host http://localhost:8000 --users 1000` against the intended deployment and attach CSV/HTML evidence. |
+| Strict C4 500ms/1000-user proof | Cluster pending | Local 100-user C4 passes in `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`; run the 1000-user profile against the intended deployment and attach CSV/HTML evidence. |
 | Local full-stack browser replay | Passed on 2026-04-30 | Evidence in `evidence/2026-04-30/live_full_stack_proof/` and `evidence/2026-04-30/live_quantum_query_recheck/`. |
-| Live local 100-user Locust smoke | Stable but C4 latency failed | Evidence in `evidence/2026-04-30/live_c4_local_smoke/`; 3602 requests, 0 failures, `/query` P99 2700ms. |
+| Live local 100-user Locust smoke | Passed after read-model/single-flight work | Final evidence in `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`; 8522 requests, 0 failures, aggregate P99 313.2ms, `/query` P99 170ms. |
 | Deployed browser replay | Not run on target host/cluster | Repeat the live full-stack proof against the intended deployment URL. |
 | Qdrant production corpus baseline | Environment-dependent | Populate Qdrant and rerun vector/RAG health with real corpus count. |
 | GPG ceremony/signed tag | Founder-only | Founder signs release/tag after external gates. |
 
 ## Presenter Notes
 
-Use the phrase "locally show-ready" or "local technical evaluation ready." Do not say "production ready" without the external C4, live replay, Qdrant corpus baseline, and founder signature gates.
+Use the phrase "locally show-ready" or "local technical evaluation ready." Do not say "production ready" without the 1000-user cluster C4 proof, deployed live replay, Qdrant corpus baseline, and founder signature gates.
 
 If network or backend fails during the show, use the screenshots/video under `evidence/2026-04-30/live_full_stack_proof/` and `evidence/2026-04-30/live_quantum_query_recheck/`, the earlier screenshots under `evidence/2026-04-30/ui_ux/after/`, and the raw JSON files in `evidence/2026-04-30/` to demonstrate the verified path.

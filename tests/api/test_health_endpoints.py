@@ -131,6 +131,80 @@ def test_root_health_reports_table_count_and_fast_audit_status(monkeypatch):
     assert payload["audit"]["chain_length"] == 7
 
 
+def test_root_health_times_out_slow_audit_check(monkeypatch):
+    import time
+
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 10}]
+
+    def slow_chain_health(**_):
+        time.sleep(0.2)
+        return {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0}
+
+    monkeypatch.setenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "0.01")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        api_main,
+        "_get_qdrant_vector_count_health",
+        lambda: {"status": "healthy", "collection": "nrg_research", "vectors": 1},
+    )
+    monkeypatch.setattr("src.audit.get_chain_health", slow_chain_health)
+    client = TestClient(api_main.app)
+
+    start = time.perf_counter()
+    response = client.get("/health")
+    elapsed = time.perf_counter() - start
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert elapsed < 1.0
+    assert payload["audit"]["status"] == "timeout"
+    assert payload["status"] == "unhealthy"
+
+
+def test_root_health_times_out_slow_qdrant_check(monkeypatch):
+    import time
+
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 10}]
+
+    def slow_qdrant_health():
+        time.sleep(0.2)
+        return {"status": "healthy", "collection": "nrg_research", "vectors": 1}
+
+    monkeypatch.setenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "0.01")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    monkeypatch.setattr(api_main, "_get_qdrant_vector_count_health", slow_qdrant_health)
+    client = TestClient(api_main.app)
+
+    start = time.perf_counter()
+    response = client.get("/health")
+    elapsed = time.perf_counter() - start
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert elapsed < 1.0
+    assert payload["qdrant"]["status"] == "unavailable"
+    assert payload["rag"]["status"] == "degraded"
+    assert "timed out" in payload["qdrant"]["message"]
+
+
 def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypatch):
     class FakeDB:
         dialect = "sqlite"

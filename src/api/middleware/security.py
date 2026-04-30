@@ -1,5 +1,6 @@
 """Security middleware: brute-force protection, security headers, IP allowlisting, prompt sanitisation."""
 
+import asyncio
 import time
 import hashlib
 import hmac
@@ -235,7 +236,8 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                     try:
                         from src.audit import log_anomaly
                         user_id = getattr(request.state, "auth_claims", {}).get("sub", "anonymous")
-                        audit_event_id = log_anomaly(
+                        audit_event_id = await asyncio.to_thread(
+                            log_anomaly,
                             user_id=user_id,
                             anomaly_type=validation["reason"],
                             details={
@@ -248,9 +250,17 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                         )
                     except Exception:
                         pass
-                    logger.warning(
-                        f"PromptSanitiserMiddleware rejected: {validation['reason']} - "
-                        f"field={field_name} path={request.url.path}"
+                    log_blocked_prompts = os.getenv("NRG_LOG_BLOCKED_PROMPTS", "").lower() in {
+                        "1",
+                        "true",
+                        "yes",
+                    }
+                    log_method = logger.warning if log_blocked_prompts else logger.debug
+                    log_method(
+                        "PromptSanitiserMiddleware rejected: %s - field=%s path=%s",
+                        validation["reason"],
+                        field_name,
+                        request.url.path,
                     )
                     if request.url.path == "/query" and validation["reason"] != "RATE_LIMITED":
                         claims = getattr(request.state, "auth_claims", {}) or {}

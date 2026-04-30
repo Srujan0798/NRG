@@ -55,6 +55,11 @@ The original folder `prompts /` was not modified.
   date/identifier formatting evidence were kept. The low-level OOXML tutorial,
   helper script source, and financial-model-specific style catalog were not
   copied.
+- External broad-validation prompts were distilled into `08`: query corpus
+  breadth, workflow matrices, tier comparisons, interaction coverage, red-team
+  passes, evidence indexing, and periodic checkpointing were kept. Artificial
+  certainty, arbitrary hour/count demands, and impossible completion claims were
+  not copied.
 
 ## Removed Or Normalized
 
@@ -73,3 +78,7 @@ The original folder `prompts /` was not modified.
 - Do not add another full duplicate master prompt. Update the relevant stone.
 - Keep each stone task-specific.
 - Keep evidence gates stricter than the implementation prompt.
+- Keep stones aligned with `.claude/CURRENT_STATE.md` and
+  `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`. If current truth
+  changes, update the shared current-state language instead of copying a new
+  master protocol into this folder.

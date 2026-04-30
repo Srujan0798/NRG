@@ -1,0 +1,57 @@
+{
+  "auto_repair_enabled": false,
+  "chain_length": 42154,
+  "chain_valid": true,
+  "db_cosign": {
+    "failed": 0,
+    "last_completed_at": null,
+    "last_error": null,
+    "last_latency_ms": null,
+    "max_queue_depth": 0,
+    "queue_depth": 0,
+    "submitted": 0,
+    "succeeded": 0,
+    "success_rate": 1.0
+  },
+  "error_count": 0,
+  "errors": [],
+  "last_event": "2026-04-30T14:34:00.090765+00:00",
+  "last_hash": "efd6220c9ef1ac26...",
+  "lineage_break": {
+    "active_chain_traceable": true,
+    "active_genesis_event_id": "genesis",
+    "active_genesis_hash": "46e3323a74eb9eb7",
+    "auto_repair_triggered": false,
+    "backup_count": 0,
+    "backup_files": [],
+    "genesis_pin_matches": true,
+    "genesis_pin_path": ".audit/genesis_hash.pin",
+    "lineage_intact": true,
+    "original_event_count": 3334,
+    "pinned_genesis_hash": "46e3323a74eb9eb7",
+    "repair_required": false,
+    "reseeding_events": [
+      {
+        "preserved_event_count": 3334,
+        "reason": "operator_reseed_traceable_genesis_2026_04_28",
+        "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+        "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+        "timestamp": "2026-04-28T13:20:28.052747+00:00"
+      }
+    ]
+  },
+  "lineage_intact": true,
+  "repair": null,
+  "reseeding_events": [
+    {
+      "preserved_event_count": 3334,
+      "reason": "operator_reseed_traceable_genesis_2026_04_28",
+      "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+      "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+      "timestamp": "2026-04-28T13:20:28.052747+00:00"
+    }
+  ],
+  "status": "healthy",
+  "valid_event_count": 42154,
+  "valid_events": 42154
+}

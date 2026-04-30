@@ -1,0 +1,57 @@
+{
+  "audit": {
+    "chain_valid": null,
+    "message": "Audit-chain health timed out after 1.00s",
+    "status": "timeout"
+  },
+  "auth_status": {
+    "algorithm": "RS256",
+    "message": "Asymmetric JWT signing is active; JWT_SECRET is not used.",
+    "min_bytes": 32,
+    "status": "not_required"
+  },
+  "consent_service": "operational",
+  "data_quality": {
+    "message": "No data quality scorecard has been emitted yet.",
+    "path": "/Users/srujansai/Desktop/NRG/docs/ops/data_quality_scorecard.json",
+    "status": "unknown"
+  },
+  "database": {
+    "dialect": "postgresql",
+    "publications": 50000,
+    "researchers": 50000,
+    "status": "healthy",
+    "table_count": 75,
+    "tables": 75
+  },
+  "qdrant": {
+    "collection": "nrg_research",
+    "message": "Qdrant vector health timed out after 0.75s",
+    "status": "unavailable",
+    "vectors": null
+  },
+  "rag": {
+    "collection": "nrg_research",
+    "qdrant_status": "unavailable",
+    "retrieval_enabled": false,
+    "retriever_status": "skipped",
+    "status": "degraded",
+    "vectors": null,
+    "warning": "RAG retrieval is disabled because Qdrant vector health timed out after 0.75s"
+  },
+  "retriever": {
+    "message": "Deep retriever health disabled for fast readiness checks",
+    "status": "skipped"
+  },
+  "status": "unhealthy",
+  "timestamp": "2026-04-30T14:02:34.393698+00:00",
+  "vector_drift": {
+    "message": "No vector drift status file has been emitted yet.",
+    "path": "/Users/srujansai/Desktop/NRG/.cache/vector_drift_status.json",
+    "scheduler": {
+      "message": "Vector drift scheduler has not emitted a run marker yet.",
+      "status": "unknown"
+    },
+    "status": "unknown"
+  }
+}

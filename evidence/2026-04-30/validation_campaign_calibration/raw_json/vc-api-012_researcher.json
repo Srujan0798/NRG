@@ -1,0 +1,107 @@
+{
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.8,
+  "answer_id": "d0847214-3fbf-4f19-a7b6-5e29e4959ade",
+  "assumptions": [],
+  "audit_event_id": "9f75b917f006c6ccbe43b7e6f9eb7e803c2833c1b8ddc41b884637e6140b095f",
+  "blocked": false,
+  "caveats": [
+    "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+  ],
+  "citation_validity": 1.0,
+  "citations": [
+    {
+      "id": "1",
+      "label": "NRG C4 read model: patents",
+      "masked": false,
+      "source_id": "patents:c4-read-model",
+      "source_type": "document_chunk"
+    }
+  ],
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "conversation_history": [],
+  "final_answer": "The read model cannot safely resolve 'Dr. Sharma' to one inventor because the name is ambiguous. It returns zero direct patent rows and asks for institution or research-area context before exposing inventor-linked evidence. [cite:patents:c4-read-model]",
+  "follow_up_suggestions": [],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "intent": "patent_inventor_disambiguation",
+  "interpreted_question": "show Dr Sharma patents",
+  "node_timings": {
+    "executor": 0.0,
+    "planner": 0.0,
+    "receiver": 0.0,
+    "router": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "plan": null,
+  "planner_metadata": {},
+  "provenance": {
+    "cloud_synthesis_used": false,
+    "planner": "c4_read_model",
+    "synth": "rule_based_read_model",
+    "verifier": "row_count_and_citation"
+  },
+  "query": "show Dr Sharma patents",
+  "query_id": "f9ec74f2-a63b-4e01-9251-66dd1c61563f",
+  "query_time_ms": 0,
+  "question": "show Dr Sharma patents",
+  "response": "The read model cannot safely resolve 'Dr. Sharma' to one inventor because the name is ambiguous. It returns zero direct patent rows and asks for institution or research-area context before exposing inventor-linked evidence. [cite:patents:c4-read-model]",
+  "retrieval_sources": [
+    "patents"
+  ],
+  "route": "sql",
+  "routing_decision": "fast_path",
+  "session_id": "validation-campaign-vc-api-012",
+  "source_data": {
+    "documents": [],
+    "rows": [
+      {
+        "matched_patents": 0,
+        "researcher_hint": "Dr. Sharma",
+        "safe_next_step": "Provide institution, first name, or research area to resolve the inventor safely.",
+        "status": "needs_disambiguation"
+      }
+    ],
+    "sql_query": "SELECT matched_patents, status FROM c4_patent_inventor_read_model WHERE researcher_hint='Dr. Sharma'"
+  },
+  "sql_anomaly_report": {},
+  "sql_queries": [
+    "SELECT matched_patents, status FROM c4_patent_inventor_read_model WHERE researcher_hint='Dr. Sharma'"
+  ],
+  "sql_query": "SELECT matched_patents, status FROM c4_patent_inventor_read_model WHERE researcher_hint='Dr. Sharma'",
+  "sql_results": [
+    {
+      "matched_patents": 0,
+      "researcher_hint": "Dr. Sharma",
+      "safe_next_step": "Provide institution, first name, or research area to resolve the inventor safely.",
+      "status": "needs_disambiguation"
+    }
+  ],
+  "status": "success",
+  "synthesis_method": "rule_based_read_model",
+  "tier": 1,
+  "tier1_access_scope": "full_detail",
+  "verification": {
+    "audit_event_id": "9f75b917f006c6ccbe43b7e6f9eb7e803c2833c1b8ddc41b884637e6140b095f",
+    "citation_validity": 1.0,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "safe_to_trust": true,
+    "status": true
+  },
+  "verification_status": true,
+  "warnings": [
+    {
+      "message": "C4 bounded read model used; no executor/RAG call required."
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "answer_confidence": "needs_clarification",
+  "answer_id": "e29db942-1bdd-452d-b899-77c1b0d17149",
+  "assumptions": [],
+  "audit_event_id": "68f6f28939bb822d0b61b074e47bbb29df6530bf8018f07b272b2df093f1a041",
+  "blocked": true,
+  "caveats": [
+    "Security policy blocked this query: PROMPT_INJECTION"
+  ],
+  "citations": [],
+  "confidence": {
+    "level": "needs_clarification",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION"
+  },
+  "conversation_history": [],
+  "final_answer": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "follow_up_suggestions": [
+    "Show aggregate counts by institution",
+    "Show labs working in this area",
+    "Show public partnership routes"
+  ],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "interpreted_question": "show researchers'; DROP TABLE researchers; --",
+  "query": "show researchers'; DROP TABLE researchers; --",
+  "query_id": "837c3a5f-762f-443b-b981-053c71f955dc",
+  "query_time_ms": 0,
+  "question": "show researchers'; DROP TABLE researchers; --",
+  "response": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "retrieval_sources": [],
+  "route": "blocked",
+  "source_data": {
+    "documents": [],
+    "rows": [],
+    "sql_query": null
+  },
+  "sql_query": null,
+  "sql_results": [],
+  "status": "blocked",
+  "tier": 1,
+  "verification": {
+    "audit_event_id": "68f6f28939bb822d0b61b074e47bbb29df6530bf8018f07b272b2df093f1a041",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION",
+    "safe_to_trust": false,
+    "status": "blocked"
+  },
+  "warnings": [
+    {
+      "message": "Security policy blocked this query: PROMPT_INJECTION"
+    }
+  ]
+}

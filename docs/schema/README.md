@@ -1,37 +1,37 @@
-# National Research Graph Database Schema
+# NRG Database Schema
 
-This directory contains the database schema and related documentation for the National Research Graph application.
+## ⚠️ Canonical Source: See `CORPUS/`
 
-## Schema Files
+**The authoritative schema reference is in `CORPUS/`:**
+- `CORPUS/db_struct.sql` — Production PostgreSQL dump (58 tables, **THE SOURCE OF TRUTH**)
+- `CORPUS/schema/` — All schema files: nrg_full_schema.sql, production_schema.sql, sqlite_schema.sql
+- `CORPUS/schema_hints.md` — AI SQL hints (used by text-to-SQL engine)
+- `CORPUS/schema_value_synonyms.md` — Value synonyms (used by text-to-SQL engine)
+- `CORPUS/business_term_glossary.yaml` — Business term glossary (used by schema retriever)
 
-1. `researcher_db.sql` - Main database schema definition
-2. `knowledge_graph_design.md` - Knowledge graph design documentation
-3. `vector_metadata_taxonomy.md` - Vector metadata taxonomy documentation
-4. `neon_integration.md` - Neon Postgres integration documentation
+## Local Schema Files
+
+| File | Description |
+|------|-------------|
+| `schema_hints.md` | **IN USE** — AI hints for text-to-SQL generation |
+| `schema_value_synonyms.md` | **IN USE** — Synonym mappings for SQL generator |
+| `business_term_glossary.yaml` | **IN USE** — Business glossary for schema retriever |
+| `nrg_full_schema.sql` | SQLite dev schema (18 tables) |
+| `production_schema.sql` | PostgreSQL ideal schema |
+| `sqlite_schema.sql` | Older SQLite schema |
 
 ## Migrations
 
-The `migrations` directory contains SQL migration scripts:
+`migrations/` — SQL migration scripts (Alembic format)
 
-1. `001_init_schema.sql` - Initial schema setup
-2. `002_neon_branching_strategy.sql` - Neon branching strategy setup
-3. `003_neon_connection_pooling.sql` - Connection pooling optimization
-4. `004_dpdp_compliance.sql` - Data Privacy and DPDP compliance
-5. `005_kong_integration.sql` - Kong API Gateway integration
+## Deprecated
 
-## Indexes
+`researcher_db.sql` — removed, use `CORPUS/db_struct.sql`
+`OFFICIAL_POSTGRESQL_SCHEMA.md` — removed, use `CORPUS/db_struct.sql`
 
-The `indexes` directory contains index optimization scripts:
+## Design Decisions
 
-1. `researcher_db_indexes.sql` - Index optimization script
-2. `README.md` - Indexing strategy documentation
-
-## Implementation Notes
-
-The schema is designed with the following considerations:
-
-1. **Neon Postgres Integration**: Optimized for Neon's serverless Postgres platform
-2. **Data Privacy Compliance**: Includes features for DPDP compliance
-3. **Kong API Gateway Integration**: Supports API key management and rate limiting
-4. **Performance Optimization**: Includes indexing strategies for query performance
-5. **Branching Strategy**: Supports Neon's branching features for development and testing
+- **Production:** PostgreSQL 14 on Neon serverless
+- **Development:** SQLite (18 tables, subset)
+- **Access Control:** Row-level security by tier (1=Researcher, 2=Government, 3=Industry)
+- **AI SQL Quality:** See `CORPUS/SQL_AUDIT_REPORT_CLEAN.md`

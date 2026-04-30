@@ -1,0 +1,21 @@
+Command: python3 -m compileall -q src/api/main.py
+Result: PASS
+
+Command: python3 -m pytest tests/api/test_c4_read_model.py tests/api/test_k4_publication_count_fast_path.py tests/api/test_query_security_validation.py tests/api/test_request_logging_middleware.py tests/api/test_health_endpoints.py -q
+Result: PASS
+
+Output summary:
+- Platform: darwin, Python 3.14.3, pytest 9.0.3
+- Collected: 34 items
+- Passed: 34
+- Warnings: 7
+- Duration: 32.95s
+
+Warnings observed:
+- LangChain/Pydantic v1 compatibility warning on Python 3.14.
+- Duplicate OpenAPI operation ID warning for `metrics_metrics_get`.
+- Qdrant client/server version compatibility warnings in health endpoint tests.
+
+Campaign interpretation:
+- No targeted backend regression failed.
+- Warnings are not campaign blockers, but the Qdrant version warning remains relevant to production baseline work.

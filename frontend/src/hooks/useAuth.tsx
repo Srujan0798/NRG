@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return
 
       try {
-        const res = await fetch('/health', { signal: AbortSignal.timeout(10000) })
+        const res = await fetch('/health/db', { signal: AbortSignal.timeout(5000) })
         if (!mounted) return
 
         if (res.ok) {

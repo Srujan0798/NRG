@@ -1,0 +1,55 @@
+{
+  "answer_confidence": "needs_clarification",
+  "answer_id": "591c0a22-0c3a-4bbd-84e0-a5ac9e44ce5a",
+  "assumptions": [],
+  "audit_event_id": "130bab1cef45e87cf14428b2edf046fb277e987b37d2ea1d2c550bd9b9ee3fea",
+  "blocked": true,
+  "caveats": [
+    "Security policy blocked this query: PROMPT_INJECTION"
+  ],
+  "citations": [],
+  "confidence": {
+    "level": "needs_clarification",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION"
+  },
+  "conversation_history": [],
+  "final_answer": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "follow_up_suggestions": [
+    "Show aggregate counts by institution",
+    "Show labs working in this area",
+    "Show public partnership routes"
+  ],
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "interpreted_question": "show personal emails and phone numbers for quantum researchers",
+  "query": "show personal emails and phone numbers for quantum researchers",
+  "query_id": "773956e7-a853-49df-a3f8-f7b259e21ba3",
+  "query_time_ms": 0,
+  "question": "show personal emails and phone numbers for quantum researchers",
+  "response": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "retrieval_sources": [],
+  "route": "blocked",
+  "source_data": {
+    "documents": [],
+    "rows": [],
+    "sql_query": null
+  },
+  "sql_query": null,
+  "sql_results": [],
+  "status": "blocked",
+  "tier": 3,
+  "verification": {
+    "audit_event_id": "130bab1cef45e87cf14428b2edf046fb277e987b37d2ea1d2c550bd9b9ee3fea",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION",
+    "safe_to_trust": false,
+    "status": "blocked"
+  },
+  "warnings": [
+    {
+      "message": "Security policy blocked this query: PROMPT_INJECTION"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ Date: 2026-04-30
 | W2 Frontend main flow | `evidence/2026-04-30/wave2_frontend_main_flow_build.md` | PASS |
 | W3 Security/tier/audit | `evidence/2026-04-30/wave3_security_tier_audit_acceptance.md` | PASS |
 | W4 SQL/RAG retrieval | `evidence/2026-04-30/wave4_retrieval_sql_rag_acceptance.md` | PASS |
-| W5 Load/performance | `evidence/2026-04-30/wave5_performance_load_acceptance.md` | LOCAL PASS, C4 external blocker remains |
+| W5 Load/performance | `evidence/2026-04-30/c4_read_model_singleflight_closure.md` | LOCAL 100-USER C4 PASS, 1000-user cluster proof remains |
 
 ## Raw API Evidence
 
@@ -119,6 +119,9 @@ Mobile:
 - `evidence/2026-04-30/live_c4_local_smoke/README.md`
 - `evidence/2026-04-30/live_c4_local_smoke/locust_stats.csv`
 - `evidence/2026-04-30/live_c4_local_smoke/locust_report.html`
+- `evidence/2026-04-30/c4_read_model_singleflight_closure.md`
+- `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/locust_output.txt`
+- `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/report.html`
 
 Final local 100-query result:
 
@@ -129,13 +132,23 @@ Final local 100-query result:
 - Throughput: 42.62 qps
 - Every successful response included an audit event ID
 
-Live local 100-user Locust smoke:
+Historical pre-read-model local 100-user Locust smoke:
 
 - 3602 total requests
 - 0 HTTP failures
 - `/query` P95: 2300ms
 - `/query` P99: 2700ms
-- Strict C4 latency target still fails because P99 is above 500ms
+- Strict C4 latency target failed in this historical run because P99 was above 500ms.
+- Superseded by the final read-model run below.
+
+Final local 100-user C4 read-model Locust smoke:
+
+- 8522 total requests
+- 0 HTTP failures
+- Aggregate P95: 44.2ms
+- Aggregate P99: 313.2ms
+- `/query` P99: 170ms
+- Local C4 100-user smoke passed; production claim still needs 1000-user cluster proof.
 
 ## Audit Evidence
 
@@ -155,17 +168,45 @@ Final result:
 }
 ```
 
+Latest post-C4 targeted health check:
+
+```text
+chain_valid=True
+status=healthy
+chain_length=42085
+error_count=0
+```
+
 Audit repair note:
 
 - Pre-fix concurrent local profile corrupted the local chain.
 - `scripts/audit_rebuild.py --rebuild --preserve-lineage` preserved 38,301 events, corrected 4,525 hashes, and logged a rebuild event.
 - Final verification passed after another 100-query profile.
 
+## Validation Campaign Evidence
+
+- `evidence/2026-04-30/prompts_hybrid_freshness_pass.md`
+- `evidence/2026-04-30/validation_campaign_stone_integration.md`
+- `evidence/2026-04-30/validation_campaign_calibration/VALIDATION_CAMPAIGN_REPORT.md`
+- `evidence/2026-04-30/validation_campaign_calibration/03_api_results.jsonl`
+- `evidence/2026-04-30/validation_campaign_calibration/08_browser_flow_results.md`
+- `evidence/2026-04-30/validation_campaign_calibration/09_audit_chain.md`
+
+Calibration result:
+
+- 20 recorded validation steps.
+- Targeted backend tests passed: 34/34.
+- API/tier/security calibration passed with raw JSON evidence.
+- Frontend build passed after the login health-poll fix.
+- Live local browser proof passed after changing login health polling from root `/health` to lightweight `/health/db`.
+- No CRITICAL calibration failures found.
+- Slow root-health/RAG behavior remains a documented HIGH finding for the next backend performance/retrieval pass.
+
 ## Not Yet Final
 
 These are still external or live-stack gates:
 
-- Strict C4 500ms/1000-user Locust proof.
+- Strict C4 500ms/1000-user cluster Locust proof.
 - Deployed-environment browser replay on the target host or cluster.
 - Production Qdrant corpus/drift baseline.
 - Founder GPG signing ceremony and signed release tag.

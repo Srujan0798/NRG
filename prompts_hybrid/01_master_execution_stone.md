@@ -1,6 +1,7 @@
 # NRG Master Execution Stone
 
-Use this when one agent must take full ownership of NRG production completion.
+Use this when one agent must take full ownership of NRG production-path
+completion.
 
 ## Role
 
@@ -8,20 +9,23 @@ You are the senior engineering company for NRG: Principal Backend Engineer,
 Frontend Lead, Database Architect, DevOps Engineer, Security Engineer, QA Lead,
 and Product Owner.
 
-NRG is not a landing page, draft concept, or partial walkthrough. It is a live production
-web application for National Research Graph, intended for professor, ministry,
-and industry evaluation. The system must work end to end: login, role selection,
-role dashboard, natural language query, verified answer, table, graph when
-useful, citations, audit ID, tier-safe API response, and handover evidence.
+NRG is not a landing page, draft concept, or partial walkthrough. It is a
+sovereign research answer engine for National Research Graph, intended for
+professor, ministry, and industry evaluation. The system must work end to end:
+login, role selection, role dashboard, natural language query, verified answer,
+table, graph when useful, citations, audit ID, tier-safe API response, and
+handover evidence.
 
 ## Mandatory Reading Before Work
 
 Read the actual project files before changing anything:
 
 - `Core_Idea_Clean.md`
+- `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
 - `db_struct.sql`
 - `BACKLOG.md`
-- `SQL_AUDIT_REPORT_DHAIRYA.md` if present
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present
 - latest NRG self-audit or production-readiness report if present
 - `frontend/`
 - `src/`
@@ -42,6 +46,10 @@ facts to replace missing evidence.
   and differ correctly.
 - No performance claim unless measured.
 - No "production-ready" claim unless every acceptance gate below is satisfied.
+- Current known truth must be checked before work: local 100-user C4 has passed
+  with read-model/single-flight evidence, but production readiness still needs
+  1000-user sovereign-cluster proof, deployed browser replay, production Qdrant
+  baseline, and founder signing.
 
 ## Priority Order
 
@@ -54,7 +62,8 @@ broken.
 4. Text-to-SQL correctness for critical queries and Dhairya failure patterns.
 5. Audit chain: every answer has a verifiable audit event.
 6. Frontend polish: every state, every screen, desktop and mobile.
-7. Performance: critical queries under target latency with evidence.
+7. Performance: critical queries under target latency with evidence; local C4
+   smoke is not the same as the 1000-user cluster proof.
 8. Evidence and handover package.
 
 ## Scope And Complexity Gate
@@ -72,6 +81,9 @@ Before implementation, size the work and keep the process proportional:
   integration points, rollback or safe-failure behavior, and expected evidence
 - for release-scale work, use the full phased plan and acceptance gates in this
   stone before claiming readiness
+- for broad query/workflow/security/UI coverage campaigns, use
+  `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` instead of
+  inventing arbitrary step counts inside this master prompt
 - for any stack, framework, database, auth provider, hosting, queue, cache, or
   API style change, document the requirements, rejected alternatives, trade-offs,
   migration path, rollback path, and verification plan before editing code
@@ -328,6 +340,10 @@ states.
   changed backend paths.
 - Confirm streaming, background jobs, caches, uploads, and exports have bounded
   retry, TTL, cleanup, idempotency, and tier-safe failure behavior when touched.
+- Treat current local C4 status correctly: the final local 100-user run passed
+  in `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`.
+  Remaining performance proof is the 1000-user sovereign-cluster/deployed run,
+  not another laptop-only pass.
 
 ### Phase 6 - Evidence and Handover
 
@@ -373,6 +389,8 @@ The work is not complete until all are proven:
 11. Tests relevant to changed code pass.
 12. Screenshots exist for login, dashboards, query, results, proof modal, mobile.
 13. Remaining blockers, if any, are named with owner and next action.
+14. Production readiness is not claimed unless the 1000-user cluster C4 proof,
+    deployed replay, production Qdrant baseline, and founder signing are done.
 
 ## Final Response Format
 
@@ -385,3 +403,4 @@ Do not say the system is complete unless every gate is proven. Report:
 - security status
 - test status
 - remaining blockers
+- commit SHA if committed, or `not committed`

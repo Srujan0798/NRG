@@ -9,13 +9,13 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Clean before live quantum recheck; current session adds the focused recheck evidence and auth cold-start timeout hardening |
+| Working tree | Not clean; current session includes uncommitted C4 hot-path hardening, C4 evidence, protocol rewrite, and unrelated/agent-created skill-directory changes. Run `git status --short` before editing. |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
 | Targeted recent checks | Wave 1 API tests, Wave 4 SQL/RAG/health tests, Wave 2 frontend build/browser tests, Wave 3 security/audit tests, Wave 5 local load/performance tests, and live local full-stack proof passed in targeted runs |
-| Audit chain | Rebuilt after pre-fix concurrent profile, then verified on 2026-04-30 with `scripts/audit_investigate.py`: `ok=true`, `events_checked=39036`, no broken indices |
+| Audit chain | Rebuilt after pre-fix concurrent profile, then verified after final C4/test rerun on 2026-04-30: `chain_valid=True`, `chain_length=42085`, `error_count=0` |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
-| Latest committed wave | Current commit — live quantum query recheck and auth cold-start timeout hardening |
+| Latest committed wave | `9e93adf` — test: add live local C4 smoke evidence. Current C4 hardening/protocol work is not committed. |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
 ---
@@ -29,7 +29,7 @@
 | W2 | Frontend main-flow polish and contract adapter verification | Done | Mocked browser gate passed; live local backend browser proof passed on 2026-04-30 |
 | W3 | Security, tier, and audit proof | Local gate passed | Blocked query audit IDs fixed; blocked envelopes now preserve authenticated tier |
 | W4 | SQL/RAG retrieval truth and regression coverage | Done locally | Committed in current Wave 4 commit; live Qdrant/PostgreSQL proof remains environment-dependent |
-| W5 | C4 concurrent query/load performance closure | Local gate improved, strict C4 still open | Local 100-query P99 2094.72ms; live local 100-user Locust smoke had 3602 requests, 0 failures, `/query` P99 2700ms; strict 500ms/1000-user C4 still needs cluster proof |
+| W5 | C4 concurrent query/load performance closure | Local 100-user gate passed | Final read-model + single-flight pass produced 8522 requests, 0 failures, aggregate P99 313.2ms and `/query` P99 170ms in `live_c4_local_smoke_after_read_model_final`. Remaining proof is the 1000-user sovereign-cluster run. |
 | W6 | Final handover package | Done | Show-readiness report and final evidence index committed |
 | K-6 | GPG signatures for handover | FOUNDER ONLY | Founder private key |
 
@@ -39,11 +39,11 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| ✅ | ✅ | ✅ | ✅ local / cluster pending | ✅ | ✅ |
 
-**C4 status is improved but not fully closed**. Wave 5 local TestClient evidence improved from P99 15,854.71ms to P99 2,094.72ms with 100/100 successful queries and audit IDs on every response. A later live local 100-user Locust smoke served 3602 requests with 0 failures, but `/query` P99 was 2700ms, above the strict 500ms target. Do not claim strict C4 production readiness until a cluster Locust run passes the official target.
+**C4 local status is now closed for the 100-user smoke target**. The final read-model/single-flight pass returned 8522 requests, 0 failures, aggregate P99 313.2ms, `/query` P99 170ms, and audit-chain health `chain_valid=True`, `error_count=0`. Do not claim final production C4 readiness until the 1000-user sovereign-cluster run passes with production worker/logging settings.
 
-**Main product risk now:** strict C4 remains the only local quality-bar miss. The system is locally show-ready with a live local browser replay, but external production claims need live Locust, deployed-environment replay, production Qdrant baseline, and founder signing.
+**Main product risk now:** local show-readiness is strong, but external production claims still need the deployed 1000-user Locust run, deployed-environment replay, production Qdrant baseline, and founder signing.
 
 ---
 
@@ -71,12 +71,19 @@
 | Current commit | Wave 3 blocked-query audit-ID fix and security/tier/audit evidence |
 | `evidence/2026-04-30/wave5_performance_load_acceptance.md` | Performance report with before/after local 100-query profile, load tests, and C4 blocker |
 | `evidence/2026-04-30/wave5_local_100_query_profile_after.json` | Final local 100-query profile: P99 2094.72ms, 100/100 success, audit IDs present |
-| `evidence/2026-04-30/live_c4_local_smoke/README.md` | Live local 100-user Locust smoke: 3602 requests, 0 failures, `/query` P99 2700ms, strict C4 latency still failed |
+| `evidence/2026-04-30/live_c4_local_smoke/README.md` | Historical pre-read-model local 100-user Locust smoke: 3602 requests, 0 failures, `/query` P99 2700ms, superseded by final read-model run. |
 | `docs/handover/SHOW_READINESS_2026-04-30.md` | Current 90-second walkthrough, evidence map, and honest blocker list |
 | `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md` | Final evidence index for current handover package |
 | `evidence/2026-04-30/live_full_stack_proof/README.md` | Live local full-stack proof: login, messy query, streaming answer, citation/source/audit drawers, mobile screenshot, Tier 3 blocked JSON |
 | `evidence/2026-04-30/live_quantum_query_recheck/README.md` | Fresh recheck that `best quantum researchers....` returns quantum-specific SQL evidence, citations, source/audit drawers, mobile screenshot, and Tier 3 blocked JSON |
-| Current commit | Live quantum query recheck and auth cold-start timeout hardening |
+| `evidence/2026-04-30/c4_hot_path_hardening_summary.md` | Historical hot-path summary, superseded by the read-model/single-flight closure evidence. |
+| `evidence/2026-04-30/live_c4_local_smoke_after_worker_pool/locust_output.txt` | Historical pre-read-model run: 0 failures, `/query` P99 about 7.4s, aggregate P99 about 6.4s. |
+| `evidence/2026-04-30/c4_read_model_singleflight_closure.md` | Read-model/single-flight closure summary with tests, audit-chain health, and load evidence. |
+| `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/locust_output.txt` | Final passing local 100-user C4 smoke: 8522 requests, 0 failures, aggregate P99 313.2ms, `/query` P99 170ms. |
+| `evidence/2026-04-30/prompts_hybrid_freshness_pass.md` | Prompt-stone freshness pass aligning agent instructions with local C4 pass, cluster blocker, evidence-backed release query, and final-report gates. |
+| `evidence/2026-04-30/validation_campaign_stone_integration.md` | Integration note for new `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` plus `.agents`/`.claude` skill wrappers, distilling broad validation strategy into NRG-safe campaign modes and evidence matrices. |
+| `evidence/2026-04-30/validation_campaign_calibration/VALIDATION_CAMPAIGN_REPORT.md` | First calibration run using the validation campaign workflow: targeted backend tests passed, API/tier/security calibration passed, frontend build passed, live browser proof passed after changing login health polling to `/health/db`; slow RAG/root-health paths remain documented findings. |
+| Current uncommitted work | C4 hardening code/tests/evidence plus `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md` rewrite. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
 | `6d0ac3a` | Tracked test-run metadata removal |
