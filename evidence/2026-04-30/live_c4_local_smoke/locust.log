@@ -1,7 +1,0 @@
-[2026-04-30 16:16:35,942] MacBook-Air/INFO/locust.main: Starting Locust 2.39.1
-[2026-04-30 16:16:35,943] MacBook-Air/INFO/locust.main: Run time limit set to 60 seconds
-[2026-04-30 16:16:35,944] MacBook-Air/INFO/locust.runners: Ramping to 100 users at a rate of 20.00 per second
-[2026-04-30 16:16:39,954] MacBook-Air/INFO/locust.runners: All users spawned: {"C4AdversarialUser": 10, "C4FastPathUser": 60, "C4FullPathUser": 30} (100 total users)
-[2026-04-30 16:17:35,657] MacBook-Air/INFO/locust.main: --run-time limit reached, shutting down
-[2026-04-30 16:17:35,816] MacBook-Air/INFO/locust.main: writing html report to file: evidence/2026-04-30/live_c4_local_smoke/locust_report.html
-[2026-04-30 16:17:35,818] MacBook-Air/INFO/locust.main: Shutting down (exit code 0)
