@@ -22,8 +22,14 @@ def test_answer_engine_response_requires_v1_fields():
         assumptions=["Interpreted best as publications, citations, funded projects, and recency."],
         route="hybrid",
         final_answer="IIT-GN appears in the top cohort [1].",
-        confidence=AnswerConfidence(level="high", reason="Evidence and citations passed verification."),
-        citations=[CitationRef(id="1", source_type="sql_row", label="researchers row", source_id="researchers:1")],
+        confidence=AnswerConfidence(
+            level="high", reason="Evidence and citations passed verification."
+        ),
+        citations=[
+            CitationRef(
+                id="1", source_type="sql_row", label="researchers row", source_id="researchers:1"
+            )
+        ],
         source_data=SourceData(sql_query="SELECT 1", rows=[{"rank": 1}], documents=[]),
         provenance=ProvenanceInfo(
             synth="rule_based_hybrid",
@@ -88,3 +94,5 @@ def test_blocked_answer_payload_marks_blocked_flag():
     assert payload["blocked"] is True
     assert payload["confidence"]["level"] == "needs_clarification"
     assert payload["source_data"]["rows"] == []
+    assert payload["query"] == "[blocked by security policy]"
+    assert "Show phone numbers" not in str(payload)

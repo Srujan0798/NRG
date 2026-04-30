@@ -1,0 +1,421 @@
+{
+  "case": {
+    "id": "KILLER-02",
+    "nl": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+    "expected_sql_pattern": "GROUP BY financial_year, stage_of_technology\n",
+    "must_contain": [
+      "innovations_at_various_stages_of_technology_readiness_level",
+      "GROUP BY",
+      "financial_year"
+    ],
+    "expected_min_rows": 1,
+    "p95_latency_ms": 4000,
+    "why_impossible_elsewhere": "Requires the 62-character TRL-stage table joined across years \u2014 no public dataset has this.",
+    "insight_for_user": "Surfaces the commercialization-funnel bottleneck \u2014 lets ministry redirect funding to the slow stage."
+  },
+  "responses": {
+    "researcher": {
+      "elapsed_ms": 2524.16,
+      "payload": {
+        "query_id": "82e8d40b-d802-470c-99d7-78797d584cd5",
+        "answer_id": "4dc7fd21-cf37-4ebb-a507-7c12c625a1f3",
+        "audit_event_id": "fc5057972d658b9e191edca58526c5fc40d25350b4facc5580648e60d7915965",
+        "tier": 1,
+        "question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "interpreted_question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: labs",
+            "source_id": "labs:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: labs",
+            "publication_id": "labs:fast-path"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: institutions",
+            "source_id": "institutions:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: institutions",
+            "publication_id": "institutions:fast-path"
+          }
+        ],
+        "source_data": {
+          "sql_query": null,
+          "rows": [
+            {
+              "sources": [
+                "labs",
+                "institutions"
+              ],
+              "scope": "bounded_aggregate"
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "bounded_local_fast_path",
+          "synth": "rule_based",
+          "verifier": "shape_and_citation",
+          "cloud_synthesis_used": false,
+          "labs:fast-path": {
+            "found_in": "labs",
+            "chunk_id": "fast-path"
+          },
+          "institutions:fast-path": {
+            "found_in": "institutions",
+            "chunk_id": "fast-path"
+          }
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'Fast bounded synthesis used for common local query shape.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "response": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-02-researcher",
+        "intent": "lab_lookup",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "fc5057972d658b9e191edca58526c5fc40d25350b4facc5580648e60d7915965"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": null,
+        "sql_queries": [],
+        "sql_results": [
+          {
+            "sources": [
+              "labs",
+              "institutions"
+            ],
+            "scope": "bounded_aggregate"
+          }
+        ],
+        "retrieval_sources": [
+          "labs",
+          "institutions"
+        ],
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "Fast bounded synthesis used for common local query shape."
+          }
+        ],
+        "tier1_access_scope": "full_detail"
+      }
+    },
+    "government": {
+      "elapsed_ms": 122.8,
+      "payload": {
+        "query_id": "67bfbe36-9085-4763-92df-fe17c6c6ae52",
+        "answer_id": "c950aee9-dfbc-4173-8f74-89f02be2f306",
+        "audit_event_id": "a684ae28b6e33bd177b8d5de23b1df20a9ce82cf9926722c93a3077ce2d12c4e",
+        "tier": 2,
+        "question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "interpreted_question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: labs",
+            "source_id": "labs:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: labs",
+            "publication_id": "labs:fast-path"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: institutions",
+            "source_id": "institutions:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: institutions",
+            "publication_id": "institutions:fast-path"
+          }
+        ],
+        "source_data": {
+          "sql_query": null,
+          "rows": [
+            {
+              "sources": [
+                "labs",
+                "institutions"
+              ],
+              "scope": "bounded_aggregate"
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "bounded_local_fast_path",
+          "synth": "rule_based",
+          "verifier": "shape_and_citation",
+          "cloud_synthesis_used": false,
+          "labs:fast-path": {
+            "found_in": "labs",
+            "chunk_id": "fast-path"
+          },
+          "institutions:fast-path": {
+            "found_in": "institutions",
+            "chunk_id": "fast-path"
+          }
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'Fast bounded synthesis used for common local query shape.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "response": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-02-government",
+        "intent": "lab_lookup",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "a684ae28b6e33bd177b8d5de23b1df20a9ce82cf9926722c93a3077ce2d12c4e"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": null,
+        "sql_queries": [],
+        "sql_results": [
+          {
+            "sources": [
+              "labs",
+              "institutions"
+            ],
+            "scope": "bounded_aggregate"
+          }
+        ],
+        "retrieval_sources": [
+          "labs",
+          "institutions"
+        ],
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "Fast bounded synthesis used for common local query shape."
+          }
+        ],
+        "tier2_access_scope": "government_aggregate"
+      }
+    },
+    "industry": {
+      "elapsed_ms": 173.93,
+      "payload": {
+        "query_id": "0032e9c9-54ad-469c-bb59-a33c0e806305",
+        "answer_id": "709f46f3-163c-4a76-ba80-cb11824c70ed",
+        "audit_event_id": "5825cce0e965429313b722a21cb73eb14f2dc8c553f56f56f0c790c36ba0f71a",
+        "tier": 3,
+        "question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "interpreted_question": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. Tier 3 response is restricted to institution-level aggregates. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: labs",
+            "source_id": "labs:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: labs",
+            "publication_id": "labs:fast-path"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG lab lookup evidence: institutions",
+            "source_id": "institutions:fast-path",
+            "masked": false,
+            "title": "NRG lab lookup evidence: institutions",
+            "publication_id": "institutions:fast-path"
+          }
+        ],
+        "source_data": {
+          "sql_query": null,
+          "rows": [
+            {
+              "sources": [
+                "labs",
+                "institutions"
+              ],
+              "scope": "bounded_aggregate"
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "bounded_local_fast_path",
+          "synth": "rule_based",
+          "verifier": "shape_and_citation",
+          "cloud_synthesis_used": false,
+          "labs:fast-path": {
+            "found_in": "labs",
+            "chunk_id": "fast-path"
+          },
+          "institutions:fast-path": {
+            "found_in": "institutions",
+            "chunk_id": "fast-path"
+          }
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'Fast bounded synthesis used for common local query shape.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "response": "Laboratory evidence is available from the NRG labs catalogue with institution-level metadata. Source tables: labs, institutions. The response uses deterministic local fast-path synthesis for this bounded query shape. Tier 3 response is restricted to institution-level aggregates. [cite:labs:fast-path] [cite:institutions:fast-path]",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-02-industry",
+        "intent": "lab_lookup",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "5825cce0e965429313b722a21cb73eb14f2dc8c553f56f56f0c790c36ba0f71a"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.95,
+        "sql_anomaly_report": {},
+        "sql_query": null,
+        "sql_queries": [],
+        "sql_results": [
+          {
+            "sources": [
+              "labs",
+              "institutions"
+            ],
+            "scope": "bounded_aggregate"
+          }
+        ],
+        "retrieval_sources": [],
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "Fast bounded synthesis used for common local query shape."
+          },
+          "Response policy applied: pii_strip:tier3:debug_trace"
+        ],
+        "tier3_access_scope": "industry_anonymized"
+      }
+    }
+  },
+  "latency_runs_ms": [
+    44.99,
+    66.55,
+    53.18
+  ],
+  "p95_latency_ms": 66.55,
+  "captured_at": "2026-04-30T20:09:02.573299+00:00",
+  "row_floor": {
+    "academic_courses_details": 50000,
+    "innovations_at_various_stages_of_technology_readiness_level": 10000,
+    "innovation_grant_from_govt": 30000,
+    "combined_ipo_patent_data": 20000,
+    "publications": 100000,
+    "researchers": 5615
+  }
+}

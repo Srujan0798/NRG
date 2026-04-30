@@ -9,10 +9,10 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Expected clean after the latest documentation closure commit; run `git status --short` before editing because agents may create local artifacts. |
+| Working tree | Expected clean after the latest validation campaign commit; run `git status --short` before editing because agents may create local artifacts. |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
-| Targeted recent checks | Wave 1 API tests, Wave 4 SQL/RAG/health tests, Wave 2 frontend build/browser tests, Wave 3 security/audit tests, Wave 5 local load/performance tests, and live local full-stack proof passed in targeted runs |
+| Targeted recent checks | May 1 local validation campaign passed broad backend/security/audit/query/RAG tests, killer-query capture, frontend Jest, frontend production build, corpus sync, diff hygiene, and forbidden-vocab guard. |
 | Audit chain | Rebuilt after pre-fix concurrent profile, then verified after final C4/test rerun on 2026-04-30: `chain_valid=True`, `chain_length=42085`, `error_count=0` |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
 | Latest committed wave | Use `git log -1 --oneline` for the exact current commit. Recent anchors: `fb44760` compact Desktop AI handoff package, `2c23c9f` Dhairya query benchmark routing, `e361d4c` source-truth/corpus restoration. |
@@ -92,6 +92,11 @@
 | `evidence/2026-05-01/external_fusion_validation_matrix.csv` | Thirty-seven-row seed matrix for future validation campaigns covering queries, tiers, workflows, UI states, security probes, and performance boundaries. |
 | `evidence/2026-05-01/minimax_fusion_final_inventory_review.md` | Final external inventory review: all 84 files under the external bundle accounted for; 57 reviewable text files covered by earlier evidence or final pass, 27 generated/binary/local artifacts ignored. |
 | `evidence/2026-05-01/fusion_completion_claim_boundary.md` | Founder correction encoded: external inventory/value integration is not whole-product proof; restored missing validation-campaign skill wrappers, added product-proof claim gates, and fixed top-level API `verification_status` normalization after contract tests exposed the mismatch. |
+| `evidence/2026-05-01/validation_campaign/VALIDATION_CAMPAIGN_REPORT.md` | May 1 validation-and-fix report: broad backend suite `195 passed, 1 skipped`, frontend Jest `97 passed`, frontend build passed, killer-query health passed, corpus sync passed, diff hygiene passed, forbidden-vocab guard passed. |
+| `evidence/2026-05-01/validation_campaign_backend_tests.log` | Broad backend/security/audit/query/RAG validation log after blocked-envelope and citation-contract fixes. |
+| `evidence/2026-05-01/validation_campaign_frontend_jest.log` | Frontend unit/a11y/contract/design-system test log: 26 suites, 97 tests passed. |
+| `evidence/2026-05-01/validation_campaign_frontend_build.log` | Frontend production build log. |
+| `evidence/2026-05-01/validation_campaign/killer/` | Killer-query response, health, and explain evidence for KILLER-01 through KILLER-03. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |

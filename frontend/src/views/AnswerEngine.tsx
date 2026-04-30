@@ -19,6 +19,7 @@ import { queryService } from '../services/queryService'
 import { Button, Card, Drawer, Input, Pill, Select, Skeleton } from '../components/ui'
 import { StreamingAnswerPanel, type StreamingProofPayload } from '../components/StreamingAnswerPanel'
 import HmacProof from '../components/HmacProof/HmacProof'
+import { ANSWER_ENGINE_COPY as COPY } from '../i18n/answer-engine'
 
 type SurfaceRole = PersonaRole
 type Confidence = 'high' | 'medium' | 'low' | 'needs_clarification'
@@ -189,38 +190,38 @@ function HeaderChrome({ role, tier, username, onLogout, onPersonaChange, onNavig
           type="button"
           className="flex min-w-0 items-center gap-3 text-left"
           onClick={() => onNavigate('/app')}
-          aria-label="Go to query home"
+          aria-label={COPY.header.homeLabel}
         >
           <span className="grid h-10 w-10 place-items-center rounded-lg border border-border bg-surface font-bold text-accent shadow-sm">N</span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-bold text-fg">National Research Graph</span>
-            <span className="block truncate text-xs text-fg-muted">Data sovereignty active · Audit chain live</span>
+            <span className="block truncate text-sm font-bold text-fg">{COPY.header.brand}</span>
+            <span className="block truncate text-xs text-fg-muted">{COPY.header.trustLine}</span>
           </span>
         </button>
-        <nav className="hidden items-center gap-2 md:flex" aria-label="Primary">
-          <Button variant="ghost" size="sm" onClick={() => onNavigate(meta.dashboardPath)}>Dashboard</Button>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('/app')}>Search</Button>
-          <Button variant="ghost" size="sm" onClick={() => onNavigate('/app/audit')}>Audit</Button>
+        <nav className="hidden items-center gap-2 md:flex" aria-label={COPY.header.navLabel}>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate(meta.dashboardPath)}>{COPY.header.dashboard}</Button>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate('/app')}>{COPY.header.search}</Button>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate('/app/audit')}>{COPY.header.audit}</Button>
         </nav>
         <div className="flex min-w-0 items-center gap-2">
-          <label className="sr-only" htmlFor="persona-switcher">Switch persona</label>
+          <label className="sr-only" htmlFor="persona-switcher">{COPY.header.switchPersona}</label>
           <select
             id="persona-switcher"
             data-testid="persona-switcher"
             value={role}
             onChange={(event) => void onPersonaChange?.(event.target.value as SurfaceRole)}
             className="hidden min-h-9 rounded-md border border-border bg-surface px-2 text-xs font-semibold text-fg shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:block"
-            aria-label="Switch persona"
+            aria-label={COPY.header.switchPersona}
           >
-            <option value="researcher">Researcher</option>
-            <option value="government">Government</option>
-            <option value="industry">Industry</option>
+            <option value="researcher">{ROLE_META.researcher.label}</option>
+            <option value="government">{ROLE_META.government.label}</option>
+            <option value="industry">{ROLE_META.industry.label}</option>
           </select>
           <Pill tone={tier >= 3 ? 'neutral' : tier === 2 ? 'warning' : 'info'}>{meta.short}</Pill>
           <span className="hidden max-w-44 truncate text-xs font-medium text-fg-muted sm:block">{username}</span>
-          <Button variant="ghost" size="sm" onClick={onLogout} aria-label="Logout" data-testid="logout-button">
+          <Button variant="ghost" size="sm" onClick={onLogout} aria-label={COPY.header.logout} data-testid="logout-button">
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
+            <span className="hidden sm:inline">{COPY.header.logout}</span>
           </Button>
         </div>
       </div>
@@ -284,14 +285,14 @@ function QueryBox({
           data-testid="answer-engine-query"
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          placeholder="Ask about Indian research..."
+          placeholder={COPY.query.placeholder}
           className="min-h-12 min-w-0 flex-1 bg-transparent text-lg text-fg outline-none placeholder:text-fg-subtle"
-          aria-label="Ask about Indian research"
+          aria-label={COPY.query.aria}
           maxLength={500}
         />
         {value ? (
-          <Button type="button" variant="ghost" size="sm" onClick={() => onChange('')} aria-label="Clear query">
-            Clear
+          <Button type="button" variant="ghost" size="sm" onClick={() => onChange('')} aria-label={COPY.query.clear}>
+            {COPY.query.clear}
           </Button>
         ) : null}
         <Button type="submit" variant="primary" size="md">
@@ -378,9 +379,9 @@ export function AnswerEngineLogin({ onLogin, error, backendAvailable = true }: A
       <Card className="relative z-10 w-full max-w-md" padding="lg">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-lg bg-fg text-bg font-bold">N</div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-fg-muted">IIT Gandhinagar</p>
-          <h1 className="mt-2 text-2xl font-bold text-fg">National Research Graph</h1>
-          <p className="mt-2 text-sm leading-6 text-fg-muted">Sovereign intelligence over India's research database</p>
+          <p className="text-xs font-semibold uppercase tracking-widest text-fg-muted">{COPY.login.institute}</p>
+          <h1 className="mt-2 text-2xl font-bold text-fg">{COPY.login.title}</h1>
+          <p className="mt-2 text-sm leading-6 text-fg-muted">{COPY.login.subtitle}</p>
         </div>
 
         <div className="mb-4 grid grid-cols-3 gap-2">
@@ -402,7 +403,7 @@ export function AnswerEngineLogin({ onLogin, error, backendAvailable = true }: A
 
         {!backendAvailable ? (
           <div className="mb-4 rounded-md border border-warning bg-warning/10 px-3 py-2 text-sm text-warning">
-            Connection is unavailable. Check the local stack and retry.
+            {COPY.login.unavailable}
           </div>
         ) : null}
 
@@ -424,7 +425,7 @@ export function AnswerEngineLogin({ onLogin, error, backendAvailable = true }: A
           }}
         >
           <Input
-            label="Email"
+            label={COPY.login.email}
             type="email"
             value={username}
             onChange={(event) => setUsername(event.target.value)}
@@ -433,7 +434,7 @@ export function AnswerEngineLogin({ onLogin, error, backendAvailable = true }: A
             leftSlot={<KeyRound className="h-4 w-4" />}
           />
           <Input
-            label="Password"
+            label={COPY.login.password}
             type={showPassword ? 'text' : 'password'}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
@@ -460,7 +461,7 @@ export function AnswerEngineLogin({ onLogin, error, backendAvailable = true }: A
             {submitting ? 'Signing you in...' : 'Sign in'}
           </Button>
         </form>
-        <p className="mt-5 text-center text-xs text-fg-muted">No credentials? Contact your IRPC officer.</p>
+        <p className="mt-5 text-center text-xs text-fg-muted">{COPY.login.noCredentials}</p>
       </Card>
     </main>
   )
@@ -479,14 +480,14 @@ export function AnswerEngineHome({ role, tier, username, onLogout, onPersonaChan
           <div className="mx-auto max-w-3xl">
             <Pill tone={tier >= 3 ? 'neutral' : tier === 2 ? 'warning' : 'info'}>{meta.tierLabel} · {meta.tone}</Pill>
             <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight text-fg md:text-6xl">
-              What would you like to know about India's research ecosystem?
+              {COPY.home.question}
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-fg-muted">
-              Sovereign intelligence over India's research database
+              {COPY.home.subtitle}
             </p>
           </div>
           <QueryBox value={query} onChange={setQuery} onSubmit={onQuerySubmit} autoFocus />
-          <p className="text-xs font-medium text-fg-muted">Press / to focus</p>
+          <p className="text-xs font-medium text-fg-muted">{COPY.query.slashHint}</p>
           <SuggestionChips role={role} onPick={(suggestion) => {
             setQuery(suggestion)
             onQuerySubmit(suggestion)
@@ -514,7 +515,7 @@ export function AnswerEngineDashboard({ role, tier, username, onLogout, onPerson
               <h1 className="mt-4 text-3xl font-bold text-fg md:text-5xl">{meta.tone}</h1>
               <p className="mt-3 text-base leading-7 text-fg-muted">{meta.scope}</p>
             </div>
-            <Button variant="secondary" onClick={() => onNavigate('/app/audit')}>Open audit list</Button>
+            <Button variant="secondary" onClick={() => onNavigate('/app/audit')}>{COPY.home.openAudit}</Button>
           </div>
           <div className="mt-6">
             <QueryBox value={query} onChange={setQuery} onSubmit={onQuerySubmit} compact />
@@ -598,26 +599,26 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
     <Chrome role={role} tier={tier} username={username} onLogout={onLogout} onPersonaChange={onPersonaChange} onNavigate={onNavigate}>
       <section className="space-y-4" data-testid="answer-route">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="ghost" onClick={() => onNavigate('/app')}><ArrowLeft className="h-4 w-4" />Back</Button>
+          <Button variant="ghost" onClick={() => onNavigate('/app')}><ArrowLeft className="h-4 w-4" />{COPY.answer.back}</Button>
           <div className="flex items-center gap-2">
-            <Pill tone={confidenceTone}>{!query ? 'no query' : `confidence: ${confidenceLabel}`}</Pill>
+            <Pill tone={confidenceTone}>{!query ? COPY.answer.noQuery : `${COPY.answer.confidencePrefix} ${confidenceLabel}`}</Pill>
           </div>
         </div>
 
         {blockedQuery ? (
           <Card data-testid="prompt-blocked" padding="lg" className="border-warning/50 bg-warning/10">
-            <h1 className="text-2xl font-bold text-fg">Sensitive prompt blocked</h1>
+            <h1 className="text-2xl font-bold text-fg">{COPY.answer.blockedTitle}</h1>
             <p className="mt-3 text-sm leading-6 text-fg-muted">
-              The query "{blockedQuery}" asks for restricted personal identifiers. NRG cannot process or display Aadhaar, PAN, passport, bank account, GSTIN, phone, or email lists.
+              {COPY.answer.blockedBody(blockedQuery)}
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg">Show privacy-safe aggregate counts by state</button>
-              <button type="button" className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg">Summarize research capacity without personal identifiers</button>
+              <button type="button" className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg">{COPY.answer.aggregateSuggestion}</button>
+              <button type="button" className="rounded-md border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg">{COPY.answer.capacitySuggestion}</button>
             </div>
           </Card>
         ) : !query ? (
           <Card padding="lg">
-            <p className="text-sm text-fg-muted">No query submitted. <button type="button" onClick={() => onNavigate('/app')} className="text-accent underline">Go back</button> and enter a question.</p>
+            <p className="text-sm text-fg-muted">{COPY.answer.noQuerySubmitted} <button type="button" onClick={() => onNavigate('/app')} className="text-accent underline">{COPY.answer.goBack}</button> {COPY.answer.noQuerySuffix}</p>
           </Card>
         ) : (
         <Card padding="lg" className="space-y-4">
@@ -635,20 +636,20 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
           />
           {isVerified && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-              <Button variant="secondary" data-testid="answer-route-copy-answer-button" onClick={() => navigator.clipboard?.writeText(fullText)}>Copy answer</Button>
-              <Button variant="secondary" data-testid="answer-route-source-data-toggle" onClick={() => setDrawer('source')}>View source data {retrievedCount > 0 && `(${retrievedCount} rows)`}</Button>
-              <Button variant="secondary" data-testid="answer-route-audit-event-toggle" onClick={() => setDrawer('audit')}>View audit event</Button>
+              <Button variant="secondary" data-testid="answer-route-copy-answer-button" onClick={() => navigator.clipboard?.writeText(fullText)}>{COPY.answer.copyAnswer}</Button>
+              <Button variant="secondary" data-testid="answer-route-source-data-toggle" onClick={() => setDrawer('source')}>{COPY.answer.viewSource} {retrievedCount > 0 && `(${retrievedCount} ${COPY.audit.rows})`}</Button>
+              <Button variant="secondary" data-testid="answer-route-audit-event-toggle" onClick={() => setDrawer('audit')}>{COPY.answer.viewAudit}</Button>
             </div>
           )}
           {isVerified && (
             <section data-testid="side-by-side-panel" className="grid gap-3 rounded-lg border border-border bg-bg-subtle p-4 md:grid-cols-2">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-widest text-fg-muted">Tier 1</p>
-                <p className="mt-1 text-sm font-semibold text-fg">Researcher view keeps source-level evidence, citations, SQL, and audit proof visible.</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-fg-muted">{COPY.answer.tierOne}</p>
+                <p className="mt-1 text-sm font-semibold text-fg">{COPY.answer.tierOneBody}</p>
               </div>
               <div data-testid="what-changed-annotation" className="rounded-md border border-warning/40 bg-warning/10 p-3">
-                <p className="text-xs font-semibold uppercase tracking-widest text-warning">Access restricted</p>
-                <p className="mt-1 text-sm font-medium text-fg-muted">Tier 3 removes personal detail and shows only aggregate, partnership-safe evidence.</p>
+                <p className="text-xs font-semibold uppercase tracking-widest text-warning">{COPY.answer.accessRestricted}</p>
+                <p className="mt-1 text-sm font-medium text-fg-muted">{COPY.answer.tierThreeBody}</p>
               </div>
             </section>
           )}
@@ -664,18 +665,18 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         )}
       </section>
 
-      <Drawer open={drawer === 'source'} title="Source data" onClose={() => setDrawer(null)} testId="source-data-drawer">
+      <Drawer open={drawer === 'source'} title={COPY.source.title} onClose={() => setDrawer(null)} testId="source-data-drawer">
         <div data-testid="source-data-panel" className="space-y-4">
           {sql ? (
             <Card>
-              <p className="mb-2 text-sm font-semibold text-fg">SQL query</p>
+              <p className="mb-2 text-sm font-semibold text-fg">{COPY.source.sqlQuery}</p>
               <code className="mt-2 block overflow-auto rounded-md bg-bg-subtle p-3 font-mono text-xs text-fg-muted">
                 {sql}
               </code>
             </Card>
           ) : (
             <Card>
-              <p className="text-sm text-fg-muted">SQL will appear here once the query executes.</p>
+              <p className="text-sm text-fg-muted">{COPY.source.sqlWaiting}</p>
             </Card>
           )}
           <Card className="overflow-auto">
@@ -684,37 +685,37 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
                 <thead className="text-xs uppercase tracking-widest text-fg-muted">
                   <tr>
                     <th className="border-b border-border px-3 py-2">#</th>
-                    <th className="border-b border-border px-3 py-2">Retrieved rows</th>
+                    <th className="border-b border-border px-3 py-2">{COPY.source.retrievedRows}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td className="border-b border-border px-3 py-2 text-fg-muted">1</td>
-                    <td className="border-b border-border px-3 py-2 font-mono text-fg-muted">{retrievedCount.toLocaleString('en-IN')} rows retrieved</td>
+                    <td className="border-b border-border px-3 py-2 font-mono text-fg-muted">{retrievedCount.toLocaleString('en-IN')} {COPY.source.rowsRetrieved}</td>
                   </tr>
                 </tbody>
               </table>
             ) : (
-              <p className="text-sm text-fg-muted">Results will appear here once the query executes.</p>
+              <p className="text-sm text-fg-muted">{COPY.source.resultWaiting}</p>
             )}
           </Card>
         </div>
       </Drawer>
 
-      <Drawer open={drawer === 'audit'} title="Audit event" onClose={() => setDrawer(null)} testId="audit-event-drawer">
+      <Drawer open={drawer === 'audit'} title={COPY.audit.title} onClose={() => setDrawer(null)} testId="audit-event-drawer">
         <div className="space-y-4">
         {auditEventId && <HmacProof auditEventId={auditEventId} />}
         <dl data-testid="audit-event-panel" className="grid gap-3 text-sm">
-          <div><dt className="font-semibold text-fg">Event ID</dt><dd className="font-mono text-fg-muted">{auditEventId || 'pending'}</dd></div>
-          <div><dt className="font-semibold text-fg">Query</dt><dd className="text-fg-muted">{query}</dd></div>
-          <div><dt className="font-semibold text-fg">Retrieved</dt><dd className="font-mono text-fg-muted">{retrievedCount.toLocaleString('en-IN')} rows</dd></div>
-          <div><dt className="font-semibold text-fg">Citations</dt><dd className="font-mono text-fg-muted">{citations.length}</dd></div>
-          {signatureBytes && <div><dt className="font-semibold text-fg">Signature bytes</dt><dd className="font-mono text-fg-muted">{signatureBytes}</dd></div>}
-          <div><dt className="font-semibold text-fg">Verification</dt><dd className={isVerified ? 'text-success' : 'text-fg-muted'}>{isVerified ? 'Verified' : 'Pending'}</dd></div>
+          <div><dt className="font-semibold text-fg">{COPY.audit.eventId}</dt><dd className="font-mono text-fg-muted">{auditEventId || COPY.audit.pending.toLowerCase()}</dd></div>
+          <div><dt className="font-semibold text-fg">{COPY.audit.query}</dt><dd className="text-fg-muted">{query}</dd></div>
+          <div><dt className="font-semibold text-fg">{COPY.audit.retrieved}</dt><dd className="font-mono text-fg-muted">{retrievedCount.toLocaleString('en-IN')} {COPY.audit.rows}</dd></div>
+          <div><dt className="font-semibold text-fg">{COPY.audit.citations}</dt><dd className="font-mono text-fg-muted">{citations.length}</dd></div>
+          {signatureBytes && <div><dt className="font-semibold text-fg">{COPY.audit.signatureBytes}</dt><dd className="font-mono text-fg-muted">{signatureBytes}</dd></div>}
+          <div><dt className="font-semibold text-fg">{COPY.audit.verification}</dt><dd className={isVerified ? 'text-success' : 'text-fg-muted'}>{isVerified ? COPY.audit.verified : COPY.audit.pending}</dd></div>
           {auditEventId && (
             <div className="pt-2">
               <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(auditEventId).then(() => {})}>
-                Verify on chain
+                {COPY.audit.verifyOnChain}
               </Button>
             </div>
           )}
@@ -722,24 +723,24 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         </div>
       </Drawer>
 
-      <Drawer open={drawer === 'citation'} title="Citation details" onClose={() => setDrawer(null)} testId="citation-drawer">
+      <Drawer open={drawer === 'citation'} title={COPY.audit.citationTitle} onClose={() => setDrawer(null)} testId="citation-drawer">
         {selectedCitation && citationMap[selectedCitation] ? (
           <div className="space-y-3 text-sm">
             <p className="font-semibold text-fg">{citationMap[selectedCitation].title || citationMap[selectedCitation].pub_id}</p>
             {citationMap[selectedCitation].authors && (
-              <p className="text-fg-muted">Authors: {Array.isArray(citationMap[selectedCitation].authors) ? citationMap[selectedCitation].authors.join(', ') : citationMap[selectedCitation].authors}</p>
+              <p className="text-fg-muted">{COPY.audit.authors} {Array.isArray(citationMap[selectedCitation].authors) ? citationMap[selectedCitation].authors.join(', ') : citationMap[selectedCitation].authors}</p>
             )}
-            {citationMap[selectedCitation].year && <p className="text-fg-muted">Year: {citationMap[selectedCitation].year}</p>}
+            {citationMap[selectedCitation].year && <p className="text-fg-muted">{COPY.audit.year} {citationMap[selectedCitation].year}</p>}
             {citationMap[selectedCitation].chunk_text && (
               <p className="rounded-md bg-bg-subtle p-3 text-fg-muted">{citationMap[selectedCitation].chunk_text}</p>
             )}
-            <p className="font-mono text-xs text-fg-muted">pub_id: {citationMap[selectedCitation].pub_id}</p>
+            <p className="font-mono text-xs text-fg-muted">{COPY.audit.pubId} {citationMap[selectedCitation].pub_id}</p>
             {citationMap[selectedCitation].audit_event_id && (
               <HmacProof auditEventId={citationMap[selectedCitation].audit_event_id} />
             )}
           </div>
         ) : (
-          <p className="text-sm text-fg-muted">Select a citation from the answer above.</p>
+          <p className="text-sm text-fg-muted">{COPY.audit.selectCitation}</p>
         )}
       </Drawer>
     </Chrome>
@@ -780,28 +781,28 @@ export function AnswerEngineAudit({ role, tier, username, onLogout, onPersonaCha
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <Pill tone={chainStatus === 'intact' ? 'success' : chainStatus === 'pending' ? 'warning' : 'danger'}>
-              Chain {chainStatus}
+              {`${COPY.audit.chainPrefix} ${chainStatus}`}
             </Pill>
-            <h1 className="mt-3 text-3xl font-bold text-fg">Audit trail</h1>
-            <p className="mt-2 text-sm text-fg-muted">Every answer, citation, and tier switch is inspectable.</p>
+            <h1 className="mt-3 text-3xl font-bold text-fg">{COPY.audit.trailTitle}</h1>
+            <p className="mt-2 text-sm text-fg-muted">{COPY.audit.trailSubtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Select
-              label="Filter by user"
+              label={COPY.audit.filterUser}
               value={filter}
               onChange={(event) => setFilter(event.target.value as typeof filter)}
             >
-              <option value="all">All personas</option>
-              <option value="researcher">Researcher</option>
-              <option value="government">Government</option>
-              <option value="industry">Industry</option>
+              <option value="all">{COPY.audit.allPersonas}</option>
+              <option value="researcher">{ROLE_META.researcher.label}</option>
+              <option value="government">{ROLE_META.government.label}</option>
+              <option value="industry">{ROLE_META.industry.label}</option>
             </Select>
           </div>
         </div>
         <Card className="overflow-hidden p-0">
           <div className="flex items-center gap-2 border-b border-border px-4 py-3 text-xs font-semibold uppercase tracking-widest text-fg-muted">
             <Filter className="h-4 w-4" />
-            Filter by user · persona · time · outcome
+            {COPY.audit.filterHint}
           </div>
           <div className="max-h-[70vh] overflow-auto">
             {loading ? (
@@ -809,7 +810,7 @@ export function AnswerEngineAudit({ role, tier, username, onLogout, onPersonaCha
                 <Skeleton className="h-64 w-full" />
               </div>
             ) : visibleRows.length === 0 ? (
-              <div className="py-12 text-center text-sm text-fg-muted">No audit events found.</div>
+              <div className="py-12 text-center text-sm text-fg-muted">{COPY.audit.empty}</div>
             ) : (
               visibleRows.map((row) => (
                 <button
@@ -834,30 +835,30 @@ export function AnswerEngineAudit({ role, tier, username, onLogout, onPersonaCha
           </div>
         </Card>
       </section>
-      <Drawer open={Boolean(selected)} title="Audit event metadata" onClose={() => setSelected(null)} testId="audit-event-drawer">
+      <Drawer open={Boolean(selected)} title={COPY.audit.metadataTitle} onClose={() => setSelected(null)} testId="audit-event-drawer">
         {selected ? (() => {
           const event = events.find((e) => e.id === selected)
           return event ? (
             <div className="space-y-4">
             <HmacProof auditEventId={selected} />
             <dl className="grid gap-3 text-sm">
-              <div><dt className="font-semibold text-fg">Event ID</dt><dd className="font-mono text-fg-muted">{event.id}</dd></div>
-              <div><dt className="font-semibold text-fg">HMAC</dt><dd className="font-mono text-fg-muted">{event.hmac}</dd></div>
-              <div><dt className="font-semibold text-fg">Timestamp</dt><dd className="text-fg-muted">{new Date(event.timestamp).toLocaleString('en-IN')}</dd></div>
-              <div><dt className="font-semibold text-fg">Actor</dt><dd className="text-fg-muted">{event.actor || event.user_id || 'unknown'}</dd></div>
-              <div><dt className="font-semibold text-fg">Action</dt><dd className="text-fg-muted">{event.action}</dd></div>
-              <div><dt className="font-semibold text-fg">Persona</dt><dd className="text-fg-muted">{event.persona}</dd></div>
-              <div><dt className="font-semibold text-fg">Tier</dt><dd className="text-fg-muted">{event.tier}</dd></div>
-              <div><dt className="font-semibold text-fg">Integrity</dt><dd className={event.integrity_status === 'intact' ? 'text-success' : 'text-danger'}>{event.integrity_status}</dd></div>
-              {event.query && <div><dt className="font-semibold text-fg">Query</dt><dd className="text-fg-muted">{event.query}</dd></div>}
-              {event.evidence_count != null && <div><dt className="font-semibold text-fg">Evidence count</dt><dd className="font-mono text-fg-muted">{event.evidence_count}</dd></div>}
+              <div><dt className="font-semibold text-fg">{COPY.audit.eventId}</dt><dd className="font-mono text-fg-muted">{event.id}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.hmac}</dt><dd className="font-mono text-fg-muted">{event.hmac}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.timestamp}</dt><dd className="text-fg-muted">{new Date(event.timestamp).toLocaleString('en-IN')}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.actor}</dt><dd className="text-fg-muted">{event.actor || event.user_id || 'unknown'}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.action}</dt><dd className="text-fg-muted">{event.action}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.persona}</dt><dd className="text-fg-muted">{event.persona}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.tier}</dt><dd className="text-fg-muted">{event.tier}</dd></div>
+              <div><dt className="font-semibold text-fg">{COPY.audit.integrity}</dt><dd className={event.integrity_status === 'intact' ? 'text-success' : 'text-danger'}>{event.integrity_status}</dd></div>
+              {event.query && <div><dt className="font-semibold text-fg">{COPY.audit.query}</dt><dd className="text-fg-muted">{event.query}</dd></div>}
+              {event.evidence_count != null && <div><dt className="font-semibold text-fg">{COPY.audit.evidenceCount}</dt><dd className="font-mono text-fg-muted">{event.evidence_count}</dd></div>}
               <div className="pt-2">
-                <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(selected)}>Verify on chain</Button>
+                <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(selected)}>{COPY.audit.verifyOnChain}</Button>
               </div>
             </dl>
             </div>
           ) : (
-            <p className="text-sm text-fg-muted">Event not found.</p>
+            <p className="text-sm text-fg-muted">{COPY.audit.eventNotFound}</p>
           )
         })() : null}
       </Drawer>

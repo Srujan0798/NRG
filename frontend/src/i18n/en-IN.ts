@@ -108,6 +108,9 @@ export const actionCopy = {
   search: 'Search',
   submit: 'Submit',
   refresh: 'Refresh',
+  loading: 'Loading',
+  closeDrawer: 'Close drawer',
+  closeModal: 'Close modal',
 }
 
 export const dashboardCopy = {

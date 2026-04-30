@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { actionCopy } from '../../i18n'
 
 type Size = 'sm' | 'md' | 'lg'
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -49,7 +50,7 @@ export function Button({
         className,
       )}
     >
-      {loading ? <Spinner size="sm" label="Loading" /> : null}
+      {loading ? <Spinner size="sm" label={actionCopy.loading} /> : null}
       <span className={loading ? 'opacity-90' : ''}>{children}</span>
     </button>
   )
@@ -227,11 +228,11 @@ export function Drawer({ open, title, onClose, children, testId }: DrawerProps) 
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title} data-testid={testId}>
-      <button className="absolute inset-0 bg-fg/20" type="button" aria-label="Close drawer" onClick={onClose} />
+      <button className="absolute inset-0 bg-fg/20" type="button" aria-label={actionCopy.closeDrawer} onClick={onClose} />
       <aside className="absolute bottom-0 right-0 top-0 flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-lg max-md:max-w-none">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-base font-bold text-fg">{title}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>{actionCopy.close}</Button>
         </header>
         <div className="min-h-0 flex-1 overflow-auto p-5">{children}</div>
       </aside>
@@ -254,11 +255,11 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <button className="absolute inset-0 bg-fg/20" type="button" aria-label="Close modal" onClick={onClose} />
+      <button className="absolute inset-0 bg-fg/20" type="button" aria-label={actionCopy.closeModal} onClick={onClose} />
       <section className="relative w-full max-w-lg rounded-lg border border-border bg-surface p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-base font-bold text-fg">{title}</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>Close</Button>
+          <Button variant="ghost" size="sm" onClick={onClose}>{actionCopy.close}</Button>
         </div>
         {children}
       </section>
@@ -290,7 +291,7 @@ export interface SpinnerProps {
   label?: string
 }
 
-export function Spinner({ size = 'md', label = 'Loading' }: SpinnerProps) {
+export function Spinner({ size = 'md', label = actionCopy.loading }: SpinnerProps) {
   const spinnerSize = size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5'
   return (
     <span className={cx('inline-block animate-spin rounded-full border-2 border-current border-t-transparent', spinnerSize)} role="status" aria-label={label} />

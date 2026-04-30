@@ -71,8 +71,38 @@ The external input folder contains five text sources, 3,019 total lines:
 - Deployed-environment browser replay remains target-environment dependent.
 - Production Qdrant corpus/drift baseline remains target-environment dependent.
 - Founder GPG signing ceremony remains founder-only.
-- Broad i18n source-discipline failures are known existing baseline issues and
-  are separate from this evidence/workflow pass.
+- Broad i18n source-discipline failures were fixed for production TSX surfaces in
+  the May 1 validation campaign by centralizing Answer Engine copy and excluding
+  Storybook-only files from the production raw-string guard.
+
+## May 1 Validation Campaign Update
+
+The validation campaign moved from workflow documentation into product fixes and
+fresh evidence. The local campaign fixed blocked-response metadata leakage,
+restored citation compatibility fields, hardened killer-query evidence capture,
+and centralized visible Answer Engine copy.
+
+Fresh gates:
+
+- Backend/security/audit/query/RAG suite:
+  `195 passed, 1 skipped, 7 deselected`.
+- Focused SQL-injection/security/contract regression:
+  `40 passed`.
+- Frontend Jest:
+  `26 passed, 26 total`; `97 passed, 97 total`.
+- Frontend production build passed.
+- Killer-query health passed for KILLER-01, KILLER-02, and KILLER-03.
+- Corpus sync passed with `ok: true`.
+- `git diff --check` and `scripts/forbidden_vocab_check.sh` passed.
+
+Primary evidence:
+
+- `evidence/2026-05-01/validation_campaign/VALIDATION_CAMPAIGN_REPORT.md`
+- `evidence/2026-05-01/validation_campaign_backend_tests.log`
+- `evidence/2026-05-01/validation_campaign_frontend_jest.log`
+- `evidence/2026-05-01/validation_campaign_frontend_build.log`
+- `evidence/2026-05-01/validation_campaign_killer_output.log`
+- `evidence/2026-05-01/validation_campaign/killer/`
 
 ## Next Step
 

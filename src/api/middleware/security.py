@@ -188,17 +188,11 @@ def verify_request_signature(
 ):
     """Dependency to verify request signature."""
     if not x_signature or not x_timestamp:
-        raise HTTPException(
-            status_code=401,
-            detail="Missing request signature"
-        )
+        raise HTTPException(status_code=401, detail="Missing request signature")
 
     body = getattr(request, "_body", "")
     if not request_signer.verify(body, x_timestamp, x_signature):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid request signature"
-        )
+        raise HTTPException(status_code=401, detail="Invalid request signature")
 
     return True
 
@@ -211,10 +205,22 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
     """
 
     SKIP_PATHS = {
-        "/health", "/health/llm", "/health/db", "/health/qdrant", "/health/all",
-        "/metrics", "/docs", "/openapi.json", "/favicon.ico",
-        "/login", "/logout", "/refresh",
-        "/auth/login", "/auth/logout", "/auth/refresh", "/auth/session",
+        "/health",
+        "/health/llm",
+        "/health/db",
+        "/health/qdrant",
+        "/health/all",
+        "/metrics",
+        "/docs",
+        "/openapi.json",
+        "/favicon.ico",
+        "/login",
+        "/logout",
+        "/refresh",
+        "/auth/login",
+        "/auth/logout",
+        "/auth/refresh",
+        "/auth/session",
         "/api/query/stream",
     }
 
@@ -235,6 +241,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                     audit_event_id = None
                     try:
                         from src.audit import log_anomaly
+
                         user_id = getattr(request.state, "auth_claims", {}).get("sub", "anonymous")
                         audit_event_id = await asyncio.to_thread(
                             log_anomaly,
@@ -244,7 +251,9 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                                 "field": field_name,
                                 "path": request.url.path,
                                 "details": validation.get("details", ""),
-                                "rate_limit_triggered": validation.get("rate_limit_triggered", False),
+                                "rate_limit_triggered": validation.get(
+                                    "rate_limit_triggered", False
+                                ),
                             },
                             identifier=identifier,
                         )
@@ -270,7 +279,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                             audit_event_id=audit_event_id,
                             reason=f"Security policy blocked this query: {validation['reason']}",
                         )
-                        return JSONResponse(status_code=400, content=blocked)
+                        return JSONResponse(status_code=200, content=blocked)
                     return JSONResponse(
                         status_code=429 if validation["reason"] == "RATE_LIMITED" else 400,
                         content={"detail": f"Security violation: {validation['reason']}"},

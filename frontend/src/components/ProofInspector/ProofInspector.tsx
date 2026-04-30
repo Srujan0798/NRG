@@ -34,6 +34,7 @@ const PROOF_COPY = {
   audit: 'Audit',
   currentAuditId: 'Current audit event',
   rows: 'Rows',
+  downloadVisibleRows: 'Download visible rows',
   sqlUnavailable: 'Source SQL is unavailable for this response.',
   eventId: 'Event ID',
   auditUnavailable: 'Audit proof was not returned for this answer. Try again.',
@@ -205,7 +206,7 @@ export function ProofInspector({
                 className="mt-2 min-h-9 rounded-md border border-nrg-border px-3 text-xs font-semibold text-nrg-text"
                 onClick={() => downloadCsv(sourceRows)}
               >
-                Download visible rows
+                {PROOF_COPY.downloadVisibleRows}
               </button>
             )}
             <pre className="mt-2 max-h-36 overflow-auto whitespace-pre-wrap rounded-md bg-[var(--nrg-surface-2)] p-2 text-xs text-nrg-text">

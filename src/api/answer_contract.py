@@ -9,6 +9,7 @@ TierName = Literal["researcher", "government", "industry"]
 RouteName = Literal["sql", "rag", "hybrid", "clarify", "blocked"]
 ConfidenceLevel = Literal["high", "medium", "low", "needs_clarification"]
 SourceType = Literal["sql_row", "document_chunk", "graph_edge"]
+BLOCKED_QUERY_PLACEHOLDER = "[blocked by security policy]"
 
 
 class AnswerConfidence(BaseModel):
@@ -184,14 +185,15 @@ def blocked_answer_payload(
         "I cannot process this request because it asks for sensitive or restricted information. "
         "Try an aggregate question about institutions, labs, capability areas, or public contact routes instead."
     )
+    safe_question = BLOCKED_QUERY_PLACEHOLDER
     return {
         "query_id": query_id or str(uuid.uuid4()),
         "answer_id": str(uuid.uuid4()),
         "audit_event_id": audit_event_id,
         "tier": user_tier,
-        "query": question,
-        "question": question,
-        "interpreted_question": question,
+        "query": safe_question,
+        "question": safe_question,
+        "interpreted_question": safe_question,
         "assumptions": [],
         "route": "blocked",
         "blocked": True,
@@ -267,6 +269,9 @@ def normalize_workflow_result(
         query_time_ms=int(elapsed_ms),
     )
     payload = response.model_dump()
+    for citation in payload["citations"]:
+        citation.setdefault("title", citation.get("label"))
+        citation.setdefault("publication_id", citation.get("source_id"))
     raw_verification_status = result.get("verification_status", False)
     verification_status = normalize_verification_status(raw_verification_status)
     payload.update(

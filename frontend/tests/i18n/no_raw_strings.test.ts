@@ -35,7 +35,7 @@ function listTsxFiles(root: string): string[] {
     const absolutePath = path.join(absoluteRoot, entry.name)
     const relativePath = path.relative(FRONTEND_ROOT, absolutePath)
     if (entry.isDirectory()) return listTsxFiles(relativePath)
-    if (!entry.name.endsWith('.tsx')) return []
+    if (!entry.name.endsWith('.tsx') || entry.name.endsWith('.stories.tsx')) return []
     if (ALLOWLISTED_FILES.has(relativePath)) return []
     return [absolutePath]
   })

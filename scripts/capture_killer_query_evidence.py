@@ -14,7 +14,6 @@ from typing import Any
 
 import yaml
 
-
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_DIR = ROOT / os.getenv("NRG_EVIDENCE_DIR", "evidence/2026-04-27")
 CORPUS = ROOT / "tests/benchmarks/killer_queries.yaml"
@@ -160,6 +159,25 @@ def row_floor() -> dict[str, int]:
 def write_explain(sql: str, path: Path, case_id: str) -> None:
     database_url = os.getenv("DATABASE_URL", "")
     captured = datetime.now(UTC).isoformat()
+    if not sql or not sql.strip():
+        path.write_text(
+            "\n".join(
+                [
+                    f"Killer query: {case_id}",
+                    f"Captured: {captured}",
+                    "Engine: not applicable",
+                    "",
+                    "SQL:",
+                    "",
+                    "",
+                    "Plan:",
+                    "No SQL statement was returned for this query; route was non-SQL or blocked.",
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return
     if database_url.startswith("postgres"):
         try:
             import psycopg2
@@ -176,10 +194,13 @@ def write_explain(sql: str, path: Path, case_id: str) -> None:
     else:
         from src.config.database import register_sqlite_compat_functions
 
-        with sqlite3.connect(sqlite_path()) as conn:
-            register_sqlite_compat_functions(conn)
-            rows = conn.execute(f"EXPLAIN QUERY PLAN {sql}").fetchall()
-        body = "\n".join(str(tuple(row)) for row in rows)
+        try:
+            with sqlite3.connect(sqlite_path()) as conn:
+                register_sqlite_compat_functions(conn)
+                rows = conn.execute(f"EXPLAIN QUERY PLAN {sql}").fetchall()
+            body = "\n".join(str(tuple(row)) for row in rows)
+        except sqlite3.Error as exc:
+            body = f"EXPLAIN QUERY PLAN unavailable: {exc}"
         engine = "local SQLite volumetric proxy"
 
     path.write_text(
@@ -205,8 +226,7 @@ def main() -> int:
     EVIDENCE_DIR.mkdir(parents=True, exist_ok=True)
     api = client()
     tokens = {
-        role: login(api, username, password)
-        for role, (username, password, _tier) in ROLES.items()
+        role: login(api, username, password) for role, (username, password, _tier) in ROLES.items()
     }
 
     health_queries: list[dict[str, Any]] = []
@@ -236,7 +256,9 @@ def main() -> int:
         evidence_path = EVIDENCE_DIR / f"killer_query_{index}_response.json"
         explain_path = EVIDENCE_DIR / f"explain_killer_{index}.txt"
         researcher_payload = responses["researcher"]["payload"]
-        sql = researcher_payload.get("sql_query") or " ".join(researcher_payload.get("sql_queries") or [])
+        sql = researcher_payload.get("sql_query") or " ".join(
+            researcher_payload.get("sql_queries") or []
+        )
         write_explain(sql, explain_path, case["id"])
 
         evidence_path.write_text(
@@ -271,7 +293,11 @@ def main() -> int:
     health = {
         "status": "healthy",
         "last_run_time": datetime.now(UTC).isoformat(),
-        "source": "local_volumetric_sqlite_proxy" if not os.getenv("NRG_API_URL") else os.getenv("NRG_API_URL"),
+        "source": (
+            "local_volumetric_sqlite_proxy"
+            if not os.getenv("NRG_API_URL")
+            else os.getenv("NRG_API_URL")
+        ),
         "row_floor": row_floor(),
         "queries": health_queries,
     }
