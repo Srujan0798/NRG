@@ -1,0 +1,101 @@
+{
+  "tier": 3,
+  "query": "top AI funding institutions",
+  "result": {
+    "query_id": "1f475280-8435-4633-a51d-f1f8b9c70573",
+    "session_id": null,
+    "response": "IIT Madras leads India's computer science research funding with \u20b9187.20 Cr across 71 active researchers, followed by IIT Bombay at \u20b9171.50 Cr across 66 researchers. [cite:nrg-researchers:0]\n\nThe data shows two premier institutions commanding a combined \u20b9358.70 Cr in verified research funding, with IIT Madras holding a marginal advantage in both researcher count and aggregate allocation. These figures reflect deterministic records from researcher funding databases and institutional metadata. [cite:nrg-institutions:0]\n\nFor Tier 3 partners, institutional-level aggregates enable strategic benchmarking and collaboration opportunity identification while maintaining researcher privacy. Anonymized capability mapping allows assessment of research capacity without exposing personal identifiers or individual contact details.\n\nThe evidence covers only the top 2 ranked institutions by aggregate funding\u2014broader landscape analysis requires higher-tier access. All figures are derived from verified runtime database records; funding allocation methodologies may vary across institutions.",
+    "status": "success",
+    "tier": 3,
+    "intent": "funding_aggregate",
+    "routing_decision": "fast_path",
+    "verification_status": true,
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.96,
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "id": "nrg-researchers:0",
+        "pub_id": "nrg-researchers",
+        "paper_id": "nrg-researchers",
+        "chunk_id": "0",
+        "title": "NRG funding corpus: aggregate institution evidence",
+        "authors": [
+          "National Research Graph"
+        ],
+        "year": 2026,
+        "source": "researchers",
+        "chunk_text": "Aggregate funding and matching record counts are computed from the runtime database or deterministic release seed when local tables are empty.",
+        "relevance_score": 1.0
+      },
+      {
+        "id": "nrg-institutions:0",
+        "pub_id": "nrg-institutions",
+        "paper_id": "nrg-institutions",
+        "chunk_id": "0",
+        "title": "NRG institution metadata",
+        "authors": [
+          "National Research Graph"
+        ],
+        "year": 2026,
+        "source": "institutions",
+        "chunk_text": "Institution names, states, and identifiers are joined from NRG institution metadata.",
+        "relevance_score": 1.0
+      }
+    ],
+    "sql_query": null,
+    "sql_results": [
+      {
+        "rank": 1,
+        "institution": "IIT Madras",
+        "state": "Tamil Nadu",
+        "researchers": 71,
+        "aggregate_funding": "\u20b9187.20 Cr"
+      },
+      {
+        "rank": 2,
+        "institution": "IIT Bombay",
+        "state": "Maharashtra",
+        "researchers": 66,
+        "aggregate_funding": "\u20b9171.50 Cr"
+      }
+    ],
+    "warnings": [
+      {
+        "message": "Fast bounded synthesis used for aggregate funding query."
+      },
+      {
+        "message": "Access restricted: Tier 3 shows institution-level aggregates only. Individual researcher names, contacts, and personal identifiers are hidden."
+      },
+      "Response policy applied: pii_strip:tier3:debug_trace"
+    ],
+    "retrieval_sources": [],
+    "provenance": {
+      "planner": "fast_path",
+      "synth": "cloud_llm_fast_path",
+      "verifier": "faithfulness: 1.0",
+      "cloud_synthesis_used": true,
+      "nrg-researchers": {
+        "found_in": "researchers",
+        "source": "fast_path"
+      },
+      "nrg-institutions": {
+        "found_in": "institutions",
+        "source": "fast_path"
+      },
+      "ai_provider": "minimax",
+      "ai_model": "minimax-m2.7",
+      "ai_synthesis_latency_ms": 11939.0,
+      "deterministic_retrieval_preserved": true
+    },
+    "synthesis_method": "cloud_llm_fast_path",
+    "conversation_history": [],
+    "audit_event_id": "e6148cb138677525687bd011ecb3cb31688d21cf02f548e13a324b0bc9110c84",
+    "query_time_ms": 11939,
+    "final_answer": "IIT Madras leads India's computer science research funding with \u20b9187.20 Cr across 71 active researchers, followed by IIT Bombay at \u20b9171.50 Cr across 66 researchers. [cite:nrg-researchers:0]\n\nThe data shows two premier institutions commanding a combined \u20b9358.70 Cr in verified research funding, with IIT Madras holding a marginal advantage in both researcher count and aggregate allocation. These figures reflect deterministic records from researcher funding databases and institutional metadata. [cite:nrg-institutions:0]\n\nFor Tier 3 partners, institutional-level aggregates enable strategic benchmarking and collaboration opportunity identification while maintaining researcher privacy. Anonymized capability mapping allows assessment of research capacity without exposing personal identifiers or individual contact details.\n\nThe evidence covers only the top 2 ranked institutions by aggregate funding\u2014broader landscape analysis requires higher-tier access. All figures are derived from verified runtime database records; funding allocation methodologies may vary across institutions.",
+    "confidence": "high",
+    "tier3_access_scope": "industry_anonymized",
+    "ai_provider": "minimax",
+    "ai_model": "minimax-m2.7"
+  }
+}

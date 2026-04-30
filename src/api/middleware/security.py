@@ -231,10 +231,11 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                     identifier=identifier,
                 )
                 if not validation["valid"]:
+                    audit_event_id = None
                     try:
                         from src.audit import log_anomaly
                         user_id = getattr(request.state, "auth_claims", {}).get("sub", "anonymous")
-                        log_anomaly(
+                        audit_event_id = log_anomaly(
                             user_id=user_id,
                             anomaly_type=validation["reason"],
                             details={
@@ -256,7 +257,7 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                         blocked = blocked_answer_payload(
                             question=field_value,
                             user_tier=int(claims.get("tier", 1) or 1),
-                            audit_event_id=None,
+                            audit_event_id=audit_event_id,
                             reason=f"Security policy blocked this query: {validation['reason']}",
                         )
                         return JSONResponse(status_code=400, content=blocked)

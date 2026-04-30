@@ -72,6 +72,8 @@ def _assert_blocked_envelope(response, expected_reason: str | None = None) -> di
     assert "personal" in payload["final_answer"].lower() or "sensitive" in payload["final_answer"].lower()
     assert payload["confidence"]["level"] == "needs_clarification"
     assert payload["source_data"]["rows"] == []
+    assert payload["audit_event_id"]
+    assert payload["verification"]["audit_event_id"] == payload["audit_event_id"]
     if expected_reason:
         assert expected_reason in payload["confidence"]["reason"]
     return payload

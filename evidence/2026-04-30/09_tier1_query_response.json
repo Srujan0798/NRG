@@ -1,0 +1,105 @@
+{
+  "tier": 1,
+  "query": "top AI funding institutions",
+  "result": {
+    "query_id": "327207d4-e1f7-401b-ae77-c848a43b0e1c",
+    "session_id": null,
+    "response": "**Headline Finding**\nIIT Madras leads Indian computer science research funding with \u20b9187.20 Cr allocated across 71 active researchers, while IIT Bombay follows closely with \u20b9171.50 Cr supporting 66 researchers. [cite:nrg-researchers:0] [cite:nrg-institutions:0]\n\n**Plain-English Explanation**\nThe data shows",
+    "status": "success",
+    "tier": 1,
+    "intent": "funding_aggregate",
+    "routing_decision": "fast_path",
+    "verification_status": true,
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.96,
+    "citation_validity": 1.0,
+    "citations": [
+      {
+        "id": "nrg-researchers:0",
+        "pub_id": "nrg-researchers",
+        "paper_id": "nrg-researchers",
+        "chunk_id": "0",
+        "title": "NRG funding corpus: aggregate institution evidence",
+        "authors": [
+          "National Research Graph"
+        ],
+        "year": 2026,
+        "source": "researchers",
+        "chunk_text": "Aggregate funding and matching record counts are computed from the runtime database or deterministic release seed when local tables are empty.",
+        "relevance_score": 1.0
+      },
+      {
+        "id": "nrg-institutions:0",
+        "pub_id": "nrg-institutions",
+        "paper_id": "nrg-institutions",
+        "chunk_id": "0",
+        "title": "NRG institution metadata",
+        "authors": [
+          "National Research Graph"
+        ],
+        "year": 2026,
+        "source": "institutions",
+        "chunk_text": "Institution names, states, and identifiers are joined from NRG institution metadata.",
+        "relevance_score": 1.0
+      }
+    ],
+    "sql_query": "SELECT institution, state, researcher_count, funding_cr FROM researchers WHERE topic LIKE '%Computer Science%' ORDER BY funding_cr DESC",
+    "sql_results": [
+      {
+        "rank": 1,
+        "institution": "IIT Madras",
+        "state": "Tamil Nadu",
+        "researchers": 71,
+        "aggregate_funding": "\u20b9187.20 Cr"
+      },
+      {
+        "rank": 2,
+        "institution": "IIT Bombay",
+        "state": "Maharashtra",
+        "researchers": 66,
+        "aggregate_funding": "\u20b9171.50 Cr"
+      }
+    ],
+    "warnings": [
+      {
+        "message": "Fast bounded synthesis used for aggregate funding query."
+      }
+    ],
+    "retrieval_sources": [
+      "researchers",
+      "institutions"
+    ],
+    "provenance": {
+      "planner": "fast_path",
+      "synth": "cloud_llm_fast_path",
+      "verifier": "faithfulness: 1.0",
+      "cloud_synthesis_used": true,
+      "nrg-researchers": {
+        "found_in": "researchers",
+        "source": "fast_path"
+      },
+      "nrg-institutions": {
+        "found_in": "institutions",
+        "source": "fast_path"
+      },
+      "ai_provider": "minimax",
+      "ai_model": "minimax-m2.7",
+      "ai_synthesis_latency_ms": 28957.74,
+      "deterministic_retrieval_preserved": true
+    },
+    "synthesis_method": "cloud_llm_fast_path",
+    "conversation_history": [
+      {
+        "query": "top AI funding institutions",
+        "response": "Computer Science"
+      }
+    ],
+    "audit_event_id": "59321bb1fb3e9c955d82bcb91d38fa527ae7ff690972b43eb5ad144dc275a36c",
+    "query_time_ms": 28958,
+    "final_answer": "**Headline Finding**\nIIT Madras leads Indian computer science research funding with \u20b9187.20 Cr allocated across 71 active researchers, while IIT Bombay follows closely with \u20b9171.50 Cr supporting 66 researchers. [cite:nrg-researchers:0] [cite:nrg-institutions:0]\n\n**Plain-English Explanation**\nThe data shows",
+    "confidence": "high",
+    "tier1_access_scope": "full_detail",
+    "ai_provider": "minimax",
+    "ai_model": "minimax-m2.7"
+  }
+}
