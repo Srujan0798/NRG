@@ -234,6 +234,150 @@ def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
     assert payload["sql_query"]
 
 
+def test_unsupported_ranked_researcher_topic_clarifies_instead_of_generic_fast_path():
+    payload = api_main._fast_query_response(
+        "best medieval poetry researchers",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="unsupported-topic-session",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "needs_clarification"
+    assert payload["routing_decision"] == "clarify"
+    assert payload["sql_results"] == []
+    assert "Matching researcher records are available" not in payload["response"]
+    assert "supported NRG research area" in payload["response"]
+
+
+def test_query_endpoint_contract_contains_stable_answer_fields(monkeypatch):
+    rows = [
+        {
+            "researcher_id": "res-contract-q1",
+            "name": "Dr. Contract Quantum",
+            "institution": "IIT Delhi",
+            "state": "Delhi",
+            "department": "Physics",
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": "",
+            "h_index": 82,
+            "funding_cr": 8.1,
+            "email": "contract.quantum@example.edu",
+        }
+    ]
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            if "r.institution_id" in query:
+                raise RuntimeError("column r.institution_id does not exist")
+            return rows
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
+    monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-contract-123")
+    api_main._api_cache.invalidate()
+
+    from src.services.consent import ConsentService
+    original_has_consent = ConsentService.has_consent
+    ConsentService.has_consent = lambda self, uid, scope: True
+
+    try:
+        client = TestClient(api_main.app)
+        response = client.post(
+            "/query",
+            json={"query": "best quantum researchers....", "session_id": "contract-session"},
+            headers=_auth_headers(client),
+        )
+    finally:
+        ConsentService.has_consent = original_has_consent
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    for field in (
+        "audit_event_id",
+        "query",
+        "response",
+        "sql_query",
+        "sql_results",
+        "citations",
+        "tier",
+        "query_time_ms",
+        "verification",
+    ):
+        assert field in payload
+    assert payload["audit_event_id"] == "audit-contract-123"
+    assert payload["query"] == "best quantum researchers...."
+    assert payload["verification"]["status"] is True
+    assert payload["sql_results"] == rows
+    assert payload["citations"]
+    assert "Dr. Contract Quantum" in payload["response"]
+
+
+def test_fast_query_messy_acceptance_set_has_relevant_distinct_routes(monkeypatch):
+    def fake_researchers(topic, patterns):
+        return (
+            f"SELECT * FROM researchers WHERE topic = '{topic}'",
+            [
+                {
+                    "researcher_id": f"res-{topic.lower().replace(' ', '-')}",
+                    "name": f"Dr. {topic}",
+                    "institution": "IISc Bengaluru",
+                    "state": "Karnataka",
+                    "department": "Research",
+                    "research_area": topic,
+                    "secondary_research_areas": "",
+                    "h_index": 70,
+                    "funding_cr": 10.5,
+                    "email": "topic.expert@example.edu",
+                }
+            ],
+        )
+
+    def fake_funding(topic, patterns):
+        return [
+            {
+                "institution": f"IIT {topic}",
+                "state": "Gujarat",
+                "researcher_count": 7,
+                "funding_cr": 123.4,
+            }
+        ]
+
+    monkeypatch.setattr(api_main, "_query_researchers_for_topic", fake_researchers)
+    monkeypatch.setattr(api_main, "_query_institution_funding", fake_funding)
+    api_main._fast_query_context.clear()
+
+    cases = [
+        ("best ai for fucking", "needs_clarification"),
+        ("best quantum researchers....", "researcher_ranking"),
+        ("top AI researchers by h-index???", "researcher_ranking"),
+        ("leading robotics experts in India", "researcher_ranking"),
+        ("which institutes have highest grant amount in renewable energy??", "funding_aggregate"),
+        ("now show same for computer science pls", "funding_aggregate"),
+        ("how many IIT papers published in 2023??", "publication_count"),
+        ("unknown institute no results zzzz", "no_results"),
+        ("best medieval poetry researchers", "needs_clarification"),
+        ("funding agencies ranked by total grant explain policy pattern", "funding_policy_pattern"),
+    ]
+
+    payloads = [
+        api_main._fast_query_response(
+            query,
+            user_tier=1,
+            user_id="messy-user",
+            session_id="messy-acceptance-session",
+        )
+        for query, _expected_intent in cases
+    ]
+
+    assert all(payload is not None for payload in payloads)
+    for (query, expected_intent), payload in zip(cases, payloads, strict=True):
+        assert payload["intent"] == expected_intent, query
+        assert "Matching researcher records are available" not in payload["response"]
+    assert len({payload["intent"] for payload in payloads}) >= 5
+    assert len({payload["response"] for payload in payloads}) == len(payloads)
+
+
 def test_researcher_ranking_uses_live_schema_institution_column(monkeypatch):
     rows = [
         {

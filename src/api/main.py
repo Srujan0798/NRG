@@ -544,6 +544,14 @@ _RESEARCHER_RANKING_TERMS = (
     "rank",
     "ranked",
 )
+_SUPPORTED_RESEARCH_TOPIC_LABELS = (
+    "Quantum Computing",
+    "Artificial Intelligence",
+    "Renewable Energy",
+    "Biotechnology",
+    "Semiconductor Design",
+    "Robotics",
+)
 
 
 def _has_aggregate_topic_intent(query_lower: str) -> bool:
@@ -613,6 +621,14 @@ def _clarification_fast_response(
         },
         "synthesis_method": "rule_based",
         "conversation_history": [],
+        "node_timings": {
+            "receiver": 0.0,
+            "planner": 0.0,
+            "router": 0.0,
+            "executor": 0.0,
+            "synthesizer": 0.0,
+            "verifier": 0.0,
+        },
     }
 
 
@@ -853,6 +869,14 @@ def _researcher_lookup_fast_response(
             "provenance": {"planner": "researcher_lookup_fast_path", "synth": "rule_based", "verifier": "no_rows", "cloud_synthesis_used": False},
             "synthesis_method": "rule_based",
             "conversation_history": [],
+            "node_timings": {
+                "receiver": 0.0,
+                "planner": 0.0,
+                "router": 0.0,
+                "executor": 0.0,
+                "synthesizer": 0.0,
+                "verifier": 0.0,
+            },
         }
 
     query_lower = query.lower()
@@ -936,6 +960,72 @@ def _researcher_lookup_fast_response(
         },
         "synthesis_method": "rule_based",
         "conversation_history": [],
+        "node_timings": {
+            "receiver": 0.0,
+            "planner": 0.0,
+            "router": 0.0,
+            "executor": 0.0,
+            "synthesizer": 0.0,
+            "verifier": 0.0,
+        },
+    }
+
+
+def _unsupported_ranked_researcher_topic_response(
+    query: str,
+    *,
+    user_tier: int,
+    session_id: str | None,
+) -> dict[str, Any] | None:
+    query_lower = query.lower()
+    if not _is_researcher_query(query):
+        return None
+    if _research_topic_for_query(query) is not None:
+        return None
+    if not any(term in query_lower for term in _RESEARCHER_RANKING_TERMS):
+        return None
+
+    supported_topics = ", ".join(_SUPPORTED_RESEARCH_TOPIC_LABELS)
+    return {
+        "query_id": str(uuid.uuid4()),
+        "session_id": session_id,
+        "response": (
+            "I can rank researchers only after the question names a supported NRG research area. "
+            f"Supported NRG research areas currently include {supported_topics}. "
+            "Try a concrete request such as \"top quantum researchers by h-index\" or "
+            "\"leading AI researchers by disclosed funding\"."
+        ),
+        "status": "success",
+        "tier": user_tier,
+        "intent": "needs_clarification",
+        "routing_decision": "clarify",
+        "verification_status": "needs_clarification",
+        "citation_validity": 0.0,
+        "citations": [],
+        "warnings": [{"message": "Researcher ranking query needs a supported NRG research area."}],
+        "answer_confidence": "needs_clarification",
+        "answer_confidence_score": 0.2,
+        "sql_anomaly_report": {},
+        "sql_query": None,
+        "sql_queries": [],
+        "sql_results": [],
+        "retrieval_sources": [],
+        "provenance": {
+            "planner": "researcher_topic_clarification_guard",
+            "synth": "rule_based",
+            "verifier": "no_generic_researcher_answer_without_topic",
+            "cloud_synthesis_used": False,
+        },
+        "synthesis_method": "rule_based",
+        "conversation_history": [],
+        "node_timings": {
+            "receiver": 0.0,
+            "planner": 0.0,
+            "router": 0.0,
+            "executor": 0.0,
+            "synthesizer": 0.0,
+            "verifier": 0.0,
+        },
     }
 
 
@@ -2248,16 +2338,24 @@ def _fast_query_response(
     )
     if researcher_lookup_response is not None:
         return researcher_lookup_response
+    unsupported_researcher_topic = _unsupported_ranked_researcher_topic_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+    )
+    if unsupported_researcher_topic is not None:
+        return unsupported_researcher_topic
     topic_funding_query = topic_match is not None and any(
         term in query_lower
         for term in ("grant", "funding", "highest", "top", "same for", "same as", "compare")
     )
     funding_ranking_query = _is_funding_ranking_query(query)
+    researcher_query_without_topic = _is_researcher_query(query) and _research_topic_for_query(query) is None
     bounded_local_response = _bounded_local_query_fast_response(
         query,
         user_tier=user_tier,
         session_id=session_id,
-    ) if not (topic_funding_query or funding_ranking_query) else None
+    ) if not (topic_funding_query or funding_ranking_query or researcher_query_without_topic) else None
     if bounded_local_response is not None:
         return bounded_local_response
 

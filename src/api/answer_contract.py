@@ -152,6 +152,7 @@ def blocked_answer_payload(
         "answer_id": str(uuid.uuid4()),
         "audit_event_id": audit_event_id,
         "tier": user_tier,
+        "query": question,
         "question": question,
         "interpreted_question": question,
         "assumptions": [],
@@ -161,6 +162,12 @@ def blocked_answer_payload(
         "response": final_answer,
         "status": "blocked",
         "confidence": {"level": "needs_clarification", "reason": reason},
+        "verification": {
+            "status": "blocked",
+            "safe_to_trust": False,
+            "reason": reason,
+            "audit_event_id": audit_event_id,
+        },
         "answer_confidence": "needs_clarification",
         "citations": [],
         "source_data": {"sql_query": None, "rows": [], "documents": []},
@@ -213,15 +220,24 @@ def normalize_workflow_result(
         query_time_ms=int(elapsed_ms),
     )
     payload = response.model_dump()
+    verification_status = result.get("verification_status", False)
     payload.update(
         {
+            "query": question,
             "response": payload["final_answer"],
             "status": "success",
             "tier": tier,
             "session_id": result.get("session_id"),
             "intent": result.get("intent"),
             "routing_decision": result.get("routing_decision"),
-            "verification_status": result.get("verification_status", False),
+            "verification_status": verification_status,
+            "verification": {
+                "status": verification_status,
+                "safe_to_trust": verification_status is True,
+                "confidence": payload["confidence"],
+                "citation_validity": result.get("citation_validity", 1.0),
+                "audit_event_id": audit_event_id,
+            },
             "citation_validity": result.get("citation_validity", 1.0),
             "plan": result.get("plan"),
             "planner_metadata": planner_metadata,
