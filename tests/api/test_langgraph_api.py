@@ -182,6 +182,7 @@ def test_fast_query_clarifies_profane_non_research_ai_prompt():
 
 
 def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
+    api_main._researcher_topic_cache.clear()
     rows = [
         {
             "researcher_id": "res-q1",
@@ -251,6 +252,7 @@ def test_unsupported_ranked_researcher_topic_clarifies_instead_of_generic_fast_p
 
 
 def test_query_endpoint_contract_contains_stable_answer_fields(monkeypatch):
+    api_main._researcher_topic_cache.clear()
     rows = [
         {
             "researcher_id": "res-contract-q1",
@@ -379,6 +381,7 @@ def test_fast_query_messy_acceptance_set_has_relevant_distinct_routes(monkeypatc
 
 
 def test_researcher_ranking_uses_live_schema_institution_column(monkeypatch):
+    api_main._researcher_topic_cache.clear()
     rows = [
         {
             "researcher_id": "res-live-q1",
@@ -407,16 +410,42 @@ def test_researcher_ranking_uses_live_schema_institution_column(monkeypatch):
 
     fake_db = FakeDB()
     monkeypatch.setattr(api_main, "_get_db", lambda: fake_db)
+    monkeypatch.setattr(
+        api_main,
+        "_get_table_columns",
+        lambda table_name: {
+            "researcher_id",
+            "name",
+            "institution",
+            "department",
+            "email",
+            "phone",
+            "orcid",
+            "state",
+            "research_area",
+            "secondary_research_areas",
+            "h_index",
+            "total_funding_received_inr_crores",
+            "year_joined",
+            "access_tier",
+            "created_at",
+            "updated_at",
+        }
+        if table_name == "researchers"
+        else set(),
+        raising=False,
+    )
     monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
 
     sql_query, result_rows = api_main._query_researchers_for_topic("Quantum Computing", ["%quantum%"])
 
     assert result_rows == rows
     assert "r.institution AS institution" in sql_query
-    assert len(fake_db.calls) == 2
+    assert len(fake_db.calls) == 1
 
 
 def test_stream_payload_uses_ranked_researcher_answer_for_quantum_live_schema(monkeypatch):
+    api_main._researcher_topic_cache.clear()
     rows = [
         {
             "researcher_id": "res-live-q1",
@@ -464,6 +493,7 @@ def test_stream_payload_uses_ranked_researcher_answer_for_quantum_live_schema(mo
 
 
 def test_researcher_ranking_uses_sparse_live_researcher_schema(monkeypatch):
+    api_main._researcher_topic_cache.clear()
     rows = [
         {
             "researcher_id": "res-sparse-q1",
@@ -481,7 +511,11 @@ def test_researcher_ranking_uses_sparse_live_researcher_schema(monkeypatch):
     ]
 
     class FakeDB:
+        def __init__(self):
+            self.calls = []
+
         def execute(self, query, params=None):
+            self.calls.append(query)
             if "r.institution_id" in query:
                 raise RuntimeError("column r.institution_id does not exist")
             if "r.institution AS institution" in query:
@@ -492,7 +526,27 @@ def test_researcher_ranking_uses_sparse_live_researcher_schema(monkeypatch):
             assert "r.secondary_research_areas" not in query
             return rows
 
-    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    fake_db = FakeDB()
+    monkeypatch.setattr(api_main, "_get_db", lambda: fake_db)
+    monkeypatch.setattr(
+        api_main,
+        "_get_table_columns",
+        lambda table_name: {
+            "researcher_id",
+            "name",
+            "email",
+            "phone",
+            "orcid",
+            "state",
+            "research_area",
+            "year_joined",
+            "access_tier",
+            "created_at",
+            "updated_at",
+        }
+        if table_name == "researchers"
+        else set(),
+    )
     monkeypatch.setattr(api_main, "_local_research_db_path", lambda: None)
 
     payload = api_main._fast_query_response(
@@ -510,6 +564,75 @@ def test_researcher_ranking_uses_sparse_live_researcher_schema(monkeypatch):
     assert "live schema does not expose ranking metrics" in payload["response"]
     assert "ranked by h-index" not in payload["response"]
     assert "Matching researcher records are available" not in payload["response"]
+    assert len(fake_db.calls) == 1
+
+
+def test_sparse_live_researcher_schema_empty_result_uses_local_catalogue(monkeypatch, tmp_path):
+    api_main._researcher_topic_cache.clear()
+    local_db_path = tmp_path / "nrg_research.db"
+    with sqlite3.connect(local_db_path) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE institutions (
+                institution_id TEXT PRIMARY KEY,
+                name TEXT
+            );
+            CREATE TABLE researchers (
+                researcher_id TEXT PRIMARY KEY,
+                name TEXT,
+                institution_id TEXT,
+                state TEXT,
+                department TEXT,
+                research_area TEXT,
+                secondary_research_areas TEXT,
+                h_index INTEGER,
+                total_funding_received_inr_crores REAL,
+                email TEXT
+            );
+            INSERT INTO institutions VALUES ('inst-q', 'IISc Bengaluru');
+            INSERT INTO researchers VALUES (
+                'res-local-q1',
+                'Dr. Local Quantum',
+                'inst-q',
+                'Karnataka',
+                'Physics',
+                'Quantum Computing',
+                'Quantum Information Science',
+                73,
+                11.2,
+                'local.quantum@example.edu'
+            );
+            """
+        )
+
+    class FakeDB:
+        def __init__(self):
+            self.calls = []
+
+        def execute(self, query, params=None):
+            self.calls.append(query)
+            assert "NULL AS institution" in query
+            assert "r.institution_id" not in query
+            assert "r.institution AS institution" not in query
+            return []
+
+    fake_db = FakeDB()
+    monkeypatch.setattr(api_main, "_get_db", lambda: fake_db)
+    monkeypatch.setattr(
+        api_main,
+        "_get_table_columns",
+        lambda table_name: {"researcher_id", "name", "state", "research_area", "email"}
+        if table_name == "researchers"
+        else set(),
+    )
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: local_db_path)
+
+    sql_query, rows = api_main._query_researchers_for_topic("Quantum Computing", ["%quantum%"])
+
+    assert len(fake_db.calls) == 1
+    assert rows[0]["name"] == "Dr. Local Quantum"
+    assert rows[0]["institution"] == "IISc Bengaluru"
+    assert "LEFT JOIN institutions" in sql_query
 
 
 def test_fast_query_release_seed_fallback_covers_audit_walkthrough():

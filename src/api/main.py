@@ -278,6 +278,8 @@ _api_cache = _APIMemoryCache(default_ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
 _publication_count_cache: dict[tuple[int, bool], int] = {}
 _researcher_topic_cache_lock = threading.Lock()
 _researcher_topic_cache: dict[tuple[str, tuple[str, ...]], tuple[str, list[dict[str, Any]]]] = {}
+_table_column_cache_lock = threading.Lock()
+_table_column_cache: dict[tuple[int, str], set[str] | None] = {}
 _tier_response_history: dict[int, deque[dict[str, Any]]] = {
     1: deque(maxlen=100),
     2: deque(maxlen=100),
@@ -711,6 +713,43 @@ def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, 
         return sql_query, rows
 
 
+def _get_table_columns(table_name: str) -> set[str] | None:
+    db = _get_db()
+    engine = getattr(db, "engine", None)
+    if engine is None:
+        return None
+
+    cache_key = (id(engine), table_name)
+    with _table_column_cache_lock:
+        if cache_key in _table_column_cache:
+            cached = _table_column_cache[cache_key]
+            return set(cached) if cached is not None else None
+
+    try:
+        from sqlalchemy import inspect
+
+        columns = {str(column["name"]) for column in inspect(engine).get_columns(table_name)}
+    except Exception as exc:
+        logger.info("Table column inspection failed; using query-shape fallback", table=table_name, error=str(exc))
+        columns = None
+
+    with _table_column_cache_lock:
+        _table_column_cache[cache_key] = set(columns) if columns is not None else None
+    return set(columns) if columns is not None else None
+
+
+def _researcher_sql_shape(columns: set[str] | None) -> str | None:
+    if columns is None:
+        return None
+    if "institution_id" in columns:
+        return "canonical"
+    if "institution" in columns:
+        return "institution_column"
+    if "research_area" in columns:
+        return "sparse"
+    return None
+
+
 def _query_researchers_for_topic_uncached(topic: str, patterns: list[str]) -> tuple[str, list[dict[str, Any]]]:
     import sqlite3
 
@@ -740,14 +779,6 @@ def _query_researchers_for_topic_uncached(topic: str, patterns: list[str]) -> tu
         ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
         LIMIT 5
     """
-    try:
-        rows = _get_db().execute(live_schema_sql, params)
-        normalized_rows = [dict(row) for row in rows]
-        if normalized_rows:
-            return " ".join(live_schema_sql.split()), normalized_rows
-    except Exception as exc:
-        logger.info("Researcher ranking institution-column query failed; trying canonical schema", error=str(exc), topic=topic)
-
     sql = f"""
         SELECT
             r.researcher_id AS researcher_id,
@@ -766,14 +797,6 @@ def _query_researchers_for_topic_uncached(topic: str, patterns: list[str]) -> tu
         ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
         LIMIT 5
     """
-    try:
-        rows = _get_db().execute(sql, params)
-        normalized_rows = [dict(row) for row in rows]
-        if normalized_rows:
-            return " ".join(sql.split()), normalized_rows
-    except Exception as exc:
-        logger.info("Researcher ranking canonical-schema query failed; trying sparse schema", error=str(exc), topic=topic)
-
     sparse_ors = " OR ".join(
         [
             f"lower(coalesce(r.research_area, '')) LIKE lower(:pattern_{idx})"
@@ -798,13 +821,46 @@ def _query_researchers_for_topic_uncached(topic: str, patterns: list[str]) -> tu
         ORDER BY r.name ASC
         LIMIT 5
     """
-    try:
-        rows = _get_db().execute(sparse_schema_sql, params)
-        normalized_rows = [dict(row) for row in rows]
-        if normalized_rows:
-            return " ".join(sparse_schema_sql.split()), normalized_rows
-    except Exception as exc:
-        logger.warning("Researcher ranking sparse-schema query failed; trying local catalogue", error=str(exc), topic=topic)
+
+    query_shapes = {
+        "institution_column": live_schema_sql,
+        "canonical": sql,
+        "sparse": sparse_schema_sql,
+    }
+    selected_shape = _researcher_sql_shape(_get_table_columns("researchers"))
+    if selected_shape is not None:
+        selected_sql = query_shapes[selected_shape]
+        try:
+            rows = _get_db().execute(selected_sql, params)
+            normalized_rows = [dict(row) for row in rows]
+            if normalized_rows:
+                return " ".join(selected_sql.split()), normalized_rows
+        except Exception as exc:
+            logger.warning(
+                "Researcher ranking schema-selected query failed; trying local catalogue",
+                error=str(exc),
+                schema_shape=selected_shape,
+                topic=topic,
+            )
+    else:
+        attempts = (
+            ("institution-column", live_schema_sql, "canonical schema"),
+            ("canonical-schema", sql, "sparse schema"),
+            ("sparse-schema", sparse_schema_sql, "local catalogue"),
+        )
+        for label, candidate_sql, next_label in attempts:
+            try:
+                rows = _get_db().execute(candidate_sql, params)
+                normalized_rows = [dict(row) for row in rows]
+                if normalized_rows:
+                    return " ".join(candidate_sql.split()), normalized_rows
+            except Exception as exc:
+                log = logger.warning if label == "sparse-schema" else logger.info
+                log(
+                    f"Researcher ranking {label} query failed; trying {next_label}",
+                    error=str(exc),
+                    topic=topic,
+                )
 
     local_db = _local_research_db_path()
     if local_db is None:
