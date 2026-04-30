@@ -1,0 +1,29 @@
+# Production Gate Environment Preflight
+timestamp_utc=2026-04-30T21:43:17Z
+repo=/Users/srujansai/Desktop/NRG
+commit=d56b95b
+
+## Environment variable presence only
+PLAYWRIGHT_BASE_URL=UNSET
+NRG_PRODUCTION_URL=UNSET
+API_TARGET=UNSET
+NRG_API_URL=UNSET
+QDRANT_URL=UNSET
+QDRANT_HOST=UNSET
+QDRANT_API_KEY=UNSET
+KUBECONFIG=UNSET
+DATABASE_URL=UNSET
+POSTGRES_DATABASE_URL=UNSET
+DATA_INTAKE_HMAC_SECRET=UNSET
+SFTP_GPG_BUNDLE=UNSET
+
+## Tool availability
+kubectl=/usr/local/bin/kubectl
+helm=MISSING
+docker=/usr/local/bin/docker
+docker-compose=/usr/local/bin/docker-compose
+locust=/Library/Frameworks/Python.framework/Versions/3.14/bin/locust
+node=/usr/local/bin/node
+npm=/usr/local/bin/npm
+python3=/usr/local/bin/python3
+curl=/usr/bin/curl

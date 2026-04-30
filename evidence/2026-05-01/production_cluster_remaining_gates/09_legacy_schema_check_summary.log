@@ -1,0 +1,8 @@
+ERROR: No database URL provided.
+Set DATABASE_URL environment variable or use --db option.
+
+Example:
+  export DATABASE_URL=postgresql://user:pass@localhost:5432/nrg
+  python scripts/check_schema_sync.py
+
+  python scripts/check_schema_sync.py --db sqlite:///nrg_research.db

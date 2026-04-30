@@ -1,0 +1,108 @@
+{
+  "checks": [
+    {
+      "detail": "/usr/local/bin/kubectl",
+      "name": "kubectl",
+      "ok": true
+    },
+    {
+      "detail": "helm not found on PATH",
+      "name": "helm",
+      "ok": false
+    },
+    {
+      "detail": "/usr/bin/sftp",
+      "name": "sftp",
+      "ok": true
+    },
+    {
+      "detail": "error: current-context is not set",
+      "name": "kubectl_context",
+      "ok": false
+    },
+    {
+      "detail": "To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.",
+      "name": "cluster_info",
+      "ok": false
+    },
+    {
+      "detail": "missing intake manifest at /data/intake/2026-05-xx/manifest.json",
+      "name": "intake_bundle",
+      "ok": false
+    },
+    {
+      "detail": "missing DATA_INTAKE_HMAC_SECRET",
+      "name": "intake_hmac_secret",
+      "ok": false
+    },
+    {
+      "detail": "flag not supplied",
+      "name": "qdrant_populated",
+      "ok": false
+    },
+    {
+      "detail": "flag not supplied",
+      "name": "api_live",
+      "ok": false
+    },
+    {
+      "detail": "flag not supplied",
+      "name": "professor_scheduled",
+      "ok": false
+    },
+    {
+      "detail": "flag not supplied",
+      "name": "cluster_stable",
+      "ok": false
+    },
+    {
+      "detail": "flag not supplied",
+      "name": "prior_phase_complete",
+      "ok": false
+    }
+  ],
+  "generated_at": "2026-04-30T21:43:21.965188+00:00",
+  "ok": false,
+  "tasks": {
+    "P7-A": {
+      "name": "Sovereign cluster activation",
+      "status": "BLOCKED",
+      "trigger": "kubectl + helm + live cluster context"
+    },
+    "P7-B": {
+      "name": "600GB data ingest",
+      "status": "BLOCKED",
+      "trigger": "cluster + SFTP + manifest + HMAC ready"
+    },
+    "P7-C": {
+      "name": "Vector drift baseline",
+      "status": "BLOCKED",
+      "trigger": "Qdrant populated"
+    },
+    "P7-D": {
+      "name": "C4 SLO load test",
+      "status": "BLOCKED",
+      "trigger": "API live on cluster"
+    },
+    "P7-E": {
+      "name": "UAT sessions",
+      "status": "BLOCKED",
+      "trigger": "professor scheduled + API live"
+    },
+    "P7-F": {
+      "name": "Sovereign red team",
+      "status": "BLOCKED",
+      "trigger": "API live on cluster"
+    },
+    "P7-G": {
+      "name": "DR dry run",
+      "status": "BLOCKED",
+      "trigger": "cluster stable"
+    },
+    "P7-H": {
+      "name": "Eternal seal / GPG tag",
+      "status": "BLOCKED",
+      "trigger": "P7-A through P7-G complete"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "baseline_skipped",
+  "message": "Qdrant is unhealthy or empty; baseline was not changed.",
+  "qdrant": {
+    "indexed_vectors": 0,
+    "total_vectors": 1800,
+    "coverage_pct": 0.0,
+    "status": "ok",
+    "latency_ms": 199.49
+  }
+}

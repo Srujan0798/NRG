@@ -1,0 +1,34 @@
+
+============================================================
+NRG Deployment Gate
+Environment: production
+============================================================
+
+  ℹ️ Checking schema synchronization...
+  ℹ️ Validating RBAC policies...
+  ℹ️ Checking health endpoints...
+  ℹ️ Running security scan...
+
+------------------------------------------------------------
+Results:
+------------------------------------------------------------
+
+  ❌ [FAIL] Schema Sync: Schema drift detected
+      Duration: 48ms
+      output: ERROR: No database URL provided.
+Set DATABASE_URL environment variable or use --db option.
+
+Example:
+  export DATABASE_URL=postgresql://user:pass@localhost:5432/nrg
+  python scripts/check_schema_sync.
+  ✅ [PASS] RBAC Policies: RBAC policies are valid
+      Duration: 61ms
+  ✅ [PASS] Health Endpoints: Health endpoint responsive at http://localhost:8000
+      Duration: 473ms
+  ✅ [PASS] Security Scan: No obvious security issues detected
+      Duration: 0ms
+
+============================================================
+❌ DEPLOYMENT BLOCKED — 1 check(s) failed: Schema Sync
+============================================================
+

@@ -1,0 +1,37 @@
+NRG Schema Sync CLI — Protocol #21
+Database: postgresql://nrg:***@localhost:5432/nrg
+
+Tables in db_struct.sql: 58
+Dhairya-required tables: 35
+Schema fingerprint: fa39e31d527f8040
+
+
+============================================================
+SCHEMA PARITY CHECK
+============================================================
+
+Authoritative schema (db_struct.sql): 58 tables
+Live database:                       75 tables
+
+EXTRA in live DB (OK): 17 tables
+  + alembic_version
+  + audit_events
+  + collaborations
+  + funding
+  + funding_records
+  + institutions
+  + keywords
+  + labs
+  + llm_cost_log
+  + patents
+  + projects
+  + publication_keywords
+  + publications
+  + research_documents
+  + researcher_labs
+  + researcher_publications
+  + researchers
+
+============================================================
+SCHEMA IN SYNC ✓
+============================================================

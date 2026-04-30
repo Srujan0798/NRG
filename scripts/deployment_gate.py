@@ -104,20 +104,20 @@ def check_tests() -> GateResult:
 
 
 def check_schema_sync() -> GateResult:
-    """Verify schema is in sync with production schema."""
+    """Verify schema is in sync with the canonical db_struct.sql checker."""
     start = time.time()
     print(f"  {INFO} Checking schema synchronization...")
 
-    schema_check_script = REPO_ROOT / "scripts" / "check_schema_sync.py"
+    schema_check_script = REPO_ROOT / "scripts" / "schema_sync.py"
     if not schema_check_script.exists():
         return GateResult(
             name="Schema Sync",
             passed=False,
-            message="check_schema_sync.py not found",
+            message="schema_sync.py not found",
         )
 
     returncode, stdout, stderr = run_command(
-        [sys.executable, str(schema_check_script)],
+        [sys.executable, str(schema_check_script), "check"],
         timeout=60,
     )
 
@@ -127,7 +127,7 @@ def check_schema_sync() -> GateResult:
         return GateResult(
             name="Schema Sync",
             passed=True,
-            message="Schema is in sync",
+            message="Canonical schema check passed",
             duration_ms=duration_ms,
         )
     else:
@@ -332,18 +332,25 @@ def run_gate(
     print("=" * 60 + "\n")
 
     checks = []
+    skipped = []
 
     if not skip_tests:
         checks.append(check_tests())
+    else:
+        skipped.append("Test Suite")
 
     checks.append(check_schema_sync())
     checks.append(check_rbac_policies())
 
     if not skip_docker:
         checks.append(check_docker_build())
+    else:
+        skipped.append("Docker Build")
 
     if not skip_health:
         checks.append(check_health_endpoints())
+    else:
+        skipped.append("Health Endpoints")
 
     checks.append(check_security_scan())
 
@@ -359,7 +366,13 @@ def run_gate(
 
     print("\n" + "=" * 60)
     if all_passed:
-        print(f"{CHECKMARK} ALL CHECKS PASSED — Ready to deploy")
+        if skipped:
+            print(
+                f"{WARNING} SELECTED CHECKS PASSED — not a full deploy gate; "
+                f"skipped: {', '.join(skipped)}"
+            )
+        else:
+            print(f"{CHECKMARK} ALL CHECKS PASSED — Ready to deploy")
         print("=" * 60 + "\n")
         return True
     else:

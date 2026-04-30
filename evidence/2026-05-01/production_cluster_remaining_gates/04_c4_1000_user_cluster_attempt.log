@@ -1,0 +1,8 @@
+═══════════════════════════════════════════════════════════
+  NRG C4 Load Test — K8s Deployment
+  Environment: production
+  Timestamp:   20260501_031350
+═══════════════════════════════════════════════════════════
+
+[1/6] Checking prerequisites...
+ERROR: Cannot connect to K8s cluster
