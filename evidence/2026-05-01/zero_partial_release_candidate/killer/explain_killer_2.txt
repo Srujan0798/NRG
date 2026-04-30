@@ -1,0 +1,9 @@
+Killer query: KILLER-02
+Captured: 2026-04-30T20:35:16.700934+00:00
+Engine: not applicable
+
+SQL:
+
+
+Plan:
+No SQL statement was returned for this query; route was non-SQL or blocked.

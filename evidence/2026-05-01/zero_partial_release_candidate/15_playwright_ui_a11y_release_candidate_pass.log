@@ -1,0 +1,20 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 [chromium] › tests/a11y/axe.test.ts:67:7 › login has no axe violations and five or fewer warnings (8.8s)
+  ✓   2 [chromium] › tests/a11y/axe.test.ts:67:7 › hero has no axe violations and five or fewer warnings (13.0s)
+  ✓   3 [chromium] › tests/a11y/axe.test.ts:67:7 › founder has no axe violations and five or fewer warnings (5.8s)
+  ✓   4 [chromium] › tests/a11y/axe.test.ts:67:7 › researcher-dashboard has no axe violations and five or fewer warnings (5.5s)
+  ✓   5 [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings (5.0s)
+  ✓   6 [chromium] › tests/a11y/axe.test.ts:67:7 › industry-dashboard has no axe violations and five or fewer warnings (4.3s)
+  ✓   7 [chromium] › tests/a11y/keyboard.test.ts:4:5 › skip link is the first focusable element and moves focus to main content (6.3s)
+  ✓   8 [chromium] › tests/a11y/keyboard.test.ts:22:5 › hero query controls are keyboard operable (7.6s)
+  ✓   9 [chromium] › tests/a11y/keyboard.test.ts:34:5 › reduced motion preference is reflected in the app shell (7.8s)
+  ✓  10 [chromium] › tests/e2e/answer_engine_v1_walk.spec.ts:4:5 › Answer Engine v1 Ask -> Answer -> Proof path is visible (9.5s)
+  ✓  11 [chromium] › tests/e2e/no_stack_trace.spec.ts:3:5 › error surfaces do not expose stack traces or raw exception markers (2.3s)
+  ✓  12 [chromium] › tests/e2e/mobile_full_flow.spec.ts:156:5 › killer query and citation drawer work on iPhone without horizontal scroll (12.6s)
+  ✓  13 [chromium] › tests/e2e/mobile_full_flow.spec.ts:175:5 › mobile dashboard uses persona switcher and fullscreen graph modal (10.5s)
+  ✓  14 [chromium] › tests/e2e/ui_ux_walk.spec.ts:63:7 › captures answer-engine UI/UX walk at desktop (28.4s)
+  ✓  15 [chromium] › tests/e2e/ui_ux_walk.spec.ts:63:7 › captures answer-engine UI/UX walk at mobile (24.6s)
+
+  15 passed (2.9m)

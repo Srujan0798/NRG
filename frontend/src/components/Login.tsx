@@ -183,7 +183,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               </div>
               <div>
                 <p className="font-devanagari text-xl font-bold leading-tight text-slate-950">राष्ट्रीय गवेषण मंच</p>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{LOGIN_COPY.productName}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-700">{LOGIN_COPY.productName}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-600">
@@ -214,7 +214,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 {PLATFORM_METRICS.map((metric) => (
                   <div key={metric.label} className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
                     <p className="text-2xl font-bold text-slate-950">{metric.value}</p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">{metric.label}</p>
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-700">{metric.label}</p>
                   </div>
                 ))}
               </div>
@@ -246,7 +246,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                           </span>
                           <span className="font-semibold text-slate-950">{info.en}</span>
                         </div>
-                        <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[0.6875rem] text-slate-500">{info.tier}</span>
+                        <span className="rounded-full bg-slate-100 px-2 py-1 font-mono text-[0.6875rem] text-slate-700">{info.tier}</span>
                       </div>
                       <p className="text-sm leading-6 text-slate-600">{info.desc}</p>
                     </button>
@@ -262,7 +262,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-slate-950">{LOGIN_COPY.signIn}</h1>
-                  <p className="text-sm text-slate-500">{LOGIN_COPY.accessBound}</p>
+                  <p className="text-sm text-slate-700">{LOGIN_COPY.accessBound}</p>
                 </div>
               </div>
 
@@ -271,13 +271,13 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                   <span className="text-sm font-semibold text-slate-950">
                     {PERSONA_LABELS[selectedPersona].hi}
                   </span>
-                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-600">·</span>
                   <span className="text-sm text-slate-600">{PERSONA_LABELS[selectedPersona].en}</span>
-                  <span className="ml-auto rounded-full bg-white px-2 py-1 font-mono text-[0.6875rem] text-slate-500">
+                  <span className="ml-auto rounded-full bg-white px-2 py-1 font-mono text-[0.6875rem] text-slate-700">
                     {PERSONA_LABELS[selectedPersona].tier}
                   </span>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-slate-500">
+                <p className="mt-2 text-xs leading-5 text-slate-700">
                   {LOGIN_COPY.currentWorkspace}
                 </p>
               </div>
@@ -347,7 +347,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
                 <button
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
-                  className="absolute right-3 top-1/2 min-h-9 -translate-y-1/2 rounded-md px-2 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+                  className="absolute right-3 top-1/2 min-h-9 -translate-y-1/2 rounded-md px-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
                   aria-label={showPassword ? LOGIN_COPY.hidePasswordLabel : LOGIN_COPY.showPasswordLabel}
                 >
                   {showPassword ? LOGIN_COPY.hidePassword : LOGIN_COPY.showPassword}
@@ -393,14 +393,14 @@ const Login: React.FC<LoginProps> = ({ onLogin, error, backendAvailable = true }
               className="mb-3 text-sm font-medium text-slate-700 hover:text-slate-950 transition-colors"
             >
               {t("auto.components.Login.16")}</button>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-700">
               {LOGIN_COPY.securityLine}
             </p>
           </div>
             </aside>
           </section>
 
-          <footer className="border-t border-slate-200 py-4 text-xs text-slate-500">
+          <footer className="border-t border-slate-200 py-4 text-xs text-slate-700">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span>{LOGIN_COPY.footerGov}</span>
               <span>{LOGIN_COPY.footerPreview}</span>

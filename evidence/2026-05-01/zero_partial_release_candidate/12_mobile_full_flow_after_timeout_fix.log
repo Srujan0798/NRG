@@ -1,0 +1,7 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/mobile_full_flow.spec.ts:156:5 › killer query and citation drawer work on iPhone without horizontal scroll (13.6s)
+  ✓  2 [chromium] › tests/e2e/mobile_full_flow.spec.ts:175:5 › mobile dashboard uses persona switcher and fullscreen graph modal (14.6s)
+
+  2 passed (50.8s)

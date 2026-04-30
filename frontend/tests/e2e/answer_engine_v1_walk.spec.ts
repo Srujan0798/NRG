@@ -11,7 +11,7 @@ test('Answer Engine v1 Ask -> Answer -> Proof path is visible', async ({ page })
     await page.getByRole('button', { name: 'Sign in' }).click()
   }
 
-  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible({ timeout: 15000 })
   await page.getByTestId('answer-engine-query').fill('Which institutes produce the most granted patents per INR 10 Cr government funding?')
   await page.getByTestId('answer-engine-query').press('Enter')
 

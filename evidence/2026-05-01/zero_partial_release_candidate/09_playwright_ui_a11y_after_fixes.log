@@ -1,0 +1,297 @@
+
+Running 15 tests using 1 worker
+
+  ✓   1 [chromium] › tests/a11y/axe.test.ts:67:7 › login has no axe violations and five or fewer warnings (22.3s)
+  ✓   2 [chromium] › tests/a11y/axe.test.ts:67:7 › hero has no axe violations and five or fewer warnings (14.4s)
+  ✓   3 [chromium] › tests/a11y/axe.test.ts:67:7 › founder has no axe violations and five or fewer warnings (6.5s)
+  ✓   4 [chromium] › tests/a11y/axe.test.ts:67:7 › researcher-dashboard has no axe violations and five or fewer warnings (7.1s)
+  ✘   5 [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings (12.4s)
+  ✓   6 [chromium] › tests/a11y/axe.test.ts:67:7 › industry-dashboard has no axe violations and five or fewer warnings (8.4s)
+  ✓   7 [chromium] › tests/a11y/keyboard.test.ts:4:5 › skip link is the first focusable element and moves focus to main content (6.3s)
+  ✘   8 [chromium] › tests/a11y/keyboard.test.ts:22:5 › hero query controls are keyboard operable (12.1s)
+  ✘   9 [chromium] › tests/a11y/keyboard.test.ts:33:5 › reduced motion preference is reflected in the app shell (6.6s)
+  ✘  10 [chromium] › tests/e2e/answer_engine_v1_walk.spec.ts:4:5 › Answer Engine v1 Ask -> Answer -> Proof path is visible (6.2s)
+  ✓  11 [chromium] › tests/e2e/no_stack_trace.spec.ts:3:5 › error surfaces do not expose stack traces or raw exception markers (2.9s)
+  ✓  12 [chromium] › tests/e2e/mobile_full_flow.spec.ts:153:5 › killer query and citation drawer work on iPhone without horizontal scroll (10.8s)
+  ✘  13 [chromium] › tests/e2e/mobile_full_flow.spec.ts:172:5 › mobile dashboard uses persona switcher and fullscreen graph modal (46.6s)
+  ✘  14 [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at desktop (19.7s)
+  ✘  15 [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at mobile (15.1s)
+
+
+  1) [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings 
+
+    Error: [
+      {
+        "id": "color-contrast",
+        "impact": "serious",
+        "tags": [
+          "cat.color",
+          "wcag2aa",
+          "wcag143",
+          "TTv5",
+          "TT13.c",
+          "EN-301-549",
+          "EN-9.1.4.3",
+          "ACT",
+          "RGAAv4",
+          "RGAA-3.2.1"
+        ],
+        "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+        "help": "Elements must meet minimum color contrast ratio thresholds",
+        "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright",
+        "nodes": [
+          {
+            "any": [
+              {
+                "id": "color-contrast",
+                "data": {
+                  "fgColor": "#b45309",
+                  "bgColor": "#f0e8dd",
+                  "contrastRatio": 4.13,
+                  "fontSize": "9.0pt (12px)",
+                  "fontWeight": "normal",
+                  "messageKey": null,
+                  "expectedContrastRatio": "4.5:1"
+                },
+                "relatedNodes": [
+                  {
+                    "html": "<span class=\"inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-xs font-semibold border-warning bg-warning/10 text-warning\">T2</span>",
+                    "target": [
+                      ".min-w-0.flex.gap-2 > .gap-1.rounded-pill.px-2\\.5"
+                    ]
+                  },
+                  {
+                    "html": "<header class=\"sticky top-0 z-40 border-b border-border bg-bg/95 backdrop-blur\">",
+                    "target": [
+                      "header"
+                    ]
+                  },
+                  {
+                    "html": "<div class=\"min-h-screen bg-bg text-fg\">",
+                    "target": [
+                      ".min-h-screen"
+                    ]
+                  }
+                ],
+                "impact": "serious",
+                "message": "Element has insufficient color contrast of 4.13 (foreground color: #b45309, background color: #f0e8dd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+              }
+            ],
+            "all": [],
+            "none": [],
+            "impact": "serious",
+            "html": "<span class=\"inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-xs font-semibold border-warning bg-warning/10 text-warning\">T2</span>",
+            "target": [
+              ".min-w-0.flex.gap-2 > .gap-1.rounded-pill.px-2\\.5"
+            ],
+            "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 4.13 (foreground color: #b45309, background color: #f0e8dd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ]
+      }
+    ]
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#f0e8dd", "contrastRatio": 4.13, "expectedContrastRatio": "4.5:1", "fgColor": "#b45309", "fontSize": "9.0pt (12px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.13 (foreground color: #b45309, background color: #f0e8dd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<span class=\"inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-xs font-semibold border-warning bg-warning/10 text-warning\">T2</span>", "target": [".min-w-0.flex.gap-2 > .gap-1.rounded-pill.px-2\\.5"]}, {"html": "<header class=\"sticky top-0 z-40 border-b border-border bg-bg/95 backdrop-blur\">", "target": ["header"]}, {"html": "<div class=\"min-h-screen bg-bg text-fg\">", "target": [".min-h-screen"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.13 (foreground color: #b45309, background color: #f0e8dd, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<span class=\"inline-flex items-center gap-1 rounded-pill border px-2.5 py-1 text-xs font-semibold border-warning bg-warning/10 text-warning\">T2</span>", "impact": "serious", "none": [], "target": [".min-w-0.flex.gap-2 > .gap-1.rounded-pill.px-2\\.5"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      79 |     writeAxeReport(routeCase.name, results)
+      80 |
+    > 81 |     expect(results.violations, JSON.stringify(results.violations, null, 2)).toHaveLength(0)
+         |                                                                             ^
+      82 |     expect(results.incomplete.length, JSON.stringify(results.incomplete, null, 2)).toBeLessThanOrEqual(5)
+      83 |   })
+      84 | }
+        at /Users/srujansai/Desktop/NRG/frontend/tests/a11y/axe.test.ts:81:77
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/a11y-axe-government-dashbo-fa9e6--and-five-or-fewer-warnings-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/a11y-axe-government-dashbo-fa9e6--and-five-or-fewer-warnings-chromium/error-context.md
+
+  2) [chromium] › tests/a11y/keyboard.test.ts:22:5 › hero query controls are keyboard operable ─────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveValue[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  getByTestId('answer-engine-query')
+    Expected: [32m"Which institutes lead hydrogen fuel cell research?"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveValue" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('answer-engine-query')[22m
+    [2m    9 × locator resolved to <input value="" maxlength="500" data-testid="answer-engine-query" aria-label="Ask about Indian research" placeholder="Ask about Indian research..." class="min-h-12 min-w-0 flex-1 bg-transparent text-lg text-fg outline-none placeholder:text-fg-subtle"/>[22m
+    [2m      - unexpected value ""[22m
+
+
+      27 |   await page.keyboard.press('Enter')
+      28 |
+    > 29 |   await expect(page.getByTestId('answer-engine-query')).toHaveValue('Which institutes lead hydrogen fuel cell research?')
+         |                                                         ^
+      30 |   await expect(page.getByText(/Live query stream/i)).toBeVisible()
+      31 | })
+      32 |
+        at /Users/srujansai/Desktop/NRG/frontend/tests/a11y/keyboard.test.ts:29:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/a11y-keyboard-hero-query-controls-are-keyboard-operable-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/a11y-keyboard-hero-query-controls-are-keyboard-operable-chromium/error-context.md
+
+  3) [chromium] › tests/a11y/keyboard.test.ts:33:5 › reduced motion preference is reflected in the app shell 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeAttached[2m([22m[2m)[22m failed
+
+    Locator: locator('html[data-reduced-motion="true"]')
+    Expected: attached
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeAttached" with timeout 5000ms[22m
+    [2m  - waiting for locator('html[data-reduced-motion="true"]')[22m
+
+
+      36 |   await page.goto('/app')
+      37 |
+    > 38 |   await expect(page.locator('html[data-reduced-motion="true"]')).toBeAttached()
+         |                                                                  ^
+      39 |   await expect(page.locator('div[data-reduced-motion="true"]')).toBeVisible()
+      40 |   await page.screenshot({ path: testInfo.outputPath('reduced-motion-app.png'), fullPage: true })
+      41 | })
+        at /Users/srujansai/Desktop/NRG/frontend/tests/a11y/keyboard.test.ts:38:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/a11y-keyboard-reduced-moti-41b3c--reflected-in-the-app-shell-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/a11y-keyboard-reduced-moti-41b3c--reflected-in-the-app-shell-chromium/error-context.md
+
+  4) [chromium] › tests/e2e/answer_engine_v1_walk.spec.ts:4:5 › Answer Engine v1 Ask -> Answer -> Proof path is visible 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('answer-engine-query')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('answer-engine-query')[22m
+
+
+      12 |   }
+      13 |
+    > 14 |   await expect(page.getByTestId('answer-engine-query')).toBeVisible()
+         |                                                         ^
+      15 |   await page.getByTestId('answer-engine-query').fill('Which institutes produce the most granted patents per INR 10 Cr government funding?')
+      16 |   await page.getByTestId('answer-engine-query').press('Enter')
+      17 |
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/answer_engine_v1_walk.spec.ts:14:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-answer_engine_v1_walk--d18bb-wer---Proof-path-is-visible-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/e2e-answer_engine_v1_walk--d18bb-wer---Proof-path-is-visible-chromium/error-context.md
+
+  5) [chromium] › tests/e2e/mobile_full_flow.spec.ts:172:5 › mobile dashboard uses persona switcher and fullscreen graph modal 
+
+    [31mTest timeout of 30000ms exceeded while running "afterEach" hook.[39m
+
+      139 | }
+      140 |
+    > 141 | test.afterEach(async ({ page }, testInfo) => {
+          |      ^
+      142 |   const video = page.video()
+      143 |   if (!video) return
+      144 |
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/mobile_full_flow.spec.ts:141:6
+
+    Error Context: tests/test-results/e2e-mobile_full_flow-mobil-f915c--and-fullscreen-graph-modal-chromium/error-context.md
+
+    attachment #2: mobile_e2e (video/mp4) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-mobile_full_flow-mobil-f915c--and-fullscreen-graph-modal-chromium/attachments/mobile-e2e-caa33a4fcc0fd967f9a8a933357c53b2cc4211f7.mp4
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at desktop ─
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('answer-engine-hero')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('answer-engine-hero')[22m
+
+
+      75 |
+      76 |     await page.goto('/app')
+    > 77 |     await expect(page.getByTestId('answer-engine-hero')).toBeVisible()
+         |                                                          ^
+      78 |     await capture(page, 'hero', viewport.width)
+      79 |
+      80 |     await page.evaluate(() => {
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/ui_ux_walk.spec.ts:77:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-desktop-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-desktop-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-desktop-chromium/error-context.md
+
+  7) [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at mobile ──
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByTestId('answer-engine-hero')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByTestId('answer-engine-hero')[22m
+
+
+      75 |
+      76 |     await page.goto('/app')
+    > 77 |     await expect(page.getByTestId('answer-engine-hero')).toBeVisible()
+         |                                                          ^
+      78 |     await capture(page, 'hero', viewport.width)
+      79 |
+      80 |     await page.evaluate(() => {
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/ui_ux_walk.spec.ts:77:58
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-mobile-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-mobile-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/e2e-ui_ux_walk-captures-answer-engine-UI-UX-walk-at-mobile-chromium/error-context.md
+
+  7 failed
+    [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings 
+    [chromium] › tests/a11y/keyboard.test.ts:22:5 › hero query controls are keyboard operable ──────
+    [chromium] › tests/a11y/keyboard.test.ts:33:5 › reduced motion preference is reflected in the app shell 
+    [chromium] › tests/e2e/answer_engine_v1_walk.spec.ts:4:5 › Answer Engine v1 Ask -> Answer -> Proof path is visible 
+    [chromium] › tests/e2e/mobile_full_flow.spec.ts:172:5 › mobile dashboard uses persona switcher and fullscreen graph modal 
+    [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at desktop ──
+    [chromium] › tests/e2e/ui_ux_walk.spec.ts:62:7 › captures answer-engine UI/UX walk at mobile ───
+  8 passed (4.7m)

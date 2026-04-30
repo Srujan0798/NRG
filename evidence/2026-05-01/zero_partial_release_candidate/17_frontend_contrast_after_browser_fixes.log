@@ -1,0 +1,34 @@
+
+> nrg-frontend@1.0.0 test:contrast
+> jest --runInBand tests/a11y/contrast.test.ts
+
+(node:14180) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS tests/a11y/contrast.test.ts
+  WCAG token contrast
+    ✓ light ink on surface meets AA normal text contrast (8 ms)
+    ✓ light muted on surface meets AA normal text contrast (2 ms)
+    ✓ light danger on surface meets AA normal text contrast (2 ms)
+    ✓ light warning on surface meets AA normal text contrast (3 ms)
+    ✓ light success on surface meets AA normal text contrast (3 ms)
+    ✓ light tier 1 on surface meets AA normal text contrast
+    ✓ light tier 2 on surface meets AA normal text contrast (1 ms)
+    ✓ light tier 3 on surface meets AA normal text contrast
+    ✓ dark ink on surface meets AA normal text contrast (1 ms)
+    ✓ dark muted on surface meets AA normal text contrast (3 ms)
+    ✓ dark danger on surface meets AA normal text contrast (2 ms)
+    ✓ dark warning on surface meets AA normal text contrast
+    ✓ dark success on surface meets AA normal text contrast (1 ms)
+    ✓ dark tier 1 on surface meets AA normal text contrast (1 ms)
+    ✓ dark tier 2 on surface meets AA normal text contrast
+    ✓ dark tier 3 on surface meets AA normal text contrast (1 ms)
+    ✓ light focus ring on surface meets non-text contrast (1 ms)
+    ✓ dark focus ring on surface meets non-text contrast
+    ✓ light border against surface meets non-text contrast (1 ms)
+    ✓ dark border against surface meets non-text contrast
+
+Test Suites: 1 passed, 1 total
+Tests:       20 passed, 20 total
+Snapshots:   0 total
+Time:        14.252 s
+Ran all test suites matching /tests\/a11y\/contrast.test.ts/i.

@@ -1,0 +1,71 @@
+{"timestamp": "2026-04-30T20:35:09.556940+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:09.668955+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:09.756075+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:10.764074+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:11.124612+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:11.518225+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:11.576931+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:11.630357+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:11.694069+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:15.677978+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90753, "thread_id": 6112538624, "extra": {}}
+{"timestamp": "2026-04-30T20:35:15.829758+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:16.105931+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:16.228168+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:16.374072+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:16.587546+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:16.698768+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.157182+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.343856+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.467561+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.489459+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.510438+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.531654+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-04-30T20:35:17.611843+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/api/health/killer_queries \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 90753, "thread_id": 8413098240, "extra": {}}
+{
+  "status": "healthy",
+  "last_run_time": "2026-04-30T20:35:17.555780+00:00",
+  "source": "local_volumetric_sqlite_proxy",
+  "row_floor": {
+    "academic_courses_details": 50000,
+    "innovations_at_various_stages_of_technology_readiness_level": 10000,
+    "innovation_grant_from_govt": 30000,
+    "combined_ipo_patent_data": 20000,
+    "publications": 100000,
+    "researchers": 5615
+  },
+  "queries": [
+    {
+      "id": "KILLER-01",
+      "last_run_time": "2026-04-30T20:35:11.804121+00:00",
+      "p95_latency_ms": 63.48,
+      "threshold_ms": 4000,
+      "row_count": 8,
+      "citation_count": 1,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/killer_query_1_response.json",
+      "explain_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/explain_killer_1.txt"
+    },
+    {
+      "id": "KILLER-02",
+      "last_run_time": "2026-04-30T20:35:16.871838+00:00",
+      "p95_latency_ms": 213.36,
+      "threshold_ms": 4000,
+      "row_count": 1,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/killer_query_2_response.json",
+      "explain_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/explain_killer_2.txt"
+    },
+    {
+      "id": "KILLER-03",
+      "last_run_time": "2026-04-30T20:35:17.555653+00:00",
+      "p95_latency_ms": 21.89,
+      "threshold_ms": 4000,
+      "row_count": 5,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/killer_query_3_response.json",
+      "explain_path": "evidence/2026-05-01/zero_partial_release_candidate/killer/explain_killer_3.txt"
+    }
+  ]
+}

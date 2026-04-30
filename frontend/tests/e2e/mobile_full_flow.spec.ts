@@ -13,6 +13,8 @@ test.use({
   video: 'on',
 })
 
+test.setTimeout(90000)
+
 async function expectNoPageHorizontalScroll(page: Page) {
   const metrics = await page.evaluate(() => ({
     viewportWidth: window.innerWidth,
@@ -142,7 +144,8 @@ test.afterEach(async ({ page }, testInfo) => {
   const video = page.video()
   if (!video) return
 
-  const evidenceDir = path.resolve(process.cwd(), '../evidence/2026-04-26')
+  const evidenceDate = process.env.NRG_EVIDENCE_DATE || new Date().toISOString().slice(0, 10)
+  const evidenceDir = path.resolve(process.cwd(), `../evidence/${evidenceDate}/ui_ux/after`)
   const evidencePath = path.join(evidenceDir, 'mobile_e2e.mp4')
   fs.mkdirSync(evidenceDir, { recursive: true })
   if (!page.isClosed()) await page.close()
@@ -154,7 +157,7 @@ test('killer query and citation drawer work on iPhone without horizontal scroll'
   await installStreamingQueryMock(page)
   await page.goto('/app')
 
-  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible({ timeout: 15000 })
   await expectNoPageHorizontalScroll(page)
 
   await page.getByTestId('answer-engine-query').fill('Which institutes in India have the highest grant amount in renewable energy?')

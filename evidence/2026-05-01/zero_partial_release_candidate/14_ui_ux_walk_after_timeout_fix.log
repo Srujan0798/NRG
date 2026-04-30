@@ -1,0 +1,7 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 [chromium] › tests/e2e/ui_ux_walk.spec.ts:63:7 › captures answer-engine UI/UX walk at desktop (49.9s)
+  ✓  2 [chromium] › tests/e2e/ui_ux_walk.spec.ts:63:7 › captures answer-engine UI/UX walk at mobile (22.8s)
+
+  2 passed (1.5m)

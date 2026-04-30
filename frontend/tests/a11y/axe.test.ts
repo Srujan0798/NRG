@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { installAuthenticatedSession } from '../mocks/auth_session'
 
 type PersonaRole = 'researcher' | 'government' | 'industry'
 
@@ -12,19 +13,13 @@ interface RouteCase {
 }
 
 const routes: RouteCase[] = [
-  { name: 'login', path: '/' },
-  { name: 'hero', path: '/app' },
+  { name: 'login', path: '/login' },
+  { name: 'hero', path: '/app', role: 'researcher' },
   { name: 'founder', path: '/founder' },
-  { name: 'researcher-dashboard', path: '/researcher', role: 'researcher' },
-  { name: 'government-dashboard', path: '/government', role: 'government' },
-  { name: 'industry-dashboard', path: '/industry', role: 'industry' },
+  { name: 'researcher-dashboard', path: '/app/researcher', role: 'researcher' },
+  { name: 'government-dashboard', path: '/app/government', role: 'government' },
+  { name: 'industry-dashboard', path: '/app/industry', role: 'industry' },
 ]
-
-const roleTier: Record<PersonaRole, number> = {
-  researcher: 1,
-  government: 2,
-  industry: 3,
-}
 
 async function installApiMocks(page: Page) {
   await page.route('**/{health,stats,researchers,publications,projects,patents,collaborations,funding,labs,research-documents}', async (route) => {
@@ -42,19 +37,7 @@ async function installApiMocks(page: Page) {
 
 async function installSession(page: Page, role?: PersonaRole) {
   if (!role) return
-  await page.addInitScript(({ selectedRole, tier }) => {
-    window.localStorage.setItem('nrg.auth.session', JSON.stringify({
-      accessToken: 'a11y-access-token',
-      refreshToken: 'a11y-refresh-token',
-      tokenType: 'bearer',
-      user: {
-        id: `a11y-${selectedRole}`,
-        username: `${selectedRole}_user`,
-        role: selectedRole,
-        tier,
-      },
-    }))
-  }, { selectedRole: role, tier: roleTier[role] })
+  await installAuthenticatedSession(page, role)
 }
 
 function writeAxeReport(routeName: string, results: Awaited<ReturnType<AxeBuilder['analyze']>>) {
