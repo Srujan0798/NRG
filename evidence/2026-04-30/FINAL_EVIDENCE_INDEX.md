@@ -24,6 +24,36 @@ Date: 2026-04-30
 - `evidence/2026-04-30/11_tier3_query_response.json`
 - `evidence/2026-04-30/wave3_blocked_query_responses.json`
 
+## Live Full-Stack Browser Proof
+
+Command:
+
+```bash
+cd frontend && PLAYWRIGHT_BASE_URL=http://127.0.0.1:3010 PLAYWRIGHT_PORT=3010 API_TARGET=127.0.0.1:8020 npx playwright test -c tests/playwright.config.ts tests/e2e/live_full_stack_proof.spec.ts
+```
+
+Result: `1 passed`.
+
+Evidence:
+
+- `evidence/2026-04-30/live_full_stack_proof/README.md`
+- `evidence/2026-04-30/live_full_stack_proof/01_login_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/02_researcher_dashboard_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/03_streaming_planning_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/04_answer_verified_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/05_citation_drawer_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/06_source_data_drawer_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/07_audit_proof_drawer_desktop.png`
+- `evidence/2026-04-30/live_full_stack_proof/08_answer_verified_mobile.png`
+- `evidence/2026-04-30/live_full_stack_proof/09_tier3_blocked_browser_query.json`
+- `evidence/2026-04-30/live_full_stack_proof/live_full_stack_proof_login_messy_query_citations_source_data_audit_proof_and_tier_block.webm`
+
+Live proof summary:
+
+- `best quantum researchers` returned `status=success`, `route=sql`, `tier=1`, 5 SQL rows, 1 citation, and an audit event ID.
+- Tier 3 sensitive request returned `status=blocked`, `route=blocked`, `tier=3`, no source rows, and an audit event ID.
+- Browser console stack-trace error list: `[]`.
+
 ## Screenshot Evidence
 
 Desktop:
@@ -76,7 +106,7 @@ Final result:
 ```json
 {
   "ok": true,
-  "events_checked": 38383,
+  "events_checked": 38392,
   "broken_indices": []
 }
 ```
@@ -92,6 +122,6 @@ Audit repair note:
 These are still external or live-stack gates:
 
 - Strict C4 500ms/1000-user Locust proof.
-- Live deployed browser replay after Wave 5.
+- Deployed-environment browser replay on the target host or cluster.
 - Production Qdrant corpus/drift baseline.
 - Founder GPG signing ceremony and signed release tag.

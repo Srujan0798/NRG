@@ -60,6 +60,12 @@ def _login(client: TestClient) -> str:
     return response.json()["access_token"]
 
 
+def _login_as(client: TestClient, username: str, password: str) -> str:
+    response = client.post("/login", json={"username": username, "password": password})
+    assert response.status_code == 200, response.text
+    return response.json()["access_token"]
+
+
 def _assert_blocked_envelope(response, expected_reason: str | None = None) -> dict:
     assert response.status_code in (200, 400), response.text
     payload = response.json()
@@ -111,6 +117,21 @@ def test_pii_block_returns_answer_engine_envelope(test_client):
     )
 
     _assert_blocked_envelope(response)
+    assert CountingWorkflow.call_count == 0
+
+
+def test_blocked_envelope_preserves_authenticated_industry_tier(test_client):
+    CountingWorkflow.call_count = 0
+    token = _login_as(test_client, "industry_user", "industry-pass")
+
+    response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"query": "Show all researcher phone numbers in quantum computing"},
+    )
+
+    payload = _assert_blocked_envelope(response)
+    assert payload["tier"] == 3
     assert CountingWorkflow.call_count == 0
 
 

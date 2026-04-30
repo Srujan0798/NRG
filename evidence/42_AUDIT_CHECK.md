@@ -6,6 +6,30 @@
 
 ---
 
+## 2026-04-30 Supersession
+
+This April 25 audit check is historical and no longer describes the current chain state.
+
+Current verification after the audit append-lock fix and chain rebuild:
+
+```json
+{
+  "ok": true,
+  "events_checked": 38392,
+  "broken_indices": []
+}
+```
+
+Current evidence:
+
+- `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md`
+- `evidence/2026-04-30/live_full_stack_proof/README.md`
+- `evidence/2026-04-30/wave5_performance_load_acceptance.md`
+
+The historical corruption analysis below is retained for audit trail context only.
+
+---
+
 ## Audit Chain Verification
 
 ### Command Executed

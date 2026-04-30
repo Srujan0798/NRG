@@ -3280,8 +3280,8 @@ app.add_middleware(
 app.add_middleware(GZipMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(AuthContextMiddleware, jwt_handler=jwt_handler)
 app.add_middleware(PromptSanitiserMiddleware)
+app.add_middleware(AuthContextMiddleware, jwt_handler=jwt_handler)
 
 # Prometheus instrumentation — must happen after app creation, before startup
 try:
