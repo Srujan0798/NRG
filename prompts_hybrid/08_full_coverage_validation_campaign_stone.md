@@ -70,6 +70,18 @@ combined old prompt pack, convert it this way:
 - Do not claim complete certainty, launch readiness, or production readiness from a
   laptop-only campaign.
 
+## Whole-Product Claim Boundary
+
+External source fusion, inventory review, or prompt-stone integration is not the
+same as whole-product proof. A claim that NRG is better than an external bundle
+across appearance, UI/UX, database/schema, backend/API, accessibility, speed,
+tier safety, audit proof, and every other corner is a release-candidate claim.
+
+That claim requires a completed campaign matrix with the relevant rows marked
+`PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN` and linked to current evidence. If the
+matrix is not current, state exactly what is proven, what is only integrated as
+workflow guidance, and what remains unproven.
+
 ## Anti-Inflation Rule
 
 Coverage must be useful, not theatrical.

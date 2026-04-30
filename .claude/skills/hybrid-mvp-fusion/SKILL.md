@@ -135,6 +135,37 @@ A v1.0 change is acceptable only when it preserves:
 - no PII leak to Tier 3
 - fresh evidence for build, tests, screenshots, or API JSON
 
+## Claim Boundary
+
+Keep three statuses separate in every report:
+
+1. `inventory-accounted`: the external source was inventoried, reviewed, and
+   every file was accepted, adapted, converted, parked, rejected, or ignored as
+   generated/binary/local artifact.
+2. `value-integrated`: useful external value was transformed into NRG-native
+   code, tests, docs, evidence, workflow rules, or backlog items.
+3. `product-proven`: the running NRG product was validated across UI/UX,
+   backend/API, data/schema, tier safety, audit proof, accessibility,
+   performance, and evidence gates.
+
+Do not collapse these statuses. `inventory-accounted` or `value-integrated`
+does not mean the live product is now better in every corner or fully proven.
+A whole-product superiority or readiness claim requires a validation campaign
+using `prompts_hybrid/08_full_coverage_validation_campaign_stone.md`, with each
+covered row marked `PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN`.
+
+If the founder asks whether NRG is now better than the external bundle across
+appearance, UI/UX, database, backend, accessibility, speed, and every other
+corner, answer with exact evidence scope:
+
+- fusion status
+- product validation status
+- unproven gates
+- next command or campaign needed
+
+Never answer that question with a blanket yes unless the product-proven matrix
+has current evidence for the claimed surfaces.
+
 ## Integration Procedure
 
 1. Read the required source-truth files.

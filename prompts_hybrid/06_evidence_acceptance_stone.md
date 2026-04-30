@@ -85,6 +85,7 @@ the declared coverage matrix, not vague "all possible cases" claims.
 | UX flow is coherent | screen/task map showing role, task, entry path, next action, success state, failure state, and screenshots |
 | validation campaign is credible | declared campaign mode, query corpus, tier matrix, workflow matrix, security probes, performance scope, structured step log, and findings/fixes report |
 | external app fusion is valid | fusion value matrix showing source material inspected, useful ideas, accept/adapt/convert/park/reject decisions, NRG target files, verification gates, and direct-merge rejections |
+| whole-product superiority is proven | current validation campaign matrix across UI/UX, backend/API, database/schema, tier safety, audit proof, accessibility, performance, and evidence gates; external fusion evidence alone is insufficient |
 | mobile works | mobile viewport screenshots or device recording |
 | tests pass | exact command output |
 | handover ready | file list and freshness check |

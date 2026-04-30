@@ -96,7 +96,15 @@ def normalize_route(route: str | None, intent: str | None = None) -> RouteName:
 
 def normalize_confidence(value: Any, verification_status: Any = None) -> AnswerConfidence:
     raw = str(value or "").lower()
-    if raw in {"high", "pass", "passed", "true"} or verification_status is True:
+    if raw in {
+        "high",
+        "ok",
+        "pass",
+        "passed",
+        "true",
+        "verified",
+        "success",
+    } or normalize_verification_status(verification_status):
         return AnswerConfidence(level="high", reason="Evidence and citations passed verification.")
     if raw in {"medium", "partial", "warning"}:
         return AnswerConfidence(level="medium", reason="Evidence supports the answer with caveats.")
@@ -108,13 +116,42 @@ def normalize_confidence(value: Any, verification_status: Any = None) -> AnswerC
     return AnswerConfidence(level="low", reason="Only partial evidence is available.")
 
 
+def normalize_verification_status(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    if isinstance(value, (int, float)):
+        return bool(value)
+
+    raw = str(value).strip().lower()
+    if raw in {"ok", "pass", "passed", "true", "verified", "success", "safe"}:
+        return True
+    if raw in {
+        "blocked",
+        "fail",
+        "failed",
+        "false",
+        "needs_clarification",
+        "low_clarify",
+        "retry",
+        "unsafe",
+        "unknown",
+        "",
+    }:
+        return False
+    return False
+
+
 def normalize_citations(raw_citations: list[Any]) -> list[CitationRef]:
     citations: list[CitationRef] = []
     for index, item in enumerate(raw_citations or [], start=1):
         if not isinstance(item, dict):
             continue
         raw_id = str(item.get("id") or item.get("pub_id") or item.get("source_id") or index)
-        source_type: SourceType = "document_chunk" if item.get("chunk_id") or item.get("chunk_text") else "sql_row"
+        source_type: SourceType = (
+            "document_chunk" if item.get("chunk_id") or item.get("chunk_text") else "sql_row"
+        )
         citations.append(
             CitationRef(
                 id=str(index),
@@ -161,6 +198,7 @@ def blocked_answer_payload(
         "final_answer": final_answer,
         "response": final_answer,
         "status": "blocked",
+        "verification_status": False,
         "confidence": {"level": "needs_clarification", "reason": reason},
         "verification": {
             "status": "blocked",
@@ -202,11 +240,20 @@ def normalize_workflow_result(
         audit_event_id=audit_event_id,
         tier=tier_name(tier),
         question=question,
-        interpreted_question=str(result.get("interpreted_question") or result.get("user_query") or question),
+        interpreted_question=str(
+            result.get("interpreted_question") or result.get("user_query") or question
+        ),
         assumptions=list(result.get("assumptions") or planner_metadata.get("assumptions") or []),
         route=normalize_route(result.get("routing_decision"), result.get("intent")),
-        final_answer=str(result.get("final_answer") or result.get("synthesized_response") or result.get("response") or ""),
-        confidence=normalize_confidence(result.get("answer_confidence"), result.get("verification_status")),
+        final_answer=str(
+            result.get("final_answer")
+            or result.get("synthesized_response")
+            or result.get("response")
+            or ""
+        ),
+        confidence=normalize_confidence(
+            result.get("answer_confidence"), result.get("verification_status")
+        ),
         citations=normalize_citations(result.get("citations", [])),
         source_data=SourceData(
             sql_query=result.get("sql_query"),
@@ -220,7 +267,8 @@ def normalize_workflow_result(
         query_time_ms=int(elapsed_ms),
     )
     payload = response.model_dump()
-    verification_status = result.get("verification_status", False)
+    raw_verification_status = result.get("verification_status", False)
+    verification_status = normalize_verification_status(raw_verification_status)
     payload.update(
         {
             "query": question,
@@ -232,8 +280,8 @@ def normalize_workflow_result(
             "routing_decision": result.get("routing_decision"),
             "verification_status": verification_status,
             "verification": {
-                "status": verification_status,
-                "safe_to_trust": verification_status is True,
+                "status": raw_verification_status,
+                "safe_to_trust": verification_status,
                 "confidence": payload["confidence"],
                 "citation_validity": result.get("citation_validity", 1.0),
                 "audit_event_id": audit_event_id,
@@ -244,7 +292,7 @@ def normalize_workflow_result(
             "answer_confidence": payload["confidence"]["level"],
             "answer_confidence_score": result.get(
                 "answer_confidence_score",
-                result.get("faithfulness_score", 0.95 if result.get("verification_status", False) else 0.45),
+                result.get("faithfulness_score", 0.95 if verification_status else 0.45),
             ),
             "sql_anomaly_report": result.get("sql_anomaly_report", {}),
             "sql_query": payload["source_data"]["sql_query"],

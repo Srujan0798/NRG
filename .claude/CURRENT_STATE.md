@@ -91,6 +91,7 @@
 | `evidence/2026-05-01/minimax_fusion_pass3_query_validation.md` | External input fusion pass 3: converted generic app-builder/UI/prompt-pack value into NRG-native query, workflow, security, UI, and performance validation material. |
 | `evidence/2026-05-01/external_fusion_validation_matrix.csv` | Thirty-seven-row seed matrix for future validation campaigns covering queries, tiers, workflows, UI states, security probes, and performance boundaries. |
 | `evidence/2026-05-01/minimax_fusion_final_inventory_review.md` | Final external inventory review: all 84 files under the external bundle accounted for; 57 reviewable text files covered by earlier evidence or final pass, 27 generated/binary/local artifacts ignored. |
+| `evidence/2026-05-01/fusion_completion_claim_boundary.md` | Founder correction encoded: external inventory/value integration is not whole-product proof; restored missing validation-campaign skill wrappers, added product-proof claim gates, and fixed top-level API `verification_status` normalization after contract tests exposed the mismatch. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
