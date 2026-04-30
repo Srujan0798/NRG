@@ -12,8 +12,11 @@ and require evidence before accepting any completion claim.
 Before assigning any stone, attach or tell the agent to read:
 
 - `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 - `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
 - `Core_Idea_Clean.md`
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- `db_struct.sql`
 - the latest relevant folder under `evidence/2026-04-30/`
 
 Current project stance:
@@ -24,6 +27,8 @@ Current project stance:
 - Production readiness is still blocked on 1000-user sovereign-cluster proof,
   deployed browser replay, production Qdrant baseline, and founder signing.
 - Do not restart broad cleanup unless a dead file blocks the product path.
+- `CORPUS/` is a portable mirror for AI handoff, not the canonical source tree.
+  Run `python3 scripts/verify_corpus_sync.py` before using it.
 
 ## Recommended Use
 

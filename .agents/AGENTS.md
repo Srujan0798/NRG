@@ -5,14 +5,16 @@
 
 ---
 
-## Start Here (3 Steps — do in order)
+## Start Here (4 Steps — do in order)
 
 1. **Read [.claude/CURRENT_STATE.md](../.claude/CURRENT_STATE.md)** — current open items, quality bar, what's blocked
-2. **Read [.claude/rules/production_only.md](../.claude/rules/production_only.md)** — forbidden vocabulary, production framing
-3. **Read the SKILL.md for every skill in your task** — then begin
+2. **Read [docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md](../docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md)** — canonical files, portable corpus, Dhairya/db_struct gates
+3. **Read [.claude/rules/production_only.md](../.claude/rules/production_only.md)** — forbidden vocabulary, production framing
+4. **Read the SKILL.md for every skill in your task** — then begin
 
 > Only if your task touches SQL/schema: also read `db_struct.sql` and `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 > Only if architecture context needed: read `Core_Idea_Clean.md`
+> For v1.0, query, validation, answer-flow, handover, SQL/RAG, or frontend proof work: also read `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`; use `CORPUS/` only as a verified mirror after `python3 scripts/verify_corpus_sync.py`.
 
 ---
 

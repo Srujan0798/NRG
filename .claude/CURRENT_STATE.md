@@ -94,8 +94,9 @@
 
 | Task type | Must read |
 |-----------|-----------|
-| Any task | `BACKLOG.md` (last 50 lines), `db_struct.sql` header, `Core_Idea_Clean.md` §1-2 |
+| Any task | `BACKLOG.md` (last 50 lines), `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `db_struct.sql` header, `Core_Idea_Clean.md` §1-2 |
 | SQL/schema | `db_struct.sql` (full), `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` |
+| v1.0 build/fusion | `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `Core_Idea_Clean.md`, `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`, `db_struct.sql`, `CORPUS/`, `prompts_hybrid/00_INDEX.md`, task stone |
 | Security/PII | `src/security/`, `.claude/rules/security.md` |
 | API/auth | `src/api/main.py`, `src/auth/` |
 | Frontend | `frontend/src/`, `.claude/rules/frontend.md` |

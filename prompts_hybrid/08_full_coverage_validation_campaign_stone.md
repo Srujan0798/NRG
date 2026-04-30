@@ -17,8 +17,11 @@ issues when safe, and leave the project in a clearer state than you found it.
 ## Read First
 
 - `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 - `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
 - `Core_Idea_Clean.md`
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- `db_struct.sql`
 - `prompts_hybrid/00_INDEX.md`
 - `prompts_hybrid/01_master_execution_stone.md`
 - `prompts_hybrid/02_main_flow_stone.md`
@@ -29,6 +32,9 @@ issues when safe, and leave the project in a clearer state than you found it.
 - `prompts_hybrid/07_show_readiness_handover_stone.md`
 - latest relevant `evidence/2026-04-30/` reports
 - `tests/load/locustfile_c4.py` when performance is in scope
+
+If `CORPUS/` is used as the handoff pack, first run
+`python3 scripts/verify_corpus_sync.py` and record the result in evidence.
 
 ## Current Truth Boundary
 

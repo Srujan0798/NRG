@@ -10,10 +10,11 @@
 
 1. **Read [rules/production_only.md](rules/production_only.md)** — production framing, forbidden vocabulary.
 2. **Read [CURRENT_STATE.md](CURRENT_STATE.md)** — open items, quality bar, what's blocked. Single fastest context file.
-3. **Read [memory/INDEX.md](memory/INDEX.md)** — durable founder directives and past learnings.
-4. **Check git** — `git status`, `git log --oneline -5`
-5. **Check for external audits** — any `NRG_*_AUDIT_*.md` in repo root. External findings override internal claims.
-6. **Read the Founder's request. Execute.**
+3. **Read [`docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`](../docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md)** — canonical hierarchy, corpus mirror rules, Dhairya/db_struct gates.
+4. **Read [memory/INDEX.md](memory/INDEX.md)** — durable founder directives and past learnings.
+5. **Check git** — `git status`, `git log --oneline -5`
+6. **Check for external audits** — any `NRG_*_AUDIT_*.md` in repo root. External findings override internal claims.
+7. **Read the Founder's request. Execute.**
 
 > For deep context: `MASTER_EXECUTION_PLAN_2026-04-25.md` is the architectural source of truth.
 > Evidence older than 7 days (load test, benchmark, security scan) is stale — must re-run before claiming valid.
@@ -57,6 +58,8 @@
 |---------|------|
 | Project vision + 3 data sources | [memory/references/three-data-sources.md](memory/references/three-data-sources.md) |
 | SQL benchmark (17 queries, 41%) | [memory/projects/sql-audit-dhairya.md](memory/projects/sql-audit-dhairya.md) |
+| Full source hierarchy and corpus mirror | `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md` + `python3 scripts/verify_corpus_sync.py` |
+| MVP build/fusion | `Core_Idea_Clean.md` + `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` + `db_struct.sql` + `CORPUS/` + [skills/hybrid-mvp-fusion/SKILL.md](skills/hybrid-mvp-fusion/SKILL.md) |
 | All 61 skills inventory | [memory/references/installed-skills.md](memory/references/installed-skills.md) |
 | Production roadmap | `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` |
 | Closure wave | `docs/specs/CLOSURE_PLAN_2026-04-26.md` |

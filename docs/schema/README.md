@@ -1,37 +1,53 @@
-# NRG Database Schema
+# NRG Schema Reference
 
-## ⚠️ Canonical Source: See `CORPUS/`
+## Canonical Source
 
-**The authoritative schema reference is in `CORPUS/`:**
-- `CORPUS/db_struct.sql` — Production PostgreSQL dump (58 tables, **THE SOURCE OF TRUTH**)
-- `CORPUS/schema/` — All schema files: nrg_full_schema.sql, production_schema.sql, sqlite_schema.sql
-- `CORPUS/schema_hints.md` — AI SQL hints (used by text-to-SQL engine)
-- `CORPUS/schema_value_synonyms.md` — Value synonyms (used by text-to-SQL engine)
-- `CORPUS/business_term_glossary.yaml` — Business term glossary (used by schema retriever)
+The authoritative production schema is:
 
-## Local Schema Files
+```text
+db_struct.sql
+```
 
-| File | Description |
-|------|-------------|
-| `schema_hints.md` | **IN USE** — AI hints for text-to-SQL generation |
-| `schema_value_synonyms.md` | **IN USE** — Synonym mappings for SQL generator |
-| `business_term_glossary.yaml` | **IN USE** — Business glossary for schema retriever |
-| `nrg_full_schema.sql` | SQLite dev schema (18 tables) |
-| `production_schema.sql` | PostgreSQL ideal schema |
-| `sqlite_schema.sql` | Older SQLite schema |
+That root file is the official PostgreSQL dump and must be read before any work
+touching Text-to-SQL, RAG retrieval, schema mapping, data validation, or query
+benchmarks.
 
-## Migrations
+## Active Schema Support Files
 
-`migrations/` — SQL migration scripts (Alembic format)
+The active schema guidance used by the Text-to-SQL path lives in
+`src/data/schema/`:
 
-## Deprecated
+| File | Purpose |
+| --- | --- |
+| `schema_hints.md` | Table, column, join, and Dhairya failure-pattern hints |
+| `schema_value_synonyms.md` | Value synonyms such as `TRL 9` -> `Level 9` |
+| `business_term_glossary.yaml` | Business terms mapped to schema paths |
+| `nrg_full_schema.sql` | SQLite/local dev schema reference |
+| `production_schema.sql` | Production DDL reference |
+| `sqlite_schema.sql` | Older SQLite schema reference |
 
-`researcher_db.sql` — removed, use `CORPUS/db_struct.sql`
-`OFFICIAL_POSTGRESQL_SCHEMA.md` — removed, use `CORPUS/db_struct.sql`
+## Portable Corpus Mirror
+
+`CORPUS/` mirrors the key schema and benchmark files for AI handoff. It is not
+the canonical source tree. Verify mirrors before using them:
+
+```bash
+python3 scripts/verify_corpus_sync.py
+```
+
+## Dhairya SQL Audit
+
+For SQL quality, the official audit files are:
+
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- `docs/reports/SQL_AUDIT_RAW_dhairya.sql`
+
+The corpus file `CORPUS/SQL_AUDIT_REPORT_CLEAN.md` is a derived short summary.
+It is useful for quick orientation, but it must not replace the official report.
 
 ## Design Decisions
 
-- **Production:** PostgreSQL 14 on Neon serverless
-- **Development:** SQLite (18 tables, subset)
-- **Access Control:** Row-level security by tier (1=Researcher, 2=Government, 3=Industry)
-- **AI SQL Quality:** See `CORPUS/SQL_AUDIT_REPORT_CLEAN.md`
+- Production database: PostgreSQL 14 on Neon serverless
+- Development database: SQLite subset where explicitly configured
+- Access control: tier-aware filtering across query and UI paths
+- Query benchmark: Dhairya audit + `tests/benchmarks/killer_queries.yaml`

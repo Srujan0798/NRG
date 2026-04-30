@@ -15,7 +15,10 @@ Everything else is secondary until this path works cleanly.
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 - `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- `db_struct.sql`
 - latest relevant `evidence/2026-04-30/` report
 - current `frontend/`
 - current API routes under `src/api/`
@@ -33,6 +36,10 @@ Use evidence-backed queries first. The current safe walkthrough query is:
 The expected behavior is a quantum-specific answer with SQL/source evidence,
 citations, and an audit event ID. Do not use advanced TRL/funding/patent walkthrough
 queries unless fresh evidence proves them end to end.
+
+Any v1.0 or release query path must still respect the Dhairya audit patterns and
+the production schema. A polished UI that routes queries to wrong SQL is a
+failed main flow.
 
 ### 1. Login
 

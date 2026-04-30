@@ -16,7 +16,10 @@ break under impatient real use.
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
+- `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 - `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+- `db_struct.sql`
 - latest relevant `evidence/2026-04-30/` UI or live-proof report
 - all files in `frontend/`
 - current API contract and mocks
@@ -33,6 +36,10 @@ NRG is an existing production app, not a greenfield scaffold. Do not create a
 new React/Vite project, new root app, or parallel `/workspace` frontend unless
 the task explicitly asks for an isolated experiment. Extend `frontend/` and its
 existing Vite scripts by default.
+
+Frontend polish must not hide answer-engine failure. If a visible query flow
+touches SQL/RAG answers, preserve the Dhairya audit gates, source rows,
+citations, confidence, tier boundary, and audit event ID.
 
 ## Non-Negotiables
 

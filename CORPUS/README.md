@@ -1,67 +1,62 @@
-# NRG — Canonical Project Corpus
+# NRG Portable Corpus
 
-**What is this:** Reference package for understanding the National Research Graph project.
+`CORPUS/` is useful and should stay. It is the portable AI handoff pack for
+NRG: a compact mirror of the files an agent needs to understand the product,
+schema, Dhairya SQL audit patterns, and benchmark questions quickly.
 
----
+It is **not** the live source tree. Canonical files remain in their normal repo
+locations. Before giving `CORPUS/` to any AI agent, verify that the mirrors are
+in sync:
 
-## The 3 Official Source Files (from the person who gave the project)
-
-| File | Description |
-|------|-------------|
-| `Core_Idea_Clean.md` | Vision & product specification — what NRG is and why |
-| `db_struct.sql` | **Production PostgreSQL schema** — 3681 lines, pg_dump from actual 58-table database |
-| `SQL_AUDIT_RAW_dhairya.sql` | Raw audit log from SesDhairya — query results and AI-generated SQL |
-
----
-
-## SQL Audit Summary (cleaner version)
-
-See `SQL_AUDIT_REPORT_CLEAN.md` for a clean summary of the 17 Dhairya queries.
-
-**Key finding:** AI SQL generator scored 7/17 (41%) on production queries.
-The 3 killer queries every release must pass are in `tests/benchmarks/killer_queries.yaml`.
-
----
-
-## Database Schemas (which to use when)
-
-| File | Type | Use |
-|-------|------|-----|
-| `schema/db_struct.sql` | PostgreSQL dump | **THE SOURCE OF TRUTH** — actual production schema with 58 tables |
-| `schema/production_schema.sql` | PostgreSQL DDL | Ideal normalized production schema |
-| `schema/nrg_full_schema.sql` | SQLite DDL | Local dev schema (18 tables, subset) |
-| `schema/sqlite_schema.sql` | SQLite DDL | Older local schema |
-
----
-
-## AI SQL Quality Hints (from Dhairya failures)
-
-### Critical Rules
-1. **`SPLIT_PART`** — Credit score format `"3:1"` must parse with `SPLIT_PART(col, ':', 1)`
-2. **`Level 9`** — TRL Market Ready is stored as `"Level 9"`, NOT `"TRL 9"` or `"Market Ready"`
-3. **62-char table** — `innovations_at_various_stages_of_technology_readiness_level` — never abbreviate
-4. **CTE + GROUP BY** — YoY comparisons need CTE → GROUP BY → self-JOIN, never row-level
-
-### Tables that matter
-```
-academic_courses_details          — 9 of 17 Dhairya queries
-innovation_grant_from_govt       — funding analysis
-combined_ipo_patent_data         — patent status = 'Granted'
-innovations_at_various_stages_of_technology_readiness_level  — TRL pipeline
+```bash
+python3 scripts/verify_corpus_sync.py
 ```
 
----
+## Canonical Files And Mirrors
 
-## Access Tiers (Row-Level Security)
+| Canonical source | Corpus mirror | Purpose |
+| --- | --- | --- |
+| `Core_Idea_Clean.md` | `CORPUS/Core_Idea_Clean.md` | Product vision, UX contract, user-visible answer-engine behavior |
+| `db_struct.sql` | `CORPUS/db_struct.sql` | Official PostgreSQL schema dump |
+| `docs/reports/SQL_AUDIT_RAW_dhairya.sql` | `CORPUS/SQL_AUDIT_RAW_dhairya.sql` | Raw external Dhairya audit log |
+| `tests/benchmarks/killer_queries.yaml` | `CORPUS/killer_queries.yaml` | Query benchmark and adversarial SQL/RAG cases |
+| `src/data/schema/schema_hints.md` | `CORPUS/schema/schema_hints.md` | Text-to-SQL table/column hints |
+| `src/data/schema/schema_value_synonyms.md` | `CORPUS/schema/schema_value_synonyms.md` | Value synonym rules |
+| `src/data/schema/business_term_glossary.yaml` | `CORPUS/schema/business_term_glossary.yaml` | Business-term-to-schema mapping |
+| `src/data/schema/*.sql` | `CORPUS/schema/*.sql` | Development and production schema references |
 
-| Tier | Role | Data |
-|------|------|------|
-| 1 | Researcher | Full details, all researchers |
-| 2 | Government | Aggregated, anonymized |
-| 3 | Industry | Overview only |
+## Dhairya Audit Rule
 
-Every table has `access_tier INTEGER` column. Queries must filter by tier.
+The official formatted Dhairya audit is:
 
----
+```text
+docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md
+```
 
-*For tests, benchmarks, and scripts — see the main project README.md*
+The raw audit is:
+
+```text
+docs/reports/SQL_AUDIT_RAW_dhairya.sql
+```
+
+`CORPUS/SQL_AUDIT_REPORT_CLEAN.md` is only a short derived summary for fast
+handoff. It must not replace the official formatted report or the raw audit.
+
+## v1.0 Handoff Pack
+
+For any v1.0-building AI, provide this minimum pack:
+
+1. `Core_Idea_Clean.md`
+2. `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
+3. `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
+4. `db_struct.sql`
+5. `CORPUS/`
+6. `.claude/CURRENT_STATE.md`
+7. `prompts_hybrid/00_INDEX.md`
+8. `prompts_hybrid/02_main_flow_stone.md`
+9. `prompts_hybrid/03_frontend_zero_flaw_stone.md`
+10. latest relevant `evidence/2026-04-30/`
+
+The corpus is valuable because it prevents agents from missing schema and audit
+context. It becomes dangerous only if an agent treats it as the only truth or
+ignores the canonical files above.
