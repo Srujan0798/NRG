@@ -95,12 +95,26 @@ const LOGIN_DEFAULTS: Record<SurfaceRole, { username: string; password: string }
   industry: { username: 'partner@industry.in', password: 'Industry@2026' },
 }
 
-const SUGGESTIONS = [
-  'Top funding agencies by total grant amount last 5 years',
-  'TRL-9 innovations in clean energy',
-  'Compare Gujarat and Karnataka AI output 5y',
-  'Who collaborates with IIT-GN on hydrogen?',
-]
+const ROLE_SUGGESTIONS: Record<SurfaceRole, string[]> = {
+  researcher: [
+    'Best quantum researchers by citations and institution',
+    'Who collaborates with IIT-GN on hydrogen?',
+    'Top clean-energy publications since 2020',
+    'Compare AI and quantum output across IITs',
+  ],
+  government: [
+    'Compare Gujarat and Karnataka AI output 5y',
+    'State-wise clean-energy research output',
+    'TRL-9 innovations in clean energy',
+    'Top funding agencies by total grant amount last 5 years',
+  ],
+  industry: [
+    'Institutions with battery technology capability',
+    'Labs working on semiconductor readiness',
+    'Partnership opportunities in quantum computing',
+    'Anonymized capability clusters for hydrogen catalysis',
+  ],
+}
 
 const SUPPORTING_PANELS = [
   {
@@ -289,10 +303,11 @@ function QueryBox({
   )
 }
 
-function SuggestionChips({ onPick }: { onPick: (query: string) => void }) {
+function SuggestionChips({ role, onPick }: { role: SurfaceRole; onPick: (query: string) => void }) {
+  const suggestions = ROLE_SUGGESTIONS[role] || ROLE_SUGGESTIONS.researcher
   return (
-    <div className="mx-auto grid max-w-4xl gap-2 sm:grid-cols-2">
-      {SUGGESTIONS.map((suggestion) => (
+    <div className="mx-auto grid max-w-4xl gap-2 sm:grid-cols-2" aria-label={`Suggested ${ROLE_META[role].label} queries`}>
+      {suggestions.map((suggestion) => (
         <button
           key={suggestion}
           type="button"
@@ -472,7 +487,7 @@ export function AnswerEngineHome({ role, tier, username, onLogout, onPersonaChan
           </div>
           <QueryBox value={query} onChange={setQuery} onSubmit={onQuerySubmit} autoFocus />
           <p className="text-xs font-medium text-fg-muted">Press / to focus</p>
-          <SuggestionChips onPick={(suggestion) => {
+          <SuggestionChips role={role} onPick={(suggestion) => {
             setQuery(suggestion)
             onQuerySubmit(suggestion)
           }} />

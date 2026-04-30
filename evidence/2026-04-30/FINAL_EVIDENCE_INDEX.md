@@ -210,6 +210,18 @@ Calibration result:
 - No CRITICAL calibration failures found.
 - Slow root-health/RAG behavior remains a documented HIGH finding for the next backend performance/retrieval pass.
 
+## External Minimax Fusion Evidence
+
+- `evidence/2026-04-30/minimax_fusion_acceptance.md`
+
+Selective fusion result:
+
+- Accepted role-aware starter questions into the existing NRG answer-engine surface.
+- Rejected backend, schema, auth, static analytics, and alternate response-contract replacement.
+- Frontend component test passed.
+- Frontend build passed.
+- `CORPUS/` sync passed.
+
 ## Not Yet Final
 
 These are still external or live-stack gates:

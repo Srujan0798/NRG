@@ -70,6 +70,26 @@ describe('AnswerEngine surface', () => {
     expect(container.querySelectorAll('[data-testid="suggestion-chip"]')).toHaveLength(4)
     expect(container.querySelector('[data-testid="answer-engine-query"]')).not.toBeNull()
     expect(container.textContent).toContain("Sovereign intelligence over India's research database")
+    expect(container.textContent).toContain('Best quantum researchers by citations and institution')
+  })
+
+  it('shows persona-specific query suggestions without changing the primary query contract', () => {
+    const container = render(
+      <AnswerEngineHome
+        role="industry"
+        tier={3}
+        username="partner@industry.in"
+        onLogout={() => undefined}
+        onQuerySubmit={() => undefined}
+        onNavigate={() => undefined}
+      />
+    )
+
+    expect(container.querySelectorAll('[data-testid="suggestion-chip"]')).toHaveLength(4)
+    expect(container.querySelector('[data-testid="answer-engine-query"]')).not.toBeNull()
+    expect(container.textContent).toContain('Institutions with battery technology capability')
+    expect(container.textContent).toContain('Anonymized capability clusters for hydrogen catalysis')
+    expect(container.textContent).not.toContain('Best quantum researchers by citations and institution')
   })
 
   it('keeps tier dashboards to query-first layout plus three supporting panels', () => {
