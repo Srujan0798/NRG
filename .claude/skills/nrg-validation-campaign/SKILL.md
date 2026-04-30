@@ -48,6 +48,33 @@ accessibility, speed, tier safety, audit, and every corner requires current
 evidence from the validation campaign stone. Otherwise mark the claim
 `UNKNOWN`, `BLOCKED`, or `PARTIAL`, with the exact missing gates.
 
+## Founder Zero-Partial Gate
+
+If the founder asks for "100% efficient", "not partial", "best in every point",
+"ultra high hybrid", or repeats concern that agents are overclaiming, the
+campaign lead must convert that into a proof matrix, not a motivational answer.
+
+Before answering any superiority or completion question, verify and report these
+rows:
+
+- appearance and visual polish
+- UI/UX main flow and recovery states
+- query intelligence for messy, ambiguous, follow-up, out-of-corpus, and killer
+  queries
+- database/schema correctness against `db_struct.sql`
+- Dhairya SQL audit alignment
+- backend/API response contract
+- SQL/RAG/hybrid retrieval health
+- tier safety and PII protection
+- audit/HMAC proof
+- accessibility
+- performance/speed
+- evidence and handover package
+- deployed/production proof
+
+Each row must be `PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN` with an evidence path
+or next command. No row may be treated as passed by implication.
+
 ## Output Required
 
 Report:

@@ -97,6 +97,7 @@
 | `evidence/2026-05-01/validation_campaign_frontend_jest.log` | Frontend unit/a11y/contract/design-system test log: 26 suites, 97 tests passed. |
 | `evidence/2026-05-01/validation_campaign_frontend_build.log` | Frontend production build log. |
 | `evidence/2026-05-01/validation_campaign/killer/` | Killer-query response, health, and explain evidence for KILLER-01 through KILLER-03. |
+| `evidence/2026-05-01/founder_zero_partial_workflow_update.md` | Founder correction encoded permanently: future v1.0 fusion/superiority requests must use a proof matrix across appearance, UI/UX, query intelligence, DB/schema, Dhairya audit, backend/API, retrieval, security/tier, audit, accessibility, performance, evidence, and production. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |

@@ -82,6 +82,42 @@ That claim requires a completed campaign matrix with the relevant rows marked
 matrix is not current, state exactly what is proven, what is only integrated as
 workflow guidance, and what remains unproven.
 
+## Founder Zero-Partial Directive
+
+When the founder says the work must be "100% efficient", "not partial", "best
+in every point", "ultra high hybrid", or asks whether NRG is truly stronger
+than an external v1.0 app across appearance, UI/UX, DB, backend,
+accessibility, speed, and every corner, translate that into evidence
+discipline:
+
+- do not reassure
+- do not claim "complete", "perfect", "better everywhere", or "done end to end"
+  unless the matrix below is current
+- if one row is missing evidence, mark it `UNKNOWN` or `BLOCKED`
+- if one row fails, mark the campaign `NO` for whole-product superiority
+- if the issue is local-vs-deployed proof, say exactly which deployed command or
+  environment is required
+- update the relevant skill, stone, current state, or evidence report so the
+  correction is reusable
+
+Required superiority matrix:
+
+| Surface | Required proof |
+| --- | --- |
+| Appearance | current desktop and mobile screenshots or browser evidence |
+| UI/UX | main path plus loading, slow, empty, error, blocked, recovery, mobile overflow |
+| Query intelligence | messy/noisy, ambiguous, follow-up, out-of-corpus, multilingual if in scope, and K-Q1/K-Q2/K-Q3 |
+| Database/schema | `db_struct.sql`, corpus sync, schema route tests, no stale schema assumptions |
+| Dhairya SQL audit | official Dhairya failure patterns checked or converted into regression rows |
+| Backend/API | raw JSON contract with audit ID, citations, source rows, tier, timing, verification |
+| Retrieval | SQL/RAG/hybrid routes, health status, explainable sources, no hidden dependency failure |
+| Security/tier | PII, injection, tier escalation, small-cohort, Tier 3 raw JSON |
+| Audit | HMAC/audit chain proof for allowed and blocked actions |
+| Accessibility | contrast, keyboard, focus trap, labels, touch targets, responsive behavior |
+| Performance | local profile for local claims; deployed/cluster profile for production claims |
+| Evidence | committed report with commands, outputs, paths, blockers, and commit SHA |
+| Production | deployed browser replay, production Qdrant baseline, 1000-user C4, founder signing |
+
 ## Anti-Inflation Rule
 
 Coverage must be useful, not theatrical.

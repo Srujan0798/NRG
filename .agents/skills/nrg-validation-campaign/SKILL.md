@@ -26,6 +26,14 @@ Whole-product claims need a current validation matrix with UI/UX, backend/API,
 database/schema, tier safety, audit proof, accessibility, performance, and
 evidence rows marked `PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN`.
 
+Founder correction: if asked whether NRG is "100% better", "not partial",
+"best in every point", or stronger than an external v1.0 app in every corner,
+do not answer with reassurance. Return a proof matrix covering appearance,
+UI/UX, query intelligence, DB/schema, Dhairya SQL audit, backend/API,
+retrieval, security/tier, audit, accessibility, performance, evidence, and
+deployed production proof. Any row without current evidence is `UNKNOWN` or
+`BLOCKED`.
+
 ## Output
 
 Return files changed, commands run, evidence paths, blockers, validation status,

@@ -166,6 +166,47 @@ corner, answer with exact evidence scope:
 Never answer that question with a blanket yes unless the product-proven matrix
 has current evidence for the claimed surfaces.
 
+## Founder Superiority Gate
+
+The founder's intent is not "make a partial merge" or "say the workflow is
+better." The intent is: extract every useful part from the external v1.0 app,
+convert it into NRG-native value, then prove whether the resulting NRG product
+is stronger across every important corner.
+
+When the request includes language like "100% better", "not partial", "best in
+every point", "appearance, UI/UX, DB, backend, accessibility, speed, every
+corner", or "do not make me repeat this", treat it as this hard gate:
+
+1. Do not reassure.
+2. Do not claim superiority.
+3. Build or update the fusion matrix.
+4. Build or update the product-proof matrix.
+5. Run the highest-risk validation slice that can be run locally.
+6. Mark every untested surface `UNKNOWN` or `BLOCKED`, never implicitly pass.
+7. Save the rule or missing gate back into the workflow so the founder does not
+   need to repeat the same correction.
+
+Whole-product superiority requires current evidence across all of these
+surfaces:
+
+| Surface | Minimum proof before claiming stronger than the external v1.0 app |
+| --- | --- |
+| Appearance | desktop and mobile screenshots or browser proof for the changed surface |
+| UI/UX flow | login -> role/tier -> query -> answer -> citations/source -> audit proof |
+| Query intelligence | messy/noisy, ambiguous, follow-up, out-of-corpus, and killer-query coverage |
+| Database/schema | `db_struct.sql`, Dhairya SQL audit, corpus sync, and SQL regression proof |
+| Backend/API | stable response contract with audit ID, citations, source rows, tier, timing, verification |
+| Retrieval | SQL/RAG/hybrid health, no hidden dependency failure, explainable source evidence |
+| Security/tier | PII, injection, tier escalation, small-cohort, and Tier 3 raw JSON proof |
+| Audit | HMAC/audit event proof for allowed and blocked attempts |
+| Accessibility | keyboard, focus, contrast, labels, touch targets, and mobile overflow checks |
+| Performance | local profile plus cluster/deployed proof for production-speed claims |
+| Evidence | committed report with commands, outputs, evidence paths, blockers, commit SHA |
+| Production | deployed replay, production Qdrant baseline, 1000-user cluster C4, founder signing |
+
+If any row lacks current evidence, the answer must say exactly that. The correct
+response is a proof table and next command, not a confidence statement.
+
 ## Integration Procedure
 
 1. Read the required source-truth files.

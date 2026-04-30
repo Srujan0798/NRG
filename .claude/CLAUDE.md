@@ -16,6 +16,14 @@
 6. **Check for external audits** — any `NRG_*_AUDIT_*.md` in repo root. External findings override internal claims.
 7. **Read the Founder's request. Execute.**
 
+**Founder correction hard rule:** if the Founder asks whether NRG is now "100%
+better", "not partial", "best in every point", or stronger than an external
+v1.0 app across appearance, UI/UX, DB, backend, accessibility, speed, and every
+corner, do not answer with reassurance. Load the hybrid release fusion skill and
+`skills/nrg-validation-campaign/SKILL.md`, then answer with a proof matrix:
+`PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN` for each surface, with evidence paths or
+the next command. No evidence means no claim.
+
 > For deep context: `MASTER_EXECUTION_PLAN_2026-04-25.md` is the architectural source of truth.
 > Evidence older than 7 days (load test, benchmark, security scan) is stale — must re-run before claiming valid.
 

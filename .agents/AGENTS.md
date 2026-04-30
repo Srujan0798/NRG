@@ -16,6 +16,14 @@
 > Only if architecture context needed: read `Core_Idea_Clean.md`
 > For v1.0, query, validation, answer-flow, handover, SQL/RAG, or frontend proof work: also read `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`; use `CORPUS/` only as a verified mirror after `python3 scripts/verify_corpus_sync.py`.
 
+> Founder correction hard rule: if asked whether NRG is "100% better", "not
+> partial", "best in every point", or stronger than an external v1.0 app across
+> appearance, UI/UX, DB, backend, accessibility, speed, and every corner, use
+> the hybrid release fusion skill, `.agents/skills/nrg-validation-campaign/SKILL.md`, and
+> `prompts_hybrid/08_full_coverage_validation_campaign_stone.md`. Return a
+> proof matrix with `PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN`. No evidence means
+> no claim.
+
 ---
 
 ## Quality Bar (6 Hard Constraints — know these cold)
