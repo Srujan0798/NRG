@@ -37,6 +37,46 @@
 
 ---
 
+## Failure Pattern Index
+
+### Pattern 1: Incorrect Aggregation Logic — Q3, Q11
+
+Year-over-year and growth questions must aggregate to the right grain before
+comparing periods. Row-level grant or course comparisons are silent wrong
+answers.
+
+### Pattern 2: Missing/Late HAVING Clause — Q14, Q16
+
+Multi-stage audit queries must finish the final filtering condition. A broad
+aggregate without the exception filter is not a valid answer.
+
+### Pattern 3: Cross-Domain Confusion — Q10, Q12
+
+Course and curriculum follow-ups must stay in `academic_courses_details` unless
+the user explicitly changes domain.
+
+### Pattern 4: String Value Mismatch — Q6
+
+User terms such as `TRL 9` and `Market Ready` must map to stored values such as
+`Level 9`.
+
+### Pattern 5: ORDER BY / LIMIT Scope Errors — Q1, Q4
+
+Ranked questions must aggregate first, then order by the aggregate. Alphabetical
+`DISTINCT` lists or premature limits are wrong.
+
+### Pattern 6: JOIN Key Mismatch — Q7, Q13
+
+Grant, patent, course, and incubation joins must use the correct semantic keys
+and preserve required filters such as `status = 'Granted'`.
+
+### Pattern 7: Complete Failure — Q15
+
+Complex analytical questions must produce a bounded SQL plan or a clear
+clarification path, never an empty generation failure.
+
+---
+
 ## Detailed Query Analysis
 
 ---

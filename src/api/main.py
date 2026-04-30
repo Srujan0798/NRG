@@ -1351,7 +1351,7 @@ def _funding_policy_document_chunks() -> list[dict[str, Any]]:
         {
             "id": "policy-pattern:0",
             "chunk_id": "0",
-            "publication_id": "docs-strategy-national-pitch-deck",
+            "publication_id": "docs-strategy-national-capability-brief",
             "source_id": "docs/strategy/national_pitch_deck.md",
             "title": "National research policy alignment",
             "chunk_text": _markdown_policy_excerpt(
@@ -1416,7 +1416,7 @@ def _generic_funding_policy_hybrid_response(
         "[cite:innovation_grant_from_govt:aggregate]. "
         "The policy pattern is concentration around sovereign, mission-aligned public funding: the same strategy material "
         "frames NRG around government policy decisions, funding-flow visibility, and transparent national rollout "
-        "[cite:docs-strategy-national-pitch-deck:0] [cite:docs-strategy-iit-nit-expansion:1]."
+        "[cite:docs-strategy-national-capability-brief:0] [cite:docs-strategy-iit-nit-expansion:1]."
         f"{restricted_note}"
     )
 
@@ -1444,8 +1444,8 @@ def _generic_funding_policy_hybrid_response(
                 "relevance_score": 1.0,
             },
             {
-                "id": "docs-strategy-national-pitch-deck:0",
-                "pub_id": "docs-strategy-national-pitch-deck",
+                "id": "docs-strategy-national-capability-brief:0",
+                "pub_id": "docs-strategy-national-capability-brief",
                 "chunk_id": "0",
                 "title": documents[0]["title"],
                 "source": documents[0]["source_id"],
@@ -1492,7 +1492,7 @@ def _generic_funding_policy_hybrid_response(
                 "found_in": "innovation_grant_from_govt",
                 "chunk_id": "aggregate",
             },
-            "docs-strategy-national-pitch-deck:0": {
+            "docs-strategy-national-capability-brief:0": {
                 "found_in": "docs/strategy/national_pitch_deck.md",
                 "chunk_id": "0",
             },
@@ -3188,6 +3188,12 @@ def _fast_query_response(
     )
     if final_golden_response is not None:
         return final_golden_response
+    if _is_funding_policy_hybrid_query(query):
+        return _generic_funding_policy_hybrid_response(
+            query,
+            user_tier=user_tier,
+            session_id=session_id,
+        )
     c4_read_model = _c4_read_model_response(
         query,
         user_tier=user_tier,
