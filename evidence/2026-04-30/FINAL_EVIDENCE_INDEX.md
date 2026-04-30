@@ -116,6 +116,9 @@ Mobile:
 - `evidence/2026-04-30/wave5_local_100_query_profile_before.json`
 - `evidence/2026-04-30/wave5_local_100_query_profile_after_audit_fastpath.json`
 - `evidence/2026-04-30/wave5_local_100_query_profile_after.json`
+- `evidence/2026-04-30/live_c4_local_smoke/README.md`
+- `evidence/2026-04-30/live_c4_local_smoke/locust_stats.csv`
+- `evidence/2026-04-30/live_c4_local_smoke/locust_report.html`
 
 Final local 100-query result:
 
@@ -125,6 +128,14 @@ Final local 100-query result:
 - P99: 2094.72ms
 - Throughput: 42.62 qps
 - Every successful response included an audit event ID
+
+Live local 100-user Locust smoke:
+
+- 3602 total requests
+- 0 HTTP failures
+- `/query` P95: 2300ms
+- `/query` P99: 2700ms
+- Strict C4 latency target still fails because P99 is above 500ms
 
 ## Audit Evidence
 
@@ -139,7 +150,7 @@ Final result:
 ```json
 {
   "ok": true,
-  "events_checked": 38417,
+  "events_checked": 39036,
   "broken_indices": []
 }
 ```

@@ -62,7 +62,7 @@ Do not present this as full sovereign-cluster production readiness. The strict C
 9. Open audit view.
    - Show audit list and proof language.
    - Screenshot: `evidence/2026-04-30/ui_ux/after/audit_list_1366.png`
-   - Final audit verification: `scripts/audit_investigate.py` returned `ok=true`, `events_checked=38417`.
+   - Final audit verification: `scripts/audit_investigate.py` returned `ok=true`, `events_checked=39036`.
 
 ## Passed Gates
 
@@ -137,6 +137,7 @@ SLO_ENV=prod .venv/bin/python -m pytest tests/load/test_slo_under_load.py -q -m 
 |---------|--------|-------------|
 | Strict C4 500ms/1000-user proof | Not passed locally | Run `python scripts/run_load_test.py --host http://localhost:8000 --users 1000` against the intended deployment and attach CSV/HTML evidence. |
 | Local full-stack browser replay | Passed on 2026-04-30 | Evidence in `evidence/2026-04-30/live_full_stack_proof/` and `evidence/2026-04-30/live_quantum_query_recheck/`. |
+| Live local 100-user Locust smoke | Stable but C4 latency failed | Evidence in `evidence/2026-04-30/live_c4_local_smoke/`; 3602 requests, 0 failures, `/query` P99 2700ms. |
 | Deployed browser replay | Not run on target host/cluster | Repeat the live full-stack proof against the intended deployment URL. |
 | Qdrant production corpus baseline | Environment-dependent | Populate Qdrant and rerun vector/RAG health with real corpus count. |
 | GPG ceremony/signed tag | Founder-only | Founder signs release/tag after external gates. |

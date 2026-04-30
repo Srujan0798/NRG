@@ -147,9 +147,37 @@ Result:
 | 100-user load evidence | LOCAL PASS |
 | C4 production/cluster proof | BLOCKED |
 
+## Live Local Locust Smoke
+
+After the live quantum browser/API proof, a bounded local C4-style Locust smoke was run against a live backend on `127.0.0.1:8020`.
+
+Evidence:
+
+- `evidence/2026-04-30/live_c4_local_smoke/README.md`
+- `evidence/2026-04-30/live_c4_local_smoke/locust_stats.csv`
+- `evidence/2026-04-30/live_c4_local_smoke/locust_report.html`
+- `evidence/2026-04-30/live_c4_local_smoke/health_before.json`
+- `evidence/2026-04-30/live_c4_local_smoke/health_after.json`
+
+Result:
+
+| Run | Users | Duration | Requests | Failures | Query P95 | Query P99 | Status |
+|-----|-------|----------|----------|----------|-----------|-----------|--------|
+| Local Locust smoke | 100 | 60s | 3602 | 0 | 2300ms | 2700ms | STABLE, C4 latency FAIL |
+
+Post-run audit verification:
+
+```json
+{
+  "ok": true,
+  "events_checked": 39036,
+  "broken_indices": []
+}
+```
+
 ## Remaining Blocker
 
-C4 is improved but not closed. The local 100-query profile now has P99 2094.72ms, which is below the older 3s C4 practical threshold but above the strict 500ms target noted in `tests/load/locustfile_c4.py`. A true C4 closure still requires a running deployment and Locust run against the cluster or local service:
+C4 is improved but not closed. The local 100-query TestClient profile had P99 2094.72ms, and the live local 100-user Locust smoke had query P99 2700ms with zero failures. Both are above the strict 500ms target noted in `tests/load/locustfile_c4.py`. A true C4 closure still requires a running deployment and Locust run against the cluster or local service:
 
 ```bash
 python scripts/run_load_test.py --host http://localhost:8000 --users 1000
