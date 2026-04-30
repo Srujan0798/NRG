@@ -9,13 +9,13 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Wave 1, Wave 4, Wave 2, and Wave 3 fixes are committed; Wave 5 performance fixes are ready to commit; unrelated cleanup deletions and new ADR files remain uncommitted |
+| Working tree | Wave 1, Wave 4, Wave 2, Wave 3, Wave 5, and Wave 6 are committed; unrelated cleanup deletions and new ADR files remain uncommitted |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
 | Targeted recent checks | Wave 1 API tests, Wave 4 SQL/RAG/health tests, Wave 2 frontend build/browser tests, Wave 3 security/audit tests, and Wave 5 local load/performance tests passed in targeted runs |
 | Audit chain | Rebuilt after pre-fix concurrent profile, then verified on 2026-04-30 with `scripts/audit_investigate.py`: `ok=true`, `events_checked=38383`, no broken indices |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
-| Latest committed wave | Wave 3 security/tier/audit proof (`c5d6a4c`); Wave 5 pending commit |
+| Latest committed wave | Wave 6 show-readiness handover (latest commit) |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
 ---
@@ -30,7 +30,7 @@
 | W3 | Security, tier, and audit proof | Local gate passed | Blocked query audit IDs fixed; live deployed replay pending |
 | W4 | SQL/RAG retrieval truth and regression coverage | Done locally | Committed in current Wave 4 commit; live Qdrant/PostgreSQL proof remains environment-dependent |
 | W5 | C4 concurrent query/load performance closure | Local gate improved | Local 100-query P99 2094.72ms; strict 500ms/1000-user C4 still needs live Locust proof |
-| W6 | Final handover package | Last | Requires evidence from W1-W5 |
+| W6 | Final handover package | Done | Show-readiness report and final evidence index committed |
 | K-6 | GPG signatures for handover | FOUNDER ONLY | Founder private key |
 
 ---
@@ -43,7 +43,7 @@
 
 **C4 status is improved but not fully closed**. Wave 5 local TestClient evidence improved from P99 15,854.71ms to P99 2,094.72ms with 100/100 successful queries and audit IDs on every response. Do not claim strict C4 production readiness until a live Locust run passes the official target.
 
-**Main product risk now:** C4 load/performance remains stale and previously failed. The next implementation wave must profile `/query` latency under concurrent load and document the exact bottleneck instead of claiming production readiness.
+**Main product risk now:** strict C4 remains the only local quality-bar miss. The system is locally show-ready, but external production claims need live Locust, live browser replay, production Qdrant baseline, and founder signing.
 
 ---
 
@@ -71,6 +71,8 @@
 | Current commit | Wave 3 blocked-query audit-ID fix and security/tier/audit evidence |
 | `evidence/2026-04-30/wave5_performance_load_acceptance.md` | Performance report with before/after local 100-query profile, load tests, and C4 blocker |
 | `evidence/2026-04-30/wave5_local_100_query_profile_after.json` | Final local 100-query profile: P99 2094.72ms, 100/100 success, audit IDs present |
+| `docs/handover/SHOW_READINESS_2026-04-30.md` | Current 90-second walkthrough, evidence map, and honest blocker list |
+| `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md` | Final evidence index for current handover package |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
 | `6d0ac3a` | Tracked test-run metadata removal |

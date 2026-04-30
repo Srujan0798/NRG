@@ -32,6 +32,7 @@ Do not claim sovereign-cluster production sign-off until those three items are e
 | 6 | [DATA_INTAKE_PROTOCOL.md](DATA_INTAKE_PROTOCOL.md) | SFTP, GPG, HMAC intake workflow | Data and infrastructure teams |
 | 7 | [UAT_RESULTS.md](UAT_RESULTS.md) | User acceptance test plan and sign-off template | Professor, ministry, industry evaluators |
 | 8 | [PITCH_DECK_GUIDE.md](PITCH_DECK_GUIDE.md) | Capability narrative guide for executive review | Presenter and leadership team |
+| 9 | [SHOW_READINESS_2026-04-30.md](SHOW_READINESS_2026-04-30.md) | Current 90-second walkthrough, evidence map, and blockers | Presenter, assistant, engineering reviewer |
 
 Supporting documents outside this directory:
 
@@ -101,6 +102,18 @@ Additional 2026-04-28 / 2026-04-29 evidence:
 | `evidence/2026-04-28/handover_packet_complete.log` | Handover packet structural completeness check. |
 | `evidence/2026-04-28/sprint_review.md` | Sprint review, quality-bar status, and next-sprint questions. |
 
+Additional 2026-04-30 evidence:
+
+| Evidence | What It Proves |
+|---|---|
+| `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md` | Current evidence index for Waves 0-6 and remaining blockers. |
+| `evidence/2026-04-30/wave1_messy_query_acceptance.md` | Messy-query backend routing and stable answer contract. |
+| `evidence/2026-04-30/wave2_frontend_main_flow_build.md` | Frontend build, mocked browser main flow, audit/citation proof, and screenshots. |
+| `evidence/2026-04-30/wave3_security_tier_audit_acceptance.md` | Tier JSON, blocked-query responses, and audit-chain verification. |
+| `evidence/2026-04-30/wave4_retrieval_sql_rag_acceptance.md` | Schema/RAG/SQL truth and health behavior. |
+| `evidence/2026-04-30/wave5_performance_load_acceptance.md` | Local 100-query profile, performance fixes, and strict C4 blocker. |
+| `docs/handover/SHOW_READINESS_2026-04-30.md` | Current presenter walkthrough and honest show-readiness status. |
+
 ## Local Operator Quick Start
 
 ```bash
@@ -129,4 +142,4 @@ For detailed setup, seed, test, and troubleshooting instructions, start with [..
 
 NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, vector baseline, and official dataset ingestion have all been run and attached as evidence.
 
-*Last updated: 2026-04-29*
+*Last updated: 2026-04-30*
