@@ -84,6 +84,7 @@ the declared coverage matrix, not vague "all possible cases" claims.
 | frontend performance is measured | Lighthouse/Web Vitals output or equivalent timing evidence for changed major screens |
 | UX flow is coherent | screen/task map showing role, task, entry path, next action, success state, failure state, and screenshots |
 | validation campaign is credible | declared campaign mode, query corpus, tier matrix, workflow matrix, security probes, performance scope, structured step log, and findings/fixes report |
+| external app fusion is valid | fusion value matrix showing source material inspected, useful ideas, accept/adapt/convert/park/reject decisions, NRG target files, verification gates, and direct-merge rejections |
 | mobile works | mobile viewport screenshots or device recording |
 | tests pass | exact command output |
 | handover ready | file list and freshness check |

@@ -12,7 +12,7 @@ QA Lead for NRG.
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `db_struct.sql`
 - `BACKLOG.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present
@@ -45,6 +45,14 @@ The backend is acceptable only when:
 
 NRG is an existing FastAPI/Python service. External full-stack defaults are
 reference material, not permission to replace the local architecture.
+
+External backend code can still contain useful value: query examples, response
+normalization ideas, retry/timeout behavior, error shapes, validation cases,
+security probes, and evidence structure. Convert that value into NRG tests,
+contract adapters, or service changes only after checking `db_struct.sql`,
+Dhairya audit patterns, tier filtering, citations/source rows, and audit IDs.
+Never replace NRG auth, schema, query orchestration, or audit chain with a
+simplified external implementation.
 
 For backend changes:
 

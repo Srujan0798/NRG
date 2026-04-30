@@ -17,7 +17,7 @@ Read every word of:
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `db_struct.sql`
 - `BACKLOG.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present

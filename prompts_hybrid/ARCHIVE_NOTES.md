@@ -79,6 +79,6 @@ The original folder `prompts /` was not modified.
 - Keep each stone task-specific.
 - Keep evidence gates stricter than the implementation prompt.
 - Keep stones aligned with `.claude/CURRENT_STATE.md` and
-  `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`. If current truth
+  `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`. If current truth
   changes, update the shared current-state language instead of copying a new
   master protocol into this folder.

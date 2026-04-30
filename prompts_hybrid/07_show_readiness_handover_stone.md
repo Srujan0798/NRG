@@ -11,7 +11,7 @@ see a working product, not a promise.
 ## Read First
 
 - `.claude/CURRENT_STATE.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `Core_Idea_Clean.md`
 - `docs/handover/SHOW_READINESS_2026-04-30.md`
 - `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md`

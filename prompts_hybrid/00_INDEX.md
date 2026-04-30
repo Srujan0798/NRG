@@ -13,7 +13,7 @@ Before assigning any stone, attach or tell the agent to read:
 
 - `.claude/CURRENT_STATE.md`
 - `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `Core_Idea_Clean.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 - `db_struct.sql`
@@ -29,6 +29,10 @@ Current project stance:
 - Do not restart broad cleanup unless a dead file blocks the product path.
 - `CORPUS/` is a portable mirror for AI handoff, not the canonical source tree.
   Run `python3 scripts/verify_corpus_sync.py` before using it.
+- External apps, screenshots, and agent-built bundles are value sources, not
+  replacement source trees. Use the hybrid release fusion skill under `.claude/skills/` to
+  mine every useful UI, interaction, query, validation, and evidence idea, then
+  adapt only NRG-compatible pieces into the existing product path.
 
 ## Recommended Use
 
@@ -50,6 +54,9 @@ Current project stance:
 8. Use `08_full_coverage_validation_campaign_stone.md` when the task is broad
    validation across many queries, workflows, tiers, UI states, security probes,
    audit proof, and performance evidence.
+9. Use the hybrid release fusion skill under `.claude/skills/` before merging any external
+   app or agent-built bundle. The required first output is a value matrix:
+   source, useful idea, decision, NRG target, and verification gate.
 
 ## Current Wave Map
 
@@ -62,6 +69,11 @@ Use this order unless `.claude/CURRENT_STATE.md` says otherwise:
 5. Deployment-grade performance proof, especially the 1000-user cluster C4 run.
 6. Full-coverage validation campaign when broad confidence is needed.
 7. Handover evidence and walkthrough refresh.
+
+When external app material is present, run the fusion skill before choosing a
+wave. Useful UI/UX and interaction patterns usually feed Wave 3; query examples
+and response behavior feed Waves 1, 2, and 6; unsafe replacement code is rejected
+as a direct merge but can still become tests, docs, or backlog.
 
 The local C4 read-model pass is complete. The next performance assignment is
 not to rebuild the read model again; it is to prove it in the target deployment.

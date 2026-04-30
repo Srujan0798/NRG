@@ -11,12 +11,18 @@ Complete the full end-to-end user journey:
 
 Everything else is secondary until this path works cleanly.
 
+If an external app, screenshot set, or agent-built bundle is available, mine it
+for visible flow value before editing: login clarity, role switching, query
+input ergonomics, progress states, answer layout, citations, source proof,
+audit proof, copy/export behavior, mobile behavior, and recovery states. Adapt
+only the useful pattern into the existing NRG main flow.
+
 ## Required Reading
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
 - `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 - `db_struct.sql`
 - latest relevant `evidence/2026-04-30/` report

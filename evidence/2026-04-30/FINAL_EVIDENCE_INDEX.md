@@ -213,6 +213,7 @@ Calibration result:
 ## External Minimax Fusion Evidence
 
 - `evidence/2026-04-30/minimax_fusion_acceptance.md`
+- `evidence/2026-04-30/external_fusion_workflow_update.md`
 
 Selective fusion result:
 
@@ -221,6 +222,12 @@ Selective fusion result:
 - Frontend component test passed.
 - Frontend build passed.
 - `CORPUS/` sync passed.
+
+Workflow update:
+
+- Fusion skill now requires external value extraction before direct-merge rejection.
+- Source map and prompt stones now point to `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`.
+- Evidence acceptance now includes an external fusion matrix gate.
 
 ## Not Yet Final
 

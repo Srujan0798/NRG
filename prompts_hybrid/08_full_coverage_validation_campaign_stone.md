@@ -18,7 +18,7 @@ issues when safe, and leave the project in a clearer state than you found it.
 
 - `.claude/CURRENT_STATE.md`
 - `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `Core_Idea_Clean.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 - `db_struct.sql`
@@ -35,6 +35,13 @@ issues when safe, and leave the project in a clearer state than you found it.
 
 If `CORPUS/` is used as the handoff pack, first run
 `python3 scripts/verify_corpus_sync.py` and record the result in evidence.
+
+If external apps, screenshots, or agent-built bundles are used as input, first
+create a fusion value matrix using the hybrid release fusion skill under
+`.claude/skills/`.
+Treat those sources as coverage generators: query examples, workflows,
+interactions, states, security probes, and evidence ideas. Do not treat them as
+canonical replacements for NRG code, schema, auth, query logic, or audit proof.
 
 ## Current Truth Boundary
 

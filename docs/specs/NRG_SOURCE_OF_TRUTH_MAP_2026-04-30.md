@@ -15,7 +15,7 @@ project only from screenshots.
 3. `.claude/CURRENT_STATE.md`
 4. `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 5. `prompts_hybrid/00_INDEX.md`
-6. `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+6. `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 
 ### Tier 1 - Product And Verification Truth
 
@@ -77,6 +77,18 @@ rg -n "Dhairya|SQL_AUDIT_REPORT_DHAIRYA|db_struct|Core_Idea|CORPUS|source of tru
 11. `prompts_hybrid/03_frontend_zero_flaw_stone.md`
 12. the hybrid release fusion skill under `.claude/skills/`
 13. latest relevant `evidence/2026-04-30/`
+
+## External App Fusion Rule
+
+External apps, screenshots, agent-built bundles, and working examples are useful
+input material. They are not canonical source trees. Agents must use
+the hybrid release fusion skill under `.claude/skills/` to extract all useful value first,
+then adapt only NRG-compatible pieces into the existing source tree.
+
+Accepted external value can become product code, tests, prompt-stone updates,
+evidence checklists, or backlog items. Direct replacement is blocked when it
+conflicts with Core Idea, Dhairya SQL audit, `db_struct.sql`, tier safety,
+citations/source rows, audit event IDs, or evidence gates.
 
 ## Query-Correctness Gate
 

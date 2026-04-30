@@ -17,7 +17,7 @@ break under impatient real use.
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
 - `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
 - `db_struct.sql`
 - latest relevant `evidence/2026-04-30/` UI or live-proof report
@@ -36,6 +36,13 @@ NRG is an existing production app, not a greenfield scaffold. Do not create a
 new React/Vite project, new root app, or parallel `/workspace` frontend unless
 the task explicitly asks for an isolated experiment. Extend `frontend/` and its
 existing Vite scripts by default.
+
+External frontend apps and screenshots are design and interaction input. Inspect
+them for better states, layouts, microcopy, shortcuts, drawers, tables,
+streaming/progress behavior, mobile handling, and reviewer-facing flow. Rebuild
+the useful parts with NRG tokens, components, routes, API adapters, tier rules,
+and proof surfaces; do not import a parallel app shell unless the task is an
+explicit isolated experiment.
 
 Frontend polish must not hide answer-engine failure. If a visible query flow
 touches SQL/RAG answers, preserve the Dhairya audit gates, source rows,

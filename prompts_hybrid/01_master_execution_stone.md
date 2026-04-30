@@ -22,7 +22,7 @@ Read the actual project files before changing anything:
 
 - `Core_Idea_Clean.md`
 - `.claude/CURRENT_STATE.md`
-- `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md`
+- `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 - `db_struct.sql`
 - `BACKLOG.md`
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` if present
@@ -98,6 +98,12 @@ Do not adopt generic external default stacks, scaffolds, route structures, auth
 providers, database providers, or deployment flows over the existing NRG
 architecture. A stack or scaffold change requires an explicit migration
 decision, rollback path, and evidence plan.
+
+When external app material is supplied, first use
+the hybrid release fusion skill under `.claude/skills/`. Extract all useful UI/UX,
+interaction, query, validation, and evidence ideas before rejecting direct code.
+Transform useful ideas into NRG-native code, tests, prompt updates, evidence, or
+backlog items; reject only the unsafe direct replacement path.
 
 Before building a feature, map the changed surfaces:
 
