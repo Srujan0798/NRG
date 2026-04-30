@@ -1,25 +1,44 @@
 import type { Page } from '@playwright/test'
 
-type TestPersona = 'researcher' | 'government' | 'industry'
+type TestRole = 'researcher' | 'government' | 'industry'
 
-const PERSONA_SESSION: Record<TestPersona, { id: string; username: string; tier: number }> = {
-  researcher: { id: 'e2e-researcher', username: 'researcher@iitgn.ac.in', tier: 1 },
-  government: { id: 'e2e-government', username: 'ministry@nrg.gov.in', tier: 2 },
-  industry: { id: 'e2e-industry', username: 'partner@industry.in', tier: 3 },
+const TEST_USERS: Record<TestRole, { username: string; tier: number }> = {
+  researcher: { username: 'researcher@iitgn.ac.in', tier: 1 },
+  government: { username: 'ministry@nrg.gov.in', tier: 2 },
+  industry: { username: 'partner@industry.in', tier: 3 },
 }
 
-export async function installAuthSession(page: Page, role: TestPersona = 'researcher') {
-  await page.addInitScript(({ selectedRole, session }) => {
+export async function installAuthenticatedSession(page: Page, role: TestRole = 'researcher') {
+  const user = TEST_USERS[role]
+
+  await page.addInitScript(({ role, user }) => {
     window.sessionStorage.setItem('nrg.auth.session', JSON.stringify({
       accessToken: '',
       refreshToken: '',
       tokenType: 'cookie',
       user: {
-        id: session.id,
-        username: session.username,
-        role: selectedRole,
-        tier: session.tier,
+        id: `e2e-${role}`,
+        username: user.username,
+        role,
+        tier: user.tier,
       },
     }))
-  }, { selectedRole: role, session: PERSONA_SESSION[role] })
+
+    const grantedAt = Date.now()
+    window.localStorage.setItem('nrg-dpdp-state', JSON.stringify({
+      state: {
+        consents: {
+          research_access: {
+            purpose: 'research_access',
+            granted: true,
+            grantedAt,
+            retentionDays: 365,
+            expiresAt: grantedAt + 365 * 24 * 60 * 60 * 1000,
+          },
+        },
+        auditLog: [],
+      },
+      version: 0,
+    }))
+  }, { role, user })
 }

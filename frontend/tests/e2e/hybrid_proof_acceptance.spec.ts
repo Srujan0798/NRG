@@ -3,24 +3,11 @@ import { installStreamingQueryMock } from '../mocks/sse_server'
 
 test('hybrid answer exposes SQL and document proof in the source drawer', async ({ page }) => {
   await installStreamingQueryMock(page)
-  await page.addInitScript(() => {
-    window.sessionStorage.setItem('nrg.auth.session', JSON.stringify({
-      accessToken: '',
-      refreshToken: '',
-      tokenType: 'cookie',
-      user: {
-        id: 'e2e-researcher',
-        username: 'researcher@iitgn.ac.in',
-        role: 'researcher',
-        tier: 1,
-      },
-    }))
-  })
   await page.goto('/app')
 
-  await expect(page.getByTestId('hero-search-input')).toBeVisible()
-  await page.getByTestId('hero-search-input').fill('top funding agencies and explain the policy pattern')
-  await page.getByTestId('hero-search-input').press('Enter')
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
+  await page.getByTestId('answer-engine-query').fill('top funding agencies and explain the policy pattern')
+  await page.getByTestId('answer-engine-query').press('Enter')
 
   await expect(page.getByTestId('streaming-answer-panel')).toBeVisible()
   await expect(page.getByTestId('source-data-toggle')).toBeVisible()

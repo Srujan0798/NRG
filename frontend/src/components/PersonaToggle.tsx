@@ -87,6 +87,7 @@ export function PersonaToggle() {
         </label>
         <select
           id="nrg-persona-switcher"
+          data-testid="mobile-persona-switcher"
           value={user?.role || 'researcher'}
           disabled={Boolean(switchingRole)}
           onChange={(event) => void switchPersona(event.target.value as PersonaRole)}

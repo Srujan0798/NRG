@@ -18,6 +18,7 @@ import type { PersonaRole } from '../services/authService'
 import { queryService } from '../services/queryService'
 import { Button, Card, Drawer, Input, Pill, Select, Skeleton } from '../components/ui'
 import { StreamingAnswerPanel, type StreamingProofPayload } from '../components/StreamingAnswerPanel'
+import HmacProof from '../components/HmacProof/HmacProof'
 
 type SurfaceRole = PersonaRole
 type Confidence = 'high' | 'medium' | 'low' | 'needs_clarification'
@@ -619,10 +620,22 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
           />
           {isVerified && (
             <div className="flex flex-wrap gap-2 border-t border-border pt-4">
-              <Button variant="secondary" data-testid="copy-answer-button" onClick={() => navigator.clipboard?.writeText(fullText)}>Copy answer</Button>
-              <Button variant="secondary" data-testid="source-data-toggle" onClick={() => setDrawer('source')}>View source data {retrievedCount > 0 && `(${retrievedCount} rows)`}</Button>
-              <Button variant="secondary" data-testid="audit-event-toggle" onClick={() => setDrawer('audit')}>View audit event</Button>
+              <Button variant="secondary" data-testid="answer-route-copy-answer-button" onClick={() => navigator.clipboard?.writeText(fullText)}>Copy answer</Button>
+              <Button variant="secondary" data-testid="answer-route-source-data-toggle" onClick={() => setDrawer('source')}>View source data {retrievedCount > 0 && `(${retrievedCount} rows)`}</Button>
+              <Button variant="secondary" data-testid="answer-route-audit-event-toggle" onClick={() => setDrawer('audit')}>View audit event</Button>
             </div>
+          )}
+          {isVerified && (
+            <section data-testid="side-by-side-panel" className="grid gap-3 rounded-lg border border-border bg-bg-subtle p-4 md:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-fg-muted">Tier 1</p>
+                <p className="mt-1 text-sm font-semibold text-fg">Researcher view keeps source-level evidence, citations, SQL, and audit proof visible.</p>
+              </div>
+              <div data-testid="what-changed-annotation" className="rounded-md border border-warning/40 bg-warning/10 p-3">
+                <p className="text-xs font-semibold uppercase tracking-widest text-warning">Access restricted</p>
+                <p className="mt-1 text-sm font-medium text-fg-muted">Tier 3 removes personal detail and shows only aggregate, partnership-safe evidence.</p>
+              </div>
+            </section>
           )}
           <div className="pt-2">
             <QueryBox
@@ -636,7 +649,7 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         )}
       </section>
 
-      <Drawer open={drawer === 'source'} title="Source data" onClose={() => setDrawer(null)}>
+      <Drawer open={drawer === 'source'} title="Source data" onClose={() => setDrawer(null)} testId="source-data-drawer">
         <div data-testid="source-data-panel" className="space-y-4">
           {sql ? (
             <Card>
@@ -673,7 +686,9 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
         </div>
       </Drawer>
 
-      <Drawer open={drawer === 'audit'} title="Audit event" onClose={() => setDrawer(null)}>
+      <Drawer open={drawer === 'audit'} title="Audit event" onClose={() => setDrawer(null)} testId="audit-event-drawer">
+        <div className="space-y-4">
+        {auditEventId && <HmacProof auditEventId={auditEventId} />}
         <dl data-testid="audit-event-panel" className="grid gap-3 text-sm">
           <div><dt className="font-semibold text-fg">Event ID</dt><dd className="font-mono text-fg-muted">{auditEventId || 'pending'}</dd></div>
           <div><dt className="font-semibold text-fg">Query</dt><dd className="text-fg-muted">{query}</dd></div>
@@ -689,9 +704,10 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
             </div>
           )}
         </dl>
+        </div>
       </Drawer>
 
-      <Drawer open={drawer === 'citation'} title="Citation" onClose={() => setDrawer(null)}>
+      <Drawer open={drawer === 'citation'} title="Citation details" onClose={() => setDrawer(null)} testId="citation-drawer">
         {selectedCitation && citationMap[selectedCitation] ? (
           <div className="space-y-3 text-sm">
             <p className="font-semibold text-fg">{citationMap[selectedCitation].title || citationMap[selectedCitation].pub_id}</p>
@@ -703,6 +719,9 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
               <p className="rounded-md bg-bg-subtle p-3 text-fg-muted">{citationMap[selectedCitation].chunk_text}</p>
             )}
             <p className="font-mono text-xs text-fg-muted">pub_id: {citationMap[selectedCitation].pub_id}</p>
+            {citationMap[selectedCitation].audit_event_id && (
+              <HmacProof auditEventId={citationMap[selectedCitation].audit_event_id} />
+            )}
           </div>
         ) : (
           <p className="text-sm text-fg-muted">Select a citation from the answer above.</p>
@@ -800,10 +819,12 @@ export function AnswerEngineAudit({ role, tier, username, onLogout, onPersonaCha
           </div>
         </Card>
       </section>
-      <Drawer open={Boolean(selected)} title="Audit event metadata" onClose={() => setSelected(null)}>
+      <Drawer open={Boolean(selected)} title="Audit event metadata" onClose={() => setSelected(null)} testId="audit-event-drawer">
         {selected ? (() => {
           const event = events.find((e) => e.id === selected)
           return event ? (
+            <div className="space-y-4">
+            <HmacProof auditEventId={selected} />
             <dl className="grid gap-3 text-sm">
               <div><dt className="font-semibold text-fg">Event ID</dt><dd className="font-mono text-fg-muted">{event.id}</dd></div>
               <div><dt className="font-semibold text-fg">HMAC</dt><dd className="font-mono text-fg-muted">{event.hmac}</dd></div>
@@ -819,6 +840,7 @@ export function AnswerEngineAudit({ role, tier, username, onLogout, onPersonaCha
                 <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(selected)}>Verify on chain</Button>
               </div>
             </dl>
+            </div>
           ) : (
             <p className="text-sm text-fg-muted">Event not found.</p>
           )

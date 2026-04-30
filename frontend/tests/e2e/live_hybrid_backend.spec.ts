@@ -22,10 +22,10 @@ test('live backend hybrid proof reaches the source drawer', async ({ page }) => 
   }, loginPayload.user)
 
   await page.goto('/app')
-  await expect(page.getByTestId('hero-search-input')).toBeVisible()
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
 
-  await page.getByTestId('hero-search-input').fill('Top funding agencies and explain the policy pattern')
-  await page.getByTestId('hero-search-input').press('Enter')
+  await page.getByTestId('answer-engine-query').fill('Top funding agencies and explain the policy pattern')
+  await page.getByTestId('answer-engine-query').press('Enter')
 
   await expect(page.getByTestId('source-data-toggle')).toBeVisible({ timeout: 20000 })
   await page.getByTestId('source-data-toggle').click()

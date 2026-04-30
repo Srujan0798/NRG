@@ -44,6 +44,27 @@ const LOGIN_ROLE_BY_USERNAME: Record<string, PersonaRole> = {
 
 const isBlockedPrompt = (query: string) => /\b(aadhaar|pan|passport|bank account|gstin|email|phone)\b/i.test(query)
 
+const consumeInitialPathname = () => {
+  const currentPath = window.location.pathname
+  const bootQuery = window.__nrgBootSubmit ? window.__nrgBootQuery?.trim() : ''
+
+  if (!bootQuery) return currentPath
+
+  sessionStorage.setItem('nrg.lastQuery', bootQuery)
+  const nextPath = isBlockedPrompt(bootQuery) ? '/app/answer/blocked' : '/app/answer/latest'
+  if (nextPath === '/app/answer/blocked') {
+    sessionStorage.setItem('nrg.blockedQuery', bootQuery)
+  } else {
+    sessionStorage.removeItem('nrg.blockedQuery')
+  }
+
+  window.__nrgBootSubmit = false
+  if (currentPath !== nextPath) {
+    window.history.replaceState({}, '', nextPath)
+  }
+  return nextPath
+}
+
 const DashboardLoading = () => (
   <div className="nrg-app-canvas min-h-screen">
     <header className="bg-[var(--glass-bg)] border-b border-nrg-border sticky top-0 z-40 backdrop-blur-xl">
@@ -216,7 +237,7 @@ const AnswerEngineRoute: React.FC<AnswerEngineRouteProps> = ({ routeRole, loginF
 
 const App: React.FC = () => {
   const reducedMotion = useReducedMotion()
-  const [pathname, setPathname] = React.useState(window.location.pathname)
+  const [pathname, setPathname] = React.useState(consumeInitialPathname)
 
   const navigate = React.useCallback((path: string, mode: 'push' | 'replace' = 'push') => {
     if (window.location.pathname !== path) {

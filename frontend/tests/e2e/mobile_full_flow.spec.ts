@@ -26,7 +26,7 @@ async function expectNoPageHorizontalScroll(page: Page) {
 
 async function installDashboardMocks(page: Page) {
   await page.addInitScript(() => {
-    window.localStorage.setItem('nrg.auth.session', JSON.stringify({
+    const session = JSON.stringify({
       accessToken: 'mobile-access-token',
       refreshToken: 'mobile-refresh-token',
       tokenType: 'bearer',
@@ -36,7 +36,9 @@ async function installDashboardMocks(page: Page) {
         role: 'researcher',
         tier: 1,
       },
-    }))
+    })
+    window.sessionStorage.setItem('nrg.auth.session', session)
+    window.localStorage.setItem('nrg.auth.session', session)
     const grantedAt = Date.now()
     window.localStorage.setItem('nrg-dpdp-state', JSON.stringify({
       state: {
@@ -57,6 +59,33 @@ async function installDashboardMocks(page: Page) {
 
   await page.route('**/health', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ status: 'ok' }) })
+  })
+
+  await page.route('**/login', async (route) => {
+    const request = route.request()
+    const body = request.postDataJSON() as { username?: string }
+    const role = body.username?.includes('industry')
+      ? 'industry'
+      : body.username?.includes('ministry')
+        ? 'government'
+        : 'researcher'
+    const tier = role === 'industry' ? 3 : role === 'government' ? 2 : 1
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        access_token: '',
+        refresh_token: '',
+        token_type: 'cookie',
+        authenticated: true,
+        user: {
+          id: `mobile-${role}`,
+          username: body.username,
+          role,
+          tier,
+        },
+      }),
+    })
   })
 
   await page.route('**/stats', async (route) => {
@@ -125,11 +154,11 @@ test('killer query and citation drawer work on iPhone without horizontal scroll'
   await installStreamingQueryMock(page)
   await page.goto('/app')
 
-  await expect(page.getByTestId('hero-search-input')).toBeVisible()
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
   await expectNoPageHorizontalScroll(page)
 
-  await page.getByTestId('hero-search-input').fill('Which institutes in India have the highest grant amount in renewable energy?')
-  await page.getByTestId('hero-search-input').press('Enter')
+  await page.getByTestId('answer-engine-query').fill('Which institutes in India have the highest grant amount in renewable energy?')
+  await page.getByTestId('answer-engine-query').press('Enter')
 
   await expect(page.getByTestId('phase-planning')).toBeVisible({ timeout: 500 })
   await expect(page.getByTestId('phase-verified')).toBeVisible({ timeout: 5000 })
@@ -140,17 +169,14 @@ test('killer query and citation drawer work on iPhone without horizontal scroll'
   await expectNoPageHorizontalScroll(page)
 })
 
-test('mobile dashboard uses bottom-sheet persona switcher and fullscreen graph modal', async ({ page }) => {
+test('mobile dashboard uses persona switcher and fullscreen graph modal', async ({ page }) => {
   await installDashboardMocks(page)
   await page.goto('/researcher')
   await page.waitForLoadState('networkidle')
 
-  await expect(page.getByTestId('mobile-persona-trigger')).toBeVisible({ timeout: 15000 })
-  await page.getByTestId('mobile-persona-trigger').tap()
-  const personaDialog = page.getByRole('dialog', { name: /Switch persona/i })
-  await expect(personaDialog).toBeVisible()
-  await expect(page.getByRole('button', { name: /Industry/i })).toBeVisible()
-  await personaDialog.getByRole('button', { name: /Close/i }).tap()
+  const personaSwitcher = page.getByTestId('mobile-persona-switcher')
+  await expect(personaSwitcher).toBeVisible({ timeout: 15000 })
+  await expect(personaSwitcher.locator('option', { hasText: 'Industry' })).toHaveCount(1)
 
   await page.getByTestId('tab-graph').tap()
   await expect(page.getByTestId('mobile-view-network')).toBeVisible()

@@ -211,9 +211,10 @@ export interface DrawerProps {
   title: string
   onClose: () => void
   children: React.ReactNode
+  testId?: string
 }
 
-export function Drawer({ open, title, onClose, children }: DrawerProps) {
+export function Drawer({ open, title, onClose, children, testId }: DrawerProps) {
   useEffect(() => {
     if (!open) return void 0
     const onKeyDown = (event: KeyboardEvent) => {
@@ -225,7 +226,7 @@ export function Drawer({ open, title, onClose, children }: DrawerProps) {
 
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title} data-testid={testId}>
       <button className="absolute inset-0 bg-fg/20" type="button" aria-label="Close drawer" onClick={onClose} />
       <aside className="absolute bottom-0 right-0 top-0 flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-lg max-md:max-w-none">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">

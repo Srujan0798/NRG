@@ -11,10 +11,10 @@ test('Answer Engine v1 Ask -> Answer -> Proof path is visible', async ({ page })
     await page.getByRole('button', { name: 'Sign in' }).click()
   }
 
-  await expect(page.getByTestId('hero-search-input')).toBeVisible()
-  await page.getByTestId('hero-search-input').fill('Which institutes produce the most granted patents per INR 10 Cr government funding?')
-  await page.getByTestId('hero-search-input').press('Enter')
+  await expect(page.getByTestId('answer-engine-query')).toBeVisible()
+  await page.getByTestId('answer-engine-query').fill('Which institutes produce the most granted patents per INR 10 Cr government funding?')
+  await page.getByTestId('answer-engine-query').press('Enter')
 
   await expect(page.getByTestId('streaming-answer-panel')).toBeVisible()
-  await expect(page.getByText(/Verifying|Synthesizing|Searching|Planning/i)).toBeVisible()
+  await expect(page.getByTestId('phase-planning')).toBeVisible()
 })

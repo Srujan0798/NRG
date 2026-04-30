@@ -5,8 +5,8 @@ test('citation drawer opens quickly and verifies HMAC proof', async ({ page }) =
   await installStreamingQueryMock(page)
   await page.goto('/app')
 
-  await page.getByTestId('hero-search-input').fill('Which institutes have renewable energy grants?')
-  await page.getByTestId('hero-search-input').press('Enter')
+  await page.getByTestId('answer-engine-query').fill('Which institutes have renewable energy grants?')
+  await page.getByTestId('answer-engine-query').press('Enter')
 
   await expect(page.getByTestId('phase-verified')).toBeVisible({ timeout: 8000 })
   const start = Date.now()
