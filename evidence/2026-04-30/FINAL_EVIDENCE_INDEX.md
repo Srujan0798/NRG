@@ -11,7 +11,7 @@ Date: 2026-04-30
 - `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`
 - `evidence/2026-04-30/desktop_ai_handoff_folder.md`
 
-This package contains the source-truth map, current state, Core Idea, consolidated and original hybrid prompt stones, full `CORPUS/`, Dhairya audit files, schema, and latest evidence summaries.
+This package is a flat nine-file Markdown handoff containing the source-truth map, current state, Core Idea, all hybrid prompt stones, `CORPUS/` content, Dhairya audit files, schema, agent operating rules, handover docs, and latest evidence summaries.
 
 ## Wave Evidence
 
