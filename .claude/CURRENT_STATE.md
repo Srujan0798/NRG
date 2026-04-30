@@ -9,13 +9,13 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Clean before live proof; current session adds live full-stack proof, evidence, and a blocked-tier regression fix |
+| Working tree | Clean before live quantum recheck; current session adds the focused recheck evidence and auth cold-start timeout hardening |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
 | Targeted recent checks | Wave 1 API tests, Wave 4 SQL/RAG/health tests, Wave 2 frontend build/browser tests, Wave 3 security/audit tests, Wave 5 local load/performance tests, and live local full-stack proof passed in targeted runs |
-| Audit chain | Rebuilt after pre-fix concurrent profile, then verified on 2026-04-30 with `scripts/audit_investigate.py`: `ok=true`, `events_checked=38392`, no broken indices |
+| Audit chain | Rebuilt after pre-fix concurrent profile, then verified on 2026-04-30 with `scripts/audit_investigate.py`: `ok=true`, `events_checked=38417`, no broken indices |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
-| Latest committed wave | Live full-stack proof and blocked-tier regression fix (latest session) |
+| Latest committed wave | Current commit — live quantum query recheck and auth cold-start timeout hardening |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
 ---
@@ -74,6 +74,8 @@
 | `docs/handover/SHOW_READINESS_2026-04-30.md` | Current 90-second walkthrough, evidence map, and honest blocker list |
 | `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md` | Final evidence index for current handover package |
 | `evidence/2026-04-30/live_full_stack_proof/README.md` | Live local full-stack proof: login, messy query, streaming answer, citation/source/audit drawers, mobile screenshot, Tier 3 blocked JSON |
+| `evidence/2026-04-30/live_quantum_query_recheck/README.md` | Fresh recheck that `best quantum researchers....` returns quantum-specific SQL evidence, citations, source/audit drawers, mobile screenshot, and Tier 3 blocked JSON |
+| Current commit | Live quantum query recheck and auth cold-start timeout hardening |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
 | `6d0ac3a` | Tracked test-run metadata removal |

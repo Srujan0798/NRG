@@ -54,6 +54,39 @@ Live proof summary:
 - Tier 3 sensitive request returned `status=blocked`, `route=blocked`, `tier=3`, no source rows, and an audit event ID.
 - Browser console stack-trace error list: `[]`.
 
+## Live Quantum Query Recheck
+
+Command:
+
+```bash
+cd frontend && PLAYWRIGHT_BASE_URL=http://127.0.0.1:3010 PLAYWRIGHT_PORT=3010 API_TARGET=127.0.0.1:8020 npx playwright test -c tests/playwright.config.ts tests/e2e/live_quantum_query_recheck.spec.ts --reporter=list
+```
+
+Result: `1 passed`.
+
+Evidence:
+
+- `evidence/2026-04-30/live_quantum_query_recheck/README.md`
+- `evidence/2026-04-30/live_quantum_query_recheck/01_researcher_quantum_query_api.json`
+- `evidence/2026-04-30/live_quantum_query_recheck/02_login_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/03_researcher_dashboard_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/04_streaming_planning_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/05_quantum_answer_verified_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/06_citation_drawer_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/07_source_data_drawer_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/08_audit_proof_drawer_desktop.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/09_quantum_answer_verified_mobile.png`
+- `evidence/2026-04-30/live_quantum_query_recheck/10_tier3_blocked_quantum_pii_query.json`
+- `evidence/2026-04-30/live_quantum_query_recheck/console_errors.json`
+- `evidence/2026-04-30/live_quantum_query_recheck/live_quantum_recheck_messy_query_returns_specific_evidence_citations_source_rows_audit_proof_and_tier_3_block.webm`
+
+Live recheck summary:
+
+- `best quantum researchers....` returned `route=sql`, `tier=1`, 5 SQL rows, 1 citation, and an audit event ID.
+- The answer text contains quantum-specific researcher evidence and does not contain the generic fallback string.
+- Tier 3 sensitive quantum PII request returned `status=blocked`, `route=blocked`, `tier=3`, and an audit event ID.
+- Browser console stack-trace error list: `[]`.
+
 ## Screenshot Evidence
 
 Desktop:
@@ -106,7 +139,7 @@ Final result:
 ```json
 {
   "ok": true,
-  "events_checked": 38392,
+  "events_checked": 38417,
   "broken_indices": []
 }
 ```
