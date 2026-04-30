@@ -6,6 +6,13 @@ Date: 2026-04-30
 
 - `docs/handover/SHOW_READINESS_2026-04-30.md`
 
+## Desktop AI Handoff Pack
+
+- `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`
+- `evidence/2026-04-30/desktop_ai_handoff_folder.md`
+
+This package contains the source-truth map, current state, Core Idea, consolidated and original hybrid prompt stones, full `CORPUS/`, Dhairya audit files, schema, and latest evidence summaries.
+
 ## Wave Evidence
 
 | Wave | Evidence | Status |

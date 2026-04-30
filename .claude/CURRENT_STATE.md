@@ -9,13 +9,13 @@
 | Item | State |
 |------|-------|
 | Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Not clean; current session includes uncommitted C4 hot-path hardening, C4 evidence, protocol rewrite, and unrelated/agent-created skill-directory changes. Run `git status --short` before editing. |
+| Working tree | Clean after the Dhairya/corpus restoration commits; run `git status --short` before editing because agents may create local artifacts. |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
 | Targeted recent checks | Wave 1 API tests, Wave 4 SQL/RAG/health tests, Wave 2 frontend build/browser tests, Wave 3 security/audit tests, Wave 5 local load/performance tests, and live local full-stack proof passed in targeted runs |
 | Audit chain | Rebuilt after pre-fix concurrent profile, then verified after final C4/test rerun on 2026-04-30: `chain_valid=True`, `chain_length=42085`, `error_count=0` |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
-| Latest committed wave | `9e93adf` — test: add live local C4 smoke evidence. Current C4 hardening/protocol work is not committed. |
+| Latest committed wave | `2c23c9f` — fix: close Dhairya query benchmark routing. Previous source-truth/corpus restoration is `e361d4c`. |
 | Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
 
 ---
@@ -83,7 +83,7 @@
 | `evidence/2026-04-30/prompts_hybrid_freshness_pass.md` | Prompt-stone freshness pass aligning agent instructions with local C4 pass, cluster blocker, evidence-backed release query, and final-report gates. |
 | `evidence/2026-04-30/validation_campaign_stone_integration.md` | Integration note for new `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` plus `.agents`/`.claude` skill wrappers, distilling broad validation strategy into NRG-safe campaign modes and evidence matrices. |
 | `evidence/2026-04-30/validation_campaign_calibration/VALIDATION_CAMPAIGN_REPORT.md` | First calibration run using the validation campaign workflow: targeted backend tests passed, API/tier/security calibration passed, frontend build passed, live browser proof passed after changing login health polling to `/health/db`; slow RAG/root-health paths remain documented findings. |
-| Current uncommitted work | C4 hardening code/tests/evidence plus `docs/specs/NRG_ETERNAL_EXECUTION_PROTOCOL_2026-04-30.md` rewrite. |
+| Current uncommitted work | None expected after the current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
 | `6d0ac3a` | Tracked test-run metadata removal |
