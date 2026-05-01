@@ -170,7 +170,7 @@ Add to crontab for daily backups:
 crontab -e
 
 # Add this line (runs at 2 AM daily)
-0 2 * * * cd /opt/nrg && bash scripts/backup_db.sh >> /var/log/nrg-backup.log 2>&1
+0 2 * * * cd /opt/nrg && bash scripts/backup_nrg.sh >> /var/log/nrg-backup.log 2>&1
 ```
 
 ### 2.5 Restore from Backup

@@ -1,49 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-echo "Starting NRG Phase 2 Deployment..."
+# Local compose helper. Cloud/staging release orchestration lives in
+# scripts/deploy.py and scripts/deployment_gate.py.
 
-echo "Checking prerequisites..."
-if ! command -v docker &> /dev/null; then
-    echo "Docker is not installed. Please install Docker first."
-    echo "Visit: https://docs.docker.com/get-docker/"
-    exit 1
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "${ROOT_DIR}"
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "Docker is required for local compose deployment." >&2
+  exit 1
 fi
 
-if ! command -v docker &> /dev/null; then
-    if docker compose version &> /dev/null; then
-        COMPOSE_CMD="docker compose"
-    else
-        echo "Docker Compose is not available."
-        exit 1
-    fi
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE=(docker compose)
+elif command -v docker-compose >/dev/null 2>&1; then
+  COMPOSE=(docker-compose)
 else
-    COMPOSE_CMD="docker-compose"
+  echo "Docker Compose is required." >&2
+  exit 1
 fi
 
-echo "Building Docker images..."
-$COMPOSE_CMD -f docker-compose.yml build
+echo "Starting NRG local stack with docker-compose.yml"
+"${COMPOSE[@]}" -f docker-compose.yml build
+"${COMPOSE[@]}" -f docker-compose.yml up -d
 
-echo "Starting services..."
-$COMPOSE_CMD -f docker-compose.yml up -d
+echo "Waiting for API health..."
+for _ in $(seq 1 30); do
+  if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+    echo "API health endpoint is reachable."
+    exit 0
+  fi
+  sleep 2
+done
 
-echo "Waiting for services to be ready..."
-sleep 10
-
-echo "Checking service health..."
-curl -s http://localhost:6333/health || echo "Qdrant not ready"
-curl -s http://localhost:5432 || echo "PostgreSQL not ready"
-
-echo ""
-echo "====================================="
-echo "Deployment Complete!"
-echo "====================================="
-echo ""
-echo "Services:"
-echo "  - PostgreSQL: localhost:5432"
-echo "  - Qdrant: localhost:6333"
-echo "  - Kong Gateway: localhost:8000"
-echo ""
-echo "Next steps:"
-echo "  1. Initialize database: python scripts/init_db.py"
-echo "  2. Ingest synthetic data: python scripts/ingest_synthetic.py"
-echo "  3. Run tests: pytest tests/"
+echo "API health endpoint did not become reachable within 60 seconds." >&2
+exit 1
