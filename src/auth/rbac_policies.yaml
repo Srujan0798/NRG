@@ -83,6 +83,18 @@ tier_response_columns:
         - "inventor_name"
         - "principal_investigator_name"
         - "pi_name"
+    personal_identifier:
+      allowed_tiers: [1, 2]
+      match: "exact"
+      aliases:
+        - "researcher_id"
+        - "author_id"
+        - "person_id"
+        - "faculty_id"
+        - "student_id"
+        - "employee_id"
+        - "pi_id"
+        - "investigator_id"
     government_grant_value:
       allowed_tiers: [1, 2]
       match: "contains"

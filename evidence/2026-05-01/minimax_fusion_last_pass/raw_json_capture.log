@@ -1,0 +1,141 @@
+{"timestamp": "2026-05-01T08:31:47.864133+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T08:31:50.464296+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 77928, "thread_id": 6157103104, "extra": {}}
+{"timestamp": "2026-05-01T08:31:50.477960+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+---
+{
+  "role": "researcher",
+  "tier": 1,
+  "query": "Find top researchers in AI and machine learning",
+  "status_code": 200,
+  "audit_event_id": "8645ad09f6dee14d45838e2f9250312f75cb9e1b79d6ae518585af9071ce0758",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations_count": 2,
+  "sql_query": "SELECT r.researcher_id AS researcher_id, r.name AS name, NULL AS institution, r.state AS state, NULL AS department, r.research_area AS research_area, NULL AS secondary_research_areas, 0 AS h_index, 0 AS funding_cr, r.email AS email, 'match_only_sparse_schema' AS ranking_basis FROM researchers r WHERE lower(coalesce(r.research_area, '')) LIKE lower(:pattern_0) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_1) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_2) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_3) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_4) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_5) OR lower(coalesce(r.research_area, '')) LIKE lower(:pattern_6) ORDER BY r.name ASC LIMIT 5",
+  "source_rows_preview": [
+    {
+      "researcher_id": "cc3cdc7d-db4a-5de3-bb06-aaa88706a16c",
+      "name": "Researcher 00000",
+      "institution": null,
+      "state": "Maharashtra",
+      "department": null,
+      "research_area": "Artificial Intelligence",
+      "secondary_research_areas": null,
+      "h_index": 0,
+      "funding_cr": 0,
+      "email": "nrg.local.sanity.00000@example.in",
+      "ranking_basis": "match_only_sparse_schema"
+    },
+    {
+      "researcher_id": "44841c8b-e0a9-5deb-b04e-269f13cdc274",
+      "name": "Researcher 00006",
+      "institution": null,
+      "state": "Maharashtra",
+      "department": null,
+      "research_area": "Artificial Intelligence",
+      "secondary_research_areas": null,
+      "h_index": 0,
+      "funding_cr": 0,
+      "email": "nrg.local.sanity.00006@example.in",
+      "ranking_basis": "match_only_sparse_schema"
+    }
+  ],
+  "response_preview": "Matching Artificial Intelligence researchers were found in the live NRG catalogue. The live schema does not expose ranking metrics, so this is a relevance match rather than a claimed best ranking. [cite:nrg-researchers:artificial-intelligence] [cite:nrg-institutions:artificial-intelligence]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Rese"
+}
+{"timestamp": "2026-05-01T08:31:50.545853+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T08:31:50.626242+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+---
+{
+  "role": "government",
+  "tier": 2,
+  "query": "Show TRL stage distribution for technology programs",
+  "status_code": 200,
+  "audit_event_id": "32a0ada808370d9b3cd16f392b36b25c6af37fa1918fe1f9b7e36facf558230c",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations_count": 1,
+  "sql_query": "SELECT stage_of_technology, COUNT(*) AS innovation_count FROM trl_stages GROUP BY stage_of_technology ORDER BY CASE stage_of_technology WHEN 'Level 1' THEN 1 WHEN 'Level 2' THEN 2 WHEN 'Level 3' THEN 3 WHEN 'Level 4' THEN 4 WHEN 'Level 5' THEN 5 WHEN 'Level 6' THEN 6 WHEN 'Level 7' THEN 7 WHEN 'Level 8' THEN 8 WHEN 'Level 9' THEN 9 ELSE 99 END",
+  "source_rows_preview": [
+    {
+      "stage_of_technology": "Level 1",
+      "innovation_count": 444
+    },
+    {
+      "stage_of_technology": "Level 2",
+      "innovation_count": 444
+    }
+  ],
+  "response_preview": "TRL stage distribution is available from the normalized `trl_stages` view. The visible corpus contains 10,000 TRL rows across 9 stages. Level 4 is the largest stage with 4,440 rows. Market Ready / TRL-9 is normalized to `Level 9` and accounts for 2,440 rows (24.4% of the visible distribution). This directly addresses the Dhairya audit string-mismatch risk by never querying the stored value as `TRL 9`. [cite:trl_stage"
+}
+{"timestamp": "2026-05-01T08:31:50.670416+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T08:31:50.824124+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+---
+{
+  "role": "industry",
+  "tier": 3,
+  "query": "Find top researchers in AI and machine learning",
+  "status_code": 200,
+  "audit_event_id": "923591521c3e6687c251edd26d5a19aaa6a11705997da200fdbee7f3da44d4cf",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations_count": 2,
+  "sql_query": null,
+  "source_rows_preview": [
+    {
+      "name": "Researcher_06bb2e82",
+      "institution": null,
+      "state": "Maharashtra",
+      "department": null,
+      "research_area": "Artificial Intelligence",
+      "secondary_research_areas": null,
+      "h_index": 0,
+      "funding_cr": 0,
+      "ranking_basis": "match_only_sparse_schema"
+    },
+    {
+      "name": "Researcher_8a97b578",
+      "institution": null,
+      "state": "Maharashtra",
+      "department": null,
+      "research_area": "Artificial Intelligence",
+      "secondary_research_areas": null,
+      "h_index": 0,
+      "funding_cr": 0,
+      "ranking_basis": "match_only_sparse_schema"
+    }
+  ],
+  "response_preview": "Matching Artificial Intelligence researchers were found in the live NRG catalogue. The live schema does not expose ranking metrics, so this is a relevance match rather than a claimed best ranking. [cite:nrg-researchers:artificial-intelligence] [cite:nrg-institutions:artificial-intelligence]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Rese"
+}
+{"timestamp": "2026-05-01T08:31:50.860128+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T08:31:50.922676+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 77928, "thread_id": 8413098240, "extra": {}}
+---
+{
+  "role": "industry",
+  "tier": 3,
+  "query": "State-wise distribution of research output over last 5 years",
+  "status_code": 200,
+  "audit_event_id": "7c9d1f217d2dd324c409f2a4d77f70b877a444c2833a0fafdaf85badab4a28da",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations_count": 3,
+  "sql_query": null,
+  "source_rows_preview": [
+    {
+      "state": "Gujarat",
+      "researcher_count": 886
+    },
+    {
+      "state": "Delhi",
+      "researcher_count": 710
+    }
+  ],
+  "response_preview": "State-wise research output is represented as a state-level researcher/output proxy in the C4 read model. Gujarat leads the visible slice with 886 researchers; the top 5 states cover 3,267 researcher-output records. This keeps the response distinct from year-only publication counts and avoids pretending that a publication-by-state table exists. [cite:researchers:c4-read-model] [cite:publications:c4-read-model] [cite:i"
+}

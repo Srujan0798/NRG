@@ -327,6 +327,8 @@ def _researcher_label(parent: dict[str, Any], value: Any, context: _FilterContex
     if not safe_id:
         digest = hashlib.sha256(str(value).encode()).hexdigest()[:8]
         safe_id = digest
+    if context.tier >= 3:
+        safe_id = hashlib.sha256(str(identifier).encode()).hexdigest()[:8]
     if any(
         pattern.search(safe_id)
         for field_name, pattern in context.value_patterns.items()

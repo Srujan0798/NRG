@@ -1,0 +1,16 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 42 items / 1 deselected / 41 selected
+
+tests/api/test_minimax_mvp_fusion_queries.py [32m.[0m[32m.[0m[32m.[0m[32m                         [  7%][0m
+tests/api/test_final_golden_fast_paths.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                           [ 17%][0m
+tests/api/test_tier_response_filtering.py [32m.[0m[32m.[0m[32m                             [ 21%][0m
+tests/api/test_tier_isolation_property.py [32m.[0m[32m                              [ 24%][0m
+tests/security/test_tier_generalization.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m       [ 80%][0m
+tests/security/test_zero_leakage.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m                             [100%][0m
+
+[32m================= [32m[1m40 passed[0m, [33m1 skipped[0m, [33m1 deselected[0m[32m in 6.46s[0m[32m ==================[0m
