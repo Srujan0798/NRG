@@ -22,6 +22,8 @@ dependencies = [
     "fastapi==0.115.0",
     "python-multipart>=0.0.9",
     "uvicorn==0.34.0",
+    "uvloop==0.22.1",
+    "httptools==0.7.1",
     "httpx==0.28.1",
     "requests==2.32.3",
     "PyJWT==2.8.0",

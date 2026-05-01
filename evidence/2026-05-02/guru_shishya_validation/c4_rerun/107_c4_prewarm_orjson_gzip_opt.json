@@ -1,0 +1,116 @@
+{
+  "generated_at_utc": "2026-05-01T23:33:53.784599+00:00",
+  "rounds": 12,
+  "total_requests": 312,
+  "status_counts": {
+    "200": 312
+  },
+  "failures": [],
+  "slowest_10": [
+    {
+      "round": 1,
+      "role": "researcher",
+      "query": "find robotics researchers in Gujarat",
+      "status": 200,
+      "elapsed_ms": 741.976,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 3,
+      "role": "government",
+      "query": "research output by year",
+      "status": 200,
+      "elapsed_ms": 653.282,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 3,
+      "role": "researcher",
+      "query": "funding agencies for electronics research",
+      "status": 200,
+      "elapsed_ms": 485.742,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 12,
+      "role": "researcher",
+      "query": "funding agencies for electronics research",
+      "status": 200,
+      "elapsed_ms": 407.031,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 4,
+      "role": "researcher",
+      "query": "what patents does Dr. Sharma have",
+      "status": 200,
+      "elapsed_ms": 382.081,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "researcher",
+      "query": "PhD students in machine learning",
+      "status": 200,
+      "elapsed_ms": 300.763,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 12,
+      "role": "researcher",
+      "query": "researchers with h_index > 50 in computer science",
+      "status": 200,
+      "elapsed_ms": 283.734,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 4,
+      "role": "researcher",
+      "query": "show me all publications from IISc in 2024",
+      "status": 200,
+      "elapsed_ms": 270.472,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "adversarial",
+      "query": "'; DROP TABLE researchers; --",
+      "status": 200,
+      "elapsed_ms": 231.588,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "researcher",
+      "query": "collaborations between IITGN and foreign universities",
+      "status": 200,
+      "elapsed_ms": 201.784,
+      "ok": true,
+      "has_audit_event_id": true
+    }
+  ],
+  "researcher_login": {
+    "status": 200,
+    "elapsed_ms": 567.666
+  },
+  "government_login": {
+    "status": 200,
+    "elapsed_ms": 73.555
+  },
+  "adversarial_login": {
+    "status": 200,
+    "elapsed_ms": 78.693
+  },
+  "duration_seconds": 16.003,
+  "failure_count": 0,
+  "ok_count": 312
+}

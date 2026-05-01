@@ -1,0 +1,175 @@
+{
+  "timestamp": "2026-05-01T23:45:35.154767+00:00",
+  "overall": "5/6",
+  "is_6_6": false,
+  "scores": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C3": "PASS",
+    "C4": "FAIL",
+    "C5": "PASS",
+    "C6": "PASS"
+  },
+  "results": {
+    "C1": {
+      "name": "DPDP-Compliant Indian PII Detection",
+      "test_file": "tests/security/test_pii_compliance.py",
+      "min_pass_rate": 1.0,
+      "description": "8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "total": 10,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 0.21s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C2": {
+      "name": "Per-User Audit Binding (Non-Repudiation)",
+      "test_file": "tests/security/test_per_user_audit_binding.py",
+      "min_pass_rate": 1.0,
+      "description": "26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 30 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 86%]\n....                                                                     [100%]\n\n============================== 30 passed in 0.12s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C3": {
+      "name": "Multi-Hop Intent Decomposition (DAG Planner)",
+      "test_file": "tests/orchestration/test_multi_hop_planner.py",
+      "min_pass_rate": 1.0,
+      "description": "28 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "total": 28,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================== 28 passed in 1.10s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C4": {
+      "name": "Production SLOs (P99 <500ms, \u22651000 concurrent)",
+      "test_file": "tests/performance/test_slo_compliance.py",
+      "min_pass_rate": 0.83,
+      "description": "P99<500ms, \u22651000 concurrent, citation rate >80%, SLO breach detection",
+      "test_count_attr": "total",
+      "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
+      "result": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 1,
+        "passed_rate": 0.0,
+        "locust_exit_code": 1,
+        "requested_users": 1000,
+        "spawn_rate": 100,
+        "run_time": "60s",
+        "locust_file": "tests/load/locustfile_c4.py",
+        "preissued_tokens": [
+          "LOAD_TEST_GOV_TOKEN",
+          "LOAD_TEST_INDUSTRY_TOKEN",
+          "LOAD_TEST_RESEARCHER_TOKEN"
+        ],
+        "has_p99_ok": false,
+        "has_concurrent_1000": true,
+        "p99_ms": 9100.0,
+        "p99_threshold_ms": 500.0,
+        "p99_ok": false,
+        "failure_rate": 0.39302888714573175,
+        "max_failure_rate": 0.0,
+        "failure_rate_ok": false,
+        "total_samples": 29321,
+        "sample_count_ok": true,
+        "c4_pass_line": false,
+        "c4_fail_line": false,
+        "endpoint_metrics": {
+          "/query::adversarial": {
+            "num_requests": 1789,
+            "num_failures": 671,
+            "failure_rate": 0.37506987143655673,
+            "p99_ms": 9500.0
+          },
+          "/query::government": {
+            "num_requests": 6765,
+            "num_failures": 2582,
+            "failure_rate": 0.381670362158167,
+            "p99_ms": 9800.0
+          },
+          "/query::researcher": {
+            "num_requests": 20315,
+            "num_failures": 8097,
+            "failure_rate": 0.3985724833866601,
+            "p99_ms": 9000.0
+          }
+        },
+        "locust_report": "/Users/srujansai/Desktop/NRG/.cache/locust_report.html",
+        "raw_output": "------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                              773  671(86.80%) |   1822       0   14494     21 |    8.20        8.20\nPOST     /query::government                                                              2890 2582(89.34%) |   1679       0   15082     14 |   30.00       30.00\nPOST     /query::researcher                                                              8916 8097(90.81%) |   1173       0   16153      8 |   60.00       60.00\nGET      /stats::adversarial                                                              212  174(82.08%) |   1717       0   14483     74 |    2.30        1.80\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     12791 11524(90.09%) |   1335       0   16153     10 |  100.50      100.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                              878  671(76.42%) |   1900       0   14494     75 |   10.70        8.20\nPOST     /query::government                                                              3259 2582(79.23%) |   1838       0   15082     54 |   38.30       30.00\nPOST     /query::researcher                                                              9920 8097(81.62%) |   1334       0   16153     12 |   73.70       60.00\nGET      /stats::adversarial                                                              228  174(76.32%) |   1683       0   14483    110 |    3.60        1.80\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     14285 11524(80.67%) |   1489       0   16153     16 |  126.30      100.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                              974  671(68.89%) |   1776       0   14494    200 |   21.10        8.20\nPOST     /query::government                                                              3644 2582(70.86%) |   1706       0   15082    190 |   70.90       30.00\nPOST     /query::researcher                                                             10960 8097(73.88%) |   1260       0   16153     30 |  154.40       60.00\nGET      /stats::adversarial                                                              258  174(67.44%) |   1558       0   14483    280 |    5.00        1.80\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     15836 11524(72.77%) |   1399       0   16153     57 |  251.40      100.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1075  671(62.42%) |   1660       0   14494    380 |   30.30        8.20\nPOST     /query::government                                                              4041 2582(63.90%) |   1587       0   15082    330 |  106.20       30.00\nPOST     /query::researcher                                                             12078 8097(67.04%) |   1187       0   16153    110 |  253.60       60.00\nGET      /stats::adversarial                                                              284  174(61.27%) |   1463       0   14483    340 |    7.50        1.80\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     17478 11524(65.93%) |   1313       0   16153    190 |  397.60      100.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1192  671(56.29%) |   1539       0   14494    390 |   32.00        0.00\nPOST     /query::government                                                              4458 2582(57.92%) |   1473       0   15082    340 |  117.30        0.00\nPOST     /query::researcher                                                             13350 8097(60.65%) |   1108       0   16153    240 |  301.00        0.00\nGET      /stats::adversarial                                                              305  174(57.05%) |   1388       0   14483    340 |    8.70        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     19305 11524(59.69%) |   1223       0   16153    280 |  459.00        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1319  671(50.87%) |   1423       0   14494    390 |   43.20        0.00\nPOST     /query::government                                                              4907 2582(52.62%) |   1365       0   15082    330 |  156.30        0.00\nPOST     /query::researcher                                                             14706 8097(55.06%) |   1031       0   16153    240 |  421.50        0.00\nGET      /stats::adversarial                                                              333  174(52.25%) |   1295       0   14483    340 |   10.10        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     21265 11524(54.19%) |   1137       0   16153    270 |  631.10        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1411  671(47.55%) |   1366       0   14494    400 |   51.40        0.00\nPOST     /query::government                                                              5313 2582(48.60%) |   1299       0   15082    360 |  194.40        0.00\nPOST     /query::researcher                                                             15871 8097(51.02%) |    991       0   16153    280 |  565.00        0.00\nGET      /stats::adversarial                                                              362  174(48.07%) |   1230       0   14483    370 |   12.10        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     22957 11524(50.20%) |   1089       0   16153    310 |  822.90        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1509  671(44.47%) |   1323       0   14494    410 |   50.80        0.00\nPOST     /query::government                                                              5693 2582(45.35%) |   1257       0   15082    380 |  193.80        0.00\nPOST     /query::researcher                                                             16839 8097(48.08%) |    971       0   16153    310 |  567.20        0.00\nGET      /stats::adversarial                                                              385  174(45.19%) |   1197       0   14483    390 |   12.30        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     24426 11524(47.18%) |   1063       0   16153    340 |  824.10        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1615  671(41.55%) |   1276       0   14494    440 |   50.00        0.00\nPOST     /query::government                                                              6079 2582(42.47%) |   1211       0   15082    400 |  188.50        0.00\nPOST     /query::researcher                                                             17891 8097(45.26%) |    944       0   16153    350 |  551.00        0.00\nGET      /stats::adversarial                                                              407  174(42.75%) |   1160       0   14483    400 |   11.90        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     25992 11524(44.34%) |   1031       0   16153    370 |  801.40        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                             1738  671(38.61%) |   1217       0   14494    440 |   49.90        0.00\nPOST     /query::government                                                              6517 2582(39.62%) |   1156       0   15082    400 |  189.70        0.00\nPOST     /query::researcher                                                             19259 8097(42.04%) |    903       0   16153    350 |  547.60        0.00\nGET      /stats::adversarial                                                              436  174(39.91%) |   1110       0   14483    400 |   11.20        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     27950 11524(41.23%) |    985       0   16153    370 |  798.40        0.00\n\n[2026-05-02 05:15:27,733] MacBook-Air/INFO/locust.main: --run-time limit reached, shutting down\n[2026-05-02 05:15:29,315] MacBook-Air/INFO/locust.main: writing html report to file: /Users/srujansai/Desktop/NRG/.cache/locust_report.html\n[2026-05-02 05:15:29,319] MacBook-Air/INFO/locust.main: Shutting down (exit code 1)\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query::adversarial                                                                0     0(0.00%) |      0       0       0      0 |    0.00        0.00\nPOST     /query::government                                                                 0     0(0.00%) |      0       0       0      0 |    0.00        0.00\nPOST     /query::researcher                                                                 0     0(0.00%) |      0       0       0      0 |    0.00        0.00\nGET      /stats::adversarial                                                                0     0(0.00%) |      0       0       0      0 |    0.00        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     29321 11524(39.30%) |    951       0   16153    360 |  478.75      188.16\n\nResponse time percentiles (approximated)\nType     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n         Aggregated                                                                            360    470    550    600   1600   6500   8400   9100  15000  16000  16000  29321\n\nError report\n# occurrences      Error                                                                                               \n------------------|---------------------------------------------------------------------------------------------------------------------------------------------\n2582               POST /query::government: HTTP 0                                                                     \n8097               POST /query::researcher: HTTP 0                                                                     \n671                POST /query::adversarial: HTTP 0                                                                    \n174                GET /stats::adversarial: HTTP 0                                                                     \n------------------|---------------------------------------------------------------------------------------------------------------------------------------------\n\n"
+      }
+    },
+    "C5": {
+      "name": "Vector Drift Monitoring + Auto-Retrain Trigger",
+      "test_file": "scripts/vector_drift_check.py",
+      "min_pass_rate": 1.0,
+      "description": "Drift check script: cosine shift detection, reindex trigger. Requires Qdrant on port 6333.",
+      "test_count_attr": "exit_code",
+      "note": "Script runs. Qdrant required for vector retrieval + cosine shift detection.",
+      "result": {
+        "status": "pass",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 2,
+        "passed_rate": 1.0,
+        "partial": false,
+        "live_qdrant_skipped": true,
+        "scheduler_status": "pass",
+        "scheduler_passed": true,
+        "scheduler_interval_seconds": 60,
+        "scheduler_cosine_shift_threshold": 0.05,
+        "scheduler_reindex_endpoint": "/api/reindex",
+        "scheduler_raw_output": "{\n  \"status\": \"dry_run\",\n  \"interval_seconds\": 60,\n  \"cosine_shift_threshold\": 0.05,\n  \"reindex_endpoint\": \"/api/reindex\",\n  \"baseline_command\": \"/Users/srujansai/Desktop/NRG/.venv/bin/python /Users/srujansai/Desktop/NRG/scripts/vector_drift_check.py --establish-baseline --json\"\n}\n",
+        "has_reindex_trigger": false,
+        "has_baseline_established": false,
+        "has_stable": false,
+        "has_cosine_check": false,
+        "script_completed": false,
+        "has_drift_check": true,
+        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-05-02 05:15:31 INFO     Starting NRG Vector Drift Detection\n2026-05-02 05:15:31 INFO     SLO target: drift_score >= 0.85\n2026-05-02 05:15:31 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-05-02 05:15:31 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 113.48ms\n"
+      }
+    },
+    "C6": {
+      "name": "Schema Allowlist Before Cloud LLM",
+      "test_file": "tests/security/test_egress_allowlist.py",
+      "min_pass_rate": 1.0,
+      "description": "35 tests: 20+ egress leak attempts blocked, all audit-logged",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "total": 35,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 1.61s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    }
+  }
+}

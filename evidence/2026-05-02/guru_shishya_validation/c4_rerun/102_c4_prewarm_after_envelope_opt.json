@@ -1,0 +1,116 @@
+{
+  "generated_at_utc": "2026-05-01T23:30:27.886411+00:00",
+  "rounds": 12,
+  "total_requests": 312,
+  "status_counts": {
+    "200": 312
+  },
+  "failures": [],
+  "slowest_10": [
+    {
+      "round": 1,
+      "role": "researcher",
+      "query": "find robotics researchers in Gujarat",
+      "status": 200,
+      "elapsed_ms": 22.529,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "funding trends by year",
+      "status": 200,
+      "elapsed_ms": 17.853,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "total funding by agency",
+      "status": 200,
+      "elapsed_ms": 17.218,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "publication counts by institution",
+      "status": 200,
+      "elapsed_ms": 17.124,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "top funded research areas",
+      "status": 200,
+      "elapsed_ms": 16.326,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "research output by year",
+      "status": 200,
+      "elapsed_ms": 16.158,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "collaboration statistics by country",
+      "status": 200,
+      "elapsed_ms": 16.037,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "state-wise research area distribution",
+      "status": 200,
+      "elapsed_ms": 15.754,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "government",
+      "query": "total researchers by state",
+      "status": 200,
+      "elapsed_ms": 14.913,
+      "ok": true,
+      "has_audit_event_id": true
+    },
+    {
+      "round": 1,
+      "role": "researcher",
+      "query": "researchers with h_index > 50 in computer science",
+      "status": 200,
+      "elapsed_ms": 13.62,
+      "ok": true,
+      "has_audit_event_id": true
+    }
+  ],
+  "researcher_login": {
+    "status": 200,
+    "elapsed_ms": 41.023
+  },
+  "government_login": {
+    "status": 200,
+    "elapsed_ms": 18.236
+  },
+  "adversarial_login": {
+    "status": 200,
+    "elapsed_ms": 15.263
+  },
+  "duration_seconds": 1.209,
+  "failure_count": 0,
+  "ok_count": 312
+}

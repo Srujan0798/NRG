@@ -1,5 +1,6 @@
 import json
 
+from fastapi.responses import ORJSONResponse
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
@@ -56,3 +57,19 @@ def test_request_envelope_profile_writes_jsonl(monkeypatch, tmp_path):
     assert payload["status"] == 200
     assert payload["duration_ms"] >= 0
     assert payload["response_content_length"] is not None
+
+
+def test_api_uses_orjson_default_response_for_hot_json_paths():
+    assert api_main.app.router.default_response_class is ORJSONResponse
+
+
+def test_app_gzip_threshold_skips_small_hot_path_responses_by_default(monkeypatch):
+    monkeypatch.delenv("NRG_APP_GZIP_MIN_SIZE", raising=False)
+
+    assert api_main._app_gzip_minimum_size() >= 8192
+
+
+def test_app_gzip_can_be_disabled_for_edge_compression(monkeypatch):
+    monkeypatch.setenv("NRG_APP_GZIP_MIN_SIZE", "0")
+
+    assert api_main._app_gzip_minimum_size() is None

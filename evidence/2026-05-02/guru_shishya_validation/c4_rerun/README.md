@@ -71,6 +71,12 @@ This folder records the C4 follow-up after the Guru/Shishya validation matrix. I
 | `98_forbidden_vocab_final_after_prewarm_diag.log` | Final forbidden vocabulary guard passed. |
 | `99_final_targeted_tests_after_prewarm_diag.log` | Final targeted audit/scorecard/Locust/API profiler tests passed: 106 passed. |
 | `100_no_leftover_port_8000_final_after_prewarm_diag.log` | No leftover host listener on port 8000. |
+| `113_c4_prewarm_after_query_middleware_skip.json` | Duplicate `/query` middleware-sanitiser work removed; declared prewarm passed 312/312, median 3.135 ms. |
+| `115_quality_bar_scorecard_60s_after_query_middleware_skip.json` | 1000 users, 35,428 samples, 0 failures, aggregate P99 2700 ms, C4 failed. |
+| `133_quality_bar_scorecard_60s_asgi_middleware_4workers.json` | Pure ASGI middleware diagnostic: 1000 users, 47,233 samples, 0 failures, aggregate P99 970 ms, C4 failed but best stable local result so far. |
+| `127_quality_bar_scorecard_60s_asgi_middleware_8workers.json` | 8-worker/backlog diagnostic rejected as improvement: 22.09% failure rate, aggregate P99 7800 ms. |
+| `139_quality_bar_scorecard_60s_asgi_authcache_4workers.json` | Auth-cache diagnostic: 1000 users, 45,249 samples, 0 failures, aggregate P99 1200 ms; not a C4 closure. |
+| `142_asgi_middleware_authcache_summary.md` | Summary of duplicate middleware removal, ASGI middleware conversion, verified-token cache, and current C4 status. |
 
 ## Current C4 Status
 
@@ -82,6 +88,7 @@ The root-cause boundary moved:
 
 - Previous blocker: C4 run was polluted by JWT replay failures and weak metric parsing.
 - Current blocker: `/query` succeeds with zero failures but queues under 1000-user Locust load; local P99 remains above the 500 ms target. The latest warmed no-profile 4-worker 60-second diagnostic reports 45,559 samples, 0 failures, aggregate P99 2100 ms, researcher P99 2100 ms, government P99 2100 ms, and adversarial query P99 2400 ms.
+- Latest blocker update: pure ASGI middleware reduced the best stable local aggregate P99 to 970 ms with 47,233 samples and 0 failures, but this still misses the 500 ms C4 gate. The 8-worker topology created HTTP 0 failures and is not an improvement.
 - Profile finding: sampled cache-hit route-handler work is low millisecond to sub-millisecond, while the full server request envelope and Locust client-observed timings are much larger under burst load. Combined profile evidence shows route-handler P99 1.589 ms, server `/query` envelope P99 538.303 ms, and client-observed aggregate P99 1000 ms in the same diagnostic window.
 - Warmed-read-model finding: declared prewarm removed cold-key setup from the test, but P99 still missed the 500 ms gate. The remaining problem is not only cold cache creation; request lifecycle, queueing, transport scheduling, worker concurrency, and audit-envelope behavior remain the likely boundary.
 - New guardrail: future C4 evidence must inspect workload-specific metrics and treat any 429 as request failure.

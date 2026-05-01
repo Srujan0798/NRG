@@ -1,18 +1,19 @@
 """Security middleware: brute-force protection, security headers, IP allowlisting, prompt sanitisation."""
 
-import asyncio
 import time
+import asyncio
 import hashlib
 import hmac
 import ipaddress
 import logging
 import json
 import os
+from urllib.parse import parse_qsl
 from typing import Optional
 
 from fastapi import HTTPException, Request, Header
+from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 
 from src.api.answer_contract import blocked_answer_payload
 from src.security.gateway.prompt_sanitiser import PromptSanitiser
@@ -74,27 +75,41 @@ class BruteForceProtection:
 brute_force_protection = BruteForceProtection()
 
 
-class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+class SecurityHeadersMiddleware:
     """Add security headers to all responses."""
 
-    async def dispatch(self, request: Request, call_next):
-        response = await call_next(request)
-
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = (
+    SECURITY_HEADERS = {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+        "Content-Security-Policy": (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: blob:; "
             "connect-src 'self' http://localhost:8000 https://localhost:8000;"
-        )
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        ),
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+    }
 
-        return response
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_with_security_headers(message):
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                for name, value in self.SECURITY_HEADERS.items():
+                    headers[name] = value
+            await send(message)
+
+        await self.app(scope, receive, send_with_security_headers)
 
 
 class IPAllowlist:
@@ -197,7 +212,7 @@ def verify_request_signature(
     return True
 
 
-class PromptSanitiserMiddleware(BaseHTTPMiddleware):
+class PromptSanitiserMiddleware:
     """Validate all text-bearing request parameters against prompt injection and PII rules.
 
     Checks query, topic, search, q, text, prompt, message, content fields
@@ -221,71 +236,97 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
         "/auth/logout",
         "/auth/refresh",
         "/auth/session",
+        "/query",
         "/api/query/stream",
     }
 
     TEXT_VALUE_MIN_LEN = 2
 
-    async def dispatch(self, request: Request, call_next):
-        if not self._should_skip_path(request.url.path):
-            fields = await self._extract_text_fields(request)
-            for field_name, field_value in fields:
-                identifier = self._identifier_for_request(request)
-                if identifier == "testclient":
-                    identifier = None
-                validation = _get_prompt_sanitiser().validate_query(
-                    {"query": field_value},
-                    identifier=identifier,
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path", "")
+        if self._should_skip_path(path):
+            await self.app(scope, receive, send)
+            return
+
+        body = await self._read_body(receive)
+        headers = Headers(scope=scope)
+        fields = self._extract_text_fields_from_scope(scope, headers, body)
+        identifier = self._identifier_for_scope(scope, headers)
+        if identifier == "testclient":
+            identifier = None
+
+        for field_name, field_value in fields:
+            validation = _get_prompt_sanitiser().validate_query(
+                {"query": field_value},
+                identifier=identifier,
+            )
+            if not validation["valid"]:
+                audit_event_id = None
+                try:
+                    from src.audit import log_anomaly
+
+                    state = scope.get("state") or {}
+                    claims = state.get("auth_claims") or {}
+                    user_id = claims.get("sub", "anonymous")
+                    audit_event_id = await asyncio.to_thread(
+                        log_anomaly,
+                        user_id=user_id,
+                        anomaly_type=validation["reason"],
+                        details={
+                            "field": field_name,
+                            "path": path,
+                            "details": validation.get("details", ""),
+                            "rate_limit_triggered": validation.get(
+                                "rate_limit_triggered", False
+                            ),
+                        },
+                        identifier=identifier,
+                    )
+                except Exception:
+                    pass
+                log_blocked_prompts = os.getenv("NRG_LOG_BLOCKED_PROMPTS", "").lower() in {
+                    "1",
+                    "true",
+                    "yes",
+                }
+                log_method = logger.warning if log_blocked_prompts else logger.debug
+                log_method(
+                    "PromptSanitiserMiddleware rejected: %s - field=%s path=%s",
+                    validation["reason"],
+                    field_name,
+                    path,
                 )
-                if not validation["valid"]:
-                    audit_event_id = None
+                if path == "/query" and validation["reason"] != "RATE_LIMITED":
+                    state = scope.get("state") or {}
+                    claims = state.get("auth_claims") or {}
                     try:
-                        from src.audit import log_anomaly
-
-                        user_id = getattr(request.state, "auth_claims", {}).get("sub", "anonymous")
-                        audit_event_id = await asyncio.to_thread(
-                            log_anomaly,
-                            user_id=user_id,
-                            anomaly_type=validation["reason"],
-                            details={
-                                "field": field_name,
-                                "path": request.url.path,
-                                "details": validation.get("details", ""),
-                                "rate_limit_triggered": validation.get(
-                                    "rate_limit_triggered", False
-                                ),
-                            },
-                            identifier=identifier,
-                        )
-                    except Exception:
-                        pass
-                    log_blocked_prompts = os.getenv("NRG_LOG_BLOCKED_PROMPTS", "").lower() in {
-                        "1",
-                        "true",
-                        "yes",
-                    }
-                    log_method = logger.warning if log_blocked_prompts else logger.debug
-                    log_method(
-                        "PromptSanitiserMiddleware rejected: %s - field=%s path=%s",
-                        validation["reason"],
-                        field_name,
-                        request.url.path,
+                        user_tier = int(claims.get("tier", 1) or 1)
+                    except (TypeError, ValueError):
+                        user_tier = 1
+                    blocked = blocked_answer_payload(
+                        question=field_value,
+                        user_tier=user_tier,
+                        audit_event_id=audit_event_id,
+                        reason=f"Security policy blocked this query: {validation['reason']}",
                     )
-                    if request.url.path == "/query" and validation["reason"] != "RATE_LIMITED":
-                        claims = getattr(request.state, "auth_claims", {}) or {}
-                        blocked = blocked_answer_payload(
-                            question=field_value,
-                            user_tier=int(claims.get("tier", 1) or 1),
-                            audit_event_id=audit_event_id,
-                            reason=f"Security policy blocked this query: {validation['reason']}",
-                        )
-                        return JSONResponse(status_code=200, content=blocked)
-                    return JSONResponse(
-                        status_code=429 if validation["reason"] == "RATE_LIMITED" else 400,
-                        content={"detail": f"Security violation: {validation['reason']}"},
-                    )
+                    response = JSONResponse(status_code=200, content=blocked)
+                    await response(scope, self._replay_body(body), send)
+                    return
+                response = JSONResponse(
+                    status_code=429 if validation["reason"] == "RATE_LIMITED" else 400,
+                    content={"detail": f"Security violation: {validation['reason']}"},
+                )
+                await response(scope, self._replay_body(body), send)
+                return
 
-        return await call_next(request)
+        await self.app(scope, self._replay_body(body), send)
 
     def _identifier_for_request(self, request: Request) -> Optional[str]:
         """Return the client identifier used for rejection tracking.
@@ -304,6 +345,23 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
             if forwarded_for:
                 return forwarded_for.split(",", 1)[0].strip()
         return request.client.host if request.client else None
+
+    def _identifier_for_scope(self, scope: dict, headers: Headers) -> Optional[str]:
+        """Return the client identifier for ASGI-scope middleware validation."""
+        trust_proxy = os.environ.get("TRUST_PROXY_HEADERS", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        if trust_proxy:
+            forwarded_for = headers.get("x-forwarded-for")
+            if forwarded_for:
+                return forwarded_for.split(",", 1)[0].strip()
+        client = scope.get("client")
+        if client:
+            return client[0]
+        return None
 
     def _should_skip_path(self, path: str) -> bool:
         for skip in self.SKIP_PATHS:
@@ -339,4 +397,48 @@ class PromptSanitiserMiddleware(BaseHTTPMiddleware):
                 fields.extend(self._extract_json_text_fields(item, f"{prefix}[{index}]"))
         elif isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
             fields.append((prefix, value))
+        return fields
+
+    async def _read_body(self, receive) -> bytes:
+        chunks: list[bytes] = []
+        more_body = True
+        while more_body:
+            message = await receive()
+            if message["type"] != "http.request":
+                continue
+            chunks.append(message.get("body", b""))
+            more_body = bool(message.get("more_body", False))
+        return b"".join(chunks)
+
+    def _replay_body(self, body: bytes):
+        sent = False
+
+        async def receive():
+            nonlocal sent
+            if sent:
+                return {"type": "http.request", "body": b"", "more_body": False}
+            sent = True
+            return {"type": "http.request", "body": body, "more_body": False}
+
+        return receive
+
+    def _extract_text_fields_from_scope(
+        self,
+        scope: dict,
+        headers: Headers,
+        body: bytes,
+    ) -> list[tuple[str, str]]:
+        fields: list[tuple[str, str]] = []
+        query_string = scope.get("query_string", b"")
+        for key, value in parse_qsl(query_string.decode("latin-1"), keep_blank_values=False):
+            if isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
+                fields.append((key, value))
+
+        content_type = headers.get("content-type", "")
+        if "application/json" in content_type and body:
+            try:
+                json_body = json.loads(body.decode("utf-8"))
+            except Exception:
+                json_body = None
+            fields.extend(self._extract_json_text_fields(json_body))
         return fields

@@ -88,6 +88,47 @@ def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
     assert result["preissued_tokens"] == ["LOAD_TEST_GOV_TOKEN", "LOAD_TEST_RESEARCHER_TOKEN"]
 
 
+def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_path):
+    class FakeSocket:
+        def settimeout(self, _timeout):
+            return None
+
+        def connect(self, _address):
+            return None
+
+        def close(self):
+            return None
+
+    def fake_run(cmd, **kwargs):
+        assert "--processes" in cmd
+        assert cmd[cmd.index("--processes") + 1] == "4"
+        return SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "Total samples : 1,250\n"
+                "P99           :      320.0 ms  <- C4 SLO target < 500 ms\n"
+                "Aggregated 1250 0(0.00%) | 150 5 400 120 | 100.00 0.00\n"
+                "C4 PASS - P99 320.0ms < 500ms SLO\n"
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(scorecard, "ROOT", tmp_path)
+    monkeypatch.setattr(scorecard, "LOCUST_PROCESSES", 4, raising=False)
+    monkeypatch.setattr(socket, "socket", lambda *_args, **_kwargs: FakeSocket())
+    monkeypatch.setattr(
+        scorecard,
+        "_preissue_load_tokens",
+        lambda _host: {"LOAD_TEST_RESEARCHER_TOKEN": "researcher-token"},
+    )
+    monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
+
+    result = scorecard._run_c4_load_test()
+
+    assert result["passed"] == 1
+    assert result["locust_processes"] == 4
+
+
 def test_c4_scorecard_rejects_target_text_without_numeric_p99():
     metrics = scorecard._extract_c4_metrics(
         "1000 users\n"

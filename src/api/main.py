@@ -19,8 +19,9 @@ from typing import Any, Awaitable, Callable, Optional, TYPE_CHECKING
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import ORJSONResponse
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.datastructures import MutableHeaders
 from starlette.responses import Response, StreamingResponse
 import uuid
 
@@ -5033,35 +5034,33 @@ async def drain_connections():
     await asyncio.sleep(0.5)
 
 
-class RequestLoggingMiddleware(BaseHTTPMiddleware):
+class RequestLoggingMiddleware:
     """Log every request with method, path, status, and duration in structured JSON."""
+
+    def __init__(self, app):
+        self.app = app
 
     def _write_envelope_profile(
         self,
         *,
-        request: Request,
-        response,
+        scope: dict,
+        status_code: int,
+        response_content_length: int | None,
         request_id: str,
         duration_ms: float,
     ) -> None:
         if not _env_flag("NRG_REQUEST_ENVELOPE_PROFILE"):
             return
 
-        content_length = response.headers.get("content-length")
-        try:
-            response_content_length = int(content_length) if content_length is not None else None
-        except ValueError:
-            response_content_length = None
-
         payload = {
             "timestamp": datetime.now(UTC).isoformat(),
             "request_id": request_id,
-            "method": request.method,
-            "path": request.url.path,
-            "status": response.status_code,
+            "method": scope.get("method"),
+            "path": scope.get("path"),
+            "status": status_code,
             "duration_ms": round(duration_ms, 3),
             "response_content_length": response_content_length,
-            "client_ip": request.client.host if request.client else None,
+            "client_ip": scope.get("client", [None])[0] if scope.get("client") else None,
         }
         path = Path(os.getenv("NRG_REQUEST_ENVELOPE_PROFILE_FILE", ".cache/request_envelope_profile.jsonl"))
         try:
@@ -5071,34 +5070,81 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
         except Exception:
             logger.debug("Request envelope profile write failed", exc_info=True)
 
-    async def dispatch(self, request: Request, call_next):
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
         start = time.time()
         request_id = str(uuid.uuid4())
-        response = await call_next(request)
-        duration = (time.time() - start) * 1000
-        log_all_requests = os.getenv("NRG_LOG_ALL_REQUESTS", "").lower() in {"1", "true", "yes"}
-        slow_request_ms = float(os.getenv("NRG_SLOW_REQUEST_LOG_MS", "1000"))
-        should_log = log_all_requests or response.status_code >= 500 or duration >= slow_request_ms
-        if should_log:
-            logger.info(
-                "request completed",
-                extra={
-                    "request_id": request_id,
-                    "method": request.method,
-                    "path": request.url.path,
-                    "status": response.status_code,
-                    "duration_ms": round(duration, 2),
-                    "client_ip": request.client.host if request.client else None,
-                }
-            )
-        self._write_envelope_profile(
-            request=request,
-            response=response,
-            request_id=request_id,
-            duration_ms=duration,
+        response_started = False
+
+        async def send_with_request_id(message):
+            nonlocal response_started
+            if message["type"] == "http.response.start":
+                response_started = True
+                duration = (time.time() - start) * 1000
+                headers = MutableHeaders(scope=message)
+                content_length = headers.get("content-length")
+                try:
+                    response_content_length = int(content_length) if content_length is not None else None
+                except ValueError:
+                    response_content_length = None
+
+                headers["X-Request-ID"] = request_id
+                status_code = int(message.get("status", 0))
+                log_all_requests = os.getenv("NRG_LOG_ALL_REQUESTS", "").lower() in {"1", "true", "yes"}
+                slow_request_ms = float(os.getenv("NRG_SLOW_REQUEST_LOG_MS", "1000"))
+                should_log = log_all_requests or status_code >= 500 or duration >= slow_request_ms
+                if should_log:
+                    logger.info(
+                        "request completed",
+                        extra={
+                            "request_id": request_id,
+                            "method": scope.get("method"),
+                            "path": scope.get("path"),
+                            "status": status_code,
+                            "duration_ms": round(duration, 2),
+                            "client_ip": scope.get("client", [None])[0] if scope.get("client") else None,
+                        }
+                    )
+                self._write_envelope_profile(
+                    scope=scope,
+                    status_code=status_code,
+                    response_content_length=response_content_length,
+                    request_id=request_id,
+                    duration_ms=duration,
+                )
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_with_request_id)
+        finally:
+            if not response_started:
+                duration = (time.time() - start) * 1000
+                self._write_envelope_profile(
+                    scope=scope,
+                    status_code=500,
+                    response_content_length=None,
+                    request_id=request_id,
+                    duration_ms=duration,
+                )
+
+
+def _app_gzip_minimum_size() -> int | None:
+    """Return the app-level gzip threshold, or None when edge compression owns it."""
+    raw_value = os.getenv("NRG_APP_GZIP_MIN_SIZE", "8192")
+    try:
+        minimum_size = int(raw_value)
+    except (TypeError, ValueError):
+        logger.warning(
+            "Invalid NRG_APP_GZIP_MIN_SIZE=%r; using 8192 bytes",
+            raw_value,
         )
-        response.headers["X-Request-ID"] = request_id
-        return response
+        minimum_size = 8192
+    if minimum_size <= 0:
+        return None
+    return minimum_size
 
 
 app = FastAPI(
@@ -5106,6 +5152,7 @@ app = FastAPI(
     version="1.0.0",
     description="Sovereign AI platform for Indian research intelligence",
     lifespan=lifespan,
+    default_response_class=ORJSONResponse,
 )
 
 app.add_middleware(
@@ -5115,7 +5162,9 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Session-ID"],
 )
-app.add_middleware(GZipMiddleware)
+_gzip_minimum_size = _app_gzip_minimum_size()
+if _gzip_minimum_size is not None:
+    app.add_middleware(GZipMiddleware, minimum_size=_gzip_minimum_size)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(PromptSanitiserMiddleware)
@@ -5404,10 +5453,12 @@ async def _query_with_langgraph_impl(
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
             if validation["reason"] == "RATE_LIMITED":
                 raise HTTPException(status_code=429, detail="Rate limit exceeded")
+            audit_event_id = None
             if validation["reason"] != "RATE_LIMITED":
                 try:
                     from src.audit import log_anomaly
-                    log_anomaly(
+                    audit_event_id = await asyncio.to_thread(
+                        log_anomaly,
                         user_id=user_id,
                         anomaly_type=validation["reason"],
                         details={
@@ -5422,7 +5473,7 @@ async def _query_with_langgraph_impl(
             blocked = blocked_answer_payload(
                 question=request.query,
                 user_tier=user_tier,
-                audit_event_id=None,
+                audit_event_id=audit_event_id,
                 reason=f"Security policy blocked this query: {validation['reason']}",
             )
             profiler.mark("prompt_sanitizer_block")

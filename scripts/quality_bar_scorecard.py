@@ -42,6 +42,7 @@ LOCUST_FILE = "tests/load/locustfile_c4.py"
 LOCUST_USERS = int(os.getenv("NRG_C4_LOCUST_USERS", "1000"))
 LOCUST_SPAWN_RATE = int(os.getenv("NRG_C4_LOCUST_SPAWN_RATE", "100"))
 LOCUST_RUN_TIME = os.getenv("NRG_C4_LOCUST_RUN_TIME", "5m")
+LOCUST_PROCESSES = int(os.getenv("NRG_C4_LOCUST_PROCESSES", "0"))
 C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
 C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 
@@ -534,6 +535,8 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "--html", str(locust_report),
         "--json",
     ]
+    if LOCUST_PROCESSES > 1:
+        cmd.extend(["--processes", str(LOCUST_PROCESSES)])
 
     try:
         result = subprocess.run(
@@ -570,6 +573,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "requested_users": LOCUST_USERS,
         "spawn_rate": LOCUST_SPAWN_RATE,
         "run_time": LOCUST_RUN_TIME,
+        "locust_processes": LOCUST_PROCESSES,
         "locust_file": LOCUST_FILE,
         "preissued_tokens": available_token_envs,
         "has_p99_ok": metrics["p99_ok"],

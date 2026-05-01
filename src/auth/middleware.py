@@ -3,15 +3,72 @@
 from __future__ import annotations
 
 from collections import Counter
+from http.cookies import SimpleCookie
+import os
+import threading
+import time
 from typing import Any, Callable
 
 from fastapi import Depends, Header, HTTPException, Request, status
-from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.datastructures import Headers
 
 from src.auth.jwt_handler import AuthError, JWTHandler
 from src.auth.rbac import RBACPolicyEngine, get_policy_engine
 
 ACCESS_COOKIE_NAME = "nrg_access_token"
+AUTH_CONTEXT_CACHE_TTL_SECONDS = float(os.getenv("NRG_AUTH_CONTEXT_CACHE_TTL_SECONDS", "5"))
+_auth_context_cache_lock = threading.Lock()
+_auth_context_token_cache: dict[tuple[str, str | None], tuple[float, dict]] = {}
+
+
+def _verified_token_cache_ttl() -> float:
+    try:
+        return max(0.0, float(os.getenv("NRG_AUTH_CONTEXT_CACHE_TTL_SECONDS", str(AUTH_CONTEXT_CACHE_TTL_SECONDS))))
+    except ValueError:
+        return AUTH_CONTEXT_CACHE_TTL_SECONDS
+
+
+def _cache_expiry_for_claims(claims: dict, now: float, ttl: float) -> float:
+    expires_at = now + ttl
+    exp = claims.get("exp")
+    if isinstance(exp, (int, float)):
+        expires_at = min(expires_at, float(exp))
+    return expires_at
+
+
+def _verify_access_token_cached(
+    jwt_handler: JWTHandler,
+    token: str,
+    *,
+    client_ip: str | None,
+) -> dict:
+    """Verify bearer tokens with a short TTL cache for hot authenticated APIs."""
+    ttl = _verified_token_cache_ttl()
+    if ttl <= 0:
+        return jwt_handler.verify_access_token(token, client_ip=client_ip)
+
+    now = time.time()
+    cache_key = (token, client_ip)
+    with _auth_context_cache_lock:
+        cached = _auth_context_token_cache.get(cache_key)
+        if cached is not None:
+            expires_at, claims = cached
+            if now < expires_at:
+                return dict(claims)
+            _auth_context_token_cache.pop(cache_key, None)
+
+    claims = jwt_handler.verify_access_token(token, client_ip=client_ip)
+    expires_at = _cache_expiry_for_claims(claims, now, ttl)
+    if expires_at > now:
+        with _auth_context_cache_lock:
+            _auth_context_token_cache[cache_key] = (expires_at, dict(claims))
+    return claims
+
+
+def reset_auth_context_token_cache() -> None:
+    """Clear verified-token cache for tests and deployment hooks."""
+    with _auth_context_cache_lock:
+        _auth_context_token_cache.clear()
 
 
 def get_user_tier(claims: dict) -> int:
@@ -163,21 +220,29 @@ def _mask_all_pii(record: dict) -> dict:
     return masked
 
 
-class AuthContextMiddleware(BaseHTTPMiddleware):
+class AuthContextMiddleware:
     """Attach decoded auth claims + resolved RBAC policy to request state."""
 
     def __init__(self, app, jwt_handler: JWTHandler):
-        super().__init__(app)
+        self.app = app
         self.jwt_handler = jwt_handler
         self._engine = get_policy_engine()
 
-    async def dispatch(self, request: Request, call_next):
-        request.state.auth_claims = None
-        request.state.rbac_policy = None
-        request.state.request_fingerprint = None
-        authorization = request.headers.get("Authorization")
-        client_ip = request.client.host if request.client else None
-        user_agent = request.headers.get("User-Agent")
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        state = scope.setdefault("state", {})
+        state["auth_claims"] = None
+        state["rbac_policy"] = None
+        state["request_fingerprint"] = None
+
+        headers = Headers(scope=scope)
+        authorization = headers.get("Authorization")
+        client = scope.get("client")
+        client_ip = client[0] if client else None
+        user_agent = headers.get("User-Agent")
 
         token = None
         if authorization and authorization.startswith("Bearer "):
@@ -185,21 +250,36 @@ class AuthContextMiddleware(BaseHTTPMiddleware):
             if header_token:
                 token = header_token
         if token is None:
-            token = request.cookies.get(ACCESS_COOKIE_NAME) or request.cookies.get("access_token")
+            cookie_header = headers.get("cookie")
+            if cookie_header:
+                cookies = SimpleCookie()
+                try:
+                    cookies.load(cookie_header)
+                    token = (
+                        cookies.get(ACCESS_COOKIE_NAME).value
+                        if cookies.get(ACCESS_COOKIE_NAME)
+                        else None
+                    ) or (
+                        cookies.get("access_token").value
+                        if cookies.get("access_token")
+                        else None
+                    )
+                except Exception:
+                    token = None
 
         if token:
             try:
-                claims = self.jwt_handler.verify_access_token(token, client_ip=client_ip)
-                request.state.auth_claims = claims
-                request.state.rbac_policy = self._engine.resolve_tier_or_persona(claims)
+                claims = _verify_access_token_cached(self.jwt_handler, token, client_ip=client_ip)
+                state["auth_claims"] = claims
+                state["rbac_policy"] = self._engine.resolve_tier_or_persona(claims)
                 from src.audit.per_user_keys import build_request_fingerprint
                 fp = build_request_fingerprint(client_ip=client_ip, user_agent=user_agent)
-                request.state.request_fingerprint = fp
+                state["request_fingerprint"] = fp
             except AuthError:
-                request.state.auth_claims = None
-                request.state.rbac_policy = None
+                state["auth_claims"] = None
+                state["rbac_policy"] = None
 
-        return await call_next(request)
+        await self.app(scope, receive, send)
 
 
 def get_current_user(request: Request, authorization: str = Header(default=None)) -> dict:
