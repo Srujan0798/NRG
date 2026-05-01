@@ -1,0 +1,335 @@
+{
+  "sample_count": 15,
+  "results": [
+    {
+      "role": "researcher",
+      "status_code": 200,
+      "query": "Who are the top researchers in hydrogen catalysis?",
+      "tier": 1,
+      "intent": "researcher_ranking",
+      "audit_event_id": "e13093a227fe7d8127649dc8889c2dc377e019d7944b11fef9080e672203c135",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT researcher, institution, state, research_area, h_index, funding_cr FROM c4_researcher_read_model WHERE topic IN ('Hydrogen Energy','Catalysis') ORDER BY h_index DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "e13093a227fe7d8127649dc8889c2dc377e019d7944b11fef9080e672203c135"
+      },
+      "response_excerpt": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Ravi Jena at Gujarat Technological University leads the visible slice with h-index 85. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "researcher",
+      "status_code": 200,
+      "query": "Compare Gujarat and Maharashtra research output",
+      "tier": 1,
+      "intent": "state_research_output_comparison",
+      "audit_event_id": "3977f9dfa12646975ee99d5bddb65141a5d28b966a39552939e587966e1739be",
+      "citation_count": 2,
+      "source_rows": 2,
+      "sql_query": "SELECT state, researcher_count FROM c4_researcher_state_read_model WHERE state IN (:state_a, :state_b) ORDER BY state",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "3977f9dfa12646975ee99d5bddb65141a5d28b966a39552939e587966e1739be"
+      },
+      "response_excerpt": "Gujarat and Maharashtra are compared as state-bounded research-output slices. Gujarat has 886 researcher-output records in the visible read model; Maharashtra has 625. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "researcher",
+      "status_code": 200,
+      "query": "Top 10 publications in renewable energy",
+      "tier": 1,
+      "intent": "publication_topic_lookup",
+      "audit_event_id": "c9bd8d4a2430dde3f16ba6579ce48a0e9e34fee07c9f73046f00ebad531482bb",
+      "citation_count": 1,
+      "source_rows": 2,
+      "sql_query": "SELECT research_area, publication_count, citation_count FROM c4_publication_area_read_model WHERE topic='Renewable Energy' ORDER BY publication_count DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "c9bd8d4a2430dde3f16ba6579ce48a0e9e34fee07c9f73046f00ebad531482bb"
+      },
+      "response_excerpt": "Renewable-energy publication evidence is summarized by research area; Sustainable Energy has 22,291 publications and 2,745,996 citations in the visible read model. [cite:publications:c4-read-model]"
+    },
+    {
+      "role": "researcher",
+      "status_code": 200,
+      "query": "Which IIT has the strongest AI research program?",
+      "tier": 1,
+      "intent": "iit_ai_program_strength",
+      "audit_event_id": "cdf189ab44e2676df84df8ebea98f86c5eca7841aeaeaf5b3f12e8eb83824dc6",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT institution, state, researcher_count, avg_h_index, funding_cr FROM c4_iit_ai_strength_read_model ORDER BY avg_h_index DESC, researcher_count DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "cdf189ab44e2676df84df8ebea98f86c5eca7841aeaeaf5b3f12e8eb83824dc6"
+      },
+      "response_excerpt": "IIT Artificial Intelligence program strength is ranked by AI/ML researcher count and average h-index. IIT Patna leads the visible slice with average h-index 28.6. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "researcher",
+      "status_code": 200,
+      "query": "List top 10 institutions by average researcher h-index",
+      "tier": 1,
+      "intent": "institution_avg_h_index_ranking",
+      "audit_event_id": "ec2dd83b176d6246ee686f14fcc718eec1615dded3c7bf557d0b2015f8830c46",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT institution, state, researcher_count, avg_h_index, funding_cr FROM c4_institution_h_index_read_model ORDER BY avg_h_index DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "ec2dd83b176d6246ee686f14fcc718eec1615dded3c7bf557d0b2015f8830c46"
+      },
+      "response_excerpt": "Institution average researcher h-index is led by CHARUSAT at 62.0 across 1 visible researchers. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "government",
+      "status_code": 200,
+      "query": "Who are the top researchers in hydrogen catalysis?",
+      "tier": 2,
+      "intent": "researcher_ranking",
+      "audit_event_id": "50025c2b92facd3a1f476e03184c8fa46e38f4f50a8858cf49f69210dc757ed8",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT researcher, institution, state, research_area, h_index, funding_cr FROM c4_researcher_read_model WHERE topic IN ('Hydrogen Energy','Catalysis') ORDER BY h_index DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "50025c2b92facd3a1f476e03184c8fa46e38f4f50a8858cf49f69210dc757ed8"
+      },
+      "response_excerpt": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Ravi Jena at Gujarat Technological University leads the visible slice with h-index 85. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "government",
+      "status_code": 200,
+      "query": "Compare Gujarat and Maharashtra research output",
+      "tier": 2,
+      "intent": "state_research_output_comparison",
+      "audit_event_id": "037751a9bfbec44d6e849ddc71d595db1803d06a37d6cc1873797e807d6c4c1d",
+      "citation_count": 2,
+      "source_rows": 2,
+      "sql_query": "SELECT state, researcher_count FROM c4_researcher_state_read_model WHERE state IN (:state_a, :state_b) ORDER BY state",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "037751a9bfbec44d6e849ddc71d595db1803d06a37d6cc1873797e807d6c4c1d"
+      },
+      "response_excerpt": "Gujarat and Maharashtra are compared as state-bounded research-output slices. Gujarat has 886 researcher-output records in the visible read model; Maharashtra has 625. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "government",
+      "status_code": 200,
+      "query": "Top 10 publications in renewable energy",
+      "tier": 2,
+      "intent": "publication_topic_lookup",
+      "audit_event_id": "79db61a0e34ff71d998eac22a61feb66c6c9d9e1cce0124ddd6cc116675d8db9",
+      "citation_count": 1,
+      "source_rows": 2,
+      "sql_query": "SELECT research_area, publication_count, citation_count FROM c4_publication_area_read_model WHERE topic='Renewable Energy' ORDER BY publication_count DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "79db61a0e34ff71d998eac22a61feb66c6c9d9e1cce0124ddd6cc116675d8db9"
+      },
+      "response_excerpt": "Renewable-energy publication evidence is summarized by research area; Sustainable Energy has 22,291 publications and 2,745,996 citations in the visible read model. [cite:publications:c4-read-model]"
+    },
+    {
+      "role": "government",
+      "status_code": 200,
+      "query": "Which IIT has the strongest AI research program?",
+      "tier": 2,
+      "intent": "iit_ai_program_strength",
+      "audit_event_id": "3f69d10bfb50e644cbb5a76fff49ca5549bb81548a22047fd697b6c008f8651a",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT institution, state, researcher_count, avg_h_index, funding_cr FROM c4_iit_ai_strength_read_model ORDER BY avg_h_index DESC, researcher_count DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "3f69d10bfb50e644cbb5a76fff49ca5549bb81548a22047fd697b6c008f8651a"
+      },
+      "response_excerpt": "IIT Artificial Intelligence program strength is ranked by AI/ML researcher count and average h-index. IIT Patna leads the visible slice with average h-index 28.6. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "government",
+      "status_code": 200,
+      "query": "List top 10 institutions by average researcher h-index",
+      "tier": 2,
+      "intent": "institution_avg_h_index_ranking",
+      "audit_event_id": "4a1b23745ccc4c975f9ec129f1534f83dbd58bbf1d453a37eb4deb31455c91cd",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": "SELECT institution, state, researcher_count, avg_h_index, funding_cr FROM c4_institution_h_index_read_model ORDER BY avg_h_index DESC LIMIT 5",
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "4a1b23745ccc4c975f9ec129f1534f83dbd58bbf1d453a37eb4deb31455c91cd"
+      },
+      "response_excerpt": "Institution average researcher h-index is led by CHARUSAT at 62.0 across 1 visible researchers. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]"
+    },
+    {
+      "role": "industry",
+      "status_code": 200,
+      "query": "Who are the top researchers in hydrogen catalysis?",
+      "tier": 3,
+      "intent": "researcher_ranking",
+      "audit_event_id": "9f85e226b42a10b0e3c0fe6e240c4c3bcfc26055af8dfc79920ae333ae348859",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": null,
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "9f85e226b42a10b0e3c0fe6e240c4c3bcfc26055af8dfc79920ae333ae348859"
+      },
+      "response_excerpt": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Researcher 1 at Gujarat Technological University leads the visible slice with h-index 85. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned."
+    },
+    {
+      "role": "industry",
+      "status_code": 200,
+      "query": "Compare Gujarat and Maharashtra research output",
+      "tier": 3,
+      "intent": "state_research_output_comparison",
+      "audit_event_id": "d72b40676109e3d41974a5aedcede3ca5e46ce9a72d8d622e6c3cfb222739ffd",
+      "citation_count": 2,
+      "source_rows": 2,
+      "sql_query": null,
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "d72b40676109e3d41974a5aedcede3ca5e46ce9a72d8d622e6c3cfb222739ffd"
+      },
+      "response_excerpt": "Gujarat and Maharashtra are compared as state-bounded research-output slices. Gujarat has 886 researcher-output records in the visible read model; Maharashtra has 625. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned."
+    },
+    {
+      "role": "industry",
+      "status_code": 200,
+      "query": "Top 10 publications in renewable energy",
+      "tier": 3,
+      "intent": "publication_topic_lookup",
+      "audit_event_id": "994d567a3d727775a1a3f2853e183cfcc85c400b10c5a73330f502a4cfd99726",
+      "citation_count": 1,
+      "source_rows": 2,
+      "sql_query": null,
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "994d567a3d727775a1a3f2853e183cfcc85c400b10c5a73330f502a4cfd99726"
+      },
+      "response_excerpt": "Renewable-energy publication evidence is summarized by research area; Sustainable Energy has 22,291 publications and 2,745,996 citations in the visible read model. [cite:publications:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned."
+    },
+    {
+      "role": "industry",
+      "status_code": 200,
+      "query": "Which IIT has the strongest AI research program?",
+      "tier": 3,
+      "intent": "iit_ai_program_strength",
+      "audit_event_id": "4e2257bd0687fcb1ede39514261b0404bb041d06b3386cacc32401cc93cb8b23",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": null,
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "4e2257bd0687fcb1ede39514261b0404bb041d06b3386cacc32401cc93cb8b23"
+      },
+      "response_excerpt": "IIT Artificial Intelligence program strength is ranked by AI/ML researcher count and average h-index. IIT Patna leads the visible slice with average h-index 28.6. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned."
+    },
+    {
+      "role": "industry",
+      "status_code": 200,
+      "query": "List top 10 institutions by average researcher h-index",
+      "tier": 3,
+      "intent": "institution_avg_h_index_ranking",
+      "audit_event_id": "eeac107b9ad87ee3a36171073ad1681632a99e1e6c4bf49070713cccdcb792bb",
+      "citation_count": 2,
+      "source_rows": 5,
+      "sql_query": null,
+      "verification": {
+        "status": true,
+        "safe_to_trust": true,
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citation_validity": 1.0,
+        "audit_event_id": "eeac107b9ad87ee3a36171073ad1681632a99e1e6c4bf49070713cccdcb792bb"
+      },
+      "response_excerpt": "Institution average researcher h-index is led by CHARUSAT at 62.0 across 1 visible researchers. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned."
+    }
+  ]
+}

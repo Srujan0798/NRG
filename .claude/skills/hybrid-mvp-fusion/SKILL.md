@@ -207,6 +207,29 @@ surfaces:
 If any row lacks current evidence, the answer must say exactly that. The correct
 response is a proof table and next command, not a confidence statement.
 
+## External Bundle Closure Checklist
+
+When the founder gives a working external v1.0 bundle and says to merge it
+"fully", "without partial work", or "better in every corner", the agent must
+close the bundle with an explicit matrix before making any claim:
+
+- every reviewable source file is accounted for as accepted, adapted,
+  converted, parked, rejected, or ignored as generated/binary/local artifact
+- all query templates and suggested questions are converted into NRG regression
+  tests, validation-campaign rows, or exact backlog items
+- all UI/proof ideas are compared against the real NRG login -> tier -> query ->
+  answer -> source/citation -> audit flow before any frontend copy is made
+- all API/schema/auth/audit defaults from the external stack are rejected unless
+  they preserve `db_struct.sql`, Dhairya, tier filtering, citations, source
+  rows, and HMAC audit IDs
+- the highest-risk failing slice is fixed first, then verified with fresh logs
+- the final report separates `inventory-accounted`, `value-integrated`, and
+  `product-proven`
+
+Do not say the old bundle has been "fully replaced" unless the repo no longer
+depends on it and current NRG tests/evidence prove the corresponding behavior
+inside the real product.
+
 ## Integration Procedure
 
 1. Read the required source-truth files.
