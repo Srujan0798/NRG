@@ -1,0 +1,194 @@
+# Repository Structure And Cleanup Plan
+
+Date: 2026-05-01
+
+This plan records the current repository structure, cleanup decisions, and the
+target company-level organization for NRG. It is intentionally conservative:
+canonical product, schema, Dhairya audit, source-truth, and runtime proof files
+are protected from accidental cleanup.
+
+## Current State
+
+NRG is a working local answer-engine repository with:
+
+- FastAPI backend for auth, query, audit, health, tier shaping, and data APIs.
+- LangGraph orchestration for query planning, routing, execution, synthesis,
+  verification, and retry handling.
+- Text-to-SQL and RAG skill layers with schema-aware prompts, sandboxing,
+  examples, validators, and Qdrant ingestion.
+- React/Vite frontend with persona dashboards, query home, streaming answer,
+  citations, source rows, HMAC proof drawer, DPDP surfaces, and responsive tests.
+- Security layer for JWT, RBAC, PII controls, prompt sanitisation, tier filters,
+  rate limiting, egress controls, and audit chain verification.
+- Broad tests across API, security, audit, orchestration, skills, frontend,
+  integration, property, load, and UAT surfaces.
+- Infrastructure for Docker Compose, Kong, Nginx, Prometheus, Grafana, Helm,
+  sovereign deployment, and model/runtime support.
+
+The current local proof is strong for the laptop/local path, but production
+claims remain blocked until deployed URLs, cluster-load access, founder signing,
+and real production data ingestion are available.
+
+## Protected Source Truth
+
+Do not remove or relocate these without updating every reference and verification
+tool in the same commit:
+
+| File | Role |
+| --- | --- |
+| `Core_Idea_Clean.md` | Product and visible UX truth |
+| `db_struct.sql` | Canonical minimum PostgreSQL schema |
+| `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` | Official formatted Dhairya audit |
+| `docs/reports/SQL_AUDIT_RAW_dhairya.sql` | Raw Dhairya audit |
+| `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md` | Source hierarchy |
+| `CORPUS/` | Portable mirror, verified by `scripts/verify_corpus_sync.py` |
+| `.claude/CURRENT_STATE.md` | Current agent-facing project status |
+| `prompts_hybrid/` | Agent execution prompt stones |
+
+## Cleanup Decisions
+
+| Area | Decision | Reason |
+| --- | --- | --- |
+| Generated caches | Remove locally and keep ignored | Recreated by tools |
+| Node modules and npm cache | Remove locally and keep ignored | Reinstallable dependencies, not repo source |
+| `.audit/` | Keep local chain, do not commit | Runtime compliance data |
+| `data/` | Keep local DBs, do not commit | Local Docker release path depends on `data/nrg_research.db` |
+| `CORPUS/` | Keep | Portable AI handoff mirror |
+| Root `db_struct.sql` | Keep | Canonical schema source |
+| Dhairya docs in `docs/reports/` | Keep | Official verification baseline |
+| `docs/ops/` | Keep | API health reads data-quality scorecard here |
+| Evidence binaries | Keep latest proof for now; later archive duplicates | Current handoff proof still references them |
+| `src/api/main.py` | Split later, not during cleanup wave | High-risk hot path |
+| Scripts | Consolidate later by category | Many are referenced by docs/tests |
+
+## Target Repository Shape
+
+```text
+NRG/
+  Core_Idea_Clean.md
+  db_struct.sql
+  README.md
+  BACKLOG.md
+  CHANGELOG.md
+
+  src/
+    api/
+      main.py
+      routes/
+      middleware/
+      contracts/
+    orchestration/
+    skills/
+      text_to_sql/
+      rag/
+    auth/
+    security/
+    audit/
+    data/
+    services/
+    observability/
+    config/
+
+  frontend/
+    src/
+    tests/
+    e2e/
+
+  tests/
+    api/
+    security/
+    audit/
+    orchestration/
+    skills/
+    integration/
+    e2e/
+    load/
+
+  scripts/
+    audit/
+    deploy/
+    ingest/
+    load/
+    maintenance/
+    seed/
+    verify/
+
+  docs/
+    README.md
+    architecture/
+    reports/
+    runbooks/
+    specs/
+    handover/
+    compliance/
+    operations/
+    ops/
+
+  CORPUS/
+  infrastructure/
+  alembic/
+  evidence/
+```
+
+## Next Cleanup Waves
+
+### Wave 1: Safe Local Cleanup
+
+Completed in this pass:
+
+- Removed ignored caches and generated local dependency directories.
+- Added `docs/README.md`, `scripts/README.md`, and `evidence/README.md`.
+- Added this cleanup plan.
+
+### Wave 2: Root And Runtime Hygiene
+
+- Review tracked `.env.*` files for secrets and convert to examples if needed.
+- Move or delete root one-off test launchers after reference checks:
+  `test_all_personas.js`, `test_full_website.py`, `test_runner.js`.
+- Decide whether root `package.json` is still needed or if frontend-only Node
+  tooling is enough.
+
+### Wave 3: Evidence Slimming
+
+- Keep latest evidence summaries.
+- Archive duplicate screenshots/videos and old browser recordings.
+- Replace repeated binary proof in git with small markdown indexes where safe.
+
+### Wave 4: Script Consolidation
+
+- Build a script registry with owner, category, callers, and status.
+- Move scripts by category only when references and tests are updated.
+- Delete only scripts with zero references and no unique behavior.
+
+### Wave 5: Backend Architecture Split
+
+- Split `src/api/main.py` into focused route modules.
+- Keep response contracts stable.
+- Add route-level tests before each extraction.
+
+### Wave 6: Documentation Rationalization
+
+- Replace duplicated architecture/handover/runbook content with links.
+- Keep current handover material and official reports.
+- Archive superseded prompt dumps and stale status reports.
+
+## Verification Gates For Cleanup
+
+Every cleanup commit should run the relevant subset:
+
+```bash
+python3 scripts/verify_corpus_sync.py
+.venv/bin/python -m pytest tests/api/test_audit_event_endpoint.py tests/api/test_langgraph_api.py tests/api/test_query_security_validation.py -q --tb=short --no-cov
+git diff --check
+```
+
+For frontend-moving work, reinstall dependencies and run:
+
+```bash
+cd frontend
+npm install
+npm run build
+npm test -- --runInBand
+```
+
+For browser-flow claims, run the relevant Playwright spec and save evidence.
