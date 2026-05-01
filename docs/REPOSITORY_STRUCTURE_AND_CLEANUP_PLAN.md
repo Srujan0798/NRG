@@ -209,11 +209,14 @@ Started in the backend split pass:
 - Extracted frontend UAT telemetry ingestion into `src/api/routes/telemetry.py`
   with the existing event allowlist, PII redaction, recent-event memory buffer,
   and audit-chain binding behavior.
+- Replaced the stale ingestion route module with the live document ingestion
+  job-store behavior from `src/api/main.py`, and moved feedback/RLHF signal
+  submission into `src/api/routes/feedback.py`.
 
 Remaining route splits:
 
 - Query and streaming routes.
-- Feedback, ingestion, and SPA shell routes.
+- SPA shell route.
 
 ### Wave 6: Documentation Rationalization
 
