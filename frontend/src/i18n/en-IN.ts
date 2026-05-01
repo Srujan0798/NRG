@@ -92,6 +92,12 @@ export const errorCopy = {
   systemBody: 'NRG could not complete the step. The signed audit trail remains intact.',
   sanitizedBody: 'NRG could not complete the step. Use the reference code if support needs to investigate.',
   supportHint: 'If this persists, contact support with the reference code.',
+  boundaryWidgetTitle: 'Widget failed to load',
+  boundaryWidgetBody: 'This widget could not render. The rest of the page is still available.',
+  boundaryPageTitle: 'NRG could not render this section',
+  boundaryPageBody: 'This view could not render. The signed audit trail remains intact.',
+  boundaryDataSafe: 'No research data was exposed by this screen error.',
+  boundaryReferenceLabel: 'Reference code',
 }
 
 export const actionCopy = {
