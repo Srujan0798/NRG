@@ -1,0 +1,105 @@
+ Image nrg-api Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 554B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile.api
+#2 transferring dockerfile: 2.52kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.11-slim
+#3 ...
+
+#4 [auth] library/python:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.11-slim
+#3 DONE 1.7s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 457B done
+#5 DONE 0.0s
+
+#6 [builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#6 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2 0.0s done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 825.72kB 0.1s done
+#7 DONE 0.1s
+
+#8 [builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [builder  8/12] RUN pip install --no-cache-dir -e .
+#9 CACHED
+
+#10 [builder  6/12] COPY pyproject.toml .
+#10 CACHED
+
+#11 [builder  9/12] COPY alembic.ini .
+#11 CACHED
+
+#12 [builder  2/12] WORKDIR /app
+#12 CACHED
+
+#13 [builder  5/12] RUN python -m venv /app/venv
+#13 CACHED
+
+#14 [builder  4/12] RUN pip install --upgrade pip wheel setuptools
+#14 CACHED
+
+#15 [builder  7/12] RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+#15 CACHED
+
+#16 [builder 10/12] COPY alembic/ ./alembic/
+#16 CACHED
+
+#17 [builder 11/12] COPY src/ ./src/
+#17 DONE 0.1s
+
+#18 [builder 12/12] COPY scripts/ ./scripts/
+#18 DONE 0.0s
+
+#19 [runner 1/2] RUN groupadd -r app && useradd -r -g app app
+#19 DONE 0.2s
+
+#20 [runner 2/2] RUN mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+#20 DONE 0.1s
+
+#21 exporting to image
+#21 exporting layers
+#21 exporting layers 0.3s done
+#21 preparing layers for inline cache
+#21 preparing layers for inline cache 0.2s done
+#21 exporting manifest sha256:98b9c54e786ce18dc6457de24dbacea1dd5f8d9bc7e4cd7f55382eee67376bd7
+#21 exporting manifest sha256:98b9c54e786ce18dc6457de24dbacea1dd5f8d9bc7e4cd7f55382eee67376bd7 done
+#21 exporting config sha256:af67cadaf6a698e2e3cf8f523e9309a868b744a7c18a360cc5a3a37030fb5bb4 done
+#21 exporting attestation manifest sha256:3aef63f2467606b73f1e8fed70b86dba6afaf4e4e8000500ec6cac61085a82d5 done
+#21 exporting manifest list sha256:947725c34a8791d142f0fe588fc998d9c8d92a313ec499f50d63f03137549a63 done
+#21 naming to docker.io/library/nrg-api:latest done
+#21 unpacking to docker.io/library/nrg-api:latest 0.1s done
+#21 DONE 0.6s
+
+#22 resolving provenance for metadata file
+#22 DONE 0.0s
+ Image nrg-api Built
+time="2026-05-01T21:05:08+05:30" level=warning msg="volume \"nrg_api_auth_data\" already exists but was not created by Docker Compose. Use `external: true` to use an existing volume"
+ Container nrg-redis Running
+ Container nrg-postgres Running
+ Container nrg-qdrant Running
+ Container nrg-pgbouncer Running
+ Container nrg-api Recreate
+ Container nrg-api Recreated
+ Container nrg-postgres Waiting
+ Container nrg-postgres Healthy
+ Container nrg-pgbouncer Waiting
+ Container nrg-postgres Waiting
+ Container nrg-qdrant Waiting
+ Container nrg-redis Waiting
+ Container nrg-qdrant Healthy
+ Container nrg-redis Healthy
+ Container nrg-postgres Healthy
+ Container nrg-pgbouncer Healthy
+ Container nrg-api Starting
+ Container nrg-api Started

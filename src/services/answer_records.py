@@ -7,9 +7,21 @@ from pathlib import Path
 from typing import Any
 
 
+def _default_answer_records_path() -> Path:
+    configured = os.getenv("NRG_ANSWER_RECORDS_DB")
+    if configured:
+        return Path(configured)
+
+    runtime_dir = Path(os.getenv("NRG_RUNTIME_DIR", "/var/lib/nrg"))
+    if runtime_dir.exists() and os.access(runtime_dir, os.W_OK):
+        return runtime_dir / "answer_records.sqlite"
+
+    return Path("data/answer_records.sqlite")
+
+
 class AnswerRecordStore:
     def __init__(self, path: str | Path | None = None):
-        default_path = Path(os.getenv("NRG_ANSWER_RECORDS_DB", "data/answer_records.sqlite"))
+        default_path = _default_answer_records_path()
         self.path = Path(path or default_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._init()

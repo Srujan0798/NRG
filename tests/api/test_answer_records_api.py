@@ -1,6 +1,15 @@
 from pathlib import Path
 
-from src.services.answer_records import AnswerRecordStore
+from src.services.answer_records import AnswerRecordStore, _default_answer_records_path
+
+
+def test_answer_record_default_path_prefers_runtime_dir(monkeypatch, tmp_path: Path):
+    runtime_dir = tmp_path / "runtime"
+    runtime_dir.mkdir()
+    monkeypatch.delenv("NRG_ANSWER_RECORDS_DB", raising=False)
+    monkeypatch.setenv("NRG_RUNTIME_DIR", str(runtime_dir))
+
+    assert _default_answer_records_path() == runtime_dir / "answer_records.sqlite"
 
 
 def test_answer_record_store_round_trip(tmp_path: Path):

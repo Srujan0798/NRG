@@ -1,3 +1,4 @@
+import logging
 import sqlite3
 from types import SimpleNamespace
 
@@ -672,6 +673,76 @@ def test_sparse_live_researcher_schema_empty_result_uses_local_catalogue(monkeyp
     assert rows[0]["name"] == "Dr. Local Quantum"
     assert rows[0]["institution"] == "IISc Bengaluru"
     assert "LEFT JOIN institutions" in sql_query
+
+
+def test_sparse_local_researcher_catalogue_does_not_require_legacy_columns(monkeypatch, tmp_path):
+    api_main._researcher_topic_cache.clear()
+    local_db_path = tmp_path / "nrg_research_sparse.db"
+    with sqlite3.connect(local_db_path) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE researchers (
+                researcher_id TEXT PRIMARY KEY,
+                name TEXT,
+                institution TEXT,
+                state TEXT,
+                research_area TEXT,
+                email TEXT
+            );
+            INSERT INTO researchers VALUES (
+                'res-local-sparse-q1',
+                'Dr. Sparse Local Quantum',
+                'IIT Delhi',
+                'Delhi',
+                'Quantum Computing',
+                'sparse.local.quantum@example.edu'
+            );
+            """
+        )
+
+    class FakeDB:
+        def execute(self, query, params=None):
+            return []
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        api_main,
+        "_get_table_columns",
+        lambda table_name: {"researcher_id", "name", "state", "research_area", "email"}
+        if table_name == "researchers"
+        else set(),
+    )
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: local_db_path)
+
+    sql_query, rows = api_main._query_researchers_for_topic("Quantum Computing", ["%quantum%"])
+
+    assert rows
+    assert rows[0]["name"] == "Dr. Sparse Local Quantum"
+    assert rows[0]["institution"] == "IIT Delhi"
+    assert rows[0]["department"] is None
+    assert rows[0]["secondary_research_areas"] is None
+    assert rows[0]["h_index"] == 0
+    assert rows[0]["funding_cr"] == 0
+    assert "r.department" not in sql_query
+    assert "r.secondary_research_areas" not in sql_query
+    assert "r.total_funding_received_inr_crores" not in sql_query
+
+
+def test_optional_local_research_lookup_does_not_warn_on_schema_miss(monkeypatch, tmp_path, caplog):
+    local_db_path = tmp_path / "nrg_research_minimal.db"
+    with sqlite3.connect(local_db_path) as conn:
+        conn.execute("CREATE TABLE researchers (name TEXT)")
+
+    monkeypatch.setattr(api_main, "_local_research_db_path", lambda: local_db_path)
+
+    with caplog.at_level(logging.WARNING, logger="src.api.main"):
+        rows = api_main._query_local_research_rows(
+            "SELECT r.department FROM researchers r LIMIT 1"
+        )
+
+    assert rows == []
+    assert "Final golden fast-path SQLite lookup failed" not in caplog.text
+    assert "Optional local SQLite lookup skipped" not in caplog.text
 
 
 def test_fast_query_release_seed_fallback_covers_audit_walkthrough():

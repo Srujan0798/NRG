@@ -438,36 +438,84 @@ def _query_researchers_for_topic(topic: str, patterns: list[str]) -> tuple[str, 
     if local_db is None:
         return " ".join(sql.split()), []
 
-    local_ors = " OR ".join(
-        [
-            "lower(coalesce(r.research_area, '')) LIKE lower(?) "
-            "OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) "
-            "OR lower(coalesce(r.department, '')) LIKE lower(?)"
-            for _ in patterns
-        ]
-    )
-    local_params = tuple(pattern for pattern in patterns for _ in range(3))
-    local_sql = f"""
-        SELECT
-            r.researcher_id AS researcher_id,
-            r.name AS name,
-            coalesce(i.name, r.institution_id) AS institution,
-            r.state AS state,
-            r.department AS department,
-            r.research_area AS research_area,
-            r.secondary_research_areas AS secondary_research_areas,
-            coalesce(r.h_index, 0) AS h_index,
-            coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr,
-            r.email AS email
-        FROM researchers r
-        LEFT JOIN institutions i ON i.institution_id = r.institution_id
-        WHERE {local_ors}
-        ORDER BY coalesce(r.h_index, 0) DESC, coalesce(r.total_funding_received_inr_crores, 0) DESC
-        LIMIT 5
-    """
+    local_sql = sql
     try:
         with sqlite3.connect(f"file:{local_db}?mode=ro", uri=True) as conn:
             conn.row_factory = sqlite3.Row
+            researcher_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(researchers)").fetchall()
+            }
+            institution_cols = {
+                row["name"]
+                for row in conn.execute("PRAGMA table_info(institutions)").fetchall()
+            }
+            searchable_cols = [
+                column
+                for column in ("research_area", "secondary_research_areas", "department")
+                if column in researcher_cols
+            ]
+            if not searchable_cols:
+                return " ".join(sql.split()), []
+
+            local_ors = " OR ".join(
+                [
+                    " OR ".join(
+                        f"lower(coalesce(r.{column}, '')) LIKE lower(?)"
+                        for column in searchable_cols
+                    )
+                    for _ in patterns
+                ]
+            )
+            local_params = tuple(pattern for pattern in patterns for _ in searchable_cols)
+            join_clause = ""
+            if (
+                "institution_id" in researcher_cols
+                and {"institution_id", "name"}.issubset(institution_cols)
+            ):
+                join_clause = "LEFT JOIN institutions i ON i.institution_id = r.institution_id"
+                institution_expr = "coalesce(i.name, r.institution_id)"
+            elif "institution" in researcher_cols:
+                institution_expr = "r.institution"
+            elif "institution_id" in researcher_cols:
+                institution_expr = "r.institution_id"
+            else:
+                institution_expr = "NULL"
+
+            state_expr = "r.state" if "state" in researcher_cols else "NULL"
+            department_expr = "r.department" if "department" in researcher_cols else "NULL"
+            secondary_expr = (
+                "r.secondary_research_areas"
+                if "secondary_research_areas" in researcher_cols
+                else "NULL"
+            )
+            h_index_expr = "coalesce(r.h_index, 0)" if "h_index" in researcher_cols else "0"
+            if "total_funding_received_inr_crores" in researcher_cols:
+                funding_expr = "coalesce(r.total_funding_received_inr_crores, 0)"
+            elif "funding_cr" in researcher_cols:
+                funding_expr = "coalesce(r.funding_cr, 0)"
+            else:
+                funding_expr = "0"
+            email_expr = "r.email" if "email" in researcher_cols else "NULL"
+
+            local_sql = f"""
+                SELECT
+                    r.researcher_id AS researcher_id,
+                    r.name AS name,
+                    {institution_expr} AS institution,
+                    {state_expr} AS state,
+                    {department_expr} AS department,
+                    r.research_area AS research_area,
+                    {secondary_expr} AS secondary_research_areas,
+                    {h_index_expr} AS h_index,
+                    {funding_expr} AS funding_cr,
+                    {email_expr} AS email
+                FROM researchers r
+                {join_clause}
+                WHERE {local_ors}
+                ORDER BY h_index DESC, funding_cr DESC, r.name ASC
+                LIMIT 5
+            """
             rows = conn.execute(local_sql, local_params).fetchall()
         return " ".join(local_sql.split()), [dict(row) for row in rows]
     except sqlite3.Error as exc:
