@@ -97,6 +97,9 @@
 | `evidence/2026-05-01/validation_campaign_frontend_jest.log` | Frontend unit/a11y/contract/design-system test log: 26 suites, 97 tests passed. |
 | `evidence/2026-05-01/validation_campaign_frontend_build.log` | Frontend production build log. |
 | `evidence/2026-05-01/validation_campaign/killer/` | Killer-query response, health, and explain evidence for KILLER-01 through KILLER-03. |
+| `evidence/2026-05-01/final_external_gates/EXTERNAL_GATE_SUMMARY.md` | May 1 external final-gates run: deployed browser replay, production Qdrant baseline, 1000-user cluster load, and founder GPG signing remain blocked by missing deployment URLs/KUBECONFIG/founder key on this machine; runner and runbook now exist. |
+| `scripts/run_final_external_gates.py` | Repeatable external-gate runner for deployed browser proof, production Qdrant health, explicit cluster C4 load, and founder signing verification. |
+| `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` | Operator runbook for closing the remaining external gates on the production/cluster/founder-signing machine. |
 | `evidence/2026-05-01/founder_zero_partial_workflow_update.md` | Founder correction encoded permanently: future v1.0 fusion/superiority requests must use a proof matrix across appearance, UI/UX, query intelligence, DB/schema, Dhairya audit, backend/API, retrieval, security/tier, audit, accessibility, performance, evidence, and production. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |

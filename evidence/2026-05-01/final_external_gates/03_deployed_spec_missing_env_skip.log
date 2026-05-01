@@ -1,0 +1,10 @@
+
+Running 1 test using 1 worker
+
+(node:63936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:63936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  1 [chromium] › tests/e2e/deployed_final_gate.spec.ts:43:5 › deployed final gate: messy query proof, source/audit drawers, mobile, and Tier 3 PII block
+
+  1 skipped

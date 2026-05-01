@@ -1,0 +1,17 @@
+Fri May  1 13:27:48 IST 2026
+f9a21f0 fix: stabilize local answer engine validation gate
+
+# Env availability, values redacted
+NRG_DEPLOYED_FRONTEND_URL=missing
+NRG_DEPLOYED_API_URL=missing
+NRG_PRODUCTION_API_URL=missing
+NRG_API_URL=missing
+NRG_SERVICE_TOKEN=missing
+KUBECONFIG=missing
+
+# Tool availability
+kubectl: /usr/local/bin/kubectl
+docker: /usr/local/bin/docker
+gpg: /opt/homebrew/bin/gpg
+npx: /usr/local/bin/npx
+locust: /Library/Frameworks/Python.framework/Versions/3.14/bin/locust

@@ -49,6 +49,9 @@
 | Final vocabulary sweep | `evidence/2026-04-28/vocab_final_sweep.log` |
 | Docs/code sync | `evidence/2026-04-28/docs_sync_report.txt` |
 | Handover completeness review | `evidence/2026-04-28/handover_packet_complete.log` |
+| External final gates runner | `scripts/run_final_external_gates.py` |
+| Latest external gate status | `evidence/2026-05-01/final_external_gates/EXTERNAL_GATE_SUMMARY.md` |
+| External final gates runbook | `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` |
 
 ## Open Blockers
 

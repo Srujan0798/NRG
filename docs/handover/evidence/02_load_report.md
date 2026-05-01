@@ -12,16 +12,13 @@
 ## Command Executed
 
 ```bash
-# Terminal 1: port-forward
-kubectl port-forward svc/api 8000:8000 &
-
-# Terminal 2: run locust
-uv run locust -f tests/performance/locustfile_c4.py --headless \
-  --users 1000 --spawn-rate 3.33 --run-time 15m \
-  --host https://api.nrg.iitgn.ac.in \
-  --html evidence/2026-05-xx/C4_1000_user_locust/report.html \
-  --csv evidence/2026-05-xx/C4_1000_user_locust/stats
+KUBECONFIG=/path/to/sovereign-cluster \
+.venv/bin/python scripts/run_final_external_gates.py \
+  --evidence-dir evidence/$(date +%F)/final_external_gates \
+  --run-cluster-load
 ```
+
+The runner invokes `tests/load/run-locust-k8s.sh production` after verifying cluster access.
 
 ## Results (Pending)
 
