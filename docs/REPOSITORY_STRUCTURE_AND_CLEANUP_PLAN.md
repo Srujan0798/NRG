@@ -187,10 +187,12 @@ Started in the backend split pass:
   and dormant route modules do not load stale endpoint definitions.
 - Removed stale DPDP/data-rights definitions from the dormant auth route module,
   leaving auth focused on login/session endpoints.
+- Extracted login, SSO, session, refresh, and logout routes into
+  `src/api/routes/auth.py`, configured against the same app-level `JWTHandler`
+  instance used by auth middleware so token revocation semantics stay intact.
 
 Remaining route splits:
 
-- Auth/session routes.
 - Health/provider/vector routes.
 - Query and streaming routes.
 - Data and graph routes.
