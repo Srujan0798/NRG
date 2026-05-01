@@ -1,0 +1,9 @@
+Killer query: KILLER-03
+Captured: 2026-05-01T08:12:39.703738+00:00
+Engine: local SQLite volumetric proxy
+
+SQL:
+SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5
+
+Plan:
+EXPLAIN QUERY PLAN unavailable: no such table: c4_funding_institute_read_model

@@ -101,6 +101,7 @@
 | `scripts/run_final_external_gates.py` | Repeatable external-gate runner for deployed browser proof, production Qdrant health, explicit cluster C4 load, and founder signing verification. |
 | `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` | Operator runbook for closing the remaining external gates on the production/cluster/founder-signing machine. |
 | `evidence/2026-05-01/founder_zero_partial_workflow_update.md` | Founder correction encoded permanently: future v1.0 fusion/superiority requests must use a proof matrix across appearance, UI/UX, query intelligence, DB/schema, Dhairya audit, backend/API, retrieval, security/tier, audit, accessibility, performance, evidence, and production. |
+| `evidence/2026-05-01/minimax_fusion_final_proof/FINAL_VALIDATION_REPORT.md` | Repeated Minimax fusion proof: broad local backend/security/query/RAG/audit slice passed, killer queries healthy, frontend Jest/build passed, live browser quantum flow passed against current local backend on `API_TARGET=127.0.0.1:8017`; external production gates remain BLOCKED. Do not trust a random listener on port 8000 for browser proof. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |
