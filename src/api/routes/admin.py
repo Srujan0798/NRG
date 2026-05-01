@@ -80,10 +80,12 @@ async def metrics():
 
 
 @router.get("/api/metrics")
-async def api_metrics(
-    request: Request,
-    token_payload: dict = Depends(get_current_user),
-):
+async def api_metrics(request: Request):
+    """
+    Comprehensive metrics endpoint for Tier 1 operators.
+
+    Returns JSON by default and Prometheus text when Accept contains text/plain.
+    """
     accept = request.headers.get("Accept", "application/json")
 
     if "text/plain" in accept:
@@ -117,7 +119,7 @@ async def api_metrics(
     try:
         from src.audit import get_chain_health, get_db_cosign_metrics
 
-        audit_health = get_chain_health()
+        audit_health = _get_chain_health_no_repair(get_chain_health)
         audit_chain_length = int(audit_health.get("chain_length", 0) or 0)
         chain_valid = bool(audit_health.get("chain_valid", True))
         chain_errors = audit_health.get("errors", []) or []
@@ -136,7 +138,9 @@ async def api_metrics(
         valid_count = 0
         db_cosign_metrics = {}
 
-    langfuse_enabled = __import__("src.observability.langfuse_tracer", fromlist=["_init_langfuse"])._init_langfuse() is not None
+    from src.observability.langfuse_tracer import _init_langfuse
+
+    langfuse_enabled = _init_langfuse() is not None
 
     cache_hit_rate = 0.0
     try:
@@ -164,34 +168,132 @@ async def api_metrics(
                         tier_label = labels.get("tier", "unknown")
                         intent_label = labels.get("intent", "unknown")
                         status_label = labels.get("status", "unknown")
-                        if tier_label not in query_counts["by_tier"]:
-                            query_counts["by_tier"][tier_label] = 0
-                        if intent_label not in query_counts["by_intent"]:
-                            query_counts["by_intent"][intent_label] = 0
-                        if status_label not in query_counts["by_status"]:
-                            query_counts["by_status"][status_label] = 0
-                        query_counts["by_tier"][tier_label] += int(sample.value)
-                        query_counts["by_intent"][intent_label] += int(sample.value)
-                        query_counts["by_status"][status_label] += int(sample.value)
+                        query_counts["by_tier"][tier_label] = query_counts["by_tier"].get(tier_label, 0) + sample.value
+                        query_counts["by_intent"][intent_label] = query_counts["by_intent"].get(intent_label, 0) + sample.value
+                        query_counts["by_status"][status_label] = query_counts["by_status"].get(status_label, 0) + sample.value
+    except Exception:
+        pass
+
+    training_data = {"status": "unavailable"}
+    try:
+        from src.training.data_collector import get_training_collector
+
+        collector = get_training_collector()
+        training_data = collector.get_stats()
+        from src.training.export import ExportPipeline
+
+        exports = ExportPipeline().get_export_history()
+        training_data["export_history"] = exports[-10:] if exports else []
     except Exception:
         pass
 
     return {
-        "status": "ok",
-        "slo": slo_status,
-        "providers": provider_health,
-        "circuit_breaker_trips": circuit_trips,
-        "audit_chain": {
-            "length": audit_chain_length,
-            "valid": chain_valid,
-            "errors": chain_errors,
-            "valid_events": valid_count,
-            "cosign": db_cosign_metrics,
+        "queries": {
+            "counts": query_counts,
+            "latency_p50_ms": slo_status["latency"]["p50_ms"],
+            "latency_p95_ms": slo_status["latency"]["p95_ms"],
+            "latency_p99_ms": slo_status["latency"]["p99_ms"],
+            "node_latency": _get_node_latency_stats(),
         },
-        "cache_hit_rate": cache_hit_rate,
-        "query_counts": query_counts,
-        "langfuse_enabled": langfuse_enabled,
+        "llm_providers": {
+            "mesh_health": provider_health,
+            "circuit_breaker_trips": circuit_trips,
+            "langfuse_enabled": langfuse_enabled,
+        },
+        "cache": {
+            "hit_rate": round(cache_hit_rate, 3),
+        },
+        "audit": {
+            "chain_length": audit_chain_length,
+            "chain_valid": chain_valid,
+            "chain_errors": chain_errors[:10] if chain_errors else [],
+            "valid_event_count": valid_count,
+            "db_cosign": db_cosign_metrics,
+        },
+        "slo": slo_status,
+        "training_data": training_data,
+        "database": _get_db_pool_stats(),
     }
+
+
+def _get_chain_health_no_repair(get_chain_health_fn):
+    try:
+        return get_chain_health_fn(auto_repair=False)
+    except TypeError:
+        return get_chain_health_fn()
+
+
+def _get_node_latency_stats(limit: int = 500) -> dict:
+    """Compute per-node p50/p95 latency from recent training pairs."""
+    try:
+        from src.training.data_collector import get_training_collector
+
+        collector = get_training_collector()
+        conn = collector._get_connection()
+        try:
+            cur = conn.execute(
+                "SELECT node_timings FROM training_pairs "
+                "WHERE node_timings IS NOT NULL AND node_timings != '' "
+                "ORDER BY timestamp DESC LIMIT ?",
+                (limit,),
+            )
+            rows = cur.fetchall()
+            if not rows:
+                return {}
+
+            import json
+
+            all_node_data: dict[str, list[float]] = {}
+            for (nt_json,) in rows:
+                try:
+                    timings = json.loads(nt_json)
+                    if isinstance(timings, dict):
+                        for node, ms in timings.items():
+                            if isinstance(ms, (int, float)) and ms > 0:
+                                all_node_data.setdefault(node, []).append(float(ms))
+                except Exception:
+                    continue
+
+            result = {}
+            for node, values in sorted(all_node_data.items()):
+                if len(values) < 3:
+                    continue
+                sorted_vals = sorted(values)
+                n = len(sorted_vals)
+                p50_idx = max(0, int(n * 0.50) - 1)
+                p95_idx = min(n - 1, int(n * 0.95))
+                result[node] = {
+                    "p50_ms": round(sorted_vals[p50_idx], 2),
+                    "p95_ms": round(sorted_vals[p95_idx], 2),
+                    "samples": n,
+                }
+            return result
+        finally:
+            conn.close()
+    except Exception:
+        return {}
+
+
+def _get_db_pool_stats() -> dict:
+    """Get PostgreSQL connection pool stats for /api/metrics."""
+    try:
+        from src.config.database import get_database_manager
+
+        db = get_database_manager()
+        stats = db.pool_stats()
+        return {
+            "driver": db.driver,
+            "status": "overloaded" if db.is_overloaded() else "healthy",
+            "pool": {
+                "active": stats.active,
+                "idle": stats.idle,
+                "waiting": stats.waiting,
+                "max_size": stats.max_size,
+                "min_size": stats.min_size,
+            },
+        }
+    except Exception:
+        return {"driver": "unknown", "status": "unavailable"}
 
 
 @router.get("/api/admin/rbac", tags=["admin"])

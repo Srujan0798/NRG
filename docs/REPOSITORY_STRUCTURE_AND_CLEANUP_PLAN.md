@@ -190,14 +190,15 @@ Started in the backend split pass:
 - Extracted login, SSO, session, refresh, and logout routes into
   `src/api/routes/auth.py`, configured against the same app-level `JWTHandler`
   instance used by auth middleware so token revocation semantics stay intact.
+- Extracted metrics, SLO, vector reindex, and RBAC policy administration routes
+  into `src/api/routes/admin.py` while preserving the existing `/api/metrics`
+  JSON contract and lightweight audit-health behavior.
 
 Remaining route splits:
 
 - Health/provider/vector routes.
 - Query and streaming routes.
 - Data and graph routes.
-- Admin/RBAC/metrics routes, with DPDP definitions already removed from the
-  dormant admin route module.
 
 ### Wave 6: Documentation Rationalization
 
