@@ -37,13 +37,13 @@ describe('SuggestionChips', () => {
       chips[0].click()
     })
 
-    expect(onSelect).toHaveBeenCalledWith('Top funding agencies by grant amount')
+    expect(onSelect).toHaveBeenCalledWith('Who are the top researchers in hydrogen catalysis?')
     expect(onSubmit).not.toHaveBeenCalled()
 
     act(() => {
       jest.advanceTimersByTime(200)
     })
 
-    expect(onSubmit).toHaveBeenCalledWith('Top funding agencies by grant amount')
+    expect(onSubmit).toHaveBeenCalledWith('Who are the top researchers in hydrogen catalysis?')
   })
 })

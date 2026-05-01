@@ -7,9 +7,9 @@ jest.mock('../../src/components/StreamingAnswerPanel', () => ({
   default: function MockStreamingAnswerPanel({ query, onProofChange }: { query: string; onProofChange?: (payload: unknown) => void }) {
     React.useEffect(() => {
       onProofChange?.({
-        response: 'Ranked funding agencies answer',
-        citations: [{ id: 'c1', title: 'Funding source row' }],
-        sqlQuery: 'SELECT agency FROM grants',
+        response: 'Ranked hydrogen catalysis researcher answer',
+        citations: [{ id: 'c1', title: 'Hydrogen catalysis source row' }],
+        sqlQuery: 'SELECT researcher FROM researchers',
         sqlResults: [],
         rowsReturned: 4,
         auditEventId: 'audit-workbench',
@@ -85,7 +85,9 @@ describe('QueryWorkbench', () => {
       await Promise.resolve()
     })
 
-    expect(container.querySelector('[data-testid="mock-streaming-answer"]')?.textContent).toContain('Top funding agencies')
+    expect(container.querySelector('[data-testid="mock-streaming-answer"]')?.textContent).toContain(
+      'Who are the top researchers in hydrogen catalysis?'
+    )
     expect(handleProofChange).toHaveBeenCalledWith(expect.objectContaining({ auditEventId: 'audit-workbench' }))
   })
 })

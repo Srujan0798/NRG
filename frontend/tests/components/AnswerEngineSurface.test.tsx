@@ -70,7 +70,8 @@ describe('AnswerEngine surface', () => {
     expect(container.querySelectorAll('[data-testid="suggestion-chip"]')).toHaveLength(4)
     expect(container.querySelector('[data-testid="answer-engine-query"]')).not.toBeNull()
     expect(container.textContent).toContain("Sovereign intelligence over India's research database")
-    expect(container.textContent).toContain('Best quantum researchers by citations and institution')
+    expect(container.textContent).toContain('Who are the top researchers in hydrogen catalysis?')
+    expect(container.textContent).toContain('List top 10 institutions by average researcher h-index')
   })
 
   it('shows persona-specific query suggestions without changing the primary query contract', () => {
@@ -87,9 +88,9 @@ describe('AnswerEngine surface', () => {
 
     expect(container.querySelectorAll('[data-testid="suggestion-chip"]')).toHaveLength(4)
     expect(container.querySelector('[data-testid="answer-engine-query"]')).not.toBeNull()
-    expect(container.textContent).toContain('Institutions with battery technology capability')
-    expect(container.textContent).toContain('Anonymized capability clusters for hydrogen catalysis')
-    expect(container.textContent).not.toContain('Best quantum researchers by citations and institution')
+    expect(container.textContent).toContain('Which IIT has the strongest AI research program?')
+    expect(container.textContent).toContain('Compare CSIR labs by research output')
+    expect(container.textContent).not.toContain('Who are the top researchers in hydrogen catalysis?')
   })
 
   it('keeps tier dashboards to query-first layout plus three supporting panels', () => {

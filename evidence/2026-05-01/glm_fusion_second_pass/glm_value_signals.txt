@@ -1,0 +1,377 @@
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/store.ts:17:  | 'audit'
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/store.ts:80:  id: string; // This is now audit_event_id
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/globals.css:2232:  /* Export button hover effect */
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/audit/route.ts:64:      db.auditLog.findMany({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/audit/route.ts:82:      db.auditLog.count({ where }),
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/audit/route.ts:117:    return NextResponse.json({ error: 'Failed to fetch audit logs' }, { status: 500 });
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:64:// PII Detection
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:65:export function containsPII(text: string): { detected: boolean; type?: string } {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:82:  // Intent-based PII requests (asking for sensitive data by name)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:111:    { pattern: /ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|rules?|prompts?)/, reason: 'Attempt to ignore system instructions' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:114:    { pattern: /system\s*:\s*"/i, reason: 'Attempt to inject system prompt' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/lib/auth.ts:117:    { pattern: /reveal\s+(your|the|hidden)\s+(prompt|instructions?|system)/i, reason: 'Attempt to extract system prompt' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/funding/route.ts:121:        .sort((a, b) => a.year.localeCompare(b.year)),
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/export/route.ts:243:        // Export research area distribution as CSV
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/export/route.ts:280:    console.error('Export error:', error);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/suggestions/route.ts:8:  'Compare average h-index across different research areas',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/suggestions/route.ts:10:  'Compare DST vs SERB funding distribution by year',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/suggestions/route.ts:14:  'Compare publication output across Indian states',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:307:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:471:  // Export handler
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:472:  const handleExport = useCallback(async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:474:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:478:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:492:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:1032:                  onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:1036:                  {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:1410:            {/* Export button */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:1416:              onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-explorer-view.tsx:1419:              {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/reports/route.ts:128:      .sort(([a], [b]) => a.localeCompare(b))
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/compare/route.ts:118:    console.error('Compare API error:', error);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:4:import { containsPII, detectPromptInjection, createAuditHash } from '@/lib/auth';
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:775:// ─── Helper: Build Verification Status ─────────────────────────────────
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:776:function buildVerification(
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:807:// ─── Helper: Tier-3 PII Filtering for Industry Role ───────────────────
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:808:function filterPIIForIndustry(
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:836:  // Filter PII from response text (researcher names in parentheses)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:865:  code: 'PII_BLOCKED' | 'ACCESS_DENIED' | 'INVALID_QUERY' | 'TIMEOUT' | 'INTERNAL_ERROR',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:867:  auditEventId?: string,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:873:      audit_event_id: auditEventId || null,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:882:  const auditEventId = randomUUID();
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:889:      return buildErrorResponse('INVALID_QUERY', 'Query text is required', auditEventId);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:893:      return buildErrorResponse('INVALID_QUERY', 'Query too long (max 2000 characters)', auditEventId);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:900:    const piiCheck = containsPII(query);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:902:      return buildErrorResponse('PII_BLOCKED',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:904:        auditEventId,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:908:    const injectionCheck = detectPromptInjection(query);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:909:    if (injectionCheck.detected) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:910:      return buildErrorResponse('PII_BLOCKED',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:911:        `Query blocked: ${injectionCheck.reason}. Please rephrase your query.`,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:912:        auditEventId,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:956:    const verification = buildVerification(synthesis.confidence, synthesis.evidence.length);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:958:    // ── STEP 7: Tier-3 PII Filtering for Industry Role ──
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:962:      const filtered = filterPIIForIndustry(sqlResults, synthesis.answer);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:972:      const latestAudit = await db.auditLog.findFirst({ orderBy: { timestamp: 'desc' } });
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:974:      const auditHash = createAuditHash(
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:980:      await db.auditLog.create({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:987:          hash: auditHash,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:990:    } catch (auditError) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:991:      console.error('Audit logging failed (non-blocking):', auditError);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:995:      audit_event_id: auditEventId,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/route.ts:1011:    return buildErrorResponse('INTERNAL_ERROR', 'Failed to process query. Please try again later.', auditEventId);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:7:// ─── Re-import PII detection from the PII API ─────────────────────────
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:8:import { detectPIIAndInjection } from '@/app/api/pii/check/route';
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:435:          audit_event_id: null,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:449:          audit_event_id: null,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:470:        // ── Phase 2: PII Check ──
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:471:        const piiResult = detectPIIAndInjection(query);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:528:        let auditEventId = '';
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:530:          const latestAudit = await db.auditLog.findFirst({ orderBy: { timestamp: 'desc' } });
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:532:          const auditHash = createAuditHash(
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:538:          const auditEntry = await db.auditLog.create({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:545:              hash: auditHash,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:548:          auditEventId = auditEntry.id;
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:549:        } catch (auditError) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:550:          console.error('Audit logging failed (non-blocking):', auditError);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:551:          auditEventId = `stream-${Date.now()}`;
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:618:            audit_event_id: auditEventId,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/query/stream/route.ts:649:            audit_event_id: null,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/notifications.tsx:49:      const res = await fetch('/api/audit?page=1&limit=5');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/notifications.tsx:203:                          } else if (action.includes('audit')) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/notifications.tsx:204:                            navigate('audit');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/notifications.tsx:242:                  navigate('audit');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:31:  - M6: Noted PII detection aggressiveness (documented, not changed)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:46:- Verified all 10 API endpoints via curl testing (login, dashboard, researchers, publications, institutions, labs, funding, audit, query engine, PII detection)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:74:9. Accessibility audit and WCAG 2.1 compliance
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:151:5. **MEDIUM**: Add accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:199:  - Added category icons to QUERY_CATEGORIES filter chips
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:213:  - funding-view, audit-view: stagger classes + shimmer on table row skeletons
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:245:    - Added GitCompare icon import
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:246:    - Added CompareView import
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:247:    - Added "Compare" nav item with all roles (researcher, government, industry)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:249:    - Added CompareView case in PageContent switch
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:255:    - "Compare" button linking to compare page
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:287:  - `enhanceAnswerWithLLM()` with structured system/user prompts for answer enhancement
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:334:Task: Add Health Check, Enhanced CSV Export, Query Suggestions, and Query Completion Toast
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:343:- Data counts for all entities (researchers, publications, institutions, labs, funding, auditLogs, bookmarks, users)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:361:### Feature 2: Enhanced CSV Export with Filters for All Browser Views
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:374:- `researchers-view.tsx`: Export now passes debouncedSearch, state, researchArea, minHIndex, sortBy, sortOrder
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:375:- `publications-view.tsx`: Export now passes search, yearFrom, yearTo, journal, sortBy, sortOrder
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:376:- `institutions-view.tsx`: Export now passes search, state, type
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:377:- `funding-view.tsx`: Export now passes source, yearFrom, status
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:378:- `labs-view.tsx`: Added Export CSV button (was the only view missing it):
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:380:  - Added `exporting` state and `handleExport` function with filter-aware URL params
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:429:  - `src/components/nrg/labs-view.tsx` — added Export CSV button with filter support
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:580:- ✅ Compare API — Multi-area comparison working
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:584:- ✅ Export API — CSV export working
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:624:**App Shell:** Time-of-day greeting in header, green online status dot on user avatar, sidebar section dividers before funding/audit sections
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:658:5. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:673:- GET endpoint combining audit logs, publications, bookmarks, and query history
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:674:- Latest 20 audit log entries (action, user name resolved, timestamp, details)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:833:  - **Enhanced UI**: New icon imports (Star, Copy, Check, Bookmark, Zap, ChevronRight), toast integration, dropdown menu component
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:925:**Feature 2: Enhanced CSV Export**
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:928:- Export CSV buttons in all 5 browser views (researchers, publications, institutions, labs, funding)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:951:- `.export-btn` — Export button hover effect
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:964:- ✅ Export API supports all data types with filters
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:980:6. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1168:5. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1185:- **API Routes**: 18 endpoints (login, dashboard, researchers, researchers/[id], publications, institutions, institutions/[id], labs, funding, query, query/suggestions, export, analytics, bookmarks, audit, health, map, explore, compare, activity, reports, collaboration-graph)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1251:  - Real `fetch()` calls to actual API endpoints with JWT token auto-injection
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1256:  - Copy buttons on all code examples
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1276:5. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1383:5. Query API response does not match the full required NRG API contract (missing audit_event_id, tier, verification fields)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1391:6. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1397:Task ID: 9-PII-STREAMING
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1399:Task: Add PII Detection & Blocking API and Streaming Answer Engine with SSE Phases
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1403:### Feature 1: PII Detection & Blocking API
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1407:- Detects Indian PII patterns using regex:
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1413:  - Prompt injection: "ignore previous instructions", "act as", "[SYSTEM]", "<script>", "pretend to be", etc.
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1415:- If blocked, provides 2 safe rewrites of the query (PII removed / context-anonymized)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1426:  - `event: blocked` → if PII detected (type, sanitized, safeRewrites, message)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1427:  - `event: answer` → final payload with audit_event_id, sql_query, answer, confidence, query_time_ms, citations, tier
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1429:- Internal PII check using imported `detectPIIAndInjection()` from PII API
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1431:- HMAC audit chain logging with `QUERY_STREAM` action type
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1445:  - PII blocked state: red warning with Ban icon, error message, clickable safe rewrite suggestions
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1458:  - `src/app/api/pii/check/route.ts` — PII detection & blocking API
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1464:- 2 major features implemented: PII Detection API + Streaming Answer Engine
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1472:Task ID: QA-9-CURRENT (Cron Review — PII Detection, Streaming Engine, CSS Fixes)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1474:Task: Full QA cycle — CSS build fixes, PII detection API, streaming answer engine, comprehensive testing
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1488:- 200 researchers, 500 publications, 24 institutions, 42 labs, 100 funding records, 69 audit logs, 2 bookmarks, 3 users
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1496:**Feature 1: PII Detection & Blocking API**
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1499:  - 6 Indian PII patterns: Aadhaar (4-digit groups + 12-digit continuous), PAN (ABCDE1234F), Phone (+91/10-digit), Email, GSTIN (15-char alphanumeric)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1500:  - 11 prompt injection patterns: "ignore previous instructions", "act as", "[SYSTEM]", "<script>", "pretend to be", admin override, etc.
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1510:  - PII blocking: if detected, emits `event: blocked` with safe rewrites before closing
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1511:  - Final `event: answer` payload includes: `audit_event_id`, `sql_query`, `answer`, `confidence`, `query_time_ms`, `citations`, `tier`
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1512:  - HMAC audit chain logging with `QUERY_STREAM` action
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1514:- Verified: SSE stream produces correct phase events ✅, final answer with full contract ✅, PII blocking works ✅
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1533:- ✅ PII Detection — Aadhaar blocked ✅, Email blocked ✅, Safe query passes ✅
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1546:2. **HIGH**: Add tier-aware data filtering (T3 should not receive PII in API responses)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1550:6. **MEDIUM**: Accessibility audit (WCAG 2.1)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1565:  - Added `buildVerification()` helper: returns `{ status: verified|partial|failed, evidence_count }` based on confidence thresholds (≥0.8 verified, ≥0.6 partial, <0.6 failed)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1567:  - Added `filterPIIForIndustry()` helper: tier-3 PII filtering that replaces researcher names with "Researcher [ID]", removes email/phone fields, and adds privacy notice when results < 3
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1568:  - Added `buildErrorResponse()` helper: creates spec-compliant error shape `{ error: { code, message, audit_event_id, request_id } }`
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1569:  - Rewrote POST handler to generate `audit_event_id` (UUID) at request start, measure `query_time_ms`, map role to tier, build full contract-compliant response
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1570:  - Updated all error responses to use new error shape with proper codes: PII_BLOCKED, INVALID_QUERY, INTERNAL_ERROR
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1571:  - Response now returns: `audit_event_id`, `query`, `response` (not `answer`), `sql_query`, `sql_results`, `citations`, `tier`, `query_time_ms`, `verification`, `confidence`, `assumptions`, `queryType`, `aiEnhanced`
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1574:  - Fixed error response shapes to use `{ error: { code, message, audit_event_id, request_id } }` format for INVALID_QUERY errors and INTERNAL_ERROR stream errors
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1577:  - Added tier-3 PII filtering for industry role in stream endpoint
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1584:- Error responses now use structured `{ error: { code, message, audit_event_id, request_id } }` shape
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1585:- Tier-3 (industry) PII filtering applied: names redacted, email/phone removed, privacy notice added
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1592:Task: Build Source Proof Modal and enhance Answer Card
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1597:  - Verification status grid (Verified/Partial/Failed badges with green/amber/rose colors)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1601:  - SQL query in styled code block with Copy SQL button
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1606:  - "Copy All" button that copies full result as formatted markdown
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1609:  - Added VerificationBadge component (verified=green, partial=amber, failed=rose)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1611:  - Added clickable audit_event_id badge in footer (opens SourceProofModal)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1616:  - Updated Copy Answer to copy formatted markdown instead of raw text
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1619:  - handleStreamSubmit: maps audit_event_id, response||answer, sql_results, citations, tier, query_time_ms, verification, aiEnhanced from SSE answer event
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1620:  - handleSubmit: maps audit_event_id||id, response||answer, sqlQuery||sql_query, sql_results, citations, tier, query_time_ms, verification, aiEnhanced from regular API response
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/worklog.md:1626:- Source Proof Modal with 6 tabbed sections, copy functionality, verification badges
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/health/route.ts:28:    const [researchers, publications, institutions, labs, funding, auditLogs, bookmarks, users] = await Promise.all([
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/health/route.ts:34:      db.auditLog.count(),
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/health/route.ts:38:    counts = { researchers, publications, institutions, labs, funding, auditLogs, bookmarks, users };
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:93:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:157:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:159:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:165:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:179:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:439:                  onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/funding-view.tsx:444:                  {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/data-table.tsx:113:        : String(aVal).localeCompare(String(bVal));
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:25:  GitCompare,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:322:    // Fetch recent audit activity
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:323:    fetch('/api/audit?limit=10')
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:492:                  <GitCompare className="size-3 mr-1" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:493:                  Compare
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:762:                    <CardDescription>Latest audit trail entries</CardDescription>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/dashboard-view.tsx:769:                      onClick={() => navigate('audit')}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:76:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:131:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:133:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:139:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:153:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:193:          onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/labs-view.tsx:198:          {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:21:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:190:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:219:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:222:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:224:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:238:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:265:          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting} className="gap-2">
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/reports-view.tsx:267:            {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/search-command.tsx:128:      audit: 'Audit Log',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/search-command.tsx:132:      compare: 'Compare Areas',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/search-command.tsx:515:                    {/* Empty state prompt */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:24:    // Fetch audit logs (latest 20)
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:25:    const auditLogs = await db.auditLog.findMany({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:40:    // Resolve audit log user names
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:41:    const auditUserIds = [...new Set(auditLogs.map((log) => log.userId).filter(Boolean))];
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:42:    const auditUsers = auditUserIds.length > 0
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:44:          where: { id: { in: auditUserIds } },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:48:    const auditUserMap: Record<string, { name: string; email: string }> = {};
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:49:    for (const u of auditUsers) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:50:      auditUserMap[u.id] = { name: u.name, email: u.email };
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:134:    // Add audit log entries
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:135:    for (const log of auditLogs) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:136:      const userInfo = log.userId ? auditUserMap[log.userId] : null;
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/activity/route.ts:142:        EXPORT: 'Exported data',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:73:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:135:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:137:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:146:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:160:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:212:            onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/publications-view.tsx:217:            {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:8:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:18:  ClipboardCopy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:49:function VerificationBadge({ status }: { status: string }) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:69:      Verification Failed
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:87:function CopyButton({ text, label }: { text: string; label?: string }) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:90:  const handleCopy = useCallback(async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:106:      onClick={handleCopy}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:108:      {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:109:      {label || 'Copy'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:174:    lines.push(`# Source Proof & Verification`);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:176:    lines.push(`**Verification Status:** ${verificationStatus}`);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:231:  const handleCopyAll = useCallback(async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:260:                <DialogTitle className="text-base">Source Proof &amp; Verification</DialogTitle>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:262:                  Cryptographic audit trail and evidence chain
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:270:              onClick={handleCopyAll}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:279:                  <ClipboardCopy className="size-3" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:280:                  Copy All
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:289:            {/* Verification Status Row */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:291:              {/* Verification */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:293:                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Verification</p>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:294:                <VerificationBadge status={verificationStatus} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:333:              <CopyButton text={result.id || ''} label="Copy ID" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:374:                <TabsTrigger value="audit" className="text-xs">
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:413:                    <CopyButton text={result.sqlQuery} label="Copy SQL" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:531:              <TabsContent value="audit" className="mt-3 space-y-3">
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:546:                        <CopyButton text={result.id || ''} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:564:                        <CopyButton
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/source-proof-modal.tsx:585:                    This result is part of a cryptographic audit chain. Each query creates a
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:8:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:119:    name: '📥 Export CSV',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:134:    name: '⚖️ Compare Areas',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:279:  Export: {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:280:    title: 'Export',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:286:        description: 'Export data as CSV with filters',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:297:        path: '/api/audit',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:298:        description: 'Immutable audit trail with HMAC-chained entries',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:340:        description: 'Combined activity feed from audit logs, publications, and bookmarks',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:446:// ─── Copy Button ─────────────────────────────────────────────────────────────
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:448:function CopyButton({ text, className }: { text: string; className?: string }) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:451:  const handleCopy = useCallback(() => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:466:          onClick={handleCopy}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:468:          {copied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:471:      <TooltipContent side="top">{copied ? 'Copied!' : 'Copy'}</TooltipContent>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:785:                      <CopyButton text={headers} className="absolute top-2 right-2" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:808:                    <CopyButton text={body} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:877:                    <CopyButton text={response.body} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:1092:                                <CopyButton text={endpoint.requestExample} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/developer-view.tsx:1104:                                <CopyButton text={endpoint.responseExample} />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:110:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:166:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:168:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:174:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:188:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:224:          onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/institutions-view.tsx:229:          {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:3:// ─── PII Pattern Definitions ───────────────────────────────────────────
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:5:interface PIIMatch {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:11:const PII_PATTERNS: PIIMatch[] = [
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:50:  { type: 'Prompt Injection', pattern: /ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|rules?|prompts?)/i },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:59:  { type: 'Prompt Injection', pattern: /reveal\s+(your|the|hidden)\s+(prompt|instructions?|system)/i },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:85:  // Remove PII based on detected type
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:103:      // For prompt injection, provide sanitized versions
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:105:        .replace(/ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|rules?|prompts?)/gi, '')
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:112:        .replace(/reveal\s+(your|the|hidden)\s+(prompt|instructions?|system)/gi, '')
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:120:  // Rewrite 1: Direct PII removal
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:127:    // For injections, try a simpler version
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:136:    // For PII, try rewording with anonymization context
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:159:function detectPIIAndInjection(text: string): {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:165:  // Check PII patterns first
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:166:  for (const pii of PII_PATTERNS) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:179:  // Check prompt injection patterns
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:193:  // No PII or injection detected
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:223:    const result = detectPIIAndInjection(text);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:227:    console.error('PII check error:', error);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:229:      { error: 'Failed to perform PII check' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:235:// Export the detection logic for reuse by the streaming endpoint
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/pii/check/route.ts:236:export { detectPIIAndInjection, sanitizeText, generateSafeRewrites };
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:26:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:63:const SUGGESTED_QUERIES = [
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:67:  'Compare Gujarat and Maharashtra research output',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:72:const QUERY_CATEGORIES = [
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:74:  { label: 'Funding', queries: ['State-wise research funding trends', 'Compare SERB and DST funding patterns'], icon: <IndianRupee className="size-3.5" /> },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:79:const QUERY_TEMPLATES = [
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:86:      'Compare average h-index across different research areas',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:93:      'Compare DST vs SERB funding distribution by year',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:102:      'Compare publication output across Indian states',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:111:      'Compare CSIR labs by research output',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:119:const STREAM_PHASES = [
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:133:  { step: 6, title: 'Prove', description: 'HMAC-signed audit chain ensures tamper-proof, verifiable results', icon: <FileCheck className="size-4" />, color: 'text-green-500' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:313:          id: answerData.audit_event_id || crypto.randomUUID(),
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:454:        id: data.audit_event_id || data.id || crypto.randomUUID(),
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:802:                    {STREAM_PHASES.map((sp) => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:916:              {QUERY_CATEGORIES.map((cat) => (
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:929:                ? QUERY_CATEGORIES.find((c) => c.label === activeCategory)?.queries || []
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:930:                : SUGGESTED_QUERIES
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:986:                    {shareCopied ? <Check className="size-3.5 text-emerald-500" /> : <Copy className="size-3.5" />}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:1088:                {[...SUGGESTED_QUERIES, ...SUGGESTED_QUERIES].map((q, i) => (
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/query-view.tsx:1250:                {QUERY_TEMPLATES.map((group) => (
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:9:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:123:      const res = await fetch(`/api/audit?${params}`);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:124:      if (!res.ok) throw new Error('Failed to fetch audit log');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:130:      setError(err instanceof Error ? err.message : 'Failed to fetch audit log');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:182:              : `${total.toLocaleString('en-IN')} audit entries`}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:281:                                    <Copy className="size-3" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/audit-view.tsx:313:                  No audit entries found
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/auth/login/route.ts:40:    // Get latest audit hash for chaining
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/auth/login/route.ts:41:    const latestAudit = await db.auditLog.findFirst({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/auth/login/route.ts:46:    const auditHash = createAuditHash('LOGIN', email, `User login: ${user.name} (${user.role})`, previousHash);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/auth/login/route.ts:48:    await db.auditLog.create({
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/app/api/auth/login/route.ts:56:        hash: auditHash,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/activity-feed.tsx:94:      label: 'Export',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/activity-feed.tsx:380:            { action: 'EXPORT', label: 'Export' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/analytics-view.tsx:151:            <TooltipContent>Export chart data</TooltipContent>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:110:  const [exporting, setExporting] = useState(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:198:  const handleExport = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:200:      setExporting(true);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:209:      if (!res.ok) throw new Error('Export failed');
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:223:      setExporting(false);
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:258:            onClick={handleExport}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/researchers-view.tsx:263:            {exporting ? 'Exporting...' : 'Export CSV'}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/login-form.tsx:57:    description: 'Policy insights, funding oversight & audit capabilities',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/login-form.tsx:491:            { icon: <Fingerprint className="size-5" />, label: 'Secure', desc: 'HMAC-signed audit chain' },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/onboarding-tour.tsx:62:      'HMAC-signed audit chain for tamper-proof results',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:23:  GitCompare,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:69:import CompareView from './compare-view';
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:78:import AuditView from './audit-view';
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:107:  { id: 'compare', label: 'Compare', icon: <GitCompare className="size-4" />, roles: ['researcher', 'government', 'industry'] },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:112:  { id: 'audit', label: 'Audit Log', icon: <Shield className="size-4" />, roles: ['government'] },
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:130:  audit: 'Immutable audit trail with HMAC chain',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:139:  compare: 'Compare research areas side by side',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:157:  compare: 'Compare Areas',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:158:  audit: 'Audit Log',
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:211:      return <CompareView />;
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:212:    case 'audit':
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/app-shell.tsx:258:          (item.id === 'audit' && index > 0 && filtered[index - 1].id !== 'audit')
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:6:  GitCompare,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:133:export default function CompareView() {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:220:                <GitCompare className="size-6 text-emerald-500" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:225:                  Compare metrics across 2-5 research areas side by side
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:357:            {/* Compare Button */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:370:                  <GitCompare className="size-4" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/compare-view.tsx:371:                  Compare {selectedAreas.length} Areas
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:8:  Copy,
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:66:function VerificationBadge({ status }: { status: string }) {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:131:  const handleCopy = async () => {
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:202:              {/* Verification badge */}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:203:              {verificationStatus && <VerificationBadge status={verificationStatus} />}
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:466:            <Button variant="ghost" size="sm" className={`text-xs gap-1 copy-btn ${copied ? 'copied' : ''}`} onClick={handleCopy}>
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:474:                  <Copy className="size-3" />
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:475:                  Copy Answer
+/Users/srujansai/Desktop/Glm_mvp/workspace-2d7f4a8c-2000-4ff6-853e-a2ff2894fb80/src/components/nrg/answer-card.tsx:483:      {/* Source Proof Modal */}

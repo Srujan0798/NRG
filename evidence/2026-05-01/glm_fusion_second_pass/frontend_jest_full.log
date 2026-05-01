@@ -1,0 +1,76 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand
+
+(node:89065) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS tests/components/AnswerEngineSurface.test.tsx
+PASS tests/i18n/no_raw_strings.test.ts
+PASS tests/components/AppAnswerEngineRoutes.test.tsx
+PASS src/__tests__/ProductionWorkspace.test.tsx
+PASS tests/components/ErrorState.test.tsx
+PASS tests/components/ErrorBoundary.test.tsx
+PASS tests/components/AnswerPanelSqlResults.test.tsx
+FAIL tests/components/QueryWorkbench.test.tsx
+  ● QueryWorkbench › submits a suggested query and reports proof payload
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "Top funding agencies"
+    Received string:    "Who are the top researchers in hydrogen catalysis?"
+
+      86 |     })
+      87 |
+    > 88 |     expect(container.querySelector('[data-testid="mock-streaming-answer"]')?.textContent).toContain('Top funding agencies')
+         |                                                                                           ^
+      89 |     expect(handleProofChange).toHaveBeenCalledWith(expect.objectContaining({ auditEventId: 'audit-workbench' }))
+      90 |   })
+      91 | })
+
+      at Object.<anonymous> (tests/components/QueryWorkbench.test.tsx:88:91)
+
+PASS tests/components/EmptyState.test.tsx
+PASS tests/components/SearchBar.test.tsx
+PASS tests/components/StreamingAnswerPanel.test.tsx
+PASS tests/components/PersonaToggle.test.tsx
+PASS src/components/__snapshots__/ComponentSnapshots.test.tsx
+PASS tests/components/AnswerTrustActions.test.tsx
+PASS tests/hooks/useStreamingQuery.test.ts
+PASS tests/components/SuggestionChips.test.tsx
+PASS tests/components/ProofInspector.test.tsx
+PASS tests/components/OperationsShell.test.tsx
+PASS tests/lib/telemetry.test.ts
+PASS tests/design-system/no_raw_values.test.ts
+PASS tests/lib/answerEngineContract.test.ts
+PASS tests/design-system/font_loading.test.ts
+PASS tests/a11y/contrast.test.ts
+PASS src/__tests__/TestApp.test.tsx
+PASS tests/lib/queryServiceSanitization.test.ts
+PASS src/utils/parseCitations.test.ts
+PASS src/__tests__/graph-view-export.test.tsx
+
+Summary of all failing tests
+FAIL tests/components/QueryWorkbench.test.tsx
+  ● QueryWorkbench › submits a suggested query and reports proof payload
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected substring: "Top funding agencies"
+    Received string:    "Who are the top researchers in hydrogen catalysis?"
+
+      86 |     })
+      87 |
+    > 88 |     expect(container.querySelector('[data-testid="mock-streaming-answer"]')?.textContent).toContain('Top funding agencies')
+         |                                                                                           ^
+      89 |     expect(handleProofChange).toHaveBeenCalledWith(expect.objectContaining({ auditEventId: 'audit-workbench' }))
+      90 |   })
+      91 | })
+
+      at Object.<anonymous> (tests/components/QueryWorkbench.test.tsx:88:91)
+
+
+Test Suites: 1 failed, 26 passed, 27 total
+Tests:       1 failed, 98 passed, 99 total
+Snapshots:   0 total
+Time:        10.642 s
+Ran all test suites.

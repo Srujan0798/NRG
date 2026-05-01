@@ -4,15 +4,15 @@ export const heroCopy = {
   trustLine: 'Ask one question and inspect the citations, source rows, audit event, and tier-shaped answer.',
   placeholders: [
     'Ask about Indian research...',
-    'Top funding agencies by grant amount',
-    'TRL-9 innovations in clean energy',
-    'Who collaborates with IIT-GN on hydrogen?',
+    'Who are the top researchers in hydrogen catalysis?',
+    'Compare Gujarat and Maharashtra research output',
+    'Which IIT has the strongest AI research program?',
   ],
   suggestions: [
-    'Top funding agencies by grant amount',
-    'TRL-9 innovations in clean energy',
-    'Compare Gujarat and Karnataka AI output 5y',
-    'Who collaborates with IIT-GN on hydrogen?',
+    'Who are the top researchers in hydrogen catalysis?',
+    'Compare Gujarat and Maharashtra research output',
+    'Top 10 publications in renewable energy',
+    'List top 10 institutions by average researcher h-index',
   ],
   emptyHint: 'Try asking about funding, researchers, patents, or innovation',
 }

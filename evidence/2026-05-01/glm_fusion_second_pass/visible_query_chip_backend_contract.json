@@ -1,0 +1,104 @@
+{
+  "total_queries": 12,
+  "routed_queries": 12,
+  "unrouted_queries": [],
+  "missing_citations": [],
+  "results": [
+    {
+      "query": "Who are the top researchers in hydrogen catalysis?",
+      "routed": true,
+      "intent": "researcher_ranking",
+      "citations": 2,
+      "sql_results": 5,
+      "answer_prefix": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Ravi Jena at Gujarat T"
+    },
+    {
+      "query": "Find researchers with more than 50 publications in Quantum Computing",
+      "routed": true,
+      "intent": "researcher_publication_threshold_proxy",
+      "citations": 3,
+      "sql_results": 5,
+      "answer_prefix": "Quantum Computing researcher evidence is ranked with linked publication counts. No local read-model row crosses the requested >50 linked-pub"
+    },
+    {
+      "query": "Compare average h-index across different research areas",
+      "routed": true,
+      "intent": "research_area_h_index_comparison",
+      "citations": 1,
+      "sql_results": 5,
+      "answer_prefix": "Average h-index by research area is led by Education Technology at 52.0 across 1 researchers. [cite:researchers:c4-read-model]"
+    },
+    {
+      "query": "List top 10 institutions by average researcher h-index",
+      "routed": true,
+      "intent": "institution_avg_h_index_ranking",
+      "citations": 2,
+      "sql_results": 5,
+      "answer_prefix": "Institution average researcher h-index is led by CHARUSAT at 62.0 across 1 visible researchers. [cite:researchers:c4-read-model] [cite:insti"
+    },
+    {
+      "query": "Compare Gujarat and Maharashtra research output",
+      "routed": true,
+      "intent": "state_research_output_comparison",
+      "citations": 2,
+      "sql_results": 2,
+      "answer_prefix": "Gujarat and Maharashtra are compared as state-bounded research-output slices. Gujarat has 886 researcher-output records in the visible read "
+    },
+    {
+      "query": "Which states have the most active researchers in Biotechnology?",
+      "routed": true,
+      "intent": "state_research_area_distribution",
+      "citations": 2,
+      "sql_results": 5,
+      "answer_prefix": "Biotechnology active-researcher distribution is led by Gujarat with 40 visible researcher rows. [cite:researchers:c4-read-model] [cite:insti"
+    },
+    {
+      "query": "Top 10 publications in renewable energy",
+      "routed": true,
+      "intent": "publication_topic_lookup",
+      "citations": 1,
+      "sql_results": 2,
+      "answer_prefix": "Renewable-energy publication evidence is summarized by research area; Sustainable Energy has 22,291 publications and 2,745,996 citations in "
+    },
+    {
+      "query": "Which research area has the highest citation count?",
+      "routed": true,
+      "intent": "research_area_citation_ranking",
+      "citations": 1,
+      "sql_results": 5,
+      "answer_prefix": "Citation count by research area is led by Nanotechnology with 2,767,553 citations across 22,296 publications. [cite:publications:c4-read-mod"
+    },
+    {
+      "query": "Which IIT has the strongest AI research program?",
+      "routed": true,
+      "intent": "iit_ai_program_strength",
+      "citations": 2,
+      "sql_results": 5,
+      "answer_prefix": "IIT Artificial Intelligence program strength is ranked by AI/ML researcher count and average h-index. IIT Patna leads the visible slice with"
+    },
+    {
+      "query": "Compare CSIR labs by research output",
+      "routed": true,
+      "intent": "csir_lab_output_lookup",
+      "citations": 2,
+      "sql_results": 5,
+      "answer_prefix": "CSIR lab research-output evidence is returned as lab, institution, state, and research-area rows. Advanced Materials and Processes Research "
+    },
+    {
+      "query": "Partnership opportunities in quantum computing",
+      "routed": true,
+      "intent": "patent_lookup",
+      "citations": 2,
+      "sql_results": 1,
+      "answer_prefix": "Patent and technology-transfer evidence is available from the NRG intellectual-property corpus. Source tables: patents, institutions. The re"
+    },
+    {
+      "query": "Top 10 publications in renewable energy",
+      "routed": true,
+      "intent": "publication_topic_lookup",
+      "citations": 1,
+      "sql_results": 2,
+      "answer_prefix": "Renewable-energy publication evidence is summarized by research area; Sustainable Energy has 22,291 publications and 2,745,996 citations in "
+    }
+  ]
+}

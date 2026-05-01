@@ -98,22 +98,22 @@ const LOGIN_DEFAULTS: Record<SurfaceRole, { username: string; password: string }
 
 const ROLE_SUGGESTIONS: Record<SurfaceRole, string[]> = {
   researcher: [
-    'Best quantum researchers by citations and institution',
-    'Who collaborates with IIT-GN on hydrogen?',
-    'Top clean-energy publications since 2020',
-    'Compare AI and quantum output across IITs',
+    'Who are the top researchers in hydrogen catalysis?',
+    'Find researchers with more than 50 publications in Quantum Computing',
+    'Compare average h-index across different research areas',
+    'List top 10 institutions by average researcher h-index',
   ],
   government: [
-    'Compare Gujarat and Karnataka AI output 5y',
-    'State-wise clean-energy research output',
-    'TRL-9 innovations in clean energy',
-    'Top funding agencies by total grant amount last 5 years',
+    'Compare Gujarat and Maharashtra research output',
+    'Which states have the most active researchers in Biotechnology?',
+    'Top 10 publications in renewable energy',
+    'Which research area has the highest citation count?',
   ],
   industry: [
-    'Institutions with battery technology capability',
-    'Labs working on semiconductor readiness',
+    'Which IIT has the strongest AI research program?',
+    'Compare CSIR labs by research output',
     'Partnership opportunities in quantum computing',
-    'Anonymized capability clusters for hydrogen catalysis',
+    'Top 10 publications in renewable energy',
   ],
 }
 

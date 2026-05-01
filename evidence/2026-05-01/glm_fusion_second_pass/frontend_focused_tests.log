@@ -1,0 +1,14 @@
+
+> nrg-frontend@1.0.0 test
+> jest tests/components/AnswerEngineSurface.test.tsx tests/components/SuggestionChips.test.tsx --runInBand
+
+(node:88746) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS tests/components/AnswerEngineSurface.test.tsx
+PASS tests/components/SuggestionChips.test.tsx
+
+Test Suites: 2 passed, 2 total
+Tests:       9 passed, 9 total
+Snapshots:   0 total
+Time:        4.434 s
+Ran all test suites matching /tests\/components\/AnswerEngineSurface.test.tsx|tests\/components\/SuggestionChips.test.tsx/i.
