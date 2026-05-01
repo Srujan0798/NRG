@@ -212,10 +212,13 @@ Started in the backend split pass:
 - Replaced the stale ingestion route module with the live document ingestion
   job-store behavior from `src/api/main.py`, and moved feedback/RLHF signal
   submission into `src/api/routes/feedback.py`.
+- Replaced stale `src/api/routes/query.py` with a thin live adapter for
+  `/query` and `/api/query/stream`; the endpoint registration is now modular
+  while the heavy answer-engine implementation remains in `src/api/main.py`
+  until a dedicated query-service extraction is safe.
 
 Remaining route splits:
 
-- Query and streaming routes.
 - SPA shell route.
 
 ### Wave 6: Documentation Rationalization

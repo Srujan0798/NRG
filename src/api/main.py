@@ -15,12 +15,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Optional, TYPE_CHECKING
 
-from fastapi import FastAPI, HTTPException, Query, Request, Depends
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from pydantic import BaseModel, Field, model_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, StreamingResponse
 import uuid
@@ -41,11 +40,11 @@ from src.api.routes.feedback import router as feedback_router
 from src.api.routes.graph import configure_graph_router, router as graph_router
 from src.api.routes.health import configure_health_router, router as health_router
 from src.api.routes.ingest import router as ingest_router
+from src.api.routes.query import QueryRequest, configure_query_router, router as query_router
 from src.api.routes.telemetry import router as telemetry_router
 from src.auth.jwt_handler import JWTHandler
 from src.auth.middleware import (
     AuthContextMiddleware,
-    get_current_user,
 )
 from src.api.response_filter import (
     TierResponseFilterReport,
@@ -5118,19 +5117,19 @@ app.include_router(graph_router)
 app.include_router(telemetry_router)
 app.include_router(feedback_router)
 app.include_router(ingest_router)
-
-
-class QueryRequest(BaseModel):
-    query: str
-    session_id: Optional[str] = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def accept_question_alias(cls, data):
-        """Accept legacy clients that submit {'question': ...} instead of {'query': ...}."""
-        if isinstance(data, dict) and "query" not in data and "question" in data:
-            return {**data, "query": data["question"]}
-        return data
+configure_query_router(
+    query_stream_response=lambda request, token_payload, raw_request: _query_stream_response(
+        request,
+        token_payload,
+        raw_request,
+    ),
+    query_handler=lambda request, token_payload, raw_request: _query_with_langgraph_impl(
+        request,
+        token_payload,
+        raw_request,
+    ),
+)
+app.include_router(query_router)
 
 
 def _sse(event: str, payload: Any) -> str:
@@ -5386,33 +5385,6 @@ async def _query_stream_response(
     )
 
 
-@app.get("/api/query/stream")
-async def query_stream_get(
-    query: str = Query(..., min_length=1),
-    session_id: Optional[str] = None,
-    token_payload: dict = Depends(get_current_user),
-    raw_request: Request = None,
-):
-    return await _query_stream_response(
-        QueryRequest(query=query, session_id=session_id),
-        token_payload=token_payload,
-        raw_request=raw_request,
-    )
-
-
-@app.post("/api/query/stream")
-async def query_stream(
-    request: QueryRequest,
-    token_payload: dict = Depends(get_current_user),
-    raw_request: Request = None,
-):
-    return await _query_stream_response(
-        request,
-        token_payload=token_payload,
-        raw_request=raw_request,
-    )
-
-
 def _extract_citations_from_text(text: str) -> list[dict]:
     import re
     citations = []
@@ -5422,10 +5394,9 @@ def _extract_citations_from_text(text: str) -> list[dict]:
     return citations
 
 
-@app.post("/query")
-async def query_with_langgraph(
+async def _query_with_langgraph_impl(
     request: QueryRequest,
-    token_payload: dict = Depends(get_current_user),
+    token_payload: dict,
     raw_request: Request = None,
 ):
     """Process query using LangGraph orchestration with full security hardening."""
