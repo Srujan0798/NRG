@@ -1,0 +1,18 @@
+2026-05-01 15:07:25 INFO     Starting NRG Vector Drift Detection
+2026-05-01 15:07:25 INFO     SLO target: drift_score >= 0.85
+2026-05-01 15:07:25 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40
+2026-05-01 15:07:26 INFO     HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 200 OK"
+2026-05-01 15:07:26 INFO     HTTP Request: GET http://localhost:6333 "HTTP/1.1 200 OK"
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  show_warning(
+2026-05-01 15:07:26 INFO     Qdrant health: ok | Indexed: 0/1800 (0.0%) | Latency: 958.52ms
+{
+  "qdrant": {
+    "indexed_vectors": 0,
+    "total_vectors": 1800,
+    "coverage_pct": 0.0,
+    "status": "ok",
+    "index_built": true,
+    "latency_ms": 958.52
+  }
+}

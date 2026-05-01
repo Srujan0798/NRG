@@ -1,0 +1,16 @@
+{
+  "baseline": {
+    "status": "baseline_established",
+    "queries_saved": 10,
+    "centroids_saved": 9,
+    "timestamp": "2026-05-01T10:36:56Z"
+  },
+  "qdrant": {
+    "indexed_vectors": 0,
+    "total_vectors": 1800,
+    "coverage_pct": 0.0,
+    "status": "ok",
+    "index_built": true,
+    "latency_ms": 113.94
+  }
+}

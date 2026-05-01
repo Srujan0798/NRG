@@ -1,0 +1,141 @@
+2026-05-01 15:07:25 INFO     Starting NRG Vector Drift Detection
+2026-05-01 15:07:25 INFO     SLO target: drift_score >= 0.85
+2026-05-01 15:07:25 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40
+2026-05-01 15:07:26 INFO     HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 200 OK"
+2026-05-01 15:07:26 INFO     HTTP Request: GET http://localhost:6333 "HTTP/1.1 200 OK"
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  show_warning(
+2026-05-01 15:07:26 INFO     Qdrant health: ok | Indexed: 0/1800 (0.0%) | Latency: 969.76ms
+2026-05-01 15:08:04 INFO     No device provided, using mps
+2026-05-01 15:08:05 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-01 15:08:05 WARNING  Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-01 15:08:05 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/modules.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:05 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:05 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:05 INFO     Loading SentenceTransformer model from BAAI/bge-m3.
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/README.md "HTTP/1.1 200 OK"
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:06 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/modules.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:07 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:07 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:07 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:07 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:07 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:10 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:10 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+2026-05-01 15:08:11 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/commits/main "HTTP/1.1 200 OK"
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 11316.01it/s]
+2026-05-01 15:08:11 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/discussions?p=0 "HTTP/1.1 200 OK"
+2026-05-01 15:08:11 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/commits/refs%2Fpr%2F130 "HTTP/1.1 200 OK"
+2026-05-01 15:08:11 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:12 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/refs%2Fpr%2F130/model.safetensors.index.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:12 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:12 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/refs%2Fpr%2F130/model.safetensors "HTTP/1.1 302 Found"
+2026-05-01 15:08:12 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:12 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:13 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:13 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:13 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:13 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:14 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:14 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:14 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:14 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:14 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:15 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-05-01 15:08:27 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+2026-05-01 15:08:28 INFO     HTTP Request: HEAD https://huggingface.co/BAAI/bge-m3/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:28 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/BAAI/bge-m3/5617a9f61b028005a4858fdac845db406aefb181/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:28 INFO     HTTP Request: GET https://huggingface.co/api/models/BAAI/bge-m3 "HTTP/1.1 200 OK"
+2026-05-01 15:08:40 INFO     Loaded primary embedding model: BAAI/bge-m3
+2026-05-01 15:08:41 INFO     No device provided, using mps
+2026-05-01 15:08:42 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/modules.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:42 INFO     No modules.json found for ai4bharat/IndicBERTv2-SS, initializing a new SentenceTransformer model.
+2026-05-01 15:08:42 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:43 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:43 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:45 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:45 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS "HTTP/1.1 200 OK"
+2026-05-01 15:08:46 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS/commits/main "HTTP/1.1 200 OK"
+2026-05-01 15:08:46 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS/discussions?p=0 "HTTP/1.1 200 OK"
+2026-05-01 15:08:47 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS/commits/refs%2Fpr%2F2 "HTTP/1.1 200 OK"
+2026-05-01 15:08:47 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/refs%2Fpr%2F2/model.safetensors.index.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:48 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/refs%2Fpr%2F2/model.safetensors "HTTP/1.1 302 Found"
+Loading weights:   0%|          | 0/197 [00:00<?, ?it/s]Loading weights: 100%|██████████| 197/197 [00:00<00:00, 8710.31it/s]
+[1mBertModel LOAD REPORT[0m from: ai4bharat/IndicBERTv2-SS
+Key                                        | Status     |
+-------------------------------------------+------------+-
+cls.predictions.decoder.bias               | UNEXPECTED |
+bert.embeddings.position_ids               | UNEXPECTED |
+cls.predictions.transform.dense.weight     | UNEXPECTED |
+cls.predictions.bias                       | UNEXPECTED |
+cls.predictions.decoder.weight             | UNEXPECTED |
+cls.predictions.transform.dense.bias       | UNEXPECTED |
+cls.predictions.transform.LayerNorm.weight | UNEXPECTED |
+cls.predictions.transform.LayerNorm.bias   | UNEXPECTED |
+pooler.dense.weight                        | MISSING    |
+pooler.dense.bias                          | MISSING    |
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+2026-05-01 15:08:48 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:48 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:49 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:49 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:49 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:49 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:50 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:50 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:50 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:50 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:51 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:51 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:51 INFO     HTTP Request: HEAD https://huggingface.co/ai4bharat/IndicBERTv2-SS/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-01 15:08:51 INFO     HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/ai4bharat/IndicBERTv2-SS/d717ffc6f0445634ae82860c9a0a45969529a200/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-05-01 15:08:52 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-05-01 15:08:52 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-05-01 15:08:55 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS "HTTP/1.1 200 OK"
+2026-05-01 15:08:56 INFO     HTTP Request: GET https://huggingface.co/api/models/ai4bharat/IndicBERTv2-SS "HTTP/1.1 200 OK"
+2026-05-01 15:09:49 INFO     Loaded IndicBERT model: ai4bharat/IndicBERTv2-SS
+2026-05-01 15:10:58 INFO     HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 200 OK"
+2026-05-01 15:11:02 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:11:43 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:12:18 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:13:13 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:14:13 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:15:05 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:16:04 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:16:56 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:17:46 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:18:46 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:12 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:21 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:22 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:22 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+2026-05-01 15:19:22 INFO     HTTP Request: POST http://localhost:6333/collections/nrg_research/points/query "HTTP/1.1 200 OK"
+{
+  "baseline": {
+    "status": "baseline_established",
+    "queries_saved": 10,
+    "centroids_saved": 0,
+    "timestamp": "2026-05-01T09:49:22Z"
+  },
+  "qdrant": {
+    "indexed_vectors": 0,
+    "total_vectors": 1800,
+    "coverage_pct": 0.0,
+    "status": "ok",
+    "index_built": true,
+    "latency_ms": 969.76
+  }
+}

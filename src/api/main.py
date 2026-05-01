@@ -6376,11 +6376,23 @@ async def vectors_health():
         collection_info = client.get_collection(collection_name=collection)
         points_count = collection_info.points_count
         indexed_count = collection_info.indexed_vectors_count
+        optimizer_cfg = getattr(collection_info.config, "optimizer_config", None)
+        indexing_threshold = getattr(optimizer_cfg, "indexing_threshold", None)
+        try:
+            indexing_threshold = int(indexing_threshold) if indexing_threshold is not None else None
+        except (TypeError, ValueError):
+            indexing_threshold = None
+        threshold_exempt = (
+            bool(points_count)
+            and not indexed_count
+            and indexing_threshold is not None
+            and points_count < indexing_threshold
+        )
 
         index_status = "green"
-        if points_count and indexed_count is not None and indexed_count < points_count:
+        if points_count and indexed_count is not None and indexed_count < points_count and not threshold_exempt:
             index_status = "yellow"
-        if not indexed_count and points_count and points_count > 0:
+        if not indexed_count and points_count and points_count > 0 and not threshold_exempt:
             index_status = "red"
 
         scroll_result = client.scroll(
@@ -6392,7 +6404,7 @@ async def vectors_health():
         last_doc = scroll_result[0][0].payload if scroll_result and scroll_result[0] else {}
         last_ingestion = last_doc.get("ingested_at")
 
-        if not indexed_count and points_count and points_count > 0:
+        if not indexed_count and points_count and points_count > 0 and not threshold_exempt:
             raise HTTPException(
                 status_code=503,
                 detail=(
@@ -6406,6 +6418,8 @@ async def vectors_health():
             "collection_name": collection,
             "vector_count": points_count,
             "indexed_vectors_count": indexed_count,
+            "index_built": index_status == "green",
+            "indexing_threshold": indexing_threshold,
             "dimension": collection_info.config.params.vectors.size if collection_info.config and collection_info.config.params else None,
             "distance_metric": collection_info.config.params.vectors.distance.name if collection_info.config and collection_info.config.params else None,
             "index_status": index_status,

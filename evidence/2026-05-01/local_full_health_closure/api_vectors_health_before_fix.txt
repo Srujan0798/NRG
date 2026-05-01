@@ -1,0 +1,2 @@
+503
+{"detail":"Vector index not built: 0/1800 vectors indexed. Qdrant HNSW index build required before RAG queries can execute. Run: python scripts/build_qdrant_index.py"}

@@ -1,0 +1,115 @@
+
+============================================================
+VECTOR DRIFT REPORT
+============================================================
+  Drift Score:    1.000
+  Alert Level:   GREEN
+  Queries:        10
+  SLO Target:     >=0.85
+  WARNING:        <0.60
+  CRITICAL:       <0.40
+------------------------------------------------------------
+
+Per-Query Scores:
+  [1.000] machine learning researchers in Gujarat
+  [1.000] robotics research labs in India
+  [1.000] artificial intelligence trends 2024
+  [1.000] sustainable energy research funding
+  [1.000] biotechnology publications 2023
+  [1.000] quantum computing research India
+  [1.000] data science researchers Maharashtra
+  [1.000] renewable energy collaboration international
+  [1.000] computer vision research Karnataka
+  [1.000] natural language processing researchers Tamil Nadu
+============================================================
+{
+  "drift": {
+    "drift_score": 1.0,
+    "alert_level": "GREEN",
+    "slo_target": 0.85,
+    "warning_threshold": 0.6,
+    "critical_threshold": 0.4,
+    "queries_checked": 10,
+    "per_query": [
+      {
+        "query": "machine learning researchers in Gujarat",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "robotics research labs in India",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "artificial intelligence trends 2024",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "sustainable energy research funding",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "biotechnology publications 2023",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "quantum computing research India",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "data science researchers Maharashtra",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "renewable energy collaboration international",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "computer vision research Karnataka",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      },
+      {
+        "query": "natural language processing researchers Tamil Nadu",
+        "source_overlap": 1.0,
+        "topic_overlap": 1.0,
+        "score": 1.0,
+        "baseline": "cache"
+      }
+    ],
+    "timestamp": "2026-05-01T10:41:43Z"
+  },
+  "qdrant": {
+    "indexed_vectors": 0,
+    "total_vectors": 1800,
+    "coverage_pct": 0.0,
+    "status": "ok",
+    "index_built": true,
+    "latency_ms": 91.0
+  }
+}

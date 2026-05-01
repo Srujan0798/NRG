@@ -1,0 +1,206 @@
+{
+  "endpoint": "/health",
+  "status": 200,
+  "payload": {
+    "status": "healthy",
+    "timestamp": "2026-05-01T09:52:35.171275+00:00",
+    "consent_service": "operational",
+    "retriever": {
+      "status": "skipped",
+      "message": "Deep retriever health disabled for fast readiness checks"
+    },
+    "qdrant": {
+      "status": "healthy",
+      "collection": "nrg_research",
+      "vectors": 1800
+    },
+    "rag": {
+      "status": "ready",
+      "retrieval_enabled": true,
+      "collection": "nrg_research",
+      "vectors": 1800,
+      "qdrant_status": "healthy",
+      "retriever_status": "skipped",
+      "warning": null
+    },
+    "vector_drift": {
+      "status": "healthy",
+      "alert_level": "GREEN",
+      "baseline": {
+        "status": "baseline_established",
+        "queries_saved": 10,
+        "centroids_saved": 0,
+        "timestamp": "2026-05-01T09:49:22Z"
+      },
+      "qdrant": {
+        "indexed_vectors": 0,
+        "total_vectors": 1800,
+        "coverage_pct": 0.0,
+        "status": "ok",
+        "index_built": true,
+        "latency_ms": 969.76
+      },
+      "timestamp": "2026-05-01T09:49:22Z",
+      "scheduler": {
+        "status": "unknown",
+        "message": "Vector drift scheduler has not emitted a run marker yet."
+      }
+    },
+    "data_quality": {
+      "status": "degraded",
+      "overall_status": "FAIL",
+      "overall_score": 0.6071,
+      "p0_alerts": 0,
+      "generated_at": "2026-05-01T09:34:50.147356+00:00",
+      "path": "/Users/srujansai/Desktop/NRG/docs/ops/data_quality_scorecard.json"
+    },
+    "database": {
+      "status": "healthy",
+      "dialect": "postgresql",
+      "researchers": 50000,
+      "publications": 50000,
+      "table_count": 75,
+      "tables": 75
+    },
+    "audit": {
+      "status": "healthy",
+      "chain_valid": true,
+      "chain_length": 51839,
+      "valid_events": 51839,
+      "valid_event_count": 51839,
+      "error_count": 0,
+      "errors": [],
+      "repair": null,
+      "lineage_intact": true,
+      "auto_repair_enabled": false,
+      "reseeding_events": [
+        {
+          "timestamp": "2026-04-28T13:20:28.052747+00:00",
+          "reason": "operator_reseed_traceable_genesis_2026_04_28",
+          "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+          "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+          "preserved_event_count": 3334
+        }
+      ],
+      "lineage_break": {
+        "lineage_intact": true,
+        "active_chain_traceable": true,
+        "repair_required": false,
+        "auto_repair_triggered": false,
+        "backup_count": 0,
+        "backup_files": [],
+        "reseeding_events": [
+          {
+            "timestamp": "2026-04-28T13:20:28.052747+00:00",
+            "reason": "operator_reseed_traceable_genesis_2026_04_28",
+            "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+            "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+            "preserved_event_count": 3334
+          }
+        ],
+        "original_event_count": 3334,
+        "active_genesis_hash": "46e3323a74eb9eb7",
+        "pinned_genesis_hash": "46e3323a74eb9eb7",
+        "genesis_pin_matches": true,
+        "genesis_pin_path": ".audit/genesis_hash.pin",
+        "active_genesis_event_id": "genesis"
+      },
+      "db_cosign": {
+        "submitted": 0,
+        "succeeded": 0,
+        "failed": 0,
+        "queue_depth": 0,
+        "max_queue_depth": 0,
+        "success_rate": 1.0,
+        "last_latency_ms": null,
+        "last_error": null,
+        "last_completed_at": null
+      },
+      "last_hash": "8c9931b6f1af685b...",
+      "last_event": "2026-05-01T09:29:21.599428+00:00"
+    },
+    "auth_status": {
+      "status": "not_required",
+      "algorithm": "RS256",
+      "min_bytes": 32,
+      "message": "Asymmetric JWT signing is active; JWT_SECRET is not used."
+    }
+  }
+}
+{
+  "endpoint": "/health/all",
+  "status": 200,
+  "payload": {
+    "status": "healthy",
+    "services": {
+      "api": {
+        "status": "healthy",
+        "timestamp": "2026-05-01T09:52:35.175165+00:00"
+      },
+      "local_llm": {
+        "status": "optional_unavailable",
+        "required": false,
+        "error": "[Errno 61] Connection refused"
+      },
+      "qdrant": {
+        "status": "healthy",
+        "collections": [
+          "nrg_research"
+        ]
+      },
+      "redis": {
+        "status": "healthy"
+      },
+      "consent_service": {
+        "status": "operational",
+        "scopes": [
+          "research_access",
+          "profile_storage",
+          "query_history",
+          "audit_logging",
+          "analytics"
+        ]
+      }
+    }
+  }
+}
+{
+  "endpoint": "/health/db",
+  "status": 200,
+  "payload": {
+    "ready": true,
+    "dialect": "postgresql",
+    "path": "/Users/srujansai/Desktop/NRG/nrg_auth.db",
+    "researcher_count": 50000,
+    "publication_count": 50000
+  }
+}
+{
+  "endpoint": "/health/qdrant",
+  "status": 200,
+  "payload": {
+    "ready": true,
+    "host": "localhost",
+    "port": 6333,
+    "collection": "nrg_research",
+    "collection_exists": true,
+    "collections": [
+      "nrg_research"
+    ]
+  }
+}
+{
+  "endpoint": "/api/vectors/health",
+  "status": 200,
+  "payload": {
+    "collection_name": "nrg_research",
+    "vector_count": 1800,
+    "indexed_vectors_count": 0,
+    "index_built": true,
+    "indexing_threshold": 20000,
+    "dimension": 1024,
+    "distance_metric": "COSINE",
+    "index_status": "green",
+    "last_ingestion_time": null
+  }
+}

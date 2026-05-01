@@ -6,6 +6,8 @@ import importlib.util
 import sys
 from pathlib import Path
 
+import pytest
+
 SCRIPT_PATH = Path(__file__).parent.parent.parent / "scripts" / "vector_drift_check.py"
 _spec = importlib.util.spec_from_file_location("vector_drift_check", SCRIPT_PATH)
 _vdc = importlib.util.module_from_spec(_spec)
@@ -247,6 +249,16 @@ class TestDriftCheckRuntime:
 
         assert _qdrant_ready_for_benchmark(health) is False
 
+    def test_qdrant_small_threshold_exempt_collection_is_benchmark_ready(self):
+        health = {
+            "status": "ok",
+            "indexed_vectors": 0,
+            "total_vectors": 1800,
+            "index_built": True,
+        }
+
+        assert _qdrant_ready_for_benchmark(health) is True
+
     def test_qdrant_with_vectors_is_benchmark_ready(self):
         health = {
             "status": "degraded",
@@ -336,3 +348,58 @@ class TestDriftCheckRuntime:
         assert result["alert_level"] == "CRITICAL"
         assert triggered
         assert triggered[0][1]["status"] == "benchmark_drift_detected"
+
+    def test_run_drift_check_uses_established_baseline_cache(self, monkeypatch):
+        """C5 drift should compare current retrieval to the persisted baseline."""
+        from src.skills.rag import embedder as embedder_module
+
+        class FakeEmbedder:
+            def embed_single(self, text):
+                return [0.1, 0.2, 0.3]
+
+            def close(self):
+                pass
+
+        class FakeRetriever:
+            def retrieve(self, query_vector, user_tier=1, top_k=5, **kwargs):
+                return {
+                    "metadata": [
+                        {
+                            "institution": "IIT Gandhinagar",
+                            "topics": ["machine learning", "robotics"],
+                        }
+                    ]
+                }
+
+        baseline = {
+            query["query"]: {
+                "sources": ["iit gandhinagar"],
+                "topics": ["machine learning", "robotics"],
+            }
+            for query in BENCHMARK_QUERIES
+        }
+        latest = []
+
+        monkeypatch.setattr(embedder_module, "Embedder", FakeEmbedder)
+        monkeypatch.setattr(_vdc, "_load_benchmark_cache", lambda: baseline)
+        monkeypatch.setattr(
+            _vdc,
+            "_save_benchmark_cache",
+            lambda data: pytest.fail("drift checks must not overwrite the known-good baseline"),
+        )
+        monkeypatch.setattr(_vdc, "_save_latest_results", lambda data: latest.append(data))
+        monkeypatch.setattr(
+            _vdc,
+            "_check_cosine_shift",
+            lambda drift_result, retriever, embedder: {
+                "status": "stable",
+                "reindex_triggered": False,
+            },
+        )
+
+        result = run_drift_check(FakeRetriever())
+
+        assert result["alert_level"] == "GREEN"
+        assert result["drift_score"] == 1.0
+        assert all(item["baseline"] == "cache" for item in result["per_query"])
+        assert latest

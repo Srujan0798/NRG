@@ -1,0 +1,225 @@
+F401 [*] `qdrant_client.models.VectorParams` imported but unused
+  --> scripts/build_qdrant_index.py:26:50
+   |
+25 | from qdrant_client import QdrantClient
+26 | from qdrant_client.models import HnswConfigDiff, VectorParams, Distance
+   |                                                  ^^^^^^^^^^^^
+27 |
+28 | DEFAULT_COLLECTION = os.getenv("QDRANT_COLLECTION", "nrg_research")
+   |
+help: Remove unused import
+
+F401 [*] `qdrant_client.models.Distance` imported but unused
+  --> scripts/build_qdrant_index.py:26:64
+   |
+25 | from qdrant_client import QdrantClient
+26 | from qdrant_client.models import HnswConfigDiff, VectorParams, Distance
+   |                                                                ^^^^^^^^
+27 |
+28 | DEFAULT_COLLECTION = os.getenv("QDRANT_COLLECTION", "nrg_research")
+   |
+help: Remove unused import
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:165:11
+    |
+163 |     """Check-only mode: report health without building."""
+164 |     print(f"\n{'='*60}")
+165 |     print(f" QDRANT INDEX HEALTH CHECK")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+166 |     print(f"{'='*60}\n")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:189:19
+    |
+187 |             )
+188 |         else:
+189 |             print(f"Index:      BUILT (HNSW fully constructed)")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+190 |         print(f"HNSW m:     {info['hnsw_m']}")
+191 |         print(f"HNSW ef:    {info['hnsw_ef_construct']}")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:194:15
+    |
+192 |         print(f"Vector dim: {info['vector_size']}")
+193 |         print(f"Optimizer:  {info['optimizer_status']}")
+194 |         print(f"\nRESULT: PASS — Qdrant index health is acceptable")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+195 |         return 0
+196 |     else:
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:199:15
+    |
+197 |         pct = (info["vectors_indexed"] / max(info["vectors_total"], 1) * 100)
+198 |         print(f"Index:      INCOMPLETE ({pct:.1f}% built)")
+199 |         print(f"WARNING: Queries are using brute-force scan")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+200 |         print(f"\nRESULT: FAIL — Run with --build to trigger indexing")
+201 |         return 1
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:200:15
+    |
+198 |         print(f"Index:      INCOMPLETE ({pct:.1f}% built)")
+199 |         print(f"WARNING: Queries are using brute-force scan")
+200 |         print(f"\nRESULT: FAIL — Run with --build to trigger indexing")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+201 |         return 1
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:207:11
+    |
+205 |     """Build/rebuild index mode."""
+206 |     print(f"\n{'='*60}")
+207 |     print(f" QDRANT HNSW INDEX BUILDER")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+208 |     print(f"{'='*60}\n")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:223:15
+    |
+222 |     if info["index_complete"]:
+223 |         print(f"\nIndex is already complete.")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+224 |         print(f"Use --rebuild to force a rebuild.")
+225 |         return 0
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:224:15
+    |
+222 |     if info["index_complete"]:
+223 |         print(f"\nIndex is already complete.")
+224 |         print(f"Use --rebuild to force a rebuild.")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+225 |         return 0
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:227:11
+    |
+225 |         return 0
+226 |
+227 |     print(f"\nTriggering index build...")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+228 |     trigger_indexing(client, collection)
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:230:11
+    |
+228 |     trigger_indexing(client, collection)
+229 |
+230 |     print(f"\nWaiting for indexing to complete (poll every 5s)...")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+231 |     result = wait_for_indexing(client, collection)
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:234:15
+    |
+233 |     if result.get("timeout"):
+234 |         print(f"\nWARNING: Indexing did not complete within timeout")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+235 |         print(f"  Indexed: {result['vectors_indexed']:,} / {result['vectors_total']:,}")
+236 |         return 1
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:239:11
+    |
+238 |     print(f"\nIndex build complete in {result['build_time_s']}s")
+239 |     print(f"\nRESULT: PASS")
+    |           ^^^^^^^^^^^^^^^^^
+240 |     return 0
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:246:11
+    |
+244 |     """Full mode: check + sample queries."""
+245 |     print(f"\n{'='*60}")
+246 |     print(f" QDRANT FULL DIAGNOSTIC")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+247 |     print(f"{'='*60}\n")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:262:15
+    |
+261 |     if not info["index_complete"]:
+262 |         print(f"\nWARNING: Index incomplete — forcing build...")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+263 |         trigger_indexing(client, collection)
+264 |         result = wait_for_indexing(client, collection)
+    |
+help: Remove extraneous `f` prefix
+
+F841 Local variable `result` is assigned to but never used
+   --> scripts/build_qdrant_index.py:264:9
+    |
+262 |         print(f"\nWARNING: Index incomplete — forcing build...")
+263 |         trigger_indexing(client, collection)
+264 |         result = wait_for_indexing(client, collection)
+    |         ^^^^^^
+265 |         info = get_collection_info(client, collection)
+    |
+help: Remove assignment to unused variable `result`
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:268:15
+    |
+267 |     if info["index_complete"]:
+268 |         print(f"\nRunning sample queries...")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+269 |         try:
+270 |             queries = run_sample_queries(client, collection, info["vector_size"] or 384)
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:277:15
+    |
+275 |             print(f"  Query test failed: {exc}")
+276 |     else:
+277 |         print(f"\nWARNING: Index still incomplete, skipping queries")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+278 |
+279 |     print(f"\nRESULT: PASS")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/build_qdrant_index.py:279:11
+    |
+277 |         print(f"\nWARNING: Index still incomplete, skipping queries")
+278 |
+279 |     print(f"\nRESULT: PASS")
+    |           ^^^^^^^^^^^^^^^^^
+280 |     return 0
+    |
+help: Remove extraneous `f` prefix
+
+Found 20 errors.
+[*] 19 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

@@ -10,6 +10,7 @@ SKILLS: /python-backend (FastAPI TestClient), /testing-strategy
 import pytest
 import sys
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 
@@ -128,6 +129,42 @@ class TestVectorsHealthEndpoint:
         required = ["collection_name", "vector_count", "index_status"]
         for field in required:
             assert field in data, f"Missing required field: {field}"
+
+    def test_vectors_health_accepts_threshold_exempt_small_collection(self, monkeypatch):
+        """Small Qdrant collections can report 0 indexed vectors below indexing_threshold."""
+
+        class FakeQdrantClient:
+            def __init__(self, *args, **kwargs):
+                pass
+
+            def get_collection(self, collection_name):
+                return SimpleNamespace(
+                    points_count=1800,
+                    indexed_vectors_count=0,
+                    config=SimpleNamespace(
+                        params=SimpleNamespace(
+                            vectors=SimpleNamespace(
+                                size=1024,
+                                distance=SimpleNamespace(name="Cosine"),
+                            )
+                        ),
+                        optimizer_config=SimpleNamespace(indexing_threshold=20000),
+                    ),
+                )
+
+            def scroll(self, *args, **kwargs):
+                return ([SimpleNamespace(payload={"ingested_at": "2026-05-01T00:00:00Z"})], None)
+
+        monkeypatch.setattr("qdrant_client.QdrantClient", FakeQdrantClient)
+        client = TestClient(api_main.app)
+
+        response = client.get("/api/vectors/health")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["index_status"] == "green"
+        assert data["indexed_vectors_count"] == 0
+        assert data["vector_count"] == 1800
 
 
 class TestSloTrackerAnomalyAlerting:

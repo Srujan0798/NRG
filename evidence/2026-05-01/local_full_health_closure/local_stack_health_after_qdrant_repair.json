@@ -1,0 +1,197 @@
+{
+  "/api/vectors/health": {
+    "body": {
+      "collection_name": "nrg_research",
+      "dimension": 1024,
+      "distance_metric": "COSINE",
+      "index_built": true,
+      "index_status": "green",
+      "indexed_vectors_count": 0,
+      "indexing_threshold": 20000,
+      "last_ingestion_time": null,
+      "vector_count": 1800
+    },
+    "status_code": 200
+  },
+  "/health": {
+    "body": {
+      "audit": {
+        "auto_repair_enabled": false,
+        "chain_length": 51839,
+        "chain_valid": true,
+        "db_cosign": {
+          "failed": 0,
+          "last_completed_at": null,
+          "last_error": null,
+          "last_latency_ms": null,
+          "max_queue_depth": 0,
+          "queue_depth": 0,
+          "submitted": 0,
+          "succeeded": 0,
+          "success_rate": 1.0
+        },
+        "error_count": 0,
+        "errors": [],
+        "last_event": "2026-05-01T09:29:21.599428+00:00",
+        "last_hash": "8c9931b6f1af685b...",
+        "lineage_break": {
+          "active_chain_traceable": true,
+          "active_genesis_event_id": "genesis",
+          "active_genesis_hash": "46e3323a74eb9eb7",
+          "auto_repair_triggered": false,
+          "backup_count": 0,
+          "backup_files": [],
+          "genesis_pin_matches": true,
+          "genesis_pin_path": ".audit/genesis_hash.pin",
+          "lineage_intact": true,
+          "original_event_count": 3334,
+          "pinned_genesis_hash": "46e3323a74eb9eb7",
+          "repair_required": false,
+          "reseeding_events": [
+            {
+              "preserved_event_count": 3334,
+              "reason": "operator_reseed_traceable_genesis_2026_04_28",
+              "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+              "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+              "timestamp": "2026-04-28T13:20:28.052747+00:00"
+            }
+          ]
+        },
+        "lineage_intact": true,
+        "repair": null,
+        "reseeding_events": [
+          {
+            "preserved_event_count": 3334,
+            "reason": "operator_reseed_traceable_genesis_2026_04_28",
+            "source_backup": ".audit/chain_line1_hash_mismatch_backup_20260428T132028010524Z.jsonl",
+            "source_sha256": "529cbc56379e995d8838b4e7336d7c5c62a2bd1747454bc4a087ea8de4e62ecd",
+            "timestamp": "2026-04-28T13:20:28.052747+00:00"
+          }
+        ],
+        "status": "healthy",
+        "valid_event_count": 51839,
+        "valid_events": 51839
+      },
+      "auth_status": {
+        "algorithm": "RS256",
+        "message": "Asymmetric JWT signing is active; JWT_SECRET is not used.",
+        "min_bytes": 32,
+        "status": "not_required"
+      },
+      "consent_service": "operational",
+      "data_quality": {
+        "generated_at": "2026-05-01T09:34:50.147356+00:00",
+        "overall_score": 0.6071,
+        "overall_status": "FAIL",
+        "p0_alerts": 0,
+        "path": "/Users/srujansai/Desktop/NRG/docs/ops/data_quality_scorecard.json",
+        "status": "degraded"
+      },
+      "database": {
+        "dialect": "postgresql",
+        "publications": 50000,
+        "researchers": 50000,
+        "status": "healthy",
+        "table_count": 75,
+        "tables": 75
+      },
+      "qdrant": {
+        "collection": "nrg_research",
+        "status": "healthy",
+        "vectors": 1800
+      },
+      "rag": {
+        "collection": "nrg_research",
+        "qdrant_status": "healthy",
+        "retrieval_enabled": true,
+        "retriever_status": "skipped",
+        "status": "ready",
+        "vectors": 1800,
+        "warning": null
+      },
+      "retriever": {
+        "message": "Deep retriever health disabled for fast readiness checks",
+        "status": "skipped"
+      },
+      "status": "healthy",
+      "timestamp": "2026-05-01T10:38:55.614792+00:00",
+      "vector_drift": {
+        "alert_level": "GREEN",
+        "qdrant": {
+          "coverage_pct": 0.0,
+          "index_built": true,
+          "indexed_vectors": 0,
+          "latency_ms": 82.47,
+          "status": "ok",
+          "total_vectors": 1800
+        },
+        "scheduler": {
+          "message": "Vector drift scheduler has not emitted a run marker yet.",
+          "status": "unknown"
+        },
+        "status": "healthy",
+        "timestamp": "2026-05-01T10:38:23Z"
+      }
+    },
+    "status_code": 200
+  },
+  "/health/all": {
+    "body": {
+      "services": {
+        "api": {
+          "status": "healthy",
+          "timestamp": "2026-05-01T10:38:55.618834+00:00"
+        },
+        "consent_service": {
+          "scopes": [
+            "research_access",
+            "profile_storage",
+            "query_history",
+            "audit_logging",
+            "analytics"
+          ],
+          "status": "operational"
+        },
+        "local_llm": {
+          "error": "[Errno 61] Connection refused",
+          "required": false,
+          "status": "optional_unavailable"
+        },
+        "qdrant": {
+          "collections": [
+            "nrg_research"
+          ],
+          "status": "healthy"
+        },
+        "redis": {
+          "status": "healthy"
+        }
+      },
+      "status": "healthy"
+    },
+    "status_code": 200
+  },
+  "/health/db": {
+    "body": {
+      "dialect": "postgresql",
+      "path": "/Users/srujansai/Desktop/NRG/nrg_auth.db",
+      "publication_count": 50000,
+      "ready": true,
+      "researcher_count": 50000
+    },
+    "status_code": 200
+  },
+  "/health/qdrant": {
+    "body": {
+      "collection": "nrg_research",
+      "collection_exists": true,
+      "collections": [
+        "nrg_research"
+      ],
+      "host": "localhost",
+      "port": 6333,
+      "ready": true
+    },
+    "status_code": 200
+  }
+}

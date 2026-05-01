@@ -12,7 +12,7 @@
 | Working tree | Expected clean after the latest validation campaign commit; run `git status --short` before editing because agents may create local artifacts. |
 | Quality Bar | **Not re-certified after cleanup** — last known state was 5/6 with C4 load bar failing |
 | Full test suite | Not rerun in this session; use Python 3.11 venv for reliable results |
-| Targeted recent checks | May 1 local validation campaign passed broad backend/security/audit/query/RAG tests, killer-query capture, frontend Jest, frontend production build, corpus sync, diff hygiene, and forbidden-vocab guard. |
+| Targeted recent checks | May 1 local validation campaign passed broad backend/security/audit/query/RAG tests, killer-query capture, frontend Jest, frontend production build, corpus sync, diff hygiene, and forbidden-vocab guard. May 1 local health closure repaired stale Qdrant vectors/payload metadata, established a local vector baseline, and proved `/health`, `/health/all`, and `/api/vectors/health` green on the local stack. |
 | Audit chain | Rebuilt after pre-fix concurrent profile, then verified after final C4/test rerun on 2026-04-30: `chain_valid=True`, `chain_length=42085`, `error_count=0` |
 | Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
 | Latest committed wave | Use `git log -1 --oneline` for the exact current commit. Recent anchors: `fb44760` compact Desktop AI handoff package, `2c23c9f` Dhairya query benchmark routing, `e361d4c` source-truth/corpus restoration. |
@@ -39,18 +39,18 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| ✅ | ✅ | ✅ | ✅ local / cluster pending | ✅ | ✅ |
+| ✅ | ✅ | ✅ | ✅ local / cluster pending | ✅ local / production pending | ✅ |
 
 **C4 local status is now closed for the 100-user smoke target**. The final read-model/single-flight pass returned 8522 requests, 0 failures, aggregate P99 313.2ms, `/query` P99 170ms, and audit-chain health `chain_valid=True`, `error_count=0`. Do not claim final production C4 readiness until the 1000-user sovereign-cluster run passes with production worker/logging settings.
 
-**Main product risk now:** local show-readiness is strong, but external production claims still need the deployed 1000-user Locust run, deployed-environment replay, production Qdrant baseline, and founder signing.
+**Main product risk now:** local show-readiness is strong, but external production claims still need the deployed 1000-user Locust run, deployed-environment replay, production Qdrant baseline, founder signing, and data completion for currently empty official core tables.
 
 ---
 
 ## Cluster-Blocked (do not re-do locally)
 
 - Live red-team replay (`scripts/red_team_live_replay.py`) — needs target API/deployment context
-- Qdrant vector baseline — local `/health` reports `ready` with 1800 vectors; production corpus baseline still needs target deployment context
+- Qdrant vector baseline — local Qdrant now has 1800 repaired non-zero vectors with Tier 3 metadata and a green local drift baseline; production corpus baseline still needs target deployment context
 - Locust 1000-user load test — needs sovereign cluster
 - UX deployed browser recording + mobile Lighthouse — needs target deployment context
 - GPG key ceremony + `v1.0.0-eternal` signed tag — founder-only
@@ -107,6 +107,9 @@
 | `evidence/2026-05-01/glm_fusion_second_pass/FINAL_GLM_SECOND_PASS_REPORT.md` | GLM external bundle second pass: inventoried 598 external files, converted the remaining visible query-chip value into NRG hero/persona suggestions, removed one unrouted suggestion, and proved 12 visible chips through live `/query` across Researcher, Government, and Industry with citations, source rows, and audit IDs. Verified with 10 GLM/Minimax backend tests, 22 security/HMAC tests, 99 frontend Jest tests, frontend build, corpus sync, ruff, and diff hygiene. Production/deployed gates remain BLOCKED. |
 | `evidence/2026-05-01/glm_fusion_browser_proof/FINAL_GLM_BROWSER_PROOF_REPORT.md` | GLM visible-query browser proof: added a live Playwright flow for the hydrogen-catalysis suggestion through the production frontend build and local FastAPI backend. Captured desktop/mobile screenshots, source drawer, citation drawer, audit/HMAC drawer, raw Researcher JSON, raw Tier 3 blocked JSON, empty console-error capture, video, and backend logs. Corrected an initial test route assumption, reran, and passed `1 passed (16.0s)`. |
 | `evidence/2026-05-01/glm_local_completion_gates/FINAL_LOCAL_COMPLETION_GATES_REPORT.md` | Local completion-gate pass for the GLM visible-query path: fixed success-token contrast, SQL proof focusability, audit drawer definition-list semantics, and Playwright video-save robustness. Verified frontend build, full Jest `99 passed`, live browser flow, live axe a11y flow, 30-request local latency profile, corpus sync, GLM/Minimax query regressions, and audit-chain verification. External deployed/cluster/founder gates remain BLOCKED. |
+| `evidence/2026-05-01/local_full_health_closure/` | Local full-health closure pass: fixed Qdrant threshold-exempt health handling, added `scripts/repair_qdrant_payloads.py`, repaired local Qdrant placeholder vectors and missing payload metadata, established the local vector baseline, proved vector drift GREEN, proved `/health`, `/health/all`, `/health/db`, `/health/qdrant`, and `/api/vectors/health` healthy. |
+| `evidence/2026-05-01/local_full_health_closure/data_quality_scorecard_postgres.log` | PostgreSQL data-quality scorecard: schema coverage, PII scan, consistency passed; overall remains FAIL because 12 official core tables are empty and optional columns have high null rates. This is an honest data-completion blocker, not a code-health blocker. |
+| `evidence/2026-05-01/local_full_health_closure/final_external_gates_after_qdrant_repair.log` | External final-gates runner remains BLOCKED by missing deployed frontend/API URLs, explicit cluster-load flag/KUBECONFIG context, and founder private signing key. |
 | Current uncommitted work | None expected after this current-state update is committed. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |

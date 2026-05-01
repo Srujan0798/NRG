@@ -1,0 +1,18 @@
+
+QUERY machine learning researchers in Gujarat
+chunks 3
+{'score': 0.5039, 'institution': 'IIT Gandhinagar', 'topics': ['machine learning', 'artificial intelligence', 'deep learning', 'natural language processing'], 'access_tier': 3, 'title': 'We present a rigorous and comprehensive experimental investigation of deep learn'}
+{'score': 0.5036, 'institution': 'IIT Gandhinagar', 'topics': ['artificial intelligence', 'deep learning', 'biotechnology'], 'access_tier': 3, 'title': 'The increasing demand for robust and scalable solutions in the domain of digital'}
+{'score': 0.5022, 'institution': 'IIT Gandhinagar', 'topics': ['artificial intelligence', 'natural language processing'], 'access_tier': 3, 'title': 'The increasing demand for robust and scalable solutions in the domain of ai-driv'}
+
+QUERY quantum computing research India
+chunks 3
+{'score': 0.6435, 'institution': 'AIIMS', 'topics': ['machine learning', 'artificial intelligence', 'quantum computing'], 'access_tier': 3, 'title': 'This work provides a comprehensive and systematic analysis alongside a significa'}
+{'score': 0.6435, 'institution': 'NIT', 'topics': ['machine learning', 'quantum computing'], 'access_tier': 3, 'title': 'This work provides a comprehensive and systematic analysis alongside a significa'}
+{'score': 0.6435, 'institution': 'NIT', 'topics': ['machine learning', 'quantum computing'], 'access_tier': 3, 'title': 'This work provides a comprehensive and systematic analysis alongside a significa'}
+
+QUERY renewable energy collaboration international
+chunks 3
+{'score': 0.5135, 'institution': 'IIT Gandhinagar', 'topics': ['quantum computing', 'renewable energy'], 'access_tier': 3, 'title': 'This paper introduces a novel computational framework for addressing complex cha'}
+{'score': 0.5128, 'institution': 'IIT Gandhinagar', 'topics': ['renewable energy'], 'access_tier': 3, 'title': 'The increasing demand for robust and scalable solutions in the domain of micro-h'}
+{'score': 0.5007, 'institution': 'IIT Gandhinagar', 'topics': ['data science', 'renewable energy', 'biotechnology'], 'access_tier': 3, 'title': 'Driven by the national imperative to develop practical, scalable, and rapidly de'}

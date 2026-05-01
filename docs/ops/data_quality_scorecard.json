@@ -1,0 +1,307 @@
+{
+  "alerts": [
+    {
+      "message": "null_rate failed: worst column null rate 1.000",
+      "pillar": "null_rate",
+      "severity": "P1"
+    },
+    {
+      "message": "freshness failed: worst table age 1.000 days",
+      "pillar": "freshness",
+      "severity": "P1"
+    },
+    {
+      "message": "completeness failed: 12 core tables below minimum row count",
+      "pillar": "completeness",
+      "severity": "P1"
+    }
+  ],
+  "database_url": "postgresql://nrg:***@localhost:5432/nrg",
+  "generated_at": "2026-05-01T09:34:50.147356+00:00",
+  "ok": false,
+  "overall_score": 0.6071,
+  "overall_status": "FAIL",
+  "pillars": {
+    "completeness": {
+      "detail": "12 core tables below minimum row count",
+      "name": "completeness",
+      "observed": {
+        "core_tables": 16,
+        "row_counts": {
+          "academic_courses_details": 50000,
+          "actual_student_strength": 0,
+          "combined_ipo_patent_data": 50000,
+          "faculty_details": 0,
+          "financial_expenses_capital": 0,
+          "financial_expenses_operational": 0,
+          "innovation_grant_from_govt": 50000,
+          "innovations_at_various_stages_of_technology_readiness_level": 50000,
+          "patents_details": 0,
+          "phd_students": 0,
+          "placements_and_higher_studies": 0,
+          "research_consultancy_details_consultancy": 0,
+          "research_consultancy_details_sponsered": 0,
+          "sanctioned_intake": 0,
+          "startup_recognition": 0,
+          "tb_institute_mstr": 0
+        },
+        "violations": [
+          {
+            "rows": 0,
+            "table": "actual_student_strength"
+          },
+          {
+            "rows": 0,
+            "table": "faculty_details"
+          },
+          {
+            "rows": 0,
+            "table": "financial_expenses_capital"
+          },
+          {
+            "rows": 0,
+            "table": "financial_expenses_operational"
+          },
+          {
+            "rows": 0,
+            "table": "patents_details"
+          },
+          {
+            "rows": 0,
+            "table": "phd_students"
+          },
+          {
+            "rows": 0,
+            "table": "placements_and_higher_studies"
+          },
+          {
+            "rows": 0,
+            "table": "research_consultancy_details_consultancy"
+          },
+          {
+            "rows": 0,
+            "table": "research_consultancy_details_sponsered"
+          },
+          {
+            "rows": 0,
+            "table": "sanctioned_intake"
+          },
+          {
+            "rows": 0,
+            "table": "startup_recognition"
+          },
+          {
+            "rows": 0,
+            "table": "tb_institute_mstr"
+          }
+        ]
+      },
+      "score": 0.25,
+      "severity": "P1",
+      "status": "FAIL",
+      "threshold": ">= 1000 rows in every core table"
+    },
+    "consistency": {
+      "detail": "0 cross-table consistency violations",
+      "name": "consistency",
+      "observed": {
+        "examples": [],
+        "records_checked": 0,
+        "rules_checked": 0,
+        "violations": 0
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "cross-table validations have zero orphaned references"
+    },
+    "freshness": {
+      "detail": "worst table age 1.000 days",
+      "name": "freshness",
+      "observed": {
+        "invalid_values": [],
+        "stale_tables": [
+          {
+            "age_days": 1.0,
+            "column": "updated_at",
+            "max_value": "2026-04-21 11:14:49",
+            "table": "institutions"
+          }
+        ],
+        "tables_checked": 5,
+        "worst_age_days": 1.0
+      },
+      "score": 0.0,
+      "severity": "P1",
+      "status": "FAIL",
+      "threshold": "<= 7 days since latest update"
+    },
+    "null_rate": {
+      "detail": "worst column null rate 1.000",
+      "name": "null_rate",
+      "observed": {
+        "columns_checked": 96,
+        "violations": [
+          {
+            "column": "payload",
+            "null_count": 807,
+            "null_rate": 1.0,
+            "rows": 807,
+            "table": "audit_events"
+          },
+          {
+            "column": "db_cosign_hmac",
+            "null_count": 807,
+            "null_rate": 1.0,
+            "rows": 807,
+            "table": "audit_events"
+          },
+          {
+            "column": "email_record",
+            "null_count": 49900,
+            "null_rate": 0.998,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "additional_email",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "application_type",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "examination_request_date",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "first_examination_report_date",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "certificate_issue_date",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "post_grant_journal_date",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "reply_to_fer_date",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "due_date_next_renewal",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "renewal_history",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "aishe_code",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "combined_ipo_patent_data"
+          },
+          {
+            "column": "founded_year",
+            "null_count": 181,
+            "null_rate": 1.0,
+            "rows": 181,
+            "table": "institutions"
+          },
+          {
+            "column": "website",
+            "null_count": 181,
+            "null_rate": 1.0,
+            "rows": 181,
+            "table": "institutions"
+          },
+          {
+            "column": "pmid",
+            "null_count": 50000,
+            "null_rate": 1.0,
+            "rows": 50000,
+            "table": "publications"
+          }
+        ],
+        "worst_null_rate": 1.0
+      },
+      "score": 0.0,
+      "severity": "P1",
+      "status": "FAIL",
+      "threshold": "<= 5.00% nulls in any measured column"
+    },
+    "pii_sanitization": {
+      "detail": "0 PII findings in non-PII tables",
+      "name": "pii_sanitization",
+      "observed": {
+        "columns_scanned": 497,
+        "findings": [],
+        "tables_scanned": 63
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "0 PII findings in non-PII tables"
+    },
+    "referential_integrity": {
+      "detail": "0 orphaned references across 0 checked",
+      "name": "referential_integrity",
+      "observed": {
+        "examples": [],
+        "orphaned_references": 0,
+        "references_checked": 0,
+        "relationships_checked": 16
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": ">= 99.00% valid references"
+    },
+    "schema_coverage": {
+      "detail": "58/58 expected tables present",
+      "name": "schema_coverage",
+      "observed": {
+        "expected_tables": 58,
+        "live_tables": 75,
+        "missing_tables": [],
+        "present_tables": 58
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": ">= 58 expected tables present"
+    }
+  }
+}

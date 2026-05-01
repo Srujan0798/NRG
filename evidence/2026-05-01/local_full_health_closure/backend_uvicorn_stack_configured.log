@@ -1,0 +1,40 @@
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  from pydantic.v1.fields import FieldInfo as FieldInfoV1
+INFO:     Started server process [8300]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-01T09:49:49.521895+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:49:49.522326+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:49:49.522417+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:49:50.278612+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8026 (Press CTRL+C to quit)
+{"timestamp": "2026-05-01T09:50:03.579918+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6184988672, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.582090+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56631 - "GET /health HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:50:03.589177+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6202961920, "extra": {}}
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  show_warning(
+{"timestamp": "2026-05-01T09:50:03.633482+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.659808+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6202961920, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.711952+00:00", "level": "INFO", "logger": "src.caching.redis_layer", "message": "Redis cache is available", "module": "redis_layer", "function": "_get_redis", "line": 62, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56638 - "GET /health/all HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56649 - "GET /health/db HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:50:03.797542+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56650 - "GET /health/qdrant HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:50:03.834471+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6202961920, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.846576+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.874752+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6202961920, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.888565+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://localhost:6333/collections/nrg_research/points/scroll \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:50:03.894445+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56653 - "GET /api/vectors/health HTTP/1.1" 503 Service Unavailable
+{"timestamp": "2026-05-01T09:50:10.323475+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:50:10.331563+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://localhost:6333/collections/nrg_research/points/scroll \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:50:10.332216+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56668 - "GET /api/vectors/health HTTP/1.1" 503 Service Unavailable
+{"timestamp": "2026-05-01T09:50:10.338394+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 8300, "thread_id": 6202388480, "extra": {}}
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+{"timestamp": "2026-05-01T09:51:56.794378+00:00", "level": "INFO", "logger": "src.api.main", "message": "Received shutdown signal, draining connections...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:51:57.296967+00:00", "level": "INFO", "logger": "src.api.main", "message": "Shutdown complete, exiting.", "module": "logging_config", "function": "_log", "line": 68, "process_id": 8300, "thread_id": 8413098240, "extra": {}}
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8300]

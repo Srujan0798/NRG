@@ -1,0 +1,15 @@
+
+============================================================
+ QDRANT INDEX HEALTH CHECK
+============================================================
+
+Collection:  nrg_research
+Status:     green
+Vectors:    0 / 1,800 indexed
+Index:      PASS (collection below indexing_threshold=20,000; Qdrant exact scan is expected)
+HNSW m:     16
+HNSW ef:    100
+Vector dim: 1024
+Optimizer:  ok
+
+RESULT: PASS — Qdrant index health is acceptable

@@ -1,0 +1,12 @@
+
+============================================================
+ QDRANT INDEX HEALTH CHECK
+============================================================
+
+Collection:  nrg_research
+Status:     green
+Vectors:    0 / 1,800 indexed
+Index:      INCOMPLETE (0.0% built)
+WARNING: Queries are using brute-force scan
+
+RESULT: FAIL — Run with --build to trigger indexing

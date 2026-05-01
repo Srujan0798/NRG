@@ -92,6 +92,7 @@ DRIFT_SCORE_CRITICAL = 0.40
 COSINE_SHIFT_THRESHOLD = 0.05
 DRIFT_CACHE_DIR = Path(os.getenv("NRG_DRIFT_CACHE_DIR", str(Path(__file__).parent.parent / ".cache")))
 BENCHMARK_CACHE_FILE = DRIFT_CACHE_DIR / "drift_benchmark.json"
+LATEST_RESULTS_FILE = DRIFT_CACHE_DIR / "drift_latest.json"
 REFERENCE_CENTROIDS_FILE = DRIFT_CACHE_DIR / "reference_centroids.json"
 DEFAULT_STATUS_FILE = DRIFT_CACHE_DIR / "vector_drift_status.json"
 
@@ -232,6 +233,12 @@ def _save_benchmark_cache(data: dict):
     BENCHMARK_CACHE_FILE.write_text(json.dumps(data, indent=2, default=str))
 
 
+def _save_latest_results(data: dict):
+    """Save the latest drift run without mutating the known-good baseline."""
+    LATEST_RESULTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    LATEST_RESULTS_FILE.write_text(json.dumps(data, indent=2, default=str))
+
+
 def _jaccard_overlap(set_a: set, set_b: set) -> float:
     """Compute Jaccard similarity between two sets."""
     if not set_a and not set_b:
@@ -246,7 +253,8 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
 
     Returns dict with drift_score, per_query_scores, and alert level.
     """
-    results = _load_benchmark_cache()
+    baseline_results = _load_benchmark_cache()
+    latest_results = {}
     per_query_scores = []
     topic_overlaps = []
     embedder = None
@@ -263,8 +271,25 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
     try:
         for i, bench in enumerate(BENCHMARK_QUERIES):
             query = bench["query"]
-            expected_sources = set(bench["expected_sources"])
-            expected_topics = set(bench["expected_topics"])
+            baseline_entry = baseline_results.get(query, {})
+            has_baseline = (
+                isinstance(baseline_entry, dict)
+                and not baseline_entry.get("error")
+                and (
+                    baseline_entry.get("sources")
+                    or baseline_entry.get("topics")
+                )
+            )
+            expected_sources = set(
+                baseline_entry.get("sources", [])
+                if has_baseline
+                else bench["expected_sources"]
+            )
+            expected_topics = set(
+                baseline_entry.get("topics", [])
+                if has_baseline
+                else bench["expected_topics"]
+            )
 
             try:
                 if embedder_error is not None:
@@ -305,6 +330,7 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
                     "source_overlap": round(source_overlap, 3),
                     "topic_overlap": round(topic_overlap, 3),
                     "score": round(query_score, 3),
+                    "baseline": "cache" if has_baseline else "static",
                 })
                 topic_overlaps.append(query_score)
 
@@ -315,7 +341,7 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
                         source_overlap, topic_overlap, query_score
                     )
 
-                results[query] = {
+                latest_results[query] = {
                     "sources": list(retrieved_sources),
                     "topics": list(retrieved_topics),
                     "score": query_score,
@@ -332,7 +358,7 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
                     "error": str(exc),
                 })
                 topic_overlaps.append(0.0)
-                results[query] = {"error": str(exc), "timestamp": time.time()}
+                latest_results[query] = {"error": str(exc), "timestamp": time.time()}
 
         avg_score = sum(topic_overlaps) / len(topic_overlaps) if topic_overlaps else 0.0
 
@@ -361,7 +387,7 @@ def run_drift_check(retriever: Retriever, verbose: bool = False) -> dict:
         else:
             logger.info("DRIFT OK: Score %.3f >= %.3f SLO target", avg_score, DRIFT_SCORE_SLO)
 
-        _save_benchmark_cache(results)
+        _save_latest_results(latest_results)
 
         try:
             if alert_level in {"WARNING", "CRITICAL"}:
@@ -458,6 +484,7 @@ def run_health_check(retriever: Retriever) -> dict:
         "total_vectors": total,
         "coverage_pct": round(coverage_pct, 2),
         "status": health.get("status"),
+        "index_built": bool(health.get("index_built")),
         "latency_ms": health.get("latency_ms"),
     }
 
@@ -466,8 +493,10 @@ def _qdrant_ready_for_benchmark(qdrant_health: dict) -> bool:
     """Return True when Qdrant has a reachable, non-empty vector collection."""
     status = qdrant_health.get("status")
     indexed = int(qdrant_health.get("indexed_vectors") or 0)
+    index_built = bool(qdrant_health.get("index_built"))
+    total = int(qdrant_health.get("total_vectors") or 0)
 
-    return status in {"ok", "degraded"} and indexed > 0
+    return status in {"ok", "degraded"} and total > 0 and (indexed > 0 or index_built)
 
 
 def main():

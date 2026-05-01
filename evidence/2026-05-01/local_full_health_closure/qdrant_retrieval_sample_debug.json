@@ -1,0 +1,27 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/391 [00:00<?, ?it/s]Loading weights: 100%|██████████| 391/391 [00:00<00:00, 46820.25it/s]
+Loading weights:   0%|          | 0/197 [00:00<?, ?it/s]Loading weights: 100%|██████████| 197/197 [00:00<00:00, 54601.06it/s]
+[1mBertModel LOAD REPORT[0m from: ai4bharat/IndicBERTv2-SS
+Key                                        | Status     |
+-------------------------------------------+------------+-
+cls.predictions.transform.dense.weight     | UNEXPECTED |
+cls.predictions.transform.dense.bias       | UNEXPECTED |
+cls.predictions.transform.LayerNorm.weight | UNEXPECTED |
+cls.predictions.decoder.weight             | UNEXPECTED |
+cls.predictions.decoder.bias               | UNEXPECTED |
+cls.predictions.bias                       | UNEXPECTED |
+cls.predictions.transform.LayerNorm.bias   | UNEXPECTED |
+bert.embeddings.position_ids               | UNEXPECTED |
+pooler.dense.bias                          | MISSING    |
+pooler.dense.weight                        | MISSING    |
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+- MISSING:	those params were newly initialized because missing from the checkpoint. Consider training on your downstream task.
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  show_warning(
+{
+  "chunks": [],
+  "metadata": [],
+  "citations": null
+}

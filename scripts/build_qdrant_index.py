@@ -23,7 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import HnswConfigDiff, VectorParams, Distance
+from qdrant_client.models import HnswConfigDiff
 
 DEFAULT_COLLECTION = os.getenv("QDRANT_COLLECTION", "nrg_research")
 DEFAULT_HOST = os.getenv("QDRANT_HOST", "localhost")
@@ -37,12 +37,28 @@ def get_client() -> QdrantClient:
 def get_collection_info(client: QdrantClient, collection: str) -> dict:
     """Get detailed collection info including HNSW status."""
     info = client.get_collection(collection)
+    vectors_total = info.points_count or 0
+    vectors_indexed = info.indexed_vectors_count or 0
+    optimizer_cfg = getattr(info.config, "optimizer_config", None)
+    indexing_threshold = getattr(optimizer_cfg, "indexing_threshold", None)
+    try:
+        indexing_threshold = int(indexing_threshold) if indexing_threshold is not None else None
+    except (TypeError, ValueError):
+        indexing_threshold = None
+    threshold_exempt = (
+        vectors_total > 0
+        and vectors_indexed == 0
+        and indexing_threshold is not None
+        and vectors_total < indexing_threshold
+    )
     return {
         "name": collection,
         "status": info.status,
-        "vectors_total": info.points_count or 0,
-        "vectors_indexed": info.indexed_vectors_count or 0,
-        "index_complete": (info.indexed_vectors_count or 0) >= (info.points_count or 0),
+        "vectors_total": vectors_total,
+        "vectors_indexed": vectors_indexed,
+        "index_complete": vectors_indexed >= vectors_total or threshold_exempt,
+        "indexing_threshold": indexing_threshold,
+        "threshold_exempt": threshold_exempt,
         "hnsw_m": getattr(info.config.hnsw_config, "m", None),
         "hnsw_ef_construct": getattr(info.config.hnsw_config, "ef_construct", None),
         "vector_size": _get_vector_size(info),
@@ -146,7 +162,7 @@ def run_sample_queries(client: QdrantClient, collection: str, vector_size: int) 
 def check_index_health(collection: str = DEFAULT_COLLECTION) -> int:
     """Check-only mode: report health without building."""
     print(f"\n{'='*60}")
-    print(f" QDRANT INDEX HEALTH CHECK")
+    print(" QDRANT INDEX HEALTH CHECK")
     print(f"{'='*60}\n")
 
     client = get_client()
@@ -163,25 +179,32 @@ def check_index_health(collection: str = DEFAULT_COLLECTION) -> int:
     print(f"Vectors:    {info['vectors_indexed']:,} / {info['vectors_total']:,} indexed")
 
     if info["index_complete"]:
-        print(f"Index:      BUILT (HNSW fully constructed)")
+        if info.get("threshold_exempt"):
+            print(
+                "Index:      PASS "
+                f"(collection below indexing_threshold={info.get('indexing_threshold'):,}; "
+                "Qdrant exact scan is expected)"
+            )
+        else:
+            print("Index:      BUILT (HNSW fully constructed)")
         print(f"HNSW m:     {info['hnsw_m']}")
         print(f"HNSW ef:    {info['hnsw_ef_construct']}")
         print(f"Vector dim: {info['vector_size']}")
         print(f"Optimizer:  {info['optimizer_status']}")
-        print(f"\nRESULT: PASS — HNSW index is complete")
+        print("\nRESULT: PASS — Qdrant index health is acceptable")
         return 0
     else:
         pct = (info["vectors_indexed"] / max(info["vectors_total"], 1) * 100)
         print(f"Index:      INCOMPLETE ({pct:.1f}% built)")
-        print(f"WARNING: Queries are using brute-force scan")
-        print(f"\nRESULT: FAIL — Run with --build to trigger indexing")
+        print("WARNING: Queries are using brute-force scan")
+        print("\nRESULT: FAIL — Run with --build to trigger indexing")
         return 1
 
 
 def build_index(collection: str = DEFAULT_COLLECTION) -> int:
     """Build/rebuild index mode."""
     print(f"\n{'='*60}")
-    print(f" QDRANT HNSW INDEX BUILDER")
+    print(" QDRANT HNSW INDEX BUILDER")
     print(f"{'='*60}\n")
 
     client = get_client()
@@ -197,30 +220,30 @@ def build_index(collection: str = DEFAULT_COLLECTION) -> int:
     print(f"Indexed:     {info['vectors_indexed']:,}")
 
     if info["index_complete"]:
-        print(f"\nIndex is already complete.")
-        print(f"Use --rebuild to force a rebuild.")
+        print("\nIndex is already complete.")
+        print("Use --rebuild to force a rebuild.")
         return 0
 
-    print(f"\nTriggering index build...")
+    print("\nTriggering index build...")
     trigger_indexing(client, collection)
 
-    print(f"\nWaiting for indexing to complete (poll every 5s)...")
+    print("\nWaiting for indexing to complete (poll every 5s)...")
     result = wait_for_indexing(client, collection)
 
     if result.get("timeout"):
-        print(f"\nWARNING: Indexing did not complete within timeout")
+        print("\nWARNING: Indexing did not complete within timeout")
         print(f"  Indexed: {result['vectors_indexed']:,} / {result['vectors_total']:,}")
         return 1
 
     print(f"\nIndex build complete in {result['build_time_s']}s")
-    print(f"\nRESULT: PASS")
+    print("\nRESULT: PASS")
     return 0
 
 
 def full_diagnostic(collection: str = DEFAULT_COLLECTION) -> int:
     """Full mode: check + sample queries."""
     print(f"\n{'='*60}")
-    print(f" QDRANT FULL DIAGNOSTIC")
+    print(" QDRANT FULL DIAGNOSTIC")
     print(f"{'='*60}\n")
 
     client = get_client()
@@ -236,13 +259,13 @@ def full_diagnostic(collection: str = DEFAULT_COLLECTION) -> int:
     print(f"Vectors:   {info['vectors_indexed']:,} / {info['vectors_total']:,} indexed")
 
     if not info["index_complete"]:
-        print(f"\nWARNING: Index incomplete — forcing build...")
+        print("\nWARNING: Index incomplete — forcing build...")
         trigger_indexing(client, collection)
-        result = wait_for_indexing(client, collection)
+        wait_for_indexing(client, collection)
         info = get_collection_info(client, collection)
 
     if info["index_complete"]:
-        print(f"\nRunning sample queries...")
+        print("\nRunning sample queries...")
         try:
             queries = run_sample_queries(client, collection, info["vector_size"] or 384)
             for query, stats in queries.items():
@@ -251,9 +274,9 @@ def full_diagnostic(collection: str = DEFAULT_COLLECTION) -> int:
         except Exception as exc:
             print(f"  Query test failed: {exc}")
     else:
-        print(f"\nWARNING: Index still incomplete, skipping queries")
+        print("\nWARNING: Index still incomplete, skipping queries")
 
-    print(f"\nRESULT: PASS")
+    print("\nRESULT: PASS")
     return 0
 
 

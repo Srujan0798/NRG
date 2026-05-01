@@ -1,0 +1,9 @@
+{
+  "collection": "nrg_research",
+  "dry_run": true,
+  "missing_access_tier_points": 1800,
+  "model": "BAAI/bge-m3",
+  "points_scanned": 1800,
+  "repairable_points": 1800,
+  "zero_vector_points": 1800
+}
