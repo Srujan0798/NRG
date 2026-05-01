@@ -206,11 +206,14 @@ Started in the backend split pass:
 - Extracted graph visualization and internal Tier 1 response-shape diff routes
   into `src/api/routes/graph.py`, configured against app-level DB, cache,
   release-seed graph, tier history, and tier response filter helpers.
+- Extracted frontend UAT telemetry ingestion into `src/api/routes/telemetry.py`
+  with the existing event allowlist, PII redaction, recent-event memory buffer,
+  and audit-chain binding behavior.
 
 Remaining route splits:
 
 - Query and streaming routes.
-- Feedback, ingestion, telemetry, and SPA shell routes.
+- Feedback, ingestion, and SPA shell routes.
 
 ### Wave 6: Documentation Rationalization
 
