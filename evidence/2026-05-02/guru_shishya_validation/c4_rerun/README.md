@@ -77,6 +77,8 @@ This folder records the C4 follow-up after the Guru/Shishya validation matrix. I
 | `127_quality_bar_scorecard_60s_asgi_middleware_8workers.json` | 8-worker/backlog diagnostic rejected as improvement: 22.09% failure rate, aggregate P99 7800 ms. |
 | `139_quality_bar_scorecard_60s_asgi_authcache_4workers.json` | Auth-cache diagnostic: 1000 users, 45,249 samples, 0 failures, aggregate P99 1200 ms; not a C4 closure. |
 | `142_asgi_middleware_authcache_summary.md` | Summary of duplicate middleware removal, ASGI middleware conversion, verified-token cache, and current C4 status. |
+| `136_quality_bar_scorecard_60s_4workers_uvloop_httptools_locust4.json` | Negative multi-process Locust diagnostic: `locust_processes=4`, failure rate 99.53%, mostly HTTP 0. Not pass evidence. |
+| `144_multilocust_and_topology_followup.md` | Documents multi-process Locust tooling, failed local multi-process evidence, and local Docker/Colima topology blocker. |
 
 ## Current C4 Status
 

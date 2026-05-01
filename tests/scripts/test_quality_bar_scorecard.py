@@ -102,6 +102,7 @@ def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_pa
     def fake_run(cmd, **kwargs):
         assert "--processes" in cmd
         assert cmd[cmd.index("--processes") + 1] == "4"
+        assert kwargs["start_new_session"] is True
         return SimpleNamespace(
             returncode=0,
             stdout=(

@@ -546,6 +546,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             timeout=360,
             cwd=ROOT,
             env=env,
+            start_new_session=LOCUST_PROCESSES > 1,
         )
         output = (result.stdout + result.stderr)[-16000:]
     except subprocess.TimeoutExpired:
