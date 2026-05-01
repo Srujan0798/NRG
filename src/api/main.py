@@ -8097,6 +8097,120 @@ async def get_audit_events(
     return {"events": events[:limit]}
 
 
+def _audit_event_allowed_for_user(event: dict[str, Any], token_payload: dict[str, Any]) -> bool:
+    role = str(token_payload.get("role") or "")
+    if role == "admin":
+        return True
+
+    event_user = str(event.get("user_id") or event.get("actor") or "")
+    if not event_user:
+        return True
+
+    username = str(token_payload.get("username") or "")
+    subject = str(token_payload.get("sub") or "")
+    persona = str(token_payload.get("persona") or role or "")
+    allowed_users = {item for item in (username, subject, f"{persona}-{username}") if item}
+    return event_user in allowed_users
+
+
+def _normalise_audit_event_for_api(
+    event: dict[str, Any],
+    *,
+    event_ref: str,
+    previous_hash: str | None = None,
+    next_hash: str | None = None,
+    token_payload: dict[str, Any] | None = None,
+    found: bool = True,
+) -> dict[str, Any]:
+    token_payload = token_payload or {}
+    event_hash = str(event.get("hash") or event.get("hmac") or event_ref)
+    user_id = str(
+        event.get("user_id")
+        or token_payload.get("username")
+        or token_payload.get("sub")
+        or "system"
+    )
+    result = event.get("result") if isinstance(event.get("result"), dict) else {}
+    evidence_count = 0
+    for key in ("citations", "sql_results", "rows", "evidence"):
+        value = result.get(key)
+        if isinstance(value, list):
+            evidence_count = max(evidence_count, len(value))
+
+    return {
+        "id": str(event.get("event_id") or event_ref),
+        "hmac": event_hash,
+        "timestamp": str(event.get("timestamp") or datetime.now(UTC).isoformat()),
+        "user_id": user_id,
+        "actor": str(event.get("actor") or user_id),
+        "persona": token_payload.get("persona") or token_payload.get("role"),
+        "action": str(event.get("action") or event.get("event_type") or "audit.event"),
+        "query": event.get("query"),
+        "status": "error" if event.get("error") else ("success" if found else "reference_only"),
+        "prev_hmac": previous_hash,
+        "current_hmac": event_hash,
+        "next_hmac": next_hash,
+        "integrity_status": "intact" if found else "pending",
+        "evidence_count": evidence_count,
+        "tier": token_payload.get("tier"),
+    }
+
+
+@app.get("/audit/event/{event_id}")
+async def get_audit_event(event_id: str, token_payload: dict = Depends(get_current_user)):
+    """Return one audit event for the proof drawer without falling through to SPA fallback."""
+    event_ref = event_id.strip()
+    if not event_ref or len(event_ref) > 256:
+        raise HTTPException(status_code=400, detail="Invalid audit event id")
+
+    from src.audit import get_audit_log
+
+    log = get_audit_log()
+    events = log.get_recent_events(1000)
+    for index, event in enumerate(events):
+        identifiers = {
+            str(event.get("hash") or ""),
+            str(event.get("hmac") or ""),
+            str(event.get("current_hmac") or ""),
+            str(event.get("event_id") or ""),
+            str(event.get("id") or ""),
+        }
+        if event_ref not in identifiers:
+            continue
+
+        if not _audit_event_allowed_for_user(event, token_payload):
+            raise HTTPException(status_code=404, detail="Audit event not found")
+
+        previous_hash = None
+        next_hash = None
+        if index > 0:
+            previous_hash = str(events[index - 1].get("hash") or "") or None
+        if index + 1 < len(events):
+            next_hash = str(events[index + 1].get("hash") or "") or None
+
+        return {
+            "event": _normalise_audit_event_for_api(
+                event,
+                event_ref=event_ref,
+                previous_hash=previous_hash,
+                next_hash=next_hash,
+                token_payload=token_payload,
+                found=True,
+            )
+        }
+
+    # Keep the visible proof drawer stable for valid-looking hashes emitted by
+    # older responses or pruned local audit windows, while marking them pending.
+    return {
+        "event": _normalise_audit_event_for_api(
+            {},
+            event_ref=event_ref,
+            token_payload=token_payload,
+            found=False,
+        )
+    }
+
+
 @app.get("/admin/slo")
 async def get_slo_status(token_payload: dict = Depends(get_current_user)):
     """Return current SLO compliance status (admin only).

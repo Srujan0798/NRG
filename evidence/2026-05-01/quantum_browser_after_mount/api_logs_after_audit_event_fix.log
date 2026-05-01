@@ -1,0 +1,62 @@
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started parent process [7]
+INFO:     Started server process [9]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-01T15:52:12.526880+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 9, "thread_id": 248872963486912, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.528124+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 9, "thread_id": 248872963486912, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.528648+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 9, "thread_id": 248872963486912, "extra": {}}
+INFO:     Started server process [12]
+INFO:     Waiting for application startup.
+INFO:     Started server process [10]
+INFO:     Waiting for application startup.
+INFO:     Started server process [11]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-01T15:52:12.614383+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.615676+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.616444+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.632563+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.633976+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.634487+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.657197+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.658207+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+{"timestamp": "2026-05-01T15:52:12.658550+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+{"timestamp": "2026-05-01T15:52:19.536195+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+{"timestamp": "2026-05-01T15:52:19.537222+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+{"timestamp": "2026-05-01T15:52:19.539721+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 9, "thread_id": 248872963486912, "extra": {}}
+{"timestamp": "2026-05-01T15:52:19.550248+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+INFO:     Application startup complete.
+{"timestamp": "2026-05-01T15:52:21.283903+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+{"timestamp": "2026-05-01T15:52:21.305801+00:00", "level": "INFO", "logger": "src.caching.redis_layer", "message": "Redis cache is available", "module": "redis_layer", "function": "_get_redis", "line": 62, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+INFO:     127.0.0.1:39750 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:52:36.396159+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 10, "thread_id": 279685621761216, "extra": {}}
+INFO:     127.0.0.1:44008 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:52:51.676951+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+{"timestamp": "2026-05-01T15:52:51.691284+00:00", "level": "INFO", "logger": "src.caching.redis_layer", "message": "Redis cache is available", "module": "redis_layer", "function": "_get_redis", "line": 62, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+INFO:     127.0.0.1:56204 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:53:06.811248+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+INFO:     127.0.0.1:47180 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:53:22.012445+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+{"timestamp": "2026-05-01T15:53:22.022387+00:00", "level": "INFO", "logger": "src.caching.redis_layer", "message": "Redis cache is available", "module": "redis_layer", "function": "_get_redis", "line": 62, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+INFO:     127.0.0.1:36156 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:53:37.137363+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+INFO:     127.0.0.1:47638 - "GET /health/all HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "POST /login HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "POST /query HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "POST /login HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:53:52.340139+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+INFO:     127.0.0.1:41740 - "GET /health/all HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "GET /api/query/stream?query=best+quantum+researchers....&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "GET /audit/event/cf27fa0bc2085667e70536dbeec0e198d11f741956a8ed9628b94b3b5573877b HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "GET /audit/event/cf27fa0bc2085667e70536dbeec0e198d11f741956a8ed9628b94b3b5573877b HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "POST /login HTTP/1.1" 200 OK
+INFO:     172.28.0.1:41632 - "POST /query HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:54:07.446196+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+INFO:     127.0.0.1:50120 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:54:15.786432+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12, "thread_id": 256717091169472, "extra": {}}
+INFO:     172.28.0.1:47670 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T15:54:22.574552+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 11, "thread_id": 279328834700480, "extra": {}}
+INFO:     127.0.0.1:41464 - "GET /health/all HTTP/1.1" 200 OK
