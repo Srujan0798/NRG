@@ -198,10 +198,14 @@ Started in the backend split pass:
   `src/api/routes/data.py`, configured against the app-level DB getter, cache,
   and tier response filter so tests and runtime monkeypatches keep the same
   behavior.
+- Replaced the stale health-route module with the live `/health`,
+  `/health/all`, `/health/db`, `/health/qdrant`, `/health/llm`,
+  `/api/providers/health`, `/api/vectors/health`, and killer-query health
+  behavior from `src/api/main.py`, configured against the app-level DB, JWT,
+  audit, drift, data-quality, and Qdrant dependencies.
 
 Remaining route splits:
 
-- Health/provider/vector routes.
 - Query and streaming routes.
 - Graph routes.
 
