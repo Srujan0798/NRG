@@ -216,10 +216,13 @@ Started in the backend split pass:
   `/query` and `/api/query/stream`; the endpoint registration is now modular
   while the heavy answer-engine implementation remains in `src/api/main.py`
   until a dedicated query-service extraction is safe.
+- Moved the frontend SPA catch-all into `src/api/routes/spa.py` and registered
+  it last, after all API routers and static assets, to preserve route ordering.
 
 Remaining route splits:
 
-- SPA shell route.
+- None. `src/api/main.py` still owns app setup, middleware, lifecycle, and the
+  private answer-engine helper implementation that backs the query router.
 
 ### Wave 6: Documentation Rationalization
 

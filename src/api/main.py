@@ -19,7 +19,6 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response, StreamingResponse
 import uuid
@@ -41,6 +40,7 @@ from src.api.routes.graph import configure_graph_router, router as graph_router
 from src.api.routes.health import configure_health_router, router as health_router
 from src.api.routes.ingest import router as ingest_router
 from src.api.routes.query import QueryRequest, configure_query_router, router as query_router
+from src.api.routes.spa import router as spa_router
 from src.api.routes.telemetry import router as telemetry_router
 from src.auth.jwt_handler import JWTHandler
 from src.auth.middleware import (
@@ -5906,10 +5906,7 @@ def _get_qdrant_vector_count_health() -> dict:
 if Path("dist/frontend/assets").exists():
     app.mount("/assets", StaticFiles(directory="dist/frontend/assets"), name="assets")
 
-# SPA catch-all — serve index.html for any unmatched route (React Router)
-@app.get("/{full_path:path}")
-async def serve_spa(full_path: str):
-    return FileResponse("dist/frontend/index.html")
+app.include_router(spa_router)
 
 if __name__ == "__main__":
     import uvicorn
