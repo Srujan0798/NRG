@@ -193,12 +193,17 @@ Started in the backend split pass:
 - Extracted metrics, SLO, vector reindex, and RBAC policy administration routes
   into `src/api/routes/admin.py` while preserving the existing `/api/metrics`
   JSON contract and lightweight audit-health behavior.
+- Extracted researcher, stats, publication, project, patent, collaboration,
+  funding, lab, and research-document data routes into
+  `src/api/routes/data.py`, configured against the app-level DB getter, cache,
+  and tier response filter so tests and runtime monkeypatches keep the same
+  behavior.
 
 Remaining route splits:
 
 - Health/provider/vector routes.
 - Query and streaming routes.
-- Data and graph routes.
+- Graph routes.
 
 ### Wave 6: Documentation Rationalization
 
