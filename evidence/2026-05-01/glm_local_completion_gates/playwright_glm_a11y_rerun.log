@@ -1,0 +1,41 @@
+
+Running 1 test using 1 worker
+
+(node:96874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:96874) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/glm_visible_query_a11y.spec.ts:52:5 › GLM visible query answer path has no axe violations in answer, source, audit, and mobile states (6.5s)
+
+
+  1) [chromium] › tests/e2e/glm_visible_query_a11y.spec.ts:52:5 › GLM visible query answer path has no axe violations in answer, source, audit, and mobile states
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByRole('heading', { name: /What would you like to know/i })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByRole('heading', { name: /What would you like to know/i })[22m
+
+
+      64 |   await expect(page.getByTestId('tier-dashboard')).toBeVisible({ timeout: 15000 })
+      65 |   await page.goto('/app')
+    > 66 |   await expect(page.getByRole('heading', { name: /What would you like to know/i })).toBeVisible()
+         |                                                                                     ^
+      67 |   await page.getByRole('button', { name: 'Who are the top researchers in hydrogen catalysis?' }).click()
+      68 |
+      69 |   await expect(page.getByTestId('phase-verified')).toBeVisible({ timeout: 45000 })
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/glm_visible_query_a11y.spec.ts:66:85
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-glm_visible_query_a11y-244aa-rce-audit-and-mobile-states-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/e2e-glm_visible_query_a11y-244aa-rce-audit-and-mobile-states-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/glm_visible_query_a11y.spec.ts:52:5 › GLM visible query answer path has no axe violations in answer, source, audit, and mobile states

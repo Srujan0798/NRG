@@ -1,0 +1,317 @@
+{
+  "query": "Who are the top researchers in hydrogen catalysis?",
+  "login_status": 200,
+  "login_ms": 34.01,
+  "request_count": 30,
+  "success_count": 30,
+  "failure_count": 0,
+  "failure_rate": 0.0,
+  "p50_ms": 14.27,
+  "p95_ms": 18.3,
+  "p99_ms": 52.27,
+  "min_ms": 13.17,
+  "max_ms": 65.78,
+  "failures": [],
+  "results": [
+    {
+      "index": 0,
+      "status": 200,
+      "elapsed_ms": 16.25,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 1,
+      "status": 200,
+      "elapsed_ms": 15.05,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 2,
+      "status": 200,
+      "elapsed_ms": 13.89,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 3,
+      "status": 200,
+      "elapsed_ms": 14.43,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 4,
+      "status": 200,
+      "elapsed_ms": 13.97,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 5,
+      "status": 200,
+      "elapsed_ms": 14.56,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 6,
+      "status": 200,
+      "elapsed_ms": 17.22,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 7,
+      "status": 200,
+      "elapsed_ms": 13.69,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 8,
+      "status": 200,
+      "elapsed_ms": 19.19,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 9,
+      "status": 200,
+      "elapsed_ms": 65.78,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 10,
+      "status": 200,
+      "elapsed_ms": 13.17,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 11,
+      "status": 200,
+      "elapsed_ms": 15.13,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 12,
+      "status": 200,
+      "elapsed_ms": 14.27,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 13,
+      "status": 200,
+      "elapsed_ms": 14.37,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 14,
+      "status": 200,
+      "elapsed_ms": 16.65,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 15,
+      "status": 200,
+      "elapsed_ms": 14.07,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 16,
+      "status": 200,
+      "elapsed_ms": 13.82,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 17,
+      "status": 200,
+      "elapsed_ms": 14.2,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 18,
+      "status": 200,
+      "elapsed_ms": 14.72,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 19,
+      "status": 200,
+      "elapsed_ms": 13.18,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 20,
+      "status": 200,
+      "elapsed_ms": 13.8,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 21,
+      "status": 200,
+      "elapsed_ms": 14.71,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 22,
+      "status": 200,
+      "elapsed_ms": 16.26,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 23,
+      "status": 200,
+      "elapsed_ms": 13.85,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 24,
+      "status": 200,
+      "elapsed_ms": 14.28,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 25,
+      "status": 200,
+      "elapsed_ms": 15.11,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 26,
+      "status": 200,
+      "elapsed_ms": 14.11,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 27,
+      "status": 200,
+      "elapsed_ms": 13.76,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 28,
+      "status": 200,
+      "elapsed_ms": 13.99,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    },
+    {
+      "index": 29,
+      "status": 200,
+      "elapsed_ms": 13.78,
+      "audit_event_id": true,
+      "citations": 2,
+      "source_rows": 5,
+      "tier": 1,
+      "route": "sql"
+    }
+  ]
+}

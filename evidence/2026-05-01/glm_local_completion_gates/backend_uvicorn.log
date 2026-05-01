@@ -1,0 +1,145 @@
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/langchain_core/_api/deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  from pydantic.v1.fields import FieldInfo as FieldInfoV1
+INFO:     Started server process [96523]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-01T09:20:25.069834+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:20:25.070626+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:20:25.070690+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:20:26.164065+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8022 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55866 - "POST /login HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:20:43.980806+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:55866 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55873 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55873 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55866 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55895 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55895 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55895 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55895 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55903 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55915 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55915 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55915 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55915 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55924 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55924 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55945 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55945 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55945 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55945 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55956 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55956 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55956 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55968 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55968 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55968 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55968 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55977 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55977 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55977 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55989 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55997 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55997 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55997 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55997 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55997 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56000 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56001 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56002 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56003 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56004 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56005 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56006 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56007 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56008 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56009 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56010 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56011 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56012 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56013 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56014 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56015 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56016 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56017 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56018 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56019 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56020 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56021 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56022 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56023 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56024 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56025 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56026 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56027 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56028 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56029 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56030 - "POST /query HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:24:55.828778+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 6119206912, "extra": {}}
+{"timestamp": "2026-05-01T09:24:55.834655+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 6152859648, "extra": {}}
+/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/site-packages/qdrant_client/qdrant_remote.py:280: UserWarning: Qdrant client version 1.17.1 is incompatible with server version 1.11.3. Major versions should match and minor version difference must not exceed 1. Set check_compatibility=False to skip version check.
+  show_warning(
+{"timestamp": "2026-05-01T09:24:55.871096+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56037 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56042 - "GET /health/db HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:24:56.014206+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56043 - "GET /health/qdrant HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:24:56.039374+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 6152859648, "extra": {}}
+{"timestamp": "2026-05-01T09:24:56.095594+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:56046 - "GET /health/all HTTP/1.1" 200 OK
+{"timestamp": "2026-05-01T09:24:56.118433+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 96523, "thread_id": 6152859648, "extra": {}}
+INFO:     127.0.0.1:56082 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56082 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56095 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56095 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56095 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56082 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56082 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56095 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56081 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56110 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56110 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56110 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56123 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56123 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56123 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56123 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56110 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56131 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56131 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56123 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56132 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56131 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56132 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56132 - "GET /audit/event/ff1c0d03981ffee00b25b3f777ae654c9b9b2061e7331329a90485255ed7e141 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56132 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56132 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56145 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56153 - "GET /stats HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56153 - "GET /api/query/stream?query=Who+are+the+top+researchers+in+hydrogen+catalysis%3F&session_id=researcher-acceptance-iitgn HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56153 - "GET /audit/event/0803de436d42dec07e0e974c32992581349703d2636c2662f9ec4f00c6a83097 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56153 - "POST /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56153 - "POST /query HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+{"timestamp": "2026-05-01T09:27:16.058732+00:00", "level": "INFO", "logger": "src.api.main", "message": "Received shutdown signal, draining connections...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T09:27:16.561920+00:00", "level": "INFO", "logger": "src.api.main", "message": "Shutdown complete, exiting.", "module": "logging_config", "function": "_log", "line": 68, "process_id": 96523, "thread_id": 8413098240, "extra": {}}
+INFO:     Application shutdown complete.
+INFO:     Finished server process [96523]

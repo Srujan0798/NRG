@@ -1,0 +1,27 @@
+
+Running 1 test using 1 worker
+
+(node:619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view (8.5s)
+
+
+  1) [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view
+
+    Error: video.saveAs: ENOENT: no such file or directory, copyfile '/Users/srujansai/Desktop/NRG/frontend/tests/test-results/.playwright-artifacts-0/page@fd28ed315d940d05d92bfd2038b7819e.webm' -> '/Users/srujansai/Desktop/NRG/evidence/2026-05-01/glm_local_completion_gates/glm_derived_visible_query_path_renders_answer_citations_source_rows_audit_proof_and_mobile_view.webm'
+
+      38 |   if (!page.isClosed()) await page.close()
+      39 |   const target = path.join(evidenceDir, `${testInfo.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.webm`)
+    > 40 |   await video.saveAs(target)
+         |               ^
+      41 |   await testInfo.attach('glm_visible_query_video', { path: target, contentType: 'video/webm' })
+      42 | })
+      43 |
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/glm_visible_query_flow.spec.ts:40:15
+
+    Error Context: tests/test-results/e2e-glm_visible_query_flow-66bd2-audit-proof-and-mobile-view-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view

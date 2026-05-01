@@ -1,0 +1,86 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand
+
+(node:98919) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+FAIL tests/i18n/no_raw_strings.test.ts
+  ● i18n source discipline › keeps user-visible JSX copy out of components and views
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "src/components/SqlBlock/SqlBlock.tsx:55:9 raw aria-label \"SQL query text\"",
+    + ]
+
+      91 |   it('keeps user-visible JSX copy out of components and views', () => {
+      92 |     const failures = SOURCE_ROOTS.flatMap(listTsxFiles).flatMap(scanFile)
+    > 93 |     expect(failures).toEqual([])
+         |                      ^
+      94 |   })
+      95 | })
+      96 |
+
+      at Object.<anonymous> (tests/i18n/no_raw_strings.test.ts:93:22)
+
+PASS src/__tests__/ProductionWorkspace.test.tsx
+PASS tests/components/AppAnswerEngineRoutes.test.tsx
+PASS tests/components/AnswerEngineSurface.test.tsx
+PASS src/components/__snapshots__/ComponentSnapshots.test.tsx
+PASS tests/components/EmptyState.test.tsx
+PASS tests/components/QueryWorkbench.test.tsx
+PASS tests/components/StreamingAnswerPanel.test.tsx
+PASS tests/components/AnswerPanelSqlResults.test.tsx
+PASS tests/components/ErrorState.test.tsx
+PASS tests/design-system/no_raw_values.test.ts
+PASS tests/components/ErrorBoundary.test.tsx
+PASS tests/components/SearchBar.test.tsx
+PASS tests/hooks/useStreamingQuery.test.ts
+PASS tests/components/PersonaToggle.test.tsx
+PASS tests/components/AnswerTrustActions.test.tsx
+PASS tests/components/ProofInspector.test.tsx
+PASS tests/components/OperationsShell.test.tsx
+PASS tests/components/SuggestionChips.test.tsx
+PASS tests/lib/telemetry.test.ts
+PASS tests/lib/answerEngineContract.test.ts
+PASS tests/lib/queryServiceSanitization.test.ts
+PASS src/__tests__/TestApp.test.tsx
+PASS src/utils/parseCitations.test.ts
+PASS tests/design-system/font_loading.test.ts
+PASS src/__tests__/graph-view-export.test.tsx
+PASS tests/a11y/contrast.test.ts
+
+Summary of all failing tests
+FAIL tests/i18n/no_raw_strings.test.ts
+  ● i18n source discipline › keeps user-visible JSX copy out of components and views
+
+    expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "src/components/SqlBlock/SqlBlock.tsx:55:9 raw aria-label \"SQL query text\"",
+    + ]
+
+      91 |   it('keeps user-visible JSX copy out of components and views', () => {
+      92 |     const failures = SOURCE_ROOTS.flatMap(listTsxFiles).flatMap(scanFile)
+    > 93 |     expect(failures).toEqual([])
+         |                      ^
+      94 |   })
+      95 | })
+      96 |
+
+      at Object.<anonymous> (tests/i18n/no_raw_strings.test.ts:93:22)
+
+
+Test Suites: 1 failed, 26 passed, 27 total
+Tests:       1 failed, 98 passed, 99 total
+Snapshots:   0 total
+Time:        2.497 s, estimated 6 s
+Ran all test suites.

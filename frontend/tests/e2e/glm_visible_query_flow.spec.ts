@@ -37,8 +37,15 @@ test.afterEach(async ({ page }, testInfo) => {
   fs.mkdirSync(evidenceDir, { recursive: true })
   if (!page.isClosed()) await page.close()
   const target = path.join(evidenceDir, `${testInfo.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.webm`)
-  await video.saveAs(target)
-  await testInfo.attach('glm_visible_query_video', { path: target, contentType: 'video/webm' })
+  try {
+    await video.saveAs(target)
+    await testInfo.attach('glm_visible_query_video', { path: target, contentType: 'video/webm' })
+  } catch (error) {
+    fs.writeFileSync(
+      path.join(evidenceDir, 'video_save_warning.txt'),
+      `${error instanceof Error ? error.message : String(error)}\n`
+    )
+  }
 })
 
 test('GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view', async ({ page, request }) => {

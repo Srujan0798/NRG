@@ -712,14 +712,14 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
           <div><dt className="font-semibold text-fg">{COPY.audit.citations}</dt><dd className="font-mono text-fg-muted">{citations.length}</dd></div>
           {signatureBytes && <div><dt className="font-semibold text-fg">{COPY.audit.signatureBytes}</dt><dd className="font-mono text-fg-muted">{signatureBytes}</dd></div>}
           <div><dt className="font-semibold text-fg">{COPY.audit.verification}</dt><dd className={isVerified ? 'text-success' : 'text-fg-muted'}>{isVerified ? COPY.audit.verified : COPY.audit.pending}</dd></div>
-          {auditEventId && (
-            <div className="pt-2">
-              <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(auditEventId).then(() => {})}>
-                {COPY.audit.verifyOnChain}
-              </Button>
-            </div>
-          )}
         </dl>
+        {auditEventId && (
+          <div className="pt-2">
+            <Button variant="secondary" onClick={() => queryService.verifyAuditEvent(auditEventId).then(() => {})}>
+              {COPY.audit.verifyOnChain}
+            </Button>
+          </div>
+        )}
         </div>
       </Drawer>
 

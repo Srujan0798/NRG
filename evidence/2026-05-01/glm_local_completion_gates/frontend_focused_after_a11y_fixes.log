@@ -1,0 +1,15 @@
+
+> nrg-frontend@1.0.0 test
+> jest tests/a11y/contrast.test.ts tests/components/AnswerEngineSurface.test.tsx tests/components/QueryWorkbench.test.tsx --runInBand
+
+(node:98078) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS tests/components/QueryWorkbench.test.tsx
+PASS tests/components/AnswerEngineSurface.test.tsx
+PASS tests/a11y/contrast.test.ts
+
+Test Suites: 3 passed, 3 total
+Tests:       30 passed, 30 total
+Snapshots:   0 total
+Time:        1.393 s, estimated 5 s
+Ran all test suites matching /tests\/a11y\/contrast.test.ts|tests\/components\/AnswerEngineSurface.test.tsx|tests\/components\/QueryWorkbench.test.tsx/i.

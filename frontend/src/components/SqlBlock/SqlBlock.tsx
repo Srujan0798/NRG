@@ -50,7 +50,11 @@ export const SqlBlock: React.FC<SqlBlockProps> = ({ sql }) => {
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="overflow-x-auto p-4 text-sm leading-6 text-nrg-text">
+      <pre
+        tabIndex={0}
+        aria-label={t("auto.components.SqlBlock.SqlBlock.3")}
+        className="overflow-x-auto p-4 text-sm leading-6 text-nrg-text"
+      >
         <code>{highlighted}</code>
       </pre>
     </div>

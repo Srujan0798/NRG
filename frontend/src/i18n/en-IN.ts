@@ -322,6 +322,7 @@ export const generatedCopy: Record<string, string> = {
   "auto.components.SecurityMonitor.9": "All requests are retained in the sovereign audit trail.",
   "auto.components.SqlBlock.SqlBlock.1": "Waiting for retrieval plan.",
   "auto.components.SqlBlock.SqlBlock.2": "SQL retrieval",
+  "auto.components.SqlBlock.SqlBlock.3": "SQL query text",
   "auto.components.StreamingAnswerPanel.1": "Stop",
   "auto.components.StreamingAnswerPanel.2": "Planning",
   "auto.components.StreamingAnswerPanel.3": "Thinking...",
