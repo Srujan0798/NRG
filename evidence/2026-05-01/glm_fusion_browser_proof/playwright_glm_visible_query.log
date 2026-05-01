@@ -1,0 +1,44 @@
+
+Running 1 test using 1 worker
+
+(node:93009) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:93009) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view (2.2m)
+
+
+  1) [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view
+
+    [31mTest timeout of 120000ms exceeded.[39m
+
+    Error: locator.click: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for getByRole('button', { name: 'Who are the top researchers in hydrogen catalysis?' })[22m
+
+
+      102 |   await capture(page, '03_researcher_dashboard_desktop.png')
+      103 |
+    > 104 |   await page.getByRole('button', { name: 'Who are the top researchers in hydrogen catalysis?' }).click()
+          |                                                                                                  ^
+      105 |
+      106 |   await expect(page.getByTestId('streaming-answer-panel')).toBeVisible({ timeout: 15000 })
+      107 |   await expect(page.getByTestId('phase-planning')).toBeVisible()
+        at /Users/srujansai/Desktop/NRG/frontend/tests/e2e/glm_visible_query_flow.spec.ts:104:98
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    tests/test-results/e2e-glm_visible_query_flow-66bd2-audit-proof-and-mobile-view-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: glm_visible_query_video (video/webm) ────────────────────────────────────────────
+    tests/test-results/e2e-glm_visible_query_flow-66bd2-audit-proof-and-mobile-view-chromium/attachments/glm-visible-query-video-0223d7e89c8b76ab16e59ad58de5a75955ff053a.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    tests/test-results/e2e-glm_visible_query_flow-66bd2-audit-proof-and-mobile-view-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: tests/test-results/e2e-glm_visible_query_flow-66bd2-audit-proof-and-mobile-view-chromium/error-context.md
+
+  1 failed
+    [chromium] › tests/e2e/glm_visible_query_flow.spec.ts:44:5 › GLM-derived visible query path renders answer, citations, source rows, audit proof, and mobile view

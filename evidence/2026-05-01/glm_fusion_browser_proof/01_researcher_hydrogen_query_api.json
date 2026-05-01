@@ -1,0 +1,212 @@
+{
+  "query_id": "d2f8dbaa-e813-4e3f-aa7e-adc4a3611511",
+  "answer_id": "3dab672b-148c-4478-a00d-073da4e1b28e",
+  "audit_event_id": "9aabeea1ce8f6b3e400bbb4aa829c67d788e136176cc39388b0339122b01985f",
+  "tier": 1,
+  "question": "Who are the top researchers in hydrogen catalysis?",
+  "interpreted_question": "Who are the top researchers in hydrogen catalysis?",
+  "assumptions": [],
+  "route": "sql",
+  "blocked": false,
+  "final_answer": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Ravi Jena at Gujarat Technological University leads the visible slice with h-index 85. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations": [
+    {
+      "id": "1",
+      "source_type": "document_chunk",
+      "label": "NRG C4 read model: researchers",
+      "source_id": "researchers:c4-read-model",
+      "masked": false,
+      "title": "NRG C4 read model: researchers",
+      "publication_id": "researchers:c4-read-model",
+      "paper_id": "researchers:c4-read-model",
+      "pub_id": "researchers:c4-read-model"
+    },
+    {
+      "id": "2",
+      "source_type": "document_chunk",
+      "label": "NRG C4 read model: institutions",
+      "source_id": "institutions:c4-read-model",
+      "masked": false,
+      "title": "NRG C4 read model: institutions",
+      "publication_id": "institutions:c4-read-model",
+      "paper_id": "institutions:c4-read-model",
+      "pub_id": "institutions:c4-read-model"
+    }
+  ],
+  "source_data": {
+    "sql_query": "SELECT researcher, institution, state, research_area, h_index, funding_cr FROM c4_researcher_read_model WHERE topic IN ('Hydrogen Energy','Catalysis') ORDER BY h_index DESC LIMIT 5",
+    "rows": [
+      {
+        "researcher": "Ravi Jena",
+        "institution": "Gujarat Technological University",
+        "state": "Gujarat",
+        "department": "Mathematics",
+        "research_area": "Advanced Materials",
+        "secondary_research_areas": "Deep Learning|Hydrogen Energy|Computer Vision",
+        "h_index": 85,
+        "funding_cr": 9.95
+      },
+      {
+        "researcher": "Shweta Iyer",
+        "institution": "NIT Calicut",
+        "state": "Kerala",
+        "department": "Agricultural Engineering",
+        "research_area": "Nanotechnology",
+        "secondary_research_areas": "Machine Learning|Hydrogen Energy|Advanced Materials",
+        "h_index": 85,
+        "funding_cr": 3.5
+      },
+      {
+        "researcher": "Megha Thakkar",
+        "institution": "IICB Kolkata",
+        "state": "West Bengal",
+        "department": "Chemical Engineering",
+        "research_area": "Robotics",
+        "secondary_research_areas": "Agricultural Biotechnology|Hydrogen Energy|Precision Medicine",
+        "h_index": 84,
+        "funding_cr": 6.73
+      },
+      {
+        "researcher": "Shubham Mahapatra",
+        "institution": "IIT Delhi",
+        "state": "Delhi",
+        "department": "Pharmaceutical Sciences",
+        "research_area": "Blockchain Technology",
+        "secondary_research_areas": "Hydrogen Energy|Robotics",
+        "h_index": 84,
+        "funding_cr": 0.93
+      },
+      {
+        "researcher": "Ritu Jena",
+        "institution": "IIT Madras",
+        "state": "Tamil Nadu",
+        "department": "Earth Sciences",
+        "research_area": "Environmental Engineering",
+        "secondary_research_areas": "Natural Language Processing|Nuclear Energy|Proteomics|Hydrogen Energy",
+        "h_index": 83,
+        "funding_cr": 13.87
+      }
+    ],
+    "documents": []
+  },
+  "provenance": {
+    "planner": "c4_read_model",
+    "synth": "rule_based_read_model",
+    "verifier": "row_count_and_citation",
+    "cloud_synthesis_used": false
+  },
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "caveats": [
+    "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+  ],
+  "follow_up_suggestions": [],
+  "query_time_ms": 0,
+  "query": "Who are the top researchers in hydrogen catalysis?",
+  "response": "Hydrogen catalysis researcher evidence is resolved through hydrogen and catalysis terms in the researcher read model. Ravi Jena at Gujarat Technological University leads the visible slice with h-index 85. [cite:researchers:c4-read-model] [cite:institutions:c4-read-model]",
+  "status": "success",
+  "session_id": "glm-visible-query-browser-api",
+  "intent": "researcher_ranking",
+  "routing_decision": "fast_path",
+  "verification_status": true,
+  "verification": {
+    "status": true,
+    "safe_to_trust": true,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "citation_validity": 1,
+    "audit_event_id": "9aabeea1ce8f6b3e400bbb4aa829c67d788e136176cc39388b0339122b01985f"
+  },
+  "citation_validity": 1,
+  "plan": null,
+  "planner_metadata": {},
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.96,
+  "sql_anomaly_report": {},
+  "sql_query": "SELECT researcher, institution, state, research_area, h_index, funding_cr FROM c4_researcher_read_model WHERE topic IN ('Hydrogen Energy','Catalysis') ORDER BY h_index DESC LIMIT 5",
+  "sql_queries": [
+    "SELECT researcher, institution, state, research_area, h_index, funding_cr FROM c4_researcher_read_model WHERE topic IN ('Hydrogen Energy','Catalysis') ORDER BY h_index DESC LIMIT 5"
+  ],
+  "sql_results": [
+    {
+      "researcher": "Ravi Jena",
+      "institution": "Gujarat Technological University",
+      "state": "Gujarat",
+      "department": "Mathematics",
+      "research_area": "Advanced Materials",
+      "secondary_research_areas": "Deep Learning|Hydrogen Energy|Computer Vision",
+      "h_index": 85,
+      "funding_cr": 9.95
+    },
+    {
+      "researcher": "Shweta Iyer",
+      "institution": "NIT Calicut",
+      "state": "Kerala",
+      "department": "Agricultural Engineering",
+      "research_area": "Nanotechnology",
+      "secondary_research_areas": "Machine Learning|Hydrogen Energy|Advanced Materials",
+      "h_index": 85,
+      "funding_cr": 3.5
+    },
+    {
+      "researcher": "Megha Thakkar",
+      "institution": "IICB Kolkata",
+      "state": "West Bengal",
+      "department": "Chemical Engineering",
+      "research_area": "Robotics",
+      "secondary_research_areas": "Agricultural Biotechnology|Hydrogen Energy|Precision Medicine",
+      "h_index": 84,
+      "funding_cr": 6.73
+    },
+    {
+      "researcher": "Shubham Mahapatra",
+      "institution": "IIT Delhi",
+      "state": "Delhi",
+      "department": "Pharmaceutical Sciences",
+      "research_area": "Blockchain Technology",
+      "secondary_research_areas": "Hydrogen Energy|Robotics",
+      "h_index": 84,
+      "funding_cr": 0.93
+    },
+    {
+      "researcher": "Ritu Jena",
+      "institution": "IIT Madras",
+      "state": "Tamil Nadu",
+      "department": "Earth Sciences",
+      "research_area": "Environmental Engineering",
+      "secondary_research_areas": "Natural Language Processing|Nuclear Energy|Proteomics|Hydrogen Energy",
+      "h_index": 83,
+      "funding_cr": 13.87
+    }
+  ],
+  "retrieval_sources": [
+    "researchers",
+    "institutions"
+  ],
+  "synthesis_method": "rule_based_read_model",
+  "conversation_history": [],
+  "node_timings": {
+    "receiver": 0,
+    "planner": 0,
+    "router": 0,
+    "executor": 0,
+    "synthesizer": 0,
+    "verifier": 0
+  },
+  "warnings": [
+    {
+      "message": "C4 bounded read model used; no executor/RAG call required."
+    }
+  ],
+  "tier1_access_scope": "full_detail",
+  "cached": true
+}
