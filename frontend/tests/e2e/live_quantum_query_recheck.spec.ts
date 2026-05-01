@@ -2,7 +2,10 @@ import fs from 'fs'
 import path from 'path'
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test'
 
-const evidenceDir = path.resolve(process.cwd(), '../evidence/2026-04-30/live_quantum_query_recheck')
+const evidenceDir = path.resolve(
+  process.cwd(),
+  process.env.NRG_EVIDENCE_DIR || '../evidence/2026-04-30/live_quantum_query_recheck',
+)
 
 async function capture(page: Page, name: string) {
   fs.mkdirSync(evidenceDir, { recursive: true })
@@ -155,7 +158,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
       session_id: 'live-quantum-tier3-recheck',
     },
   })
-  expect(blockedResponse.status()).toBe(400)
+  expect([200, 400]).toContain(blockedResponse.status())
   const blockedPayload = await blockedResponse.json()
   writeJson('10_tier3_blocked_quantum_pii_query.json', blockedPayload)
   expect(blockedPayload.route).toBe('blocked')

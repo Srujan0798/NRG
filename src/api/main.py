@@ -5445,7 +5445,7 @@ async def health_check():
             health["status"] = "unhealthy"
         return health
 
-    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "1.0"))
+    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
     try:
         audit_health = await asyncio.wait_for(
             asyncio.to_thread(_resolve_audit_health),

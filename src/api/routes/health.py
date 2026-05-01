@@ -163,12 +163,17 @@ async def health_check():
         try:
             from src.audit import get_chain_health
 
+            audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
             audit_health = await asyncio.wait_for(
                 asyncio.to_thread(get_chain_health),
-                timeout=1.0,
+                timeout=audit_timeout_seconds,
             )
         except asyncio.TimeoutError:
-            audit_health = {"status": "timeout", "chain_valid": None, "message": "Audit-chain health timed out after 1.0s"}
+            audit_health = {
+                "status": "timeout",
+                "chain_valid": None,
+                "message": f"Audit-chain health timed out after {audit_timeout_seconds:.1f}s",
+            }
         except Exception as exc:
             audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
 

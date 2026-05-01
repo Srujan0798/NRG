@@ -1,0 +1,4 @@
+3.11.7 (main, Jan  7 2024, 23:23:46) [Clang 16.0.3 ]
+qdrant-client 1.11.3
+fastapi 0.115.0
+pytest 8.2.2
