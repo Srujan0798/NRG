@@ -1,0 +1,56 @@
+{
+  "query_id": "08e815f3-bd51-4cce-b5b1-8bef63b8fddb",
+  "answer_id": "0f2c7ea7-e16b-4639-bfb0-1e2d25dc61c5",
+  "audit_event_id": "1cffa5eeac6c4f4f04174605817aeec17b1af44774df89c4ee48e8cd7024ac3b",
+  "tier": 3,
+  "query": "[blocked by security policy]",
+  "question": "[blocked by security policy]",
+  "interpreted_question": "[blocked by security policy]",
+  "assumptions": [],
+  "route": "blocked",
+  "blocked": true,
+  "final_answer": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "response": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "status": "blocked",
+  "verification_status": false,
+  "confidence": {
+    "level": "needs_clarification",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION"
+  },
+  "verification": {
+    "status": "blocked",
+    "safe_to_trust": false,
+    "reason": "Security policy blocked this query: PROMPT_INJECTION",
+    "audit_event_id": "1cffa5eeac6c4f4f04174605817aeec17b1af44774df89c4ee48e8cd7024ac3b"
+  },
+  "answer_confidence": "needs_clarification",
+  "citations": [],
+  "source_data": {
+    "sql_query": null,
+    "rows": [],
+    "documents": []
+  },
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "caveats": [
+    "Security policy blocked this query: PROMPT_INJECTION"
+  ],
+  "follow_up_suggestions": [
+    "Show aggregate counts by institution",
+    "Show labs working in this area",
+    "Show public partnership routes"
+  ],
+  "query_time_ms": 0,
+  "sql_query": null,
+  "sql_results": [],
+  "retrieval_sources": [],
+  "warnings": [
+    {
+      "message": "Security policy blocked this query: PROMPT_INJECTION"
+    }
+  ],
+  "conversation_history": []
+}

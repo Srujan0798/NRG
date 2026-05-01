@@ -1,6 +1,6 @@
 # Repository Structure And Cleanup Plan
 
-Date: 2026-05-01
+Date: 2026-05-02
 
 This plan records the current repository structure, cleanup decisions, and the
 target company-level organization for NRG. It is intentionally conservative:
@@ -60,6 +60,8 @@ tool in the same commit:
 | Evidence binaries | Keep latest proof for now; later archive duplicates | Current handoff proof still references them |
 | `src/api/main.py` | Split later, not during cleanup wave | High-risk hot path |
 | Scripts | Consolidate later by category | Many are referenced by docs/tests |
+| Agent skills | Keep tracked `.agents/skills/` and `.claude/skills/`; remove untracked duplicate imports | Prevents copied marketplace/rewritten skill clutter from becoming project truth |
+| Root `AGENTS.md` | Keep as a short execution entry point | Prevents future agents from reading strategy-only Claude rules as universal coding rules |
 
 ## Target Repository Shape
 
@@ -74,6 +76,7 @@ NRG/
   src/
     api/
       main.py
+      query_response_utils.py
       routes/
       middleware/
       contracts/
@@ -223,6 +226,35 @@ Remaining route splits:
 
 - None. `src/api/main.py` still owns app setup, middleware, lifecycle, and the
   private answer-engine helper implementation that backs the query router.
+- 2026-05-02 wrap-up extracted query response support helpers into
+  `src/api/query_response_utils.py`: PII redaction, answer-confidence mapping,
+  SSE formatting, query/stream payload normalization, citation-token parsing,
+  and answer-record persistence. This was intentionally limited to helper
+  extraction because `src/api/query_helpers.py` and the live fast-path logic in
+  `src/api/main.py` currently diverge.
+
+Next backend split:
+
+- Reconcile `src/api/query_helpers.py` against the live fast-path code in
+  `src/api/main.py` before moving retrieval/fast-path branches. Do not switch
+  the query route to that helper module until messy-query, Dhairya, GLM,
+  Minimax, tier-shaping, and stream-contract tests prove behavior parity.
+
+### Wave 5.5: Agent Workflow Hygiene
+
+Completed in the 2026-05-02 wrap-up:
+
+- Removed 85 untracked `.agents/skills/*` duplicate directories. All 85 had a
+  matching `.claude/skills/<name>/SKILL.md`; 65 were exact `SKILL.md` matches
+  and the remaining 20 were automatic text rewrites with invalid `.Codex/...`
+  references.
+- Removed untracked `.codex/` local hook files after verifying the hook script
+  was byte-identical to `.claude/hooks/security_reminder_hook.py`.
+- Added `.codex/` and root `.npm-cache/` to `.gitignore` as local tool/cache
+  artifacts.
+- Replaced the root `AGENTS.md` with a concise cross-tool entry point that
+  points implementation agents to `.agents/AGENTS.md`, keeps source-truth rules
+  visible, and blocks unsupported "100% complete" claims without evidence.
 
 ### Wave 6: Documentation Rationalization
 

@@ -1,0 +1,48 @@
+{
+  "status": "healthy",
+  "last_run_time": "2026-05-01T21:36:51.814546+00:00",
+  "source": "local_volumetric_sqlite_proxy",
+  "row_floor": {
+    "academic_courses_details": 50000,
+    "innovations_at_various_stages_of_technology_readiness_level": 10000,
+    "innovation_grant_from_govt": 30000,
+    "combined_ipo_patent_data": 20000,
+    "publications": 100000,
+    "researchers": 5615
+  },
+  "queries": [
+    {
+      "id": "KILLER-01",
+      "last_run_time": "2026-05-01T21:36:51.581235+00:00",
+      "p95_latency_ms": 16.78,
+      "threshold_ms": 4000,
+      "row_count": 8,
+      "citation_count": 1,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_1_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_1.txt"
+    },
+    {
+      "id": "KILLER-02",
+      "last_run_time": "2026-05-01T21:36:51.690255+00:00",
+      "p95_latency_ms": 13.32,
+      "threshold_ms": 4000,
+      "row_count": 1,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_2_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_2.txt"
+    },
+    {
+      "id": "KILLER-03",
+      "last_run_time": "2026-05-01T21:36:51.814423+00:00",
+      "p95_latency_ms": 12.49,
+      "threshold_ms": 4000,
+      "row_count": 5,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_3_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_3.txt"
+    }
+  ]
+}

@@ -1,0 +1,218 @@
+{
+  "query_id": "719b40be-f503-4826-b323-230c3328d6eb",
+  "answer_id": "212da8d1-3c2b-4ac3-84f8-c6c8d4a7cfba",
+  "audit_event_id": "a82812d3c6a910740b23ff360bc347a9daa30e932cd0dce1707ed9c9c862d331",
+  "tier": 3,
+  "question": "best quantum researchers....",
+  "interpreted_question": "best quantum researchers....",
+  "assumptions": [],
+  "route": "sql",
+  "blocked": false,
+  "final_answer": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Researcher 1 | IISc Bangalore | Karnataka | Quantum Information Science | 84 | \u20b90.86 Cr |\n| 2 | Researcher 2 | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | \u20b90.83 Cr |\n| 3 | Researcher 3 | IIT Bombay | Maharashtra | Quantum Information Science | 83 | \u20b91.95 Cr |\n| 4 | Researcher 4 | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | \u20b90.98 Cr |\n| 5 | Researcher 5 | Delhi University | Delhi | Quantum Computing | 80 | \u20b910.95 Cr |\n\nAccess restricted: lower tiers show anonymized researcher labels and no direct contact details.",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations": [
+    {
+      "id": "1",
+      "source_type": "document_chunk",
+      "label": "NRG researcher catalogue: Quantum Computing",
+      "source_id": "nrg-researchers:quantum-computing",
+      "masked": false,
+      "title": "NRG researcher catalogue: Quantum Computing",
+      "publication_id": "nrg-researchers:quantum-computing",
+      "paper_id": "nrg-researchers:quantum-computing",
+      "pub_id": "nrg-researchers:quantum-computing"
+    },
+    {
+      "id": "2",
+      "source_type": "document_chunk",
+      "label": "NRG institution metadata supporting Quantum Computing",
+      "source_id": "nrg-institutions:quantum-computing",
+      "masked": false,
+      "title": "NRG institution metadata supporting Quantum Computing",
+      "publication_id": "nrg-institutions:quantum-computing",
+      "paper_id": "nrg-institutions:quantum-computing",
+      "pub_id": "nrg-institutions:quantum-computing"
+    }
+  ],
+  "source_data": {
+    "sql_query": null,
+    "rows": [
+      {
+        "name": "Researcher_c3eb352a",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86
+      },
+      {
+        "name": "Researcher_240e7e17",
+        "institution": "IIT Kharagpur",
+        "state": "West Bengal",
+        "department": "Sustainable Energy",
+        "research_area": "Robotics",
+        "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
+        "h_index": 84,
+        "funding_cr": 0.83
+      },
+      {
+        "name": "Researcher_7eb159ea",
+        "institution": "IIT Bombay",
+        "state": "Maharashtra",
+        "department": "Biotechnology",
+        "research_area": "Quantum Information Science",
+        "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
+        "h_index": 83,
+        "funding_cr": 1.95
+      },
+      {
+        "name": "Researcher_745b9a7a",
+        "institution": "IIT Gandhinagar",
+        "state": "Gujarat",
+        "department": "Agricultural Engineering",
+        "research_area": "VLSI Design",
+        "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
+        "h_index": 81,
+        "funding_cr": 0.98
+      },
+      {
+        "name": "Researcher_b96a18e0",
+        "institution": "Delhi University",
+        "state": "Delhi",
+        "department": "Pharmaceutical Sciences",
+        "research_area": "Quantum Computing",
+        "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
+        "h_index": 80,
+        "funding_cr": 10.95
+      }
+    ],
+    "documents": []
+  },
+  "provenance": {
+    "planner": "researcher_lookup_fast_path",
+    "synth": "rule_based",
+    "verifier": "row_count_and_citation",
+    "cloud_synthesis_used": false,
+    "nrg-researchers:quantum-computing": {
+      "found_in": "researchers",
+      "chunk_id": "quantum-computing"
+    },
+    "nrg-institutions:quantum-computing": {
+      "found_in": "institutions",
+      "chunk_id": "quantum-computing"
+    }
+  },
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "caveats": [
+    "{'message': 'Fast bounded synthesis used for researcher ranking query.'}"
+  ],
+  "follow_up_suggestions": [],
+  "query_time_ms": 0,
+  "query": "best quantum researchers....",
+  "response": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Researcher 1 | IISc Bangalore | Karnataka | Quantum Information Science | 84 | \u20b90.86 Cr |\n| 2 | Researcher 2 | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | \u20b90.83 Cr |\n| 3 | Researcher 3 | IIT Bombay | Maharashtra | Quantum Information Science | 83 | \u20b91.95 Cr |\n| 4 | Researcher 4 | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | \u20b90.98 Cr |\n| 5 | Researcher 5 | Delhi University | Delhi | Quantum Computing | 80 | \u20b910.95 Cr |\n\nAccess restricted: lower tiers show anonymized researcher labels and no direct contact details.",
+  "status": "success",
+  "session_id": "guru-shishya-industry-quantum_researchers",
+  "intent": "researcher_ranking",
+  "routing_decision": "fast_path",
+  "verification_status": true,
+  "verification": {
+    "status": true,
+    "safe_to_trust": true,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "citation_validity": 1.0,
+    "audit_event_id": "a82812d3c6a910740b23ff360bc347a9daa30e932cd0dce1707ed9c9c862d331"
+  },
+  "citation_validity": 1.0,
+  "plan": null,
+  "planner_metadata": {},
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.95,
+  "sql_anomaly_report": {},
+  "sql_query": null,
+  "sql_queries": [],
+  "sql_results": [
+    {
+      "name": "Researcher_c3eb352a",
+      "institution": "IISc Bangalore",
+      "state": "Karnataka",
+      "department": "Electrical Engineering",
+      "research_area": "Wind Energy",
+      "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+      "h_index": 84,
+      "funding_cr": 0.86
+    },
+    {
+      "name": "Researcher_240e7e17",
+      "institution": "IIT Kharagpur",
+      "state": "West Bengal",
+      "department": "Sustainable Energy",
+      "research_area": "Robotics",
+      "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
+      "h_index": 84,
+      "funding_cr": 0.83
+    },
+    {
+      "name": "Researcher_7eb159ea",
+      "institution": "IIT Bombay",
+      "state": "Maharashtra",
+      "department": "Biotechnology",
+      "research_area": "Quantum Information Science",
+      "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
+      "h_index": 83,
+      "funding_cr": 1.95
+    },
+    {
+      "name": "Researcher_745b9a7a",
+      "institution": "IIT Gandhinagar",
+      "state": "Gujarat",
+      "department": "Agricultural Engineering",
+      "research_area": "VLSI Design",
+      "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
+      "h_index": 81,
+      "funding_cr": 0.98
+    },
+    {
+      "name": "Researcher_b96a18e0",
+      "institution": "Delhi University",
+      "state": "Delhi",
+      "department": "Pharmaceutical Sciences",
+      "research_area": "Quantum Computing",
+      "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
+      "h_index": 80,
+      "funding_cr": 10.95
+    }
+  ],
+  "retrieval_sources": [],
+  "synthesis_method": "rule_based",
+  "conversation_history": [],
+  "node_timings": {
+    "receiver": 0.0,
+    "planner": 0.0,
+    "router": 0.0,
+    "executor": 0.0,
+    "synthesizer": 0.0,
+    "verifier": 0.0
+  },
+  "warnings": [
+    {
+      "message": "Fast bounded synthesis used for researcher ranking query."
+    },
+    "Response policy applied: pii_strip:tier3:debug_trace",
+    "Response policy applied: pii_strip:tier3:email",
+    "Response policy applied: pii_strip:tier3:personal_identifier",
+    "Response policy applied: pii_strip:tier3:personal_name"
+  ],
+  "tier3_access_scope": "industry_anonymized"
+}

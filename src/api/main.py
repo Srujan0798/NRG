@@ -24,7 +24,7 @@ from starlette.responses import Response, StreamingResponse
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
-from src.api.answer_contract import blocked_answer_payload, normalize_workflow_result
+from src.api.answer_contract import blocked_answer_payload
 from src.api.middleware.security import (
     SecurityHeadersMiddleware,
     PromptSanitiserMiddleware,
@@ -51,6 +51,16 @@ from src.api.response_filter import (
     apply_k_anonymity_threshold,
     filter_response_payload_for_tier,
 )
+from src.api.query_response_utils import (
+    answer_confidence_from_verification as _answer_confidence_from_verification,
+    extract_citations_from_text as _extract_citations_from_text,
+    normalise_query_answer_payload as _normalise_query_answer_payload,
+    normalise_stream_answer_payload as _normalise_stream_answer_payload,
+    persist_answer_record as _persist_answer_record,
+    redact_pii_from_response as _redact_pii_from_response,
+    schedule_answer_record_persist as _schedule_answer_record_persist,
+    sse as _sse,
+)
 from src.data.database import resolve_database_path
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
@@ -58,7 +68,6 @@ from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate
 from src.audit import log_query as audit_log_query
 from src.observability.health_checks import get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app
-from src.services.answer_records import get_answer_record_store
 from qdrant_client import QdrantClient
 
 if TYPE_CHECKING:
@@ -145,67 +154,6 @@ def _get_data_quality_health() -> dict[str, Any]:
         "generated_at": payload.get("generated_at"),
         "path": str(path),
     }
-
-
-def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
-    """Redact PII from API response fields.
-
-    Scans response text fields for Aadhaar, PAN, phone, email patterns
-    and replaces them with placeholders.
-
-    Returns:
-        (redacted_response, list_of_redacted_pii_types)
-    """
-    import re
-
-    pii_patterns = {
-        "AADHAAR": re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"),
-        "PAN": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b"),
-        "PHONE": re.compile(r"\b[6-9][0-9]{9}\b"),
-        "EMAIL": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
-    }
-
-    redacted_types: list[str] = []
-    redacted_response = response_data.copy()
-
-    def _redact_text(text: str) -> tuple[str, list[str]]:
-        """Redact PII from text, return (redacted_text, redacted_types)."""
-        if not isinstance(text, str):
-            return text, []
-        found_types = []
-        result = text
-        for pii_type, pattern in pii_patterns.items():
-            if pattern.search(result):
-                placeholder = f"[{pii_type}_REDACTED]"
-                result = pattern.sub(placeholder, result)
-                found_types.append(pii_type)
-        return result, found_types
-
-    text_fields_to_check = ["response", "final_answer", "warnings"]
-    for fname in text_fields_to_check:
-        if fname in redacted_response and isinstance(redacted_response[fname], str):
-            redacted_response[fname], found = _redact_text(redacted_response[fname])
-            redacted_types.extend(found)
-
-    if "citations" in redacted_response and isinstance(redacted_response["citations"], list):
-        redacted_citations = []
-        for citation in redacted_response["citations"]:
-            if isinstance(citation, dict):
-                redacted_citation = citation.copy()
-                for key in ["text", "context", "paper_title"]:
-                    if key in redacted_citation and isinstance(redacted_citation[key], str):
-                        redacted_citation[key], found = _redact_text(redacted_citation[key])
-                        redacted_types.extend(found)
-                redacted_citations.append(redacted_citation)
-            else:
-                redacted_citations.append(citation)
-        redacted_response["citations"] = redacted_citations
-
-    if redacted_types:
-        redacted_types = list(set(redacted_types))
-        logger.debug(f"PII redaction applied to response: {redacted_types}")
-
-    return redacted_response, redacted_types
 
 
 QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
@@ -337,16 +285,6 @@ async def _get_or_build_query_cache_singleflight(
         if value is not None:
             _api_cache.set(cache_key, value, ttl=ttl or QUERY_RESULT_CACHE_TTL_SECONDS)
         return value, False
-
-
-def _answer_confidence_from_verification(verification_status: Any) -> str:
-    if verification_status in (True, "ok", "pass"):
-        return "high"
-    if verification_status == "retry":
-        return "medium"
-    if verification_status in ("needs_clarification", "low_clarify"):
-        return "needs_clarification"
-    return "low"
 
 
 def _apply_tier_response_filter(
@@ -5120,8 +5058,8 @@ app.include_router(ingest_router)
 configure_query_router(
     query_stream_response=lambda request, token_payload, raw_request: _query_stream_response(
         request,
-        token_payload,
-        raw_request,
+        token_payload=token_payload,
+        raw_request=raw_request,
     ),
     query_handler=lambda request, token_payload, raw_request: _query_with_langgraph_impl(
         request,
@@ -5130,86 +5068,6 @@ configure_query_router(
     ),
 )
 app.include_router(query_router)
-
-
-def _sse(event: str, payload: Any) -> str:
-    data = payload if isinstance(payload, str) else json.dumps(payload, default=str)
-    return f"event: {event}\ndata: {data}\n\n"
-
-
-def _normalise_stream_answer_payload(
-    result: dict[str, Any],
-    *,
-    request: QueryRequest,
-    user_tier: int,
-    audit_event_id: str | None,
-) -> dict[str, Any]:
-    verification = result.get("verification_status", True)
-    return normalize_workflow_result(
-        question=request.query,
-        tier=user_tier,
-        audit_event_id=result.get("audit_event_id", audit_event_id),
-        elapsed_ms=0,
-        result={
-            **result,
-            "query_id": result.get("query_id", str(uuid.uuid4())),
-            "session_id": result.get("session_id", request.session_id),
-            "synthesized_response": result.get("synthesized_response") or result.get("response", ""),
-            "routing_decision": result.get("routing_decision", "text_to_sql"),
-            "verification_status": verification,
-            "answer_confidence": result.get("answer_confidence", _answer_confidence_from_verification(verification)),
-            "provenance": result.get("provenance", {"synth": "critical_path_stream"}),
-        },
-    )
-
-
-def _normalise_query_answer_payload(
-    request: QueryRequest,
-    *,
-    user_tier: int,
-    audit_event_id: str | None,
-    elapsed_ms: float,
-    result: dict[str, Any],
-    default_routing: str = "text_to_sql",
-    default_verification: bool = True,
-) -> dict[str, Any]:
-    normalized_result = {
-        **result,
-        "query_id": result.get("query_id", str(uuid.uuid4())),
-        "session_id": result.get("session_id", request.session_id),
-        "synthesized_response": result.get("synthesized_response") or result.get("response", ""),
-        "routing_decision": result.get("routing_decision", default_routing),
-        "verification_status": result.get("verification_status", default_verification),
-    }
-    return normalize_workflow_result(
-        question=request.query,
-        tier=user_tier,
-        audit_event_id=audit_event_id,
-        elapsed_ms=elapsed_ms,
-        result=normalized_result,
-    )
-
-
-def _persist_answer_record(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
-    if payload.get("status") != "success" or not payload.get("answer_id"):
-        return
-    try:
-        get_answer_record_store().save(
-            user_id=user_id,
-            session_id=session_id,
-            payload=payload,
-        )
-    except Exception:
-        logger.warning("Answer record persistence failed", exc_info=True)
-
-
-def _schedule_answer_record_persist(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        _persist_answer_record(user_id, session_id, payload)
-        return
-    loop.create_task(asyncio.to_thread(_persist_answer_record, user_id, session_id, payload))
 
 
 def _build_stream_answer_payload(
@@ -5383,15 +5241,6 @@ async def _query_stream_response(
             "X-Accel-Buffering": "no",
         },
     )
-
-
-def _extract_citations_from_text(text: str) -> list[dict]:
-    import re
-    citations = []
-    cite_pattern = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
-    for pub_id, chunk_id in cite_pattern.findall(text):
-        citations.append({"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id})
-    return citations
 
 
 async def _query_with_langgraph_impl(

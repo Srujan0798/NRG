@@ -1,0 +1,5 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand
+
+sh: jest: command not found

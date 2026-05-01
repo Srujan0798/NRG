@@ -1,0 +1,5 @@
+0db4351 refactor: extract spa fallback route
+13df994 refactor: register query api routes through router
+7ae6ef0 refactor: extract feedback and ingest api routes
+430593a refactor: extract telemetry api route
+a944df0 refactor: extract graph api routes

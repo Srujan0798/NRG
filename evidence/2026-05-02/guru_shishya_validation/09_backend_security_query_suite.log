@@ -1,0 +1,434 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 203 items / 7 deselected / 196 selected
+
+tests/contract/test_answer_engine_v1_contract.py [32m.[0m[32m.[0m[32m.[0m[32m                     [  1%][0m
+tests/contract/test_api_response_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                      [  5%][0m
+tests/contract/test_api_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                      [ 14%][0m
+tests/contract/test_pipeline_contracts.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                 [ 21%][0m
+tests/contract/test_query_endpoint.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                       [ 27%][0m
+tests/api/test_health_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                   [ 37%][0m
+tests/api/test_query_security_validation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m                     [ 41%][0m
+tests/api/test_live_hybrid_stream.py [31mF[0m[31m                                   [ 41%][0m
+tests/api/test_tier_response_filtering.py [32m.[0m[32m.[0m[31m                             [ 42%][0m
+tests/security/test_prompt_injection.py [32m.[0m[32m.[0m[32m.[0m[31m                              [ 44%][0m
+tests/security/test_sql_injection_blocked.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m           [ 53%][0m
+tests/security/test_pii_indian.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                            [ 58%][0m
+tests/security/test_tier_generalization.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m       [ 70%][0m
+tests/security/test_zero_leakage.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[31m                             [ 74%][0m
+tests/audit/test_chain_integrity.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                  [ 84%][0m
+tests/skills/test_text_to_sql.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                           [ 90%][0m
+tests/skills/test_text_to_sql_rewriter.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                           [ 92%][0m
+tests/skills/test_rag.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                                        [ 96%][0m
+tests/orchestration/test_query_catalog.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                         [100%][0m
+
+=================================== FAILURES ===================================
+[31m[1m_ test_live_stream_funding_policy_query_returns_hybrid_sql_and_document_proof __[0m
+  + Exception Group Traceback (most recent call last):
+  |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_utils.py", line 77, in collapse_excgroups
+  |     yield
+  |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 186, in __call__
+  |     async with anyio.create_task_group() as task_group:
+  |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/anyio/_backends/_asyncio.py", line 799, in __aexit__
+  |     raise BaseExceptionGroup(
+  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)
+  +-+---------------- 1 ----------------
+    | Traceback (most recent call last):
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 341, in from_call
+    |     result: Optional[TResult] = func()
+    |                                 ^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 241, in <lambda>
+    |     lambda: runtest_hook(item=item, **kwds), when=when, reraise=reraise
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/threadexception.py", line 87, in pytest_runtest_call
+    |     yield from thread_exception_runtest_hook()
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/threadexception.py", line 63, in thread_exception_runtest_hook
+    |     yield
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/unraisableexception.py", line 90, in pytest_runtest_call
+    |     yield from unraisable_exception_runtest_hook()
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/unraisableexception.py", line 65, in unraisable_exception_runtest_hook
+    |     yield
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/logging.py", line 850, in pytest_runtest_call
+    |     yield from self._runtest_for(item, "call")
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/logging.py", line 833, in _runtest_for
+    |     yield
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/capture.py", line 878, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/skipping.py", line 257, in pytest_runtest_call
+    |     return (yield)
+    |             ^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 183, in pytest_runtest_call
+    |     raise e
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/runner.py", line 173, in pytest_runtest_call
+    |     item.runtest()
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/python.py", line 1632, in runtest
+    |     self.ihook.pytest_pyfunc_call(pyfuncitem=self)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_hooks.py", line 512, in __call__
+    |     return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_manager.py", line 120, in _hookexec
+    |     return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 167, in _multicall
+    |     raise exception
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 139, in _multicall
+    |     teardown.throw(exception)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 53, in run_old_style_hookwrapper
+    |     return result.get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_result.py", line 103, in get_result
+    |     raise exc.with_traceback(tb)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 38, in run_old_style_hookwrapper
+    |     res = yield
+    |           ^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pluggy/_callers.py", line 121, in _multicall
+    |     res = hook_impl.function(*args)
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/python.py", line 162, in pytest_pyfunc_call
+    |     result = testfunction(**testargs)
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/tests/api/test_live_hybrid_stream.py", line 27, in test_live_stream_funding_policy_query_returns_hybrid_sql_and_document_proof
+    |     with client.stream(
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py", line 137, in __enter__
+    |     return next(self.gen)
+    |            ^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/httpx/_client.py", line 868, in stream
+    |     response = self.send(
+    |                ^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/httpx/_client.py", line 914, in send
+    |     response = self._send_handling_auth(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    |     response = self._send_handling_redirects(
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    |     response = self._send_single_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    |     response = transport.handle_request(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 381, in handle_request
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/testclient.py", line 378, in handle_request
+    |     portal.call(self.app, scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/anyio/from_thread.py", line 334, in call
+    |     return cast(T_Retval, self.start_task_soon(func, *args).result())
+    |                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py", line 456, in result
+    |     return self.__get_result()
+    |            ^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py", line 401, in __get_result
+    |     raise self._exception
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/anyio/from_thread.py", line 259, in _call_func
+    |     retval = await retval_or_awaitable
+    |              ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    |     await super().__call__(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/applications.py", line 113, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 187, in __call__
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 165, in __call__
+    |     await self.app(scope, receive, _send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/prometheus_fastapi_instrumentator/middleware.py", line 177, in __call__
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/prometheus_fastapi_instrumentator/middleware.py", line 175, in __call__
+    |     await self.app(scope, receive, send_wrapper)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+    |     with collapse_excgroups():
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_utils.py", line 83, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/auth/middleware.py", line 202, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+    |     raise app_exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+    |     with collapse_excgroups():
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_utils.py", line 83, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/middleware/security.py", line 288, in dispatch
+    |     return await call_next(request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+    |     raise app_exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+    |     with collapse_excgroups():
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_utils.py", line 83, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/middleware/security.py", line 81, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+    |     raise app_exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 185, in __call__
+    |     with collapse_excgroups():
+    |   File "/Users/srujansai/.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py", line 158, in __exit__
+    |     self.gen.throw(typ, value, traceback)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_utils.py", line 83, in collapse_excgroups
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 187, in __call__
+    |     response = await self.dispatch_func(request, call_next)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/main.py", line 4976, in dispatch
+    |     response = await call_next(request)
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 163, in call_next
+    |     raise app_exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/base.py", line 149, in coro
+    |     await self.app(scope, receive_or_disconnect, send_no_error)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py", line 20, in __call__
+    |     await responder(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py", line 39, in __call__
+    |     await self.app(scope, receive, self.send_with_gzip)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    |     await self.app(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 62, in __call__
+    |     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/routing.py", line 715, in __call__
+    |     await self.middleware_stack(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/routing.py", line 735, in app
+    |     await route.handle(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/routing.py", line 288, in handle
+    |     await self.app(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/routing.py", line 76, in app
+    |     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 62, in wrapped_app
+    |     raise exc
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 51, in wrapped_app
+    |     await app(scope, receive, sender)
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/starlette/routing.py", line 73, in app
+    |     response = await f(request)
+    |                ^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 301, in app
+    |     raw_response = await run_endpoint_function(
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 212, in run_endpoint_function
+    |     return await dependant.call(**values)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/routes/query.py", line 63, in query_stream_get
+    |     return await _stream_response(request, token_payload, raw_request)
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/routes/query.py", line 46, in _stream_response
+    |     return await _query_stream_response(request, token_payload, raw_request)
+    |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |   File "/Users/srujansai/Desktop/NRG/src/api/main.py", line 5059, in <lambda>
+    |     query_stream_response=lambda request, token_payload, raw_request: _query_stream_response(
+    |                                                                       ^^^^^^^^^^^^^^^^^^^^^^^
+    | TypeError: _query_stream_response() takes 1 positional argument but 3 were given
+    +------------------------------------
+
+[33mDuring handling of the above exception, another exception occurred:[0m
+[1m[31mtests/api/test_live_hybrid_stream.py[0m:27: in test_live_stream_funding_policy_query_returns_hybrid_sql_and_document_proof
+    [0m[94mwith[39;49;00m client.stream([90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py[0m:137: in __enter__
+    [0m[94mreturn[39;49;00m [96mnext[39;49;00m([96mself[39;49;00m.gen)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/httpx/_client.py[0m:868: in stream
+    [0mresponse = [96mself[39;49;00m.send([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/httpx/_client.py[0m:914: in send
+    [0mresponse = [96mself[39;49;00m._send_handling_auth([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/httpx/_client.py[0m:942: in _send_handling_auth
+    [0mresponse = [96mself[39;49;00m._send_handling_redirects([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/httpx/_client.py[0m:979: in _send_handling_redirects
+    [0mresponse = [96mself[39;49;00m._send_single_request(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/httpx/_client.py[0m:1014: in _send_single_request
+    [0mresponse = transport.handle_request(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/testclient.py[0m:381: in handle_request
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/testclient.py[0m:378: in handle_request
+    [0mportal.call([96mself[39;49;00m.app, scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/anyio/from_thread.py[0m:334: in call
+    [0m[94mreturn[39;49;00m cast(T_Retval, [96mself[39;49;00m.start_task_soon(func, *args).result())[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py[0m:456: in result
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.__get_result()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/concurrent/futures/_base.py[0m:401: in __get_result
+    [0m[94mraise[39;49;00m [96mself[39;49;00m._exception[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/anyio/from_thread.py[0m:259: in _call_func
+    [0mretval = [94mawait[39;49;00m retval_or_awaitable[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/fastapi/applications.py[0m:1054: in __call__
+    [0m[94mawait[39;49;00m [96msuper[39;49;00m().[92m__call__[39;49;00m(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/applications.py[0m:113: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.middleware_stack(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/errors.py[0m:187: in __call__
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/errors.py[0m:165: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive, _send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/prometheus_fastapi_instrumentator/middleware.py[0m:177: in __call__
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/prometheus_fastapi_instrumentator/middleware.py[0m:175: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive, send_wrapper)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:185: in __call__
+    [0m[94mwith[39;49;00m collapse_excgroups():[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py[0m:158: in __exit__
+    [0m[96mself[39;49;00m.gen.throw(typ, value, traceback)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_utils.py[0m:83: in collapse_excgroups
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:187: in __call__
+    [0mresponse = [94mawait[39;49;00m [96mself[39;49;00m.dispatch_func(request, call_next)[90m[39;49;00m
+[1m[31msrc/auth/middleware.py[0m:202: in dispatch
+    [0m[94mreturn[39;49;00m [94mawait[39;49;00m call_next(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:163: in call_next
+    [0m[94mraise[39;49;00m app_exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:149: in coro
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive_or_disconnect, send_no_error)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:185: in __call__
+    [0m[94mwith[39;49;00m collapse_excgroups():[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py[0m:158: in __exit__
+    [0m[96mself[39;49;00m.gen.throw(typ, value, traceback)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_utils.py[0m:83: in collapse_excgroups
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:187: in __call__
+    [0mresponse = [94mawait[39;49;00m [96mself[39;49;00m.dispatch_func(request, call_next)[90m[39;49;00m
+[1m[31msrc/api/middleware/security.py[0m:288: in dispatch
+    [0m[94mreturn[39;49;00m [94mawait[39;49;00m call_next(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:163: in call_next
+    [0m[94mraise[39;49;00m app_exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:149: in coro
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive_or_disconnect, send_no_error)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:185: in __call__
+    [0m[94mwith[39;49;00m collapse_excgroups():[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py[0m:158: in __exit__
+    [0m[96mself[39;49;00m.gen.throw(typ, value, traceback)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_utils.py[0m:83: in collapse_excgroups
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:187: in __call__
+    [0mresponse = [94mawait[39;49;00m [96mself[39;49;00m.dispatch_func(request, call_next)[90m[39;49;00m
+[1m[31msrc/api/middleware/security.py[0m:81: in dispatch
+    [0mresponse = [94mawait[39;49;00m call_next(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:163: in call_next
+    [0m[94mraise[39;49;00m app_exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:149: in coro
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive_or_disconnect, send_no_error)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:185: in __call__
+    [0m[94mwith[39;49;00m collapse_excgroups():[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/contextlib.py[0m:158: in __exit__
+    [0m[96mself[39;49;00m.gen.throw(typ, value, traceback)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_utils.py[0m:83: in collapse_excgroups
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:187: in __call__
+    [0mresponse = [94mawait[39;49;00m [96mself[39;49;00m.dispatch_func(request, call_next)[90m[39;49;00m
+[1m[31msrc/api/main.py[0m:4976: in dispatch
+    [0mresponse = [94mawait[39;49;00m call_next(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:163: in call_next
+    [0m[94mraise[39;49;00m app_exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/base.py[0m:149: in coro
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive_or_disconnect, send_no_error)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py[0m:20: in __call__
+    [0m[94mawait[39;49;00m responder(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/gzip.py[0m:39: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive, [96mself[39;49;00m.send_with_gzip)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/cors.py[0m:85: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py[0m:62: in __call__
+    [0m[94mawait[39;49;00m wrap_app_handling_exceptions([96mself[39;49;00m.app, conn)(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_exception_handler.py[0m:62: in wrapped_app
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_exception_handler.py[0m:51: in wrapped_app
+    [0m[94mawait[39;49;00m app(scope, receive, sender)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/routing.py[0m:715: in __call__
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.middleware_stack(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/routing.py[0m:735: in app
+    [0m[94mawait[39;49;00m route.handle(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/routing.py[0m:288: in handle
+    [0m[94mawait[39;49;00m [96mself[39;49;00m.app(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/routing.py[0m:76: in app
+    [0m[94mawait[39;49;00m wrap_app_handling_exceptions(app, request)(scope, receive, send)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_exception_handler.py[0m:62: in wrapped_app
+    [0m[94mraise[39;49;00m exc[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/_exception_handler.py[0m:51: in wrapped_app
+    [0m[94mawait[39;49;00m app(scope, receive, sender)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/starlette/routing.py[0m:73: in app
+    [0mresponse = [94mawait[39;49;00m f(request)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/fastapi/routing.py[0m:301: in app
+    [0mraw_response = [94mawait[39;49;00m run_endpoint_function([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/fastapi/routing.py[0m:212: in run_endpoint_function
+    [0m[94mreturn[39;49;00m [94mawait[39;49;00m dependant.call(**values)[90m[39;49;00m
+[1m[31msrc/api/routes/query.py[0m:63: in query_stream_get
+    [0m[94mreturn[39;49;00m [94mawait[39;49;00m _stream_response(request, token_payload, raw_request)[90m[39;49;00m
+[1m[31msrc/api/routes/query.py[0m:46: in _stream_response
+    [0m[94mreturn[39;49;00m [94mawait[39;49;00m _query_stream_response(request, token_payload, raw_request)[90m[39;49;00m
+[1m[31msrc/api/main.py[0m:5059: in <lambda>
+    [0mquery_stream_response=[94mlambda[39;49;00m request, token_payload, raw_request: _query_stream_response([90m[39;49;00m
+[1m[31mE   TypeError: _query_stream_response() takes 1 positional argument but 3 were given[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-01T21:36:55.035254+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/auth/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12776, "thread_id": 8413098240, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/auth/login "HTTP/1.1 200 OK"
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/api/test_live_hybrid_stream.py::[1mtest_live_stream_funding_policy_query_returns_hybrid_sql_and_document_proof[0m - TypeError: _query_stream_response() takes 1 positional argument but 3 were ...
+[31m============ [31m[1m1 failed[0m, [32m194 passed[0m, [33m1 skipped[0m, [33m7 deselected[0m[31m in 9.09s[0m[31m ============[0m

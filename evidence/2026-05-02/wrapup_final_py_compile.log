@@ -1,0 +1,1 @@
+$ python3 -m py_compile src/api/main.py src/api/query_response_utils.py src/api/routes/*.py

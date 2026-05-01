@@ -1,0 +1,71 @@
+{"timestamp": "2026-05-01T21:36:49.619088+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:49.665878+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:49.778687+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.293273+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 12781, "thread_id": 6152974336, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.297088+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.415828+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.525699+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.540570+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.555938+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.572760+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.597414+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.619752+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.647533+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.660058+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.672965+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.686337+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.706259+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.732236+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.771583+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.782291+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.793630+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.805941+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-01T21:36:51.824630+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/api/health/killer_queries \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 12781, "thread_id": 8413098240, "extra": {}}
+{
+  "status": "healthy",
+  "last_run_time": "2026-05-01T21:36:51.814546+00:00",
+  "source": "local_volumetric_sqlite_proxy",
+  "row_floor": {
+    "academic_courses_details": 50000,
+    "innovations_at_various_stages_of_technology_readiness_level": 10000,
+    "innovation_grant_from_govt": 30000,
+    "combined_ipo_patent_data": 20000,
+    "publications": 100000,
+    "researchers": 5615
+  },
+  "queries": [
+    {
+      "id": "KILLER-01",
+      "last_run_time": "2026-05-01T21:36:51.581235+00:00",
+      "p95_latency_ms": 16.78,
+      "threshold_ms": 4000,
+      "row_count": 8,
+      "citation_count": 1,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_1_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_1.txt"
+    },
+    {
+      "id": "KILLER-02",
+      "last_run_time": "2026-05-01T21:36:51.690255+00:00",
+      "p95_latency_ms": 13.32,
+      "threshold_ms": 4000,
+      "row_count": 1,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_2_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_2.txt"
+    },
+    {
+      "id": "KILLER-03",
+      "last_run_time": "2026-05-01T21:36:51.814423+00:00",
+      "p95_latency_ms": 12.49,
+      "threshold_ms": 4000,
+      "row_count": 5,
+      "citation_count": 2,
+      "status": "healthy",
+      "evidence_path": "evidence/2026-05-02/guru_shishya_validation/killer/killer_query_3_response.json",
+      "explain_path": "evidence/2026-05-02/guru_shishya_validation/killer/explain_killer_3.txt"
+    }
+  ]
+}

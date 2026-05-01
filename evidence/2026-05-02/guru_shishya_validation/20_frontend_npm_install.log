@@ -1,0 +1,35 @@
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: postcss-load-config@6.0.1
+npm warn Found: peerOptional yaml@"^2.4.2" from the root project
+npm warn
+npm warn Could not resolve dependency:
+npm warn peerOptional yaml@"^2.4.2" from the root project
+npm warn ERESOLVE overriding peer dependency
+npm warn While resolving: react-reconciler@0.26.2
+npm warn Found: react@18.3.1
+npm warn node_modules/react
+npm warn   react@"^18.2.0" from the root project
+npm warn   90 more (@emotion/use-insertion-effect-with-fallbacks, ...)
+npm warn
+npm warn Could not resolve dependency:
+npm warn peer react@"^17.0.2" from react-reconciler@0.26.2
+npm warn node_modules/react-reconciler
+npm warn   react-reconciler@"^0.26.2" from ink@3.2.0
+npm warn   node_modules/ink
+npm warn
+npm warn Conflicting peer dependency: react@17.0.2
+npm warn node_modules/react
+npm warn   peer react@"^17.0.2" from react-reconciler@0.26.2
+npm warn   node_modules/react-reconciler
+npm warn     react-reconciler@"^0.26.2" from ink@3.2.0
+npm warn     node_modules/ink
+npm error code EACCES
+npm error syscall open
+npm error path /Users/srujansai/.npm/_cacache/index-v5/99/aa/125ade68f9bca1d65a843c2aab353f720ddf9eee7f97db630d6de39132d0
+npm error errno EACCES
+npm error
+npm error Your cache folder contains root-owned files, due to a bug in previous versions of npm which has since been addressed.
+npm error
+npm error To permanently fix this problem, please run:
+npm error   sudo chown -R 501:20 "/Users/srujansai/.npm"
+npm error A complete log of this run can be found in: /Users/srujansai/.npm/_logs/2026-05-01T21_37_28_114Z-debug-0.log

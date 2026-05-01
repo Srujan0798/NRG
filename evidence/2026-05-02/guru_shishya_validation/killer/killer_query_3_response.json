@@ -1,0 +1,522 @@
+{
+  "case": {
+    "id": "KILLER-03",
+    "nl": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+    "expected_sql_pattern": "WITH grants AS (...), patents AS (...)\n... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0\n",
+    "must_contain": [
+      "WITH",
+      "innovation_grant_from_govt",
+      "combined_ipo_patent_data",
+      "HAVING"
+    ],
+    "expected_min_rows": 1,
+    "p95_latency_ms": 4000,
+    "why_impossible_elsewhere": "Multi-table multi-year CTE with HAVING completeness \u2014 exactly the Dhairya Q3/Q16 failure pattern.",
+    "insight_for_user": "Surfaces efficiency leaders for performance-based funding decisions."
+  },
+  "responses": {
+    "researcher": {
+      "elapsed_ms": 16.07,
+      "payload": {
+        "query_id": "d213f948-c018-4e71-b68e-5288d3333f55",
+        "answer_id": "37eb0bc0-f23f-46a5-99a7-305b3ec88595",
+        "audit_event_id": "82a32380e9fd30eb6953405296d2d41974ca925ba74344287e0aaacdefd957de",
+        "tier": 1,
+        "question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "interpreted_question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: innovation_grant_from_govt",
+            "source_id": "innovation_grant_from_govt:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: innovation_grant_from_govt",
+            "publication_id": "innovation_grant_from_govt:c4-read-model",
+            "paper_id": "innovation_grant_from_govt:c4-read-model",
+            "pub_id": "innovation_grant_from_govt:c4-read-model"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: researchers",
+            "source_id": "researchers:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: researchers",
+            "publication_id": "researchers:c4-read-model",
+            "paper_id": "researchers:c4-read-model",
+            "pub_id": "researchers:c4-read-model"
+          }
+        ],
+        "source_data": {
+          "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+          "rows": [
+            {
+              "institute": "IIT Madras",
+              "grant_count": 3755,
+              "funding_cr": 3907.71
+            },
+            {
+              "institute": "IIT Bombay",
+              "grant_count": 3754,
+              "funding_cr": 3903.59
+            },
+            {
+              "institute": "IIT Delhi",
+              "grant_count": 3751,
+              "funding_cr": 3898.35
+            },
+            {
+              "institute": "IIT Hyderabad",
+              "grant_count": 3748,
+              "funding_cr": 3148.22
+            },
+            {
+              "institute": "IIT Roorkee",
+              "grant_count": 3747,
+              "funding_cr": 3147.82
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "c4_read_model",
+          "synth": "rule_based_read_model",
+          "verifier": "row_count_and_citation",
+          "cloud_synthesis_used": false
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "response": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-03-researcher",
+        "intent": "funding_aggregate",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "82a32380e9fd30eb6953405296d2d41974ca925ba74344287e0aaacdefd957de"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.96,
+        "sql_anomaly_report": {},
+        "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+        "sql_queries": [
+          "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5"
+        ],
+        "sql_results": [
+          {
+            "institute": "IIT Madras",
+            "grant_count": 3755,
+            "funding_cr": 3907.71
+          },
+          {
+            "institute": "IIT Bombay",
+            "grant_count": 3754,
+            "funding_cr": 3903.59
+          },
+          {
+            "institute": "IIT Delhi",
+            "grant_count": 3751,
+            "funding_cr": 3898.35
+          },
+          {
+            "institute": "IIT Hyderabad",
+            "grant_count": 3748,
+            "funding_cr": 3148.22
+          },
+          {
+            "institute": "IIT Roorkee",
+            "grant_count": 3747,
+            "funding_cr": 3147.82
+          }
+        ],
+        "retrieval_sources": [
+          "innovation_grant_from_govt",
+          "researchers"
+        ],
+        "synthesis_method": "rule_based_read_model",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "C4 bounded read model used; no executor/RAG call required."
+          }
+        ],
+        "tier1_access_scope": "full_detail"
+      }
+    },
+    "government": {
+      "elapsed_ms": 25.99,
+      "payload": {
+        "query_id": "0e8387ee-e290-4844-a202-b075e1c6a79e",
+        "answer_id": "c3961fbf-238d-4615-9d41-78be79060e90",
+        "audit_event_id": "05d2d4e30219095ee3f04c1f23153b6419faf7ce8f1da021e6e1833f7acdc13e",
+        "tier": 2,
+        "question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "interpreted_question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: innovation_grant_from_govt",
+            "source_id": "innovation_grant_from_govt:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: innovation_grant_from_govt",
+            "publication_id": "innovation_grant_from_govt:c4-read-model",
+            "paper_id": "innovation_grant_from_govt:c4-read-model",
+            "pub_id": "innovation_grant_from_govt:c4-read-model"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: researchers",
+            "source_id": "researchers:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: researchers",
+            "publication_id": "researchers:c4-read-model",
+            "paper_id": "researchers:c4-read-model",
+            "pub_id": "researchers:c4-read-model"
+          }
+        ],
+        "source_data": {
+          "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+          "rows": [
+            {
+              "institute": "IIT Madras",
+              "grant_count": 3755,
+              "funding_cr": 3907.71
+            },
+            {
+              "institute": "IIT Bombay",
+              "grant_count": 3754,
+              "funding_cr": 3903.59
+            },
+            {
+              "institute": "IIT Delhi",
+              "grant_count": 3751,
+              "funding_cr": 3898.35
+            },
+            {
+              "institute": "IIT Hyderabad",
+              "grant_count": 3748,
+              "funding_cr": 3148.22
+            },
+            {
+              "institute": "IIT Roorkee",
+              "grant_count": 3747,
+              "funding_cr": 3147.82
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "c4_read_model",
+          "synth": "rule_based_read_model",
+          "verifier": "row_count_and_citation",
+          "cloud_synthesis_used": false
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "response": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-03-government",
+        "intent": "funding_aggregate",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "05d2d4e30219095ee3f04c1f23153b6419faf7ce8f1da021e6e1833f7acdc13e"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.96,
+        "sql_anomaly_report": {},
+        "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+        "sql_queries": [
+          "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5"
+        ],
+        "sql_results": [
+          {
+            "institute": "IIT Madras",
+            "grant_count": 3755,
+            "funding_cr": 3907.71
+          },
+          {
+            "institute": "IIT Bombay",
+            "grant_count": 3754,
+            "funding_cr": 3903.59
+          },
+          {
+            "institute": "IIT Delhi",
+            "grant_count": 3751,
+            "funding_cr": 3898.35
+          },
+          {
+            "institute": "IIT Hyderabad",
+            "grant_count": 3748,
+            "funding_cr": 3148.22
+          },
+          {
+            "institute": "IIT Roorkee",
+            "grant_count": 3747,
+            "funding_cr": 3147.82
+          }
+        ],
+        "retrieval_sources": [
+          "innovation_grant_from_govt",
+          "researchers"
+        ],
+        "synthesis_method": "rule_based_read_model",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "C4 bounded read model used; no executor/RAG call required."
+          }
+        ],
+        "tier2_access_scope": "government_aggregate"
+      }
+    },
+    "industry": {
+      "elapsed_ms": 39.26,
+      "payload": {
+        "query_id": "5f2dab5b-9772-418d-8f04-e990b78ea888",
+        "answer_id": "1e8faf7a-dced-42c1-9c49-28b1752ebad8",
+        "audit_event_id": "bc4090a0ac9e4292e5820151782cce7688971eb71cb6f22e574880ed62a21794",
+        "tier": 3,
+        "question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "interpreted_question": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "assumptions": [],
+        "route": "sql",
+        "blocked": false,
+        "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
+        "confidence": {
+          "level": "high",
+          "reason": "Evidence and citations passed verification."
+        },
+        "citations": [
+          {
+            "id": "1",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: innovation_grant_from_govt",
+            "source_id": "innovation_grant_from_govt:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: innovation_grant_from_govt",
+            "publication_id": "innovation_grant_from_govt:c4-read-model",
+            "paper_id": "innovation_grant_from_govt:c4-read-model",
+            "pub_id": "innovation_grant_from_govt:c4-read-model"
+          },
+          {
+            "id": "2",
+            "source_type": "document_chunk",
+            "label": "NRG C4 read model: researchers",
+            "source_id": "researchers:c4-read-model",
+            "masked": false,
+            "title": "NRG C4 read model: researchers",
+            "publication_id": "researchers:c4-read-model",
+            "paper_id": "researchers:c4-read-model",
+            "pub_id": "researchers:c4-read-model"
+          }
+        ],
+        "source_data": {
+          "sql_query": null,
+          "rows": [
+            {
+              "institute": "IIT Madras",
+              "grant_count": 3755,
+              "funding_cr": 3907.71
+            },
+            {
+              "institute": "IIT Bombay",
+              "grant_count": 3754,
+              "funding_cr": 3903.59
+            },
+            {
+              "institute": "IIT Delhi",
+              "grant_count": 3751,
+              "funding_cr": 3898.35
+            },
+            {
+              "institute": "IIT Hyderabad",
+              "grant_count": 3748,
+              "funding_cr": 3148.22
+            },
+            {
+              "institute": "IIT Roorkee",
+              "grant_count": 3747,
+              "funding_cr": 3147.82
+            }
+          ],
+          "documents": []
+        },
+        "provenance": {
+          "planner": "c4_read_model",
+          "synth": "rule_based_read_model",
+          "verifier": "row_count_and_citation",
+          "cloud_synthesis_used": false
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 0,
+        "query": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+        "response": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
+        "status": "success",
+        "session_id": "lb3-evidence-KILLER-03-industry",
+        "intent": "funding_aggregate",
+        "routing_decision": "fast_path",
+        "verification_status": true,
+        "verification": {
+          "status": true,
+          "safe_to_trust": true,
+          "confidence": {
+            "level": "high",
+            "reason": "Evidence and citations passed verification."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "bc4090a0ac9e4292e5820151782cce7688971eb71cb6f22e574880ed62a21794"
+        },
+        "citation_validity": 1.0,
+        "plan": null,
+        "planner_metadata": {},
+        "answer_confidence": "high",
+        "answer_confidence_score": 0.96,
+        "sql_anomaly_report": {},
+        "sql_query": null,
+        "sql_queries": [],
+        "sql_results": [
+          {
+            "institute": "IIT Madras",
+            "grant_count": 3755,
+            "funding_cr": 3907.71
+          },
+          {
+            "institute": "IIT Bombay",
+            "grant_count": 3754,
+            "funding_cr": 3903.59
+          },
+          {
+            "institute": "IIT Delhi",
+            "grant_count": 3751,
+            "funding_cr": 3898.35
+          },
+          {
+            "institute": "IIT Hyderabad",
+            "grant_count": 3748,
+            "funding_cr": 3148.22
+          },
+          {
+            "institute": "IIT Roorkee",
+            "grant_count": 3747,
+            "funding_cr": 3147.82
+          }
+        ],
+        "retrieval_sources": [],
+        "synthesis_method": "rule_based_read_model",
+        "conversation_history": [],
+        "node_timings": {
+          "receiver": 0.0,
+          "planner": 0.0,
+          "router": 0.0,
+          "executor": 0.0,
+          "synthesizer": 0.0,
+          "verifier": 0.0
+        },
+        "warnings": [
+          {
+            "message": "C4 bounded read model used; no executor/RAG call required."
+          },
+          "Response policy applied: pii_strip:tier3:debug_trace"
+        ],
+        "tier3_access_scope": "industry_anonymized"
+      }
+    }
+  },
+  "latency_runs_ms": [
+    10.72,
+    11.22,
+    12.49
+  ],
+  "p95_latency_ms": 12.49,
+  "captured_at": "2026-05-01T21:36:51.809456+00:00",
+  "row_floor": {
+    "academic_courses_details": 50000,
+    "innovations_at_various_stages_of_technology_readiness_level": 10000,
+    "innovation_grant_from_govt": 30000,
+    "combined_ipo_patent_data": 20000,
+    "publications": 100000,
+    "researchers": 5615
+  }
+}

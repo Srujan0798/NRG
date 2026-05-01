@@ -56,6 +56,7 @@ qdrant_storage/
 
 node_modules/
 .npm
+.npm-cache/
 frontend/.npm-cache/
 frontend/dist/
 frontend/build/
@@ -93,6 +94,7 @@ claude_docs_backup/
 .protocol/
 .claude/settings.local.json
 .env.local
+.codex/
 
 # --- AI Tool Skill Directories (auto-installed by various AI IDEs) ---
 # These are generic marketplace skills NOT specific to NRG.
