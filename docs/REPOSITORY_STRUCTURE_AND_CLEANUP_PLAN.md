@@ -203,11 +203,14 @@ Started in the backend split pass:
   `/api/providers/health`, `/api/vectors/health`, and killer-query health
   behavior from `src/api/main.py`, configured against the app-level DB, JWT,
   audit, drift, data-quality, and Qdrant dependencies.
+- Extracted graph visualization and internal Tier 1 response-shape diff routes
+  into `src/api/routes/graph.py`, configured against app-level DB, cache,
+  release-seed graph, tier history, and tier response filter helpers.
 
 Remaining route splits:
 
 - Query and streaming routes.
-- Graph routes.
+- Feedback, ingestion, telemetry, and SPA shell routes.
 
 ### Wave 6: Documentation Rationalization
 

@@ -1,40 +1,95 @@
-"""Graph visualization endpoints."""
+"""Graph visualization and internal tier-diff endpoints."""
 
 from __future__ import annotations
 
-from collections import deque
+from collections.abc import Callable
 from typing import Any, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel
 
-from src.api.deps import (
-    GraphQueryRequest,
-    _api_cache,
-    _apply_tier_response_filter,
-    get_db,
-    QUERY_RESULT_CACHE_TTL_SECONDS,
-)
-from src.api.logging_config import get_logger
-from src.api.query_helpers import _release_seed_graph
 from src.auth.middleware import get_current_user
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit
 
-router = APIRouter(prefix="/query", tags=["graph"])
-logger = get_logger(__name__)
+router = APIRouter(tags=["graph"])
+
+_get_db: Callable[[], Any] | None = None
+_api_cache: Any | None = None
+_tier_response_filter: Callable[..., Any] | None = None
+_release_seed_graph: Callable[[str | None, int], dict[str, Any]] | None = None
+_tier_history_snapshot: Callable[[], dict[str, Any]] | None = None
+_query_result_cache_ttl_seconds = 300
 
 
-@router.post("/graph")
+class GraphQueryRequest(BaseModel):
+    query: str
+    depth: int = 2
+
+
+def configure_graph_router(
+    *,
+    db_getter: Callable[[], Any],
+    api_cache: Any,
+    tier_response_filter: Callable[..., Any],
+    release_seed_graph: Callable[[str | None, int], dict[str, Any]],
+    tier_history_snapshot: Callable[[], dict[str, Any]],
+    query_result_cache_ttl_seconds: int,
+) -> None:
+    """Bind graph routes to app-level DB/cache/filter helpers."""
+    global _get_db, _api_cache, _tier_response_filter
+    global _release_seed_graph, _tier_history_snapshot, _query_result_cache_ttl_seconds
+
+    _get_db = db_getter
+    _api_cache = api_cache
+    _tier_response_filter = tier_response_filter
+    _release_seed_graph = release_seed_graph
+    _tier_history_snapshot = tier_history_snapshot
+    _query_result_cache_ttl_seconds = query_result_cache_ttl_seconds
+
+
+def _db() -> Any:
+    if _get_db is None:
+        raise RuntimeError("Graph router is not configured with a DB getter")
+    return _get_db()
+
+
+def _cache() -> Any:
+    if _api_cache is None:
+        raise RuntimeError("Graph router is not configured with an API cache")
+    return _api_cache
+
+
+def _apply_tier_response_filter(payload: Any, tier: int, **kwargs) -> Any:
+    if _tier_response_filter is None:
+        raise RuntimeError("Graph router is not configured with a tier response filter")
+    return _tier_response_filter(payload, tier, **kwargs)
+
+
+def _release_graph(topic: str | None, tier: int) -> dict[str, Any]:
+    if _release_seed_graph is None:
+        raise RuntimeError("Graph router is not configured with release seed graph data")
+    return _release_seed_graph(topic, tier)
+
+
+def _tier_snapshot() -> dict[str, Any]:
+    if _tier_history_snapshot is None:
+        raise RuntimeError("Graph router is not configured with a tier history snapshot")
+    return _tier_history_snapshot()
+
+
+@router.post("/query/graph")
 async def post_graph_query(
     request: GraphQueryRequest,
     token_payload: dict = Depends(get_current_user),
-    raw_request=None,
+    raw_request: Request = None,
 ):
+    """Return a collaboration subgraph via recursive CTE where supported."""
     depth = min(max(request.depth, 1), 3)
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
     user_id = token_payload.get("sub", "anonymous")
 
-    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+    allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(
         user_id, token_payload.get("tier", 1), client_ip
     )
     if not allowed:
@@ -44,14 +99,14 @@ async def post_graph_query(
     if not validation["valid"]:
         raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
-    db = get_db()
+    db = _db()
     tier = token_payload.get("tier", 1)
     topic_pattern = f"%{request.query.strip()}%"
 
-    nodes: list[dict] = []
-    edges: list[dict] = []
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
     node_counter = 0
-    _node_ids: dict[str, str] = {}
+    node_ids: dict[str, str] = {}
 
     def add_node(label: str, node_type: str, **props) -> str:
         nonlocal node_counter
@@ -125,8 +180,8 @@ async def post_graph_query(
             """)
             result = session.execute(rcte_fallback, {"pattern": topic_pattern})
 
-        _researcher_ids: set[str] = set()
-        _institution_ids: set[str] = set()
+        researcher_ids: set[str] = set()
+        institution_ids: set[str] = set()
 
         for row in result:
             rid = row[0]
@@ -136,31 +191,31 @@ async def post_graph_query(
             inst_name = row[5]
             inst_state = row[6]
 
-            if rid not in _node_ids:
+            if rid not in node_ids:
                 if tier == 3:
-                    anon_label = f"Researcher-{len(_node_ids) + 1}"
+                    label = f"Researcher-{len(node_ids) + 1}"
                 else:
-                    anon_label = name if name else f"Researcher-{len(_node_ids) + 1}"
-                node_key = add_node(anon_label, "author", area=area or None)
-                _node_ids[rid] = node_key
-                _researcher_ids.add(rid)
+                    label = name if name else f"Researcher-{len(node_ids) + 1}"
+                node_key = add_node(label, "author", area=area or None)
+                node_ids[rid] = node_key
+                researcher_ids.add(rid)
                 if inst_id:
-                    _institution_ids.add(inst_id)
+                    institution_ids.add(inst_id)
 
-            if inst_id and inst_id not in _node_ids:
+            if inst_id and inst_id not in node_ids:
                 node_key = add_node(inst_name or "Unknown Institution", "institution", state=inst_state)
-                _node_ids[inst_id] = node_key
-                _institution_ids.add(inst_id)
+                node_ids[inst_id] = node_key
+                institution_ids.add(inst_id)
 
-            if rid in _node_ids and inst_id in _node_ids:
+            if rid in node_ids and inst_id in node_ids:
                 edges.append({
-                    "source": _node_ids[rid],
-                    "target": _node_ids[inst_id],
+                    "source": node_ids[rid],
+                    "target": node_ids[inst_id],
                     "type": "affiliated",
                     "weight": 1,
                 })
 
-        if _researcher_ids:
+        if researcher_ids:
             try:
                 from sqlalchemy import bindparam
 
@@ -177,20 +232,20 @@ async def post_graph_query(
                 """).bindparams(bindparam("researcher_ids", expanding=True))
                 collab_result = session.execute(
                     collab_stmt,
-                    {"researcher_ids": list(_researcher_ids)},
+                    {"researcher_ids": list(researcher_ids)},
                 )
                 for row in collab_result:
-                    if row[0] in _node_ids and row[1] in _node_ids:
+                    if row[0] in node_ids and row[1] in node_ids:
                         edges.append({
-                            "source": _node_ids[row[0]],
-                            "target": _node_ids[row[1]],
+                            "source": node_ids[row[0]],
+                            "target": node_ids[row[1]],
                             "type": "collaborated",
                             "weight": 1,
                         })
             except Exception:
                 pass
 
-    result_data: dict = {
+    result_data: dict[str, Any] = {
         "nodes": nodes,
         "edges": edges,
         "query": request.query,
@@ -214,12 +269,12 @@ async def post_graph_query(
     )
 
 
-@router.get("/graph")
+@router.get("/query/graph")
 async def get_graph_data(
     topic: Optional[str] = None,
     token_payload: dict = Depends(get_current_user),
-    raw_request=None,
 ):
+    """Get graph data for research network visualization."""
     tier = token_payload.get("tier", 1)
     user_id = token_payload.get("sub", "anonymous")
     if topic:
@@ -228,10 +283,11 @@ async def get_graph_data(
             raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
     cache_key = f"graph:{topic or 'all'}:tier:{tier}"
-    cached = _api_cache.get(cache_key)
+    cached = _cache().get(cache_key)
     if cached is not None:
         return _apply_tier_response_filter(
-            cached, tier,
+            cached,
+            tier,
             user_id=token_payload.get("sub"),
             jwt_kid=token_payload.get("kid"),
             endpoint="/query/graph",
@@ -239,26 +295,25 @@ async def get_graph_data(
 
     if topic and any(term in topic.lower() for term in ("hydrogen", "fuel cell", "renewable", "solar")):
         result = _apply_tier_response_filter(
-            _release_seed_graph(topic, tier),
+            _release_graph(topic, tier),
             tier,
             user_id=token_payload.get("sub"),
             jwt_kid=token_payload.get("kid"),
             endpoint="/query/graph",
         )
-        _api_cache.set(cache_key, result, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+        _cache().set(cache_key, result, ttl=_query_result_cache_ttl_seconds)
         return result
 
-    db = get_db()
-
-    nodes = []
-    edges = []
+    db = _db()
+    nodes: list[dict[str, Any]] = []
+    edges: list[dict[str, Any]] = []
     node_counter = 0
 
-    def add_node(label, type, **props):
+    def add_node(label, node_type, **props):
         nonlocal node_counter
-        node_id = f"{type[0]}{node_counter}"
+        node_id = f"{node_type[0]}{node_counter}"
         node_counter += 1
-        nodes.append({"id": node_id, "label": label, "type": type, **props})
+        nodes.append({"id": node_id, "label": label, "type": node_type, **props})
         return node_id
 
     with db.get_session() as session:
@@ -324,7 +379,10 @@ async def get_graph_data(
 
     warnings = []
     if topic and not researchers:
-        warnings.append({"message": f"No graph data found for topic '{topic}'", "topic": topic})
+        warnings.append({
+            "message": f"No graph data found for topic '{topic}'",
+            "topic": topic,
+        })
         return _apply_tier_response_filter(
             {"nodes": [], "edges": [], "warnings": warnings},
             tier,
@@ -345,9 +403,9 @@ async def get_graph_data(
                 iid_params,
             )
         else:
-            inst_result = session.execute(
-                sa_text2("SELECT institution_id, name, state FROM institutions LIMIT 20")
-            )
+            inst_result = session.execute(sa_text2(
+                "SELECT institution_id, name, state FROM institutions LIMIT 20"
+            ))
 
         for row in inst_result:
             iid = add_node(row[1], "institution", state=row[2])
@@ -361,9 +419,9 @@ async def get_graph_data(
                 r_params,
             )
         else:
-            aff_result = session.execute(
-                sa_text2("SELECT researcher_id, institution_id FROM researchers LIMIT 50")
-            )
+            aff_result = session.execute(sa_text2(
+                "SELECT researcher_id, institution_id FROM researchers LIMIT 50"
+            ))
 
         for row in aff_result:
             if row[0] in researchers and row[1] in institutions:
@@ -382,15 +440,16 @@ async def get_graph_data(
         jwt_kid=token_payload.get("kid"),
         endpoint="/query/graph",
     )
-    _api_cache.set(cache_key, result, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+    _cache().set(cache_key, result, ttl=_query_result_cache_ttl_seconds)
     return result
 
 
-@router.get("/internal/tier_diff")
+@router.get("/api/internal/tier_diff")
 async def get_internal_tier_diff(
     token_payload: dict = Depends(get_current_user),
-    raw_request=None,
+    raw_request: Request = None,
 ):
+    """Return recent response-shape differences for Tier 1 operators."""
     tier = token_payload.get("tier", 1)
     if tier != 1:
         raise HTTPException(status_code=403, detail="Tier 1 access required")
@@ -407,47 +466,7 @@ async def get_internal_tier_diff(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
             )
         )
-    except Exception:
-        logger.warning("Tier diff audit binding failed", exc_info=True)
-        raise HTTPException(status_code=500, detail="Audit binding required")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="Audit binding required") from exc
 
-    return _tier_history_snapshot()
-
-
-def _tier_history_snapshot():
-    from collections import deque
-
-    _tier_response_history: dict[int, deque[dict[str, Any]]] = {
-        1: deque(maxlen=100),
-        2: deque(maxlen=100),
-        3: deque(maxlen=100),
-    }
-
-    snapshots: dict[int, set[str]] = {}
-    for tier, entries in _tier_response_history.items():
-        columns: set[str] = set()
-        for entry in entries:
-            columns.update(entry.get("columns", []))
-        snapshots[tier] = columns
-
-    def diff(left: int, right: int) -> dict[str, Any]:
-        left_cols = snapshots.get(left, set())
-        right_cols = snapshots.get(right, set())
-        return {
-            f"only_tier_{left}": sorted(left_cols - right_cols),
-            f"only_tier_{right}": sorted(right_cols - left_cols),
-            "shared": sorted(left_cols & right_cols),
-        }
-
-    return {
-        "window": {f"tier_{tier}": len(entries) for tier, entries in sorted(_tier_response_history.items())},
-        "diffs": {
-            "tier1_vs_tier2": diff(1, 2),
-            "tier1_vs_tier3": diff(1, 3),
-            "tier2_vs_tier3": diff(2, 3),
-        },
-        "recent": {
-            f"tier_{tier}": list(entries)[-5:]
-            for tier, entries in sorted(_tier_response_history.items())
-        },
-    }
+    return _tier_snapshot()
