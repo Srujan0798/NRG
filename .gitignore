@@ -9,6 +9,10 @@ __pycache__/
 *.so
 
 .env
+.env.dev
+.env.prod
+.env.staging
+.env.*.local
 .jwt_secret
 *.key
 !.gitkeep

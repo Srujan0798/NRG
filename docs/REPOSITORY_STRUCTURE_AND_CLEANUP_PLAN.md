@@ -142,11 +142,17 @@ Completed in this pass:
 
 ### Wave 2: Root And Runtime Hygiene
 
-- Review tracked `.env.*` files for secrets and convert to examples if needed.
-- Move or delete root one-off test launchers after reference checks:
-  `test_all_personas.js`, `test_full_website.py`, `test_runner.js`.
-- Decide whether root `package.json` is still needed or if frontend-only Node
-  tooling is enough.
+Completed in this pass:
+
+- Removed tracked runtime env files from git index while preserving local copies:
+  `.env.dev`, `.env.local`, `.env.prod`, and `.env.staging`.
+- Added ignore rules for runtime env variants and added
+  `.env.staging.example` as the tracked staging template.
+- Removed stale root one-off browser launchers:
+  `test_all_personas.js`, `test_full_website.py`, and `test_runner.js`.
+- Removed stale root Playwright/npm files. Browser tooling is owned by
+  `frontend/package.json`, `frontend/playwright.config.ts`, and
+  `frontend/tests/playwright.config.ts`.
 
 ### Wave 3: Evidence Slimming
 
