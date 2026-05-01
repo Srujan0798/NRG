@@ -1,5 +1,7 @@
 """DPDP 2023 Consent Management Service with data retention policies."""
 
+import os
+import time
 import uuid
 import logging
 from functools import lru_cache
@@ -41,7 +43,16 @@ class ConsentService:
 
     def __init__(self, db_path: Optional[str] = None):
         self.db_path = resolve_database_path(db_path)
+        self._consent_cache_ttl_seconds = float(os.getenv("NRG_CONSENT_CACHE_TTL_SECONDS", "5"))
+        self._has_consent_cache: dict[tuple[str, str], tuple[float, bool]] = {}
         self._init_table()
+
+    def _invalidate_consent_cache(self, user_id: str, scope: str | None = None) -> None:
+        if scope is not None:
+            self._has_consent_cache.pop((user_id, scope), None)
+            return
+        for key in [key for key in self._has_consent_cache if key[0] == user_id]:
+            self._has_consent_cache.pop(key, None)
 
     def _init_table(self):
         """Initialize consent_ledger table."""
@@ -111,6 +122,7 @@ class ConsentService:
                 "terms_version": self.CURRENT_TERMS_VERSION,
             }
             _audit_consent_event("consent_granted", user_id, scope, result)
+            self._invalidate_consent_cache(user_id, scope)
             return result
         except Exception as e:
             result = {"success": False, "error": str(e)}
@@ -139,6 +151,7 @@ class ConsentService:
         if success:
             result = {"success": True, "scope": scope, "revoked_at": now}
             _audit_consent_event("consent_revoked", user_id, scope, result)
+            self._invalidate_consent_cache(user_id, scope)
             return result
         result = {"success": False, "scope": scope, "error": "Consent not found or already revoked"}
         _audit_consent_event("consent_revoke_failed", user_id, scope, result)
@@ -204,18 +217,43 @@ class ConsentService:
 
     def has_consent(self, user_id: str, scope: str) -> bool:
         """Check if user has active, non-expired, current-terms consent for scope."""
+        cache_key = (user_id, scope)
+        cached = self._has_consent_cache.get(cache_key)
+        now_monotonic = time.monotonic()
+        if cached is not None:
+            expires_at, value = cached
+            if now_monotonic < expires_at:
+                return value
+            self._has_consent_cache.pop(cache_key, None)
+
         consent = self.get_consent(user_id, scope)
         if consent is None or not consent["active"]:
+            self._has_consent_cache[cache_key] = (
+                now_monotonic + self._consent_cache_ttl_seconds,
+                False,
+            )
             return False
         if consent.get("terms_version", 0) < self.CURRENT_TERMS_VERSION:
+            self._has_consent_cache[cache_key] = (
+                now_monotonic + self._consent_cache_ttl_seconds,
+                False,
+            )
             return False
         if consent.get("expires_at"):
             try:
                 exp_dt = datetime.fromisoformat(consent["expires_at"].replace("Z", "+00:00"))
                 if datetime.now(timezone.utc) > exp_dt:
+                    self._has_consent_cache[cache_key] = (
+                        now_monotonic + self._consent_cache_ttl_seconds,
+                        False,
+                    )
                     return False
             except Exception:
                 pass
+        self._has_consent_cache[cache_key] = (
+            now_monotonic + self._consent_cache_ttl_seconds,
+            True,
+        )
         return True
 
     def export_user_data(self, user_id: str) -> Dict[str, Any]:
@@ -274,6 +312,7 @@ class ConsentService:
 
         conn.commit()
         conn.close()
+        self._invalidate_consent_cache(user_id)
 
         result = {
             "success": True,

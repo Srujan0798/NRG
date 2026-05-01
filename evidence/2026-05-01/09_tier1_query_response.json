@@ -1,0 +1,12 @@
+{
+  "tier": 1,
+  "query": "top AI funding institutions",
+  "result": {
+    "status": "blocked",
+    "response": "Security violation: RATE_LIMITED",
+    "http_status": 429,
+    "warnings": [
+      "Security violation: RATE_LIMITED"
+    ]
+  }
+}

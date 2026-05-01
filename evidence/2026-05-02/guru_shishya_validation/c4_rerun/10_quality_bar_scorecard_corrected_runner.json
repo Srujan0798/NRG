@@ -1,0 +1,154 @@
+{
+  "timestamp": "2026-05-01T22:21:37.886448+00:00",
+  "overall": "5/6",
+  "is_6_6": false,
+  "scores": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C3": "PASS",
+    "C4": "FAIL",
+    "C5": "PASS",
+    "C6": "PASS"
+  },
+  "results": {
+    "C1": {
+      "name": "DPDP-Compliant Indian PII Detection",
+      "test_file": "tests/security/test_pii_compliance.py",
+      "min_pass_rate": 1.0,
+      "description": "8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "total": 10,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 0.22s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C2": {
+      "name": "Per-User Audit Binding (Non-Repudiation)",
+      "test_file": "tests/security/test_per_user_audit_binding.py",
+      "min_pass_rate": 1.0,
+      "description": "26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 30 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 86%]\n....                                                                     [100%]\n\n============================== 30 passed in 0.12s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C3": {
+      "name": "Multi-Hop Intent Decomposition (DAG Planner)",
+      "test_file": "tests/orchestration/test_multi_hop_planner.py",
+      "min_pass_rate": 1.0,
+      "description": "28 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "total": 28,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================== 28 passed in 0.86s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C4": {
+      "name": "Production SLOs (P99 <500ms, \u22651000 concurrent)",
+      "test_file": "tests/performance/test_slo_compliance.py",
+      "min_pass_rate": 0.83,
+      "description": "P99<500ms, \u22651000 concurrent, citation rate >80%, SLO breach detection",
+      "test_count_attr": "total",
+      "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
+      "result": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 1,
+        "passed_rate": 0.0,
+        "locust_exit_code": 1,
+        "requested_users": 1000,
+        "spawn_rate": 100,
+        "run_time": "5m",
+        "locust_file": "tests/load/locustfile_c4.py",
+        "preissued_tokens": [
+          "LOAD_TEST_GOV_TOKEN",
+          "LOAD_TEST_INDUSTRY_TOKEN",
+          "LOAD_TEST_RESEARCHER_TOKEN"
+        ],
+        "has_p99_ok": false,
+        "has_concurrent_1000": true,
+        "p99_ms": null,
+        "p99_threshold_ms": 500.0,
+        "p99_ok": false,
+        "failure_rate": 0.8656,
+        "max_failure_rate": 0.0,
+        "failure_rate_ok": false,
+        "total_samples": null,
+        "sample_count_ok": false,
+        "c4_pass_line": false,
+        "c4_fail_line": false,
+        "raw_output": "-----------\nPOST     /query                                                                         80415 69292(86.17%) |   2476       1    8173   2400 |  162.00      135.90\nGET      /stats                                                                          2811 2811(100.00%) |   2196       1    6262   2000 |    7.30        7.30\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     83226 72103(86.64%) |   2466       1    8173   2400 |  169.30      143.20\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         80985 69775(86.16%) |   2477       1    8173   2400 |  207.40      176.40\nGET      /stats                                                                          2828 2828(100.00%) |   2197       1    6262   2000 |    8.00        8.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     83813 72603(86.62%) |   2468       1    8173   2400 |  215.40      184.40\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         81607 70309(86.16%) |   2478       1    8173   2400 |  203.30      169.60\nGET      /stats                                                                          2854 2854(100.00%) |   2196       1    6262   2000 |    7.00        7.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     84461 73163(86.62%) |   2468       1    8173   2400 |  210.30      176.60\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         81834 70504(86.15%) |   2479       1    8173   2400 |  255.60      215.30\nGET      /stats                                                                          2859 2859(100.00%) |   2196       1    6262   2000 |    8.70        8.70\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     84693 73363(86.62%) |   2469       1    8173   2400 |  264.30      224.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         82040 70656(86.12%) |   2482       1    8173   2400 |  272.60      233.30\nGET      /stats                                                                          2867 2867(100.00%) |   2201       1    6262   2000 |   10.70       10.70\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     84907 73523(86.59%) |   2472       1    8173   2400 |  283.30      244.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         82698 71228(86.13%) |   2502       1    8173   2400 |  242.70      204.90\nGET      /stats                                                                          2895 2895(100.00%) |   2226       1    6262   2000 |    8.30        8.30\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     85593 74123(86.60%) |   2493       1    8173   2400 |  251.00      213.20\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         83124 71574(86.11%) |   2510       1    8173   2400 |  198.20      164.50\nGET      /stats                                                                          2909 2909(100.00%) |   2228       1    6262   2000 |    6.70        6.70\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     86033 74483(86.57%) |   2500       1    8173   2400 |  204.90      171.20\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         83811 72172(86.11%) |   2510       1    8173   2400 |  209.20      178.50\nGET      /stats                                                                          2934 2934(100.00%) |   2225       1    6262   2000 |    8.40        8.40\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     86745 75106(86.58%) |   2500       1    8173   2400 |  217.60      186.90\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         84477 72762(86.13%) |   2509       1    8173   2400 |  212.70      182.20\nGET      /stats                                                                          2961 2961(100.00%) |   2223       1    6262   2000 |    9.60        9.60\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     87438 75723(86.60%) |   2499       1    8173   2400 |  222.30      191.80\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         85020 73223(86.12%) |   2508       1    8173   2400 |  252.40      214.30\nGET      /stats                                                                          2980 2980(100.00%) |   2222       1    6262   2000 |    9.70        9.70\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     88000 76203(86.59%) |   2498       1    8173   2400 |  262.10      224.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         85691 73795(86.12%) |   2509       1    8173   2400 |  277.20      237.80\nGET      /stats                                                                          3008 3008(100.00%) |   2222       1    6262   2000 |   10.20       10.20\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     88699 76803(86.59%) |   2500       1    8173   2400 |  287.40      248.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         86230 74256(86.11%) |   2509       1    8173   2400 |  300.50      259.70\nGET      /stats                                                                          3027 3027(100.00%) |   2221       1    6262   2000 |   11.40       11.40\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     89257 77283(86.58%) |   2499       1    8173   2400 |  311.90      271.10\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         86699 74640(86.09%) |   2508       1    8173   2400 |  311.20      268.10\nGET      /stats                                                                          3043 3043(100.00%) |   2221       1    6262   2000 |   11.00       11.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     89742 77683(86.56%) |   2498       1    8173   2400 |  322.20      279.10\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         87382 75234(86.10%) |   2509       1    8173   2400 |  295.80      251.60\nGET      /stats                                                                          3067 3067(100.00%) |   2221       1    6262   2000 |   10.60       10.60\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     90449 78301(86.57%) |   2500       1    8173   2400 |  306.40      262.20\n\n[2026-05-02 03:51:34,663] MacBook-Air/INFO/locust.main: --run-time limit reached, shutting down\n[2026-05-02 03:51:34,836] MacBook-Air/INFO/locust.main: writing html report to file: /Users/srujansai/Desktop/NRG/.cache/locust_report.html\n[2026-05-02 03:51:34,838] MacBook-Air/INFO/locust.main: Shutting down (exit code 1)\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                             0     0(0.00%) |      0       0       0      0 |    0.00        0.00\nGET      /stats                                                                             0     0(0.00%) |      0       0       0      0 |    0.00        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     90716 78523(86.56%) |   2500       1    8173   2400 |  302.85      262.15\n\nResponse time percentiles (approximated)\nType     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n         Aggregated                                                                           2400   2800   3000   3200   3800   4600   5400   5900   6900   7900   8200  90716\n\nError report\n# occurrences      Error                                                                                               \n------------------|---------------------------------------------------------------------------------------------------------------------------------------------\n3071               GET /stats: HTTP 401                                                                                \n75452              POST /query: HTTP 401                                                                               \n------------------|---------------------------------------------------------------------------------------------------------------------------------------------\n\n"
+      }
+    },
+    "C5": {
+      "name": "Vector Drift Monitoring + Auto-Retrain Trigger",
+      "test_file": "scripts/vector_drift_check.py",
+      "min_pass_rate": 1.0,
+      "description": "Drift check script: cosine shift detection, reindex trigger. Requires Qdrant on port 6333.",
+      "test_count_attr": "exit_code",
+      "note": "Script runs. Qdrant required for vector retrieval + cosine shift detection.",
+      "result": {
+        "status": "pass",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 2,
+        "passed_rate": 1.0,
+        "partial": false,
+        "live_qdrant_skipped": true,
+        "scheduler_status": "pass",
+        "scheduler_passed": true,
+        "scheduler_interval_seconds": 60,
+        "scheduler_cosine_shift_threshold": 0.05,
+        "scheduler_reindex_endpoint": "/api/reindex",
+        "scheduler_raw_output": "{\n  \"status\": \"dry_run\",\n  \"interval_seconds\": 60,\n  \"cosine_shift_threshold\": 0.05,\n  \"reindex_endpoint\": \"/api/reindex\",\n  \"baseline_command\": \"/Users/srujansai/Desktop/NRG/.venv/bin/python /Users/srujansai/Desktop/NRG/scripts/vector_drift_check.py --establish-baseline --json\"\n}\n",
+        "has_reindex_trigger": false,
+        "has_baseline_established": false,
+        "has_stable": false,
+        "has_cosine_check": false,
+        "script_completed": false,
+        "has_drift_check": true,
+        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-05-02 03:51:35 INFO     Starting NRG Vector Drift Detection\n2026-05-02 03:51:35 INFO     SLO target: drift_score >= 0.85\n2026-05-02 03:51:35 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-05-02 03:51:35 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 84.5ms\n"
+      }
+    },
+    "C6": {
+      "name": "Schema Allowlist Before Cloud LLM",
+      "test_file": "tests/security/test_egress_allowlist.py",
+      "min_pass_rate": 1.0,
+      "description": "35 tests: 20+ egress leak attempts blocked, all audit-logged",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "total": 35,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 0.61s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    }
+  }
+}

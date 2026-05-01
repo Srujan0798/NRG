@@ -17,12 +17,15 @@ Usage:
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
 import time
 from datetime import datetime, UTC
 from pathlib import Path
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 SCORECARD_JSON = Path(__file__).parent / "quality_bar_scorecard.json"
 ROOT = Path(__file__).parent.parent
@@ -35,7 +38,12 @@ TESTS_C4A = "tests/performance/test_slo_compliance.py"
 TESTS_C5 = "scripts/vector_drift_check.py"
 TESTS_C5_SCHEDULER = "scripts/vector_drift_scheduler.py"
 TESTS_C6 = "tests/security/test_egress_allowlist.py"
-LOCUST_FILE = "tests/load/locustfile.py"
+LOCUST_FILE = "tests/load/locustfile_c4.py"
+LOCUST_USERS = int(os.getenv("NRG_C4_LOCUST_USERS", "1000"))
+LOCUST_SPAWN_RATE = int(os.getenv("NRG_C4_LOCUST_SPAWN_RATE", "100"))
+LOCUST_RUN_TIME = os.getenv("NRG_C4_LOCUST_RUN_TIME", "5m")
+C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
+C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 
 CONSTRAINTS = {
     "C1": {
@@ -298,6 +306,182 @@ def _run_drift_scheduler_dry_run() -> dict:
     }
 
 
+def _extract_locust_report_metrics(report_path: Path) -> dict:
+    """Read aggregate C4 metrics from Locust's generated HTML report."""
+    if not report_path.exists():
+        return {}
+    text = report_path.read_text(encoding="utf-8", errors="ignore")
+
+    requests_statistics = []
+    marker = "window.templateArgs = "
+    marker_index = text.find(marker)
+    if marker_index >= 0:
+        try:
+            payload, _ = json.JSONDecoder().raw_decode(text[marker_index + len(marker) :])
+            requests_statistics = payload.get("requests_statistics", [])
+        except json.JSONDecodeError:
+            requests_statistics = []
+
+    if not requests_statistics:
+        stats_match = re.search(r'"requests_statistics"\s*:\s*(\[[^\]]+\])', text)
+        if stats_match:
+            try:
+                requests_statistics = json.loads(stats_match.group(1))
+            except json.JSONDecodeError:
+                requests_statistics = []
+
+    if not requests_statistics:
+        return {}
+
+    aggregate: dict = {}
+    endpoint_metrics: dict[str, dict] = {}
+    for stat in requests_statistics:
+        if not isinstance(stat, dict):
+            continue
+        name = stat.get("name")
+        num_requests = stat.get("num_requests")
+        num_failures = stat.get("num_failures")
+        p99_ms = stat.get("response_time_percentile_0.99")
+        failure_rate = None
+        if num_requests and num_failures is not None:
+            failure_rate = num_failures / num_requests
+        metric = {
+            "p99_ms": p99_ms,
+            "failure_rate": failure_rate,
+            "total_samples": int(num_requests) if num_requests is not None else None,
+        }
+        if name == "Aggregated":
+            aggregate = metric
+        elif name and name.startswith("/query::"):
+            endpoint_metrics[name] = {
+                "num_requests": int(num_requests) if num_requests is not None else None,
+                "num_failures": int(num_failures) if num_failures is not None else None,
+                "failure_rate": failure_rate,
+                "p99_ms": p99_ms,
+            }
+
+    if not aggregate:
+        return {"endpoint_metrics": endpoint_metrics} if endpoint_metrics else {}
+    if endpoint_metrics:
+        aggregate["endpoint_metrics"] = endpoint_metrics
+    return aggregate
+
+
+def _extract_c4_metrics(output: str, report_path: Path | None = None) -> dict:
+    """Parse the maintained C4 Locust output into strict numeric SLO metrics."""
+    clean = _strip_ansi(output)
+    p99_ms = None
+    total_samples = None
+    failure_rate = None
+    in_percentile_table = False
+
+    for line in clean.splitlines():
+        p99_match = re.search(r"\bP99\b[\s:=-]*([0-9][0-9,]*(?:\.[0-9]+)?)\s*ms", line, flags=re.I)
+        if p99_match:
+            p99_ms = float(p99_match.group(1).replace(",", ""))
+
+        sample_match = re.search(r"Total samples\s*:\s*([0-9][0-9,]*)", line, flags=re.I)
+        if sample_match:
+            total_samples = int(sample_match.group(1).replace(",", ""))
+
+        aggregated_match = re.match(
+            r"\s*Aggregated\s+(?P<reqs>\d+)\s+(?P<fails>\d+)\((?P<rate>[0-9.]+)%\)",
+            line,
+        )
+        if aggregated_match:
+            failure_rate = float(aggregated_match.group("rate")) / 100.0
+
+        if "Response time percentiles" in line:
+            in_percentile_table = True
+            continue
+
+        if in_percentile_table and "99%" in line and "99.9%" in line and "# reqs" in line:
+            continue
+
+        if in_percentile_table and re.match(r"\s*Aggregated\s+", line):
+            numbers = [
+                float(value.replace(",", ""))
+                for value in re.findall(r"\b[0-9][0-9,]*(?:\.[0-9]+)?\b", line)
+            ]
+            if len(numbers) >= 12:
+                p99_ms = numbers[7]
+                total_samples = int(numbers[-1])
+
+    if report_path is not None:
+        report_metrics = _extract_locust_report_metrics(report_path)
+        p99_ms = report_metrics.get("p99_ms", p99_ms)
+        failure_rate = report_metrics.get("failure_rate", failure_rate)
+        total_samples = report_metrics.get("total_samples", total_samples)
+    else:
+        report_metrics = {}
+
+    c4_pass_line = any("C4 PASS" in line for line in clean.splitlines())
+    c4_fail_line = any("C4 FAIL" in line for line in clean.splitlines())
+    p99_ok = p99_ms is not None and p99_ms < C4_P99_THRESHOLD_MS
+    failure_rate_ok = failure_rate is not None and failure_rate <= C4_MAX_FAILURE_RATE
+    sample_count_ok = total_samples is not None and total_samples > 0
+
+    return {
+        "p99_ms": p99_ms,
+        "p99_threshold_ms": C4_P99_THRESHOLD_MS,
+        "p99_ok": p99_ok,
+        "failure_rate": failure_rate,
+        "max_failure_rate": C4_MAX_FAILURE_RATE,
+        "failure_rate_ok": failure_rate_ok,
+        "total_samples": total_samples,
+        "sample_count_ok": sample_count_ok,
+        "c4_pass_line": c4_pass_line,
+        "c4_fail_line": c4_fail_line,
+        "endpoint_metrics": report_metrics.get("endpoint_metrics", {}),
+        **({"locust_report": str(report_path)} if report_path is not None else {}),
+    }
+
+
+def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
+    data = json.dumps(payload).encode("utf-8")
+    req = urllib_request.Request(
+        url,
+        data=data,
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib_request.urlopen(req, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (urllib_error.URLError, urllib_error.HTTPError, TimeoutError, json.JSONDecodeError):
+        return None
+
+
+def _preissue_load_tokens(api_host: str) -> dict[str, str]:
+    """Issue one token per persona before Locust starts so C4 measures query load."""
+    credentials = {
+        "LOAD_TEST_RESEARCHER_TOKEN": (
+            os.getenv("LOAD_TEST_RESEARCHER_USER", "researcher_user"),
+            os.getenv("LOAD_TEST_RESEARCHER_PASS", "researcher-pass"),
+        ),
+        "LOAD_TEST_GOV_TOKEN": (
+            os.getenv("LOAD_TEST_GOV_USER", "gov_user"),
+            os.getenv("LOAD_TEST_GOV_PASS", "government-pass"),
+        ),
+        "LOAD_TEST_INDUSTRY_TOKEN": (
+            os.getenv("LOAD_TEST_INDUSTRY_USER", "industry_user"),
+            os.getenv("LOAD_TEST_INDUSTRY_PASS", "industry-pass"),
+        ),
+    }
+    issued: dict[str, str] = {}
+    for env_name, (username, password) in credentials.items():
+        if os.getenv(env_name):
+            continue
+        payload = _post_json(
+            f"http://{api_host}:8000/auth/login",
+            {"username": username, "password": password},
+        )
+        token = (payload or {}).get("access_token")
+        if token:
+            issued[env_name] = token
+    return issued
+
+
 def _run_c4_load_test(verbose: bool = False) -> dict:
     """Run C4 1000-concurrent-user load test via locust."""
     import socket
@@ -328,15 +512,26 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             "note": "Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first.",
         }
 
+    locust_report = ROOT / ".cache" / "locust_report.html"
+    locust_report.parent.mkdir(parents=True, exist_ok=True)
+    issued_tokens = _preissue_load_tokens(api_host)
+    env = os.environ.copy()
+    env.update(issued_tokens)
+    available_token_envs = sorted(
+        name
+        for name in ("LOAD_TEST_RESEARCHER_TOKEN", "LOAD_TEST_GOV_TOKEN", "LOAD_TEST_INDUSTRY_TOKEN")
+        if env.get(name)
+    )
+
     cmd = [
         str(VENV_PYTEST), "-m", "locust",
         "-f", str(ROOT / LOCUST_FILE),
         "--headless",
-        "-u", "1000",
-        "-r", "100",
-        "--run-time", "5m",
+        "-u", str(LOCUST_USERS),
+        "-r", str(LOCUST_SPAWN_RATE),
+        "--run-time", LOCUST_RUN_TIME,
         "--host", f"http://{api_host}:8000",
-        "--html", str(ROOT / ".cache" / "locust_report.html"),
+        "--html", str(locust_report),
         "--json",
     ]
 
@@ -347,16 +542,22 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             text=True,
             timeout=360,
             cwd=ROOT,
+            env=env,
         )
-        output = (result.stdout + result.stderr)[-4000:]
+        output = (result.stdout + result.stderr)[-16000:]
     except subprocess.TimeoutExpired:
         return {"status": "timeout", "passed": 0, "total": 1, "passed_rate": 0.0, "error": "Locust timeout after 360s"}
 
-    p99_match = [l for l in output.splitlines() if "99%" in l or "p99" in l.lower()]
-    has_p99_ok = any("500" in l or "<500" in l for l in p99_match)
-    has_concurrent = "1000" in output or "1,000" in output
+    metrics = _extract_c4_metrics(output, report_path=locust_report)
+    has_concurrent = LOCUST_USERS >= 1000
 
-    passed = 1 if (has_p99_ok and has_concurrent) else 0
+    passed = 1 if (
+        result.returncode == 0
+        and has_concurrent
+        and metrics["p99_ok"]
+        and metrics["failure_rate_ok"]
+        and metrics["sample_count_ok"]
+    ) else 0
 
     return {
         "passed": passed,
@@ -365,9 +566,15 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "total": 1,
         "exit_code": 0 if passed else 1,
         "passed_rate": 1.0 if passed else 0.0,
-        "has_p99_ok": has_p99_ok,
+        "locust_exit_code": result.returncode,
+        "requested_users": LOCUST_USERS,
+        "spawn_rate": LOCUST_SPAWN_RATE,
+        "run_time": LOCUST_RUN_TIME,
+        "locust_file": LOCUST_FILE,
+        "preissued_tokens": available_token_envs,
+        "has_p99_ok": metrics["p99_ok"],
         "has_concurrent_1000": has_concurrent,
-        "p99_lines": p99_match[:3],
+        **metrics,
         "raw_output": output,
     }
 

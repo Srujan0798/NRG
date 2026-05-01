@@ -1,0 +1,33 @@
+{
+  "c4_fail_line": false,
+  "c4_pass_line": false,
+  "endpoint_metrics": {
+    "/query::adversarial": {
+      "failure_rate": 0.0,
+      "num_failures": 0,
+      "num_requests": 1772,
+      "p99_ms": 6400.0
+    },
+    "/query::government": {
+      "failure_rate": 0.0,
+      "num_failures": 0,
+      "num_requests": 8999,
+      "p99_ms": 3000.0
+    },
+    "/query::researcher": {
+      "failure_rate": 0.0,
+      "num_failures": 0,
+      "num_requests": 25923,
+      "p99_ms": 2700.0
+    }
+  },
+  "failure_rate": 0.0,
+  "failure_rate_ok": true,
+  "locust_report": "evidence/2026-05-02/guru_shishya_validation/c4_rerun/49_locust_report_60s_profile_4workers.html",
+  "max_failure_rate": 0.0,
+  "p99_ms": 3100.0,
+  "p99_ok": false,
+  "p99_threshold_ms": 500.0,
+  "sample_count_ok": true,
+  "total_samples": 37174
+}

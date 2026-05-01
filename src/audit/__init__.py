@@ -373,6 +373,10 @@ class ImmutableAuditLog:
             self._user_key_cache: dict[str, str] = {}
             self.last_hash = self._load_last_hash()
             self.event_count = self._count_events()
+            # Force the first append against an existing chain to read the
+            # actual JSONL tail. After this process appends, file-size caching
+            # can safely skip repeated same-process tail scans.
+            self._last_chain_file_size: int | None = None
             if os.environ.get("AUDIT_PERSIST_MERKLE_ON_INIT", "").lower() in {"1", "true", "yes", "on"}:
                 self._persist_merkle_root()
 
@@ -407,7 +411,19 @@ class ImmutableAuditLog:
         Compute hash with per-user binding for non-repudiation.
         Each user's actions are cryptographically bound to their identity.
         """
-        user_message = f"{user_key}:{prev_hash}:{event.serialize()}"
+        return self._compute_per_user_hash_from_serialized(
+            user_key,
+            prev_hash,
+            event.serialize(),
+        )
+
+    def _compute_per_user_hash_from_serialized(
+        self,
+        user_key: str,
+        prev_hash: str,
+        event_serialized: str,
+    ) -> str:
+        user_message = f"{user_key}:{prev_hash}:{event_serialized}"
         return hmac.new(
             user_key.encode(),
             user_message.encode(),
@@ -427,6 +443,32 @@ class ImmutableAuditLog:
 
     def _genesis_hash(self) -> str:
         return "0" * 64
+
+    def _chain_file_size(self) -> int:
+        if not self.chain_file.exists():
+            return 0
+        try:
+            return self.chain_file.stat().st_size
+        except OSError:
+            return 0
+
+    def _read_append_prev_hash(self) -> str:
+        """Return the append predecessor hash without rereading the tail unnecessarily.
+
+        The file lock still guards cross-process safety. This cache only avoids a
+        same-process tail scan when no other writer has changed the chain file
+        size since this process last appended or initialized.
+        """
+        current_size = self._chain_file_size()
+        if current_size == 0:
+            self._last_chain_file_size = 0
+            return self._genesis_hash()
+        if current_size == getattr(self, "_last_chain_file_size", None) and self.last_hash:
+            return self.last_hash
+
+        tail_hash = self._read_last_chain_hash()
+        self._last_chain_file_size = current_size
+        return tail_hash
 
     def _read_last_chain_hash(self) -> str:
         """Read the hash on the actual last chain line, bypassing stale process state."""
@@ -455,7 +497,10 @@ class ImmutableAuditLog:
         return json.loads(last_line).get("hash") or self._genesis_hash()
 
     def _compute_hash(self, prev_hash: str, event: AuditEvent) -> str:
-        message = prev_hash + event.serialize()
+        return self._compute_hash_from_serialized(prev_hash, event.serialize())
+
+    def _compute_hash_from_serialized(self, prev_hash: str, event_serialized: str) -> str:
+        message = prev_hash + event_serialized
         return hmac.new(
             self.CHAIN_KEY.encode(),
             message.encode(),
@@ -568,6 +613,7 @@ class ImmutableAuditLog:
             self.last_hash = prev_hash
             self.last_hash_file.write_text(prev_hash)
             self.event_count = self._count_events()
+            self._last_chain_file_size = self._chain_file_size()
 
         global _chain_health_cache
         _chain_health_cache = None
@@ -686,14 +732,20 @@ class ImmutableAuditLog:
 
         user_key = self._derive_user_key(event.user_id)
         event.user_key_hash = event.compute_user_key_hash(user_key)
+        event_serialized = event.serialize()
+        event_data = event.to_dict()
 
         try:
             with self._lock:
                 with self._file_lock.hold():
-                    self.last_hash = self._read_last_chain_hash()
-                    new_hash = self._compute_hash(self.last_hash, event)
+                    self.last_hash = self._read_append_prev_hash()
+                    new_hash = self._compute_hash_from_serialized(self.last_hash, event_serialized)
 
-                    per_user_hash = self._compute_per_user_hash(user_key, new_hash, event)
+                    per_user_hash = self._compute_per_user_hash_from_serialized(
+                        user_key,
+                        new_hash,
+                        event_serialized,
+                    )
 
                     if event.jwt_kid is not None or event.request_fingerprint is not None:
                         try:
@@ -702,18 +754,18 @@ class ImmutableAuditLog:
                                 jwt_kid=event.jwt_kid,
                                 request_fingerprint=event.request_fingerprint,
                                 chain_hash=new_hash,
-                                event_serialized=event.serialize(),
+                                event_serialized=event_serialized,
                             )
                             per_user_hash = pk_binding
                         except Exception:
                             pass
 
-                    event_data = event.to_dict()
                     event_data["hash"] = new_hash
                     event_data["per_user_binding"] = per_user_hash[:16]
 
                     with open(self.chain_file, "a") as f:
                         f.write(json.dumps(event_data, default=str) + "\n")
+                        self._last_chain_file_size = f.tell()
 
                     self.last_hash = new_hash
                     self.last_hash_file.write_text(new_hash)
@@ -775,6 +827,7 @@ class ImmutableAuditLog:
             self.last_hash = new_hash
             self.last_hash_file.write_text(new_hash)
             self.event_count += 1
+            self._last_chain_file_size = self._chain_file_size()
 
             logger.warning(f"Key rotation completed. New key hash: {new_key[:16]}...")
             return new_hash

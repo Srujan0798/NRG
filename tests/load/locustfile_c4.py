@@ -58,6 +58,11 @@ def _credentials(
     }
 
 
+def _preissued_token(token_env: str) -> str | None:
+    token = os.environ.get(token_env, "").strip()
+    return token or None
+
+
 def _has_query_payload(data: dict) -> bool:
     return bool(
         data.get("sql_query")
@@ -81,7 +86,7 @@ def _handle_query_response(resp) -> None:
         else:
             resp.failure("Empty response")
     elif resp.status_code == 429:
-        resp.success()
+        resp.failure("HTTP 429 rate limited")
     else:
         resp.failure(f"HTTP {resp.status_code}")
 
@@ -101,10 +106,19 @@ def _login_user(
     default_username: str,
     password_env: str,
     default_password: str,
+    token_env: str,
 ) -> None:
     """Authenticate a Locust persona using a catch_response context."""
     should_quit = False
     proxy_headers = {"X-Forwarded-For": _client_ip_for_user(user)}
+    token = _preissued_token(token_env)
+    if token:
+        user.headers = {
+            "Authorization": f"Bearer {token}",
+        }
+        user.client.headers.update(user.headers)
+        return
+
     with user.client.post(
         "/auth/login",
         headers=proxy_headers,
@@ -223,6 +237,7 @@ class C4FastPathUser(HttpUser):
             "researcher_user",
             "LOAD_TEST_RESEARCHER_PASS",
             "researcher-pass",
+            "LOAD_TEST_RESEARCHER_TOKEN",
         )
 
     @task(8)
@@ -232,7 +247,7 @@ class C4FastPathUser(HttpUser):
             headers=self.headers,
             json={"query": query_text, "session_id": "c4-load-test"},
             catch_response=True,
-            name="/query"
+            name="/query::researcher"
         ) as resp:
             _handle_query_response(resp)
 
@@ -250,6 +265,7 @@ class C4FullPathUser(HttpUser):
             "gov_user",
             "LOAD_TEST_GOV_PASS",
             "government-pass",
+            "LOAD_TEST_GOV_TOKEN",
         )
 
     @task(5)
@@ -259,7 +275,7 @@ class C4FullPathUser(HttpUser):
             headers=self.headers,
             json={"query": query_text, "session_id": "c4-load-test"},
             catch_response=True,
-            name="/query"
+            name="/query::government"
         ) as resp:
             _handle_query_response(resp)
 
@@ -277,6 +293,7 @@ class C4AdversarialUser(HttpUser):
             "researcher_user",
             "LOAD_TEST_RESEARCHER_PASS",
             "researcher-pass",
+            "LOAD_TEST_RESEARCHER_TOKEN",
         )
 
     @task(4)
@@ -286,17 +303,20 @@ class C4AdversarialUser(HttpUser):
             headers=self.headers,
             json={"query": query_text, "session_id": "c4-load-test"},
             catch_response=True,
-            name="/query"
+            name="/query::adversarial"
         ) as resp:
             if resp.status_code in (400, 401, 403, 422, 429):
-                resp.success()
+                if resp.status_code == 429:
+                    resp.failure("HTTP 429 rate limited")
+                else:
+                    resp.success()
                 return
             _handle_query_response(resp)
 
     @task(1)
     def stats(self):
         with self.client.get("/stats", headers=self.headers,
-            catch_response=True, name="/stats") as resp:
+            catch_response=True, name="/stats::adversarial") as resp:
             if resp.status_code == 200:
                 resp.success()
             else:

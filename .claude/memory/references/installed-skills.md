@@ -4,7 +4,33 @@ description: All skills available to NRG — Agent (Shishya) + Guru (Claude)
 type: reference
 ---
 
-## Agent Skills (`.agents/skills/`) — 31 total
+## Current Repo Filesystem Count (2026-05-02)
+
+Authoritative skill source for NRG is the repository itself:
+
+- `.claude/skills/`
+- `.agents/skills/`
+
+Do not use `$CODEX_HOME`, plugin caches, or user-home skill inventories as the
+project source of truth. A fresh clone of this repo should carry the same NRG
+Guru/Shishya skill set.
+
+Fresh inventory from direct repo directory comparison:
+
+- **Agent/Shishya skill directories**: 51 under `.agents/skills/`
+  - 50 use `SKILL.md`
+  - 1 uses uppercase `SKILL.MD`: `better-auth-security-best-practices`
+- **Guru/Claude skills**: 86 under `.claude/skills/`
+- **Total repo-contained skill directories**: 137
+- **Shared skill names between `.claude` and `.agents`**: 1 —
+  `nrg-validation-campaign`
+
+Detailed inventory: `evidence/2026-05-02/guru_shishya_validation/55_skill_inventory.tsv`
+Usage ledger: `evidence/2026-05-02/guru_shishya_validation/56_skill_usage_ledger.md`
+
+The older categorized list below is retained as historical context and is no longer the authoritative count.
+
+## Agent Skills (`.agents/skills/`) — historical 31 total
 
 Execution skills for Shishya (agent) work.
 
@@ -56,7 +82,7 @@ Execution skills for Shishya (agent) work.
 
 ---
 
-## Guru Skills (`.claude/skills/`) — 46 total
+## Guru Skills (`.claude/skills/`) — historical 46 total
 
 Strategy, review, and architecture skills for Guru (Claude) work.
 
@@ -114,9 +140,9 @@ Strategy, review, and architecture skills for Guru (Claude) work.
 
 ---
 
-## Total: 77 skills
+## Historical Total: 77 skills
 
 - **Agent (Shishya)**: 31 skills in `.agents/skills/`
 - **Guru (Claude)**: 46 skills in `.claude/skills/`
 
-Last updated: 2026-04-27
+Last updated: 2026-05-02

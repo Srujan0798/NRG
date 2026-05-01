@@ -1,0 +1,194 @@
+{
+  "cache": {
+    "hit": 6250,
+    "miss": 17
+  },
+  "latency_by_cache": {
+    "hit": {
+      "avg_ms": 44.652,
+      "count": 6250,
+      "max_ms": 3367.722,
+      "p50_ms": 0.666,
+      "p90_ms": 1.243,
+      "p95_ms": 2.146,
+      "p99_ms": 1762.672
+    },
+    "miss": {
+      "avg_ms": 2050.51,
+      "count": 17,
+      "max_ms": 2827.928,
+      "p50_ms": 2053.847,
+      "p90_ms": 2665.974,
+      "p95_ms": 2827.928,
+      "p99_ms": 2827.928
+    }
+  },
+  "latency_by_route": {
+    "c4_read_model": {
+      "avg_ms": 1669.577,
+      "count": 185,
+      "max_ms": 3367.722,
+      "p50_ms": 1612.294,
+      "p90_ms": 2665.974,
+      "p95_ms": 2974.199,
+      "p99_ms": 3299.435
+    },
+    "cache": {
+      "avg_ms": 0.832,
+      "count": 6082,
+      "max_ms": 97.529,
+      "p50_ms": 0.656,
+      "p90_ms": 1.131,
+      "p95_ms": 1.475,
+      "p99_ms": 3.272
+    }
+  },
+  "locust_metrics": {
+    "c4_fail_line": false,
+    "c4_pass_line": false,
+    "endpoint_metrics": {
+      "/query::adversarial": {
+        "failure_rate": 0.0,
+        "num_failures": 0,
+        "num_requests": 2148,
+        "p99_ms": 2900.0
+      },
+      "/query::government": {
+        "failure_rate": 0.0,
+        "num_failures": 0,
+        "num_requests": 7174,
+        "p99_ms": 3000.0
+      },
+      "/query::researcher": {
+        "failure_rate": 0.0,
+        "num_failures": 0,
+        "num_requests": 19272,
+        "p99_ms": 3000.0
+      }
+    },
+    "failure_rate": 0.0,
+    "failure_rate_ok": true,
+    "locust_report": "evidence/2026-05-02/guru_shishya_validation/c4_rerun/73_locust_report_60s_after_critical_section.html",
+    "max_failure_rate": 0.0,
+    "p99_ms": 3000.0,
+    "p99_ok": false,
+    "p99_threshold_ms": 500.0,
+    "sample_count_ok": true,
+    "total_samples": 29168
+  },
+  "locust_report": "evidence/2026-05-02/guru_shishya_validation/c4_rerun/73_locust_report_60s_after_critical_section.html",
+  "outcomes": {
+    "success": 6267
+  },
+  "profile_file": "evidence/2026-05-02/guru_shishya_validation/c4_rerun/69_query_stage_profile_after_critical_section.jsonl",
+  "routes": {
+    "c4_read_model": 185,
+    "cache": 6082
+  },
+  "sampled_request_count": 6267,
+  "stage_latency": {
+    "answer_record_schedule": {
+      "avg_ms": 0.028,
+      "count": 17,
+      "max_ms": 0.053,
+      "p50_ms": 0.023,
+      "p90_ms": 0.047,
+      "p95_ms": 0.053,
+      "p99_ms": 0.053
+    },
+    "audit_append": {
+      "avg_ms": 2018.229,
+      "count": 17,
+      "max_ms": 2792.039,
+      "p50_ms": 2009.172,
+      "p90_ms": 2629.071,
+      "p95_ms": 2792.039,
+      "p99_ms": 2792.039
+    },
+    "c4_read_model": {
+      "avg_ms": 3.73,
+      "count": 17,
+      "max_ms": 7.212,
+      "p50_ms": 3.176,
+      "p90_ms": 6.541,
+      "p95_ms": 7.212,
+      "p99_ms": 7.212
+    },
+    "c4_singleflight": {
+      "avg_ms": 1480.754,
+      "count": 185,
+      "max_ms": 3367.524,
+      "p50_ms": 1473.495,
+      "p90_ms": 2537.396,
+      "p95_ms": 2973.676,
+      "p99_ms": 3299.081
+    },
+    "cache_lookup": {
+      "avg_ms": 0.035,
+      "count": 6267,
+      "max_ms": 6.065,
+      "p50_ms": 0.026,
+      "p90_ms": 0.05,
+      "p95_ms": 0.064,
+      "p99_ms": 0.14
+    },
+    "consent_check": {
+      "avg_ms": 0.264,
+      "count": 6267,
+      "max_ms": 96.831,
+      "p50_ms": 0.154,
+      "p90_ms": 0.418,
+      "p95_ms": 0.609,
+      "p99_ms": 1.849
+    },
+    "normalize_and_redact": {
+      "avg_ms": 0.254,
+      "count": 17,
+      "max_ms": 0.452,
+      "p50_ms": 0.205,
+      "p90_ms": 0.435,
+      "p95_ms": 0.452,
+      "p99_ms": 0.452
+    },
+    "prompt_sanitizer": {
+      "avg_ms": 0.481,
+      "count": 6267,
+      "max_ms": 89.134,
+      "p50_ms": 0.394,
+      "p90_ms": 0.642,
+      "p95_ms": 0.768,
+      "p99_ms": 1.726
+    },
+    "rate_limit_and_tier_guard": {
+      "avg_ms": 0.028,
+      "count": 6267,
+      "max_ms": 3.33,
+      "p50_ms": 0.021,
+      "p90_ms": 0.037,
+      "p95_ms": 0.054,
+      "p99_ms": 0.12
+    },
+    "tier_filter": {
+      "avg_ms": 27.92,
+      "count": 17,
+      "max_ms": 43.492,
+      "p50_ms": 27.417,
+      "p90_ms": 42.792,
+      "p95_ms": 43.492,
+      "p99_ms": 43.492
+    }
+  },
+  "tiers": {
+    "1": 4576,
+    "2": 1691
+  },
+  "total_latency": {
+    "avg_ms": 50.093,
+    "count": 6267,
+    "max_ms": 3367.722,
+    "p50_ms": 0.667,
+    "p90_ms": 1.263,
+    "p95_ms": 2.235,
+    "p99_ms": 1858.818
+  }
+}

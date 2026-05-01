@@ -14,8 +14,9 @@ project only from screenshots.
 2. `.agents/AGENTS.md`
 3. `.claude/CURRENT_STATE.md`
 4. `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-5. `prompts_hybrid/00_INDEX.md`
-6. `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
+5. `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`
+6. `prompts_hybrid/00_INDEX.md`
+7. `docs/specs/NRG_ETERNAL_MASTER_AGENT_PROMPT.md`
 
 ### Tier 1 - Product And Verification Truth
 

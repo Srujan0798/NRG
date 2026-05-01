@@ -1,0 +1,155 @@
+{
+  "timestamp": "2026-05-01T22:36:26.491069+00:00",
+  "overall": "5/6",
+  "is_6_6": false,
+  "scores": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C3": "PASS",
+    "C4": "FAIL",
+    "C5": "PASS",
+    "C6": "PASS"
+  },
+  "results": {
+    "C1": {
+      "name": "DPDP-Compliant Indian PII Detection",
+      "test_file": "tests/security/test_pii_compliance.py",
+      "min_pass_rate": 1.0,
+      "description": "8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 10,
+        "failed": 0,
+        "skipped": 0,
+        "total": 10,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 10 items\n\ntests/security/test_pii_compliance.py ..........                         [100%]\n\n============================== 10 passed in 0.19s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C2": {
+      "name": "Per-User Audit Binding (Non-Repudiation)",
+      "test_file": "tests/security/test_per_user_audit_binding.py",
+      "min_pass_rate": 1.0,
+      "description": "26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 30,
+        "failed": 0,
+        "skipped": 0,
+        "total": 30,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 30 items\n\ntests/security/test_per_user_audit_binding.py .......................... [ 86%]\n....                                                                     [100%]\n\n============================== 30 passed in 0.12s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C3": {
+      "name": "Multi-Hop Intent Decomposition (DAG Planner)",
+      "test_file": "tests/orchestration/test_multi_hop_planner.py",
+      "min_pass_rate": 1.0,
+      "description": "28 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 28,
+        "failed": 0,
+        "skipped": 0,
+        "total": 28,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 28 items\n\ntests/orchestration/test_multi_hop_planner.py .......................... [ 92%]\n..                                                                       [100%]\n\n============================== 28 passed in 0.85s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    },
+    "C4": {
+      "name": "Production SLOs (P99 <500ms, \u22651000 concurrent)",
+      "test_file": "tests/performance/test_slo_compliance.py",
+      "min_pass_rate": 0.83,
+      "description": "P99<500ms, \u22651000 concurrent, citation rate >80%, SLO breach detection",
+      "test_count_attr": "total",
+      "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
+      "result": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 1,
+        "passed_rate": 0.0,
+        "locust_exit_code": 0,
+        "requested_users": 1000,
+        "spawn_rate": 100,
+        "run_time": "60s",
+        "locust_file": "tests/load/locustfile_c4.py",
+        "preissued_tokens": [
+          "LOAD_TEST_GOV_TOKEN",
+          "LOAD_TEST_INDUSTRY_TOKEN",
+          "LOAD_TEST_RESEARCHER_TOKEN"
+        ],
+        "has_p99_ok": false,
+        "has_concurrent_1000": true,
+        "p99_ms": 4500.0,
+        "p99_threshold_ms": 500.0,
+        "p99_ok": false,
+        "failure_rate": 0.0,
+        "max_failure_rate": 0.0,
+        "failure_rate_ok": true,
+        "total_samples": 27765,
+        "sample_count_ok": true,
+        "c4_pass_line": false,
+        "c4_fail_line": false,
+        "locust_report": "/Users/srujansai/Desktop/NRG/.cache/locust_report.html",
+        "raw_output": "                                   344     0(0.00%) |    558       1    1300    580 |   11.00        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     17643     0(0.00%) |    830       1    3186    890 |  551.50        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         18378     0(0.00%) |    853       2    3186    920 |  547.30        0.00\nGET      /stats                                                                           366     0(0.00%) |    571       1    1300    620 |   11.30        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     18744     0(0.00%) |    848       1    3186    910 |  558.60        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         19417     0(0.00%) |    883       2    3186    940 |  555.80        0.00\nGET      /stats                                                                           390     0(0.00%) |    590       1    1322    630 |   11.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     19807     0(0.00%) |    877       1    3186    930 |  567.20        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         20220     0(0.00%) |    890       2    3186    940 |  531.70        0.00\nGET      /stats                                                                           409     0(0.00%) |    598       1    1322    630 |   11.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     20629     0(0.00%) |    884       1    3186    930 |  543.10        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         21409     0(0.00%) |    911       2    3186    960 |  535.90        0.00\nGET      /stats                                                                           439     0(0.00%) |    613       1    1322    640 |   11.50        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     21848     0(0.00%) |    905       1    3186    950 |  547.40        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         22196     0(0.00%) |    930       2    3186    970 |  518.50        0.00\nGET      /stats                                                                           457     0(0.00%) |    625       1    1326    660 |   11.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     22653     0(0.00%) |    924       1    3186    970 |  529.90        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         22862     0(0.00%) |    945       2    3186    990 |  491.20        0.00\nGET      /stats                                                                           475     0(0.00%) |    636       1    1578    670 |   11.20        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     23337     0(0.00%) |    938       1    3186    980 |  502.40        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         23689     0(0.00%) |    980       2    5119   1000 |  457.70        0.00\nGET      /stats                                                                           488     0(0.00%) |    658       1    1992    670 |   10.30        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     24177     0(0.00%) |    973       1    5119   1000 |  468.00        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         24247     0(0.00%) |   1006       2    6514   1000 |  448.50        0.00\nGET      /stats                                                                           498     0(0.00%) |    674       1    1992    690 |   10.10        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     24745     0(0.00%) |   1000       1    6514   1000 |  458.60        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         24774     0(0.00%) |   1044       2    8470   1000 |  397.30        0.00\nGET      /stats                                                                           512     0(0.00%) |    703       1    2729    710 |    9.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     25286     0(0.00%) |   1038       1    8470   1000 |  406.70        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         25263     0(0.00%) |   1089       2    8470   1000 |  356.20        0.00\nGET      /stats                                                                           522     0(0.00%) |    731       1    3396    710 |    7.90        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     25785     0(0.00%) |   1082       1    8470   1000 |  364.10        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         25723     0(0.00%) |   1124       2    8470   1100 |  312.10        0.00\nGET      /stats                                                                           535     0(0.00%) |    759       1    3396    720 |    6.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     26258     0(0.00%) |   1117       1    8470   1000 |  318.50        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         26241     0(0.00%) |   1163       2    8470   1100 |  280.50        0.00\nGET      /stats                                                                           540     0(0.00%) |    768       1    3396    720 |    6.40        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     26781     0(0.00%) |   1155       1    8470   1100 |  286.90        0.00\n\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         26757     0(0.00%) |   1205       2    8470   1100 |  256.90        0.00\nGET      /stats                                                                           550     0(0.00%) |    801       1    3652    730 |    5.60        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     27307     0(0.00%) |   1197       1    8470   1100 |  262.50        0.00\n\n[2026-05-02 04:06:17,322] MacBook-Air/INFO/locust.main: --run-time limit reached, shutting down\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                         27203     0(0.00%) |   1235       2    8470   1100 |  263.70        0.00\nGET      /stats                                                                           562     0(0.00%) |    831       1    3652    740 |    4.90        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     27765     0(0.00%) |   1227       1    8470   1100 |  268.60        0.00\n\n[2026-05-02 04:06:17,817] MacBook-Air/INFO/locust.main: writing html report to file: /Users/srujansai/Desktop/NRG/.cache/locust_report.html\n[2026-05-02 04:06:17,819] MacBook-Air/INFO/locust.main: Shutting down (exit code 0)\nType     Name                                                                          # reqs      # fails |    Avg     Min     Max    Med |   req/s  failures/s\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\nPOST     /query                                                                             0     0(0.00%) |      0       0       0      0 |    0.00        0.00\nGET      /stats                                                                             0     0(0.00%) |      0       0       0      0 |    0.00        0.00\n--------|----------------------------------------------------------------------------|-------|-------------|-------|-------|-------|-------|--------|-----------\n         Aggregated                                                                     27765     0(0.00%) |   1227       1    8470   1100 |  462.29        0.00\n\nResponse time percentiles (approximated)\nType     Name                                                                                  50%    66%    75%    80%    90%    95%    98%    99%  99.9% 99.99%   100% # reqs\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n--------|--------------------------------------------------------------------------------|--------|------|------|------|------|------|------|------|------|------|------|------\n         Aggregated                                                                           1100   1300   1500   1700   2200   3000   4300   4500   6400   7700   8500  27765\n\n"
+      }
+    },
+    "C5": {
+      "name": "Vector Drift Monitoring + Auto-Retrain Trigger",
+      "test_file": "scripts/vector_drift_check.py",
+      "min_pass_rate": 1.0,
+      "description": "Drift check script: cosine shift detection, reindex trigger. Requires Qdrant on port 6333.",
+      "test_count_attr": "exit_code",
+      "note": "Script runs. Qdrant required for vector retrieval + cosine shift detection.",
+      "result": {
+        "status": "pass",
+        "passed": 1,
+        "failed": 0,
+        "skipped": 0,
+        "total": 1,
+        "exit_code": 2,
+        "passed_rate": 1.0,
+        "partial": false,
+        "live_qdrant_skipped": true,
+        "scheduler_status": "pass",
+        "scheduler_passed": true,
+        "scheduler_interval_seconds": 60,
+        "scheduler_cosine_shift_threshold": 0.05,
+        "scheduler_reindex_endpoint": "/api/reindex",
+        "scheduler_raw_output": "{\n  \"status\": \"dry_run\",\n  \"interval_seconds\": 60,\n  \"cosine_shift_threshold\": 0.05,\n  \"reindex_endpoint\": \"/api/reindex\",\n  \"baseline_command\": \"/Users/srujansai/Desktop/NRG/.venv/bin/python /Users/srujansai/Desktop/NRG/scripts/vector_drift_check.py --establish-baseline --json\"\n}\n",
+        "has_reindex_trigger": false,
+        "has_baseline_established": false,
+        "has_stable": false,
+        "has_cosine_check": false,
+        "script_completed": false,
+        "has_drift_check": true,
+        "raw_output": "\n============================================================\nVECTOR DRIFT CHECK SKIPPED\n============================================================\nVector drift benchmark skipped because Qdrant is unhealthy or empty.\nQdrant status: unhealthy\nVectors: 0/0\n============================================================\n2026-05-02 04:06:19 INFO     Starting NRG Vector Drift Detection\n2026-05-02 04:06:19 INFO     SLO target: drift_score >= 0.85\n2026-05-02 04:06:19 INFO     WARNING threshold: 0.60 | CRITICAL threshold: 0.40\n2026-05-02 04:06:19 INFO     Qdrant health: unhealthy | Indexed: 0/0 (0.0%) | Latency: 155.77ms\n"
+      }
+    },
+    "C6": {
+      "name": "Schema Allowlist Before Cloud LLM",
+      "test_file": "tests/security/test_egress_allowlist.py",
+      "min_pass_rate": 1.0,
+      "description": "35 tests: 20+ egress leak attempts blocked, all audit-logged",
+      "test_count_attr": "total",
+      "result": {
+        "passed": 35,
+        "failed": 0,
+        "skipped": 0,
+        "total": 35,
+        "passed_rate": 1.0,
+        "errors": [],
+        "exit_code": 0,
+        "raw_output": "============================= test session starts ==============================\ncollected 35 items\n\ntests/security/test_egress_allowlist.py ................................ [ 91%]\n...                                                                      [100%]\n\n============================== 35 passed in 3.13s ==============================\n/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option \"asyncio_default_fixture_loop_scope\" is unset.\nThe event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: \"function\", \"class\", \"module\", \"package\", \"session\"\n\n  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))\n"
+      }
+    }
+  }
+}

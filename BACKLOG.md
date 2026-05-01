@@ -1,16 +1,66 @@
 # NRG — Task Backlog
 
-> **Updated**: 2026-04-28 (Schema alias fix, forbidden vocab cleanup, workflow hardening, audit chain auto-repair documented)
+> **Updated**: 2026-05-02 (Guru/Shishya validation matrix, skill inventory, audit binding rebuild, C4/dependency blockers)
 > **Previous**: 2026-04-27 (P1+P3 session sealed at `da6c967`; LB-1..LB-8 code all committed)
 > **Sprint**: LB closure wave (LB-1..LB-8) SEALED locally. Next: v1.0.0-launch-ready tag + cluster sovereign activation.
-> **Test Status**: LB-1: 6 passed ✅ | LB-2: 28/31 (ADV-07 gap) | LB-3: 3/3 KILLER success ✅ | LB-4: 1585+ passed ✅ | LB-6: 10 passed + 7 skipped | LB-7: 22+28=50 passed ✅ | LB-8: 29+3=32 passed ✅ | LB-5: 6 passed (API-dependent tests pass individually) | Full suite: 1585+ passed, 0 failed.
-> **Quality Bar**: 8/8 LB items have code MERGED (all ✅). All non-API tests green. API-dependent tests pass individually but fail in parallel xdist (rely on live uvicorn). C4 pending fresh evidence.
-> **Audit Chain**: ✅ valid, 0 errors, 296 events. ⚠️ **LINEAGE BREAK** — auto-repair created new genesis. See ADR-006.
+> **Test Status**: May 2 targeted gates passed: backend/security/query 195 passed + 1 skipped; Dhairya SQL 57 passed; frontend Jest 99 passed; frontend build passed; Playwright live quantum proof passed; Playwright axe/keyboard 9 passed; live tier/red-team retry-all 35 passed + 1 skipped. Broad single-command pytest is **not green**: 1,679 passed, 56 skipped, 26 failed, 6 errors.
+> **Quality Bar**: Not certified. C4 current 1000-user local scorecard now uses the maintained C4 Locust file with preissued tokens, strict measured-P99 parsing, real Locust HTML metrics, and per-workload query metrics; request failures are fixed, but the P99 target still fails. Dependency audit has high-severity findings; local `/health/all` is healthy after starting Qdrant/Redis.
+> **Operating Flow**: Central rule hierarchy and next execution flow added at `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`. Use it to keep Guru/Shishya work tied to repo-contained skills, evidence gates, source truth, and C4 status.
+> **Latest focused verification**: May 2 final local check after C4 runner and consent hot-path changes passed 30 targeted scorecard/Locust/consent tests, compileall, diff check, corpus sync, forbidden-vocabulary guard, and no leftover load/API processes. Follow-up C4 truth-contract checks passed after making HTTP 429 a load failure and exposing per-workload query metrics. Audit append now avoids repeated same-process JSONL tail rereads and precomputes immutable event serialization before entering the file-lock critical section; 87 audit/per-user/cosign tests passed after both audit changes. Combined C4 profiling shows sampled route-handler P99 at 1.589 ms, server `/query` envelope P99 at 538.303 ms, and Locust client-observed aggregate P99 at 1000 ms. A declared prewarm/no-profile run warmed 312 workload requests with 0 failures, then still failed C4 at 45,559 samples, 0 failures, aggregate P99 2100 ms. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/43_final_local_verification.md`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/44_c4_truth_contract_after_429_endpoint_metrics.md`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/68_audit_chain_security_after_critical_section.log`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/86_combined_query_envelope_profile_summary.md`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/93_declared_prewarm_no_profile_summary.md`.
+> **C4 mode boundary**: Quota-on C4 needs distinct load identities; quota-neutral C4 must explicitly document `NRG_QUOTA_DISABLED=1` and is capacity-only evidence. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/75_rate_limit_and_quota_mode_boundary.md`.
+> **Audit Chain**: ✅ valid after May 2 rebuild, 55,212 events, 0 errors. Rebuild archived `.audit/chain_corrupted_backup_20260501T215637Z.jsonl`. ADR-006 lineage caveat still applies.
 > **Data Sources**: 5 mandatory reads (Core Idea, db_struct.sql, BACKLOG.md, Dhairya Audit, NRG_SELF_AUDIT_REPORT)
 > **Schema**: db_struct.sql = 58 tables (11 Django + 42 NRG core + 5 archive). Actual PG has 73 tables. Reconciliation doc: `docs/audits/schema_reconciliation.md`. db_struct.sql = minimum viable Dhairya schema; 15 missing tables need live dump to confirm.
 > **Protocols**: 9 Guru-format assignments complete. P1 (code commit+baseline), P3 (feature completion) done.
 > **Current Baseline**: 9.2/10 — 26 components verified working, 2 cluster-dependent (C4 locust, C5 vector-drift), GAP-H (GPG signatures) ready for founder key ceremony.
 > **Assignments**: `ASSIGNMENTS_2026-04-27-ACTIVE.md` COMPLETE. All 8 LBs committed.
+
+---
+
+## 2026-05-02 GURU/SHISHYA VALIDATION MATRIX
+
+Source: `evidence/2026-05-02/guru_shishya_validation/FINAL_VALIDATION_MATRIX.md`.
+Status is proof-bound. No 100% or production-ready claim is allowed until every FAIL/BLOCKED row closes with fresh evidence.
+
+| Surface | Status | Evidence |
+|---|---|---|
+| Backend/API contract slice | PASS | `22_backend_security_query_suite_after_stream_fix.log` — 195 passed, 1 skipped |
+| Project-local skills | PASS | `55_skill_inventory.tsv`, `56_skill_usage_ledger.md` — 136 skills inventoried and classified |
+| Dhairya SQL regression | PASS | `10_dhairya_sql_regression.log` — 57 passed |
+| Live quantum browser proof | PASS | `34_live_quantum_playwright.log`, `live_quantum_recheck/` screenshots/video/raw JSON |
+| Accessibility | PASS | `30_frontend_contrast_after_install.log`, `36_frontend_playwright_a11y.log` |
+| Live tier/red-team | PASS | `52_live_tier_isolation_redteam_retry_all.log` — 35 passed, 1 skipped |
+| Audit chain | PASS after repair | `45_audit_rebuild_repair.log`, `53_audit_verify_final_after_live_redteam.log` |
+| Full Python suite single command | FAIL | `38_full_pytest_tests_ignore_scripts.log` |
+| C4 1000-user load bar | FAIL | `31_c4_scorecard_raw_summary.log`; runner/auth failure defects fixed in `c4_rerun/README.md`; `c4_rerun/44_c4_truth_contract_after_429_endpoint_metrics.md` now makes 429 fail and splits per-workload metrics; `c4_rerun/86_combined_query_envelope_profile_summary.md` shows handler P99 1.589 ms, server envelope P99 538.303 ms, and client-observed P99 1000 ms; `c4_rerun/93_declared_prewarm_no_profile_summary.md` shows declared warmed no-profile scorecard still failed with 45,559 samples, 0 failures, aggregate P99 2100 ms |
+| Dependency audit | FAIL | `35_frontend_npm_audit_high.log` — 39 vulnerabilities, 10 high |
+| Qdrant/Redis live services | PASS local | `64_live_health_all_after_services.json`, `66_live_vectors_health_after_services.json`, `68_qdrant_redis_local_health_report.md` |
+| External production gates | BLOCKED | `evidence/2026-05-02/final_external_gates/EXTERNAL_GATE_SUMMARY.md` |
+
+Dispatch next: C4 bounded-admission/worker-topology design, dependency-audit remediation, full-suite live-test orchestration, and external production gates. Guru/Shishya protocol: `60_guru_shishya_next_wave_protocol.md`.
+
+## 2026-05-02 CENTRAL EXECUTION FLOW
+
+Source: `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`.
+
+The operating order is now centralized:
+
+1. Founder request and corrections.
+2. Repo operating manuals.
+3. Production-only framing.
+4. Current state and source-truth map.
+5. Product/schema truth.
+6. External audit findings.
+7. Quality Bar C1-C6.
+8. Evidence and release acceptance.
+9. Work-type rules.
+10. Repo-contained Guru/Shishya skills.
+11. Pre-commit and completion gates.
+
+C4 is defined there as Quality Bar Constraint 4: 1000 concurrent users, zero
+failures, and P99 below 500 ms. Current status remains **FAIL** because latest
+evidence reports zero failures but aggregate P99 2100 ms after declared workload
+prewarm.
 
 ---
 

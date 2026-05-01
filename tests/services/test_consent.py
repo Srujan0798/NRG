@@ -89,6 +89,25 @@ class TestConsentService:
         assert service.has_consent("user1", "research_access") is True
         assert service.has_consent("user1", "profile_storage") is False
 
+    def test_has_consent_caches_repeated_checks(self, consent_db, monkeypatch):
+        service = ConsentService()
+        calls = 0
+
+        def fake_get_consent(user_id, scope):
+            nonlocal calls
+            calls += 1
+            return {
+                "active": True,
+                "terms_version": service.CURRENT_TERMS_VERSION,
+                "expires_at": None,
+            }
+
+        monkeypatch.setattr(service, "get_consent", fake_get_consent)
+
+        assert service.has_consent("user1", "research_access") is True
+        assert service.has_consent("user1", "research_access") is True
+        assert calls == 1
+
     def test_has_consent_after_revoke(self, consent_db):
         service = ConsentService()
         service.grant_consent("user1", "research_access")

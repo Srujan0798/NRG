@@ -1,6 +1,4 @@
 from pathlib import Path
-
-
 ROOT = Path(__file__).resolve().parents[2]
 LOCUSTFILE = ROOT / "tests/load/locustfile.py"
 C4_LOCUSTFILE = ROOT / "tests/load/locustfile_c4.py"
@@ -58,6 +56,23 @@ def test_c4_locustfile_declares_60_30_10_traffic_mix():
     assert "weight = 30" in source
     assert "weight = 10" in source
     assert "DROP TABLE" in source
+
+
+def test_c4_locustfile_treats_429_as_failure():
+    source = C4_LOCUSTFILE.read_text()
+
+    assert "resp.status_code == 429" in source
+    assert 'resp.failure("HTTP 429 rate limited")' in source
+    assert 'resp.success()' not in source.split("resp.status_code == 429", 1)[1].split("else:", 1)[0]
+
+
+def test_c4_locustfile_names_query_metrics_by_workload():
+    source = C4_LOCUSTFILE.read_text()
+
+    assert 'name="/query::researcher"' in source
+    assert 'name="/query::government"' in source
+    assert 'name="/query::adversarial"' in source
+    assert 'name="/query"' not in source
 
 
 def test_c4_performance_path_matches_phase7_runbook():

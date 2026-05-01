@@ -156,6 +156,33 @@ class TestAuditChainIntegrity:
         assert valid is True, f"Stale writer corrupted chain: {errors}"
         assert count == 3
 
+    def test_append_reuses_cached_tail_when_file_size_unchanged(self, fresh_audit_log, monkeypatch):
+        """Same-process appends should not reread the JSONL tail on every event."""
+        log = fresh_audit_log
+        original_read_tail = log._read_last_chain_hash
+        tail_reads = 0
+
+        def counted_read_tail():
+            nonlocal tail_reads
+            tail_reads += 1
+            return original_read_tail()
+
+        monkeypatch.setattr(log, "_read_last_chain_hash", counted_read_tail)
+
+        for i in range(5):
+            log.append(
+                AuditEvent(
+                    event_type="query",
+                    user_id=f"u{i}",
+                    query=f"tail-cache-{i}",
+                )
+            )
+
+        assert tail_reads <= 1
+        valid, errors, count = log.verify_chain()
+        assert valid is True, f"Tail cache corrupted chain: {errors}"
+        assert count == 5
+
     def test_rebuild_produces_valid_chain(self, fresh_audit_log):
         """Test that rebuild corrects corrupted hashes."""
         log = fresh_audit_log

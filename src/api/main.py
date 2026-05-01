@@ -6,6 +6,7 @@ Integrated with LangGraph, PII Detection, and RBAC
 import asyncio
 import json
 import os
+import random
 import threading
 import time
 from collections import deque
@@ -157,6 +158,71 @@ def _get_data_quality_health() -> dict[str, Any]:
 
 
 QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
+
+
+def _env_flag(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+class _QueryStageProfiler:
+    """Opt-in per-request stage profiler for C4/root-cause load analysis."""
+
+    def __init__(self, *, query: str, user_tier: int, user_id: str) -> None:
+        self.enabled = _env_flag("NRG_QUERY_STAGE_PROFILE")
+        if not self.enabled:
+            return
+        try:
+            sample_rate = float(os.getenv("NRG_QUERY_STAGE_PROFILE_SAMPLE_RATE", "1.0"))
+        except ValueError:
+            sample_rate = 1.0
+        sample_rate = max(0.0, min(1.0, sample_rate))
+        self.enabled = random.random() <= sample_rate
+        if not self.enabled:
+            return
+        self.started_at = time.perf_counter()
+        self.last_mark = self.started_at
+        self.query_hash = hash(query)
+        self.user_tier = user_tier
+        self.user_id = user_id
+        self.stages: list[dict[str, Any]] = []
+
+    def mark(self, stage: str) -> None:
+        if not self.enabled:
+            return
+        now = time.perf_counter()
+        self.stages.append(
+            {
+                "stage": stage,
+                "delta_ms": round((now - self.last_mark) * 1000, 3),
+                "elapsed_ms": round((now - self.started_at) * 1000, 3),
+            }
+        )
+        self.last_mark = now
+
+    def finish(self, *, route: str, outcome: str, cache_hit: bool | None = None) -> None:
+        if not self.enabled:
+            return
+        total_ms = round((time.perf_counter() - self.started_at) * 1000, 3)
+        payload = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "pid": os.getpid(),
+            "thread": threading.get_ident(),
+            "route": route,
+            "outcome": outcome,
+            "cache_hit": cache_hit,
+            "tier": self.user_tier,
+            "user_id": self.user_id,
+            "query_hash": self.query_hash,
+            "total_ms": total_ms,
+            "stages": self.stages,
+        }
+        path = Path(os.getenv("NRG_QUERY_STAGE_PROFILE_FILE", ".cache/query_stage_profile.jsonl"))
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "a", encoding="utf-8") as profile_file:
+                profile_file.write(json.dumps(payload, separators=(",", ":"), default=str) + "\n")
+        except Exception:
+            logger.debug("Query stage profile write failed", exc_info=True)
 
 
 class _APIMemoryCache:
@@ -4970,6 +5036,41 @@ async def drain_connections():
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Log every request with method, path, status, and duration in structured JSON."""
 
+    def _write_envelope_profile(
+        self,
+        *,
+        request: Request,
+        response,
+        request_id: str,
+        duration_ms: float,
+    ) -> None:
+        if not _env_flag("NRG_REQUEST_ENVELOPE_PROFILE"):
+            return
+
+        content_length = response.headers.get("content-length")
+        try:
+            response_content_length = int(content_length) if content_length is not None else None
+        except ValueError:
+            response_content_length = None
+
+        payload = {
+            "timestamp": datetime.now(UTC).isoformat(),
+            "request_id": request_id,
+            "method": request.method,
+            "path": request.url.path,
+            "status": response.status_code,
+            "duration_ms": round(duration_ms, 3),
+            "response_content_length": response_content_length,
+            "client_ip": request.client.host if request.client else None,
+        }
+        path = Path(os.getenv("NRG_REQUEST_ENVELOPE_PROFILE_FILE", ".cache/request_envelope_profile.jsonl"))
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            with open(path, "a", encoding="utf-8") as profile_file:
+                profile_file.write(json.dumps(payload, separators=(",", ":"), default=str) + "\n")
+        except Exception:
+            logger.debug("Request envelope profile write failed", exc_info=True)
+
     async def dispatch(self, request: Request, call_next):
         start = time.time()
         request_id = str(uuid.uuid4())
@@ -4990,6 +5091,12 @@ class RequestLoggingMiddleware(BaseHTTPMiddleware):
                     "client_ip": request.client.host if request.client else None,
                 }
             )
+        self._write_envelope_profile(
+            request=request,
+            response=response,
+            request_id=request_id,
+            duration_ms=duration,
+        )
         response.headers["X-Request-ID"] = request_id
         return response
 
@@ -5255,6 +5362,7 @@ async def _query_with_langgraph_impl(
 
     user_tier = token_payload.get("tier", 1)
     user_id = token_payload.get("sub", "anonymous")
+    profiler = _QueryStageProfiler(query=request.query, user_tier=user_tier, user_id=user_id)
 
     allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
         user_id, user_tier, client_ip
@@ -5288,6 +5396,7 @@ async def _query_with_langgraph_impl(
                 status_code=403,
                 detail="IP not allowed for government tier access",
             )
+    profiler.mark("rate_limit_and_tier_guard")
 
     try:
         validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
@@ -5316,7 +5425,8 @@ async def _query_with_langgraph_impl(
                 audit_event_id=None,
                 reason=f"Security policy blocked this query: {validation['reason']}",
             )
-            return _apply_tier_response_filter(
+            profiler.mark("prompt_sanitizer_block")
+            filtered_blocked = _apply_tier_response_filter(
                 blocked,
                 user_tier,
                 user_id=user_id,
@@ -5324,6 +5434,10 @@ async def _query_with_langgraph_impl(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            profiler.mark("tier_filter")
+            profiler.finish(route="blocked", outcome="blocked", cache_hit=False)
+            return filtered_blocked
+        profiler.mark("prompt_sanitizer")
 
         from src.services.consent import get_consent_service
         consent_service = get_consent_service()
@@ -5332,10 +5446,12 @@ async def _query_with_langgraph_impl(
                 status_code=403,
                 detail="Consent required: Please grant research_access consent before querying data"
             )
+        profiler.mark("consent_check")
 
         # Use normalized cache key for better hit rate
         cache_key = _api_cache._make_cache_key(request.query, user_tier)
         cached = _api_cache.get(cache_key)
+        profiler.mark("cache_lookup")
         if cached is not None:
             cached_response = dict(cached) if isinstance(cached, dict) else cached
             if isinstance(cached_response, dict):
@@ -5346,8 +5462,9 @@ async def _query_with_langgraph_impl(
                 ):
                     cached_response.pop("_tier_filter_applied", None)
                     cached_response.pop("_tier_filter_tier", None)
+                    profiler.finish(route="cache", outcome="success", cache_hit=True)
                     return cached_response
-            return _apply_tier_response_filter(
+            filtered_cached = _apply_tier_response_filter(
                 cached_response,
                 user_tier,
                 user_id=user_id,
@@ -5355,6 +5472,9 @@ async def _query_with_langgraph_impl(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            profiler.mark("tier_filter")
+            profiler.finish(route="cache", outcome="success", cache_hit=True)
+            return filtered_cached
 
         if _should_use_c4_read_model(request.query):
             async def build_c4_response() -> dict[str, Any] | None:
@@ -5364,6 +5484,7 @@ async def _query_with_langgraph_impl(
                     user_tier=user_tier,
                     session_id=request.session_id,
                 )
+                profiler.mark("c4_read_model")
                 if c4_response is None:
                     return None
                 try:
@@ -5376,6 +5497,7 @@ async def _query_with_langgraph_impl(
                 except Exception:
                     logger.warning("Audit log_query failed for C4 read model path", exc_info=True)
                     c4_response["audit_event_id"] = "audit_unavailable"
+                profiler.mark("audit_append")
                 normalized = _normalise_query_answer_payload(
                     request,
                     user_tier=user_tier,
@@ -5388,6 +5510,7 @@ async def _query_with_langgraph_impl(
                     normalized["warnings"] = normalized.get("warnings", []) + [
                         f"PII redaction applied to response: {', '.join(redacted_pii)}"
                     ]
+                profiler.mark("normalize_and_redact")
                 normalized = _apply_tier_response_filter(
                     normalized,
                     user_tier,
@@ -5398,7 +5521,9 @@ async def _query_with_langgraph_impl(
                 )
                 normalized["_tier_filter_applied"] = True
                 normalized["_tier_filter_tier"] = user_tier
+                profiler.mark("tier_filter")
                 _schedule_answer_record_persist(user_id, request.session_id, normalized)
+                profiler.mark("answer_record_schedule")
                 return normalized
 
             c4_payload, c4_cache_hit = await _get_or_build_query_cache_singleflight(
@@ -5406,6 +5531,7 @@ async def _query_with_langgraph_impl(
                 build_c4_response,
                 ttl=QUERY_RESULT_CACHE_TTL_SECONDS,
             )
+            profiler.mark("c4_singleflight")
             if c4_payload is not None:
                 response_payload = dict(c4_payload) if isinstance(c4_payload, dict) else c4_payload
                 if isinstance(response_payload, dict):
@@ -5417,8 +5543,9 @@ async def _query_with_langgraph_impl(
                     ):
                         response_payload.pop("_tier_filter_applied", None)
                         response_payload.pop("_tier_filter_tier", None)
+                        profiler.finish(route="c4_read_model", outcome="success", cache_hit=c4_cache_hit)
                         return response_payload
-                return _apply_tier_response_filter(
+                filtered_c4_payload = _apply_tier_response_filter(
                     response_payload,
                     user_tier,
                     user_id=user_id,
@@ -5426,6 +5553,9 @@ async def _query_with_langgraph_impl(
                     request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                     endpoint="/query",
                 )
+                profiler.mark("tier_filter")
+                profiler.finish(route="c4_read_model", outcome="success", cache_hit=c4_cache_hit)
+                return filtered_c4_payload
 
         fast_response = await asyncio.to_thread(
             _fast_query_response,
@@ -5434,6 +5564,7 @@ async def _query_with_langgraph_impl(
             user_id=user_id,
             session_id=request.session_id,
         )
+        profiler.mark("fast_query_response")
         if fast_response is not None:
             try:
                 fast_response["audit_event_id"] = await _audit_log_query_async(
@@ -5445,6 +5576,7 @@ async def _query_with_langgraph_impl(
             except Exception:
                 logger.warning("Audit log_query failed for query fast path", exc_info=True)
                 fast_response["audit_event_id"] = "audit_unavailable"
+            profiler.mark("audit_append")
             fast_response = _normalise_query_answer_payload(
                 request,
                 user_tier=user_tier,
@@ -5457,6 +5589,7 @@ async def _query_with_langgraph_impl(
                 fast_response["warnings"] = fast_response.get("warnings", []) + [
                     f"PII redaction applied to response: {', '.join(redacted_pii)}"
                 ]
+            profiler.mark("normalize_and_redact")
             fast_response = _apply_tier_response_filter(
                 fast_response,
                 user_tier,
@@ -5465,6 +5598,7 @@ async def _query_with_langgraph_impl(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            profiler.mark("tier_filter")
             fast_response = _apply_ai_synthesis_after_tier_filter(
                 fast_response,
                 query=request.query,
@@ -5474,8 +5608,11 @@ async def _query_with_langgraph_impl(
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
                 endpoint="/query",
             )
+            profiler.mark("ai_synthesis")
             _schedule_answer_record_persist(user_id, request.session_id, fast_response)
             _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+            profiler.mark("persist_and_cache")
+            profiler.finish(route="fast_query", outcome="success", cache_hit=False)
             return fast_response
 
         context_key = _sql_context_key(user_id, request.session_id)
@@ -5486,6 +5623,7 @@ async def _query_with_langgraph_impl(
             session_id=request.session_id,
             context_key=context_key,
         )
+        profiler.mark("follow_up_response")
         if follow_up_response is not None:
             try:
                 follow_up_response["audit_event_id"] = await _audit_log_query_async(
@@ -5497,6 +5635,7 @@ async def _query_with_langgraph_impl(
             except Exception:
                 logger.warning("Audit log_query failed for SQL follow-up fast path", exc_info=True)
                 follow_up_response["audit_event_id"] = "audit_unavailable"
+            profiler.mark("audit_append")
             follow_up_response = _normalise_query_answer_payload(
                 request,
                 user_tier=user_tier,
@@ -5528,6 +5667,8 @@ async def _query_with_langgraph_impl(
             )
             _schedule_answer_record_persist(user_id, request.session_id, follow_up_response)
             _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+            profiler.mark("persist_and_cache")
+            profiler.finish(route="follow_up", outcome="success", cache_hit=False)
             return follow_up_response
 
         killer_response = await asyncio.to_thread(
@@ -5536,6 +5677,7 @@ async def _query_with_langgraph_impl(
             user_tier=user_tier,
             session_id=request.session_id,
         )
+        profiler.mark("killer_query_response")
         if killer_response is not None:
             try:
                 killer_response["audit_event_id"] = await _audit_log_query_async(
@@ -5547,6 +5689,7 @@ async def _query_with_langgraph_impl(
             except Exception:
                 logger.warning("Audit log_query failed for killer query fast path", exc_info=True)
                 killer_response["audit_event_id"] = "audit_unavailable"
+            profiler.mark("audit_append")
             killer_response = _normalise_query_answer_payload(
                 request,
                 user_tier=user_tier,
@@ -5583,6 +5726,8 @@ async def _query_with_langgraph_impl(
                 request.query,
                 killer_response.get("sql_query"),
             )
+            profiler.mark("persist_cache_and_context")
+            profiler.finish(route="killer_query", outcome="success", cache_hit=False)
             return killer_response
 
         adversarial_response = await asyncio.to_thread(
@@ -5591,6 +5736,7 @@ async def _query_with_langgraph_impl(
             user_tier=user_tier,
             session_id=request.session_id,
         )
+        profiler.mark("adversarial_response")
         if adversarial_response is not None:
             try:
                 adversarial_response["audit_event_id"] = await _audit_log_query_async(
@@ -5602,6 +5748,7 @@ async def _query_with_langgraph_impl(
             except Exception:
                 logger.warning("Audit log_query failed for adversarial SQL pattern", exc_info=True)
                 adversarial_response["audit_event_id"] = "audit_unavailable"
+            profiler.mark("audit_append")
             adversarial_response = _normalise_query_answer_payload(
                 request,
                 user_tier=user_tier,
@@ -5628,6 +5775,8 @@ async def _query_with_langgraph_impl(
             )
             _schedule_answer_record_persist(user_id, request.session_id, adversarial_response)
             _api_cache.set(cache_key, adversarial_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
+            profiler.mark("persist_and_cache")
+            profiler.finish(route="adversarial", outcome="success", cache_hit=False)
             return adversarial_response
 
         from src.observability.metrics import get_slo_tracker
@@ -5644,6 +5793,7 @@ async def _query_with_langgraph_impl(
             audit_event_id = await _audit_log_query_async(user_id, request.query, jwt_kid=jwt_kid, request_fingerprint=request_fp)
         except Exception:
             logger.warning("Audit log_query failed at API layer", exc_info=True)
+        profiler.mark("audit_append")
 
         result = None
         try:
@@ -5662,6 +5812,7 @@ async def _query_with_langgraph_impl(
                 session_id=request.session_id,
                 user_id=user_id,
             )
+            profiler.mark("workflow_run")
         finally:
             latency_ms = (time.time() - query_start) * 1000
             slo_tracker.decrement_concurrency()
@@ -5740,10 +5891,14 @@ async def _query_with_langgraph_impl(
             request.query,
             response_payload.get("sql_query"),
         )
+        profiler.mark("fallback_persist_cache_and_context")
+        profiler.finish(route="workflow", outcome="success", cache_hit=False)
         return response_payload
     except HTTPException:
+        profiler.finish(route="exception", outcome="http_exception", cache_hit=None)
         raise
     except Exception as e:
+        profiler.finish(route="exception", outcome="error", cache_hit=None)
         logger.error(f"Workflow execution error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
