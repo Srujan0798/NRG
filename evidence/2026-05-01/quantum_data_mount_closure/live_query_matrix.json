@@ -1,0 +1,169 @@
+{
+  "resolved_local_research_db_path": "/app/data/nrg_research.db",
+  "quantum_researcher_count": 717,
+  "default_answer_records_path": "/var/lib/nrg/answer_records.sqlite",
+  "answer_record_count": 26,
+  "results": [
+    {
+      "case": "capex_low_innovation",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "success",
+      "intent": "institution_aggregate",
+      "routing_decision": "fast_path",
+      "has_audit_event_id": true,
+      "verification_status": true,
+      "citation_count": 2,
+      "row_count": 1,
+      "sql_query_present": false,
+      "answer_contains_email": false,
+      "first_row": {
+        "sources": [
+          "researchers",
+          "institutions"
+        ],
+        "scope": "bounded_aggregate"
+      },
+      "answer_preview": "Institution-level aggregates are available from local NRG metadata and are returned without personal identifiers. Source tables: researchers, institutions. The response uses deterministic local fast-path synthesis for th"
+    },
+    {
+      "case": "noisy_quantum",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "success",
+      "intent": "researcher_ranking",
+      "routing_decision": "fast_path",
+      "has_audit_event_id": true,
+      "verification_status": true,
+      "citation_count": 2,
+      "row_count": 5,
+      "sql_query_present": true,
+      "answer_contains_email": false,
+      "first_row": {
+        "researcher_id": "RES-002857",
+        "name": "Rohit Thakur",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86,
+        "email": "rohit.thakur@iisc.ac.in"
+      },
+      "answer_preview": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Ins"
+    },
+    {
+      "case": "state_ai",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "success",
+      "intent": "state_research_output_comparison",
+      "routing_decision": "fast_path",
+      "has_audit_event_id": true,
+      "verification_status": true,
+      "citation_count": 2,
+      "row_count": 2,
+      "sql_query_present": true,
+      "answer_contains_email": false,
+      "first_row": {
+        "state": "Gujarat",
+        "researcher_count": 886
+      },
+      "answer_preview": "Gujarat and Karnataka are compared as state-bounded research-output slices. Gujarat has 886 researcher-output records in the visible read model; Karnataka has 555. [cite:researchers:c4-read-model] [cite:institutions:c4-r"
+    },
+    {
+      "case": "government_aggregate",
+      "role": "government",
+      "status_code": 200,
+      "status": "success",
+      "intent": "funding_aggregate",
+      "routing_decision": "fast_path",
+      "has_audit_event_id": true,
+      "verification_status": true,
+      "citation_count": 2,
+      "row_count": 5,
+      "sql_query_present": true,
+      "answer_contains_email": false,
+      "first_row": {
+        "institute": "IIT Madras",
+        "grant_count": 3755,
+        "funding_cr": 3907.71
+      },
+      "answer_preview": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]"
+    },
+    {
+      "case": "industry_tier_safe",
+      "role": "industry",
+      "status_code": 200,
+      "status": "success",
+      "intent": "researcher_ranking",
+      "routing_decision": "fast_path",
+      "has_audit_event_id": true,
+      "verification_status": true,
+      "citation_count": 2,
+      "row_count": 5,
+      "sql_query_present": false,
+      "answer_contains_email": false,
+      "first_row": {
+        "name": "Researcher_c3eb352a",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86
+      },
+      "answer_preview": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Ins"
+    },
+    {
+      "case": "pii_block",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "blocked",
+      "intent": null,
+      "routing_decision": null,
+      "has_audit_event_id": true,
+      "verification_status": false,
+      "citation_count": 0,
+      "row_count": 0,
+      "sql_query_present": false,
+      "answer_contains_email": false,
+      "first_row": null,
+      "answer_preview": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead."
+    },
+    {
+      "case": "injection_block",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "blocked",
+      "intent": null,
+      "routing_decision": null,
+      "has_audit_event_id": true,
+      "verification_status": false,
+      "citation_count": 0,
+      "row_count": 0,
+      "sql_query_present": false,
+      "answer_contains_email": false,
+      "first_row": null,
+      "answer_preview": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead."
+    },
+    {
+      "case": "out_of_corpus",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "success",
+      "intent": "needs_clarification",
+      "routing_decision": "clarify",
+      "has_audit_event_id": true,
+      "verification_status": false,
+      "citation_count": 0,
+      "row_count": 0,
+      "sql_query_present": false,
+      "answer_contains_email": false,
+      "first_row": null,
+      "answer_preview": "I can help with AI research, researchers, publications, patents, labs, institutions, TRL, and policy evidence, but this is not a clear research question. Try a concrete request such as: \"top AI researchers by h-index\", \""
+    }
+  ]
+}

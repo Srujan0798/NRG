@@ -1,0 +1,97 @@
+{
+  "env_NRG_LOCAL_RESEARCH_DB": "/app/data/nrg_research.db",
+  "resolved_local_research_db_path": "/app/data/nrg_research.db",
+  "quantum_researcher_count": 717,
+  "top_quantum_rows": [
+    {
+      "name": "Rohit Thakur",
+      "institution": "IISc Bangalore",
+      "state": "Karnataka",
+      "research_area": "Wind Energy",
+      "h_index": 84,
+      "funding_cr": 0.86
+    },
+    {
+      "name": "Vishal Gupta",
+      "institution": "IIT Kharagpur",
+      "state": "West Bengal",
+      "research_area": "Robotics",
+      "h_index": 84,
+      "funding_cr": 0.83
+    },
+    {
+      "name": "Mohan Dave",
+      "institution": "IIT Bombay",
+      "state": "Maharashtra",
+      "research_area": "Quantum Information Science",
+      "h_index": 83,
+      "funding_cr": 1.95
+    },
+    {
+      "name": "Lakshmi Das",
+      "institution": "IIT Gandhinagar",
+      "state": "Gujarat",
+      "research_area": "VLSI Design",
+      "h_index": 81,
+      "funding_cr": 0.98
+    },
+    {
+      "name": "Sunita Shukla",
+      "institution": "Delhi University",
+      "state": "Delhi",
+      "research_area": "Quantum Computing",
+      "h_index": 80,
+      "funding_cr": 10.95
+    }
+  ],
+  "responses": [
+    {
+      "case": "researcher_quantum",
+      "role": "researcher",
+      "status_code": 200,
+      "status": "success",
+      "intent": "researcher_ranking",
+      "answer_confidence": "high",
+      "has_audit_event_id": true,
+      "citation_count": 2,
+      "row_count": 5,
+      "contains_direct_email_in_answer": false,
+      "answer_preview": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Rohit Thakur | IISc Bangalore | Karnataka | Quantum Information Science | 84 | \u20b90.86 Cr |\n| 2 | Vishal Gupta | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | \u20b90.83 Cr |\n| 3 | Mohan Dave | IIT Bombay | Maharashtra | Quantum Information Science | 83 | \u20b91.95 Cr |\n| 4 | Lakshmi Das | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | \u20b90.98 Cr |\n| 5 | Sunita Shukla | Delhi University | Delhi | Quantum Computing | 80 | \u20b910.95 Cr |\n\nTop contact shown for Tier 1 res",
+      "first_row": {
+        "researcher_id": "RES-002857",
+        "name": "Rohit Thakur",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86,
+        "email": "rohit.thakur@iisc.ac.in"
+      }
+    },
+    {
+      "case": "industry_quantum_safe",
+      "role": "industry",
+      "status_code": 200,
+      "status": "success",
+      "intent": "researcher_ranking",
+      "answer_confidence": "high",
+      "has_audit_event_id": true,
+      "citation_count": 2,
+      "row_count": 5,
+      "contains_direct_email_in_answer": false,
+      "answer_preview": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Researcher 1 | IISc Bangalore | Karnataka | Quantum Information Science | 84 | \u20b90.86 Cr |\n| 2 | Researcher 2 | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | \u20b90.83 Cr |\n| 3 | Researcher 3 | IIT Bombay | Maharashtra | Quantum Information Science | 83 | \u20b91.95 Cr |\n| 4 | Researcher 4 | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | \u20b90.98 Cr |\n| 5 | Researcher 5 | Delhi University | Delhi | Quantum Computing | 80 | \u20b910.95 Cr |\n\nAccess restricted: lower tiers",
+      "first_row": {
+        "name": "Researcher_c3eb352a",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86
+      }
+    }
+  ]
+}

@@ -40,6 +40,13 @@ def test_api_container_uses_service_hostnames_for_dependencies():
     assert "REDIS_URL=redis://redis:6379/0" in environment
 
 
+def test_api_container_mounts_populated_local_research_db_read_only():
+    api = _compose()["services"]["api"]
+
+    assert "NRG_LOCAL_RESEARCH_DB=/app/data/nrg_research.db" in api["environment"]
+    assert "./data:/app/data:ro" in api["volumes"]
+
+
 def test_kong_uses_non_conflicting_public_port():
     ports = _compose()["services"]["kong"]["ports"]
 
