@@ -36,6 +36,7 @@ from src.api.middleware.security import (
     enforce_tier_response_boundary,
 )
 from src.api.routes.audit import router as audit_router
+from src.api.routes.dpdp import router as dpdp_router
 from src.auth.jwt_handler import JWTHandler, AuthError
 from src.auth.middleware import (
     AuthContextMiddleware,
@@ -5079,6 +5080,7 @@ except Exception:
     logger.warning("Prometheus instrumentation failed — metrics disabled")
 
 app.include_router(audit_router)
+app.include_router(dpdp_router)
 
 
 class LoginRequest(BaseModel):
@@ -5093,11 +5095,6 @@ class RefreshRequest(BaseModel):
 
 class LogoutRequest(BaseModel):
     refresh_token: Optional[str] = None
-
-
-class EraseRequest(BaseModel):
-    confirm: bool = False
-    reason: Optional[str] = None
 
 
 ACCESS_COOKIE_NAME = "nrg_access_token"
@@ -7944,102 +7941,6 @@ async def get_internal_tier_diff(
         raise HTTPException(status_code=500, detail="Audit binding required")
 
     return _tier_history_snapshot()
-
-
-# DPDP Compliance Alias Endpoints (DPDP-2023 Article 13/17)
-# These alias the /me/* endpoints for DPDP-mandated paths
-@app.get("/dpdp/export")
-async def dpdp_export(token_payload: dict = Depends(get_current_user)):
-    """DPDP-2023 Article 13: Right to Access — alias for /me/data"""
-    return await export_user_data(token_payload)
-
-
-@app.post("/dpdp/erase")
-async def dpdp_erase(
-    body: EraseRequest,
-    token_payload: dict = Depends(get_current_user),
-):
-    """DPDP-2023 Article 17: Right to Erasure — alias for /me/data DELETE"""
-    if not body.confirm:
-        raise HTTPException(status_code=400, detail="Erasure requires confirm=true")
-    return await erase_user_data(token_payload)
-
-
-@app.get("/dpdp/consents")
-async def dpdp_consents(token_payload: dict = Depends(get_current_user)):
-    """DPDP-2023 Article 6: Consent visibility — alias for /me/consents"""
-    return await list_consents(token_payload)
-
-
-# DPDP Compliance Endpoints
-@app.post("/consent")
-async def grant_consent(
-    scope: str,
-    retention_days: int = 365,
-    token_payload: dict = Depends(get_current_user)
-):
-    """Grant consent for data processing (DPDP 2023)."""
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    user_id = token_payload.get("sub", "anonymous")
-    result = service.grant_consent(user_id, scope, retention_days)
-    if result["success"]:
-        return result
-    raise HTTPException(status_code=400, detail=result["error"])
-
-
-@app.delete("/consent/{scope}")
-async def revoke_consent(
-    scope: str,
-    token_payload: dict = Depends(get_current_user)
-):
-    """Revoke consent for data processing (DPDP 2023)."""
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    user_id = token_payload.get("sub", "anonymous")
-    result = service.revoke_consent(user_id, scope)
-    if result["success"]:
-        return result
-    raise HTTPException(status_code=404, detail=result["error"])
-
-
-@app.get("/me/consents")
-async def list_consents(token_payload: dict = Depends(get_current_user)):
-    """List all consents for current user."""
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    user_id = token_payload.get("sub", "anonymous")
-    return {"consents": service.list_consents(user_id)}
-
-
-
-@app.get("/me/data")
-async def export_user_data(token_payload: dict = Depends(get_current_user)):
-    """Export all user data (DPDP right to access)."""
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    user_id = token_payload.get("sub", "anonymous")
-    return service.export_user_data(user_id)
-
-
-@app.delete("/me/data")
-async def erase_user_data(token_payload: dict = Depends(get_current_user)):
-    """Erase all user data (DPDP right to erasure)."""
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    user_id = token_payload.get("sub", "anonymous")
-    return service.erase_user_data(user_id)
-
-
-@app.get("/admin/dpdp/stats")
-async def get_dpdp_admin_stats(token_payload: dict = Depends(get_current_user)):
-    """DPDP compliance admin dashboard stats."""
-    role = token_payload.get("role", "")
-    if role not in ("admin", "government"):
-        raise HTTPException(status_code=403, detail="Admin access required")
-    from src.services.consent import get_consent_service
-    service = get_consent_service()
-    return service.get_admin_stats()
 
 
 @app.get("/admin/slo")

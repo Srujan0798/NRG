@@ -180,6 +180,13 @@ Started in the backend split pass:
 - Registered the audit router from `src/api/main.py`.
 - Removed duplicate audit route definitions from `src/api/routes/admin.py` so
   future admin-router activation does not create overlapping `/audit/*` paths.
+- Extracted DPDP consent, data export, data erasure, and `/me/*` data-rights
+  endpoints into `src/api/routes/dpdp.py`.
+- Registered the DPDP router from `src/api/main.py`.
+- Made `src/api/routes/__init__.py` import-free so route activation is explicit
+  and dormant route modules do not load stale endpoint definitions.
+- Removed stale DPDP/data-rights definitions from the dormant auth route module,
+  leaving auth focused on login/session endpoints.
 
 Remaining route splits:
 
@@ -187,7 +194,8 @@ Remaining route splits:
 - Health/provider/vector routes.
 - Query and streaming routes.
 - Data and graph routes.
-- Admin/RBAC/metrics routes.
+- Admin/RBAC/metrics routes, with DPDP definitions already removed from the
+  dormant admin route module.
 
 ### Wave 6: Documentation Rationalization
 
