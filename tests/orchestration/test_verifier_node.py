@@ -198,8 +198,31 @@ class TestCitationValidation:
         })
 
         assert result["citation_validity"] == 1.0
+        assert result["verification_status"] == "ok"
         cited_responses = result["synthesized_response"].count("[cite:PUB_001:0]")
         assert cited_responses == 1, "Duplicate citation should be removed"
+
+    def test_duplicate_structured_citations_with_sql_rows_are_verified(self, mock_db, monkeypatch):
+        """Repeated [cite:structured:0] tokens from SQL fast paths should dedupe, not force retry."""
+        monkeypatch.setattr(verifier_module, "get_llm_client", lambda: None)
+
+        result = verifier_module.verifier_node({
+            "synthesized_response": (
+                "Found 3 records [cite:structured:0]. "
+                "IIT Delhi capital_expense_crore is 412.4 [cite:structured:0]. "
+                "IIT Kanpur capital_expense_crore is 351.2 [cite:structured:0]."
+            ),
+            "sql_results": [
+                {"institute": "IIT Delhi", "capital_expense_crore": 412.4},
+                {"institute": "IIT Kharagpur", "capital_expense_crore": 388.7},
+                {"institute": "IIT Kanpur", "capital_expense_crore": 351.2},
+            ],
+            "verification_retries": 0,
+        })
+
+        assert result["citation_validity"] == 1.0
+        assert result["verification_status"] == "ok"
+        assert result["synthesized_response"].count("[cite:structured:0]") == 1
 
     def test_enriched_citations_contain_metadata(self, mock_db, monkeypatch):
         """Valid publication citations are enriched with title, authors, year, DOI."""

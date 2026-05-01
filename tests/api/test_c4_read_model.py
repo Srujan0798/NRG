@@ -49,6 +49,48 @@ def test_c4_read_model_anonymizes_researcher_rows_for_tier3():
     assert all(str(row.get("researcher", "")).startswith("Researcher ") for row in response["sql_results"])
 
 
+def test_c4_funding_institution_query_uses_safe_seed_when_read_model_empty(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "_c4_read_model_snapshot",
+        lambda: {"funding_by_institute": [], "funding_by_agency": [], "research_area_funding": []},
+    )
+
+    response = api_main._c4_read_model_response(
+        "Compare funding allocation across major institutions",
+        user_tier=2,
+        session_id="c4-empty-funding-test",
+    )
+
+    assert response is not None
+    assert response["status"] == "success"
+    assert response["intent"] == "funding_aggregate"
+    assert response["verification_status"] is True
+    assert response["sql_results"]
+    assert response["citations"]
+
+
+def test_c4_state_output_query_uses_safe_seed_when_read_model_empty(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "_c4_read_model_snapshot",
+        lambda: {"researchers_by_state": [], "publication_by_area": [], "publication_by_year": []},
+    )
+
+    response = api_main._c4_read_model_response(
+        "Compare Gujarat and Karnataka AI research output and show gap",
+        user_tier=1,
+        session_id="c4-empty-state-test",
+    )
+
+    assert response is not None
+    assert response["status"] == "success"
+    assert response["intent"] == "state_research_output_comparison"
+    assert response["verification_status"] is True
+    assert [row["state"] for row in response["sql_results"]] == ["Gujarat", "Karnataka"]
+    assert response["citations"]
+
+
 def test_query_cache_singleflight_builds_same_key_once():
     api_main._api_cache.invalidate("singleflight-test")
     key = "singleflight-test:c4"

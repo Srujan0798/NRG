@@ -1,0 +1,196 @@
+{
+  "results": [
+    {
+      "id": "state_ai",
+      "persona": "researcher",
+      "query": "Compare Gujarat and Karnataka AI research output 5y; show gap after worker restart",
+      "http_status": 500,
+      "elapsed_ms": 104.46,
+      "status": null,
+      "tier": null,
+      "intent": null,
+      "routing_decision": null,
+      "verification_status": null,
+      "answer_confidence": null,
+      "audit_event_id": null,
+      "row_count": 0,
+      "citation_count": 0,
+      "response_preview": "list index out of range",
+      "raw": {
+        "detail": "list index out of range"
+      }
+    },
+    {
+      "id": "government_aggregate",
+      "persona": "government",
+      "query": "Compare funding allocation across major institutions after worker restart",
+      "http_status": 500,
+      "elapsed_ms": 100.93,
+      "status": null,
+      "tier": null,
+      "intent": null,
+      "routing_decision": null,
+      "verification_status": null,
+      "answer_confidence": null,
+      "audit_event_id": null,
+      "row_count": 0,
+      "citation_count": 0,
+      "response_preview": "list index out of range",
+      "raw": {
+        "detail": "list index out of range"
+      }
+    },
+    {
+      "id": "out_of_corpus",
+      "persona": "researcher",
+      "query": "Who will win the 2035 cricket world cup?",
+      "http_status": 200,
+      "elapsed_ms": 21400.44,
+      "status": "success",
+      "tier": 1,
+      "intent": "unstructured",
+      "routing_decision": "rag",
+      "verification_status": false,
+      "answer_confidence": "low",
+      "audit_event_id": "642a06f6a0427b7f743635d67007d52c1a2f6b993e82d33ce24dae774a46f710",
+      "row_count": 0,
+      "citation_count": 0,
+      "response_preview": "Insufficient data to support the numeric claims with required citations.",
+      "raw": {
+        "query_id": "36d7b060-c256-434c-92f4-0768b3188bc4",
+        "answer_id": "5f5c400f-5a69-4e8b-bc0b-74610303eb66",
+        "audit_event_id": "642a06f6a0427b7f743635d67007d52c1a2f6b993e82d33ce24dae774a46f710",
+        "tier": 1,
+        "question": "Who will win the 2035 cricket world cup?",
+        "interpreted_question": "Who will win the 2035 cricket world cup?",
+        "assumptions": [],
+        "route": "rag",
+        "blocked": false,
+        "final_answer": "Insufficient data to support the numeric claims with required citations.",
+        "confidence": {
+          "level": "low",
+          "reason": "Only partial evidence is available."
+        },
+        "citations": [],
+        "source_data": {
+          "sql_query": null,
+          "rows": [],
+          "documents": []
+        },
+        "provenance": {
+          "synth": "rule_based",
+          "cloud_synthesis_used": false
+        },
+        "freshness": {
+          "database_snapshot": null,
+          "document_indexed_at": null,
+          "warning": null
+        },
+        "caveats": [
+          "Some numeric claims were not supported by retrieved evidence."
+        ],
+        "follow_up_suggestions": [],
+        "query_time_ms": 21353,
+        "query": "Who will win the 2035 cricket world cup?",
+        "response": "Insufficient data to support the numeric claims with required citations.",
+        "status": "success",
+        "session_id": "42cb2528-5a15-4c50-a1c1-60841877eb6a",
+        "intent": "unstructured",
+        "routing_decision": "rag",
+        "verification_status": false,
+        "verification": {
+          "status": "fail",
+          "safe_to_trust": false,
+          "confidence": {
+            "level": "low",
+            "reason": "Only partial evidence is available."
+          },
+          "citation_validity": 1.0,
+          "audit_event_id": "642a06f6a0427b7f743635d67007d52c1a2f6b993e82d33ce24dae774a46f710"
+        },
+        "citation_validity": 1.0,
+        "plan": {
+          "subqueries": [
+            "who will win the 2035 cricket world cup"
+          ],
+          "schema_tables": [
+            "institutions",
+            "publications",
+            "researchers"
+          ],
+          "desired_skills": [
+            "rag"
+          ],
+          "expected_output_shape": "narrative_summary",
+          "dag_nodes": [
+            {
+              "id": "node_e027c3",
+              "subquery": "who will win the 2035 cricket world cup",
+              "skill": "rag",
+              "depends_on": [],
+              "tables": [
+                "institutions",
+                "publications",
+                "researchers"
+              ],
+              "output_shape": "narrative_summary",
+              "optional": false
+            }
+          ],
+          "dag_root_id": "node_e027c3",
+          "is_dag": true
+        },
+        "planner_metadata": {
+          "mode": "heuristic_fallback",
+          "reason": "llm_unavailable_or_failed",
+          "catalog": {
+            "route": "rag",
+            "confidence": 0.55,
+            "output_shape": "narrative_summary",
+            "matched_tables": [],
+            "matched_domains": [],
+            "rationale": [
+              "No strong catalog match; use broad document retrieval unless planner adds context."
+            ],
+            "assumptions": [],
+            "needs_clarification": false,
+            "clarification_question": null,
+            "blocked_reason": null,
+            "pii_terms": []
+          }
+        },
+        "answer_confidence": "low",
+        "answer_confidence_score": 0.30000000000000004,
+        "sql_anomaly_report": {},
+        "sql_query": null,
+        "sql_queries": [],
+        "sql_results": [],
+        "retrieval_sources": [],
+        "synthesis_method": "rule_based",
+        "conversation_history": [
+          {
+            "query": "Who will win the 2035 cricket world cup?",
+            "response": "Insufficient data to support the numeric claims with required citations."
+          }
+        ],
+        "node_timings": {
+          "receiver": 0.43,
+          "planner": 69.83,
+          "router": 0.53,
+          "executor": 20896.36,
+          "synthesizer": 1.01,
+          "verifier": 0.59
+        },
+        "warnings": [
+          {
+            "node": "executor",
+            "skill": "rag",
+            "error_type": "EmbedderUnavailable",
+            "message": "No embedding models loaded"
+          }
+        ],
+        "tier1_access_scope": "full_detail"
+      }
+    }
+  ]
+}

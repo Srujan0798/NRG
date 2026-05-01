@@ -1,0 +1,41 @@
+{
+  "status": "healthy",
+  "chain_valid": true,
+  "chain_length": 17551,
+  "valid_events": 17551,
+  "valid_event_count": 17551,
+  "error_count": 0,
+  "errors": [],
+  "repair": null,
+  "lineage_intact": true,
+  "auto_repair_enabled": false,
+  "reseeding_events": [],
+  "lineage_break": {
+    "lineage_intact": true,
+    "active_chain_traceable": true,
+    "repair_required": false,
+    "auto_repair_triggered": false,
+    "backup_count": 0,
+    "backup_files": [],
+    "reseeding_events": [],
+    "original_event_count": null,
+    "active_genesis_hash": "374b047b81b0ebba",
+    "pinned_genesis_hash": "374b047b81b0ebba",
+    "genesis_pin_matches": true,
+    "genesis_pin_path": "/var/lib/nrg/audit/genesis_hash.pin",
+    "active_genesis_event_id": "2d92e775"
+  },
+  "db_cosign": {
+    "submitted": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "queue_depth": 0,
+    "max_queue_depth": 0,
+    "success_rate": 1.0,
+    "last_latency_ms": null,
+    "last_error": null,
+    "last_completed_at": null
+  },
+  "last_hash": "1f229dd50d7332da...",
+  "last_event": "2026-05-01T15:06:04.163180+00:00"
+}

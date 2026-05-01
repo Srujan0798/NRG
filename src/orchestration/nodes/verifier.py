@@ -538,9 +538,9 @@ def verifier_node(state: Any) -> dict:
 
     citation_coverage = _calculate_citation_coverage(stripped_response, citations)
 
-    if missing or dupes or malformed:
-        missing_with_dupes = [cid for cid in unique_citations if cid not in validated_pub_ids]
-        missing_ratio = len(missing_with_dupes) / len(unique_citations)
+    if missing or malformed:
+        missing_invalid = [cid for cid in unique_citations if cid not in validated_pub_ids]
+        missing_ratio = len(missing_invalid) / len(unique_citations)
         score_breakdown["evidence_match"] = FAITHFULNESS_WEIGHTS["evidence_match"] * (1 - missing_ratio)
         score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"] * (1 - missing_ratio)
 
@@ -548,7 +548,7 @@ def verifier_node(state: Any) -> dict:
 
         result = _failure_result(
             retries,
-            [f"Invalid citation {citation_id}" for citation_id in missing_with_dupes],
+            [f"Invalid citation {citation_id}" for citation_id in missing_invalid],
             stripped_response,
             total_score,
             score_breakdown,

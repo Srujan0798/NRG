@@ -181,6 +181,22 @@ def test_fast_query_clarifies_profane_non_research_ai_prompt():
     assert "AI research" in payload["response"]
 
 
+def test_fast_query_clarifies_obvious_out_of_corpus_prompt():
+    payload = api_main._fast_query_response(
+        "Who will win the 2035 cricket world cup?",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="clarify-out-of-corpus-session",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "needs_clarification"
+    assert payload["routing_decision"] == "clarify"
+    assert payload["sql_results"] == []
+    assert payload["retrieval_sources"] == []
+    assert "research question" in payload["response"].lower()
+
+
 def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
     api_main._researcher_topic_cache.clear()
     rows = [
@@ -233,6 +249,29 @@ def test_fast_query_returns_ranked_quantum_researchers(monkeypatch):
     assert "IISc Bengaluru" in payload["response"]
     assert "Quantum Computing" in payload["response"]
     assert payload["sql_query"]
+
+
+def test_fast_query_no_result_researcher_lookup_keeps_source_citations(monkeypatch):
+    monkeypatch.setattr(
+        api_main,
+        "_query_researchers_for_topic",
+        lambda topic, patterns: ("SELECT * FROM researchers WHERE topic LIKE '%quantum%'", []),
+    )
+
+    payload = api_main._fast_query_response(
+        "best quantum researchers",
+        user_tier=1,
+        user_id="researcher-user",
+        session_id="quantum-empty-session",
+    )
+
+    assert payload is not None
+    assert payload["intent"] == "no_results"
+    assert payload["verification_status"] is True
+    assert payload["sql_results"] == []
+    assert payload["citations"]
+    assert "[cite:researchers:no-results]" in payload["response"]
+    assert "source tables were still searched" in payload["warnings"][0]["message"]
 
 
 def test_unsupported_ranked_researcher_topic_clarifies_instead_of_generic_fast_path():
