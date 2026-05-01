@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "elapsed_ms": 74.36,
+  "routing_decision": "fast_path",
+  "verification_status": true,
+  "response_preview": "Machine Learning PhD supervision is proxied through the top 0 machine-learning researcher/institution rows because the local PhD table is sparse. [cite:researchers:c4-read-model] [cite:phd_students:c4-read-model]",
+  "sql_query": "SELECT researcher, institution, state, research_area FROM c4_researcher_read_model WHERE topic='Machine Learning' ORDER BY h_index DESC LIMIT 5",
+  "row_count": 0,
+  "first_row": null,
+  "audit_event_id": "27a16ecc7183b43f3d03db1b6a83e7b400794e48096aa1e6a86e8b3757f0012b"
+}

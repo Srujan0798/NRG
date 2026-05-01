@@ -800,6 +800,98 @@ def test_advanced_adversarial_patterns_return_sql_metadata():
         assert payload["routing_decision"] == "text_to_sql"
 
 
+def test_fast_path_defers_structured_benchmark_shapes_to_killer_sql():
+    queries = [
+        "Institutes with highest disparity between sanctioned intake and actual student strength for UG programs in the last 3 years.",
+        "Top 3 institutes by patents granted per PhD students per academic year.",
+    ]
+
+    for query in queries:
+        assert api_main._fast_query_response(
+            query,
+            user_tier=1,
+            user_id="researcher-user",
+            session_id="structured-benchmark",
+        ) is None
+
+
+def test_structured_benchmark_query_bypasses_c4_read_model_preemption():
+    query = "Top 3 institutes by patents granted per PhD students per academic year."
+
+    assert api_main._is_c4_read_model_query(query) is True
+    assert api_main._should_use_c4_read_model(query) is False
+
+
+def test_killer_query_executes_sanctioned_actual_student_strength_sql(monkeypatch):
+    captured = {}
+
+    def fake_execute_sql(sql, user_tier=1):
+        captured["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {
+                    "institute": "IIT Bombay",
+                    "program": "UG",
+                    "period": "2026",
+                    "seats": 500,
+                    "actual_strength": 430,
+                    "seat_gap": 70,
+                }
+            ],
+            "warnings": [],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+
+    payload = api_main._killer_query_response(
+        "Institutes with highest disparity between sanctioned intake and actual student strength for UG programs in the last 3 years.",
+        user_tier=1,
+        session_id="killer-sanctioned-actual",
+    )
+
+    assert payload is not None
+    assert "sanctioned_intake" in captured["sql"]
+    assert "actual_student_strength" in captured["sql"]
+    assert payload["verification_status"] is True
+    assert payload["sql_results"][0]["seat_gap"] == 70
+
+
+def test_killer_query_executes_patents_per_phd_sql(monkeypatch):
+    captured = {}
+
+    def fake_execute_sql(sql, user_tier=1):
+        captured["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {
+                    "institute": "IIT Madras",
+                    "financial_year": "2025-26",
+                    "patents_granted": 18,
+                    "phd_students": 90,
+                    "patent_phd_ratio": 0.2,
+                }
+            ],
+            "warnings": [],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+
+    payload = api_main._killer_query_response(
+        "Top 3 institutes by patents granted per PhD students per academic year.",
+        user_tier=1,
+        session_id="killer-patent-phd",
+    )
+
+    assert payload is not None
+    assert "patents_details" in captured["sql"]
+    assert "phd_students" in captured["sql"]
+    assert "NULLIF" in captured["sql"]
+    assert payload["verification_status"] is True
+    assert payload["sql_results"][0]["patent_phd_ratio"] == 0.2
+
+
 def test_release_seed_graph_covers_hydrogen_visualization():
     graph = api_main._release_seed_graph("the hydrogen fuel cells", tier=1)
 

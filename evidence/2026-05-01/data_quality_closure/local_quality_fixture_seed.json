@@ -1,0 +1,112 @@
+{
+  "_freshness_refresh": {
+    "combined_ipo_patent_data": {
+      "columns": [
+        "inserted_at",
+        "fetched_at"
+      ],
+      "value": "2026-05-01T10:50:15+00:00"
+    },
+    "institutions": {
+      "columns": [
+        "updated_at",
+        "created_at"
+      ],
+      "value": "2026-05-01T10:50:15+00:00"
+    },
+    "publications": {
+      "columns": [
+        "updated_at",
+        "created_at"
+      ],
+      "value": "2026-05-01T10:50:15+00:00"
+    },
+    "researchers": {
+      "columns": [
+        "updated_at",
+        "created_at"
+      ],
+      "value": "2026-05-01T10:50:15+00:00"
+    }
+  },
+  "academic_courses_details": {
+    "after": 50000,
+    "before": 50000,
+    "inserted": 0
+  },
+  "actual_student_strength": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "combined_ipo_patent_data": {
+    "after": 50000,
+    "before": 50000,
+    "inserted": 0
+  },
+  "faculty_details": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "financial_expenses_capital": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "financial_expenses_operational": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "innovation_grant_from_govt": {
+    "after": 50000,
+    "before": 50000,
+    "inserted": 0
+  },
+  "innovations_at_various_stages_of_technology_readiness_level": {
+    "after": 50000,
+    "before": 50000,
+    "inserted": 0
+  },
+  "patents_details": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "phd_students": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "placements_and_higher_studies": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "research_consultancy_details_consultancy": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "research_consultancy_details_sponsered": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "sanctioned_intake": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "startup_recognition": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  },
+  "tb_institute_mstr": {
+    "after": 1000,
+    "before": 0,
+    "inserted": 1000
+  }
+}

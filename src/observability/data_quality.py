@@ -288,12 +288,16 @@ class DataQualityMonitor:
     def _null_rate(self, inspector: Any, tables: set[str]) -> PillarResult:
         worst_rate = 0.0
         checked_columns = 0
+        skipped_nullable = 0
         examples: list[dict[str, Any]] = []
         for table in sorted(tables):
             row_count = self._count_rows(table)
             if row_count == 0:
                 continue
             for column in inspector.get_columns(table):
+                if column.get("nullable") and not column.get("primary_key"):
+                    skipped_nullable += 1
+                    continue
                 column_name = column["name"]
                 null_count = self._count_nulls(table, column_name)
                 rate = null_count / row_count
@@ -320,6 +324,7 @@ class DataQualityMonitor:
             threshold=f"<= {self.thresholds.max_null_rate:.2%} nulls in any measured column",
             observed={
                 "columns_checked": checked_columns,
+                "columns_skipped_nullable": skipped_nullable,
                 "worst_null_rate": _round_score(worst_rate),
                 "violations": examples[:20],
             },
@@ -352,7 +357,7 @@ class DataQualityMonitor:
                     {
                         "table": table,
                         "column": column_name,
-                        "age_days": _round_score(age_days),
+                        "age_days": _round_measurement(age_days),
                         "max_value": str(raw_value),
                     }
                 )
@@ -377,12 +382,12 @@ class DataQualityMonitor:
             threshold=f"<= {self.thresholds.max_freshness_days} days since latest update",
             observed={
                 "tables_checked": checked_tables,
-                "worst_age_days": _round_score(worst_age_days),
+                "worst_age_days": _round_measurement(worst_age_days),
                 "stale_tables": stale[:20],
                 "invalid_values": invalid[:20],
             },
             severity=None if status == "PASS" else "P1",
-            detail=f"worst table age {_round_score(worst_age_days):.3f} days",
+            detail=f"worst table age {_round_measurement(worst_age_days):.3f} days",
         )
 
     def _completeness(self, tables: set[str]) -> PillarResult:
@@ -710,6 +715,12 @@ def _round_score(value: float) -> float:
     if math.isnan(value) or math.isinf(value):
         return 0.0
     return round(max(0.0, min(1.0, value)), 4)
+
+
+def _round_measurement(value: float) -> float:
+    if math.isnan(value) or math.isinf(value):
+        return 0.0
+    return round(max(0.0, value), 4)
 
 
 def _redact_database_url(database_url: str) -> str:

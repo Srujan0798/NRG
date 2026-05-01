@@ -1,9 +1,9 @@
 {
   "alerts": [],
   "database_url": "postgresql://nrg:***@localhost:5432/nrg",
-  "generated_at": "2026-05-01T11:05:15.809930+00:00",
+  "generated_at": "2026-05-01T10:51:44.604358+00:00",
   "ok": true,
-  "overall_score": 0.9039,
+  "overall_score": 0.9041,
   "overall_status": "PASS",
   "pillars": {
     "completeness": {
@@ -51,15 +51,15 @@
       "threshold": "cross-table validations have zero orphaned references"
     },
     "freshness": {
-      "detail": "worst table age 4.707 days",
+      "detail": "worst table age 4.697 days",
       "name": "freshness",
       "observed": {
         "invalid_values": [],
         "stale_tables": [],
         "tables_checked": 5,
-        "worst_age_days": 4.7065
+        "worst_age_days": 4.6971
       },
-      "score": 0.3276,
+      "score": 0.329,
       "severity": null,
       "status": "PASS",
       "threshold": "<= 7 days since latest update"

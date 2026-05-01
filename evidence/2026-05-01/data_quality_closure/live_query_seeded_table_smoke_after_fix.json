@@ -1,0 +1,94 @@
+{
+  "queries": [
+    {
+      "name": "sanctioned_vs_actual",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 106.23,
+      "routing_decision": "text_to_sql",
+      "verification_status": true,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query",
+        "query_time_ms",
+        "response",
+        "source_data",
+        "sql_query",
+        "sql_results",
+        "tier",
+        "verification"
+      ],
+      "response_preview": "Structured evidence query returned 10 rows. [cite:killer-sql:0]\n\n| institute | program | period | seats | actual_strength |\n| --- | --- | --- | --- | --- |\n| IIT Bombay | UG | 2026 | 10110 | 16230 |\n| IIT Gandhinagar | UG | 2026 | 10314 | 16434 |\n| IIT Hyderabad | UG | 2026 | 10212 | 16332 |\n| IIT Roorkee | UG | 2026 | 10416 | 16536 |\n| IISc Bengaluru | UG | 2026 | 9792 | 15732 |",
+      "sql_query": "\n        WITH intake AS (\n            SELECT\n                institute,\n                program,\n                COALESCE(as_on_year, financial_year) AS period,\n                SUM(seats) AS seats\n            FROM sanctioned_intake\n            WHERE LOWER(COALESCE(program, '')) LIKE '%ug%'\n            GROUP BY institute, program, COALESCE(as_on_year, financial_year)\n        ),\n        actual AS (\n            SELECT\n                institute,\n                program,\n                as_on_year AS period,\n                SUM(total_students) AS actual_strength\n            FROM actual_student_strength\n            WHERE LOWER(COALESCE(program, '')) LIKE '%ug%'\n            GROUP BY institute, program, as_on_year\n        )\n        SELECT\n            COALESCE(i.institute, a.institute) AS institute,\n            COALESCE(i.program, a.program) AS program,\n            COALESCE(i.period, a.period) AS period,\n            COALESCE(i.seats, 0) AS seats,\n            COALESCE(a.actual_strength, 0) AS actual_strength,\n            COALESCE(i.seats, 0) - COALESCE(a.actual_strength, 0) AS seat_gap,\n            ABS(COALESCE(i.seats, 0) - COALESCE(a.actual_strength, 0)) AS absolute_gap\n        FROM intake AS i\n        FULL OUTER JOIN actual AS a\n          ON LOWER(TRIM(a.institute)) = LOWER(TRIM(i.institute))\n         AND LOWER(TRIM(a.program)) = LOWER(TRIM(i.program))\n         AND a.period = i.period\n        ORDER BY absolute_gap DESC, institute\n        LIMIT 20\n        ",
+      "row_count": 10,
+      "first_row": {
+        "institute": "IIT Bombay",
+        "program": "UG",
+        "period": "2026",
+        "seats": 10110,
+        "actual_strength": 16230,
+        "seat_gap": -6120,
+        "absolute_gap": 6120
+      },
+      "audit_event_id": "2a84f49f3be3f544dd32facd138c4fe2f22b0705cc9d2f9852d079779845c112"
+    },
+    {
+      "name": "patent_phd_ratio",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 14.1,
+      "routing_decision": "fast_path",
+      "verification_status": true,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query",
+        "query_time_ms",
+        "response",
+        "source_data",
+        "sql_query",
+        "sql_results",
+        "tier",
+        "verification"
+      ],
+      "response_preview": "Machine Learning PhD supervision is proxied through the top 0 machine-learning researcher/institution rows because the local PhD table is sparse. [cite:researchers:c4-read-model] [cite:phd_students:c4-read-model]",
+      "sql_query": "SELECT researcher, institution, state, research_area FROM c4_researcher_read_model WHERE topic='Machine Learning' ORDER BY h_index DESC LIMIT 5",
+      "row_count": 0,
+      "first_row": null,
+      "audit_event_id": "7f80186f9aa5a55ba50d300f26394bec1cc5998931e341b92cec0dd6898774e8"
+    },
+    {
+      "name": "capital_expenses",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 252.0,
+      "routing_decision": "text_to_sql",
+      "verification_status": false,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query",
+        "query_time_ms",
+        "response",
+        "source_data",
+        "sql_query",
+        "sql_results",
+        "tier",
+        "verification"
+      ],
+      "response_preview": "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 NATIONAL RESEARCH GRAPH \u2014 Research Intelligence Report\n\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550 Query: Which institutes have high capital expenses but low innovation course counts? \u250c\u2500 \u26a0\ufe0f AI Synthesis Unavailable\n\u2502 SQL-only analytical response formatted without LLM to meet latency SLO.\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500 \u250c\u2500 Query Classification\n\u2502 Intent: structured\n\u2502 Routed to: text_to_sql\n\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500",
+      "sql_query": "SELECT institute, capital_expense_crore, innovation_course_count FROM capex_course_gap_fast_path ORDER BY capital_expense_crore DESC",
+      "row_count": 3,
+      "first_row": {
+        "institute": "IIT Delhi",
+        "capital_expense_crore": 412.4,
+        "innovation_course_count": 4
+      },
+      "audit_event_id": "74e0d38b10f5403427ff600d3ebc3e0f2279774b415d7a38da251c898495bf2f"
+    }
+  ]
+}

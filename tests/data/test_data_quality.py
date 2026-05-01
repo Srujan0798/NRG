@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from sqlalchemy import create_engine
@@ -206,3 +206,89 @@ def test_baseline_check_tolerates_rounding_noise(tmp_path):
     baseline["overall_score"] = scorecard.overall_score + 0.000000001
 
     assert _score_dropped(scorecard, baseline) is False
+
+
+def test_null_rate_ignores_nullable_optional_columns(tmp_path):
+    db_url = f"sqlite:///{tmp_path / 'nullable.sqlite'}"
+    engine = create_engine(db_url)
+    now = datetime.now(UTC).isoformat()
+
+    with engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE institutions (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                state TEXT NOT NULL,
+                optional_website TEXT,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.exec_driver_sql(
+            """
+            INSERT INTO institutions (id, name, state, optional_website, updated_at) VALUES
+                (1, 'IIT Bombay', 'Maharashtra', NULL, ?),
+                (2, 'IISc Bengaluru', 'Karnataka', NULL, ?)
+            """,
+            (now, now),
+        )
+
+    scorecard = DataQualityMonitor(
+        db_url,
+        expected_tables={"institutions"},
+        core_tables={"institutions"},
+        non_pii_tables={"institutions"},
+        thresholds=DataQualityThresholds(
+            expected_table_count=1,
+            min_core_rows=2,
+            max_null_rate=0.05,
+            max_freshness_days=7,
+        ),
+    ).run()
+
+    null_rate = scorecard.pillar("null_rate")
+
+    assert null_rate.status == "PASS"
+    assert null_rate.observed["columns_skipped_nullable"] == 1
+    assert not null_rate.observed["violations"]
+
+
+def test_freshness_reports_real_age_days_without_clamping(tmp_path):
+    db_url = f"sqlite:///{tmp_path / 'stale.sqlite'}"
+    engine = create_engine(db_url)
+    stale = (datetime.now(UTC) - timedelta(days=9, hours=3)).isoformat()
+
+    with engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE institutions (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                state TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.exec_driver_sql(
+            "INSERT INTO institutions VALUES (1, 'IIT Bombay', 'Maharashtra', ?)",
+            (stale,),
+        )
+
+    scorecard = DataQualityMonitor(
+        db_url,
+        expected_tables={"institutions"},
+        core_tables={"institutions"},
+        non_pii_tables={"institutions"},
+        thresholds=DataQualityThresholds(
+            expected_table_count=1,
+            min_core_rows=1,
+            max_freshness_days=7,
+        ),
+    ).run()
+
+    freshness = scorecard.pillar("freshness")
+
+    assert freshness.status == "FAIL"
+    assert freshness.observed["worst_age_days"] > 9
+    assert freshness.observed["stale_tables"][0]["age_days"] > 9

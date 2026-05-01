@@ -1,0 +1,64 @@
+{
+  "queries": [
+    {
+      "name": "sanctioned_vs_actual",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 29674.51,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query_time_ms",
+        "response",
+        "sql_query",
+        "sql_results",
+        "tier"
+      ],
+      "response_preview": "## Analysis of the Evidence Gap [cite:nrg:evidence]\n\nThe provided data does not contain the fields needed to answer the question about **sanctioned intake vs. actual student strength disparity** for UG programs.\n\n### What the evidence actually contains:\n- Course credit scores (e.g., \"2:0\", \"3:0\", \"4:0\", \"5:0\") \u2014 these represent **teaching hours**, not enrollment capacity or actual strength.\n- Financial years spanning 2020-21 to 2023-24 across multiple IITs.\n- Elective course metadata (department",
+      "sql_query": null,
+      "row_count": 300,
+      "audit_event_id": "4e7f93a8f552a6f84b9e6aec8bbcdfc8877699317d60f1549cdd9fb9cff0d594"
+    },
+    {
+      "name": "patent_phd_ratio",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 10089.9,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query_time_ms",
+        "response",
+        "sql_query",
+        "sql_results",
+        "tier"
+      ],
+      "response_preview": "# Answer\n\n**Headline finding:** The available data does not address the asked question. The evidence shows government innovation grant distributions organized by funding agency (MeitY, CSIR, DST-SERB, ICMR, ANRF), not patent grants or PhD student counts by academic institute. [cite:innovation_grant_from_govt:aggregate]\n\n**Plain-English explanation:** The SQL query and source rows reflect aggregated grant amounts across five major government funding bodies, totaling \u20b923,007.14 Cr across 24,995 gr",
+      "sql_query": "SELECT gov_organisation_name, COUNT(*) AS grant_count, SUM(grant_received) AS total_grant, ROUND(SUM(grant_received) / 10000000.0, 2) AS total_grant_crore FROM innovation_grant_from_govt GROUP BY gov_organisation_name ORDER BY total_grant DESC LIMIT 5",
+      "row_count": 5,
+      "audit_event_id": "68d7798df3025ff140ed22774613d4c291740646e98fa2f1af3271fcaba8450f"
+    },
+    {
+      "name": "capital_expenses",
+      "ok": true,
+      "error": null,
+      "elapsed_ms": 13358.35,
+      "status_fields": [
+        "audit_event_id",
+        "citations",
+        "confidence",
+        "query_time_ms",
+        "response",
+        "sql_query",
+        "sql_results",
+        "tier"
+      ],
+      "response_preview": "IIT Delhi demonstrates the starkest capital-to-innovation imbalance among the analyzed institutes, commanding \u20b9412.4 crore in capital expenses\u2014the highest in the dataset\u2014while offering only 4 innovation courses [cite:structured:0].\n\nThe data suggests that larger capital expenditures do not necessarily translate to greater innovation course offerings. IIT Delhi's \u20b9412.4 crore in capital expenses paired with just 4 courses contrasts notably with IIT Kanpur, which operates with \u20b9351.2 crore (15% le",
+      "sql_query": "SELECT institute, capital_expense_crore, innovation_course_count FROM capex_course_gap_fast_path ORDER BY capital_expense_crore DESC",
+      "row_count": 3,
+      "audit_event_id": "fc74e79b03f37b7f07a799ec51593c8f56f4801b63019231677f76641de02b56"
+    }
+  ]
+}

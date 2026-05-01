@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/app/scripts/data_quality_scorecard.py", line 15, in <module>
+    from src.observability.data_quality import (  # noqa: E402
+  File "/app/src/observability/data_quality.py", line 13, in <module>
+    from sqlalchemy import create_engine, inspect, text
+ModuleNotFoundError: No module named 'sqlalchemy'

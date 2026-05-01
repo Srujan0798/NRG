@@ -1,0 +1,16 @@
+                table_name                | rows 
+------------------------------------------+------
+ actual_student_strength                  | 1000
+ faculty_details                          | 1000
+ financial_expenses_capital               | 1000
+ financial_expenses_operational           | 1000
+ patents_details                          | 1000
+ phd_students                             | 1000
+ placements_and_higher_studies            | 1000
+ research_consultancy_details_consultancy | 1000
+ research_consultancy_details_sponsered   | 1000
+ sanctioned_intake                        | 1000
+ startup_recognition                      | 1000
+ tb_institute_mstr                        | 1000
+(12 rows)
+
