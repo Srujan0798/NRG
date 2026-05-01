@@ -1,10 +1,9 @@
-"""Admin, audit, SLO, and metrics endpoints."""
+"""Admin, SLO, metrics, DPDP, and RBAC endpoints."""
 
 from __future__ import annotations
 
 import time
-from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
@@ -121,59 +120,6 @@ async def get_dpdp_admin_stats(
 
     service = get_consent_service()
     return service.get_admin_stats()
-
-
-@router.get("/audit/verify")
-async def verify_audit_chain(
-    token_payload: dict = Depends(get_current_user),
-):
-    from src.audit import get_audit_log, verify_chain
-
-    valid, errors, count = verify_chain()
-    log = get_audit_log()
-    last_event = log.get_last_hash()
-
-    return {
-        "ok": valid,
-        "broken_indices": errors,
-        "last_sealed_at": datetime.now(UTC).isoformat(),
-        "current_head_hash": last_event,
-    }
-
-
-@router.get("/audit/events")
-async def get_audit_events(
-    user_id: Optional[str] = None,
-    action: Optional[str] = None,
-    since: Optional[str] = None,
-    limit: int = 100,
-    token_payload: dict = Depends(get_current_user),
-):
-    from src.audit import get_audit_log
-
-    role = token_payload.get("role", "")
-    log = get_audit_log()
-    events = log.get_recent_events(limit)
-
-    if role != "admin":
-        username = str(token_payload.get("username") or "")
-        subject = str(token_payload.get("sub") or "")
-        persona = str(token_payload.get("persona") or role or "")
-        allowed_users = {item for item in (username, subject, f"{persona}-{username}") if item}
-        filtered_events = []
-        for event in events:
-            event_user = str(event.get("user_id") or event.get("actor") or "")
-            if event_user in allowed_users:
-                filtered_events.append(event)
-        events = filtered_events or events[: min(limit, 20)]
-
-    if user_id and role == "admin":
-        events = [e for e in events if e.get("user_id") == user_id]
-
-    if action:
-        events = [e for e in events if e.get("action") == action]
-
-    return {"events": events[:limit]}
 
 
 @router.get("/admin/slo")

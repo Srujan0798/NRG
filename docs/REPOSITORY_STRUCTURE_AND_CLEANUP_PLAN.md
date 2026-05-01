@@ -173,9 +173,21 @@ Completed in this pass:
 
 ### Wave 5: Backend Architecture Split
 
-- Split `src/api/main.py` into focused route modules.
-- Keep response contracts stable.
-- Add route-level tests before each extraction.
+Started in the backend split pass:
+
+- Extracted audit proof and audit-chain routes from `src/api/main.py` into
+  `src/api/routes/audit.py`.
+- Registered the audit router from `src/api/main.py`.
+- Removed duplicate audit route definitions from `src/api/routes/admin.py` so
+  future admin-router activation does not create overlapping `/audit/*` paths.
+
+Remaining route splits:
+
+- Auth/session routes.
+- Health/provider/vector routes.
+- Query and streaming routes.
+- Data and graph routes.
+- Admin/RBAC/metrics routes.
 
 ### Wave 6: Documentation Rationalization
 
