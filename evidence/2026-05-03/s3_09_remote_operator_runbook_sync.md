@@ -22,8 +22,8 @@ matches the current local state after the rewritten-history evidence closure.
 Latest local scanner proof:
 `evidence/2026-05-03/s3_09_local_history_purge/36_s3_09_env_history_secret_scan_final.json`
 
-Latest external-gate proof:
-`evidence/2026-05-03/final_external_gates_after_8335d68/EXTERNAL_GATE_SUMMARY.md`
+Latest external-gate proof after this runbook sync:
+`evidence/2026-05-03/final_external_gates_after_61e9bd2/EXTERNAL_GATE_SUMMARY.md`
 
 This runbook update does not rotate credentials and does not push rewritten
 refs to the remote.

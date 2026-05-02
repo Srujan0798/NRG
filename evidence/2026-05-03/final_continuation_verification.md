@@ -12,7 +12,7 @@ Batch 4, S3-09, and service-health rechecks.
 
 | Check | Result |
 |---|---|
-| Latest HEAD external-gate preflight | BLOCKED on missing deployed/cluster/founder inputs |
+| Latest runbook-checkpoint external-gate preflight | BLOCKED on missing deployed/cluster/founder inputs |
 | Batch 5 replay: `pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` | 419 passed, 6 skipped, 35 deselected |
 | Batch 2 frontend replay: `npm run build && npm test -- --runInBand` | Build PASS; 107 Jest tests passed |
 | Frontend lint | PASS |
@@ -34,7 +34,7 @@ Batch 4, S3-09, and service-health rechecks.
 | `evidence/2026-05-03/s3_09_local_history_purge/36_s3_09_env_history_secret_scan_final.json` | PASS, 0 findings |
 | `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/20_qdrant_health_after_stack_up.txt` | Local `/health/qdrant` healthy |
 | `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/21_vectors_health_after_stack_up.txt` | Local `/api/vectors/health` healthy, 1800 vectors |
-| `evidence/2026-05-03/final_external_gates_after_8335d68/EXTERNAL_GATE_SUMMARY.md` | External gates BLOCKED |
+| `evidence/2026-05-03/final_external_gates_after_61e9bd2/EXTERNAL_GATE_SUMMARY.md` | External gates BLOCKED |
 
 ## Boundaries
 

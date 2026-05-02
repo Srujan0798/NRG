@@ -41,6 +41,9 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   - Result: `BLOCKED` by missing deployed frontend/API URLs, production
     API/Qdrant target, explicit cluster-load flag/context, and founder signing
     inputs.
+- Latest external-gate preflight after S3-09 runbook sync:
+  - `evidence/2026-05-03/final_external_gates_after_61e9bd2/EXTERNAL_GATE_SUMMARY.md`
+  - Result: `BLOCKED` by the same missing external inputs.
 
 ## PASS Locally
 
@@ -148,6 +151,7 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_external_gates_after_9ace4501/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_external_gates_after_8335d68/EXTERNAL_GATE_SUMMARY.md`
+- `evidence/2026-05-03/final_external_gates_after_61e9bd2/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/README.md`
 - `evidence/2026-05-03/s3_09_local_history_purge/README.md`
 - `evidence/2026-05-03/final_continuation_verification.md`

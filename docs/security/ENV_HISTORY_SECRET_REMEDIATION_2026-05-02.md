@@ -16,8 +16,10 @@ Latest local evidence shows:
   `evidence/2026-05-03/s3_09_local_history_purge/36_s3_09_env_history_secret_scan_final.json`.
 - Commit containing the latest local evidence:
   `8335d68 evidence: close local s3 and batch4 verification`.
-- Latest state sync:
-  `evidence/2026-05-03/final_state_sync_after_8335d68.md`.
+- Latest state and external-gate sync:
+  `evidence/2026-05-03/final_state_sync_after_8335d68.md`,
+  `evidence/2026-05-03/final_continuation_verification.md`, and
+  `evidence/2026-05-03/final_external_gates_after_61e9bd2/EXTERNAL_GATE_SUMMARY.md`.
 
 Earlier pre-rewrite evidence showed:
 
