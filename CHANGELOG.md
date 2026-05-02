@@ -1,3 +1,44 @@
+## v1.0.1 - Wave 5 / 5.5 Patch (2026-05-03)
+
+This changelog entry covers the recent local verification line from
+`082beb17` through `5ebc4513`, plus the post-state replay evidence prepared on
+2026-05-03.
+
+## Features
+
+- Extracted `QueryAnswerService` from the large query route body (`8ddd7a1a`).
+- Added bounded audit append executor with configurable `NRG_AUDIT_APPEND_WORKERS` (`63ca1717`).
+- Added Batch 5 Orchestration/AI/RAG verification: multi-hop planner, RAG deduplication, threshold calibration, state machine transitions, synthesizer fallback, Qdrant re-ingest, router bypass, RetryHandler backoff, multi-source dedup, prompt injection defense (`082beb1`).
+
+## Security
+
+- Hardened audit genesis pin and fixed a chain integrity verification edge case (`19abc691`).
+- Covered simple router and state transitions with regression tests (`68585ecf`).
+- Verified closed P0 security review findings with evidence artifacts (`285ea019`).
+- All 41/43 batch tasks PASS (1 INFO on query_helpers drift, 1 NOTE on git history purge).
+
+## Fixes
+
+- Preserved NULL aggregates in `/data/stats` endpoint instead of fabricating zero (`e62502bc`).
+- Closed query helper drift and documented that `QueryAnswerService` is the live answer-engine authority; earlier delta evidence remains at `evidence/2026-05-02/backend_query_reconcile/delta_matrix.md` (`88d3a0db`, `8ddd7a1a`).
+- Preserved citation chunk ordering during migration (`4d8d9a6a`).
+- Hardened migration safety contract and forward-safety checks (`96b9ea65`).
+- Fixed `d4` verification summary evidence (`ffe7d1c3`).
+
+## Operations
+
+- Comprehensive batch verification: B1 (11 tasks), F2 (11 tasks), S3 (11 tasks), A5 (10 tasks) — 419 tests passing, 0 regressions (`6baae945`).
+- Frontend evidence refreshed with latest artifacts and screenshots.
+- Tier drawer screenshots updated for all 3 persona tiers.
+
+## Documentation
+
+- Synced state after May 3 gate preflight, executor lifecycle fix, async query boundary verification, backlog status alignment, and migration hardening (`dee8fbce`, `c01ba4a6`, `65d69248`, `cd3ba2f6`, `e7fc1c1f`).
+- Closed stale local backlog gaps and aligned quality bar status (`973b7204`, `4df273ce`).
+- Added ADR-007 for the query answer-service extraction and normalized post-state replay evidence under `evidence/2026-05-03/post_state_replay/`.
+
+---
+
 # v1.0.0 - Sovereign Launch
 
 This changelog summarizes the local handover state through `6085c3b`. Cluster-gated validation, founder signatures, and commercial gates remain outside this local engineering packet.
