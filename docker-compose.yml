@@ -213,7 +213,10 @@ services:
   # Nginx Reverse Proxy (production load balancer / SSL termination)
   # ---------------------------------------------------------------------------
   nginx:
-    image: nginx:1.25-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: nrg-nginx:1.29-alpine-patched
     container_name: nrg-nginx
     restart: unless-stopped
     ports:

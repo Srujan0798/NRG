@@ -1,0 +1,60 @@
+289_api_runtime_image_trivy_scan_after_dependency_audit_fix.json
+artifact=nrg-api:dependency-audit-20260502-fixed
+results=2
+total=1399
+CRITICAL=0
+HIGH=146
+MEDIUM=579
+LOW=605
+UNKNOWN=69
+targets=[('nrg-api:dependency-audit-20260502-fixed (debian 13.4)', 'debian', 1393, {'LOW': 604, 'MEDIUM': 577, 'UNKNOWN': 69, 'HIGH': 143}), ('Python', 'python-pkg', 6, {'HIGH': 3, 'MEDIUM': 2, 'LOW': 1})]
+('LOW', 'apt', '3.0.3', None, 'CVE-2011-3374', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'bash', '5.2.37-2+b8', None, 'TEMP-0841856-B18BAF', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2017-13716', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2018-20673', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2018-20712', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2018-9996', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2021-32256', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11081', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11082', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11083', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11412', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11413', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11414', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-1147', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-1148', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-1149', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11494', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-11495', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-1150', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+('LOW', 'binutils', '2.44-3', None, 'CVE-2025-1151', 'nrg-api:dependency-audit-20260502-fixed (debian 13.4)')
+299_api_runtime_image_trivy_scan_after_multistage_os_hardening.json
+artifact=nrg-api:dependency-audit-20260502-osfix
+results=2
+total=112
+CRITICAL=0
+HIGH=7
+MEDIUM=39
+LOW=64
+UNKNOWN=2
+targets=[('nrg-api:dependency-audit-20260502-osfix (debian 13.4)', 'debian', 112, {'LOW': 64, 'MEDIUM': 39, 'UNKNOWN': 2, 'HIGH': 7}), ('Python', 'python-pkg', 0, {})]
+('LOW', 'apt', '3.0.3', None, 'CVE-2011-3374', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'bash', '5.2.37-2+b8', None, 'TEMP-0841856-B18BAF', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'bsdutils', '1:2.41-5', None, 'CVE-2026-27456', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'bsdutils', '1:2.41-5', None, 'CVE-2026-3184', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'bsdutils', '1:2.41-5', None, 'CVE-2022-0563', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'bsdutils', '1:2.41-5', None, 'CVE-2025-14104', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'coreutils', '9.7-3', None, 'CVE-2017-18018', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'coreutils', '9.7-3', None, 'CVE-2025-5278', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'libapt-pkg7.0', '3.0.3', None, 'CVE-2011-3374', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libblkid1', '2.41-5', None, 'CVE-2026-27456', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libblkid1', '2.41-5', None, 'CVE-2026-3184', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'libblkid1', '2.41-5', None, 'CVE-2022-0563', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'libblkid1', '2.41-5', None, 'CVE-2025-14104', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-4046', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-4437', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-4438', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-5435', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-5450', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('MEDIUM', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2026-5928', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')
+('LOW', 'libc-bin', '2.41-12+deb13u2', None, 'CVE-2010-4756', 'nrg-api:dependency-audit-20260502-osfix (debian 13.4)')

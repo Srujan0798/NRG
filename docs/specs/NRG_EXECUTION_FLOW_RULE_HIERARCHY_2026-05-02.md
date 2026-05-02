@@ -61,7 +61,7 @@ and
 | Local product proof | PASS local / external pending | Backend, frontend, tier, audit, accessibility, local Qdrant/Redis, managed full-suite, dependency audit, and local quota-neutral C4 evidence pass locally. |
 | C4 SLO | PASS local quota-neutral / cluster pending | Latest strict local scorecard: 1000 users, 82,365 samples, 0 failures, aggregate P99 79 ms; quota-policy and deployed/cluster proof remain pending. |
 | Full Python suite | PASS managed live orchestration | `scripts/run_test_suite.sh --live-api` separates non-live and live API phases; latest evidence has 1,830 non-live tests with 0 failures/errors and 36 live API tests with 0 failures/errors. |
-| Dependency audit | PASS local package audits / OS and deployed scans pending | Frontend `npm audit` now reports 0 total vulnerabilities locally. Frontend nginx runtime image build/smoke passed. API runtime image Python `pip-audit` now reports 0 vulnerabilities after dependency hardening. OS/base-image CVE scanner output and deployed image scans remain pending. |
+| Dependency audit | PARTIAL local image OS scan / deployed scans pending | Frontend `npm audit` reports 0 total vulnerabilities. Frontend and reverse-proxy local runtime images now have 0 Trivy OS findings after nginx base hardening. API runtime Python `pip-audit` reports 0 vulnerabilities and fixable-only Trivy reports 0 findings after true multi-stage hardening, but strict Trivy still reports 112 Debian findings including 7 high no-fix findings. Deployed image scans remain pending. |
 | External production gates | BLOCKED | Need deployed URLs, production service context, cluster C4, production Qdrant target, production image dependency checks, and founder signing. |
 
 ## Rule Hierarchy
@@ -274,11 +274,12 @@ follow this order:
 2. **Production image dependency replay**
    - Frontend runtime image build/smoke evidence exists for the local nginx
      image.
-   - API runtime image Python package audit now passes for the fixed local
-     image.
-   - Run CVE scanner output where `trivy`, `grype`, or `syft` is available.
-   - Scan OS/base-image layers and deployed images, not only local package
-     trees.
+   - Frontend and reverse-proxy local runtime OS scans now pass with Trivy.
+   - API runtime Python package audit and fixable-only Trivy scan pass, but
+     strict Trivy still has no-fix Debian base findings.
+   - Resolve the API no-fix base-image boundary when an upstream patched base or
+     approved alternate runtime base is available.
+   - Scan deployed images, not only local image builds.
 
 3. **Cluster C4 replay**
    - Use the same strict scorecard semantics as the local pass.

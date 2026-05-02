@@ -1,0 +1,120 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.api
+#1 transferring dockerfile: 3.29kB 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 2.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 457B 0.0s done
+#3 DONE 0.0s
+
+#4 [builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#4 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2 0.0s done
+#4 DONE 0.0s
+
+#5 [builder  2/12] WORKDIR /app
+#5 CACHED
+
+#6 [internal] load build context
+#6 transferring context: 8.83MB 0.6s done
+#6 DONE 0.6s
+
+#7 [builder  5/12] RUN pip install --upgrade "pip>=26.0" wheel setuptools
+#7 CACHED
+
+#8 [builder  6/12] COPY pyproject.toml .
+#8 CACHED
+
+#9 [builder 10/12] COPY alembic/ ./alembic/
+#9 CACHED
+
+#10 [builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#10 CACHED
+
+#11 [builder  7/12] RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+#11 CACHED
+
+#12 [builder  8/12] RUN pip install --no-cache-dir -e .
+#12 CACHED
+
+#13 [builder  9/12] COPY alembic.ini .
+#13 CACHED
+
+#14 [builder 11/12] COPY src/ ./src/
+#14 CACHED
+
+#15 [builder  4/12] RUN python -m venv /app/venv
+#15 CACHED
+
+#16 [builder 12/12] COPY scripts/ ./scripts/
+#16 CACHED
+
+#17 [runner 3/8] RUN python -m pip install --no-cache-dir --upgrade     "pip>=26.0"     "wheel>=0.46.2"     "setuptools>=81.0.0"     "jaraco.context>=6.1.0" &&     groupadd -r app && useradd -r -g app app &&     mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+#17 2.878 Collecting pip>=26.0
+#17 3.113   Downloading pip-26.1-py3-none-any.whl.metadata (4.6 kB)
+#17 3.166 Collecting wheel>=0.46.2
+#17 3.199   Downloading wheel-0.47.0-py3-none-any.whl.metadata (2.3 kB)
+#17 3.379 Collecting setuptools>=81.0.0
+#17 3.411   Downloading setuptools-82.0.1-py3-none-any.whl.metadata (6.5 kB)
+#17 3.453 Collecting jaraco.context>=6.1.0
+#17 3.573   Downloading jaraco_context-6.1.2-py3-none-any.whl.metadata (4.2 kB)
+#17 3.622 Collecting packaging>=24.0 (from wheel>=0.46.2)
+#17 3.652   Downloading packaging-26.2-py3-none-any.whl.metadata (3.5 kB)
+#17 3.719 Collecting backports.tarfile (from jaraco.context>=6.1.0)
+#17 3.750   Downloading backports.tarfile-1.2.0-py3-none-any.whl.metadata (2.0 kB)
+#17 3.786 Downloading pip-26.1-py3-none-any.whl (1.8 MB)
+#17 3.971    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 10.2 MB/s eta 0:00:00
+#17 4.070 Downloading wheel-0.47.0-py3-none-any.whl (32 kB)
+#17 4.102 Downloading setuptools-82.0.1-py3-none-any.whl (1.0 MB)
+#17 4.152    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.0/1.0 MB 21.0 MB/s eta 0:00:00
+#17 4.183 Downloading jaraco_context-6.1.2-py3-none-any.whl (7.9 kB)
+#17 4.216 Downloading packaging-26.2-py3-none-any.whl (100 kB)
+#17 4.220    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100.2/100.2 kB 34.4 MB/s eta 0:00:00
+#17 4.252 Downloading backports.tarfile-1.2.0-py3-none-any.whl (30 kB)
+#17 4.386 Installing collected packages: setuptools, pip, packaging, backports.tarfile, wheel, jaraco.context
+#17 4.386   Attempting uninstall: setuptools
+#17 4.391     Found existing installation: setuptools 79.0.1
+#17 4.504     Uninstalling setuptools-79.0.1:
+#17 4.830       Successfully uninstalled setuptools-79.0.1
+#17 5.418   Attempting uninstall: pip
+#17 5.428     Found existing installation: pip 24.0
+#17 5.489     Uninstalling pip-24.0:
+#17 5.694       Successfully uninstalled pip-24.0
+#17 6.370   Attempting uninstall: wheel
+#17 6.374     Found existing installation: wheel 0.45.1
+#17 6.380     Uninstalling wheel-0.45.1:
+#17 6.398       Successfully uninstalled wheel-0.45.1
+#17 6.426 Successfully installed backports.tarfile-1.2.0 jaraco.context-6.1.2 packaging-26.2 pip-26.1 setuptools-82.0.1 wheel-0.47.0
+#17 6.427 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv
+#17 DONE 6.9s
+
+#18 [runner 4/8] COPY --from=builder --chown=app:app /app/venv /app/venv
+#18 DONE 35.8s
+
+#19 [runner 5/8] COPY --from=builder --chown=app:app /app/alembic.ini /app/alembic.ini
+#19 DONE 1.3s
+
+#20 [runner 6/8] COPY --from=builder --chown=app:app /app/alembic /app/alembic
+#20 DONE 0.0s
+
+#21 [runner 7/8] COPY --from=builder --chown=app:app /app/src /app/src
+#21 DONE 0.2s
+
+#22 [runner 8/8] COPY --from=builder --chown=app:app /app/scripts /app/scripts
+#22 DONE 0.1s
+
+#23 exporting to image
+#23 exporting layers
+#23 exporting layers 53.0s done
+#23 exporting manifest sha256:bd0a170924fc5c7ce6896793c9c1a0b9bd0217b2f1d19cdb26de42c0d15ee876 0.1s done
+#23 exporting config sha256:0e5fbd716dce74b1c33b5e74df97f71ad8f18a37aad721dbe78ecf8fcdad772f 0.0s done
+#23 exporting attestation manifest sha256:39fae2ba7155daedc9320ca7aa9d1a1d8aeaabc4bd2fca8d67693b69536a0ce4 0.0s done
+#23 exporting manifest list sha256:f13496bb5dcf09ff6d40c3d912bd0cc4af5d56ce6ee902a400d8af55bd0f19e3 done
+#23 naming to docker.io/library/nrg-api:dependency-audit-20260502-osfix
+#23 naming to docker.io/library/nrg-api:dependency-audit-20260502-osfix done
+#23 unpacking to docker.io/library/nrg-api:dependency-audit-20260502-osfix
+#23 unpacking to docker.io/library/nrg-api:dependency-audit-20260502-osfix 22.9s done
+#23 DONE 76.1s

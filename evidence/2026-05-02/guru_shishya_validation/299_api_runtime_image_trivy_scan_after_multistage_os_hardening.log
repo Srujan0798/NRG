@@ -1,0 +1,8 @@
+2026-05-02T10:41:57Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-02T10:42:11Z	INFO	[python] Licenses acquired from one or more METADATA files may be subject to additional terms. Use `--debug` flag to see all affected packages.
+2026-05-02T10:42:27Z	INFO	Detected OS	family="debian" version="13.4"
+2026-05-02T10:42:27Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=87
+2026-05-02T10:42:27Z	INFO	Number of language-specific files	num=1
+2026-05-02T10:42:27Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-05-02T10:42:27Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.70/guide/scanner/vulnerability#severity-selection for details.
+trivy_command_exit=0

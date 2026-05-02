@@ -9,9 +9,10 @@
 # predictable for local acceptance and handoff runs.
 # ==============================================================================
 
-FROM nginx:1.25-alpine
+FROM nginx:1.29-alpine
 
-RUN adduser -D -u 82 -g 82 -s /bin/sh nginx 2>/dev/null || true && \
+RUN apk upgrade --no-cache && \
+    adduser -D -u 82 -g 82 -s /bin/sh nginx 2>/dev/null || true && \
     chown -R nginx:nginx /usr/share/nginx/html && \
     chown -R nginx:nginx /var/cache/nginx && \
     chown -R nginx:nginx /var/log/nginx && \

@@ -1,0 +1,11 @@
+# ==============================================================================
+# Runtime Dockerfile for NRG Nginx Reverse Proxy
+#
+# The compose reverse proxy mounts its configuration from infrastructure/nginx.
+# This image keeps the nginx base patched before runtime so OS CVE scans do not
+# depend on the raw upstream tag state.
+# ==============================================================================
+
+FROM nginx:1.29-alpine
+
+RUN apk upgrade --no-cache

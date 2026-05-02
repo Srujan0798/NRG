@@ -1,0 +1,36 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.nginx
+#1 transferring dockerfile: 510B 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/nginx:1.29-alpine
+#2 DONE 2.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 457B 0.0s done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+#4 resolve docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de 0.0s done
+#4 CACHED
+
+#5 [2/2] RUN apk upgrade --no-cache
+#5 2.635 (1/4) Upgrading nghttp2-libs (1.68.0-r0 -> 1.69.0-r0)
+#5 2.681 (2/4) Upgrading libxpm (3.5.17-r0 -> 3.5.19-r0)
+#5 2.725 (3/4) Upgrading xz-libs (5.8.2-r0 -> 5.8.3-r0)
+#5 2.870 (4/4) Upgrading tzdata (2026a-r0 -> 2026b-r0)
+#5 3.283 Executing busybox-1.37.0-r30.trigger
+#5 3.410 OK: 58.3 MiB in 72 packages
+#5 DONE 3.5s
+
+#6 exporting to image
+#6 exporting layers
+#6 exporting layers 0.4s done
+#6 exporting manifest sha256:f487732a33f4d6b369161efc3757ec0fba78a237b9a3643e1678906fd1a1bd44 done
+#6 exporting config sha256:1736433f77a605511f75343c5d15eed1820f8e855bdaa68a1e4a68a9be7611a8 done
+#6 exporting attestation manifest sha256:d361888b4076cb907b006dceaebcd947979c30f8111ff1ef9e9f2168603704ca done
+#6 exporting manifest list sha256:9b11a2c819522c38d1e64179f3124295be6319542203f41f8f4689915507ab49 done
+#6 naming to docker.io/library/nrg-nginx:dependency-audit-20260502-osfix done
+#6 unpacking to docker.io/library/nrg-nginx:dependency-audit-20260502-osfix 0.1s done
+#6 DONE 0.5s

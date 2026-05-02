@@ -1,0 +1,40 @@
+276_frontend_runtime_image_trivy_scan.json
+artifact=nrg-frontend:dependency-audit-20260502
+results=1
+total=93
+CRITICAL=3
+HIGH=19
+MEDIUM=62
+LOW=9
+UNKNOWN=0
+('MEDIUM', 'busybox', '1.36.1-r15', '1.36.1-r17', 'CVE-2023-42363', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox', '1.36.1-r15', '1.36.1-r19', 'CVE-2023-42364', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox', '1.36.1-r15', '1.36.1-r19', 'CVE-2023-42365', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox', '1.36.1-r15', '1.36.1-r16', 'CVE-2023-42366', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox', '1.36.1-r15', '1.36.1-r21', 'CVE-2024-58251', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('LOW', 'busybox', '1.36.1-r15', '1.36.1-r21', 'CVE-2025-46394', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox-binsh', '1.36.1-r15', '1.36.1-r17', 'CVE-2023-42363', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox-binsh', '1.36.1-r15', '1.36.1-r19', 'CVE-2023-42364', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox-binsh', '1.36.1-r15', '1.36.1-r19', 'CVE-2023-42365', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+('MEDIUM', 'busybox-binsh', '1.36.1-r15', '1.36.1-r16', 'CVE-2023-42366', 'nrg-frontend:dependency-audit-20260502 (alpine 3.19.1)')
+281_frontend_runtime_image_trivy_scan_after_os_base_update.json
+artifact=nrg-frontend:dependency-audit-20260502-osfix
+results=1
+total=3
+CRITICAL=0
+HIGH=1
+MEDIUM=2
+LOW=0
+UNKNOWN=0
+('MEDIUM', 'libxpm', '3.5.17-r0', '3.5.19-r0', 'CVE-2026-4367', 'nrg-frontend:dependency-audit-20260502-osfix (alpine 3.23.4)')
+('HIGH', 'nghttp2-libs', '1.68.0-r0', '1.68.1', 'CVE-2026-27135', 'nrg-frontend:dependency-audit-20260502-osfix (alpine 3.23.4)')
+('MEDIUM', 'xz-libs', '5.8.2-r0', '5.8.3-r0', 'CVE-2026-34743', 'nrg-frontend:dependency-audit-20260502-osfix (alpine 3.23.4)')
+287_frontend_runtime_image_trivy_scan_after_apk_upgrade.json
+artifact=nrg-frontend:dependency-audit-20260502-osfix2
+results=1
+total=0
+CRITICAL=0
+HIGH=0
+MEDIUM=0
+LOW=0
+UNKNOWN=0

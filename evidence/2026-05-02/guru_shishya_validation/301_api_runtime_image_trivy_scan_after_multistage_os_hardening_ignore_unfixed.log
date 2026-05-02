@@ -1,0 +1,7 @@
+2026-05-02T10:45:30Z	INFO	[vuln] Vulnerability scanning is enabled
+2026-05-02T10:45:30Z	INFO	Detected OS	family="debian" version="13.4"
+2026-05-02T10:45:30Z	INFO	[debian] Detecting vulnerabilities...	os_version="13" pkg_num=87
+2026-05-02T10:45:30Z	INFO	Number of language-specific files	num=1
+2026-05-02T10:45:30Z	INFO	[python-pkg] Detecting vulnerabilities...
+2026-05-02T10:45:30Z	WARN	Using severities from other vendors for some vulnerabilities. Read https://trivy.dev/docs/v0.70/guide/scanner/vulnerability#severity-selection for details.
+trivy_command_exit=0

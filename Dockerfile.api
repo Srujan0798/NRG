@@ -47,11 +47,24 @@ COPY scripts/ ./scripts/
 # ------------------------------------------------------------------------------
 # Stage 2: Runner
 # ------------------------------------------------------------------------------
-FROM builder AS runner
+FROM python:3.11-slim AS runner
 
-# Security: non-root user setup
-RUN groupadd -r app && useradd -r -g app app
-RUN mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+WORKDIR /app
+
+# Keep global tooling patched because image scanners inspect system Python too.
+RUN python -m pip install --no-cache-dir --upgrade \
+    "pip>=26.0" \
+    "wheel>=0.46.2" \
+    "setuptools>=81.0.0" \
+    "jaraco.context>=6.1.0" && \
+    groupadd -r app && useradd -r -g app app && \
+    mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+
+COPY --from=builder --chown=app:app /app/venv /app/venv
+COPY --from=builder --chown=app:app /app/alembic.ini /app/alembic.ini
+COPY --from=builder --chown=app:app /app/alembic /app/alembic
+COPY --from=builder --chown=app:app /app/src /app/src
+COPY --from=builder --chown=app:app /app/scripts /app/scripts
 
 USER app
 
@@ -67,9 +80,9 @@ ENV PATH=/app/venv/bin:$PATH \
 
 EXPOSE 8000
 
-# Health check - uses the actual health endpoint
+# Health check - uses the actual health endpoint without adding curl to runtime.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 --start-interval=5s \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()" || exit 1
 
 # Graceful shutdown with SIGTERM handling
 CMD ["sh", "-c", "uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --workers ${UVICORN_WORKERS:-4} --timeout-keep-alive ${UVICORN_TIMEOUT_KEEP_ALIVE:-5}"]
