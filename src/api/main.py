@@ -10,7 +10,7 @@ import random
 import threading
 import time
 from collections import deque
-from collections.abc import AsyncIterator, Mapping
+from collections.abc import Mapping
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
@@ -29,7 +29,6 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
-from src.api.answer_contract import blocked_answer_payload
 from src.api.middleware.security import (
     SecurityHeadersMiddleware,
     PromptSanitiserMiddleware,
@@ -57,18 +56,13 @@ from src.api.response_filter import (
     filter_response_payload_for_tier,
 )
 from src.api.query_response_utils import (
-    answer_confidence_from_verification as _answer_confidence_from_verification,
-    normalise_query_answer_payload as _normalise_query_answer_payload,
-    normalise_stream_answer_payload as _normalise_stream_answer_payload,
     redact_pii_from_response as _redact_pii_from_response,
-    schedule_answer_record_persist as _schedule_answer_record_persist,
     shutdown_answer_record_executor,
-    sse as _sse,
 )
+from src.api.query_service import QueryAnswerService, QueryServiceDependencies
 from src.data.database import resolve_database_path
 from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
-from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
 from src.audit import log_anomaly as audit_log_anomaly
 from src.audit.async_append import (
@@ -5374,17 +5368,42 @@ app.include_router(graph_router)
 app.include_router(telemetry_router)
 app.include_router(feedback_router)
 app.include_router(ingest_router)
+_query_answer_service = QueryAnswerService(
+    QueryServiceDependencies(
+        logger=logger,
+        api_cache=_api_cache,
+        query_result_cache_ttl_seconds=QUERY_RESULT_CACHE_TTL_SECONDS,
+        prompt_sanitiser=prompt_sanitiser,
+        query_stage_profiler_factory=lambda **kwargs: _QueryStageProfiler(**kwargs),
+        as_json_dict=_as_json_dict,
+        as_sequence_for_count=_as_sequence_for_count,
+        audit_log_query_sync=lambda *args, **kwargs: audit_log_query(*args, **kwargs),
+        audit_log_query=lambda *args, **kwargs: _audit_log_query_async(*args, **kwargs),
+        audit_log_anomaly=lambda *args, **kwargs: _audit_log_anomaly_async(*args, **kwargs),
+        rate_limit_detail=lambda *args, **kwargs: _rate_limit_detail(*args, **kwargs),
+        apply_tier_response_filter=lambda *args, **kwargs: _apply_tier_response_filter(*args, **kwargs),
+        apply_ai_synthesis_after_tier_filter=lambda *args, **kwargs: _apply_ai_synthesis_after_tier_filter(
+            *args,
+            **kwargs,
+        ),
+        should_use_c4_read_model=lambda query: _should_use_c4_read_model(query),
+        c4_read_model_response=lambda *args, **kwargs: _c4_read_model_response(*args, **kwargs),
+        get_or_build_query_cache_singleflight=lambda *args, **kwargs: _get_or_build_query_cache_singleflight(
+            *args,
+            **kwargs,
+        ),
+        fast_query_response=lambda *args, **kwargs: _fast_query_response(*args, **kwargs),
+        academic_follow_up_response=lambda *args, **kwargs: _academic_follow_up_response(*args, **kwargs),
+        killer_query_response=lambda *args, **kwargs: _killer_query_response(*args, **kwargs),
+        advanced_adversarial_response=lambda *args, **kwargs: _advanced_adversarial_response(*args, **kwargs),
+        run_workflow=lambda *args, **kwargs: _run_workflow(*args, **kwargs),
+        sql_context_key=_sql_context_key,
+        remember_sql_domain_context=_remember_sql_domain_context,
+    )
+)
 configure_query_router(
-    query_stream_response=lambda request, token_payload, raw_request: _query_stream_response(
-        request,
-        token_payload=token_payload,
-        raw_request=raw_request,
-    ),
-    query_handler=lambda request, token_payload, raw_request: _query_with_langgraph_impl(
-        request,
-        token_payload,
-        raw_request,
-    ),
+    query_stream_response=_query_answer_service.query_stream_response,
+    query_handler=_query_answer_service.query_with_langgraph,
 )
 app.include_router(query_router)
 
@@ -5395,74 +5414,11 @@ def _build_stream_answer_payload(
     token_payload: TokenPayload,
     raw_request: Request | None,
 ) -> dict[str, Any]:
-    user_tier = token_payload.get("tier", 1)
-    user_id = token_payload.get("sub", "anonymous")
-    jwt_kid = token_payload.get("kid")
-    request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
-
-    cache_key = _api_cache.make_cache_key(request.query, user_tier)
-    cached = _api_cache.get(cache_key)
-    if cached is not None:
-        cached_response = _as_json_dict(cached) if isinstance(cached, Mapping) else cached
-        if isinstance(cached_response, dict):
-            cached_response["cached"] = True
-        return _apply_tier_response_filter(
-            cached_response,
-            user_tier,
-            user_id=user_id,
-            jwt_kid=jwt_kid,
-            request_fingerprint=request_fp,
-            endpoint="/api/query/stream",
-        )
-
-    audit_event_id = None
-    try:
-        audit_event_id = audit_log_query(
-            user_id,
-            request.query,
-            jwt_kid=jwt_kid,
-            request_fingerprint=request_fp,
-        )
-    except Exception:
-        logger.warning("Audit log_query failed for stream query", exc_info=True)
-
-    context_key = _sql_context_key(user_id, request.session_id)
-    result = (
-        _fast_query_response(request.query, user_tier=user_tier, user_id=user_id, session_id=request.session_id)
-        or _academic_follow_up_response(request.query, user_tier=user_tier, session_id=request.session_id, context_key=context_key)
-        or _killer_query_response(request.query, user_tier=user_tier, session_id=request.session_id)
-        or _advanced_adversarial_response(request.query, user_tier=user_tier, session_id=request.session_id)
+    return _query_answer_service.build_stream_answer_payload(
+        request,
+        token_payload=token_payload,
+        raw_request=raw_request,
     )
-
-    if result is None:
-        result = _run_workflow(
-            request.query,
-            user_tier=user_tier,
-            session_id=request.session_id,
-            user_id=user_id,
-        )
-
-    if audit_event_id:
-        result.setdefault("audit_event_id", audit_event_id)
-
-    response_payload = _normalise_stream_answer_payload(
-        result,
-        request=request,
-        user_tier=user_tier,
-        audit_event_id=audit_event_id,
-    )
-    response_payload = _apply_tier_response_filter(
-        response_payload,
-        user_tier,
-        user_id=user_id,
-        jwt_kid=jwt_kid,
-        request_fingerprint=request_fp,
-        endpoint="/api/query/stream",
-    )
-    _schedule_answer_record_persist(user_id, request.session_id, response_payload)
-    _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-    _remember_sql_domain_context(context_key, request.query, response_payload.get("sql_query"))
-    return response_payload
 
 
 async def _query_stream_response(
@@ -5471,113 +5427,10 @@ async def _query_stream_response(
     token_payload: TokenPayload,
     raw_request: Request | None,
 ) -> StreamingResponse:
-    client_ip = raw_request.client.host if raw_request and raw_request.client else None
-    user_tier = token_payload.get("tier", 1)
-    user_id = token_payload.get("sub", "anonymous")
-
-    allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(user_id, user_tier, client_ip)
-    if not allowed:
-        raise HTTPException(
-            status_code=429,
-            detail=await _rate_limit_detail(
-                user_id=user_id,
-                message="Rate limit exceeded",
-                client_ip=client_ip,
-                limit_scope="tier",
-            ),
-            headers=rate_headers,
-        )
-
-    from src.services.consent import get_consent_service
-    consent_service = get_consent_service()
-    if not consent_service.has_consent(user_id, "research_access"):
-        raise HTTPException(status_code=403, detail="Consent required for research_access")
-
-    async def event_generator() -> AsyncIterator[str]:
-        started_at = time.time()
-        yield "retry: 300\n\n"
-
-        def phase_payload(phase: str, label: str, progress: float, **extra: Any) -> dict[str, Any]:
-            return {
-                "phase": phase,
-                "label": label,
-                "progress": progress,
-                "elapsed_ms": int((time.time() - started_at) * 1000),
-                **extra,
-            }
-
-        validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
-        yield _sse("phase", phase_payload("understanding", "Understanding your question", 0.08))
-        yield _sse("phase", phase_payload("parsing", "Parsing your question...", 0.08))
-        await asyncio.sleep(0.02)
-        if not validation["valid"]:
-            blocked = blocked_answer_payload(
-                question=request.query,
-                user_tier=user_tier,
-                audit_event_id=None,
-                reason=f"Security policy blocked this query: {validation['reason']}",
-            )
-            yield _sse("phase", phase_payload("blocked", "Blocked by safety policy", 1.0))
-            yield _sse("meta", blocked)
-            yield _sse("done", "")
-            return
-
-        try:
-            yield _sse("phase", phase_payload("planning", "Planning retrieval", 0.18))
-            await asyncio.sleep(0.02)
-            yield _sse("phase", phase_payload("searching_records", "Searching research records", 0.42))
-            yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.52))
-            answer_task = asyncio.create_task(
-                asyncio.to_thread(
-                    _build_stream_answer_payload,
-                    request,
-                    token_payload=token_payload,
-                    raw_request=raw_request,
-                )
-            )
-            while not answer_task.done():
-                yield _sse(
-                    "heartbeat",
-                    {
-                        "phase": "heartbeat",
-                        "elapsed_ms": int((time.time() - started_at) * 1000),
-                    },
-                )
-                await asyncio.sleep(1)
-            answer_payload = await answer_task
-            row_count = len(answer_payload.get("sql_results") or [])
-            yield _sse("phase", phase_payload("checking_documents", "Checking documents", 0.58, row_count=row_count))
-            yield _sse("phase", phase_payload("querying", "Querying 58 research tables...", 0.62, row_count=row_count))
-            await asyncio.sleep(0.02)
-            yield _sse("phase", phase_payload("synthesizing", "Synthesizing answer", 0.78))
-            await asyncio.sleep(0.02)
-            yield _sse("phase", phase_payload("verifying", "Verifying sources", 0.92))
-            await asyncio.sleep(0.02)
-            answer_payload["elapsed_ms"] = int((time.time() - started_at) * 1000)
-            yield _sse("answer", answer_payload)
-            yield _sse("done", "")
-        except Exception as e:
-            logger.error(f"Streaming query error: {e}", exc_info=True)
-            yield _sse(
-                "error",
-                {
-                    "phase": "error",
-                    "message": (
-                        "The streaming answer stopped before verification. "
-                        "Run the query again; the signed audit trail remains intact."
-                    ),
-                },
-            )
-            yield _sse("done", "")
-
-    return StreamingResponse(
-        event_generator(),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no",
-        },
+    return await _query_answer_service.query_stream_response(
+        request,
+        token_payload=token_payload,
+        raw_request=raw_request,
     )
 
 
@@ -5586,576 +5439,8 @@ async def _query_with_langgraph_impl(
     token_payload: TokenPayload,
     raw_request: Request | None = None,
 ) -> Any:
-    """Process query using LangGraph orchestration with full security hardening."""
-    client_ip = None
-    if raw_request and raw_request.client:
-        client_ip = raw_request.client.host
+    return await _query_answer_service.query_with_langgraph(request, token_payload, raw_request)
 
-    user_tier = token_payload.get("tier", 1)
-    user_id = token_payload.get("sub", "anonymous")
-    profiler = _QueryStageProfiler(query=request.query, user_tier=user_tier, user_id=user_id)
-
-    allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(
-        user_id, user_tier, client_ip
-    )
-    if not allowed:
-        raise HTTPException(
-            status_code=429,
-            detail=await _rate_limit_detail(
-                user_id=user_id,
-                message="Rate limit exceeded",
-                client_ip=client_ip,
-                limit_scope="tier",
-            ),
-            headers=rate_headers,
-        )
-
-    allowed_endpoint, _remaining_endpoint, _reset_endpoint, endpoint_headers = check_endpoint_rate_limit(
-        "/query", user_id
-    )
-    if not allowed_endpoint:
-        raise HTTPException(
-            status_code=429,
-            detail=await _rate_limit_detail(
-                user_id=user_id,
-                message="Query rate limit exceeded (10/min). Please wait before submitting another query.",
-                client_ip=client_ip,
-                limit_scope="endpoint:/query",
-            ),
-            headers={**rate_headers, **endpoint_headers},
-        )
-
-    if user_tier == 2:
-        from src.api.middleware.security import IPAllowlist
-        if not IPAllowlist.is_allowed(client_ip or ""):
-            logger.warning(
-                "Government tier access blocked for non-whitelisted IP",
-                client_ip=client_ip,
-                user=user_id,
-            )
-            raise HTTPException(
-                status_code=403,
-                detail="IP not allowed for government tier access",
-            )
-    profiler.mark("rate_limit_and_tier_guard")
-
-    try:
-        validation = prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
-        if not validation["valid"]:
-            logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
-            if validation["reason"] == "RATE_LIMITED":
-                raise HTTPException(
-                    status_code=429,
-                    detail=await _rate_limit_detail(
-                        user_id=user_id,
-                        message="Rate limit exceeded",
-                        client_ip=client_ip,
-                        limit_scope="prompt_sanitiser",
-                    ),
-                )
-            audit_event_id = None
-            if validation["reason"] != "RATE_LIMITED":
-                try:
-                    audit_event_id = await _audit_log_anomaly_async(
-                        user_id=user_id,
-                        anomaly_type=validation["reason"],
-                        details={
-                            "query": request.query[:200],
-                            "details": validation.get("details", ""),
-                            "rate_limit_triggered": validation.get("rate_limit_triggered", False),
-                        },
-                        identifier=client_ip,
-                    )
-                except Exception:
-                    logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
-            blocked = blocked_answer_payload(
-                question=request.query,
-                user_tier=user_tier,
-                audit_event_id=audit_event_id,
-                reason=f"Security policy blocked this query: {validation['reason']}",
-            )
-            profiler.mark("prompt_sanitizer_block")
-            filtered_blocked = _apply_tier_response_filter(
-                blocked,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            profiler.mark("tier_filter")
-            profiler.finish(route="blocked", outcome="blocked", cache_hit=False)
-            return filtered_blocked
-        profiler.mark("prompt_sanitizer")
-
-        from src.services.consent import get_consent_service
-        consent_service = get_consent_service()
-        if not consent_service.has_consent(user_id, "research_access"):
-            raise HTTPException(
-                status_code=403,
-                detail="Consent required: Please grant research_access consent before querying data"
-            )
-        profiler.mark("consent_check")
-
-        # Use normalized cache key for better hit rate
-        cache_key = _api_cache.make_cache_key(request.query, user_tier)
-        cached = _api_cache.get(cache_key)
-        profiler.mark("cache_lookup")
-        if cached is not None:
-            cached_response: Any = cached
-            if isinstance(cached, Mapping):
-                cached_response_dict = _as_json_dict(cached)
-                cached_response_dict["cached"] = True
-                if (
-                    cached_response_dict.get("_tier_filter_applied") is True
-                    and cached_response_dict.get("_tier_filter_tier") == user_tier
-                ):
-                    cached_response_dict.pop("_tier_filter_applied", None)
-                    cached_response_dict.pop("_tier_filter_tier", None)
-                    profiler.finish(route="cache", outcome="success", cache_hit=True)
-                    return cached_response_dict
-                cached_response = cached_response_dict
-            filtered_cached = _apply_tier_response_filter(
-                cached_response,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            profiler.mark("tier_filter")
-            profiler.finish(route="cache", outcome="success", cache_hit=True)
-            return filtered_cached
-
-        if _should_use_c4_read_model(request.query):
-            async def build_c4_response() -> dict[str, Any] | None:
-                c4_response = await asyncio.to_thread(
-                    _c4_read_model_response,
-                    request.query,
-                    user_tier=user_tier,
-                    session_id=request.session_id,
-                )
-                profiler.mark("c4_read_model")
-                if c4_response is None:
-                    return None
-                try:
-                    c4_response["audit_event_id"] = await _audit_log_query_async(
-                        user_id,
-                        request.query,
-                        jwt_kid=token_payload.get("kid"),
-                        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                    )
-                except Exception:
-                    logger.warning("Audit log_query failed for C4 read model path", exc_info=True)
-                    c4_response["audit_event_id"] = "audit_unavailable"
-                profiler.mark("audit_append")
-                normalized = _normalise_query_answer_payload(
-                    request,
-                    user_tier=user_tier,
-                    audit_event_id=c4_response.get("audit_event_id"),
-                    elapsed_ms=0,
-                    result=c4_response,
-                )
-                normalized, redacted_pii = _redact_pii_from_response(normalized)
-                if redacted_pii:
-                    normalized["warnings"] = normalized.get("warnings", []) + [
-                        f"PII redaction applied to response: {', '.join(redacted_pii)}"
-                    ]
-                profiler.mark("normalize_and_redact")
-                normalized = _apply_tier_response_filter(
-                    normalized,
-                    user_tier,
-                    user_id=user_id,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                    endpoint="/query",
-                )
-                normalized["_tier_filter_applied"] = True
-                normalized["_tier_filter_tier"] = user_tier
-                profiler.mark("tier_filter")
-                _schedule_answer_record_persist(user_id, request.session_id, normalized)
-                profiler.mark("answer_record_schedule")
-                return normalized
-
-            c4_payload, c4_cache_hit = await _get_or_build_query_cache_singleflight(
-                cache_key,
-                build_c4_response,
-                ttl=QUERY_RESULT_CACHE_TTL_SECONDS,
-            )
-            profiler.mark("c4_singleflight")
-            if c4_payload is not None:
-                response_payload: Any = c4_payload
-                if isinstance(c4_payload, Mapping):
-                    response_payload_dict = _as_json_dict(c4_payload)
-                    if c4_cache_hit:
-                        response_payload_dict["cached"] = True
-                    if (
-                        response_payload_dict.get("_tier_filter_applied") is True
-                        and response_payload_dict.get("_tier_filter_tier") == user_tier
-                    ):
-                        response_payload_dict.pop("_tier_filter_applied", None)
-                        response_payload_dict.pop("_tier_filter_tier", None)
-                        profiler.finish(route="c4_read_model", outcome="success", cache_hit=c4_cache_hit)
-                        return response_payload_dict
-                    response_payload = response_payload_dict
-                filtered_c4_payload = _apply_tier_response_filter(
-                    response_payload,
-                    user_tier,
-                    user_id=user_id,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                    endpoint="/query",
-                )
-                profiler.mark("tier_filter")
-                profiler.finish(route="c4_read_model", outcome="success", cache_hit=c4_cache_hit)
-                return filtered_c4_payload
-
-        fast_response = await asyncio.to_thread(
-            _fast_query_response,
-            request.query,
-            user_tier=user_tier,
-            user_id=user_id,
-            session_id=request.session_id,
-        )
-        profiler.mark("fast_query_response")
-        if fast_response is not None:
-            try:
-                fast_response["audit_event_id"] = await _audit_log_query_async(
-                    user_id,
-                    request.query,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                )
-            except Exception:
-                logger.warning("Audit log_query failed for query fast path", exc_info=True)
-                fast_response["audit_event_id"] = "audit_unavailable"
-            profiler.mark("audit_append")
-            fast_response = _normalise_query_answer_payload(
-                request,
-                user_tier=user_tier,
-                audit_event_id=fast_response.get("audit_event_id"),
-                elapsed_ms=0,
-                result=fast_response,
-            )
-            fast_response, redacted_pii = _redact_pii_from_response(fast_response)
-            if redacted_pii:
-                fast_response["warnings"] = fast_response.get("warnings", []) + [
-                    f"PII redaction applied to response: {', '.join(redacted_pii)}"
-                ]
-            profiler.mark("normalize_and_redact")
-            fast_response = _apply_tier_response_filter(
-                fast_response,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            profiler.mark("tier_filter")
-            fast_response = _apply_ai_synthesis_after_tier_filter(
-                fast_response,
-                query=request.query,
-                user_tier=user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            profiler.mark("ai_synthesis")
-            _schedule_answer_record_persist(user_id, request.session_id, fast_response)
-            _api_cache.set(cache_key, fast_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-            profiler.mark("persist_and_cache")
-            profiler.finish(route="fast_query", outcome="success", cache_hit=False)
-            return fast_response
-
-        context_key = _sql_context_key(user_id, request.session_id)
-        follow_up_response = await asyncio.to_thread(
-            _academic_follow_up_response,
-            request.query,
-            user_tier=user_tier,
-            session_id=request.session_id,
-            context_key=context_key,
-        )
-        profiler.mark("follow_up_response")
-        if follow_up_response is not None:
-            try:
-                follow_up_response["audit_event_id"] = await _audit_log_query_async(
-                    user_id,
-                    request.query,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                )
-            except Exception:
-                logger.warning("Audit log_query failed for SQL follow-up fast path", exc_info=True)
-                follow_up_response["audit_event_id"] = "audit_unavailable"
-            profiler.mark("audit_append")
-            follow_up_response = _normalise_query_answer_payload(
-                request,
-                user_tier=user_tier,
-                audit_event_id=follow_up_response.get("audit_event_id"),
-                elapsed_ms=0,
-                result=follow_up_response,
-            )
-            follow_up_response, redacted_pii = _redact_pii_from_response(follow_up_response)
-            if redacted_pii:
-                follow_up_response["warnings"] = follow_up_response.get("warnings", []) + [
-                    f"PII redaction applied to response: {', '.join(redacted_pii)}"
-                ]
-            follow_up_response = _apply_tier_response_filter(
-                follow_up_response,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            follow_up_response = _apply_ai_synthesis_after_tier_filter(
-                follow_up_response,
-                query=request.query,
-                user_tier=user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            _schedule_answer_record_persist(user_id, request.session_id, follow_up_response)
-            _api_cache.set(cache_key, follow_up_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-            profiler.mark("persist_and_cache")
-            profiler.finish(route="follow_up", outcome="success", cache_hit=False)
-            return follow_up_response
-
-        killer_response = await asyncio.to_thread(
-            _killer_query_response,
-            request.query,
-            user_tier=user_tier,
-            session_id=request.session_id,
-        )
-        profiler.mark("killer_query_response")
-        if killer_response is not None:
-            try:
-                killer_response["audit_event_id"] = await _audit_log_query_async(
-                    user_id,
-                    request.query,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                )
-            except Exception:
-                logger.warning("Audit log_query failed for killer query fast path", exc_info=True)
-                killer_response["audit_event_id"] = "audit_unavailable"
-            profiler.mark("audit_append")
-            killer_response = _normalise_query_answer_payload(
-                request,
-                user_tier=user_tier,
-                audit_event_id=killer_response.get("audit_event_id"),
-                elapsed_ms=0,
-                result=killer_response,
-            )
-            killer_response, redacted_pii = _redact_pii_from_response(killer_response)
-            if redacted_pii:
-                killer_response["warnings"] = killer_response.get("warnings", []) + [
-                    f"PII redaction applied to response: {', '.join(redacted_pii)}"
-                ]
-            killer_response = _apply_tier_response_filter(
-                killer_response,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            killer_response = _apply_ai_synthesis_after_tier_filter(
-                killer_response,
-                query=request.query,
-                user_tier=user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            _schedule_answer_record_persist(user_id, request.session_id, killer_response)
-            _api_cache.set(cache_key, killer_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-            _remember_sql_domain_context(
-                _sql_context_key(user_id, request.session_id),
-                request.query,
-                killer_response.get("sql_query"),
-            )
-            profiler.mark("persist_cache_and_context")
-            profiler.finish(route="killer_query", outcome="success", cache_hit=False)
-            return killer_response
-
-        adversarial_response = await asyncio.to_thread(
-            _advanced_adversarial_response,
-            request.query,
-            user_tier=user_tier,
-            session_id=request.session_id,
-        )
-        profiler.mark("adversarial_response")
-        if adversarial_response is not None:
-            try:
-                adversarial_response["audit_event_id"] = await _audit_log_query_async(
-                    user_id,
-                    request.query,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                )
-            except Exception:
-                logger.warning("Audit log_query failed for adversarial SQL pattern", exc_info=True)
-                adversarial_response["audit_event_id"] = "audit_unavailable"
-            profiler.mark("audit_append")
-            adversarial_response = _normalise_query_answer_payload(
-                request,
-                user_tier=user_tier,
-                audit_event_id=adversarial_response.get("audit_event_id"),
-                elapsed_ms=0,
-                result=adversarial_response,
-            )
-            adversarial_response = _apply_tier_response_filter(
-                adversarial_response,
-                user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            adversarial_response = _apply_ai_synthesis_after_tier_filter(
-                adversarial_response,
-                query=request.query,
-                user_tier=user_tier,
-                user_id=user_id,
-                jwt_kid=token_payload.get("kid"),
-                request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                endpoint="/query",
-            )
-            _schedule_answer_record_persist(user_id, request.session_id, adversarial_response)
-            _api_cache.set(cache_key, adversarial_response, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-            profiler.mark("persist_and_cache")
-            profiler.finish(route="adversarial", outcome="success", cache_hit=False)
-            return adversarial_response
-
-        from src.observability.metrics import get_slo_tracker
-        slo_tracker = get_slo_tracker()
-        slo_tracker.increment_concurrency()
-
-        query_start = time.time()
-
-        jwt_kid = token_payload.get("kid")
-        request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
-
-        audit_event_id = None
-        try:
-            audit_event_id = await _audit_log_query_async(user_id, request.query, jwt_kid=jwt_kid, request_fingerprint=request_fp)
-        except Exception:
-            logger.warning("Audit log_query failed at API layer", exc_info=True)
-        profiler.mark("audit_append")
-
-        result: JSONDict | None = None
-        try:
-            from src.config.database import get_database_manager
-            db = get_database_manager()
-            if db.is_overloaded():
-                raise HTTPException(
-                    status_code=503,
-                    detail="Service temporarily unavailable due to database load. Please retry in a moment.",
-                )
-
-            result = await asyncio.to_thread(
-                _run_workflow,
-                request.query,
-                user_tier=user_tier,
-                session_id=request.session_id,
-                user_id=user_id,
-            )
-            profiler.mark("workflow_run")
-        finally:
-            latency_ms = (time.time() - query_start) * 1000
-            slo_tracker.decrement_concurrency()
-            slo_tracker.record_latency(latency_ms)
-            if result is not None:
-                citations = _as_sequence_for_count(result.get("citations", []))
-                synthesis_method = str(result.get("synthesis_method", "unknown"))
-            else:
-                citations = []
-                synthesis_method = "error"
-            slo_tracker.record_citation(
-                has_citation=len(citations) > 0,
-                synthesis_method=synthesis_method,
-            )
-
-        if result is None:
-            result = {}
-        synthesis_method = str(result.get("synthesis_method", "unknown"))
-        warnings_text = " ".join(str(item).lower() for item in _as_sequence_for_count(result.get("warnings", [])))
-        explicit_sql_only_degradation = synthesis_method == "sql_only" and (
-            "vector" in warnings_text or "qdrant" in warnings_text
-        )
-        if (
-            synthesis_method == "unknown"
-            or (synthesis_method == "sql_only" and not explicit_sql_only_degradation)
-        ) and result.get("synthesized_response"):
-            synthesis_method = "rule_based"
-        provenance = _as_json_dict(result.get("provenance", {}) or {})
-        if "synth" not in provenance:
-            provenance["synth"] = synthesis_method if synthesis_method != "unknown" else "rule_based"
-        provenance.setdefault("cloud_synthesis_used", "cloud" in str(provenance.get("synth", "")))
-
-        response_payload = _normalise_query_answer_payload(
-            request,
-            user_tier=user_tier,
-            audit_event_id=audit_event_id,
-            elapsed_ms=latency_ms,
-            result={
-                **result,
-                "warnings": result.get("warnings", result.get("errors", [])),
-                "provenance": provenance,
-                "synthesis_method": synthesis_method,
-                "answer_confidence": result.get(
-                    "answer_confidence",
-                    _answer_confidence_from_verification(result.get("verification_status", False)),
-                ),
-            },
-            default_verification=False,
-        )
-
-        response_payload, redacted_pii = _redact_pii_from_response(response_payload)
-        if redacted_pii:
-            response_payload["warnings"] = response_payload.get("warnings", []) + [
-                f"PII redaction applied to response: {', '.join(redacted_pii)}"
-            ]
-        response_payload = _apply_tier_response_filter(
-            response_payload,
-            user_tier,
-            user_id=user_id,
-            jwt_kid=jwt_kid,
-            request_fingerprint=request_fp,
-            endpoint="/query",
-        )
-        response_payload = _apply_ai_synthesis_after_tier_filter(
-            response_payload,
-            query=request.query,
-            user_tier=user_tier,
-            user_id=user_id,
-            jwt_kid=jwt_kid,
-            request_fingerprint=request_fp,
-            endpoint="/query",
-        )
-
-        _schedule_answer_record_persist(user_id, request.session_id, response_payload)
-        _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
-        _remember_sql_domain_context(
-            _sql_context_key(user_id, request.session_id),
-            request.query,
-            response_payload.get("sql_query"),
-        )
-        profiler.mark("fallback_persist_cache_and_context")
-        profiler.finish(route="workflow", outcome="success", cache_hit=False)
-        return response_payload
-    except HTTPException:
-        profiler.finish(route="exception", outcome="http_exception", cache_hit=None)
-        raise
-    except Exception as e:
-        profiler.finish(route="exception", outcome="error", cache_hit=None)
-        logger.error(f"Workflow execution error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 def _get_qdrant_vector_count_health() -> JSONDict:
     return get_qdrant_vector_count_health(client_factory=QdrantClient)

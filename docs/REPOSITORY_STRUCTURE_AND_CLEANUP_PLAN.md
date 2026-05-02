@@ -217,15 +217,17 @@ Started in the backend split pass:
   submission into `src/api/routes/feedback.py`.
 - Replaced stale `src/api/routes/query.py` with a thin live adapter for
   `/query` and `/api/query/stream`; the endpoint registration is now modular
-  while the heavy answer-engine implementation remains in `src/api/main.py`
-  until a dedicated query-service extraction is safe.
+  and the heavy answer-engine implementation now lives in
+  `src/api/query_service.py`. `src/api/main.py` wires dependencies and keeps
+  thin compatibility wrappers for tests and older internal call sites.
 - Moved the frontend SPA catch-all into `src/api/routes/spa.py` and registered
   it last, after all API routers and static assets, to preserve route ordering.
 
 Remaining route splits:
 
-- None. `src/api/main.py` still owns app setup, middleware, lifecycle, and the
-  private answer-engine helper implementation that backs the query router.
+- None. `src/api/main.py` owns app setup, middleware, lifecycle, dependency
+  wiring, and router registration. `src/api/query_service.py` owns `/query`
+  and `/api/query/stream` answer-engine execution.
 - 2026-05-02 wrap-up extracted query response support helpers into
   `src/api/query_response_utils.py`: PII redaction, answer-confidence mapping,
   SSE formatting, query/stream payload normalization, citation-token parsing,
@@ -238,14 +240,16 @@ Remaining route splits:
   drift cases. The old helper copy is still present as dormant implementation
   detail and should be physically slimmed only during a broader query-service
   extraction.
+- 2026-05-03 query-service extraction moved the live answer-engine body out of
+  `src/api/main.py` into `src/api/query_service.py`, preserved route contracts,
+  and added architecture tests that keep `main.py` wrappers thin while checking
+  blocking answer paths stay behind `asyncio.to_thread`.
 
-Next backend split:
+Next backend hardening:
 
-- Extract the heavy answer-engine implementation from `src/api/main.py` into a
-  focused query-service module. Keep `/query` and `/api/query/stream` public
-  response fields unchanged, preserve the current async boundary, and rerun
-  messy-query, Dhairya, GLM, Minimax, tier-shaping, stream-contract, and
-  frontend adapter tests before changing route wiring.
+- Continue query-service hardening with broader messy-query, Dhairya,
+  external-template, tier-shaping, stream-contract, and frontend adapter
+  regressions before any further answer-path refactor.
 
 ### Wave 5.5: Agent Workflow Hygiene
 

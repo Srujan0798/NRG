@@ -6,7 +6,7 @@ import ast
 from pathlib import Path
 
 
-API_MAIN = Path(__file__).resolve().parents[2] / "src/api/main.py"
+QUERY_SERVICE = Path(__file__).resolve().parents[2] / "src/api/query_service.py"
 
 
 def _call_name(node: ast.AST) -> str | None:
@@ -18,11 +18,14 @@ def _call_name(node: ast.AST) -> str | None:
     return None
 
 
-def _async_function(tree: ast.Module, name: str) -> ast.AsyncFunctionDef:
+def _async_method(tree: ast.Module, class_name: str, name: str) -> ast.AsyncFunctionDef:
     for node in tree.body:
-        if isinstance(node, ast.AsyncFunctionDef) and node.name == name:
-            return node
-    raise AssertionError(f"async function not found: {name}")
+        if not isinstance(node, ast.ClassDef) or node.name != class_name:
+            continue
+        for item in node.body:
+            if isinstance(item, ast.AsyncFunctionDef) and item.name == name:
+                return item
+    raise AssertionError(f"async method not found: {class_name}.{name}")
 
 
 def _to_thread_targets(function_node: ast.AsyncFunctionDef) -> set[str]:
@@ -32,9 +35,7 @@ def _to_thread_targets(function_node: ast.AsyncFunctionDef) -> set[str]:
             continue
         if _call_name(node.func) != "asyncio.to_thread" or not node.args:
             continue
-        first_arg = node.args[0]
-        if isinstance(first_arg, ast.Name):
-            targets.add(first_arg.id)
+        targets.add(_call_name(node.args[0]) or "")
     return targets
 
 
@@ -49,16 +50,16 @@ def _direct_calls(function_node: ast.AsyncFunctionDef, names: set[str]) -> set[s
 
 
 def test_query_handler_keeps_blocking_answer_paths_off_event_loop() -> None:
-    tree = ast.parse(API_MAIN.read_text())
-    query_impl = _async_function(tree, "_query_with_langgraph_impl")
+    tree = ast.parse(QUERY_SERVICE.read_text())
+    query_impl = _async_method(tree, "QueryAnswerService", "query_with_langgraph")
 
     blocking_paths = {
-        "_c4_read_model_response",
-        "_fast_query_response",
-        "_academic_follow_up_response",
-        "_killer_query_response",
-        "_advanced_adversarial_response",
-        "_run_workflow",
+        "self.deps.c4_read_model_response",
+        "self.deps.fast_query_response",
+        "self.deps.academic_follow_up_response",
+        "self.deps.killer_query_response",
+        "self.deps.advanced_adversarial_response",
+        "self.deps.run_workflow",
     }
 
     assert _direct_calls(query_impl, blocking_paths) == set()
@@ -66,7 +67,7 @@ def test_query_handler_keeps_blocking_answer_paths_off_event_loop() -> None:
 
 
 def test_stream_handler_builds_answer_payload_off_event_loop() -> None:
-    tree = ast.parse(API_MAIN.read_text())
-    stream_impl = _async_function(tree, "_query_stream_response")
+    tree = ast.parse(QUERY_SERVICE.read_text())
+    stream_impl = _async_method(tree, "QueryAnswerService", "query_stream_response")
 
-    assert "_build_stream_answer_payload" in _to_thread_targets(stream_impl)
+    assert "self.build_stream_answer_payload" in _to_thread_targets(stream_impl)
