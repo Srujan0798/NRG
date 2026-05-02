@@ -1,0 +1,5 @@
+trivy=not_found
+grype=not_found
+syft=not_found
+/usr/local/bin/docker
+docker_server=29.2.1

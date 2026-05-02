@@ -19,12 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python build tools
-RUN pip install --upgrade pip wheel setuptools
-
 # Create virtualenv and install dependencies into it
 RUN python -m venv /app/venv
 ENV PATH=/app/venv/bin:$PATH
+
+# Install Python build tools inside the runtime venv, not only globally.
+# pip>=26 closes the 24.x runtime-image CVEs found in the May 2 image audit.
+RUN pip install --upgrade "pip>=26.0" wheel setuptools
 
 # Copy dependency metadata
 COPY pyproject.toml .

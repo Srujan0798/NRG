@@ -1,0 +1,6 @@
+uid=999(app) gid=999(app) groups=999(app)
+import=ok
+app=FastAPI
+Running uvicorn 0.34.0 with CPython 3.11.15 on Linux
+uvicorn=present
+state_dir=present

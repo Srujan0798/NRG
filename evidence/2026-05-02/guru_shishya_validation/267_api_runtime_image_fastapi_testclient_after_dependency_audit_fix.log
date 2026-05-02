@@ -1,0 +1,8 @@
+/app/venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+{"timestamp": "2026-05-02T10:16:50.144704+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/health \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 7, "thread_id": 279272711238848, "extra": {}}
+health_status=200
+health_body={"status":"unhealthy","timestamp":"2026-05-02T10:16:50.138057+00:00","consent_service":"operational","retriever":{"status":"skipped","message":"Deep retriever health disabled for fast readiness checks"},"qdrant":{"status":"unavailable","collection":"nrg_research","vectors":null,"message":"Qdrant vec
+sentence_transformers=5.4.1
+transformers=5.7.0
+embedding_api_import=ok
