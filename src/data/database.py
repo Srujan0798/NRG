@@ -2,12 +2,34 @@
 
 import os
 import sqlite3
+import uuid
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Optional
-import uuid
+
+from src.caching.redis_layer import invalidate_query_cache
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATABASE_URL = "sqlite:///nrg_research.db"
+MUTATING_SQL_VERBS = {
+    "alter",
+    "create",
+    "delete",
+    "drop",
+    "insert",
+    "merge",
+    "refresh",
+    "replace",
+    "truncate",
+    "update",
+    "vacuum",
+}
+
+
+def _query_mutates_data(query: str) -> bool:
+    """Return True when a SQL statement can change stored source data."""
+    first_token = query.lstrip().split(None, 1)[0].lower() if query.strip() else ""
+    return first_token in MUTATING_SQL_VERBS
 
 
 def resolve_database_path(db_path: Optional[str] = None) -> Path:
@@ -61,15 +83,29 @@ class NRGDatabase:
         self.conn = conn
         return conn
 
+    @contextmanager
+    def transaction(self):
+        """Open a connection with explicit commit/rollback semantics."""
+        conn = self.connect()
+        try:
+            yield conn
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
     def initialize_schema(self) -> None:
         """Initialize the database schema."""
         schema_path = Path(__file__).parent / "schema" / "nrg_full_schema.sql"
 
-        with self.connect() as conn:
+        with self.transaction() as conn:
             with open(schema_path, "r") as f:
                 schema_sql = f.read()
 
             conn.executescript(schema_sql)
+        invalidate_query_cache()
 
     def insert_researcher(
         self,
@@ -85,7 +121,7 @@ class NRGDatabase:
         """Insert a researcher record."""
         researcher_id = str(uuid.uuid4())
 
-        with self.connect() as conn:
+        with self.transaction() as conn:
             conn.execute(
                 """
                 INSERT INTO researchers 
@@ -105,6 +141,7 @@ class NRGDatabase:
                     orcid,
                 ),
             )
+        invalidate_query_cache()
 
         return researcher_id
 
@@ -127,7 +164,7 @@ class NRGDatabase:
             query += " AND institution_id = ?"
             params.append(institution_id)
 
-        with self.connect() as conn:
+        with self.transaction() as conn:
             cursor = conn.execute(query, params)
             return [dict(row) for row in cursor.fetchall()]
 
@@ -141,16 +178,20 @@ class NRGDatabase:
         Returns:
             List of dict rows
         """
-        with self.connect() as conn:
+        mutates_data = _query_mutates_data(query)
+        with self.transaction() as conn:
             if params:
                 cursor = conn.execute(query, params)
             else:
                 cursor = conn.execute(query)
-            return [dict(row) for row in cursor.fetchall()]
+            rows = [dict(row) for row in cursor.fetchall()]
+        if mutates_data:
+            invalidate_query_cache()
+        return rows
 
     def get_researcher_by_id(self, researcher_id: str) -> Optional[dict]:
         """Get researcher by ID."""
-        with self.connect() as conn:
+        with self.transaction() as conn:
             cursor = conn.execute(
                 "SELECT * FROM researchers WHERE researcher_id = ?", (researcher_id,)
             )

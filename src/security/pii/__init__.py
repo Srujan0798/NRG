@@ -19,6 +19,8 @@ _PII_REGEX = {
     "phone_91": re.compile(r"\+91[\s-]?[6-9][0-9]{9}\b"),
     "email": re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b"),
     "email_academic_in": re.compile(r"\b[A-Za-z0-9._%+-]+@[*a-z0-9.-]+\.(ac|res|gov)\.in\b", re.IGNORECASE),
+    "bank_account": re.compile(r"\b(?:Account|Acc)[\s:#]*[0-9]{9,18}\b", re.IGNORECASE),
+    "passport": re.compile(r"\b[A-Z][0-9]{7}\b", re.IGNORECASE),
     "dl_number": re.compile(r"\b[A-Z]{2}[0-9]{2}[\s-]?[0-9]{11}\b"),
     "gstin": re.compile(r"\b[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]\b", re.IGNORECASE),
 }

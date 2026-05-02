@@ -7,19 +7,35 @@ import logging
 import os
 import re
 import sqlite3
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, cast
 
 from src.config.llm_config import get_llm_client
 from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
 
-PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "verifier_system.md"
-CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
-VALID_CITATION_TYPES = {"pub", "PUB", "structured", "DOC", "DOC-", "chunk", "researcher", "funding", "lab", "institution"}
+JSONDict = dict[str, Any]
+Citation = dict[str, str]
+CitationList = list[Citation]
+ScoreBreakdown = dict[str, float]
 
-FAITHFULNESS_WEIGHTS = {
+
+class VerifierLLM(Protocol):
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[JSONDict],
+    ) -> str: ...
+
+
+PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "verifier_system.md"
+CITATION_PATTERN: re.Pattern[str] = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
+VALID_CITATION_TYPES: set[str] = {"pub", "PUB", "structured", "DOC", "DOC-", "chunk", "researcher", "funding", "lab", "institution"}
+
+FAITHFULNESS_WEIGHTS: ScoreBreakdown = {
     "citation_present": 0.2,
     "evidence_match": 0.4,
     "no_fabrication": 0.3,
@@ -103,13 +119,13 @@ def _validate_citation_type(pub_id: str) -> bool:
     return False
 
 
-def _strip_invalid_citation_tokens(response: str, valid_ids: set[str], duplicate_ids: set[str] | None = None) -> tuple[str, list[dict]]:
+def _strip_invalid_citation_tokens(response: str, valid_ids: set[str], duplicate_ids: set[str] | None = None) -> tuple[str, list[JSONDict]]:
     """Remove invalid and duplicate [cite:...] tokens. Returns (stripped_response, stripped_list)."""
-    stripped = []
+    stripped: list[JSONDict] = []
     duplicate_ids = duplicate_ids or set()
     seen_valid: set[str] = set()
 
-    def replace_cite(match):
+    def replace_cite(match: re.Match[str]) -> str:
         pub_id = match.group(1)
         chunk_id = match.group(2)
         cite_id = f"{pub_id}:{chunk_id}"
@@ -157,7 +173,7 @@ def _enrich_citation(
     pub_id: str,
     chunk_id: str,
     conn: sqlite3.Connection,
-) -> dict:
+) -> JSONDict:
     """Fetch title, authors, year, venue, DOI for a valid publication citation."""
     if _is_structured_citation(pub_id):
         return {"pub_id": pub_id, "chunk_id": chunk_id, "enriched": False}
@@ -174,7 +190,7 @@ def _enrich_citation(
         if not row:
             return {"pub_id": pub_id, "chunk_id": chunk_id, "enriched": False}
 
-        authors_str = row["authors"] or ""
+        authors_str = str(row["authors"] or "")
         author_list = [a.strip() for a in authors_str.split(",") if a.strip()]
 
         return {
@@ -195,21 +211,7 @@ def _enrich_citation(
         return {"pub_id": pub_id, "chunk_id": chunk_id, "enriched": False}
 
 
-def _extract_claims(response: str) -> list[str]:
-    """Split response into individual factual claims for coverage estimation."""
-    sentences = re.split(r"(?<=[.!?])\s+", response)
-    claims = []
-    for sent in sentences:
-        sent = sent.strip()
-        if len(sent) < 10:
-            continue
-        if re.search(r"\b(should|may|might|could|possibly)\b", sent, re.I):
-            continue
-        claims.append(sent)
-    return claims
-
-
-def _calculate_citation_coverage(response: str, citations: list[dict]) -> float:
+def _calculate_citation_coverage(response: str, citations: CitationList) -> float:
     """Estimate what fraction of sentences contain at least one citation."""
     sentences = re.split(r"(?<=[.!?])\s+", response)
     cited_sentences = 0
@@ -222,16 +224,20 @@ def _calculate_citation_coverage(response: str, citations: list[dict]) -> float:
     return cited_sentences / len(sentences)
 
 
-def _deduplicate_citations(citations: list[dict]) -> list[dict]:
-    """Remove duplicate citations (same pub_id), keeping the first occurrence."""
+def _deduplicate_citations(citations: CitationList) -> CitationList:
+    """Remove duplicate citations, keeping the first occurrence."""
     seen: set[str] = set()
-    deduped: list[dict] = []
-    for cite in citations:
-        key = cite.get("pub_id", "")
-        if key not in seen:
-            seen.add(key)
-            deduped.append(cite)
+    deduped: CitationList = []
+    for citation in citations:
+        key = citation.get("id") or f"{citation.get('pub_id', '')}:{citation.get('chunk_id', '')}"
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(citation)
     return deduped
+
+
+deduplicate_citations = _deduplicate_citations
 
 
 _NUMERIC_CLAIM_RE = re.compile(
@@ -244,7 +250,7 @@ _NUMERIC_CLAIM_RE = re.compile(
 )
 
 
-def _unsupported_numeric_claims(answer: str, sql_results: list[dict]) -> list[str]:
+def _unsupported_numeric_claims(answer: str, sql_results: list[JSONDict]) -> list[str]:
     """Return numeric answer claims not supported by SQL row values."""
     if not answer or not sql_results:
         return []
@@ -282,7 +288,7 @@ def _split_sentences(answer: str) -> list[str]:
     return [part.strip() for part in re.split(r"(?<=[.!?])\s+", normalized) if part.strip()]
 
 
-def _extract_source_numbers(sql_results: list[dict]) -> list[float]:
+def _extract_source_numbers(sql_results: list[JSONDict]) -> list[float]:
     values: list[float] = [float(len(sql_results))]
 
     def visit(value: Any) -> None:
@@ -291,12 +297,12 @@ def _extract_source_numbers(sql_results: list[dict]) -> list[float]:
         if isinstance(value, (int, float)):
             values.append(float(value))
             return
-        if isinstance(value, dict):
-            for child in value.values():
+        if isinstance(value, Mapping):
+            for child in cast(Mapping[str, Any], value).values():
                 visit(child)
             return
         if isinstance(value, list):
-            for child in value:
+            for child in cast(list[Any], value):
                 visit(child)
             return
         if isinstance(value, str):
@@ -340,7 +346,7 @@ def _number_supported(target: float, source_numbers: list[float]) -> bool:
 
 
 @trace_llm_call("verifier")
-def verifier_node(state: Any) -> dict:
+def verifier_node(state: Any) -> JSONDict:
     """Verify cited claims against available evidence with numerical faithfulness score.
 
     Returns faithfulness_score (0.0-1.0) instead of just pass/fail.
@@ -355,24 +361,20 @@ def verifier_node(state: Any) -> dict:
     - invalid citations are stripped from synthesized_response
     - malformed, duplicate, and unknown-type citations are caught
     """
-    response = _state_get(state, "synthesized_response", "") or ""
+    response = str(_state_get(state, "synthesized_response", "") or "")
     retries = int(_state_get(state, "verification_retries", 0) or 0)
     citations = _extract_citations(response)
-    sql_results = _state_get(state, "sql_results", []) or []
-    synth_method = _state_get(state, "synthesis_method", "unknown")
-    anomaly_report = _state_get(state, "sql_anomaly_report", {}) or {}
+    sql_results = _json_dict_list(_state_get(state, "sql_results", []))
+    synth_method = str(_state_get(state, "synthesis_method", "unknown") or "unknown")
+    anomaly_report = _json_dict(_state_get(state, "sql_anomaly_report", {}))
 
     if _is_low_confidence_sql_anomaly(anomaly_report):
-        clarification = (
+        clarification = str(
             anomaly_report.get("clarification_question")
             or _state_get(state, "clarification_question")
             or "The SQL result is low confidence. Please narrow the question or allow a corrected query."
         )
-        signals = anomaly_report.get("signal_names") or [
-            signal.get("name")
-            for signal in anomaly_report.get("signals", [])
-            if isinstance(signal, dict) and signal.get("name")
-        ]
+        signal_names = _sql_anomaly_signal_names(anomaly_report)
         return _with_evidence_confidence({
             "verification_status": "fail",
             "faithfulness_score": min(float(anomaly_report.get("confidence_score", 0.05) or 0.05), 0.5),
@@ -382,7 +384,7 @@ def verifier_node(state: Any) -> dict:
                 "no_fabrication": 0.0,
                 "tier_compliance": FAITHFULNESS_WEIGHTS["tier_compliance"],
             },
-            "unsupported_claims": [f"SQL anomaly requires clarification: {', '.join(signals)}"],
+            "unsupported_claims": [f"SQL anomaly requires clarification: {', '.join(signal_names)}"],
             "verification_retries": retries,
             "synthesis_method": synth_method,
             "citation_validity": 0.0,
@@ -399,7 +401,7 @@ def verifier_node(state: Any) -> dict:
     unsupported_numbers = _unsupported_numeric_claims(response, sql_results)
     numeric_failures = uncited_numeric_claims + unsupported_numbers
     if numeric_failures:
-        score_breakdown = {
+        score_breakdown: ScoreBreakdown = {
             "citation_present": 0.0,
             "evidence_match": FAITHFULNESS_WEIGHTS["evidence_match"] * (0.25 if unsupported_numbers else 0.5),
             "no_fabrication": 0.0,
@@ -421,7 +423,7 @@ def verifier_node(state: Any) -> dict:
             "answer_confidence_score": sum(score_breakdown.values()),
         })
 
-    score_breakdown = {
+    score_breakdown: ScoreBreakdown = {
         "citation_present": 0.0,
         "evidence_match": 0.0,
         "no_fabrication": 0.0,
@@ -429,8 +431,8 @@ def verifier_node(state: Any) -> dict:
     }
 
     citation_validity = 1.0
-    invalid_citations_out: list[dict] = []
-    enriched_citations: list[dict] = []
+    invalid_citations_out: list[JSONDict] = []
+    enriched_citations: list[JSONDict] = []
 
     if not citations:
         if sql_results:
@@ -496,7 +498,7 @@ def verifier_node(state: Any) -> dict:
     conn = _get_db_connection()
     try:
         validated_pub_ids: set[str] = set()
-        malformed: list[dict] = []
+        malformed: list[JSONDict] = []
         dupes: set[str] = set()
         seen_ids: set[str] = set()
 
@@ -525,7 +527,6 @@ def verifier_node(state: Any) -> dict:
     finally:
         conn.close()
 
-    unique_citations = {c["id"] for c in citations}
     unique_citations = {c["id"] for c in citations}
     missing = [cid for cid in unique_citations if cid not in validated_pub_ids and cid not in dupes]
 
@@ -602,7 +603,7 @@ def verifier_node(state: Any) -> dict:
             "synthesized_response": stripped_response,
         }
 
-    client = get_llm_client()
+    client = cast(VerifierLLM | None, get_llm_client())
     if client is None:
         score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"]
         score_breakdown["tier_compliance"] = FAITHFULNESS_WEIGHTS["tier_compliance"]
@@ -622,7 +623,7 @@ def verifier_node(state: Any) -> dict:
             "synthesized_response": stripped_response,
         }
 
-    payload = {
+    payload: JSONDict = {
         "answer": stripped_response,
         "citations": citations,
         "evidence": _match_evidence(state, citations),
@@ -669,7 +670,7 @@ def verifier_node(state: Any) -> dict:
             "synthesized_response": stripped_response,
         }
 
-    llm_claims = verdict.get("unsupported_claims", [])
+    llm_claims = _string_list(verdict.get("unsupported_claims", []))
     if llm_claims:
         claim_ratio = min(len(llm_claims) / max(len(unique_citations), 1), 1.0)
         score_breakdown["no_fabrication"] = FAITHFULNESS_WEIGHTS["no_fabrication"] * (1 - claim_ratio * 0.5)
@@ -691,10 +692,10 @@ def verifier_node(state: Any) -> dict:
     return _with_evidence_confidence(result)
 
 
-def _with_evidence_confidence(result: dict) -> dict:
+def _with_evidence_confidence(result: JSONDict) -> JSONDict:
     faithfulness_score = float(result.get("faithfulness_score", 0.0) or 0.0)
-    unsupported_claims = result.get("unsupported_claims", []) or []
-    caveats = list(result.get("caveats", []) or [])
+    unsupported_claims = _string_list(result.get("unsupported_claims", []))
+    caveats = _string_list(result.get("caveats", []))
     existing_confidence = result.get("answer_confidence")
 
     if existing_confidence == "low_clarify":
@@ -712,7 +713,7 @@ def _with_evidence_confidence(result: dict) -> dict:
     else:
         answer_confidence = "high"
 
-    enriched = dict(result)
+    enriched: JSONDict = dict(result)
     enriched["answer_confidence"] = answer_confidence
     enriched["answer_confidence_score"] = faithfulness_score
     enriched["caveats"] = caveats
@@ -724,8 +725,8 @@ def _failure_result(
     unsupported_claims: list[str],
     response: str,
     faithfulness_score: float = 0.0,
-    score_breakdown: dict | None = None,
-) -> dict:
+    score_breakdown: ScoreBreakdown | None = None,
+) -> JSONDict:
     if retries < 1:
         return {
             "verification_status": "retry",
@@ -746,73 +747,120 @@ def _failure_result(
 
 
 def _is_low_confidence_sql_anomaly(report: Any) -> bool:
-    if not isinstance(report, dict) or not report.get("detected"):
+    if not isinstance(report, Mapping):
         return False
-    if report.get("answer_confidence") == "low_clarify":
+    report_map = cast(Mapping[str, Any], report)
+    if not report_map.get("detected"):
+        return False
+    if report_map.get("answer_confidence") == "low_clarify":
         return True
-    return bool(report.get("needs_clarification"))
+    return bool(report_map.get("needs_clarification"))
 
 
-def _extract_citations(response: str) -> list[dict]:
+def _extract_citations(response: str) -> CitationList:
     return [
         {"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id}
         for pub_id, chunk_id in CITATION_PATTERN.findall(response)
     ]
 
 
-def _match_evidence(state: Any, citations: list[dict]) -> dict[str, dict]:
-    evidence: dict[str, dict] = {}
+def _match_evidence(state: Any, citations: CitationList) -> dict[str, JSONDict]:
+    evidence: dict[str, JSONDict] = {}
     wanted = {citation["id"] for citation in citations}
 
-    for item in _state_get(state, "retrieved_chunks", []) or []:
-        if isinstance(item, dict):
-            pub_id = str(item.get("publication_id") or item.get("pub_id") or item.get("source_id") or "")
-            chunk_id = str(item.get("chunk_id") or item.get("id") or "0")
+    for item in _sequence(_state_get(state, "retrieved_chunks", [])):
+        if isinstance(item, Mapping):
+            item_map = cast(Mapping[str, Any], item)
+            pub_id = str(item_map.get("publication_id") or item_map.get("pub_id") or item_map.get("source_id") or "")
+            chunk_id = str(item_map.get("chunk_id") or item_map.get("id") or "0")
             citation_id = f"{pub_id}:{chunk_id}"
             if citation_id in wanted:
                 evidence[citation_id] = {
-                    "title": item.get("title"),
+                    "title": item_map.get("title"),
                     "chunk_text": (
-                        item.get("chunk_text")
-                        or item.get("content")
-                        or item.get("text")
-                        or item.get("abstract")
+                        item_map.get("chunk_text")
+                        or item_map.get("content")
+                        or item_map.get("text")
+                        or item_map.get("abstract")
                     ),
                 }
 
-    for row in _state_get(state, "sql_results", []) or []:
-        if not isinstance(row, dict):
-            continue
+    sql_results = _json_dict_list(_state_get(state, "sql_results", []))
+    for row in sql_results:
+        row_map = cast(Mapping[str, Any], row)
         for key in ("publication_id", "researcher_id", "funding_id", "lab_id", "institution_id"):
-            if row.get(key):
-                citation_id = f"{row[key]}:0"
+            if row_map.get(key):
+                citation_id = f"{row_map[key]}:0"
                 if citation_id in wanted:
                     evidence[citation_id] = {"row": row}
 
-    if "structured:0" in wanted and "structured:0" not in evidence:
-        sql_results = _state_get(state, "sql_results", []) or []
-        if sql_results:
-            first_row = sql_results[0]
-            evidence["structured:0"] = {"row": first_row}
+    if "structured:0" in wanted and "structured:0" not in evidence and sql_results:
+        first_row = sql_results[0]
+        evidence["structured:0"] = {"row": first_row}
 
     return evidence
 
 
-def _parse_verdict(raw: str) -> dict:
+def _parse_verdict(raw: str) -> JSONDict:
     try:
-        return dict(json.loads(raw))
+        loaded = json.loads(raw)
+        if not isinstance(loaded, Mapping):
+            return {}
+        return dict(cast(Mapping[str, Any], loaded))
     except json.JSONDecodeError:
         match = re.search(r"\{.*\}", raw, re.DOTALL)
         if not match:
             raise
-        return dict(json.loads(match.group(0)))
+        loaded = json.loads(match.group(0))
+        if not isinstance(loaded, Mapping):
+            return {}
+        return dict(cast(Mapping[str, Any], loaded))
 
 
 def _load_prompt() -> str:
     return PROMPT_PATH.read_text()
 
 
+def _sql_anomaly_signal_names(report: JSONDict) -> list[str]:
+    signal_names = report.get("signal_names")
+    if isinstance(signal_names, list):
+        return [str(signal) for signal in cast(list[Any], signal_names) if signal is not None]
+
+    names: list[str] = []
+    for signal in _sequence(report.get("signals", [])):
+        if not isinstance(signal, Mapping):
+            continue
+        name = cast(Mapping[str, Any], signal).get("name")
+        if name:
+            names.append(str(name))
+    return names
+
+
+def _json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _json_dict_list(value: Any) -> list[JSONDict]:
+    return [_json_dict(item) for item in _sequence(value) if isinstance(item, Mapping)]
+
+
+def _string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in cast(list[Any], value) if item is not None]
+    if value:
+        return [str(value)]
+    return []
+
+
+def _sequence(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return cast(list[Any], value)
+    return []
+
+
 def _state_get(state: Any, key: str, default: Any = None) -> Any:
-    if isinstance(state, dict):
-        return state.get(key, default)
+    if isinstance(state, Mapping):
+        return cast(Mapping[str, Any], state).get(key, default)
     return getattr(state, key, default)

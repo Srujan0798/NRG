@@ -37,7 +37,7 @@ Status is proof-bound. No 100% or production-ready claim is allowed until every 
 | Qdrant/Redis live services | PASS local | `64_live_health_all_after_services.json`, `66_live_vectors_health_after_services.json`, `68_qdrant_redis_local_health_report.md` |
 | External production gates | BLOCKED | `evidence/2026-05-02/final_external_gates/EXTERNAL_GATE_SUMMARY.md` |
 
-Dispatch next: API no-fix base-image resolution, deployed-image dependency audit replay, sovereign cluster C4 replay, production data completion for empty official core tables, and external production gates. Guru/Shishya protocol: `60_guru_shishya_next_wave_protocol.md`.
+Dispatch next: API no-fix base-image resolution, deployed-image dependency audit replay, sovereign cluster C4 replay, production data-quality replay, and external production gates. Guru/Shishya protocol: `60_guru_shishya_next_wave_protocol.md`.
 
 ## 2026-05-02 CENTRAL EXECUTION FLOW
 

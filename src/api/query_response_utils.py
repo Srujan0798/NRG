@@ -3,16 +3,45 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import json
 import re
+import threading
 import uuid
-from typing import Any
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any, cast
 
 from src.api.answer_contract import normalize_workflow_result
 from src.api.logging_config import get_logger
 from src.services.answer_records import get_answer_record_store
 
 logger = get_logger(__name__)
+JSONDict = dict[str, Any]
+_answer_record_executor: ThreadPoolExecutor | None = None
+_answer_record_executor_lock = threading.Lock()
+
+
+def _get_answer_record_executor() -> ThreadPoolExecutor:
+    global _answer_record_executor
+    with _answer_record_executor_lock:
+        if _answer_record_executor is None:
+            _answer_record_executor = ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix="answer_record",
+            )
+        return _answer_record_executor
+
+
+def shutdown_answer_record_executor() -> None:
+    global _answer_record_executor
+    with _answer_record_executor_lock:
+        executor = _answer_record_executor
+        _answer_record_executor = None
+    if executor is not None:
+        executor.shutdown(wait=False, cancel_futures=True)
+
+
+atexit.register(shutdown_answer_record_executor)
 
 
 def answer_confidence_from_verification(verification_status: Any) -> str:
@@ -25,9 +54,9 @@ def answer_confidence_from_verification(verification_status: Any) -> str:
     return "low"
 
 
-def redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
+def redact_pii_from_response(response_data: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:
     """Redact obvious Indian PII from response text and citation fields."""
-    pii_patterns = {
+    pii_patterns: dict[str, re.Pattern[str]] = {
         "AADHAAR": re.compile(r"\b[0-9]{4}[- ]?[0-9]{4}[- ]?[0-9]{4}\b"),
         "PAN": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b"),
         "PHONE": re.compile(r"\b[6-9][0-9]{9}\b"),
@@ -38,9 +67,7 @@ def redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
     redacted_response = response_data.copy()
 
     def _redact_text(text: str) -> tuple[str, list[str]]:
-        if not isinstance(text, str):
-            return text, []
-        found_types = []
+        found_types: list[str] = []
         result = text
         for pii_type, pattern in pii_patterns.items():
             if pattern.search(result):
@@ -56,10 +83,10 @@ def redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
             redacted_types.extend(found)
 
     if "citations" in redacted_response and isinstance(redacted_response["citations"], list):
-        redacted_citations = []
-        for citation in redacted_response["citations"]:
+        redacted_citations: list[Any] = []
+        for citation in cast(list[Any], redacted_response["citations"]):
             if isinstance(citation, dict):
-                redacted_citation = citation.copy()
+                redacted_citation = cast(JSONDict, citation).copy()
                 for key in ["text", "context", "paper_title"]:
                     if key in redacted_citation and isinstance(redacted_citation[key], str):
                         redacted_citation[key], found = _redact_text(redacted_citation[key])
@@ -151,16 +178,17 @@ def persist_answer_record(user_id: str, session_id: str | None, payload: dict[st
 
 
 def schedule_answer_record_persist(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
+    executor = _get_answer_record_executor()
     try:
         loop = asyncio.get_running_loop()
     except RuntimeError:
-        persist_answer_record(user_id, session_id, payload)
+        executor.submit(persist_answer_record, user_id, session_id, payload)
         return
-    loop.create_task(asyncio.to_thread(persist_answer_record, user_id, session_id, payload))
+    loop.run_in_executor(executor, persist_answer_record, user_id, session_id, payload)
 
 
-def extract_citations_from_text(text: str) -> list[dict]:
-    citations = []
+def extract_citations_from_text(text: str) -> list[JSONDict]:
+    citations: list[JSONDict] = []
     cite_pattern = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
     for pub_id, chunk_id in cite_pattern.findall(text):
         citations.append({"id": f"{pub_id}:{chunk_id}", "pub_id": pub_id, "chunk_id": chunk_id})

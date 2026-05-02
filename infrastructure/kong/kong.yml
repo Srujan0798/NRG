@@ -33,10 +33,6 @@ services:
                 - industry
                 - guest
               hide_groups_header: false
-          - name: rate-limiting
-            config:
-              minute: 100
-              policy: local
       - name: protected-data-route
         paths:
           - /researchers
@@ -59,10 +55,6 @@ services:
                 - government
                 - industry
               hide_groups_header: false
-          - name: rate-limiting
-            config:
-              minute: 100
-              policy: local
 
 consumers:
   - username: researcher
@@ -144,3 +136,42 @@ plugins:
         - POST
       headers:
         - "*"
+  - name: rate-limiting
+    consumer: researcher
+    config:
+      minute: 120
+      hour: 5000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429
+  - name: rate-limiting
+    consumer: government
+    config:
+      minute: 300
+      hour: 12000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429
+  - name: rate-limiting
+    consumer: industry
+    config:
+      minute: 40
+      hour: 1000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429

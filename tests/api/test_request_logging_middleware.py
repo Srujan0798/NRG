@@ -59,6 +59,20 @@ def test_request_envelope_profile_writes_jsonl(monkeypatch, tmp_path):
     assert payload["response_content_length"] is not None
 
 
+def test_openapi_hides_metrics_by_default_and_omits_indian_pii_terms():
+    api_main.app.openapi_schema = None
+    client = TestClient(api_main.app)
+
+    payload = client.get("/openapi.json").json()
+    paths = payload.get("paths", {})
+    schema_text = json.dumps(payload).lower()
+
+    assert "/metrics" not in paths
+    assert "/api/metrics" not in paths
+    for term in ("aadhaar", "pan", "phone", "email"):
+        assert term not in schema_text
+
+
 def test_api_uses_orjson_default_response_for_hot_json_paths():
     assert api_main.app.router.default_response_class is ORJSONResponse
 

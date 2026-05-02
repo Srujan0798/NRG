@@ -288,7 +288,10 @@ follow this order:
    - Record users, spawn rate, runtime, failures, aggregate P99, per-workload
      `/query` P99, and audit-chain verification.
 
-4. **Data completion for empty official core tables**
+4. **Production data-quality replay**
+   - Local PostgreSQL scorecard evidence may close local data-completion gaps,
+     but deployed production claims still require a fresh scorecard against the
+     target production database.
    - Keep `db_struct.sql`, Dhairya regression expectations, and query evidence
      aligned before external product claims.
 

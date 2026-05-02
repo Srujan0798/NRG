@@ -1,7 +1,9 @@
 """Unit tests for NRGDatabase using Test-Driven Development."""
 
-import pytest
+import os
 import sqlite3
+
+import pytest
 
 from src.data.database import NRGDatabase
 
@@ -10,8 +12,9 @@ class TestNRGDatabase:
     """Test suite for NRGDatabase class."""
 
     @pytest.fixture
-    def test_db(self, tmp_path):
+    def test_db(self, tmp_path, monkeypatch):
         """Create a test database instance."""
+        monkeypatch.setattr("src.data.database.invalidate_query_cache", lambda: 0)
         db_path = tmp_path / "test_nrg.db"
 
         db = NRGDatabase(str(db_path))
@@ -60,6 +63,53 @@ class TestNRGDatabase:
         assert researcher["name"] == "Dr. Test Researcher"
         assert researcher["state"] == "MH"
         assert researcher["research_area"] == "Test Research"
+
+    def test_insert_researcher_invalidates_query_cache(self, tmp_path, monkeypatch):
+        """Writes must evict cached query results after commit."""
+        calls = []
+        monkeypatch.setattr("src.data.database.invalidate_query_cache", lambda: calls.append("invalidate") or 1)
+        db = NRGDatabase(str(tmp_path / "invalidate_insert.db"))
+        db.initialize_schema()
+        calls.clear()
+
+        db.insert_researcher(
+            name="Dr. Cache Writer",
+            institution_id="inst-cache-001",
+            state="KA",
+            research_area="Cache Invalidation",
+        )
+
+        assert calls == ["invalidate"]
+
+    def test_execute_mutating_query_invalidates_query_cache(self, tmp_path, monkeypatch):
+        """Parameterized mutating SQL must evict cached query results."""
+        calls = []
+        monkeypatch.setattr("src.data.database.invalidate_query_cache", lambda: calls.append("invalidate") or 1)
+        db = NRGDatabase(str(tmp_path / "invalidate_update.db"))
+        db.initialize_schema()
+        researcher_id = db.insert_researcher(
+            name="Dr. Cache Update",
+            institution_id="inst-cache-002",
+            state="MH",
+            research_area="Cache Invalidation",
+        )
+        calls.clear()
+
+        db.execute_query(
+            "UPDATE researchers SET state = ? WHERE researcher_id = ?",
+            ("GJ", researcher_id),
+        )
+
+        assert calls == ["invalidate"]
+
+    def test_execute_select_query_does_not_invalidate_query_cache(self, test_db, monkeypatch):
+        """Read-only SQL must not evict cached query results."""
+        calls = []
+        monkeypatch.setattr("src.data.database.invalidate_query_cache", lambda: calls.append("invalidate") or 1)
+
+        test_db.execute_query("SELECT * FROM researchers")
+
+        assert calls == []
 
     def test_query_researchers_by_state(self, test_db):
         """Test querying researchers by state."""
@@ -121,6 +171,22 @@ class TestNRGDatabase:
         """Test getting a non-existent researcher returns None."""
         researcher = test_db.get_researcher_by_id("non-existent-id")
         assert researcher is None
+
+    def test_transaction_rolls_back_on_exception(self, test_db):
+        """Database helper transactions must not commit partial writes on error."""
+        with pytest.raises(RuntimeError):
+            with test_db.transaction() as conn:
+                conn.execute(
+                    """
+                    INSERT INTO researchers
+                    (researcher_id, name, institution_id, state)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    ("rollback-id", "Dr Rollback", "inst-rollback", "GJ"),
+                )
+                raise RuntimeError("force rollback")
+
+        assert test_db.get_researcher_by_id("rollback-id") is None
 
     def test_database_close(self, test_db):
         """Test database connection can be closed."""

@@ -23,17 +23,14 @@ Environment variables:
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import time
 import uuid
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
-from typing import Any, Optional
+from typing import Any
 
 import jwt
 
-from src.auth.refresh_store import RefreshStore
 from src.auth.jwt_handler import AuthError
 
 
@@ -115,8 +112,6 @@ class OIDCTokenVerifier:
         return None
 
     def verify(self, token: str) -> dict[str, Any]:
-        import requests
-
         unverified_header = jwt.get_unverified_header(token)
         kid = unverified_header.get("kid", "")
 
@@ -124,7 +119,6 @@ class OIDCTokenVerifier:
         if signing_key is None:
             raise AuthError(f"OIDC: no signing key found for kid={kid}")
 
-        from cryptography.hazmat.primitives.asymmetric.rsa import RSAFromJavaWebToken
         try:
             from cryptography.hazmat.primitives import serialization
             from cryptography.hazmat.backends import default_backend
@@ -305,7 +299,6 @@ class SSOAuthHandler:
             raise AuthError(f"Email domain not allowed: {claims.get('email')}")
 
         role = _normalize_role(self.config, claims)
-        domain = claims.get("email", "").split("@")[-1] if "@" in claims.get("email", "") else ""
         user_info = {
             "user_id": f"sso-{claims.get('sub', claims.get('email', 'unknown'))}",
             "username": claims.get("email", claims.get("preferred_username", "sso_user")),
@@ -338,15 +331,15 @@ class SSOAuthHandler:
             self._pkce_store.pop(s, None)
 
 
-_sso_handler: SSOConfig | None = None
+_sso_handler: SSOAuthHandler | None = None
 
 
-def get_sso_handler() -> SSOConfig:
+def get_sso_handler() -> SSOAuthHandler:
     global _sso_handler
     if _sso_handler is None:
-        _sso_handler = SSOConfig()
+        _sso_handler = SSOAuthHandler()
     return _sso_handler
 
 
 def is_sso_enabled() -> bool:
-    return get_sso_handler().is_configured
+    return get_sso_handler().is_enabled

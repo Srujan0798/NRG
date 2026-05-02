@@ -395,6 +395,7 @@ class PromptSanitiser:
             _Rule("ssrf", re.compile(r"https?://(localhost|127\.0\.0\.1|0\.0\.0\.0)[:/]")),
             _Rule("ssrf", re.compile(r"file:///")),
             _Rule("xss_script_tag", re.compile(r"<\s*script[^>]*>.*?<\s*/\s*script\s*>", re.IGNORECASE | re.DOTALL)),
+            _Rule("xss_javascript_uri", re.compile(r"\bjavascript\s*:", re.IGNORECASE)),
             _Rule("xss_event_handler", re.compile(r"\bon\w+\s*=\s*['\"]?\s*(javascript:|alert\(|prompt\(|confirm\()", re.IGNORECASE)),
             _Rule("xss_img_onerror", re.compile(r"<\s*img[^>]+onerror\s*=", re.IGNORECASE)),
             _Rule("xss_svganimate", re.compile(r"<\s*svg[^>]*>[\s\S]*?(on(load|error|click|mouse)|\bjavascript:)", re.IGNORECASE)),

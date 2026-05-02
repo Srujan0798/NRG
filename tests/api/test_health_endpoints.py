@@ -491,6 +491,97 @@ def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
     assert payload["collection"] == "nrg_research"
 
 
+def test_health_endpoints_share_status_and_healthy_contract(monkeypatch, tmp_path):
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 1}]
+
+    class FakeProviderMesh:
+        class mesh_config:
+            query_timeout_budget_seconds = 5
+
+        def get_provider_health(self):
+            return {"local": {"status": "healthy"}}
+
+    class FakeDistance:
+        name = "Cosine"
+
+    class FakeVectors:
+        size = 384
+        distance = FakeDistance()
+
+    class FakeParams:
+        vectors = FakeVectors()
+
+    class FakeOptimizer:
+        indexing_threshold = 10000
+
+    class FakeConfig:
+        params = FakeParams()
+        optimizer_config = FakeOptimizer()
+
+    class FakeCollectionInfo:
+        points_count = 1
+        indexed_vectors_count = 1
+        config = FakeConfig()
+
+    class FakePoint:
+        payload = {"ingested_at": "2026-05-02T00:00:00Z"}
+
+    class FakeVectorClient(FakeQdrantClient):
+        def get_collection(self, collection_name: str):
+            assert collection_name == "nrg_research"
+            return FakeCollectionInfo()
+
+        def scroll(self, **kwargs):
+            return ([FakePoint()], None)
+
+    health_file = tmp_path / "killer_health.json"
+    health_file.write_text('{"status":"healthy","queries":[]}')
+
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(api_main, "QdrantClient", FakeVectorClient)
+    monkeypatch.setattr("qdrant_client.QdrantClient", FakeVectorClient)
+    monkeypatch.setattr(
+        api_main,
+        "_get_qdrant_vector_count_health",
+        lambda: {"status": "healthy", "collection": "nrg_research", "vectors": 1},
+    )
+    monkeypatch.setattr("src.api.routes.health._killer_query_health_file", health_file)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda **_: {"chain_valid": True, "chain_length": 1, "valid_events": 1, "error_count": 0},
+    )
+    monkeypatch.setattr("src.config.llm_config.get_llm_client", lambda: None)
+    monkeypatch.setattr("src.config.llm_config.get_llm_mesh", lambda: FakeProviderMesh())
+    monkeypatch.setattr("src.config.local_llm.get_llama_cpp_client", lambda: None)
+
+    client = TestClient(api_main.app)
+    endpoints = [
+        "/health",
+        "/health/db",
+        "/health/qdrant",
+        "/health/llm",
+        "/health/all",
+        "/api/health/killer_queries",
+        "/api/providers/health",
+        "/api/vectors/health",
+    ]
+
+    for endpoint in endpoints:
+        response = client.get(endpoint)
+        assert response.status_code in {200, 503}, endpoint
+        payload = response.json()
+        assert "status" in payload, endpoint
+        assert "healthy" in payload, endpoint
+        assert isinstance(payload["healthy"], bool), endpoint
+
+
 class TestAPIMemoryCache:
     def test_cache_get_set(self):
         cache = api_main._APIMemoryCache(default_ttl=60)

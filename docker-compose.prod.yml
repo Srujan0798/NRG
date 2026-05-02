@@ -45,7 +45,7 @@ services:
         reservations:
           memory: 2G
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health/all"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/all', timeout=5).read()"]
       interval: 15s
       timeout: 10s
       retries: 5

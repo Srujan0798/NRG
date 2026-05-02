@@ -1,6 +1,6 @@
 """Receiver Node - Entry point for user queries."""
 
-from typing import TypedDict
+from typing import Any, TypedDict, cast
 import uuid
 from datetime import datetime, UTC
 
@@ -12,46 +12,24 @@ class ReceiverState(TypedDict):
     session_id: str
     user_query: str
     user_tier: int
-    conversation_history: list
+    conversation_history: list[dict[str, Any]]
     created_at: str
 
 
-def receiver_node(state):
+def _state_get(state: Any, key: str, default: Any) -> Any:
+    if isinstance(state, dict):
+        return cast(dict[str, Any], state).get(key, default)
+    return getattr(state, key, default)
+
+
+def receiver_node(state: Any) -> dict[str, Any]:
     """Process incoming user query and initialize state."""
-    if hasattr(state, "query_id"):
-        query_id = state.query_id or str(uuid.uuid4())
-    elif isinstance(state, dict):
-        query_id = state.get("query_id", str(uuid.uuid4()))
-    else:
-        query_id = str(uuid.uuid4())
-
-    if hasattr(state, "session_id"):
-        session_id = state.session_id or query_id
-    elif isinstance(state, dict):
-        session_id = state.get("session_id", query_id)
-    else:
-        session_id = query_id
-
-    if hasattr(state, "user_query"):
-        user_query = state.user_query
-    elif isinstance(state, dict):
-        user_query = state.get("user_query", "")
-    else:
-        user_query = ""
-
-    if hasattr(state, "user_tier"):
-        user_tier = state.user_tier
-    elif isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
-    else:
-        user_tier = 1
-
-    if hasattr(state, "conversation_history"):
-        conversation_history = state.conversation_history
-    elif isinstance(state, dict):
-        conversation_history = state.get("conversation_history", [])
-    else:
-        conversation_history = []
+    query_id = _state_get(state, "query_id", "") or str(uuid.uuid4())
+    session_id = _state_get(state, "session_id", query_id) or query_id
+    user_query = _state_get(state, "user_query", "") or ""
+    user_tier = _state_get(state, "user_tier", 1) or 1
+    raw_history = _state_get(state, "conversation_history", [])
+    conversation_history = cast(list[dict[str, Any]], raw_history) if isinstance(raw_history, list) else []
 
     return {
         "query_id": query_id,
@@ -67,8 +45,8 @@ def create_initial_state(
     user_query: str,
     user_tier: int = 1,
     session_id: str | None = None,
-    conversation_history: list | None = None,
-) -> dict:
+    conversation_history: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     """Create initial state for a new query."""
     query_id = str(uuid.uuid4())
     return {

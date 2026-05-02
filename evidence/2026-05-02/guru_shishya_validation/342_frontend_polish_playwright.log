@@ -1,0 +1,16 @@
+
+Running 7 tests using 1 worker
+
+(node:22891) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22891) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 1 (1.8s)
+  ✓  2 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 2 (1.2s)
+  ✓  3 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 3 (1.2s)
+  ✓  4 [chromium] › tests/e2e/fetch_abort_navigation.spec.ts:8:5 › pending stats fetch is aborted when navigating away from query page (4.6s)
+  ✓  5 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 375px (712ms)
+  ✓  6 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 768px (732ms)
+  ✓  7 [chromium] › tests/e2e/sse_reconnect_stability.spec.ts:8:5 › active stream stays visually stable across transient token-refresh reconnect (5.6s)
+
+  7 passed (17.7s)

@@ -10,6 +10,7 @@ import hmac
 import json
 import logging
 import os
+import re
 import time
 from datetime import datetime, timezone
 from typing import Optional
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 SIGNATURE_VALIDATION_LOG: list[dict] = []
 
 SIGNATURE_EXPIRY_SECONDS = 300
+HEX_SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 
 def get_api_secret() -> str:
@@ -82,8 +84,10 @@ class RequestSigner:
             return False, f"Timestamp in future: {age}s"
 
         expected = self.sign(body, timestamp)
-        if not hmac.compare_digest(expected, signature):
-            return False, "Signature mismatch"
+        malformed = not isinstance(signature, str) or not HEX_SHA256_RE.fullmatch(signature)
+        candidate = signature.lower() if not malformed else "0" * len(expected)
+        if not hmac.compare_digest(expected, candidate):
+            return False, "Malformed signature" if malformed else "Signature mismatch"
 
         return True, "OK"
 

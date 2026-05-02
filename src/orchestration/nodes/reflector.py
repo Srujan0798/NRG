@@ -4,9 +4,9 @@ Reflector Node for Agentic Workflow Engine
 Validates output completeness before delivery
 """
 
-import logging
 import sys
-from typing import Dict, Any
+import logging
+from typing import Any
 
 # Configure logging
 logging.basicConfig(
@@ -20,14 +20,14 @@ logger = logging.getLogger(__name__)
 class ReflectorNode:
     """Reflector node that checks output completeness before delivery"""
 
-    def __init__(self):
-        self.validation_rules = {
+    def __init__(self) -> None:
+        self.validation_rules: dict[str, Any] = {
             "required_fields": ["query_intent", "results", "confidence_score"],
             "min_results": 1,
             "max_execution_time": 30.0,  # seconds
         }
 
-    def validate_output_completeness(self, output: Dict[str, Any]) -> bool:
+    def validate_output_completeness(self, output: dict[str, Any]) -> bool:
         """
         Validate that output is complete and well-formed
 
@@ -46,13 +46,15 @@ class ReflectorNode:
                 return False
 
         # Check minimum results
-        if len(output.get("results", [])) < self.validation_rules["min_results"]:
+        min_results = int(self.validation_rules["min_results"])
+        if len(output.get("results", [])) < min_results:
             logger.warning("Insufficient results in output")
             return False
 
         # Check execution time
-        execution_time = output.get("execution_time", 0)
-        if execution_time > self.validation_rules["max_execution_time"]:
+        execution_time = float(output.get("execution_time", 0))
+        max_execution_time = float(self.validation_rules["max_execution_time"])
+        if execution_time > max_execution_time:
             logger.warning("Execution time exceeds maximum allowed")
             return False
 
@@ -66,7 +68,7 @@ class ReflectorNode:
         return True
 
 
-def main():
+def main() -> None:
     """Main function for reflector node"""
     logger.info("Reflector node initialized")
 

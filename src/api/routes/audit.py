@@ -3,17 +3,24 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.auth.middleware import get_current_user
+from src.auth.middleware import TokenClaims, get_current_user
 
 router = APIRouter(prefix="/audit", tags=["audit"])
 
+JSONDict = dict[str, Any]
+JSONRows = list[JSONDict]
+
+
+def _recent_events(log: Any, limit: int) -> JSONRows:
+    return cast(JSONRows, log.get_recent_events(limit))
+
 
 @router.get("/verify")
-async def verify_audit_chain(token_payload: dict = Depends(get_current_user)) -> dict[str, Any]:
+async def verify_audit_chain(token_payload: TokenClaims = Depends(get_current_user)) -> JSONDict:
     """Verify audit chain integrity for an authenticated user."""
     from src.audit import get_audit_log, verify_chain
 
@@ -33,21 +40,21 @@ async def get_audit_events(
     action: Optional[str] = None,
     since: Optional[str] = None,
     limit: int = 100,
-    token_payload: dict = Depends(get_current_user),
-) -> dict[str, Any]:
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
     """Get audit events with admin access or own-event access for regular users."""
     from src.audit import get_audit_log
 
     role = token_payload.get("role", "")
     log = get_audit_log()
-    events = log.get_recent_events(limit)
+    events = _recent_events(log, limit)
 
     if role != "admin":
         username = str(token_payload.get("username") or "")
         subject = str(token_payload.get("sub") or "")
         persona = str(token_payload.get("persona") or role or "")
         allowed_users = {item for item in (username, subject, f"{persona}-{username}") if item}
-        filtered_events = []
+        filtered_events: JSONRows = []
         for event in events:
             event_user = str(event.get("user_id") or event.get("actor") or "")
             if event_user in allowed_users:
@@ -63,7 +70,7 @@ async def get_audit_events(
     return {"events": events[:limit]}
 
 
-def _audit_event_allowed_for_user(event: dict[str, Any], token_payload: dict[str, Any]) -> bool:
+def _audit_event_allowed_for_user(event: JSONDict, token_payload: TokenClaims) -> bool:
     role = str(token_payload.get("role") or "")
     if role == "admin":
         return True
@@ -80,14 +87,14 @@ def _audit_event_allowed_for_user(event: dict[str, Any], token_payload: dict[str
 
 
 def _normalise_audit_event_for_api(
-    event: dict[str, Any],
+    event: JSONDict,
     *,
     event_ref: str,
     previous_hash: str | None = None,
     next_hash: str | None = None,
-    token_payload: dict[str, Any] | None = None,
+    token_payload: TokenClaims | None = None,
     found: bool = True,
-) -> dict[str, Any]:
+) -> JSONDict:
     token_payload = token_payload or {}
     event_hash = str(event.get("hash") or event.get("hmac") or event_ref)
     user_id = str(
@@ -96,12 +103,13 @@ def _normalise_audit_event_for_api(
         or token_payload.get("sub")
         or "system"
     )
-    result = event.get("result") if isinstance(event.get("result"), dict) else {}
+    raw_result = event.get("result")
+    result = cast(JSONDict, raw_result) if isinstance(raw_result, dict) else {}
     evidence_count = 0
     for key in ("citations", "sql_results", "rows", "evidence"):
         value = result.get(key)
         if isinstance(value, list):
-            evidence_count = max(evidence_count, len(value))
+            evidence_count = max(evidence_count, len(cast(list[Any], value)))
 
     return {
         "id": str(event.get("event_id") or event_ref),
@@ -125,8 +133,8 @@ def _normalise_audit_event_for_api(
 @router.get("/event/{event_id}")
 async def get_audit_event(
     event_id: str,
-    token_payload: dict = Depends(get_current_user),
-) -> dict[str, Any]:
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
     """Return one audit event for the proof drawer without SPA fallback."""
     event_ref = event_id.strip()
     if not event_ref or len(event_ref) > 256:
@@ -135,7 +143,7 @@ async def get_audit_event(
     from src.audit import get_audit_log
 
     log = get_audit_log()
-    events = log.get_recent_events(1000)
+    events = _recent_events(log, 1000)
     for index, event in enumerate(events):
         identifiers = {
             str(event.get("hash") or ""),

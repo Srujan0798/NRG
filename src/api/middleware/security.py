@@ -7,12 +7,14 @@ import ipaddress
 import logging
 import json
 import os
+from collections.abc import Mapping
 from urllib.parse import parse_qsl
-from typing import Optional
+from typing import Any, Optional, cast
 
 from fastapi import HTTPException, Request, Header
 from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from src.api.answer_contract import blocked_answer_payload
 from src.audit.async_append import run_audit_append
@@ -21,6 +23,13 @@ from src.security.gateway.prompt_sanitiser import PromptSanitiser
 logger = logging.getLogger(__name__)
 
 _prompt_sanitiser: PromptSanitiser | None = None
+JSONDict = dict[str, Any]
+
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
 
 
 def _get_prompt_sanitiser() -> PromptSanitiser:
@@ -36,7 +45,7 @@ class BruteForceProtection:
     MAX_FAILURES = 5
     LOCKOUT_DURATION = 900  # 15 minutes
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._failure_count: dict[str, int] = {}
         self._lockout_until: dict[str, float] = {}
 
@@ -54,7 +63,7 @@ class BruteForceProtection:
 
         return False, ""
 
-    def record_failure(self, username: str):
+    def record_failure(self, username: str) -> None:
         """Record a failed login attempt."""
         normalized = username.lower()
         self._failure_count[normalized] = self._failure_count.get(normalized, 0) + 1
@@ -65,7 +74,7 @@ class BruteForceProtection:
         elif self._failure_count[normalized] >= 3:
             logger.warning(f"Login failed ({self._failure_count[normalized]}/5): {normalized}")
 
-    def record_success(self, username: str):
+    def record_success(self, username: str) -> None:
         """Clear failures on successful login."""
         normalized = username.lower()
         self._failure_count.pop(normalized, None)
@@ -94,15 +103,15 @@ class SecurityHeadersMiddleware:
         "Referrer-Policy": "strict-origin-when-cross-origin",
     }
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
-        async def send_with_security_headers(message):
+        async def send_with_security_headers(message: Message) -> None:
             if message["type"] == "http.response.start":
                 headers = MutableHeaders(scope=message)
                 for name, value in self.SECURITY_HEADERS.items():
@@ -115,10 +124,10 @@ class SecurityHeadersMiddleware:
 class IPAllowlist:
     """IP allowlisting for government tier."""
 
-    ALLOWED_IPS: set = set()
+    ALLOWED_IPS: set[str] = set()
 
     @classmethod
-    def add_allowed_ip(cls, ip: str):
+    def add_allowed_ip(cls, ip: str) -> None:
         """Add an IP to the allowlist."""
         try:
             ipaddress.ip_address(ip)
@@ -128,7 +137,7 @@ class IPAllowlist:
             logger.warning(f"Invalid IP address: {ip}")
 
     @classmethod
-    def remove_allowed_ip(cls, ip: str):
+    def remove_allowed_ip(cls, ip: str) -> None:
         """Remove an IP from the allowlist."""
         cls.ALLOWED_IPS.discard(ip)
 
@@ -158,7 +167,7 @@ class RequestSigner:
         expected = self.sign(payload, timestamp)
         return hmac.compare_digest(expected, signature)
 
-    def create_signed_payload(self, payload: dict) -> dict:
+    def create_signed_payload(self, payload: JSONDict) -> JSONDict:
         """Create payload with signature."""
         timestamp = int(time.time())
         payload_str = json.dumps(payload, sort_keys=True)
@@ -200,7 +209,7 @@ def verify_request_signature(
     request: Request,
     x_signature: Optional[str] = Header(None),
     x_timestamp: Optional[int] = Header(None),
-):
+) -> bool:
     """Dependency to verify request signature."""
     if not x_signature or not x_timestamp:
         raise HTTPException(status_code=401, detail="Missing request signature")
@@ -242,15 +251,15 @@ class PromptSanitiserMiddleware:
 
     TEXT_VALUE_MIN_LEN = 2
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
 
-        path = scope.get("path", "")
+        path = str(scope.get("path", ""))
         if self._should_skip_path(path):
             await self.app(scope, receive, send)
             return
@@ -272,9 +281,9 @@ class PromptSanitiserMiddleware:
                 try:
                     from src.audit import log_anomaly
 
-                    state = scope.get("state") or {}
-                    claims = state.get("auth_claims") or {}
-                    user_id = claims.get("sub", "anonymous")
+                    state = _as_json_dict(scope.get("state") or {})
+                    claims = _as_json_dict(state.get("auth_claims") or {})
+                    user_id = str(claims.get("sub", "anonymous"))
                     audit_event_id = await run_audit_append(
                         log_anomaly,
                         user_id=user_id,
@@ -304,8 +313,8 @@ class PromptSanitiserMiddleware:
                     path,
                 )
                 if path == "/query" and validation["reason"] != "RATE_LIMITED":
-                    state = scope.get("state") or {}
-                    claims = state.get("auth_claims") or {}
+                    state = _as_json_dict(scope.get("state") or {})
+                    claims = _as_json_dict(state.get("auth_claims") or {})
                     try:
                         user_tier = int(claims.get("tier", 1) or 1)
                     except (TypeError, ValueError):
@@ -346,7 +355,7 @@ class PromptSanitiserMiddleware:
                 return forwarded_for.split(",", 1)[0].strip()
         return request.client.host if request.client else None
 
-    def _identifier_for_scope(self, scope: dict, headers: Headers) -> Optional[str]:
+    def _identifier_for_scope(self, scope: Scope, headers: Headers) -> Optional[str]:
         """Return the client identifier for ASGI-scope middleware validation."""
         trust_proxy = os.environ.get("TRUST_PROXY_HEADERS", "").lower() in {
             "1",
@@ -372,7 +381,7 @@ class PromptSanitiserMiddleware:
     async def _extract_text_fields(self, request: Request) -> list[tuple[str, str]]:
         fields: list[tuple[str, str]] = []
         for key, value in dict(request.query_params).items():
-            if isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
+            if len(value) >= self.TEXT_VALUE_MIN_LEN:
                 fields.append((key, value))
         content_type = request.headers.get("content-type", "")
         if "application/json" in content_type:
@@ -389,17 +398,17 @@ class PromptSanitiserMiddleware:
         prefix: str = "body",
     ) -> list[tuple[str, str]]:
         fields: list[tuple[str, str]] = []
-        if isinstance(value, dict):
-            for key, item in value.items():
+        if isinstance(value, Mapping):
+            for key, item in cast(Mapping[str, Any], value).items():
                 fields.extend(self._extract_json_text_fields(item, f"{prefix}.{key}"))
         elif isinstance(value, list):
-            for index, item in enumerate(value):
+            for index, item in enumerate(cast(list[Any], value)):
                 fields.extend(self._extract_json_text_fields(item, f"{prefix}[{index}]"))
         elif isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
             fields.append((prefix, value))
         return fields
 
-    async def _read_body(self, receive) -> bytes:
+    async def _read_body(self, receive: Receive) -> bytes:
         chunks: list[bytes] = []
         more_body = True
         while more_body:
@@ -410,10 +419,10 @@ class PromptSanitiserMiddleware:
             more_body = bool(message.get("more_body", False))
         return b"".join(chunks)
 
-    def _replay_body(self, body: bytes):
+    def _replay_body(self, body: bytes) -> Receive:
         sent = False
 
-        async def receive():
+        async def receive() -> Message:
             nonlocal sent
             if sent:
                 return {"type": "http.request", "body": b"", "more_body": False}
@@ -424,14 +433,14 @@ class PromptSanitiserMiddleware:
 
     def _extract_text_fields_from_scope(
         self,
-        scope: dict,
+        scope: Scope,
         headers: Headers,
         body: bytes,
     ) -> list[tuple[str, str]]:
         fields: list[tuple[str, str]] = []
-        query_string = scope.get("query_string", b"")
+        query_string = cast(bytes, scope.get("query_string", b""))
         for key, value in parse_qsl(query_string.decode("latin-1"), keep_blank_values=False):
-            if isinstance(value, str) and len(value) >= self.TEXT_VALUE_MIN_LEN:
+            if len(value) >= self.TEXT_VALUE_MIN_LEN:
                 fields.append((key, value))
 
         content_type = headers.get("content-type", "")

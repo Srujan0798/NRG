@@ -10,14 +10,16 @@ import logging
 import os
 import uuid
 from datetime import datetime, timezone, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
 ACCESS_TOKEN_TTL_SECONDS = int(os.getenv("NRG_ACCESS_TOKEN_TTL", "900"))
 REFRESH_TOKEN_TTL_SECONDS = int(os.getenv("NRG_REFRESH_TOKEN_TTL", "604800"))
 
-ROTATED_TOKENS_LOG: list[dict] = []
+JSONDict = dict[str, Any]
+
+ROTATED_TOKENS_LOG: list[JSONDict] = []
 
 
 def log_token_rotation(
@@ -64,7 +66,7 @@ class TokenRotator:
         role: str,
         tier: int,
         researcher_id: Optional[str] = None,
-    ) -> dict:
+    ) -> JSONDict:
         """Create access token payload with short expiry."""
         now = datetime.now(timezone.utc)
         jti = str(uuid.uuid4())
@@ -93,7 +95,7 @@ class TokenRotator:
         role: str,
         tier: int,
         researcher_id: Optional[str] = None,
-    ) -> tuple[dict, str]:
+    ) -> tuple[JSONDict, str]:
         """Create refresh token payload with long expiry.
 
         Returns (payload, jti)
@@ -151,7 +153,7 @@ class TokenRotator:
         """Check if a token JTI has been revoked."""
         return jti in self._revoked_jtis
 
-    def get_ttl_config(self) -> dict:
+    def get_ttl_config(self) -> JSONDict:
         """Get token TTL configuration."""
         return {
             "access_token_ttl_seconds": self._access_ttl,
@@ -169,7 +171,7 @@ def get_token_rotator() -> TokenRotator:
     return _rotator_instance
 
 
-def rotate_tokens(user_id: str, old_refresh_jti: Optional[str]) -> dict:
+def rotate_tokens(user_id: str, old_refresh_jti: Optional[str]) -> JSONDict:
     """Convenience function to rotate tokens.
 
     Returns rotation metadata including new JTI.
@@ -186,6 +188,6 @@ def rotate_tokens(user_id: str, old_refresh_jti: Optional[str]) -> dict:
     }
 
 
-def get_rotation_logs() -> list[dict]:
+def get_rotation_logs() -> list[JSONDict]:
     """Get token rotation logs."""
     return list(ROTATED_TOKENS_LOG)

@@ -59,7 +59,8 @@ This document defines NRG's Service Level Objectives — the quantitative contra
 | **Qdrant** | 99.0% | 7.3 hours |
 
 ### Measurement Methodology
-- Health check interval: 60 seconds (`/health` endpoint)
+- Health check interval: 15 seconds (`/health` endpoint)
+- Metrics scrape interval: 60 seconds (`/metrics` endpoint)
 - Uptime tracked via `nrg_api_up` Prometheus gauge
 - Alerts fire if 3 consecutive health checks fail
 

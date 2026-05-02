@@ -23,6 +23,15 @@ security:
   jwtSecretMinBytes: 32
   jwtSecretPlaceholder: "vault://secret/data/nrg/production#jwt_secret-minimum-32-bytes"
 
+features:
+  knowledgeGraph: false
+  consentUi: true
+
+llm:
+  plannerProvider: "gemini"
+  synthProvider: "local_llama"
+  verifierProvider: "anthropic"
+
 serviceAccount:
   create: true
   annotations:
@@ -131,6 +140,8 @@ api:
 # ==============================================================================
 postgresql:
   enabled: true
+  host: "nrg-postgres"
+  database: "nrg_research"
 
   image:
     repository: postgres:16-alpine
@@ -182,6 +193,8 @@ postgresql:
 # ==============================================================================
 qdrant:
   enabled: true
+  host: "nrg-qdrant"
+  port: 6333
 
   image:
     repository: qdrant/qdrant:v1.12.0
@@ -223,6 +236,7 @@ qdrant:
 # ==============================================================================
 redis:
   enabled: true
+  host: "nrg-redis"
 
   image:
     repository: redis:7-alpine
@@ -375,6 +389,8 @@ grafana:
 # ==============================================================================
 prometheus:
   enabled: true
+  metricsScrapeInterval: "60s"
+  healthScrapeInterval: "15s"
 
   image:
     repository: prom/prometheus:v2.49.0

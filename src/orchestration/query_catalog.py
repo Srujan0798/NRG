@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 import re
-from typing import Literal
+from typing import Any, Literal, cast
 
 
 RouteDecision = Literal["text_to_sql", "rag", "text_to_sql+rag", "clarify", "blocked"]
@@ -35,7 +35,7 @@ class CatalogTable:
     pii_columns: tuple[str, ...] = ()
     min_tier: int = 1
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return _dataclass_to_jsonable(self)
 
 
@@ -46,7 +46,7 @@ class CatalogMatch:
     score: float
     matched_terms: tuple[str, ...]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return _dataclass_to_jsonable(self)
 
 
@@ -64,7 +64,7 @@ class QueryClassification:
     blocked_reason: str | None = None
     pii_terms: tuple[str, ...] = ()
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return _dataclass_to_jsonable(self)
 
 
@@ -506,6 +506,12 @@ def _default_assumptions(normalized_query: str) -> tuple[str, ...]:
     return tuple(assumptions)
 
 
-def _dataclass_to_jsonable(value) -> dict:
+CatalogDataclass = CatalogTable | CatalogMatch | QueryClassification
+
+
+def _dataclass_to_jsonable(value: CatalogDataclass) -> dict[str, Any]:
     data = asdict(value)
-    return {key: list(item) if isinstance(item, tuple) else item for key, item in data.items()}
+    return {
+        key: list(cast(tuple[Any, ...], item)) if isinstance(item, tuple) else item
+        for key, item in data.items()
+    }

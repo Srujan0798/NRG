@@ -24,15 +24,16 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
-import io
 import logging
 import os
-import re
 import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterator
+
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, PointStruct, VectorParams
 
 try:
     from tqdm import tqdm
@@ -42,9 +43,6 @@ except ImportError:
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams, Filter, FieldCondition, MatchValue
 
 DEFAULT_COLLECTION = os.getenv("QDRANT_COLLECTION", "nrg_research")
 DEFAULT_BATCH_SIZE = 100
@@ -81,7 +79,7 @@ class DocumentRecord:
     document_id: str
     title: str
     content: str
-    metadata: dict
+    metadata: dict[str, Any]
 
 
 def _parse_csv(source_path: Path) -> Iterator[DocumentRecord]:
@@ -390,6 +388,18 @@ def _parse_txt(source_path: Path) -> Iterator[DocumentRecord]:
         logger.warning(f"Failed to parse {source_path}: {e}")
 
 
+detect_source_type = _detect_source_type
+embed_chunks = _embed_chunks
+ensure_collection = _ensure_collection
+get_existing_hashes = _get_existing_hashes
+load_embedder = _load_embedder
+parse_csv = _parse_csv
+parse_pdf = _parse_pdf
+parse_txt = _parse_txt
+parse_txt_directory = _parse_txt_directory
+sha256_text = _sha256
+
+
 def main():
     parser = argparse.ArgumentParser(description="Ingest documents into NRG vector store")
     parser.add_argument("--source", required=True, type=Path, help="CSV file, PDF file, or directory of .txt files")
@@ -426,7 +436,7 @@ def main():
     elapsed = time.time() - start
 
     print(f"\n{'='*60}")
-    print(f"  INGESTION REPORT")
+    print("  INGESTION REPORT")
     print(f"{'='*60}")
     print(f"  Source:       {args.source}")
     print(f"  Collection:   {args.collection}")

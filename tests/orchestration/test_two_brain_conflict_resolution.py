@@ -43,10 +43,6 @@ behavior and will pass once Protocol #32 is implemented.
 Status: ⏸️ PENDING — Protocol #32 is post-handover (#29→#30→#31→#32)
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
-
-
 class TestTwoBrainConflictDetection:
     """Test conflict detection between model and DB paths."""
 
@@ -84,7 +80,6 @@ class TestTwoBrainConflictDetection:
         → Both agree IIT Bombay leads; no conflict
         → Model's qualitative framing wins for the answer
         """
-        analytical_query = "Which institute leads in hydrogen catalysis research?"
         model_answer = "IIT Bombay leads in hydrogen catalysis based on research depth and breadth."
         db_facts = {
             "IIT Bombay": {"papers": 12, "h_index_avg": 38},
@@ -188,8 +183,6 @@ class TestTwoBrainIntegration:
         5. Resolution strategy applied (DB wins for exact facts)
         6. Merged response surfaced with confidence metadata
         """
-        query = "What is IIT Bombay's exact publication count and how does its AI research compare?"
-
         model_result = {
             "publication_count": 850,
             "qualitative": "IIT Bombay leads in AI research breadth",

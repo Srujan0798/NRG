@@ -15,6 +15,8 @@ INDIAN_PII_PATTERN_CASES = [
     ("phone_91", "Call +91 9876543210"),
     ("email", "Contact researcher@iitb.ac.in"),
     ("email_academic_in", "Contact pi@iitgn.ac.in"),
+    ("bank_account", "Grant account Account 123456789012 is not query text"),
+    ("passport", "Passport Z1234567 belongs to the applicant"),
     ("gstin", "GSTIN 27ABCDE1234F1Z5"),
 ]
 
@@ -53,6 +55,14 @@ def test_email_detected():
 
 def test_academic_email_detected():
     assert "email_academic_in" in _types("Contact pi@iitgn.ac.in")
+
+
+def test_bank_account_detected():
+    assert "bank_account" in _types("Grant account Account 123456789012 is not query text")
+
+
+def test_passport_detected():
+    assert "passport" in _types("Passport Z1234567 belongs to the applicant")
 
 
 def test_gstin_detected():

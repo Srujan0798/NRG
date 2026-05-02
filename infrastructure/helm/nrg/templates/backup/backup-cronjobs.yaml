@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/component: backup
     nrg.gov.in/backup: mandatory
 spec:
-  schedule: {{ .Values.backup.postgres.schedule | default "0 2 * * *" }}
+  schedule: {{ .Values.backup.postgres.schedule | default "0 2 * * *" | quote }}
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -21,16 +21,16 @@ spec:
             app: nrg-postgres-backup
         spec:
           serviceAccountName: nrg-sa
-          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          {{- include "nrg.podSecurityContext" . | nindent 10 }}
           restartPolicy: OnFailure
           containers:
             - name: backup
               image: "{{ .Values.postgresql.image.repository | default "postgres:16-alpine" }}"
               imagePullPolicy: IfNotPresent
-              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              {{- include "nrg.containerSecurityContext" . | nindent 14 }}
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
 
@@ -109,7 +109,7 @@ metadata:
     app.kubernetes.io/component: backup
     nrg.gov.in/backup: mandatory
 spec:
-  schedule: {{ .Values.backup.qdrant.schedule | default "0 3 * * 0" }}  # Weekly Sunday at 3 AM IST
+  schedule: {{ .Values.backup.qdrant.schedule | default "0 3 * * 0" | quote }}  # Weekly Sunday at 3 AM IST
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 3
@@ -122,16 +122,16 @@ spec:
             app: nrg-qdrant-backup
         spec:
           serviceAccountName: nrg-sa
-          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          {{- include "nrg.podSecurityContext" . | nindent 10 }}
           restartPolicy: OnFailure
           containers:
             - name: backup
               image: "curlimages/curl:latest"
               imagePullPolicy: IfNotPresent
-              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              {{- include "nrg.containerSecurityContext" . | nindent 14 }}
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
 

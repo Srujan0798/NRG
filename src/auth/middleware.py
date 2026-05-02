@@ -3,22 +3,25 @@
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Mapping
 from http.cookies import SimpleCookie
 import os
 import threading
 import time
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from fastapi import Depends, Header, HTTPException, Request, status
 from starlette.datastructures import Headers
+from starlette.types import ASGIApp, Receive, Scope, Send
 
 from src.auth.jwt_handler import AuthError, JWTHandler
 from src.auth.rbac import RBACPolicyEngine, get_policy_engine
 
 ACCESS_COOKIE_NAME = "nrg_access_token"
 AUTH_CONTEXT_CACHE_TTL_SECONDS = float(os.getenv("NRG_AUTH_CONTEXT_CACHE_TTL_SECONDS", "5"))
+TokenClaims = dict[str, Any]
 _auth_context_cache_lock = threading.Lock()
-_auth_context_token_cache: dict[tuple[str, str | None], tuple[float, dict]] = {}
+_auth_context_token_cache: dict[tuple[str, str | None], tuple[float, TokenClaims]] = {}
 
 
 def _verified_token_cache_ttl() -> float:
@@ -28,7 +31,7 @@ def _verified_token_cache_ttl() -> float:
         return AUTH_CONTEXT_CACHE_TTL_SECONDS
 
 
-def _cache_expiry_for_claims(claims: dict, now: float, ttl: float) -> float:
+def _cache_expiry_for_claims(claims: TokenClaims, now: float, ttl: float) -> float:
     expires_at = now + ttl
     exp = claims.get("exp")
     if isinstance(exp, (int, float)):
@@ -41,7 +44,7 @@ def _verify_access_token_cached(
     token: str,
     *,
     client_ip: str | None,
-) -> dict:
+) -> TokenClaims:
     """Verify bearer tokens with a short TTL cache for hot authenticated APIs."""
     ttl = _verified_token_cache_ttl()
     if ttl <= 0:
@@ -57,7 +60,7 @@ def _verify_access_token_cached(
                 return dict(claims)
             _auth_context_token_cache.pop(cache_key, None)
 
-    claims = jwt_handler.verify_access_token(token, client_ip=client_ip)
+    claims = cast(TokenClaims, jwt_handler.verify_access_token(token, client_ip=client_ip))
     expires_at = _cache_expiry_for_claims(claims, now, ttl)
     if expires_at > now:
         with _auth_context_cache_lock:
@@ -71,20 +74,20 @@ def reset_auth_context_token_cache() -> None:
         _auth_context_token_cache.clear()
 
 
-def get_user_tier(claims: dict) -> int:
+def get_user_tier(claims: TokenClaims) -> int:
     """Extract tier from JWT claims, defaulting to most restrictive (tier 1)."""
     engine = get_policy_engine()
     policy = engine.resolve_tier_or_persona(claims)
     return policy.tier
 
 
-def get_user_policy(claims: dict) -> Any:
+def get_user_policy(claims: TokenClaims) -> Any:
     """Resolve the full RBACPolicy for the current user from JWT claims."""
     engine = get_policy_engine()
     return engine.resolve_tier_or_persona(claims)
 
 
-def filter_researcher_records(records: list[dict], claims: dict) -> dict:
+def filter_researcher_records(records: list[TokenClaims], claims: TokenClaims) -> TokenClaims:
     """
     Filter researcher records according to the user's RBAC policy.
 
@@ -103,14 +106,14 @@ def filter_researcher_records(records: list[dict], claims: dict) -> dict:
 
 
 def _full_researcher_output(
-    records: list[dict],
-    claims: dict,
+    records: list[TokenClaims],
+    claims: TokenClaims,
     policy: Any,
     engine: RBACPolicyEngine,
-) -> dict:
+) -> TokenClaims:
     """Tier 1 / full output — show own records fully, others with PII masked."""
     own_researcher_id = claims.get("researcher_id")
-    results = []
+    results: list[TokenClaims] = []
 
     for record in records:
         if record.get("researcher_id") == own_researcher_id:
@@ -128,14 +131,14 @@ def _full_researcher_output(
     }
 
 
-def _aggregated_researcher_output(records: list[dict], policy: Any) -> dict:
+def _aggregated_researcher_output(records: list[TokenClaims], policy: Any) -> TokenClaims:
     """Tier 2 / government — aggregated stats + sample records with masked PII."""
     state_counts = Counter(r.get("state", "unknown") for r in records)
     area_counts = Counter(
         r.get("research_area", "unknown") for r in records if r.get("research_area")
     )
 
-    sample_records = []
+    sample_records: list[TokenClaims] = []
     for record in records[:5]:
         masked = _mask_all_pii(record)
         sample_records.append({
@@ -158,7 +161,7 @@ def _aggregated_researcher_output(records: list[dict], policy: Any) -> dict:
     }
 
 
-def _anonymized_researcher_output(records: list[dict], claims: dict, policy: Any) -> dict:
+def _anonymized_researcher_output(records: list[TokenClaims], claims: TokenClaims, policy: Any) -> TokenClaims:
     """Tier 3 / industry — anonymized summaries, no individual records."""
     if not records:
         return {
@@ -188,7 +191,7 @@ def _anonymized_researcher_output(records: list[dict], claims: dict, policy: Any
     }
 
 
-def _public_researcher_record(record: dict) -> dict:
+def _public_researcher_record(record: TokenClaims) -> TokenClaims:
     """Public researcher record — no PII."""
     return {
         "researcher_id": record.get("researcher_id"),
@@ -207,7 +210,7 @@ def _public_researcher_record(record: dict) -> dict:
     }
 
 
-def _mask_all_pii(record: dict) -> dict:
+def _mask_all_pii(record: TokenClaims) -> TokenClaims:
     """Apply full PII mask to a record."""
     masked = dict(record)
     for key in list(masked.keys()):
@@ -223,12 +226,12 @@ def _mask_all_pii(record: dict) -> dict:
 class AuthContextMiddleware:
     """Attach decoded auth claims + resolved RBAC policy to request state."""
 
-    def __init__(self, app, jwt_handler: JWTHandler):
+    def __init__(self, app: ASGIApp, jwt_handler: JWTHandler) -> None:
         self.app = app
         self.jwt_handler = jwt_handler
         self._engine = get_policy_engine()
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -282,8 +285,9 @@ class AuthContextMiddleware:
         await self.app(scope, receive, send)
 
 
-def get_current_user(request: Request, authorization: str = Header(default=None)) -> dict:
-    claims: dict[str, Any] = getattr(request.state, "auth_claims", None) or {}
+def get_current_user(request: Request, authorization: str = Header(default=None)) -> TokenClaims:
+    raw_claims = getattr(request.state, "auth_claims", None) or {}
+    claims = dict(cast(Mapping[str, Any], raw_claims)) if isinstance(raw_claims, Mapping) else {}
     if claims:
         return claims
 
@@ -293,8 +297,8 @@ def get_current_user(request: Request, authorization: str = Header(default=None)
     raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
-def require_roles(*roles: str) -> Callable[[dict], dict]:
-    def dependency(claims: dict = Depends(get_current_user)) -> dict:
+def require_roles(*roles: str) -> Callable[[TokenClaims], TokenClaims]:
+    def dependency(claims: TokenClaims = Depends(get_current_user)) -> TokenClaims:
         if claims.get("role") not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -308,7 +312,7 @@ def require_roles(*roles: str) -> Callable[[dict], dict]:
 def require_policy_access(
     endpoint_pattern: str | None = None,
     table: str | None = None,
-) -> Callable[[dict], dict]:
+) -> Callable[[TokenClaims], TokenClaims]:
     """
     Dependency that enforces RBAC policy endpoint/table access.
 
@@ -321,7 +325,7 @@ def require_policy_access(
             ...
     """
 
-    def dependency(claims: dict = Depends(get_current_user)) -> dict:
+    def dependency(claims: TokenClaims = Depends(get_current_user)) -> TokenClaims:
         engine = get_policy_engine()
         policy = engine.resolve_tier_or_persona(claims)
 

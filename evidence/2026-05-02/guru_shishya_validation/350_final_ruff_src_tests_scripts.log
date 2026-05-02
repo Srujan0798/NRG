@@ -1,0 +1,1916 @@
+F401 [*] `src.skills.text_to_sql.skill.QueryContext` imported but unused
+  --> scripts/benchmark_dhairya_prompts.py:17:58
+   |
+15 | sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+16 |
+17 | from src.skills.text_to_sql.skill import TextToSQLSkill, QueryContext
+   |                                                          ^^^^^^^^^^^^
+18 | from src.skills.text_to_sql.schema_extractor import _load_schema_hints, _load_value_synonyms
+   |
+help: Remove unused import: `src.skills.text_to_sql.skill.QueryContext`
+
+F841 Local variable `result` is assigned to but never used
+  --> scripts/benchmark_queries.py:31:13
+   |
+29 |         for i in range(iterations):
+30 |             start = time.time()
+31 |             result = query_func()
+   |             ^^^^^^
+32 |             elapsed = time.time() - start
+33 |             times.append(elapsed)
+   |
+help: Remove assignment to unused variable `result`
+
+F401 [*] `typing.Any` imported but unused
+  --> scripts/build_embeddings.py:12:32
+   |
+10 | import os
+11 | import sys
+12 | from typing import List, Dict, Any
+   |                                ^^^
+13 |
+14 | sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+   |
+help: Remove unused import: `typing.Any`
+
+F401 [*] `dataclasses.asdict` imported but unused
+  --> scripts/chain_seal_attestation.py:32:36
+   |
+30 | import sys
+31 | import time
+32 | from dataclasses import dataclass, asdict
+   |                                    ^^^^^^
+33 | from datetime import datetime, UTC
+34 | from pathlib import Path
+   |
+help: Remove unused import: `dataclasses.asdict`
+
+F401 [*] `json` imported but unused
+ --> scripts/compliance/compile_final_docs.py:7:8
+  |
+6 | import argparse
+7 | import json
+  |        ^^^^
+8 | import os
+9 | import sys
+  |
+help: Remove unused import: `json`
+
+F401 [*] `os` imported but unused
+  --> scripts/compliance/compile_final_docs.py:8:8
+   |
+ 6 | import argparse
+ 7 | import json
+ 8 | import os
+   |        ^^
+ 9 | import sys
+10 | from datetime import datetime
+   |
+help: Remove unused import: `os`
+
+F401 [*] `json` imported but unused
+  --> scripts/compliance/run_dpdp_assessment.py:8:8
+   |
+ 7 | import argparse
+ 8 | import json
+   |        ^^^^
+ 9 | import sys
+10 | from typing import Dict, List
+   |
+help: Remove unused import: `json`
+
+F401 [*] `typing.List` imported but unused
+  --> scripts/compliance/run_dpdp_assessment.py:10:26
+   |
+ 8 | import json
+ 9 | import sys
+10 | from typing import Dict, List
+   |                          ^^^^
+11 | from src.security.pii.presidio_config import PresidioConfig
+12 | from src.security.pii.tokenizer import PIITokenizer
+   |
+help: Remove unused import: `typing.List`
+
+F841 Local variable `tokenizer` is assigned to but never used
+  --> scripts/compliance/run_dpdp_assessment.py:23:5
+   |
+21 |     # Initialize compliance components
+22 |     presidio = PresidioConfig()
+23 |     tokenizer = PIITokenizer()
+   |     ^^^^^^^^^
+24 |
+25 |     # Compliance assessment results
+   |
+help: Remove assignment to unused variable `tokenizer`
+
+F541 [*] f-string without any placeholders
+   --> scripts/deploy.py:151:30
+    |
+149 |         return True
+150 |
+151 |     headers = {"User-Agent": f"NRG-Deploy/1.0"}
+    |                              ^^^^^^^^^^^^^^^^^
+152 |
+153 |     endpoints = [
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/deploy.py:202:17
+    |
+200 |         return False
+201 |
+202 |     logger.info(f"  Waiting for services to stabilize...")
+    |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+203 |     result = subprocess.run(
+204 |         ["aws", "ecs", "wait", "services-stable", "--cluster", cluster,
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `json` imported but unused
+  --> scripts/deployment_gate.py:24:8
+   |
+23 | import argparse
+24 | import json
+   |        ^^^^
+25 | import os
+26 | import subprocess
+   |
+help: Remove unused import: `json`
+
+F841 [*] Local variable `e` is assigned to but never used
+  --> scripts/deployment_gate.py:70:41
+   |
+68 |         )
+69 |         return result.returncode, result.stdout, result.stderr
+70 |     except subprocess.TimeoutExpired as e:
+   |                                         ^
+71 |         return -1, "", f"Command timed out after {timeout}s"
+72 |     except FileNotFoundError:
+   |
+help: Remove assignment to unused variable `e`
+
+F841 [*] Local variable `e` is assigned to but never used
+   --> scripts/expand_database.py:157:29
+    |
+155 |             if added % 500 == 0:
+156 |                 print(f"  Added {added}/{to_add} publications...")
+157 |         except Exception as e:
+    |                             ^
+158 |             pass
+    |
+help: Remove assignment to unused variable `e`
+
+F841 Local variable `status` is assigned to but never used
+   --> scripts/expand_database.py:198:9
+    |
+196 |         start = f"{random.randint(2015, 2023)}-01-01"
+197 |         end = f"{random.randint(2018, 2026)}-12-31"
+198 |         status = random.choice(statuses)
+    |         ^^^^^^
+199 |
+200 |         try:
+    |
+help: Remove assignment to unused variable `status`
+
+E722 Do not use bare `except`
+   --> scripts/expand_database.py:233:9
+    |
+231 |             print(f"  {table}: {count:,}")
+232 |             total += count
+233 |         except:
+    |         ^^^^^^
+234 |             pass
+235 |     print(f"  TOTAL: {total:,} records")
+    |
+
+F401 [*] `os` imported but unused
+  --> scripts/export_training_data.py:18:8
+   |
+16 | import argparse
+17 | import logging
+18 | import os
+   |        ^^
+19 | import sys
+20 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F541 [*] f-string without any placeholders
+   --> scripts/export_training_data.py:116:15
+    |
+114 |         print(f"  Pairs export:{stats['pairs_exported']}")
+115 |         print()
+116 |         print(f"  By original grade:")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^
+117 |         for grade, count in stats.get("by_original_grade", {}).items():
+118 |             print(f"    {grade:10s}: {count}")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/export_training_data.py:121:15
+    |
+119 |         print()
+120 |         by_filter = stats.get("by_filter_grade", {})
+121 |         print(f"  After filter (gold+silver only):")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+122 |         print(f"    gold:  {by_filter.get('gold', 0)}")
+123 |         print(f"    silver:{by_filter.get('silver', 0)}")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/export_training_data.py:129:19
+    |
+127 |             print(f"  Output:       {stats['filename']}")
+128 |         else:
+129 |             print(f"  Output:       (dry run)")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+130 |         print("=" * 60)
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `src.orchestration.graph.NRGWorkflow` imported but unused
+   --> scripts/health_check.py:107:45
+    |
+105 |     """Check Python modules are importable."""
+106 |     try:
+107 |         from src.orchestration.graph import NRGWorkflow
+    |                                             ^^^^^^^^^^^
+108 |
+109 |         return {"status": "PASS", "modules": ["NRGWorkflow"]}
+    |
+help: Remove unused import: `src.orchestration.graph.NRGWorkflow`
+
+E402 Module level import not at top of file
+  --> scripts/ingest_qdrant.py:32:1
+   |
+30 |     sys.path.insert(0, str(PROJECT_ROOT))
+31 |
+32 | from qdrant_client import QdrantClient
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+33 | from qdrant_client.models import Distance, PointStruct, VectorParams
+34 | from src.skills.rag.embedder import Embedder
+   |
+
+E402 Module level import not at top of file
+  --> scripts/ingest_qdrant.py:33:1
+   |
+32 | from qdrant_client import QdrantClient
+33 | from qdrant_client.models import Distance, PointStruct, VectorParams
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+34 | from src.skills.rag.embedder import Embedder
+   |
+
+E402 Module level import not at top of file
+  --> scripts/ingest_qdrant.py:34:1
+   |
+32 | from qdrant_client import QdrantClient
+33 | from qdrant_client.models import Distance, PointStruct, VectorParams
+34 | from src.skills.rag.embedder import Embedder
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+35 |
+36 | _NRG_DATA_BASE = Path(
+   |
+
+F401 [*] `os` imported but unused
+  --> scripts/ingestion/batch_embedder.py:10:8
+   |
+ 8 | import logging
+ 9 | import sys
+10 | import os
+   |        ^^
+11 | import numpy as np
+12 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F401 [*] `typing.Iterator` imported but unused
+  --> scripts/ingestion/batch_embedder.py:13:26
+   |
+11 | import numpy as np
+12 | from pathlib import Path
+13 | from typing import List, Iterator
+   |                          ^^^^^^^^
+14 | import json
+   |
+help: Remove unused import: `typing.Iterator`
+
+F401 [*] `os` imported but unused
+  --> scripts/ingestion/chunk_pipeline.py:10:8
+   |
+ 8 | import logging
+ 9 | import sys
+10 | import os
+   |        ^^
+11 | import re
+12 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F401 [*] `typing.Iterator` imported but unused
+  --> scripts/ingestion/chunk_pipeline.py:13:26
+   |
+11 | import re
+12 | from pathlib import Path
+13 | from typing import List, Iterator
+   |                          ^^^^^^^^
+   |
+help: Remove unused import: `typing.Iterator`
+
+F401 [*] `json` imported but unused
+ --> scripts/ingestion/db_to_qdrant.py:6:8
+  |
+4 | """
+5 |
+6 | import json
+  |        ^^^^
+7 | import logging
+8 | import os
+  |
+help: Remove unused import: `json`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/ingestion/db_to_qdrant.py:10:21
+   |
+ 8 | import os
+ 9 | import sys
+10 | from pathlib import Path
+   |                     ^^^^
+11 |
+12 | from src.data.database import get_sqlite_connection
+   |
+help: Remove unused import: `pathlib.Path`
+
+E741 Ambiguous variable name: `l`
+  --> scripts/ingestion/db_to_qdrant.py:85:13
+   |
+83 |             "entity_type": "lab",
+84 |         }
+85 |         for l in rows
+   |             ^
+86 |     ]
+   |
+
+F401 [*] `typing.Optional` imported but unused
+ --> scripts/ingestion/embedding_config.py:7:31
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional
+  |                               ^^^^^^^^
+8 | import json
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `hashlib` imported but unused
+  --> scripts/ingestion/metadata_enricher.py:8:8
+   |
+ 7 | import logging
+ 8 | import hashlib
+   |        ^^^^^^^
+ 9 | from typing import Dict, Any, List, Optional
+10 | import json
+   |
+help: Remove unused import: `hashlib`
+
+F401 [*] `typing.List` imported but unused
+  --> scripts/ingestion/metadata_enricher.py:9:31
+   |
+ 7 | import logging
+ 8 | import hashlib
+ 9 | from typing import Dict, Any, List, Optional
+   |                               ^^^^
+10 | import json
+11 | from datetime import datetime
+   |
+help: Remove unused import
+
+F401 [*] `typing.Optional` imported but unused
+  --> scripts/ingestion/metadata_enricher.py:9:37
+   |
+ 7 | import logging
+ 8 | import hashlib
+ 9 | from typing import Dict, Any, List, Optional
+   |                                     ^^^^^^^^
+10 | import json
+11 | from datetime import datetime
+   |
+help: Remove unused import
+
+F401 [*] `os` imported but unused
+  --> scripts/ingestion/qdrant_loader.py:10:8
+   |
+ 8 | import logging
+ 9 | import sys
+10 | import os
+   |        ^^
+11 | import numpy as np
+12 | import json
+   |
+help: Remove unused import: `os`
+
+F401 [*] `typing.Dict` imported but unused
+  --> scripts/ingestion/text_preprocessor.py:8:26
+   |
+ 6 | import re
+ 7 | import logging
+ 8 | from typing import List, Dict, Any
+   |                          ^^^^
+ 9 |
+10 | logging.basicConfig(level=logging.INFO)
+   |
+help: Remove unused import
+
+F401 [*] `typing.Any` imported but unused
+  --> scripts/ingestion/text_preprocessor.py:8:32
+   |
+ 6 | import re
+ 7 | import logging
+ 8 | from typing import List, Dict, Any
+   |                                ^^^
+ 9 |
+10 | logging.basicConfig(level=logging.INFO)
+   |
+help: Remove unused import
+
+F401 [*] `json` imported but unused
+  --> scripts/ingestion/vector_quality.py:10:8
+   |
+ 8 | import numpy as np
+ 9 | from typing import List, Dict, Any, Tuple
+10 | import json
+   |        ^^^^
+11 |
+12 | logging.basicConfig(level=logging.INFO)
+   |
+help: Remove unused import: `json`
+
+F401 [*] `psycopg2.sql` imported but unused
+ --> scripts/init_db.py:7:22
+  |
+5 | from pathlib import Path
+6 | import psycopg2
+7 | from psycopg2 import sql
+  |                      ^^^
+8 |
+9 | sys.path.insert(0, str(Path(__file__).parent.parent))
+  |
+help: Remove unused import: `psycopg2.sql`
+
+F541 [*] f-string without any placeholders
+  --> scripts/init_db.py:24:11
+   |
+22 |         return False
+23 |
+24 |     print(f"Connecting to database...")
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+25 |     try:
+26 |         conn = psycopg2.connect(db_url)
+   |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+  --> scripts/init_qdrant.py:33:15
+   |
+31 |         print(f"Collection '{collection_name}' already exists")
+32 |         client.delete_collection(collection_name)
+33 |         print(f"Deleted existing collection")
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+34 |
+35 |     # Create collection
+   |
+help: Remove extraneous `f` prefix
+
+F401 [*] `sys` imported but unused
+ --> scripts/insert_test_data.py:7:8
+  |
+6 | import os
+7 | import sys
+  |        ^^^
+8 | import uuid
+9 | from datetime import date
+  |
+help: Remove unused import: `sys`
+
+F401 [*] `uuid` imported but unused
+  --> scripts/insert_test_data.py:8:8
+   |
+ 6 | import os
+ 7 | import sys
+ 8 | import uuid
+   |        ^^^^
+ 9 | from datetime import date
+10 | import psycopg2
+   |
+help: Remove unused import: `uuid`
+
+F401 [*] `datetime.date` imported but unused
+  --> scripts/insert_test_data.py:9:22
+   |
+ 7 | import sys
+ 8 | import uuid
+ 9 | from datetime import date
+   |                      ^^^^
+10 | import psycopg2
+11 | from qdrant_client import QdrantClient
+   |
+help: Remove unused import: `datetime.date`
+
+F401 [*] `sys` imported but unused
+ --> scripts/llm_cost_report.py:7:8
+  |
+6 | import sqlite3
+7 | import sys
+  |        ^^^
+8 | from datetime import datetime
+9 | from pathlib import Path
+  |
+help: Remove unused import: `sys`
+
+F841 Local variable `breakdown` is assigned to but never used
+  --> scripts/llm_cost_report.py:19:5
+   |
+17 | def get_cost_breakdown() -> dict:
+18 |     conn = sqlite3.connect(DB_PATH)
+19 |     breakdown = {}
+   |     ^^^^^^^^^
+20 |
+21 |     monthly_total = conn.execute(
+   |
+help: Remove assignment to unused variable `breakdown`
+
+F541 [*] f-string without any placeholders
+  --> scripts/llm_cost_report.py:94:9
+   |
+92 |         f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+93 |         f"**Status:** {status}",
+94 |         f"",
+   |         ^^^
+95 |         f"## Budget Overview",
+96 |         f"",
+   |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+  --> scripts/llm_cost_report.py:95:9
+   |
+93 |         f"**Status:** {status}",
+94 |         f"",
+95 |         f"## Budget Overview",
+   |         ^^^^^^^^^^^^^^^^^^^^^
+96 |         f"",
+97 |         f"| Metric | Value |",
+   |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+  --> scripts/llm_cost_report.py:96:9
+   |
+94 |         f"",
+95 |         f"## Budget Overview",
+96 |         f"",
+   |         ^^^
+97 |         f"| Metric | Value |",
+98 |         f"|--------|-------|",
+   |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+  --> scripts/llm_cost_report.py:97:9
+   |
+95 |         f"## Budget Overview",
+96 |         f"",
+97 |         f"| Metric | Value |",
+   |         ^^^^^^^^^^^^^^^^^^^^^
+98 |         f"|--------|-------|",
+99 |         f"| Monthly Budget | {format_inr(monthly_budget)} |",
+   |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:98:9
+    |
+ 96 |         f"",
+ 97 |         f"| Metric | Value |",
+ 98 |         f"|--------|-------|",
+    |         ^^^^^^^^^^^^^^^^^^^^^
+ 99 |         f"| Monthly Budget | {format_inr(monthly_budget)} |",
+100 |         f"| Spent This Month | {format_inr(spent)} ({pct:.1f}%) |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:104:9
+    |
+102 |         f"| Projected Month-End | {format_inr(projected)} ({projected / monthly_budget * 100:.1f}%) |",
+103 |         f"| Alerts | {status} |",
+104 |         f"",
+    |         ^^^
+105 |     ]
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:109:13
+    |
+107 |     if breakdown["persona"]:
+108 |         lines += [
+109 |             f"## By Persona",
+    |             ^^^^^^^^^^^^^^^^
+110 |             f"",
+111 |             f"| Tier | Queries | Cost | Avg/Query | % of Budget |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:110:13
+    |
+108 |         lines += [
+109 |             f"## By Persona",
+110 |             f"",
+    |             ^^^
+111 |             f"| Tier | Queries | Cost | Avg/Query | % of Budget |",
+112 |             f"|------|---------|------|-----------|-------------|",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:111:13
+    |
+109 |             f"## By Persona",
+110 |             f"",
+111 |             f"| Tier | Queries | Cost | Avg/Query | % of Budget |",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+112 |             f"|------|---------|------|-----------|-------------|",
+113 |         ]
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:112:13
+    |
+110 |             f"",
+111 |             f"| Tier | Queries | Cost | Avg/Query | % of Budget |",
+112 |             f"|------|---------|------|-----------|-------------|",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+113 |         ]
+114 |         for persona, data in breakdown["persona"].items():
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:121:13
+    |
+119 |     if breakdown["provider"]:
+120 |         lines += [
+121 |             f"## By Provider",
+    |             ^^^^^^^^^^^^^^^^^
+122 |             f"",
+123 |             f"| Provider | Queries | Cost | Avg/Query |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:122:13
+    |
+120 |         lines += [
+121 |             f"## By Provider",
+122 |             f"",
+    |             ^^^
+123 |             f"| Provider | Queries | Cost | Avg/Query |",
+124 |             f"|----------|---------|------|-----------|",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:123:13
+    |
+121 |             f"## By Provider",
+122 |             f"",
+123 |             f"| Provider | Queries | Cost | Avg/Query |",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+124 |             f"|----------|---------|------|-----------|",
+125 |         ]
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:124:13
+    |
+122 |             f"",
+123 |             f"| Provider | Queries | Cost | Avg/Query |",
+124 |             f"|----------|---------|------|-----------|",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+125 |         ]
+126 |         for provider, data in breakdown["provider"].items():
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:132:13
+    |
+130 |     if breakdown["complexity"]:
+131 |         lines += [
+132 |             f"## By Complexity",
+    |             ^^^^^^^^^^^^^^^^^^^
+133 |             f"",
+134 |             f"| Level | Queries | Cost | Avg |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:133:13
+    |
+131 |         lines += [
+132 |             f"## By Complexity",
+133 |             f"",
+    |             ^^^
+134 |             f"| Level | Queries | Cost | Avg |",
+135 |             f"|-------|---------|------|-----|",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:134:13
+    |
+132 |             f"## By Complexity",
+133 |             f"",
+134 |             f"| Level | Queries | Cost | Avg |",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+135 |             f"|-------|---------|------|-----|",
+136 |         ]
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:135:13
+    |
+133 |             f"",
+134 |             f"| Level | Queries | Cost | Avg |",
+135 |             f"|-------|---------|------|-----|",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+136 |         ]
+137 |         for complexity, data in breakdown["complexity"].items():
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:144:13
+    |
+142 |     if status != "HEALTHY":
+143 |         lines += [
+144 |             f"## Action Required",
+    |             ^^^^^^^^^^^^^^^^^^^^^
+145 |             f"",
+146 |             f"- **{status}**: Monthly spend has reached {pct:.1f}% of budget",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:145:13
+    |
+143 |         lines += [
+144 |             f"## Action Required",
+145 |             f"",
+    |             ^^^
+146 |             f"- **{status}**: Monthly spend has reached {pct:.1f}% of budget",
+147 |             f"- Consider optimizing routing to lower-cost providers",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:147:13
+    |
+145 |             f"",
+146 |             f"- **{status}**: Monthly spend has reached {pct:.1f}% of budget",
+147 |             f"- Consider optimizing routing to lower-cost providers",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+148 |             f"- Review critical-complexity query volume",
+149 |             f"",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:148:13
+    |
+146 |             f"- **{status}**: Monthly spend has reached {pct:.1f}% of budget",
+147 |             f"- Consider optimizing routing to lower-cost providers",
+148 |             f"- Review critical-complexity query volume",
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+149 |             f"",
+150 |         ]
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/llm_cost_report.py:149:13
+    |
+147 |             f"- Consider optimizing routing to lower-cost providers",
+148 |             f"- Review critical-complexity query volume",
+149 |             f"",
+    |             ^^^
+150 |         ]
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `json` imported but unused
+  --> scripts/load_test.py:14:8
+   |
+12 | import argparse
+13 | import asyncio
+14 | import json
+   |        ^^^^
+15 | import sys
+16 | import time
+   |
+help: Remove unused import: `json`
+
+F401 [*] `typing.Optional` imported but unused
+  --> scripts/load_test.py:19:20
+   |
+17 | from dataclasses import dataclass, field
+18 | from pathlib import Path
+19 | from typing import Optional
+   |                    ^^^^^^^^
+20 |
+21 | import aiohttp
+   |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `requests` imported but unused
+  --> scripts/load_test.py:22:8
+   |
+21 | import aiohttp
+22 | import requests
+   |        ^^^^^^^^
+23 |
+24 | # Add project root to path
+   |
+help: Remove unused import: `requests`
+
+E402 Module level import not at top of file
+  --> scripts/load_test.py:28:1
+   |
+26 | sys.path.insert(0, str(PROJECT_ROOT))
+27 |
+28 | from src.auth.jwt_handler import JWTHandler
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+F401 [*] `time` imported but unused
+  --> scripts/migrate_data_to_postgresql.py:36:8
+   |
+34 | import json
+35 | import logging
+36 | import time
+   |        ^^^^
+37 | from datetime import datetime, timezone
+38 | from pathlib import Path
+   |
+help: Remove unused import: `time`
+
+F401 [*] `typing.Generator` imported but unused
+  --> scripts/migrate_data_to_postgresql.py:39:20
+   |
+37 | from datetime import datetime, timezone
+38 | from pathlib import Path
+39 | from typing import Generator
+   |                    ^^^^^^^^^
+40 |
+41 | PROJECT_ROOT = Path(__file__).resolve().parents[1]
+   |
+help: Remove unused import: `typing.Generator`
+
+F841 Local variable `manifest` is assigned to but never used
+   --> scripts/migrate_data_to_postgresql.py:235:9
+    |
+233 |             manifest = json.load(f)
+234 |     else:
+235 |         manifest = {"tables": {name.stem: {} for name in json_dir.glob("*.json")}}
+    |         ^^^^^^^^
+236 |
+237 |     sqlite_conn = sqlite3.connect(sqlite_path)
+    |
+help: Remove assignment to unused variable `manifest`
+
+F541 [*] f-string without any placeholders
+   --> scripts/migrate_data_to_postgresql.py:300:29
+    |
+298 |             row_count = get_sqlite_row_count(sqlite_conn, table)
+299 |             if row_count == 0:
+300 |                 logger.info(f"    Empty, skipping")
+    |                             ^^^^^^^^^^^^^^^^^^^^^^
+301 |                 continue
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/migrate_data_to_postgresql.py:305:32
+    |
+303 |             pg_cols = get_pg_columns(pg_conn, table)
+304 |             if not pg_cols:
+305 |                 logger.warning(f"    Table not in PostgreSQL, skipping")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+306 |                 continue
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/migrate_data_to_postgresql.py:314:32
+    |
+312 |             common_cols = [c for c in sqlite_col_names if c in pg_col_names]
+313 |             if not common_cols:
+314 |                 logger.warning(f"    No common columns, skipping")
+    |                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+315 |                 continue
+    |
+help: Remove extraneous `f` prefix
+
+F841 [*] Local variable `e` is assigned to but never used
+   --> scripts/migrate_sqlite_to_pg.py:137:37
+    |
+135 |                     pg_conn.commit()
+136 |                     rows_inserted += 1
+137 |                 except Exception as e:
+    |                                     ^
+138 |                     pg_conn.rollback()
+139 |                     for i, row in enumerate([batch]):
+    |
+help: Remove assignment to unused variable `e`
+
+F401 [*] `psycopg2` imported but unused
+   --> scripts/migrate_sqlite_to_pg.py:403:16
+    |
+402 |     try:
+403 |         import psycopg2
+    |                ^^^^^^^^
+404 |         pg_conn = _get_pg_conn(pg_url)
+405 |         logger.info("PostgreSQL connected OK")
+    |
+help: Remove unused import: `psycopg2`
+
+F401 [*] `typing.Dict` imported but unused
+ --> scripts/migration/connection_manager.py:7:20
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional, ContextManager
+  |                    ^^^^
+8 | from contextlib import contextmanager
+  |
+help: Remove unused import
+
+F401 [*] `typing.Any` imported but unused
+ --> scripts/migration/connection_manager.py:7:26
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional, ContextManager
+  |                          ^^^
+8 | from contextlib import contextmanager
+  |
+help: Remove unused import
+
+F401 [*] `typing.Optional` imported but unused
+ --> scripts/migration/connection_manager.py:7:31
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional, ContextManager
+  |                               ^^^^^^^^
+8 | from contextlib import contextmanager
+  |
+help: Remove unused import
+
+F401 [*] `typing.ContextManager` imported but unused
+ --> scripts/migration/connection_manager.py:7:41
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional, ContextManager
+  |                                         ^^^^^^^^^^^^^^
+8 | from contextlib import contextmanager
+  |
+help: Remove unused import
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/migration/data_validator.py:9:21
+   |
+ 7 | import hashlib
+ 8 | import logging
+ 9 | from pathlib import Path
+   |                     ^^^^
+10 | from typing import Dict, List, Any, Optional
+11 | import json
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `typing.List` imported but unused
+  --> scripts/migration/data_validator.py:10:26
+   |
+ 8 | import logging
+ 9 | from pathlib import Path
+10 | from typing import Dict, List, Any, Optional
+   |                          ^^^^
+11 | import json
+   |
+help: Remove unused import
+
+F401 [*] `typing.Optional` imported but unused
+  --> scripts/migration/data_validator.py:10:37
+   |
+ 8 | import logging
+ 9 | from pathlib import Path
+10 | from typing import Dict, List, Any, Optional
+   |                                     ^^^^^^^^
+11 | import json
+   |
+help: Remove unused import
+
+F401 [*] `typing.Optional` imported but unused
+ --> scripts/migration/error_handler.py:7:31
+  |
+6 | import logging
+7 | from typing import Dict, Any, Optional, Callable
+  |                               ^^^^^^^^
+8 | import traceback
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `os` imported but unused
+  --> scripts/migration/etl_pipeline.py:9:8
+   |
+ 7 | import logging
+ 8 | import sys
+ 9 | import os
+   |        ^^
+10 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/migration/etl_pipeline.py:10:21
+   |
+ 8 | import sys
+ 9 | import os
+10 | from pathlib import Path
+   |                     ^^^^
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `os` imported but unused
+  --> scripts/migration/index_builder.py:9:8
+   |
+ 7 | import logging
+ 8 | import sys
+ 9 | import os
+   |        ^^
+10 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/migration/index_builder.py:10:21
+   |
+ 8 | import sys
+ 9 | import os
+10 | from pathlib import Path
+   |                     ^^^^
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `json` imported but unused
+ --> scripts/migration/migration_utils.py:8:8
+  |
+6 | import logging
+7 | from typing import Dict, Any, List, Iterator
+8 | import json
+  |        ^^^^
+9 | from datetime import datetime
+  |
+help: Remove unused import: `json`
+
+F821 Undefined name `Optional`
+  --> scripts/migration/migration_utils.py:43:37
+   |
+42 |     @staticmethod
+43 |     def validate_year(year: Any) -> Optional[int]:
+   |                                     ^^^^^^^^
+44 |         """Validate and convert year to integer"""
+45 |         try:
+   |
+
+F401 [*] `typing.Optional` imported but unused
+ --> scripts/migration/performance_monitor.py:8:31
+  |
+6 | import logging
+7 | import time
+8 | from typing import Dict, Any, Optional
+  |                               ^^^^^^^^
+9 | from contextlib import contextmanager
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `os` imported but unused
+  --> scripts/migration/validate_migration.py:9:8
+   |
+ 7 | import logging
+ 8 | import sys
+ 9 | import os
+   |        ^^
+10 | from pathlib import Path
+   |
+help: Remove unused import: `os`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/migration/validate_migration.py:10:21
+   |
+ 8 | import sys
+ 9 | import os
+10 | from pathlib import Path
+   |                     ^^^^
+   |
+help: Remove unused import: `pathlib.Path`
+
+E402 Module level import not at top of file
+  --> scripts/qdrant_shard_config.py:32:1
+   |
+30 |     sys.path.insert(0, str(PROJECT_ROOT))
+31 |
+32 | import logging
+   | ^^^^^^^^^^^^^^
+33 | from typing import Literal
+   |
+
+E402 Module level import not at top of file
+  --> scripts/qdrant_shard_config.py:33:1
+   |
+32 | import logging
+33 | from typing import Literal
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+34 |
+35 | logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+   |
+
+F401 [*] `typing.Literal` imported but unused
+  --> scripts/qdrant_shard_config.py:33:20
+   |
+32 | import logging
+33 | from typing import Literal
+   |                    ^^^^^^^
+34 |
+35 | logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+   |
+help: Remove unused import: `typing.Literal`
+
+F401 [*] `qdrant_client.QdrantClient` imported but unused
+  --> scripts/qdrant_shard_config.py:69:31
+   |
+67 | ) -> dict:
+68 |     """Create a production-ready Qdrant collection with sharding and HNSW tuning."""
+69 |     from qdrant_client import QdrantClient
+   |                               ^^^^^^^^^^^^
+70 |     from qdrant_client.models import (
+71 |         VectorParams,
+   |
+help: Remove unused import: `qdrant_client.QdrantClient`
+
+F401 [*] `time` imported but unused
+  --> scripts/quality_bar_scorecard.py:24:8
+   |
+22 | import subprocess
+23 | import sys
+24 | import time
+   |        ^^^^
+25 | from datetime import datetime, UTC
+26 | from pathlib import Path
+   |
+help: Remove unused import: `time`
+
+F821 Undefined name `_error_result`
+   --> scripts/quality_bar_scorecard.py:189:16
+    |
+187 |         output = result.stdout + result.stderr
+188 |     except subprocess.TimeoutExpired:
+189 |         return _error_result(f"Timeout after 300s for {test_path}")
+    |                ^^^^^^^^^^^^^
+190 |
+191 |     parsed = _parse_pytest_output(output)
+    |
+
+F541 [*] f-string without any placeholders
+   --> scripts/quality_bar_scorecard.py:703:9
+    |
+701 |         "",
+702 |         "> **Rule**: A release CANNOT ship unless the scorecard reports **6/6**. Any score drop flags a P0 incident.",
+703 |         f"> Scorecard JSON: `scripts/quality_bar_scorecard.json`",
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+704 |     ]
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `hashlib` imported but unused
+  --> scripts/red_team_live_replay.py:17:8
+   |
+15 | import argparse
+16 | import base64
+17 | import hashlib
+   |        ^^^^^^^
+18 | import json
+19 | import os
+   |
+help: Remove unused import: `hashlib`
+
+F541 [*] f-string without any placeholders
+   --> scripts/red_team_live_replay.py:530:34
+    |
+528 |                 if r.unexpected:
+529 |                     lines.append(f"- **{r.payload_id}** ({r.category}): HTTP {r.status_code}")
+530 |                     lines.append(f"  ```")
+    |                                  ^^^^^^^^
+531 |                     lines.append(f"  {r.response_snippet[:300]}")
+532 |                     lines.append(f"  ```")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/red_team_live_replay.py:532:34
+    |
+530 |                     lines.append(f"  ```")
+531 |                     lines.append(f"  {r.response_snippet[:300]}")
+532 |                     lines.append(f"  ```")
+    |                                  ^^^^^^^^
+533 |             lines.append("")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/red_team_live_replay.py:536:22
+    |
+535 |         lines.append("## Full JSON Evidence")
+536 |         lines.append(f"```json")
+    |                      ^^^^^^^^^^
+537 |         lines.append(json.dumps([r.to_dict() for r in self.results], indent=2, default=str))
+538 |         lines.append(f"```")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/red_team_live_replay.py:538:22
+    |
+536 |         lines.append(f"```json")
+537 |         lines.append(json.dumps([r.to_dict() for r in self.results], indent=2, default=str))
+538 |         lines.append(f"```")
+    |                      ^^^^^^
+539 |
+540 |         output_path.write_text("\n".join(lines), encoding="utf-8")
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `os` imported but unused
+  --> scripts/run_acceptance_verification.py:14:8
+   |
+12 | """
+13 |
+14 | import os
+   |        ^^
+15 | import sys
+16 | import time
+   |
+help: Remove unused import: `os`
+
+F401 [*] `time` imported but unused
+  --> scripts/run_acceptance_verification.py:16:8
+   |
+14 | import os
+15 | import sys
+16 | import time
+   |        ^^^^
+17 | from pathlib import Path
+   |
+help: Remove unused import: `time`
+
+F401 [*] `playwright.sync_api.expect` imported but unused
+  --> scripts/run_acceptance_verification.py:19:50
+   |
+17 | from pathlib import Path
+18 |
+19 | from playwright.sync_api import sync_playwright, expect
+   |                                                  ^^^^^^
+20 |
+21 | BASE_URL = "http://localhost:3000"
+   |
+help: Remove unused import: `playwright.sync_api.expect`
+
+E741 Ambiguous variable name: `l`
+   --> scripts/run_acceptance_verification.py:223:29
+    |
+221 |         try:
+222 |             logs = page.evaluate("() => { return window.__nrg_console_logs || []; }")
+223 |             errors = [l for l in logs if l.get("level") == "error"]
+    |                             ^
+224 |             if errors:
+225 |                 log("CONSOLE", "WARN", f"{len(errors)} console errors")
+    |
+
+F401 [*] `sys` imported but unused
+  --> scripts/run_final_external_gates.py:18:8
+   |
+16 | import shutil
+17 | import subprocess
+18 | import sys
+   |        ^^^
+19 | import time
+20 | from pathlib import Path
+   |
+help: Remove unused import: `sys`
+
+F401 [*] `os` imported but unused
+  --> scripts/run_load_test.py:29:8
+   |
+27 | import csv
+28 | import json
+29 | import os
+   |        ^^
+30 | import subprocess
+31 | import sys
+   |
+help: Remove unused import: `os`
+
+F401 [*] `time` imported but unused
+  --> scripts/run_load_test.py:32:8
+   |
+30 | import subprocess
+31 | import sys
+32 | import time
+   |        ^^^^
+33 | from datetime import datetime, UTC
+34 | from pathlib import Path
+   |
+help: Remove unused import: `time`
+
+F401 [*] `typing.Optional` imported but unused
+  --> scripts/run_load_test.py:35:20
+   |
+33 | from datetime import datetime, UTC
+34 | from pathlib import Path
+35 | from typing import Optional
+   |                    ^^^^^^^^
+36 |
+37 | ROOT = Path(__file__).resolve().parents[1]
+   |
+help: Remove unused import: `typing.Optional`
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:157:11
+    |
+155 |     success_rate = (req_count - failures) / req_count if req_count > 0 else 0
+156 |
+157 |     print(f"  /api/query/stream stats:")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+158 |     print(f"    Requests:    {req_count}")
+159 |     print(f"    Failures:    {failures}")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:198:11
+    |
+196 | ) -> Path:
+197 |     """Write load test evidence to evidence/02_load_report.md."""
+198 |     print(f"\n[5/5] Writing evidence...")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+199 |
+200 |     passed, metrics = validation
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:221:9
+    |
+219 |         "## Constraints",
+220 |         "",
+221 |         f"| Constraint | Target | Observed | Status |",
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+222 |         f"|-------------|--------|----------|--------|",
+223 |         f"| P99 latency | <{P99_THRESHOLD_MS}ms | {p99_ms:.0f}ms | {'✅' if metrics.get('p99_pass') else '❌'} |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:222:9
+    |
+220 | …     "",
+221 | …     f"| Constraint | Target | Observed | Status |",
+222 | …     f"|-------------|--------|----------|--------|",
+    |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+223 | …     f"| P99 latency | <{P99_THRESHOLD_MS}ms | {p99_ms:.0f}ms | {'✅' if metrics.get('p99_pass') else '❌'} |",
+224 | …     f"| Success rate | >{SUCCESS_RATE_MIN*100:.0f}% | {success_rate*100:.1f}% | {'✅' if metrics.get('success_pass') else '❌'} |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:229:9
+    |
+227 |         "## Latency Distribution",
+228 |         "",
+229 |         f"| Percentile | Latency (ms) |",
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+230 |         f"|------------|---------------|",
+231 |         f"| P50 | {p50_ms:.0f} |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:230:9
+    |
+228 |         "",
+229 |         f"| Percentile | Latency (ms) |",
+230 |         f"|------------|---------------|",
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+231 |         f"| P50 | {p50_ms:.0f} |",
+232 |         f"| P95 | {p95_ms:.0f} |",
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:296:15
+    |
+294 |     if not args.skip_health and not check_api_health(args.host):
+295 |         print("\n❌ API health check failed. Ensure API is running:")
+296 |         print(f"   kubectl port-forward svc/api 8000:8000 &")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+297 |         print(f"   python scripts/run_load_test.py --host http://localhost:8000")
+298 |         sys.exit(1)
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/run_load_test.py:297:15
+    |
+295 |         print("\n❌ API health check failed. Ensure API is running:")
+296 |         print(f"   kubectl port-forward svc/api 8000:8000 &")
+297 |         print(f"   python scripts/run_load_test.py --host http://localhost:8000")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+298 |         sys.exit(1)
+    |
+help: Remove extraneous `f` prefix
+
+F841 Local variable `in_columns` is assigned to but never used
+  --> scripts/schema_sync.py:60:17
+   |
+58 | …     if line_stripped.startswith(")"):
+59 | …         current_table = None
+60 | …         in_columns = False
+   |           ^^^^^^^^^^
+61 | …     elif line_stripped.startswith("CREATE INDEX") or line_stripped.startswith("CREATE SEQUENCE") or line_stripped.startswith("ALTER …
+62 | …         continue
+   |
+help: Remove assignment to unused variable `in_columns`
+
+F541 [*] f-string without any placeholders
+   --> scripts/schema_sync.py:173:18
+    |
+171 |     lines = []
+172 |     lines.append(f"\n{'='*60}")
+173 |     lines.append(f"SCHEMA PARITY CHECK")
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+174 |     lines.append(f"{'='*60}")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/schema_sync.py:199:18
+    |
+198 |     lines.append(f"\n{'='*60}")
+199 |     lines.append(f"SCHEMA IN SYNC ✓")
+    |                  ^^^^^^^^^^^^^^^^^^^
+200 |     lines.append(f"{'='*60}")
+201 |     return True, "\n".join(lines)
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/schema_sync.py:262:18
+    |
+260 |     lines = []
+261 |     lines.append(f"\n{'='*60}")
+262 |     lines.append(f"SCHEMA DIFF")
+    |                  ^^^^^^^^^^^^^^
+263 |     lines.append(f"{'='*60}")
+264 |     lines.append(f"\ndb_struct.sql: {len(auth_tables)} tables")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/schema_sync.py:332:11
+    |
+330 |         return 0
+331 |
+332 |     print(f"NRG Schema Sync CLI — Protocol #21")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+333 |     print(f"Database: {args.db_url}")
+334 |     print()
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/schema_sync.py:375:19
+    |
+374 |         if missing:
+375 |             print(f"\nMISSING DHAIRYA TABLES:")
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+376 |             for t in sorted(missing):
+377 |                 print(f"  ! {t}")
+    |
+help: Remove extraneous `f` prefix
+
+F841 Local variable `institution_ids` is assigned to but never used
+   --> scripts/seed_database.py:157:5
+    |
+156 |     cursor.execute("SELECT institution_id FROM institutions")
+157 |     institution_ids = [row[0] for row in cursor.fetchall()]
+    |     ^^^^^^^^^^^^^^^
+158 |
+159 |     seeded = 0
+    |
+help: Remove assignment to unused variable `institution_ids`
+
+F841 Local variable `status` is assigned to but never used
+   --> scripts/seed_database.py:266:9
+    |
+264 |         start_date = f"{random.randint(2018, 2023)}-01-01"
+265 |         end_date = f"{random.randint(2020, 2026)}-12-31"
+266 |         status = random.choice(statuses)
+    |         ^^^^^^
+267 |
+268 |         try:
+    |
+help: Remove assignment to unused variable `status`
+
+E722 Do not use bare `except`
+   --> scripts/seed_database.py:311:9
+    |
+309 |             if count > 0:
+310 |                 print(f"  {table}: {count:,}")
+311 |         except:
+    |         ^^^^^^
+312 |             pass
+    |
+
+F401 [*] `datetime.date` imported but unused
+  --> scripts/seed_production_data.py:15:22
+   |
+13 | import random
+14 | from faker import Faker
+15 | from datetime import date, timedelta
+   |                      ^^^^
+16 |
+17 | fake = Faker('en_IN')  # Indian locale
+   |
+help: Remove unused import
+
+F401 [*] `datetime.timedelta` imported but unused
+  --> scripts/seed_production_data.py:15:28
+   |
+13 | import random
+14 | from faker import Faker
+15 | from datetime import date, timedelta
+   |                            ^^^^^^^^^
+16 |
+17 | fake = Faker('en_IN')  # Indian locale
+   |
+help: Remove unused import
+
+F541 [*] f-string without any placeholders
+   --> scripts/seed_production_data.py:124:11
+    |
+122 |     publications = generate_publications(researchers, 2000)
+123 |
+124 |     print(f"Generated:")
+    |           ^^^^^^^^^^^^^
+125 |     print(f"  {len(researchers)} researchers across {len(INSTITUTIONS)} institutions")
+126 |     print(f"  {len(grants)} grants totalling ₹{sum(g['grant_received'] for g in grants):,.0f}")
+    |
+help: Remove extraneous `f` prefix
+
+E402 Module level import not at top of file
+  --> scripts/seed_relations.py:14:1
+   |
+12 |     sys.path.insert(0, str(ROOT))
+13 |
+14 | from src.data.database import get_sqlite_connection
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 |
+16 | # Curated keywords from ML/Physics/Bio/Chem/CS/SS ontologies
+   |
+
+F401 [*] `time` imported but unused
+  --> scripts/slo_report.py:16:8
+   |
+14 | import json
+15 | import sys
+16 | import time
+   |        ^^^^
+17 | from datetime import datetime, UTC
+18 | from pathlib import Path
+   |
+help: Remove unused import: `time`
+
+F841 Local variable `status_icon` is assigned to but never used
+   --> scripts/slo_report.py:131:5
+    |
+129 |     ]
+130 |
+131 |     status_icon = {"GREEN": "🟢", "RED": "🔴"}
+    |     ^^^^^^^^^^^
+132 |
+133 |     for m in report["metrics"]:
+    |
+help: Remove assignment to unused variable `status_icon`
+
+F841 Local variable `delta_str` is assigned to but never used
+   --> scripts/slo_report.py:135:9
+    |
+133 |     for m in report["metrics"]:
+134 |         icon = "🟢" if m["met"] else "🔴"
+135 |         delta_str = f" ({m['delta']:+.1f}{m['unit']})" if m["delta"] is not None else ""
+    |         ^^^^^^^^^
+136 |         actual_str = f"{m['actual']:.2f}" if isinstance(m["actual"], float) else str(m["actual"])
+137 |         lines.append(
+    |
+help: Remove assignment to unused variable `delta_str`
+
+F401 [*] `io` imported but unused
+   --> scripts/start_local_llm.py:133:12
+    |
+131 |     sys.stderr.flush()
+132 |
+133 |     import io
+    |            ^^
+134 |     log_path = Path("logs/local_llm.log")
+135 |     log_path.parent.mkdir(exist_ok=True)
+    |
+help: Remove unused import: `io`
+
+F401 [*] `os` imported but unused
+ --> scripts/strategy/validate_claims.py:7:8
+  |
+5 | """
+6 |
+7 | import os
+  |        ^^
+8 | import json
+9 | import sys
+  |
+help: Remove unused import: `os`
+
+F401 [*] `json` imported but unused
+  --> scripts/strategy/validate_claims.py:8:8
+   |
+ 7 | import os
+ 8 | import json
+   |        ^^^^
+ 9 | import sys
+10 | from pathlib import Path
+   |
+help: Remove unused import: `json`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> scripts/strategy/validate_claims.py:10:21
+   |
+ 8 | import json
+ 9 | import sys
+10 | from pathlib import Path
+   |                     ^^^^
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `subprocess` imported but unused
+  --> scripts/uat_run_session.py:18:8
+   |
+16 | import argparse
+17 | import json
+18 | import subprocess
+   |        ^^^^^^^^^^
+19 | import sys
+20 | import time
+   |
+help: Remove unused import: `subprocess`
+
+F541 [*] f-string without any placeholders
+   --> scripts/uat_run_session.py:131:15
+    |
+129 |     else:
+130 |         token = None
+131 |         print(f"  ⏭️  Skipping login (host mode)")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+132 |
+133 |     print(f"\n[2/3] Running {cfg['queries']} queries...")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> scripts/uat_run_session.py:144:11
+    |
+142 |         time.sleep(0.5)  # Brief pause between queries
+143 |
+144 |     print(f"\n[3/3] Verifying audit chain...")
+    |           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+145 |     try:
+146 |         from src.audit import verify_chain
+    |
+help: Remove extraneous `f` prefix
+
+F841 Local variable `cfg` is assigned to but never used
+   --> scripts/uat_run_session.py:234:9
+    |
+233 |     for tier in tiers_to_run:
+234 |         cfg = TIERS[tier]
+    |         ^^^
+235 |         output_path = EVIDENCE_DIR / f"03_uat_t{tier}_results.json"
+236 |         r = run_tier(tier, args.host, output_path, args.skip_login)
+    |
+help: Remove assignment to unused variable `cfg`
+
+F401 [*] `re` imported but unused
+ --> src/skills/text_to_sql/_schema_prompt_utils.py:5:8
+  |
+3 | from __future__ import annotations
+4 |
+5 | import re
+  |        ^^
+6 | from pathlib import Path
+7 | from typing import Any
+  |
+help: Remove unused import: `re`
+
+F401 [*] `pathlib.Path` imported but unused
+  --> src/skills/text_to_sql/schema_extractor.py:10:21
+   |
+ 8 | import re
+ 9 | from typing import List, Dict, Any, Optional
+10 | from pathlib import Path
+   |                     ^^^^
+11 | from sqlalchemy import create_engine, inspect
+   |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `typing.List` imported but unused
+  --> tests/benchmarks/volumetric/test_volumetric_correctness.py:12:20
+   |
+10 | import concurrent.futures
+11 | import os
+12 | from typing import List
+   |                    ^^^^
+13 |
+14 | pytestmark = pytest.mark.skipif(
+   |
+help: Remove unused import: `typing.List`
+
+E401 [*] Multiple imports on one line
+  --> tests/benchmarks/volumetric/test_volumetric_correctness.py:25:9
+   |
+23 |     @pytest.fixture(scope="class")
+24 |     def api_client(self):
+25 |         import requests, time, os
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^
+26 |         base_url = os.environ.get("NRG_API_URL", "http://localhost:8000")
+   |
+help: Split imports
+
+F841 Local variable `errors` is assigned to but never used
+  --> tests/benchmarks/volumetric/test_volumetric_correctness.py:61:9
+   |
+60 |         results = []
+61 |         errors = []
+   |         ^^^^^^
+62 |
+63 |         def run_query(q: str) -> dict:
+   |
+help: Remove assignment to unused variable `errors`
+
+F841 Local variable `found` is assigned to but never used
+   --> tests/benchmarks/volumetric/test_volumetric_correctness.py:182:13
+    |
+180 |         # Every citation in the response should be in the citations list
+181 |         for pub_id, chunk_id in cited_ids:
+182 |             found = any(
+    |             ^^^^^
+183 |                 c.get("pub_id") == pub_id and c.get("chunk_id") == chunk_id
+184 |                 for c in citations
+    |
+help: Remove assignment to unused variable `found`
+
+E402 Module level import not at top of file
+  --> tests/conftest.py:30:1
+   |
+28 | _configure_isolated_audit_dir()
+29 |
+30 | import pytest
+   | ^^^^^^^^^^^^^
+   |
+
+F401 [*] `playwright.sync_api.expect` imported but unused
+  --> tests/e2e/test_personas.py:22:39
+   |
+20 | import re
+21 | from pathlib import Path
+22 | from playwright.sync_api import Page, expect
+   |                                       ^^^^^^
+23 |
+24 | sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+   |
+help: Remove unused import: `playwright.sync_api.expect`
+
+E712 Avoid equality comparisons to `True`; use `response.json().get("ok"):` for truth checks
+   --> tests/e2e/test_personas.py:344:16
+    |
+343 |         assert response.status_code == 200, "Health endpoint should be healthy"
+344 |         assert response.json().get("ok") == True
+    |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: Replace with `response.json().get("ok")`
+
+F541 [*] f-string without any placeholders
+   --> tests/load/locustfile.py:224:15
+    |
+222 |     if p99 >= P99_THRESHOLD_MS:
+223 |         print(f"\n  ⚠️  P99 ({p99:.1f}ms) exceeds threshold ({P99_THRESHOLD_MS}ms)")
+224 |         print(f"  Suggestions:")
+    |               ^^^^^^^^^^^^^^^^^
+225 |         print(f"    - Enable Redis caching (rate limiting reduces DB load)")
+226 |         print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> tests/load/locustfile.py:225:15
+    |
+223 |         print(f"\n  ⚠️  P99 ({p99:.1f}ms) exceeds threshold ({P99_THRESHOLD_MS}ms)")
+224 |         print(f"  Suggestions:")
+225 |         print(f"    - Enable Redis caching (rate limiting reduces DB load)")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+226 |         print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+227 |         print(f"    - Enable query result caching in CostGuard")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> tests/load/locustfile.py:226:15
+    |
+224 |         print(f"  Suggestions:")
+225 |         print(f"    - Enable Redis caching (rate limiting reduces DB load)")
+226 |         print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+227 |         print(f"    - Enable query result caching in CostGuard")
+228 |         print(f"    - Check Qdrant latency at :6333/dashboard")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> tests/load/locustfile.py:227:15
+    |
+225 |         print(f"    - Enable Redis caching (rate limiting reduces DB load)")
+226 |         print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+227 |         print(f"    - Enable query result caching in CostGuard")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+228 |         print(f"    - Check Qdrant latency at :6333/dashboard")
+    |
+help: Remove extraneous `f` prefix
+
+F541 [*] f-string without any placeholders
+   --> tests/load/locustfile.py:228:15
+    |
+226 |         print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+227 |         print(f"    - Enable query result caching in CostGuard")
+228 |         print(f"    - Check Qdrant latency at :6333/dashboard")
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+229 |
+230 |     print(f"{'='*60}\n")
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `pytest` imported but unused
+ --> tests/skills/test_result_anomaly_detector.py:5:8
+  |
+3 | from __future__ import annotations
+4 |
+5 | import pytest
+  |        ^^^^^^
+6 |
+7 | from src.skills.text_to_sql.result_anomaly_detector import detect_result_anomalies
+  |
+help: Remove unused import: `pytest`
+
+F401 [*] `src.skills.text_to_sql.schema_retriever.SchemaRetriever` imported but unused
+   --> tests/skills/test_schema_retriever.py:366:13
+    |
+364 |     def test_build_prompt_section_contains_ddl(self):
+365 |         from src.skills.text_to_sql.schema_retriever import (
+366 |             SchemaRetriever,
+    |             ^^^^^^^^^^^^^^^
+367 |             build_relevant_ddl_prompt_section,
+368 |         )
+    |
+help: Remove unused import: `src.skills.text_to_sql.schema_retriever.SchemaRetriever`
+
+Found 167 errors.
+[*] 139 fixable with the `--fix` option (14 hidden fixes can be enabled with the `--unsafe-fixes` option).

@@ -43,6 +43,9 @@ REQUESTS_PER_MINUTE = 60
 
 def _is_test_mode() -> bool:
     """Check if we're running in test mode."""
+    force_rate_limit = os.environ.get("NRG_RATE_LIMIT_FORCE", "").lower()
+    if force_rate_limit in {"1", "true", "yes"}:
+        return False
     quota_disabled = os.environ.get("NRG_QUOTA_DISABLED", "").lower()
     return (
         os.environ.get("PYTEST_CURRENT_TEST") is not None
@@ -166,7 +169,7 @@ def check_tier_rate_limit(
     user_id: str,
     tier: int,
     ip: Optional[str] = None,
-) -> tuple[bool, int, int, dict]:
+) -> tuple[bool, int, int, dict[str, str]]:
     """Convenience function to check rate limit and get headers.
 
     Returns:
@@ -278,7 +281,7 @@ def get_endpoint_limiter() -> EndpointRateLimiter:
 def check_endpoint_rate_limit(
     endpoint: str,
     identifier: str,
-) -> tuple[bool, int, int, dict]:
+) -> tuple[bool, int, int, dict[str, str]]:
     """Check endpoint-specific rate limit.
 
     Returns:

@@ -157,7 +157,7 @@ class ConsentService:
         _audit_consent_event("consent_revoke_failed", user_id, scope, result)
         return result
 
-    def get_consent(self, user_id: str, scope: str) -> Optional[Dict]:
+    def get_consent(self, user_id: str, scope: str) -> Optional[Dict[str, Any]]:
         """Get consent status for a scope."""
         conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
@@ -184,7 +184,7 @@ class ConsentService:
             "active": row[5] is None,
         }
 
-    def list_consents(self, user_id: str) -> List[Dict]:
+    def list_consents(self, user_id: str) -> List[Dict[str, Any]]:
         """List all consents for a user."""
         conn = get_sqlite_connection(str(self.db_path))
         cursor = conn.execute(
@@ -355,7 +355,7 @@ class ConsentService:
         """Check if data retention policies are active."""
         return True
 
-    def get_expiring_consents(self, user_id: str, within_days: int = 30) -> List[Dict]:
+    def get_expiring_consents(self, user_id: str, within_days: int = 30) -> List[Dict[str, Any]]:
         """Get consents expiring within specified days for a user."""
         conn = get_sqlite_connection(str(self.db_path))
         cutoff = (datetime.now(timezone.utc) + timedelta(days=within_days)).isoformat()

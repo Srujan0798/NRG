@@ -1,10 +1,8 @@
 """Tests for database_v2 SQLAlchemy ORM layer."""
 
 import pytest
-import os
-from unittest.mock import patch
 
-from src.data.database_v2 import NRGDatabase, Researcher, Institution, Publication, Lab, Base
+from src.data.database_v2 import Institution, Lab, NRGDatabase, Publication, Researcher
 
 
 @pytest.fixture
@@ -97,6 +95,22 @@ class TestNRGDatabaseV2:
         with db.get_session() as session:
             count = session.query(Researcher).count()
             assert count == 2
+
+    def test_get_session_rolls_back_partial_write_on_exception(self, db):
+        with pytest.raises(RuntimeError):
+            with db.get_session() as session:
+                session.add(
+                    Researcher(
+                        researcher_id="rollback-r",
+                        name="Dr Rollback",
+                        institution_id="inst1",
+                        state="GJ",
+                    )
+                )
+                raise RuntimeError("force rollback")
+
+        with db.get_session() as session:
+            assert session.query(Researcher).filter_by(researcher_id="rollback-r").count() == 0
 
     def test_create_tables_idempotent(self, db):
         db.create_tables()

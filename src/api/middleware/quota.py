@@ -2,9 +2,13 @@
 
 import os
 import time
+from typing import Any, cast
+
 import redis
 
 from fastapi import HTTPException, Request
+
+JSONDict = dict[str, Any]
 
 
 def _quota_disabled() -> bool:
@@ -16,21 +20,21 @@ class QuotaManager:
     
     # Tier limits: (requests_per_minute, requests_per_day)
     # Hardened per security task: researcher=100/min, gov=200/min, industry=50/min
-    TIER_LIMITS = {
+    TIER_LIMITS: dict[int, tuple[int, int]] = {
         1: (100, 10000),   # Researcher
         2: (200, 20000),   # Government (higher limit for official use)
         3: (50, 5000),     # Industry (most restrictive)
     }
     
     def __init__(self, redis_url: str = "redis://localhost:6379/0"):
-        self.redis = redis.from_url(redis_url)
+        self.redis: Any = redis.from_url(redis_url)
         self.bucket_size = 60  # seconds
     
     def _get_key(self, user_id: str, tier: int, window: str) -> str:
         """Generate Redis key for rate limit."""
         return f"quota:{user_id}:tier{tier}:{window}"
     
-    def check_quota(self, user_id: str, tier: int) -> dict:
+    def check_quota(self, user_id: str, tier: int) -> JSONDict:
         """Check if user has quota available."""
         minute_limit, day_limit = self.TIER_LIMITS.get(tier, (10, 1000))
         
@@ -46,8 +50,8 @@ class QuotaManager:
         pipe.expire(day_key, 172800)  # 2 day expiry
         results = pipe.execute()
         
-        minute_count = results[0]
-        day_count = results[2]
+        minute_count = int(results[0])
+        day_count = int(results[2])
         
         allowed = minute_count <= minute_limit and day_count <= day_limit
         
@@ -62,7 +66,7 @@ class QuotaManager:
             "reset_at": (now // 60 + 1) * 60,
         }
     
-    def enforce_quota(self, user_id: str, tier: int):
+    def enforce_quota(self, user_id: str, tier: int) -> JSONDict:
         """Enforce quota or raise exception."""
         if _quota_disabled():
             return {"allowed": True, "tier": tier, "quota_disabled": True}
@@ -88,8 +92,9 @@ class QuotaManager:
 quota_manager = QuotaManager()
 
 
-def rate_limit_tiered(request: Request):
+def rate_limit_tiered(request: Request) -> JSONDict:
     """Dependency for rate limiting by tier."""
-    user_id = request.state.user.get("sub", "anonymous")
-    tier = request.state.user.get("tier", 1)
+    user = cast(JSONDict, request.state.user)
+    user_id = str(user.get("sub", "anonymous"))
+    tier = int(user.get("tier", 1))
     return quota_manager.enforce_quota(user_id, tier)

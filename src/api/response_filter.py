@@ -6,14 +6,29 @@ import hashlib
 import re
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import Any
+from typing import Any, cast
+
+JSONDict = dict[str, Any]
+JSONRows = list[JSONDict]
+
+
+def _empty_str_list() -> list[str]:
+    return []
+
+
+def _empty_event_list() -> JSONRows:
+    return []
+
+
+def _empty_replacement_map() -> dict[str, str]:
+    return {}
 
 
 @dataclass(frozen=True)
 class TierResponseFilterReport:
-    warnings: list[str] = field(default_factory=list)
-    strip_events: list[dict[str, Any]] = field(default_factory=list)
-    shape_columns: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=_empty_str_list)
+    strip_events: JSONRows = field(default_factory=_empty_event_list)
+    shape_columns: list[str] = field(default_factory=_empty_str_list)
 
 
 _DROP = object()
@@ -33,9 +48,9 @@ INDIVIDUAL_IDENTIFIER_KEYS = frozenset(
 
 
 def filter_query_response_for_tier(
-    payload: dict[str, Any],
+    payload: JSONDict,
     tier: int,
-) -> tuple[dict[str, Any], list[str]]:
+) -> tuple[JSONDict, list[str]]:
     """Compatibility wrapper used by older call sites."""
     filtered, report = filter_response_payload_for_tier(payload, tier=tier)
     return filtered, report.warnings
@@ -45,21 +60,23 @@ def apply_k_anonymity_threshold(
     payload: Any,
     tier: int,
     threshold: int = K_ANONYMITY_THRESHOLD,
-) -> tuple[Any, list[dict[str, Any]]]:
+) -> tuple[Any, JSONRows]:
     """Block lower-tier individual cohorts below the configured privacy threshold."""
     tier_int = int(tier)
     if tier_int <= 1 or not isinstance(payload, dict):
         return payload, []
 
-    rows = payload.get("sql_results")
-    if not isinstance(rows, list) or not rows:
-        return payload, []
+    payload_dict = cast(JSONDict, payload)
+    rows_raw = payload_dict.get("sql_results")
+    if not isinstance(rows_raw, list) or not rows_raw:
+        return payload_dict, []
+    rows = cast(list[Any], rows_raw)
 
     identifiers = _collect_individual_identifiers(rows)
     if not identifiers or len(identifiers) >= int(threshold):
-        return payload, []
+        return payload_dict, []
 
-    blocked = dict(payload)
+    blocked = dict(payload_dict)
     blocked["status"] = "blocked"
     blocked["blocked"] = True
     blocked["response"] = (
@@ -74,8 +91,10 @@ def apply_k_anonymity_threshold(
 
     existing_warnings = blocked.get("warnings", [])
     if not isinstance(existing_warnings, list):
-        existing_warnings = [existing_warnings]
-    blocked["warnings"] = existing_warnings + [
+        existing_warning_items = [str(existing_warnings)]
+    else:
+        existing_warning_items = [str(item) for item in cast(list[Any], existing_warnings)]
+    blocked["warnings"] = existing_warning_items + [
         f"k_anonymity_block: cohort below k={int(threshold)} threshold"
     ]
 
@@ -113,11 +132,11 @@ def filter_response_payload_for_tier(
     return filtered, report
 
 
-def find_tier_response_violations(payload: Any, tier: int) -> list[dict[str, Any]]:
+def find_tier_response_violations(payload: Any, tier: int) -> JSONRows:
     """Return remaining response-boundary violations after filtering."""
     policy = _load_response_policy()
     context = _FilterContext(policy=policy, tier=int(tier))
-    violations: list[dict[str, Any]] = []
+    violations: JSONRows = []
     _collect_violations(payload, context, "$", None, None, violations)
     return violations
 
@@ -133,12 +152,13 @@ def collect_shape_columns(payload: Any) -> list[str]:
 
     def walk(value: Any, path: str) -> None:
         if isinstance(value, dict):
-            for item_key, item_value in value.items():
+            value_dict = cast(JSONDict, value)
+            for item_key, item_value in value_dict.items():
                 columns.add(str(item_key))
                 child_path = f"{path}.{item_key}" if path else str(item_key)
                 walk(item_value, child_path)
         elif isinstance(value, list):
-            for item in value:
+            for item in cast(list[Any], value):
                 walk(item, path)
 
     walk(payload, "")
@@ -150,7 +170,8 @@ def _collect_individual_identifiers(rows: list[Any]) -> set[str]:
     for row in rows:
         if not isinstance(row, dict):
             continue
-        for item_key, item_value in row.items():
+        row_dict = cast(JSONDict, row)
+        for item_key, item_value in row_dict.items():
             normalized = _normalize_key(item_key)
             if normalized in INDIVIDUAL_IDENTIFIER_KEYS and item_value not in (None, ""):
                 identifiers.add(str(item_value))
@@ -160,10 +181,10 @@ def _collect_individual_identifiers(rows: list[Any]) -> set[str]:
 
 @dataclass
 class _FilterContext:
-    policy: dict[str, Any]
+    policy: JSONDict
     tier: int
-    strip_events: list[dict[str, Any]] = field(default_factory=list)
-    name_replacements: dict[str, str] = field(default_factory=dict)
+    strip_events: JSONRows = field(default_factory=_empty_event_list)
+    name_replacements: dict[str, str] = field(default_factory=_empty_replacement_map)
     value_patterns: dict[str, re.Pattern[str]] = field(init=False)
 
     def __post_init__(self) -> None:
@@ -179,7 +200,7 @@ class _FilterContext:
 
 
 @lru_cache(maxsize=1)
-def _load_response_policy() -> dict[str, Any]:
+def _load_response_policy() -> JSONDict:
     from src.auth.rbac import get_policy_engine
 
     policy = get_policy_engine().get_tier_response_columns()
@@ -192,7 +213,7 @@ def _filter_value(
     value: Any,
     context: _FilterContext,
     path: str,
-    parent: dict[str, Any] | None,
+    parent: JSONDict | None,
     key: str | None,
 ) -> Any:
     field_class = _field_class_for_key(key, parent, context.policy)
@@ -207,21 +228,22 @@ def _filter_value(
         return _DROP
 
     if isinstance(value, dict):
-        result: dict[str, Any] = {}
-        for item_key, item_value in value.items():
+        value_dict = cast(JSONDict, value)
+        result: JSONDict = {}
+        for item_key, item_value in value_dict.items():
             item_path = f"{path}.{item_key}" if path != "$" else f"$.{item_key}"
-            filtered = _filter_value(item_value, context, item_path, value, item_key)
+            filtered = _filter_value(item_value, context, item_path, value_dict, item_key)
             if filtered is not _DROP:
                 result[item_key] = filtered
         return result
 
     if isinstance(value, list):
-        result = []
-        for index, item in enumerate(value):
+        list_result: list[Any] = []
+        for index, item in enumerate(cast(list[Any], value)):
             filtered = _filter_value(item, context, f"{path}[{index}]", parent, key)
             if filtered is not _DROP:
-                result.append(filtered)
-        return result
+                list_result.append(filtered)
+        return list_result
 
     if isinstance(value, str):
         return _redact_disallowed_values(value, context, path, key)
@@ -233,9 +255,9 @@ def _collect_violations(
     value: Any,
     context: _FilterContext,
     path: str,
-    parent: dict[str, Any] | None,
+    parent: JSONDict | None,
     key: str | None,
-    violations: list[dict[str, Any]],
+    violations: JSONRows,
 ) -> None:
     field_class = _field_class_for_key(key, parent, context.policy)
     if field_class and not _field_allowed(field_class, context.tier, context.policy):
@@ -249,11 +271,12 @@ def _collect_violations(
             violations.append(_event(context, field_class, path, key, "violation"))
 
     if isinstance(value, dict):
-        for item_key, item_value in value.items():
+        value_dict = cast(JSONDict, value)
+        for item_key, item_value in value_dict.items():
             item_path = f"{path}.{item_key}" if path != "$" else f"$.{item_key}"
-            _collect_violations(item_value, context, item_path, value, item_key, violations)
+            _collect_violations(item_value, context, item_path, value_dict, item_key, violations)
     elif isinstance(value, list):
-        for index, item in enumerate(value):
+        for index, item in enumerate(cast(list[Any], value)):
             _collect_violations(item, context, f"{path}[{index}]", parent, key, violations)
     elif isinstance(value, str):
         for field_name, pattern in context.value_patterns.items():
@@ -263,14 +286,14 @@ def _collect_violations(
 
 def _field_class_for_key(
     key: str | None,
-    parent: dict[str, Any] | None,
-    policy: dict[str, Any],
+    parent: JSONDict | None,
+    policy: JSONDict,
 ) -> str | None:
     if not key:
         return None
 
     normalized = _normalize_key(key)
-    graph_types = {_normalize_key(item) for item in policy.get("graph_person_node_types", [])}
+    graph_types = {_normalize_key(str(item)) for item in cast(list[Any], policy.get("graph_person_node_types", []))}
     if normalized == "label" and parent and _normalize_key(str(parent.get("type", ""))) in graph_types:
         return "personal_name"
     if normalized == "name" and parent and any(
@@ -278,7 +301,8 @@ def _field_class_for_key(
     ):
         return "personal_name"
 
-    for field_name, spec in policy.get("field_classes", {}).items():
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    for field_name, spec in field_classes.items():
         aliases = [_normalize_key(field_name)]
         aliases.extend(_normalize_key(alias) for alias in spec.get("aliases", []))
         match_mode = spec.get("match", "exact")
@@ -290,19 +314,22 @@ def _field_class_for_key(
     return None
 
 
-def _field_allowed(field_name: str, tier: int, policy: dict[str, Any]) -> bool:
-    spec = policy.get("field_classes", {}).get(field_name, {})
-    allowed_tiers = {int(item) for item in spec.get("allowed_tiers", [1, 2, 3])}
+def _field_allowed(field_name: str, tier: int, policy: JSONDict) -> bool:
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    spec = field_classes.get(field_name, {})
+    allowed_tiers = {int(item) for item in cast(list[Any], spec.get("allowed_tiers", [1, 2, 3]))}
     return int(tier) in allowed_tiers
 
 
-def _should_transform_name(field_name: str, tier: int, policy: dict[str, Any]) -> bool:
-    spec = policy.get("field_classes", {}).get(field_name, {})
+def _should_transform_name(field_name: str, tier: int, policy: JSONDict) -> bool:
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    spec = field_classes.get(field_name, {})
     return int(tier) == 3 and bool(spec.get("tier3_transform"))
 
 
-def _empty_on_strip(field_name: str, policy: dict[str, Any]) -> bool:
-    spec = policy.get("field_classes", {}).get(field_name, {})
+def _empty_on_strip(field_name: str, policy: JSONDict) -> bool:
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    spec = field_classes.get(field_name, {})
     return bool(spec.get("empty_on_strip"))
 
 
@@ -314,7 +341,7 @@ def _empty_like(value: Any) -> Any:
     return None
 
 
-def _researcher_label(parent: dict[str, Any], value: Any, context: _FilterContext) -> str:
+def _researcher_label(parent: JSONDict, value: Any, context: _FilterContext) -> str:
     identifier = (
         parent.get("researcher_id")
         or parent.get("author_id")
@@ -346,16 +373,17 @@ def _collect_name_replacements(payload: Any, context: _FilterContext) -> dict[st
 
     def walk(value: Any) -> None:
         if isinstance(value, dict):
-            for item_key, item_value in value.items():
+            value_dict = cast(JSONDict, value)
+            for item_key, item_value in value_dict.items():
                 if (
                     isinstance(item_value, str)
-                    and _field_class_for_key(item_key, value, context.policy) == "personal_name"
+                    and _field_class_for_key(item_key, value_dict, context.policy) == "personal_name"
                     and not item_value.startswith("Researcher_")
                 ):
-                    replacements[item_value] = _researcher_label(value, item_value, context)
+                    replacements[item_value] = _researcher_label(value_dict, item_value, context)
                 walk(item_value)
         elif isinstance(value, list):
-            for item in value:
+            for item in cast(list[Any], value):
                 walk(item)
 
     walk(payload)
@@ -390,9 +418,10 @@ def _redact_disallowed_values(
     return redacted
 
 
-def _compiled_value_patterns(policy: dict[str, Any]) -> dict[str, re.Pattern[str]]:
+def _compiled_value_patterns(policy: JSONDict) -> dict[str, re.Pattern[str]]:
     compiled: dict[str, re.Pattern[str]] = {}
-    for field_name, pattern in policy.get("value_patterns", {}).items():
+    value_patterns = cast(dict[str, str], policy.get("value_patterns", {}))
+    for field_name, pattern in value_patterns.items():
         compiled[field_name] = re.compile(pattern)
     return compiled
 
@@ -403,7 +432,7 @@ def _event(
     path: str,
     key: str | None,
     action: str,
-) -> dict[str, Any]:
+) -> JSONDict:
     return {
         "reason": f"{context.reason_prefix}:tier{context.tier}:{field_name}",
         "tier": context.tier,
@@ -414,7 +443,7 @@ def _event(
     }
 
 
-def _build_warnings(events: list[dict[str, Any]]) -> list[str]:
+def _build_warnings(events: JSONRows) -> list[str]:
     if not events:
         return []
     reasons = sorted({event["reason"] for event in events})

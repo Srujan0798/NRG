@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: nrg-api-monitor
@@ -13,12 +13,15 @@ spec:
   endpoints:
     - port: http
       path: /metrics
-      interval: 15s
+      interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
+    - port: http
+      path: /health
+      interval: {{ .Values.prometheus.healthScrapeInterval | default "15s" }}
   namespaceSelector:
     matchNames:
       - {{ .Values.namespace | default "nrg-production" }}
 ---
-apiVersion: v1
+apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: nrg-postgres-monitor
@@ -33,12 +36,12 @@ spec:
   endpoints:
     - port: tcp-postgres
       path: /metrics
-      interval: 15s
+      interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
   namespaceSelector:
     matchNames:
       - {{ .Values.namespace | default "nrg-production" }}
 ---
-apiVersion: v1
+apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: nrg-api-pod-monitor
@@ -53,7 +56,10 @@ spec:
   podMetricsEndpoints:
     - port: http
       path: /metrics
-      interval: 15s
+      interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
+    - port: http
+      path: /health
+      interval: {{ .Values.prometheus.healthScrapeInterval | default "15s" }}
   namespaceSelector:
     matchNames:
       - {{ .Values.namespace | default "nrg-production" }}

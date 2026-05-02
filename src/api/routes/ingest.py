@@ -12,15 +12,23 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Any, Iterator, Literal, Optional, cast
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 
+from src.auth.middleware import TokenClaims
+
 router = APIRouter(prefix="/api", tags=["ingest"])
 
+JSONDict = dict[str, Any]
+
 _ingestion_executor = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ingest_worker")
-_ingestion_jobs: dict[str, dict] = {}
+_ingestion_jobs: dict[str, JSONDict] = {}
 _ingestion_lock = threading.Lock()
+
+
+def _empty_json_dict() -> JSONDict:
+    return {}
 
 
 @dataclass
@@ -29,7 +37,7 @@ class IngestionJob:
     status: Literal["pending", "running", "completed", "failed"] = "pending"
     source_filename: str = ""
     collection: str = ""
-    result: dict = field(default_factory=dict)
+    result: JSONDict = field(default_factory=_empty_json_dict)
     error: str = ""
     started_at: str = ""
     completed_at: str = ""
@@ -51,7 +59,7 @@ def _create_job(source_filename: str, collection: str) -> str:
     return job_id
 
 
-def _update_job(job_id: str, **kwargs) -> None:
+def _update_job(job_id: str, **kwargs: Any) -> None:
     with _ingestion_lock:
         if job_id in _ingestion_jobs:
             _ingestion_jobs[job_id].update(kwargs)
@@ -69,50 +77,51 @@ def _run_ingestion(job_id: str, file_path: Path, collection: str) -> None:
             DEFAULT_BATCH_SIZE,
             DEFAULT_CHUNK_TOKENS,
             DEFAULT_OVERLAP_TOKENS,
-            _detect_source_type,
-            _embed_chunks,
-            _ensure_collection,
-            _get_existing_hashes,
-            _load_embedder,
-            _parse_csv,
-            _parse_pdf,
-            _parse_txt,
-            _parse_txt_directory,
-            _sha256,
+            DocumentRecord,
+            detect_source_type,
+            embed_chunks,
+            ensure_collection,
+            get_existing_hashes,
+            load_embedder,
+            parse_csv,
+            parse_pdf,
+            parse_txt,
+            parse_txt_directory,
+            sha256_text,
         )
 
         _update_job(job_id, status="running")
 
         qdrant_url = os.getenv("QDRANT_URL", "http://localhost:6333")
         qdrant = QdrantClient(url=qdrant_url)
-        source_type = _detect_source_type(file_path)
+        source_type = detect_source_type(file_path)
 
         if source_type == "csv":
-            doc_iter = _parse_csv(file_path)
+            doc_iter: Iterator[DocumentRecord] = parse_csv(file_path)
         elif source_type == "txt_directory":
-            doc_iter = _parse_txt_directory(file_path)
+            doc_iter = parse_txt_directory(file_path)
         elif source_type == "pdf":
-            doc_iter = _parse_pdf(file_path)
+            doc_iter = parse_pdf(file_path)
         elif source_type == "txt":
-            doc_iter = _parse_txt(file_path)
+            doc_iter = parse_txt(file_path)
         else:
             raise ValueError(f"Unknown source type: {source_type}")
 
-        embedder = _load_embedder()
-        _ensure_collection(qdrant, collection)
-        existing_hashes = _get_existing_hashes(qdrant, collection)
+        embedder = load_embedder()
+        ensure_collection(qdrant, collection)
+        existing_hashes = get_existing_hashes(qdrant, collection)
 
         batch: list[PointStruct] = []
         ingested = skipped = failed = total_docs = 0
 
         for doc in doc_iter:
             total_docs += 1
-            doc_hash = _sha256(doc.content)
+            doc_hash = sha256_text(doc.content)
             if doc_hash in existing_hashes:
                 skipped += 1
                 continue
 
-            chunks = []
+            chunks: list[str] = []
             start = 0
             chunk_chars = DEFAULT_CHUNK_TOKENS * 4
             overlap_chars = DEFAULT_OVERLAP_TOKENS * 4
@@ -124,14 +133,15 @@ def _run_ingestion(job_id: str, file_path: Path, collection: str) -> None:
                 start += chunk_chars - overlap_chars
 
             try:
-                chunk_embeddings = _embed_chunks(embedder, chunks)
+                chunk_embeddings = embed_chunks(embedder, chunks)
             except Exception:
                 failed += 1
                 continue
 
             for chunk_idx, (chunk_text, embedding) in enumerate(zip(chunks, chunk_embeddings)):
                 point_id = f"{doc.document_id}:{chunk_idx}"
-                payload = {
+                metadata = doc.metadata
+                payload: JSONDict = {
                     "document_id": doc.document_id,
                     "document_hash": doc_hash,
                     "title": doc.title,
@@ -139,7 +149,7 @@ def _run_ingestion(job_id: str, file_path: Path, collection: str) -> None:
                     "chunk_index": chunk_idx,
                     "total_chunks": len(chunks),
                     "job_id": job_id,
-                    **{k: v for k, v in doc.metadata.items()},
+                    **{str(k): v for k, v in metadata.items()},
                 }
                 batch.append(PointStruct(id=point_id, vector=embedding, payload=payload))
 
@@ -158,7 +168,7 @@ def _run_ingestion(job_id: str, file_path: Path, collection: str) -> None:
             except Exception:
                 failed += len(batch)
 
-        result = {"ingested": ingested, "skipped": skipped, "failed": failed, "total": total_docs}
+        result: JSONDict = {"ingested": ingested, "skipped": skipped, "failed": failed, "total": total_docs}
         _update_job(
             job_id,
             status="completed",
@@ -184,9 +194,10 @@ async def ingest_documents(
     request: Request,
     file: UploadFile = File(...),
     collection: Optional[str] = None,
-):
+) -> JSONDict:
     """Trigger async document ingestion into the vector store."""
-    claims = getattr(request.state, "auth_claims", None) or {}
+    raw_claims = getattr(request.state, "auth_claims", None)
+    claims = cast(TokenClaims, raw_claims if isinstance(raw_claims, dict) else {})
     tier = 0
     try:
         from src.auth.middleware import get_user_tier
@@ -224,7 +235,7 @@ async def ingest_documents(
 
 
 @router.get("/ingest/{job_id}")
-async def get_ingest_status(job_id: str):
+async def get_ingest_status(job_id: str) -> JSONDict:
     """Return status of an ingestion job."""
     with _ingestion_lock:
         job = _ingestion_jobs.get(job_id)

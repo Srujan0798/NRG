@@ -239,6 +239,15 @@ class TestDataExportAndErasure:
 
     def test_export_returns_blob(self, client, researcher_token):
         """GET /me/data returns user data as JSON blob."""
+        login_resp = client.post(
+            "/login",
+            json={"username": "researcher_user", "password": "researcher-pass"},
+        )
+        user_id = login_resp.json()["user"]["id"]
+
+        from src.services.consent import get_consent_service
+        get_consent_service().grant_consent(user_id, "research_access")
+
         response = client.get(
             "/me/data",
             headers={"Authorization": f"Bearer {researcher_token}"},
@@ -249,6 +258,26 @@ class TestDataExportAndErasure:
         assert "user_id" in data
         assert "export_timestamp" in data
         assert "consents" in data
+
+    def test_export_blocked_after_consent_revoked(self, client, researcher_token, consent_service):
+        """GET /me/data and /dpdp/export return 403 after research_access is revoked."""
+        login_resp = client.post(
+            "/login",
+            json={"username": "researcher_user", "password": "researcher-pass"},
+        )
+        token = login_resp.json()["access_token"]
+        user_id = login_resp.json()["user"]["id"]
+
+        from src.services.consent import get_consent_service
+        route_consent_service = get_consent_service()
+        route_consent_service.grant_consent(user_id, "research_access")
+        revoke_result = route_consent_service.revoke_consent(user_id, "research_access")
+        assert revoke_result["success"]
+
+        for path in ("/me/data", "/dpdp/export"):
+            response = client.get(path, headers={"Authorization": f"Bearer {token}"})
+            assert response.status_code == 403, f"{path} returned {response.status_code}"
+            assert "Consent required" in response.json()["detail"]
 
     def test_erase_anonymizes_data(self, client, researcher_token, consent_service):
         """DELETE /me/data erases PII and anonymizes audit events."""

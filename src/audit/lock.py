@@ -9,7 +9,6 @@ are trying to acquire it. So we keep ONE fd open and reuse it.
 
 import fcntl
 import contextlib
-import os
 import time
 import atexit
 import logging

@@ -7,7 +7,8 @@ Fallback: HuggingFace transformers with Phi-2 or rule-based templates
 import os
 import logging
 import time
-from typing import Optional, List
+from collections.abc import Generator
+from typing import Any
 
 import httpx
 
@@ -70,7 +71,7 @@ class LocalLLMClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: Optional[List[dict]] = None,
+        conversation_history: list[dict[str, Any]] | None = None,
     ) -> str:
         """Generate response using local model."""
         if self.model is None or self.tokenizer is None:
@@ -117,7 +118,7 @@ class LocalLLMClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: Optional[List[dict]] = None,
+        conversation_history: list[dict[str, Any]] | None = None,
     ) -> str:
         """Build prompt for local LLM."""
         parts = []
@@ -142,7 +143,7 @@ class LocalLLMClient:
         return "\n".join(parts)
 
 
-def get_local_llm_client():
+def get_local_llm_client() -> "LlamaCppClient | LocalLLMClient | None":
     """Get the configured local synthesis client.
 
     llama.cpp is the Phase 1 local path. HuggingFace Phi loading is retained
@@ -177,7 +178,7 @@ class LlamaCppClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: List[dict] | None = None,
+        conversation_history: list[dict[str, Any]] | None = None,
         temperature: float = 0.3,
         max_tokens: int = 1024,
     ) -> str:
@@ -232,10 +233,10 @@ class LlamaCppClient:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: List[dict] | None = None,
+        conversation_history: list[dict[str, Any]] | None = None,
         temperature: float = 0.3,
         max_tokens: int = 1024,
-    ):
+    ) -> Generator[str, None, None]:
         """Streaming generator via llama.cpp HTTP API."""
         messages = [{"role": "system", "content": system_prompt}]
 
@@ -304,7 +305,7 @@ _llama_cpp_health_cache: tuple[float, bool] | None = None
 _LLAMA_CACHE_TTL_SECONDS = 30.0
 
 
-def get_llama_cpp_client() -> Optional[LlamaCppClient]:
+def get_llama_cpp_client() -> LlamaCppClient | None:
     """Get LlamaCppClient if server is available (health-check cached, TTL 30s)."""
     global _llama_cpp_health_cache
     if os.getenv("LOCAL_LLM_DISABLED", "false").lower() in {"1", "true", "yes"}:
@@ -334,6 +335,10 @@ def get_llama_cpp_client() -> Optional[LlamaCppClient]:
         logger.warning("Failed to create LlamaCppClient: %s", e)
         _llama_cpp_health_cache = (now, False)
         return None
+
+
+def get_llama_cpp_health_cache() -> tuple[float, bool] | None:
+    return _llama_cpp_health_cache
 
 
 # Simple rule-based synthesis as ultimate fallback

@@ -8,11 +8,12 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
-from src.auth.middleware import get_current_user
+from src.auth.middleware import TokenClaims, get_current_user
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit
 
 router = APIRouter(tags=["graph"])
+JSONDict = dict[str, Any]
 
 _get_db: Callable[[], Any] | None = None
 _api_cache: Any | None = None
@@ -60,7 +61,7 @@ def _cache() -> Any:
     return _api_cache
 
 
-def _apply_tier_response_filter(payload: Any, tier: int, **kwargs) -> Any:
+def _apply_tier_response_filter(payload: Any, tier: int, **kwargs: Any) -> Any:
     if _tier_response_filter is None:
         raise RuntimeError("Graph router is not configured with a tier response filter")
     return _tier_response_filter(payload, tier, **kwargs)
@@ -81,16 +82,17 @@ def _tier_snapshot() -> dict[str, Any]:
 @router.post("/query/graph")
 async def post_graph_query(
     request: GraphQueryRequest,
-    token_payload: dict = Depends(get_current_user),
-    raw_request: Request = None,
-):
+    raw_request: Request,
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> Any:
     """Return a collaboration subgraph via recursive CTE where supported."""
     depth = min(max(request.depth, 1), 3)
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
-    user_id = token_payload.get("sub", "anonymous")
+    user_id = str(token_payload.get("sub", "anonymous"))
+    tier = int(token_payload.get("tier", 1) or 1)
 
     allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(
-        user_id, token_payload.get("tier", 1), client_ip
+        user_id, tier, client_ip
     )
     if not allowed:
         raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
@@ -100,7 +102,6 @@ async def post_graph_query(
         raise HTTPException(status_code=400, detail=f"Security violation: {validation['reason']}")
 
     db = _db()
-    tier = token_payload.get("tier", 1)
     topic_pattern = f"%{request.query.strip()}%"
 
     nodes: list[dict[str, Any]] = []
@@ -108,7 +109,7 @@ async def post_graph_query(
     node_counter = 0
     node_ids: dict[str, str] = {}
 
-    def add_node(label: str, node_type: str, **props) -> str:
+    def add_node(label: str, node_type: str, **props: Any) -> str:
         nonlocal node_counter
         node_id = f"{node_type[0]}{node_counter}"
         node_counter += 1
@@ -272,11 +273,11 @@ async def post_graph_query(
 @router.get("/query/graph")
 async def get_graph_data(
     topic: Optional[str] = None,
-    token_payload: dict = Depends(get_current_user),
-):
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> Any:
     """Get graph data for research network visualization."""
-    tier = token_payload.get("tier", 1)
-    user_id = token_payload.get("sub", "anonymous")
+    tier = int(token_payload.get("tier", 1) or 1)
+    user_id = str(token_payload.get("sub", "anonymous"))
     if topic:
         validation = prompt_sanitiser.validate_query({"query": topic}, identifier=user_id)
         if not validation["valid"]:
@@ -309,7 +310,7 @@ async def get_graph_data(
     edges: list[dict[str, Any]] = []
     node_counter = 0
 
-    def add_node(label, node_type, **props):
+    def add_node(label: str, node_type: str, **props: Any) -> str:
         nonlocal node_counter
         node_id = f"{node_type[0]}{node_counter}"
         node_counter += 1
@@ -327,7 +328,7 @@ async def get_graph_data(
             LEFT JOIN publications p ON rp.publication_id = p.publication_id
             WHERE r.research_area IS NOT NULL
         """)
-        params = {}
+        params: JSONDict = {}
         if topic:
             topic_lower = topic.lower()
             if "hydrogen" in topic_lower or "fuel cell" in topic_lower:
@@ -352,20 +353,20 @@ async def get_graph_data(
         graph_query_str = str(graph_query) + " LIMIT 50"
         result = session.execute(sa_text(graph_query_str), params)
 
-        researchers = {}
-        researcher_institution_ids = set()
-        publications = {}
+        researchers: dict[str, str] = {}
+        researcher_institution_ids: set[str] = set()
+        publications: dict[str, str] = {}
 
         for row in result:
-            researcher_id = row[0]
+            researcher_id = str(row[0])
             if researcher_id not in researchers:
                 rid = add_node(row[1], "author", area=row[2], state=row[3])
                 researchers[researcher_id] = rid
                 if row[4]:
-                    researcher_institution_ids.add(row[4])
+                    researcher_institution_ids.add(str(row[4]))
 
             if row[5]:
-                pub_id = row[5]
+                pub_id = str(row[5])
                 if pub_id not in publications:
                     pid = add_node(row[6][:50] if row[6] else "", "paper", year=row[7])
                     publications[pub_id] = pid
@@ -377,7 +378,7 @@ async def get_graph_data(
                     "weight": 1,
                 })
 
-    warnings = []
+    warnings: list[JSONDict] = []
     if topic and not researchers:
         warnings.append({
             "message": f"No graph data found for topic '{topic}'",
@@ -391,13 +392,13 @@ async def get_graph_data(
             endpoint="/query/graph",
         )
 
-    institutions = {}
+    institutions: dict[str, str] = {}
     with db.get_session() as session:
         from sqlalchemy import text as sa_text2
 
         if researcher_institution_ids:
             placeholders = ",".join(f":iid{i}" for i in range(len(researcher_institution_ids)))
-            iid_params = {f"iid{i}": iid for i, iid in enumerate(researcher_institution_ids)}
+            iid_params: JSONDict = {f"iid{i}": iid for i, iid in enumerate(researcher_institution_ids)}
             inst_result = session.execute(
                 sa_text2(f"SELECT institution_id, name, state FROM institutions WHERE institution_id IN ({placeholders})"),
                 iid_params,
@@ -408,12 +409,12 @@ async def get_graph_data(
             ))
 
         for row in inst_result:
-            iid = add_node(row[1], "institution", state=row[2])
-            institutions[row[0]] = iid
+            iid = add_node(str(row[1]), "institution", state=row[2])
+            institutions[str(row[0])] = iid
 
         if researchers:
             r_placeholders = ",".join(f":rid{i}" for i in range(len(researchers)))
-            r_params = {f"rid{i}": rid for i, rid in enumerate(researchers)}
+            r_params: JSONDict = {f"rid{i}": rid for i, rid in enumerate(researchers)}
             aff_result = session.execute(
                 sa_text2(f"SELECT researcher_id, institution_id FROM researchers WHERE researcher_id IN ({r_placeholders})"),
                 r_params,
@@ -424,15 +425,17 @@ async def get_graph_data(
             ))
 
         for row in aff_result:
-            if row[0] in researchers and row[1] in institutions:
+            researcher_id = str(row[0])
+            institution_id = str(row[1])
+            if researcher_id in researchers and institution_id in institutions:
                 edges.append({
-                    "source": researchers[row[0]],
-                    "target": institutions[row[1]],
+                    "source": researchers[researcher_id],
+                    "target": institutions[institution_id],
                     "type": "affiliated",
                     "weight": 1,
                 })
 
-    result = {"nodes": nodes, "edges": edges, "warnings": warnings}
+    result: JSONDict = {"nodes": nodes, "edges": edges, "warnings": warnings}
     result = _apply_tier_response_filter(
         result,
         tier,
@@ -446,11 +449,11 @@ async def get_graph_data(
 
 @router.get("/api/internal/tier_diff")
 async def get_internal_tier_diff(
-    token_payload: dict = Depends(get_current_user),
-    raw_request: Request = None,
-):
+    raw_request: Request,
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
     """Return recent response-shape differences for Tier 1 operators."""
-    tier = token_payload.get("tier", 1)
+    tier = int(token_payload.get("tier", 1) or 1)
     if tier != 1:
         raise HTTPException(status_code=403, detail="Tier 1 access required")
 
@@ -460,7 +463,7 @@ async def get_internal_tier_diff(
         get_audit_log().append(
             AuditEvent(
                 event_type="tier_diff_access",
-                user_id=token_payload.get("sub", "system"),
+                user_id=str(token_payload.get("sub", "system")),
                 result={"endpoint": "/api/internal/tier_diff"},
                 jwt_kid=token_payload.get("kid"),
                 request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,

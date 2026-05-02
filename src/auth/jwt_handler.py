@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import logging
 import os
+import threading
 import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -151,6 +152,7 @@ class JWTHandler:
         private_key_path: str | None = None,
         public_key_path: str | None = None,
         enforce_secret_min_length: bool | None = None,
+        rotation_grace_seconds: int | None = None,
     ):
         # Determine algorithm (prefer RS256 for production)
         self.algorithm = algorithm or os.getenv("JWT_ALGORITHM", "RS256")
@@ -196,8 +198,13 @@ class JWTHandler:
         self.revoked_jtis: set[str] = set()
         self.active_refresh_tokens: dict[str, str] = {}
         self.refresh_store = RefreshStore()
+        self._refresh_rotation_lock = threading.RLock()
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids: set[str] = {self._signing_key_id}
+        self.rotation_grace_seconds = int(
+            os.getenv("JWT_ROTATION_GRACE_SECONDS", str(rotation_grace_seconds if rotation_grace_seconds is not None else 300))
+        )
+        self._previous_verification_keys: dict[str, tuple[Any, float]] = {}
         self._jti_ip_registry: dict[str, tuple[str, str, float]] = {}
         self._access_claims_cache: dict[tuple[str, str | None], tuple[dict[str, Any], float]] = {}
         # NOTE: This in-process registry does not survive restarts and is not
@@ -286,27 +293,28 @@ class JWTHandler:
         }
 
     def issue_token_pair(self, user: dict[str, Any]) -> dict[str, Any]:
-        access_token = self._create_token(user, "access", self.access_token_ttl_seconds)
-        refresh_token = self._create_token(
-            user,
-            "refresh",
-            self.refresh_token_ttl_seconds,
-        )
-        refresh_claims = self._decode_token(refresh_token)
-        self.active_refresh_tokens[refresh_claims["sub"]] = refresh_claims["jti"]
-        self.refresh_store.store(
-            refresh_token,
-            refresh_claims["sub"],
-            datetime.fromtimestamp(refresh_claims["iat"], UTC),
-            datetime.fromtimestamp(refresh_claims["exp"], UTC),
-        )
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_type": "bearer",
-            "expires_in": self.access_token_ttl_seconds,
-            "refresh_expires_in": self.refresh_token_ttl_seconds,
-        }
+        with self._refresh_rotation_lock:
+            access_token = self._create_token(user, "access", self.access_token_ttl_seconds)
+            refresh_token = self._create_token(
+                user,
+                "refresh",
+                self.refresh_token_ttl_seconds,
+            )
+            refresh_claims = self._decode_token(refresh_token)
+            self.active_refresh_tokens[refresh_claims["sub"]] = refresh_claims["jti"]
+            self.refresh_store.store(
+                refresh_token,
+                refresh_claims["sub"],
+                datetime.fromtimestamp(refresh_claims["iat"], UTC),
+                datetime.fromtimestamp(refresh_claims["exp"], UTC),
+            )
+            return {
+                "access_token": access_token,
+                "refresh_token": refresh_token,
+                "token_type": "bearer",
+                "expires_in": self.access_token_ttl_seconds,
+                "refresh_expires_in": self.refresh_token_ttl_seconds,
+            }
 
     def verify_access_token(self, token: str, client_ip: Optional[str] = None) -> dict[str, Any]:
         """Verify access token, optionally checking for token replay across IPs."""
@@ -393,33 +401,37 @@ class JWTHandler:
         return claims
 
     def refresh_access_token(self, refresh_token: str, access_token: Optional[str] = None) -> dict[str, Any]:
-        claims = self.verify_refresh_token(refresh_token)
-        user = {
-            "user_id": claims["sub"],
-            "username": claims["username"],
-            "role": claims["role"],
-            "persona": claims.get("persona", claims["role"]),
-            "tier": claims["tier"],
-            "researcher_id": claims.get("researcher_id"),
-            "groups": claims.get("groups", []),
-            "scope": claims.get("scope"),
-        }
-        self.revoke_token(refresh_token)
-        if access_token:
-            self.revoke_token(access_token)
-        return self.issue_token_pair(user)
+        with self._refresh_rotation_lock:
+            claims = self.verify_refresh_token(refresh_token)
+            user = {
+                "user_id": claims["sub"],
+                "username": claims["username"],
+                "role": claims["role"],
+                "persona": claims.get("persona", claims["role"]),
+                "tier": claims["tier"],
+                "researcher_id": claims.get("researcher_id"),
+                "groups": claims.get("groups", []),
+                "scope": claims.get("scope"),
+            }
+            self.revoke_token(refresh_token)
+            if access_token:
+                self.revoke_token(access_token)
+            return self.issue_token_pair(user)
 
     def revoke_token(self, token: str) -> None:
-        claims = self._decode_token(token, verify_exp=False)
-        self.revoked_jtis.add(claims["jti"])
-        self._purge_access_cache_for_token(token)
-        if claims.get("token_type") == "refresh":
-            self.refresh_store.revoke(token)
-            self.active_refresh_tokens.pop(claims["sub"], None)
+        with self._refresh_rotation_lock:
+            claims = self._decode_token(token, verify_exp=False)
+            self.revoked_jtis.add(claims["jti"])
+            self._purge_access_cache_for_token(token)
+            if claims.get("token_type") == "refresh":
+                self.refresh_store.revoke(token)
+                self.active_refresh_tokens.pop(claims["sub"], None)
 
     def rotate_signing_key(self, new_private_key: str, new_public_key: str) -> None:
         """Rotate the signing key. New tokens will use the new key; old keys are kept for verification."""
         old_key_id = self._signing_key_id
+        old_verification_key = self._current_verification_key()
+        self._store_previous_verification_key(old_key_id, old_verification_key)
         self.private_key = new_private_key
         self.public_key = new_public_key
         from cryptography.hazmat.primitives import serialization
@@ -435,6 +447,39 @@ class JWTHandler:
         self._signing_key_id = self._compute_key_id()
         self._known_key_ids.add(self._signing_key_id)
         self._known_key_ids.add(old_key_id)
+        self._access_claims_cache.clear()
+
+    def rotate_secret(self, new_secret: str) -> None:
+        """Rotate an HS* signing secret while accepting in-flight tokens for the grace window."""
+        if self.algorithm not in {"HS256", "HS384", "HS512"}:
+            raise AuthError("rotate_secret is only valid for HS* JWT algorithms")
+        if self._secret_length_enforced and not validate_jwt_secret(new_secret):
+            _raise_short_jwt_secret(new_secret, "new JWT secret")
+
+        old_key_id = self._signing_key_id
+        old_verification_key = self._current_verification_key()
+        self._store_previous_verification_key(old_key_id, old_verification_key)
+        self.secret_key = new_secret
+        self._signing_key_id = self._compute_key_id()
+        self._known_key_ids.add(self._signing_key_id)
+        self._known_key_ids.add(old_key_id)
+        self._access_claims_cache.clear()
+
+    def _current_verification_key(self) -> Any:
+        verification_key = self._public_key_obj or self.public_key or self.secret_key
+        if verification_key is None:
+            raise AuthError("No verification key available")
+        return verification_key
+
+    def _store_previous_verification_key(self, kid: str, verification_key: Any) -> None:
+        expires_at = datetime.now(UTC).timestamp() + self.rotation_grace_seconds
+        self._previous_verification_keys[kid] = (verification_key, expires_at)
+
+    def _purge_expired_previous_verification_keys(self) -> None:
+        now_ts = datetime.now(UTC).timestamp()
+        for kid, (_key, expires_at) in list(self._previous_verification_keys.items()):
+            if expires_at <= now_ts:
+                self._previous_verification_keys.pop(kid, None)
 
     def _create_token(
         self,
@@ -475,12 +520,7 @@ class JWTHandler:
         *,
         verify_exp: bool = True,
     ) -> dict[str, Any]:
-        try:
-            # Use public key for asymmetric, secret key for symmetric
-            verification_key = self._public_key_obj or self.public_key or self.secret_key
-            if verification_key is None:
-                raise AuthError("No verification key available")
-            
+        def decode_with_key(verification_key: Any) -> dict[str, Any]:
             claims = jwt.decode(
                 token,
                 verification_key,
@@ -488,8 +528,22 @@ class JWTHandler:
                 audience=self.audience,
                 options={"verify_exp": verify_exp},
             )
+            return claims  # type: ignore[no-any-return]
+
+        last_error: Exception | None = None
+        try:
+            claims = decode_with_key(self._current_verification_key())
         except jwt.PyJWTError as exc:
-            raise AuthError(str(exc)) from exc
+            last_error = exc
+            self._purge_expired_previous_verification_keys()
+            for _kid, (verification_key, _expires_at) in list(self._previous_verification_keys.items()):
+                try:
+                    claims = decode_with_key(verification_key)
+                    break
+                except jwt.PyJWTError as previous_exc:
+                    last_error = previous_exc
+            else:
+                raise AuthError(str(last_error)) from last_error
 
         if claims["jti"] in self.revoked_jtis:
             raise AuthError("Token has been revoked")

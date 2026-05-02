@@ -5,11 +5,14 @@ import logging
 import time
 import random
 from functools import wraps
-from typing import Any, Callable, Optional, Dict
+from typing import Any, Callable, Dict, Optional, ParamSpec, TypeVar
 from dataclasses import dataclass
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
+
+P = ParamSpec("P")
+R = TypeVar("R")
 
 _client: Any = None
 _sampling_rate: float = float(os.getenv("LANGFUSE_SAMPLING_RATE", "1.0"))
@@ -48,16 +51,20 @@ def _init_langfuse() -> Any:
     return _client if _client is not False else None
 
 
+def is_langfuse_enabled() -> bool:
+    return _init_langfuse() is not None
+
+
 def _should_sample() -> bool:
     return random.random() < _sampling_rate
 
 
-def trace_llm_call(node_name: str, capture_output: bool = False) -> Callable:
+def trace_llm_call(node_name: str, capture_output: bool = False) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Decorator to trace LLM calls in pipeline nodes."""
     
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             client = _init_langfuse()
             if not client or not _should_sample():
                 return func(*args, **kwargs)
@@ -106,12 +113,12 @@ def trace_pipeline_node(
     capture_tokens: bool = True,
     capture_latency: bool = True,
     capture_routing: bool = False
-) -> Callable:
+) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Decorator to trace pipeline node execution with comprehensive metadata."""
     
-    def decorator(func: Callable) -> Callable:
+    def decorator(func: Callable[P, R]) -> Callable[P, R]:
         @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             client = _init_langfuse()
             should_trace = client and _should_sample()
             

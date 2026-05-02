@@ -22,16 +22,16 @@ spec:
             app: nrg-compliance-audit-log
         spec:
           serviceAccountName: nrg-sa
-          {{- include "nrg.podSecurityContext" . | nindent 8 }}
+          {{- include "nrg.podSecurityContext" . | nindent 10 }}
           restartPolicy: OnFailure
           containers:
             - name: audit
               image: "curlimages/curl:latest"
               imagePullPolicy: IfNotPresent
-              {{- include "nrg.containerSecurityContext" . | nindent 12 }}
+              {{- include "nrg.containerSecurityContext" . | nindent 14 }}
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
 

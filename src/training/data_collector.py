@@ -15,7 +15,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from src.orchestration.state import NRGState
@@ -137,6 +137,9 @@ class TrainingDataCollector:
 
     def _get_connection(self) -> sqlite3.Connection:
         return sqlite3.connect(self.db_path)
+
+    def get_connection(self) -> sqlite3.Connection:
+        return self._get_connection()
 
     def _grade_pair(
         self,
@@ -284,7 +287,7 @@ class TrainingDataCollector:
         finally:
             conn.close()
 
-    def get_stats(self) -> dict:
+    def get_stats(self) -> dict[str, Any]:
         """Return training data statistics for /api/metrics dashboard."""
         conn = self._get_connection()
         try:
@@ -304,7 +307,7 @@ class TrainingDataCollector:
                 """
             )
             row = cur.fetchone()
-            return {
+            stats: dict[str, Any] = {
                 "total_pairs": row[0] or 0,
                 "by_grade": {
                     "gold": row[1] or 0,
@@ -317,6 +320,7 @@ class TrainingDataCollector:
                 "avg_feedback_score": round(row[7] or 0.0, 2),
                 "exported_pairs": row[8] or 0,
             }
+            return stats
         finally:
             conn.close()
 
@@ -375,6 +379,6 @@ def get_training_collector() -> TrainingDataCollector:
     return _collector_instance
 
 
-def capture_training_async(state: "NRGState | dict", user_id: str = None) -> None:
+def capture_training_async(state: "NRGState | dict[str, Any]", user_id: str | None = None) -> None:
     """Submit training capture without initializing the collector on the request path."""
     _EXECUTOR.submit(lambda: get_training_collector().capture(state, user_id))

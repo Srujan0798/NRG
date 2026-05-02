@@ -4,12 +4,38 @@ from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, 
 from prometheus_fastapi_instrumentator import Instrumentator
 from functools import wraps
 from typing import Callable, Any
+from fastapi import FastAPI
 import time
 import os
+import re
 
 
 app_info = Info('nrg_app', 'NRG application information')
 app_info.info({'version': os.getenv("NRG_VERSION", "1.0.0"), 'environment': os.getenv("ENV", "production")})
+
+
+_LABEL_VALUE_MAX_LENGTH = 80
+_LABEL_PII_PATTERNS = (
+    re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b", re.IGNORECASE),
+    re.compile(r"\b\d{4}[\s-]?\d{4}[\s-]?\d{4}\b"),
+    re.compile(r"\b(?:\+?91[\s-]?)?[6-9]\d{9}\b"),
+    re.compile(r"\b[A-Z][0-9]{7}\b", re.IGNORECASE),
+    re.compile(r"\b[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b", re.IGNORECASE),
+    re.compile(r"\buser[_-]?[0-9a-f]{8,}\b", re.IGNORECASE),
+    re.compile(r"\b[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}\b"),
+)
+
+
+def _safe_label_value(value: Any, fallback: str = "unknown") -> str:
+    """Return a bounded Prometheus label value without direct identifiers."""
+    if value is None:
+        return fallback
+    text = str(value).strip()
+    if not text:
+        return fallback
+    if any(pattern.search(text) for pattern in _LABEL_PII_PATTERNS):
+        return "redacted_pii"
+    return re.sub(r"[\r\n\t]", "_", text)[:_LABEL_VALUE_MAX_LENGTH]
 
 
 # ── Query Metrics ─────────────────────────────────────────────────────────────
@@ -241,9 +267,14 @@ nrg_llm_provider_status = Gauge(
 )
 
 
-def instrument_app(app):
-    """Instrument FastAPI app with Prometheus."""
-    Instrumentator().instrument(app).expose(app)
+def instrument_app(app: FastAPI) -> None:
+    """Instrument FastAPI app with Prometheus.
+
+    The application-owned /metrics route serves the shared registry, so the
+    instrumentator only attaches middleware here. Set OPENAPI_METRICS=true to
+    include the application-owned metrics endpoints in the OpenAPI schema.
+    """
+    Instrumentator().instrument(app)
 
 
 def timed_metric(metric: Histogram):
@@ -263,15 +294,17 @@ def timed_metric(metric: Histogram):
 
 def count_query(tier: int, intent: str, status: str = "success"):
     """Count a query."""
-    tier_label = str(tier)
-    nrg_queries_total.labels(tier=tier_label, intent=intent, status=status).inc()
-    queries_total.labels(tier=tier_label, intent=intent).inc()
+    tier_label = _safe_label_value(tier)
+    intent_label = _safe_label_value(intent)
+    status_label = _safe_label_value(status)
+    nrg_queries_total.labels(tier=tier_label, intent=intent_label, status=status_label).inc()
+    queries_total.labels(tier=tier_label, intent=intent_label).inc()
 
 
 def record_query_latency(tier: int, intent: str, duration: float):
     """Record query latency histogram."""
-    tier_label = str(tier)
-    nrg_query_latency_seconds.labels(tier=tier_label, intent=intent).observe(duration)
+    tier_label = _safe_label_value(tier)
+    nrg_query_latency_seconds.labels(tier=tier_label, intent=_safe_label_value(intent)).observe(duration)
     query_duration_seconds.observe(duration)
 
 
@@ -290,23 +323,32 @@ def count_cache_miss():
 
 def count_llm_fallback(provider: str):
     """Count LLM fallback activation."""
-    llm_fallback_total.labels(provider=provider).inc()
+    llm_fallback_total.labels(provider=_safe_label_value(provider)).inc()
 
 
 def count_llm_tokens(role: str, provider: str, model: str, tokens: int):
     """Count LLM tokens."""
-    nrg_llm_tokens_total.labels(role=role, provider=provider, model=model).inc(tokens)
-    token_usage.labels(provider=provider).observe(tokens)
+    provider_label = _safe_label_value(provider)
+    nrg_llm_tokens_total.labels(
+        role=_safe_label_value(role),
+        provider=provider_label,
+        model=_safe_label_value(model),
+    ).inc(tokens)
+    token_usage.labels(provider=provider_label).observe(tokens)
 
 
 def record_llm_latency(role: str, provider: str, model: str, duration: float):
     """Record LLM call latency."""
-    nrg_llm_latency_seconds.labels(role=role, provider=provider, model=model).observe(duration)
+    nrg_llm_latency_seconds.labels(
+        role=_safe_label_value(role),
+        provider=_safe_label_value(provider),
+        model=_safe_label_value(model),
+    ).observe(duration)
 
 
 def count_pii_block(entity_type: str):
     """Count PII block."""
-    nrg_pii_block_total.labels(entity_type=entity_type).inc()
+    nrg_pii_block_total.labels(entity_type=_safe_label_value(entity_type)).inc()
 
 
 def count_injection_block():
@@ -321,7 +363,7 @@ def count_egress_block():
 
 def count_audit_event(action: str):
     """Count audit event."""
-    nrg_audit_events_total.labels(action=action).inc()
+    nrg_audit_events_total.labels(action=_safe_label_value(action)).inc()
 
 
 def set_audit_chain_ok(ok: bool):
@@ -343,17 +385,20 @@ def set_audit_db_cosign_metrics(metrics: dict):
 
 def count_skill_error(skill_name: str, error_type: str):
     """Count skill error."""
-    nrg_skill_errors_total.labels(skill_name=skill_name, error_type=error_type).inc()
+    nrg_skill_errors_total.labels(
+        skill_name=_safe_label_value(skill_name),
+        error_type=_safe_label_value(error_type),
+    ).inc()
 
 
 def record_skill_latency(skill_name: str, duration: float):
     """Record skill latency."""
-    nrg_skill_latency_seconds.labels(skill_name=skill_name).observe(duration)
+    nrg_skill_latency_seconds.labels(skill_name=_safe_label_value(skill_name)).observe(duration)
 
 
 def count_rate_limited(user_tier: int):
     """Count rate limited request."""
-    nrg_rate_limited_total.labels(user_tier=str(user_tier)).inc()
+    nrg_rate_limited_total.labels(user_tier=_safe_label_value(user_tier)).inc()
 
 
 def set_db_connections(count: int):
@@ -374,20 +419,20 @@ def set_api_up(up: bool):
 
 def set_llm_provider_status(provider: str, up: bool):
     """Set LLM provider status."""
-    nrg_llm_provider_status.labels(provider=provider).set(1 if up else 0)
+    nrg_llm_provider_status.labels(provider=_safe_label_value(provider)).set(1 if up else 0)
 
 
-def record_db_latency(query_type: str, duration: float):
+def record_db_latency(query_type: str, duration: float) -> None:
     """Record database query latency."""
-    nrg_db_query_latency_seconds.labels(query_type=query_type).observe(duration)
+    nrg_db_query_latency_seconds.labels(query_type=_safe_label_value(query_type)).observe(duration)
 
 
-def get_metrics():
+def get_metrics() -> bytes:
     """Get Prometheus metrics for /metrics endpoint."""
     return generate_latest()
 
 
-def get_metrics_content_type():
+def get_metrics_content_type() -> tuple[str, bytes]:
     """Get content type and metrics output for Prometheus endpoint."""
     from prometheus_client import generate_latest, REGISTRY
     return CONTENT_TYPE_LATEST, generate_latest(REGISTRY)
@@ -445,7 +490,7 @@ nrg_slo_breach_total = Counter(
 
 def record_slo_breach(breach_type: str):
     """Record an SLO breach event."""
-    nrg_slo_breach_total.labels(breach_type=breach_type).inc()
+    nrg_slo_breach_total.labels(breach_type=_safe_label_value(breach_type)).inc()
 
 
 class SLOTracker:

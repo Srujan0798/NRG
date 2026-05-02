@@ -49,12 +49,19 @@ dev = [
     "black",
     "ruff",
     "mypy",
+    "pyright>=1.1,<2",
     "pre-commit",
+    "sqlfluff>=3.2,<4",
     "locust>=2.32,<3",
 ]
 nlp = [
     "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
 ]
+
+[tool.sqlfluff.core]
+dialect = "postgres"
+templater = "jinja"
+sql_file_exts = ".sql,.sql.j2,.dml,.ddl"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,0 +1,13 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand tests/hooks/useStreamingQuery.test.ts tests/components/ConsentBanner.test.tsx tests/components/OverlayFocusTrap.test.tsx tests/lib/authServiceHeaders.test.ts tests/lib/dpdpStore.test.ts tests/lib/fetchWithTimeout.test.ts src/__tests__/TestApp.test.tsx
+
+
+Test Suites: 7 passed, 7 total
+Tests:       13 passed, 13 total
+Snapshots:   0 total
+Time:        0.941 s, estimated 1 s
+Ran all test suites matching tests/hooks/useStreamingQuery.test.ts|tests/components/ConsentBanner.test.tsx|tests/components/OverlayFocusTrap.test.tsx|tests/lib/authServiceHeaders.test.ts|tests/lib/dpdpStore.test.ts|tests/lib/fetchWithTimeout.test.ts|src/__tests__/TestApp.test.tsx.
+Jest did not exit one second after the test run has completed.
+
+'This usually means that there are asynchronous operations that weren't stopped in your tests. Consider running Jest with `--detectOpenHandles` to troubleshoot this issue.

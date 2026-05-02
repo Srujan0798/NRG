@@ -30,6 +30,11 @@ services:
           - /logout
         strip_path: false
         methods: [POST]
+        plugins:
+          - name: key-auth
+            config:
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: query
         paths:
@@ -37,12 +42,10 @@ services:
         strip_path: false
         methods: [POST]
         plugins:
-          - name: rate-limiting
+          - name: key-auth
             config:
-              minute: 100
-              policy: redis
-              redis_host: redis
-              fault_tolerant: true
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: query-graph
         paths:
@@ -50,10 +53,10 @@ services:
         strip_path: false
         methods: [GET]
         plugins:
-          - name: rate-limiting
+          - name: key-auth
             config:
-              minute: 50
-              policy: redis
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: researchers
         paths:
@@ -61,10 +64,10 @@ services:
         strip_path: false
         methods: [GET]
         plugins:
-          - name: rate-limiting
+          - name: key-auth
             config:
-              minute: 100
-              policy: redis
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: publications
         paths:
@@ -72,10 +75,10 @@ services:
         strip_path: false
         methods: [GET]
         plugins:
-          - name: rate-limiting
+          - name: key-auth
             config:
-              minute: 100
-              policy: redis
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: stats
         paths:
@@ -88,12 +91,22 @@ services:
           - /me
         strip_path: false
         methods: [GET, DELETE]
+        plugins:
+          - name: key-auth
+            config:
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: consent
         paths:
           - /consent
         strip_path: false
         methods: [POST, DELETE]
+        plugins:
+          - name: key-auth
+            config:
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: audit
         paths:
@@ -101,10 +114,10 @@ services:
         strip_path: false
         methods: [GET]
         plugins:
-          - name: rate-limiting
+          - name: key-auth
             config:
-              minute: 20
-              policy: redis
+              key_names: [apikey, x-api-key]
+              hide_credentials: true
       
       - name: health-llm
         paths:
@@ -144,24 +157,65 @@ services:
               - X-Proxy-By:Kong
 
 plugins:
-  - name: rate-limiting
-    config:
-      minute: 200
-      policy: redis
-      redis_host: redis
-      redis_port: 6379
-      redis_timeout: 2000
-      redis_database: 0
-      fault_tolerant: true
-      hide_client_headers: false
-      redis_ssl: false
-      redis_ssl_verify: false
-
   - name: request-size-limiting
     config:
       allowed_payload_size: 1
       size_unit: megabytes
       require_content_length: true
+
+  - name: rate-limiting
+    consumer: tier1-researcher
+    config:
+      minute: 120
+      hour: 5000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+        timeout: 2000
+        database: 0
+        ssl: false
+        ssl_verify: false
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429
+
+  - name: rate-limiting
+    consumer: tier2-government
+    config:
+      minute: 300
+      hour: 12000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+        timeout: 2000
+        database: 0
+        ssl: false
+        ssl_verify: false
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429
+
+  - name: rate-limiting
+    consumer: tier3-industry
+    config:
+      minute: 40
+      hour: 1000
+      policy: redis
+      limit_by: consumer
+      redis:
+        host: redis
+        port: 6379
+        timeout: 2000
+        database: 0
+        ssl: false
+        ssl_verify: false
+      fault_tolerant: false
+      hide_client_headers: false
+      error_code: 429
 
 consumers:
   - username: tier1-researcher

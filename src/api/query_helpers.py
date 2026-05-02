@@ -9,23 +9,16 @@ import sqlite3
 import threading
 import time
 import uuid
-from collections import deque
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, cast
 
 from src.api.deps import (
-    _api_cache,
-    _fast_query_context,
-    _format_inr_crores,
-    _get_db,
-    _metric_band,
-    _publication_count_cache,
-    _sql_domain_context,
-    _tier_response_history,
-    get_workflow,
-    jwt_handler,
-    KILLER_QUERY_HEALTH_FILE,
-    QUERY_RESULT_CACHE_TTL_SECONDS,
+    format_inr_crores as _format_inr_crores,
+    get_db as _get_db,
+    get_fast_query_context,
+    get_publication_count_cache,
+    get_sql_domain_context,
+    metric_band as _metric_band,
     REPO_ROOT,
 )
 from src.api._shared_sql_domain import (
@@ -38,38 +31,22 @@ from src.api.logging_config import get_logger
 logger = get_logger(__name__)
 _table_column_cache_lock = threading.Lock()
 _table_column_cache: dict[tuple[int, str], set[str] | None] = {}
+JSONDict = dict[str, Any]
+_fast_query_context = get_fast_query_context()
+_publication_count_cache = get_publication_count_cache()
+_sql_domain_context = get_sql_domain_context()
 
 
-def _extract_institute_hint(query: str) -> str | None:
-    match = re.search(r"\b(IIT\s+[A-Za-z]+(?:\s+[A-Za-z]+)?)\b", query, flags=re.IGNORECASE)
-    if match:
-        parts = match.group(1).split()
-        while len(parts) > 2 and parts[-1].lower() in {"offer", "offered", "offers", "has", "have", "had"}:
-            parts.pop()
-        return " ".join(part.capitalize() if part.lower() != "iit" else "IIT" for part in parts)
-    return None
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, dict):
+        return {}
+    return dict(cast(dict[str, Any], value))
 
 
-def _extract_year_hint(query: str) -> str | None:
-    match = re.search(r"\b(20\d{2})(?:[-/](\d{2}))?\b", query)
-    if not match:
-        return None
-    start = int(match.group(1))
-    if match.group(2):
-        return f"{start}-{match.group(2)}"
-    return f"{start}-{str(start + 1)[-2:]}"
-
-
-def _previous_financial_year(financial_year: str | None) -> str | None:
-    if not financial_year or "-" not in financial_year:
-        return None
-    try:
-        start_text, end_text = financial_year.split("-", 1)
-        start = int(start_text)
-        end = int(end_text)
-    except ValueError:
-        return None
-    return f"{start - 1}-{(end - 1) % 100:02d}"
+def _as_json_rows(value: Any) -> list[JSONDict]:
+    if not isinstance(value, list):
+        return []
+    return [_as_json_dict(item) for item in cast(list[Any], value) if isinstance(item, dict)]
 
 
 def _remember_sql_domain_context(context_key: str, query: str, sql_query: str | None) -> None:
@@ -89,7 +66,7 @@ def _remember_sql_domain_context(context_key: str, query: str, sql_query: str | 
 
 def _local_research_db_path() -> Path | None:
     env_path = os.getenv("NRG_LOCAL_RESEARCH_DB")
-    candidates = []
+    candidates: list[Path] = []
     if env_path:
         candidates.append(Path(env_path).expanduser())
     candidates.extend(
@@ -794,8 +771,8 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
         return []
 
     if topic == "Renewable Energy":
-        rows = []
-        for item in seed.get("solar_seed_patents", []):
+        rows: list[JSONDict] = []
+        for item in _as_json_rows(seed.get("solar_seed_patents", [])):
             rows.append(
                 {
                     "institution": item["institution"],
@@ -805,13 +782,13 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
                     "source_label": "solar seed grant and patent corpus",
                 }
             )
-        rows.sort(key=lambda row: row["funding_cr"], reverse=True)
+        rows.sort(key=lambda row: float(row["funding_cr"]), reverse=True)
         return rows
 
     if topic == "Computer Science":
         latest_by_institution: dict[str, dict[str, Any]] = {}
-        for item in seed.get("iit_ai_ml_comparison", []):
-            institution = item["institution"]
+        for item in _as_json_rows(seed.get("iit_ai_ml_comparison", [])):
+            institution = str(item["institution"])
             current = latest_by_institution.get(institution)
             if current is None or int(item["year"]) > int(current["year"]):
                 latest_by_institution[institution] = item
@@ -825,7 +802,7 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
             }
             for item in latest_by_institution.values()
         ]
-        rows.sort(key=lambda row: row["funding_cr"], reverse=True)
+        rows.sort(key=lambda row: float(row["funding_cr"]), reverse=True)
         return rows
 
     return []
@@ -834,7 +811,8 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
 def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
     seed_path = REPO_ROOT / "scripts" / "seed_data.json"
     try:
-        release_graph = json.loads(seed_path.read_text(encoding="utf-8")).get("release_graph", {})
+        release_seed = _as_json_dict(json.loads(seed_path.read_text(encoding="utf-8")))
+        release_graph = _as_json_dict(release_seed.get("release_graph", {}))
     except (OSError, ValueError):
         release_graph = {}
 
@@ -851,26 +829,26 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
     nodes: list[dict[str, Any]] = []
     node_ids: dict[str, str] = {}
     author_count = 0
-    for raw_node in release_graph.get("nodes", []):
-        raw_type = raw_node.get("type", "topic")
+    for raw_node in _as_json_rows(release_graph.get("nodes", [])):
+        raw_type = str(raw_node.get("type", "topic"))
         if tier >= 3 and raw_type == "researcher":
             continue
         node_type = node_type_map.get(raw_type, "topic")
         node_id = str(raw_node.get("id", f"{node_type}:{len(nodes)}")).replace(":", "-")
-        label = raw_node.get("label", "NRG evidence node")
+        label = str(raw_node.get("label", "NRG evidence node"))
         if tier >= 3 and raw_type == "researcher":
             author_count += 1
             label = f"Researcher {author_count}"
-        node_ids[raw_node.get("id", node_id)] = node_id
+        node_ids[str(raw_node.get("id", node_id))] = node_id
         nodes.append({"id": node_id, "label": label, "type": node_type, "weight": raw_node.get("weight")})
 
     edges: list[dict[str, Any]] = []
-    for raw_edge in release_graph.get("edges", []):
-        source = node_ids.get(raw_edge.get("source"))
-        target = node_ids.get(raw_edge.get("target"))
+    for raw_edge in _as_json_rows(release_graph.get("edges", [])):
+        source = node_ids.get(str(raw_edge.get("source")))
+        target = node_ids.get(str(raw_edge.get("target")))
         if not source or not target:
             continue
-        relationship = raw_edge.get("relationship", "related")
+        relationship = str(raw_edge.get("relationship", "related"))
         edges.append({
             "source": source,
             "target": target,
@@ -1119,7 +1097,7 @@ def _fast_query_response(
     return {
         "query_id": str(uuid.uuid4()),
         "session_id": session_id,
-        "response": "\n".join(line for line in lines if line is not None),
+        "response": "\n".join(lines),
         "status": "success",
         "tier": user_tier,
         "intent": "funding_aggregate",
@@ -1741,7 +1719,7 @@ def _killer_query_response(
         from src.skills.text_to_sql.sandbox import execute_sql
 
         started = time.time()
-        sql_result = execute_sql(fixed_sql, user_tier=user_tier)
+        sql_result = _as_json_dict(execute_sql(fixed_sql, user_tier=user_tier))
         sql_result["answer_confidence"] = "high" if sql_result.get("results") else "low_clarify"
         sql_result["answer_confidence_score"] = 0.95 if sql_result.get("results") else 0.05
         sql_result["execution_time_ms"] = int((time.time() - started) * 1000)
@@ -1750,11 +1728,11 @@ def _killer_query_response(
 
         skill = TextToSQLSkill()
         try:
-            sql_result = skill.execute(query, user_tier=user_tier)
+            sql_result = _as_json_dict(skill.execute(query, user_tier=user_tier))
         finally:
             skill.close()
 
-    rows = sql_result.get("results") or []
+    rows = _as_json_rows(sql_result.get("results", []))
     sql_query = sql_result.get("query")
     row_count = len(rows)
     payload_rows = _restricted_structured_rows(rows) if user_tier >= 3 else rows
@@ -1817,3 +1795,12 @@ def _killer_query_response(
         "conversation_history": [],
         "execution_time_ms": sql_result.get("execution_time_ms", {}),
     }
+
+
+remember_sql_domain_context = _remember_sql_domain_context
+release_seed_graph = _release_seed_graph
+prewarm_publication_count_cache = _prewarm_publication_count_cache
+fast_query_response = _fast_query_response
+academic_follow_up_response = _academic_follow_up_response
+advanced_adversarial_response = _advanced_adversarial_response
+killer_query_response = _killer_query_response

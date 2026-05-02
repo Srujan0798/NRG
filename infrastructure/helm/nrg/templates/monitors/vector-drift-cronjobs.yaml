@@ -36,7 +36,7 @@ spec:
                   value: "{{ .Values.vectorDrift.cacheMountPath }}/vector_drift_status.json"
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -euo pipefail
                   cd /app
@@ -86,7 +86,7 @@ spec:
                   value: "{{ .Values.vectorDrift.cacheMountPath }}/vector_drift_status.json"
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -euo pipefail
                   cd /app

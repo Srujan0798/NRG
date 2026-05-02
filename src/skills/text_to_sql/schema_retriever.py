@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import math
 import re
-import os
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any
@@ -467,7 +466,6 @@ class SchemaRetriever:
                         "hint": "ambiguous — specify context",
                     })
 
-        ambiguous_terms = [d["term"] for d in disambiguations if d.get("requires_clarification")]
         semantic_notes: List[str] = []
         for tbl in tables:
             for gname, gdata in self._semantic_layer.get("graphs", {}).items():
@@ -618,6 +616,12 @@ class SchemaRetriever:
         if not self._loaded:
             self.load()
         return "\n\n".join(table.ddl_text for table in self._tables.values())
+
+    def table_count(self) -> int:
+        """Return the number of parsed schema tables."""
+        if not self._loaded:
+            self.load()
+        return len(self._tables)
 
 
 def _table_to_alias(table_name: str) -> str:

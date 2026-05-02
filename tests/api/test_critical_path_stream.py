@@ -1,6 +1,11 @@
+import threading
+import time
+
 from fastapi.testclient import TestClient
 
 import src.api.main as api_main
+from src.api import query_response_utils
+from src.api.routes.query import QueryRequest
 
 
 def test_get_stream_uses_cookie_auth_and_named_phases(monkeypatch):
@@ -140,3 +145,47 @@ def test_stream_answer_event_includes_hybrid_provenance(monkeypatch):
     assert "event: answer" in body
     assert '"synth": "rule_based_hybrid"' in body
     assert '"hybrid_evidence": {"sql_rows": 1, "document_chunks": 1}' in body
+
+
+def test_stream_answer_record_persist_does_not_block_answer_build(monkeypatch):
+    persisted = threading.Event()
+
+    def fake_fast_response(query: str, user_tier: int = 1, user_id: str | None = None, session_id: str | None = None):
+        return {
+            "query_id": "cp-stream-persist",
+            "session_id": session_id or "session-1",
+            "response": "Fast streaming response.",
+            "status": "success",
+            "tier": user_tier,
+            "verification_status": True,
+            "answer_confidence": "high",
+            "citations": [],
+            "sql_results": [],
+            "conversation_history": [],
+            "audit_event_id": "audit-cp-stream",
+        }
+
+    def slow_persist(user_id, session_id, payload):
+        time.sleep(0.2)
+        persisted.set()
+
+    query_response_utils.shutdown_answer_record_executor()
+    try:
+        monkeypatch.setattr(api_main, "_fast_query_response", fake_fast_response)
+        monkeypatch.setattr(api_main, "audit_log_query", lambda *args, **kwargs: "audit-cp-stream")
+        monkeypatch.setattr(query_response_utils, "persist_answer_record", slow_persist)
+        api_main._api_cache.invalidate()
+
+        started = time.perf_counter()
+        payload = api_main._build_stream_answer_payload(
+            QueryRequest(query="Top funding agencies", session_id="stream-session"),
+            token_payload={"sub": "stream-user", "tier": 1},
+            raw_request=None,
+        )
+        elapsed_ms = (time.perf_counter() - started) * 1000
+
+        assert payload["status"] == "success"
+        assert elapsed_ms < 150
+        assert persisted.wait(timeout=1)
+    finally:
+        query_response_utils.shutdown_answer_record_executor()

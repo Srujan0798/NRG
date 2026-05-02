@@ -1,0 +1,9 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand tests/hooks/useStreamingQuery.test.ts
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        3.194 s
+Ran all test suites matching tests/hooks/useStreamingQuery.test.ts.

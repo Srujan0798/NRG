@@ -35,8 +35,8 @@ vault.hashicorp.com/role: {{ .Values.vault.role | default "nrg-app" }}
 vault.hashicorp.com/agent-inject-default: "false"
 vault.hashicorp.com/agent-inject-file: "secrets.env"
 vault.hashicorp.com/agent-inject-template: |
-  {{- with secret "secret/data/nrg/production" -}}
-  DATABASE_URL=postgresql://{{ .Data.data.db_user }}:{{ .Data.data.db_password }}@{{ .Values.postgresql.host }}:5432/{{ .Values.postgresql.database }}
+  {{ "{{" }}- with secret "secret/data/nrg/production" -{{ "}}" }}
+  DATABASE_URL=postgresql://{{ "{{" }} .Data.data.db_user {{ "}}" }}:{{ "{{" }} .Data.data.db_password {{ "}}" }}@{{ .Values.postgresql.host }}:5432/{{ .Values.postgresql.database }}
   DATABASE_POOL_MIN=20
   DATABASE_POOL_MAX=40
   REDIS_URL=redis://{{ .Values.redis.host }}:6379/0
@@ -45,9 +45,9 @@ vault.hashicorp.com/agent-inject-template: |
   QDRANT_PORT={{ .Values.qdrant.port }}
   AUDIT_AUTO_REPAIR_LINE1=false
   TRUST_PROXY_HEADERS=true
-  JWT_SECRET={{ .Data.data.jwt_secret }}
-  API_ENCRYPTION_KEY={{ .Data.data.api_encryption_key }}
-  {{- end }}
+  JWT_SECRET={{ "{{" }} .Data.data.jwt_secret {{ "}}" }}
+  API_ENCRYPTION_KEY={{ "{{" }} .Data.data.api_encryption_key {{ "}}" }}
+  {{ "{{" }}- end {{ "}}" }}
 {{- end }}
 
 {{/*

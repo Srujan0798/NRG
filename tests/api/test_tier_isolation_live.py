@@ -145,7 +145,7 @@ class TestTierIsolationLive:
             or "redact" in warning_text
             or "anonymiz" in response_text.lower()
             or result.get("status") == "blocked"
-        ), f"Tier 2 should return aggregated/anonymized data or be blocked"
+        ), "Tier 2 should return aggregated/anonymized data or be blocked"
 
     def test_tier3_industry_limited_scope(self, industry_token):
         result = _query(industry_token, self.QUERY, "industry")
@@ -162,7 +162,7 @@ class TestTierIsolationLive:
             "name" in response_text.lower()
             or "research" in response_text.lower()
             or result.get("status") == "blocked"
-        ), f"Tier 3 should show names/research areas or be blocked"
+        ), "Tier 3 should show names/research areas or be blocked"
 
     def test_tier1_vs_tier2_response_differs(self, researcher_token, gov_token):
         """Same query, different persona → different response shape."""
@@ -202,8 +202,6 @@ class TestTierIsolationLive:
         result = _query(researcher_token, query, "researcher")
 
         response_text = result.get("response", "")
-        warnings = result.get("warnings", [])
-        warning_text = " ".join(str(w) for w in warnings).lower()
 
         # Tier 1 researcher SHOULD see emails (they have full access)
         # But for government/industry, we test in separate methods

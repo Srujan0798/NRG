@@ -54,6 +54,11 @@ repos:
     language: system
     pass_filenames: false
     always_run: true
+  - id: sqlfluff-text-to-sql
+    name: Lint Text-to-SQL SQL artifacts
+    entry: .venv/bin/sqlfluff lint src/skills/text_to_sql/
+    language: system
+    pass_filenames: false
   - id: slow-test-marker-check
     name: Require slow marker for long tests
     entry: python scripts/check_slow_test_markers.py

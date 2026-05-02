@@ -37,7 +37,7 @@ spec:
                   value: {{ .Values.chaos.namespace | default "nrg-staging" | quote }}
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
 
@@ -93,7 +93,7 @@ spec:
                   value: "30s"
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
 
@@ -137,7 +137,7 @@ spec:
               image: "ghcr.io/nrg-india/nrg/chaos-tools:latest"
               command:
                 - /bin/sh
-                - -c
+                - "-c"
                 - |
                   set -e
                   echo "[$(date)] Starting clock-skew experiment"

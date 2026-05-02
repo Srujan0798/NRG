@@ -51,8 +51,8 @@ data:
     template {
       destination = "/vault/secrets/secrets.env"
       contents = <<-EOF
-      {{- with secret "secret/data/nrg/production" -}}
-      DATABASE_URL=postgresql://{{ .Data.data.db_user }}:{{ .Data.data.db_password }}@{{ .Values.postgresql.host }}:5432/{{ .Values.postgresql.database }}
+      {{ "{{" }}- with secret "secret/data/nrg/production" -{{ "}}" }}
+      DATABASE_URL=postgresql://{{ "{{" }} .Data.data.db_user {{ "}}" }}:{{ "{{" }} .Data.data.db_password {{ "}}" }}@{{ .Values.postgresql.host }}:5432/{{ .Values.postgresql.database }}
       DATABASE_POOL_MIN=20
       DATABASE_POOL_MAX=40
       REDIS_URL=redis://{{ .Values.redis.host }}:6379/0
@@ -61,38 +61,38 @@ data:
       QDRANT_PORT={{ .Values.qdrant.port }}
       AUDIT_AUTO_REPAIR_LINE1=false
       TRUST_PROXY_HEADERS=true
-      JWT_SECRET={{ .Data.data.jwt_secret }}
-      API_ENCRYPTION_KEY={{ .Data.data.api_encryption_key }}
-      LANGFUSE_SECRET_KEY={{ .Data.data.langfuse_secret_key }}
-      LANGFUSE_PUBLIC_KEY={{ .Data.data.langfuse_public_key }}
-      {{- end }}
+      JWT_SECRET={{ "{{" }} .Data.data.jwt_secret {{ "}}" }}
+      API_ENCRYPTION_KEY={{ "{{" }} .Data.data.api_encryption_key {{ "}}" }}
+      LANGFUSE_SECRET_KEY={{ "{{" }} .Data.data.langfuse_secret_key {{ "}}" }}
+      LANGFUSE_PUBLIC_KEY={{ "{{" }} .Data.data.langfuse_public_key {{ "}}" }}
+      {{ "{{" }}- end {{ "}}" }}
       EOF
     }
 
     template {
       destination = "/vault/secrets/tls.crt"
       contents = <<-EOF
-      {{- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -}}
-      {{ .Data.certificate }}
-      {{ end }}
+      {{ "{{" }}- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -{{ "}}" }}
+      {{ "{{" }} .Data.certificate {{ "}}" }}
+      {{ "{{" }} end {{ "}}" }}
       EOF
     }
 
     template {
       destination = "/vault/secrets/tls.key"
       contents = <<-EOF
-      {{- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -}}
-      {{ .Data.private_key }}
-      {{ end }}
+      {{ "{{" }}- with secret "pki/issue/nrg-internal" "common_name=nrg-api" "ttl=720h" -{{ "}}" }}
+      {{ "{{" }} .Data.private_key {{ "}}" }}
+      {{ "{{" }} end {{ "}}" }}
       EOF
     }
 
     template {
       destination = "/vault/secrets/db_password"
       contents = <<-EOF
-      {{- with secret "secret/data/nrg/database" -}}
-      {{ .Data.data.postgres_password }}
-      {{- end }}
+      {{ "{{" }}- with secret "secret/data/nrg/database" -{{ "}}" }}
+      {{ "{{" }} .Data.data.postgres_password {{ "}}" }}
+      {{ "{{" }}- end {{ "}}" }}
       EOF
     }
 

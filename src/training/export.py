@@ -9,7 +9,7 @@ import json
 import logging
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 from src.training.data_collector import get_training_collector
 from src.training.data_formatter import DataFormatter, pairs_to_jsonl
@@ -147,7 +147,7 @@ class ExportPipeline:
 
         return export_stats
 
-    def get_export_history(self) -> list[dict]:
+    def get_export_history(self) -> list[dict[str, Any]]:
         """Return all previous exports from manifest files."""
         manifests = sorted(self.output_dir.glob("v*_manifest.json"))
         exports = []

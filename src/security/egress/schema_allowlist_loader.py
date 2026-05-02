@@ -63,7 +63,7 @@ class EgressSchemaAllowlist:
         llm_prompts = data.get("llm_prompts") or {}
         return bool(llm_prompts.get(field_name))
 
-    def get_allowed_tables(self) -> frozenset:
+    def get_allowed_tables(self) -> frozenset[str]:
         """Get all allowlisted table names."""
         data = self._load()
         return frozenset((data.get("tables") or {}).keys())

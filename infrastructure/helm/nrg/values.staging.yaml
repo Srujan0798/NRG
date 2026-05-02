@@ -32,7 +32,8 @@ chaos:
 
 prometheus:
   enabled: true
-  scrapeInterval: "30s"
+  metricsScrapeInterval: "60s"
+  healthScrapeInterval: "15s"
 
 observability:
   tracing:

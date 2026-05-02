@@ -1,0 +1,123 @@
+{
+  "alerts": [],
+  "database_url": "postgresql://nrg:***@localhost:5432/nrg",
+  "generated_at": "2026-05-02T11:41:06.270073+00:00",
+  "ok": true,
+  "overall_score": 0.883,
+  "overall_status": "PASS",
+  "pillars": {
+    "completeness": {
+      "detail": "0 core tables below minimum row count",
+      "name": "completeness",
+      "observed": {
+        "core_tables": 16,
+        "row_counts": {
+          "academic_courses_details": 50000,
+          "actual_student_strength": 1000,
+          "combined_ipo_patent_data": 50000,
+          "faculty_details": 1000,
+          "financial_expenses_capital": 1000,
+          "financial_expenses_operational": 1000,
+          "innovation_grant_from_govt": 50000,
+          "innovations_at_various_stages_of_technology_readiness_level": 50000,
+          "patents_details": 1000,
+          "phd_students": 1000,
+          "placements_and_higher_studies": 1000,
+          "research_consultancy_details_consultancy": 1000,
+          "research_consultancy_details_sponsered": 1000,
+          "sanctioned_intake": 1000,
+          "startup_recognition": 1000,
+          "tb_institute_mstr": 1000
+        },
+        "violations": []
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": ">= 1000 rows in every core table"
+    },
+    "consistency": {
+      "detail": "0 cross-table consistency violations",
+      "name": "consistency",
+      "observed": {
+        "examples": [],
+        "records_checked": 0,
+        "rules_checked": 0,
+        "violations": 0
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "cross-table validations have zero orphaned references"
+    },
+    "freshness": {
+      "detail": "worst table age 5.731 days",
+      "name": "freshness",
+      "observed": {
+        "invalid_values": [],
+        "stale_tables": [],
+        "tables_checked": 5,
+        "worst_age_days": 5.7314
+      },
+      "score": 0.1812,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "<= 7 days since latest update"
+    },
+    "null_rate": {
+      "detail": "worst column null rate 0.000",
+      "name": "null_rate",
+      "observed": {
+        "columns_checked": 26,
+        "columns_skipped_nullable": 168,
+        "violations": [],
+        "worst_null_rate": 0.0
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "<= 5.00% nulls in any measured column"
+    },
+    "pii_sanitization": {
+      "detail": "0 PII findings in non-PII tables",
+      "name": "pii_sanitization",
+      "observed": {
+        "columns_scanned": 497,
+        "findings": [],
+        "tables_scanned": 63
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": "0 PII findings in non-PII tables"
+    },
+    "referential_integrity": {
+      "detail": "0 orphaned references across 0 checked",
+      "name": "referential_integrity",
+      "observed": {
+        "examples": [],
+        "orphaned_references": 0,
+        "references_checked": 0,
+        "relationships_checked": 16
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": ">= 99.00% valid references"
+    },
+    "schema_coverage": {
+      "detail": "58/58 expected tables present",
+      "name": "schema_coverage",
+      "observed": {
+        "expected_tables": 58,
+        "live_tables": 75,
+        "missing_tables": [],
+        "present_tables": 58
+      },
+      "score": 1.0,
+      "severity": null,
+      "status": "PASS",
+      "threshold": ">= 58 expected tables present"
+    }
+  }
+}

@@ -3,13 +3,15 @@ Security Tests: Rate Limit Enforced
 101 requests in 1 minute for researcher tier → 429 on 101st
 """
 
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 import src.api.main as api_main
+import src.security.rate_limiter as rate_limiter
 
 
 class StubWorkflow:
@@ -35,11 +37,66 @@ class StubWorkflow:
         }
 
 
+class FakeRedisPipeline:
+    def __init__(self, redis):
+        self.redis = redis
+        self.commands = []
+
+    def zremrangebyscore(self, key, minimum, maximum):
+        self.commands.append(("zremrangebyscore", key, minimum, maximum))
+        return self
+
+    def zcard(self, key):
+        self.commands.append(("zcard", key))
+        return self
+
+    def zadd(self, key, mapping):
+        self.commands.append(("zadd", key, mapping))
+        return self
+
+    def expire(self, key, seconds):
+        self.commands.append(("expire", key, seconds))
+        return self
+
+    def execute(self):
+        results = []
+        for command in self.commands:
+            if command[0] == "zremrangebyscore":
+                _, key, _minimum, maximum = command
+                self.redis.store[key] = [
+                    score for score in self.redis.store.get(key, []) if score > maximum
+                ]
+                results.append(0)
+            elif command[0] == "zcard":
+                _, key = command
+                results.append(len(self.redis.store.get(key, [])))
+            elif command[0] == "zadd":
+                _, key, mapping = command
+                self.redis.store.setdefault(key, []).extend(mapping.values())
+                results.append(1)
+            elif command[0] == "expire":
+                results.append(True)
+        return results
+
+
+class FakeRedis:
+    def __init__(self):
+        self.store = {}
+
+    def pipeline(self):
+        return FakeRedisPipeline(self)
+
+
 @pytest.fixture(autouse=True)
 def setup(monkeypatch):
     StubWorkflow.call_count = 0
     monkeypatch.setattr(api_main, "workflow", StubWorkflow())
     api_main._api_cache.invalidate()
+    rate_limiter._rate_limiter_instance = None
+    rate_limiter._endpoint_limiter_instance = None
+    yield
+    rate_limiter._rate_limiter_instance = None
+    rate_limiter._endpoint_limiter_instance = None
 
 
 @pytest.fixture
@@ -165,3 +222,35 @@ class TestRateLimitEnforced:
                 data = response.json()
                 assert "detail" in data or "error" in data, "429 response should have error detail"
                 break
+
+    def test_burst_two_x_quota_returns_429_with_audit_id(self, client, monkeypatch):
+        """A 2x burst over the tier quota should reject every over-quota request."""
+        token = _login(client, "researcher_user", "researcher-pass")
+
+        monkeypatch.setenv("NRG_RATE_LIMIT_FORCE", "1")
+        fake_redis = FakeRedis()
+        monkeypatch.setattr(rate_limiter, "_get_redis", lambda: fake_redis)
+        rate_limiter._rate_limiter_instance = None
+        rate_limiter._endpoint_limiter_instance = None
+        rate_limiter.get_rate_limiter().set_tier_limit(1, 5)
+        rate_limiter.get_endpoint_limiter().set_endpoint_limit("/query", 50)
+
+        async def fake_rate_limit_audit(**kwargs):
+            return "audit-rate-limit"
+
+        monkeypatch.setattr(api_main, "_audit_log_anomaly_async", fake_rate_limit_audit)
+
+        responses = [
+            client.post(
+                "/query",
+                headers={"Authorization": f"Bearer {token}"},
+                json={"query": f"burst quota validation {index}"},
+            )
+            for index in range(10)
+        ]
+
+        assert [response.status_code for response in responses[:5]] == [200] * 5
+        assert [response.status_code for response in responses[5:]] == [429] * 5
+        for response in responses[5:]:
+            detail = response.json()["detail"]
+            assert detail["audit_event_id"] == "audit-rate-limit"

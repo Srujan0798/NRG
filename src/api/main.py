@@ -10,19 +10,22 @@ import random
 import threading
 import time
 from collections import deque
+from collections.abc import AsyncIterator, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Awaitable, Callable, Optional, TYPE_CHECKING
+from typing import Any, Awaitable, Callable, Optional, TYPE_CHECKING, cast
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import ORJSONResponse
+from fastapi.responses import JSONResponse, ORJSONResponse  # pyright: ignore[reportDeprecated]
 from fastapi.staticfiles import StaticFiles
 from starlette.datastructures import MutableHeaders
 from starlette.responses import Response, StreamingResponse
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
 import uuid
 
 from src.api.logging_config import configure_logging, get_logger
@@ -55,12 +58,11 @@ from src.api.response_filter import (
 )
 from src.api.query_response_utils import (
     answer_confidence_from_verification as _answer_confidence_from_verification,
-    extract_citations_from_text as _extract_citations_from_text,
     normalise_query_answer_payload as _normalise_query_answer_payload,
     normalise_stream_answer_payload as _normalise_stream_answer_payload,
-    persist_answer_record as _persist_answer_record,
     redact_pii_from_response as _redact_pii_from_response,
     schedule_answer_record_persist as _schedule_answer_record_persist,
+    shutdown_answer_record_executor,
     sse as _sse,
 )
 from src.data.database import resolve_database_path
@@ -87,12 +89,38 @@ KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.
 DEFAULT_VECTOR_DRIFT_STATUS_FILE = REPO_ROOT / ".cache" / "vector_drift_status.json"
 DEFAULT_DATA_QUALITY_SCORECARD_FILE = REPO_ROOT / "docs/ops/data_quality_scorecard.json"
 
+JSONDict = dict[str, Any]
+JSONRows = list[JSONDict]
+TokenPayload = dict[str, Any]
 
-def _get_chain_health_no_repair(get_chain_health_fn):
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _as_json_rows(value: Any) -> JSONRows:
+    if not isinstance(value, list):
+        return []
+    return [_as_json_dict(item) for item in cast(list[Any], value) if isinstance(item, Mapping)]
+
+
+def _as_sequence_for_count(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return cast(list[Any], value)
+    return []
+
+
+def _get_chain_health_no_repair(get_chain_health_fn: Callable[..., JSONDict]) -> JSONDict:
     try:
         return get_chain_health_fn(auto_repair=False)
     except TypeError:
         return get_chain_health_fn()
+
+
+def _make_qdrant_client(**kwargs: Any) -> QdrantClient:
+    return QdrantClient(**kwargs)
 
 
 async def _audit_log_query_async(*args: Any, **kwargs: Any) -> Any:
@@ -101,6 +129,50 @@ async def _audit_log_query_async(*args: Any, **kwargs: Any) -> Any:
 
 async def _audit_log_anomaly_async(*args: Any, **kwargs: Any) -> Any:
     return await run_audit_append(audit_log_anomaly, *args, **kwargs)
+
+
+async def _rate_limit_detail(
+    *,
+    user_id: str,
+    message: str,
+    client_ip: str | None,
+    limit_scope: str,
+) -> dict[str, Any]:
+    try:
+        audit_event_id = await _audit_log_anomaly_async(
+            user_id=user_id,
+            anomaly_type="RATE_LIMIT_EXCEEDED",
+            details={"scope": limit_scope, "message": message},
+            identifier=client_ip,
+        )
+    except Exception:
+        logger.warning("Audit log_anomaly failed for rate-limit response", exc_info=True)
+        audit_event_id = "audit_unavailable"
+    return {
+        "error": message,
+        "audit_event_id": audit_event_id,
+        "limit_scope": limit_scope,
+    }
+
+
+async def _internal_error_audit_event_id(request: Request, error: BaseException | HTTPException) -> str:
+    claims = _as_json_dict(getattr(request.state, "auth_claims", None) or {})
+    user_id = str(claims.get("sub") or claims.get("user_id") or "anonymous")
+    client_ip = request.client.host if request.client else None
+    try:
+        return await _audit_log_anomaly_async(
+            user_id=user_id,
+            anomaly_type="INTERNAL_SERVER_ERROR",
+            details={
+                "method": request.method,
+                "path": request.url.path,
+                "error_type": type(error).__name__,
+            },
+            identifier=client_ip,
+        )
+    except Exception:
+        logger.warning("Audit log_anomaly failed for 500 response", exc_info=True)
+        return "audit_unavailable"
 
 
 def _get_vector_drift_health() -> dict[str, Any]:
@@ -274,7 +346,13 @@ class _APIMemoryCache:
 
         return ' '.join(filtered)
 
-    def _make_cache_key(self, query: str, user_tier: int, intent: str = None, routing: str = None) -> str:
+    def _make_cache_key(
+        self,
+        query: str,
+        user_tier: int,
+        intent: str | None = None,
+        routing: str | None = None,
+    ) -> str:
         """Create cache key with normalized query intent."""
         normalized = self._normalize_query_for_cache(query)
         base = f"query:{hash(normalized.encode())}:{user_tier}"
@@ -283,6 +361,15 @@ class _APIMemoryCache:
         if routing:
             base += f":{routing}"
         return base
+
+    def make_cache_key(
+        self,
+        query: str,
+        user_tier: int,
+        intent: str | None = None,
+        routing: str | None = None,
+    ) -> str:
+        return self._make_cache_key(query, user_tier, intent=intent, routing=routing)
 
     def get(self, key: str) -> Any:
         now = time.time()
@@ -372,7 +459,10 @@ def _apply_tier_response_filter(
     request_fingerprint: str | None = None,
     endpoint: str = "unknown",
 ) -> Any:
+    bounded_payload: Any
+    k_anonymity_events: list[dict[str, Any]]
     bounded_payload, k_anonymity_events = apply_k_anonymity_threshold(payload, tier=tier)
+    filtered: Any
     filtered, report = filter_response_payload_for_tier(bounded_payload, tier=tier)
     enforce_tier_response_boundary(filtered, tier)
     _audit_tier_filter_events(
@@ -384,18 +474,20 @@ def _apply_tier_response_filter(
     )
     _record_tier_response_shape(filtered, tier=tier, endpoint=endpoint, report=report)
     if report.warnings and isinstance(filtered, dict):
-        existing = filtered.get("warnings", [])
+        filtered_payload = cast(JSONDict, filtered)
+        existing = filtered_payload.get("warnings", [])
         if not isinstance(existing, list):
             existing = [existing]
-        filtered["warnings"] = existing + report.warnings
+        filtered_payload["warnings"] = existing + report.warnings
     if endpoint == "/query" and isinstance(filtered, dict):
+        filtered_payload = cast(JSONDict, filtered)
         if tier == 1:
-            filtered["tier1_access_scope"] = "full_detail"
+            filtered_payload["tier1_access_scope"] = "full_detail"
         elif tier == 2:
-            filtered["tier2_access_scope"] = "government_aggregate"
+            filtered_payload["tier2_access_scope"] = "government_aggregate"
         elif tier >= 3:
-            filtered["tier3_access_scope"] = "industry_anonymized"
-    return filtered
+            filtered_payload["tier3_access_scope"] = "industry_anonymized"
+    return cast(Any, filtered)
 
 
 def _apply_ai_synthesis_after_tier_filter(
@@ -425,14 +517,14 @@ def _apply_ai_synthesis_after_tier_filter(
         synthesized["warnings"] = synthesized.get("warnings", []) + [
             f"PII redaction applied to AI synthesis response: {', '.join(redacted_pii)}"
         ]
-    return _apply_tier_response_filter(
+    return cast(JSONDict, _apply_tier_response_filter(
         synthesized,
         user_tier,
         user_id=user_id,
         jwt_kid=jwt_kid,
         request_fingerprint=request_fingerprint,
         endpoint=endpoint,
-    )
+    ))
 
 
 def _audit_tier_filter_events(
@@ -550,10 +642,14 @@ def _get_db() -> "NRGDatabaseV2":
     return _db_instance
 
 
-def _format_inr_crores(value: float | int | None) -> str:
+def _format_inr_crores(value: Any) -> str:
     if value is None:
         return "₹0 Cr"
-    return f"₹{float(value):,.2f} Cr"
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        amount = 0.0
+    return f"₹{amount:,.2f} Cr"
 
 
 _AGGREGATE_TOPIC_TERMS = (
@@ -1788,13 +1884,13 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
 
     seed_path = REPO_ROOT / "scripts" / "seed_data.json"
     try:
-        seed = json.loads(seed_path.read_text(encoding="utf-8"))
+        seed = _as_json_dict(json.loads(seed_path.read_text(encoding="utf-8")))
     except (OSError, ValueError):
         return []
 
     if topic == "Renewable Energy":
-        rows = []
-        for item in seed.get("solar_seed_patents", []):
+        rows: JSONRows = []
+        for item in _as_json_rows(seed.get("solar_seed_patents", [])):
             rows.append(
                 {
                     "institution": item["institution"],
@@ -1809,8 +1905,8 @@ def _seeded_institution_funding(topic: str) -> list[dict[str, Any]]:
 
     if topic == "Computer Science":
         latest_by_institution: dict[str, dict[str, Any]] = {}
-        for item in seed.get("iit_ai_ml_comparison", []):
-            institution = item["institution"]
+        for item in _as_json_rows(seed.get("iit_ai_ml_comparison", [])):
+            institution = str(item["institution"])
             current = latest_by_institution.get(institution)
             if current is None or int(item["year"]) > int(current["year"]):
                 latest_by_institution[institution] = item
@@ -1836,7 +1932,8 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
 
     seed_path = REPO_ROOT / "scripts" / "seed_data.json"
     try:
-        release_graph = json.loads(seed_path.read_text(encoding="utf-8")).get("release_graph", {})
+        release_seed = _as_json_dict(json.loads(seed_path.read_text(encoding="utf-8")))
+        release_graph = _as_json_dict(release_seed.get("release_graph", {}))
     except (OSError, ValueError):
         release_graph = {}
 
@@ -1863,8 +1960,8 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
     nodes: list[dict[str, Any]] = []
     node_ids: dict[str, str] = {}
     author_count = 0
-    for raw_node in release_graph.get("nodes", []):
-        raw_type = raw_node.get("type", "topic")
+    for raw_node in _as_json_rows(release_graph.get("nodes", [])):
+        raw_type = str(raw_node.get("type", "topic"))
         if tier >= 3 and raw_type == "researcher":
             continue
         node_type = node_type_map.get(raw_type, "topic")
@@ -1873,7 +1970,7 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
         if tier >= 3 and raw_type == "researcher":
             author_count += 1
             label = f"Researcher {author_count}"
-        node_ids[raw_node.get("id", node_id)] = node_id
+        node_ids[str(raw_node.get("id", node_id))] = node_id
         nodes.append(
             {
                 "id": node_id,
@@ -1884,12 +1981,12 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
         )
 
     edges: list[dict[str, Any]] = []
-    for raw_edge in release_graph.get("edges", []):
-        source = node_ids.get(raw_edge.get("source"))
-        target = node_ids.get(raw_edge.get("target"))
+    for raw_edge in _as_json_rows(release_graph.get("edges", [])):
+        source = node_ids.get(str(raw_edge.get("source")))
+        target = node_ids.get(str(raw_edge.get("target")))
         if not source or not target:
             continue
-        relationship = raw_edge.get("relationship", "related")
+        relationship = str(raw_edge.get("relationship", "related"))
         edges.append(
             {
                 "source": source,
@@ -1915,7 +2012,7 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
 
 def _local_research_db_path() -> Path | None:
     env_path = os.getenv("NRG_LOCAL_RESEARCH_DB")
-    candidates = []
+    candidates: list[Path] = []
     if env_path:
         candidates.append(Path(env_path).expanduser())
     candidates.extend(
@@ -2047,7 +2144,7 @@ def _publication_count_fast_response(
 
 
 _C4_READ_MODEL_LOCK = threading.Lock()
-_C4_READ_MODEL_SNAPSHOT: dict[str, list[dict[str, Any]]] | None = None
+_c4_read_model_snapshot_cache: dict[str, list[dict[str, Any]]] | None = None
 
 _C4_INDIAN_STATES = (
     "Andhra Pradesh",
@@ -2429,13 +2526,13 @@ def _c4_load_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
 
 
 def _c4_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
-    global _C4_READ_MODEL_SNAPSHOT
-    if _C4_READ_MODEL_SNAPSHOT is not None:
-        return _C4_READ_MODEL_SNAPSHOT
+    global _c4_read_model_snapshot_cache
+    if _c4_read_model_snapshot_cache is not None:
+        return _c4_read_model_snapshot_cache
     with _C4_READ_MODEL_LOCK:
-        if _C4_READ_MODEL_SNAPSHOT is None:
-            _C4_READ_MODEL_SNAPSHOT = _c4_load_read_model_snapshot()
-    return _C4_READ_MODEL_SNAPSHOT
+        if _c4_read_model_snapshot_cache is None:
+            _c4_read_model_snapshot_cache = _c4_load_read_model_snapshot()
+    return _c4_read_model_snapshot_cache
 
 
 def _c4_text_matches(value: Any, terms: tuple[str, ...]) -> bool:
@@ -2852,7 +2949,7 @@ def _c4_read_model_response(
             group["researcher_count"] += 1
             group["total_h_index"] += int(row.get("h_index") or 0)
             group["funding_cr"] += float(row.get("funding_cr") or 0)
-        rows = []
+        rows: JSONRows = []
         for group in grouped.values():
             count = int(group["researcher_count"] or 0)
             rows.append(
@@ -4137,7 +4234,7 @@ def _fast_query_response(
     return {
         "query_id": str(uuid.uuid4()),
         "session_id": session_id,
-        "response": "\n".join(line for line in lines if line is not None),
+        "response": "\n".join(lines),
         "status": "success",
         "tier": user_tier,
         "intent": "funding_aggregate",
@@ -4605,7 +4702,7 @@ def _killer_query_response(
         from src.skills.text_to_sql.sandbox import execute_sql
 
         started = time.time()
-        sql_result = execute_sql(fixed_sql, user_tier=user_tier)
+        sql_result = _as_json_dict(execute_sql(fixed_sql, user_tier=user_tier))
         sql_result["answer_confidence"] = "high" if sql_result.get("results") else "low_clarify"
         sql_result["answer_confidence_score"] = 0.95 if sql_result.get("results") else 0.05
         sql_result["execution_time_ms"] = int((time.time() - started) * 1000)
@@ -4614,12 +4711,12 @@ def _killer_query_response(
 
         skill = TextToSQLSkill()
         try:
-            sql_result = skill.execute(query, user_tier=user_tier)
+            sql_result = _as_json_dict(skill.execute(query, user_tier=user_tier))
         finally:
             skill.close()
 
-    rows = sql_result.get("results") or []
-    sql_query = sql_result.get("query")
+    rows = _as_json_rows(sql_result.get("results", []))
+    sql_query = str(sql_result.get("query") or "")
     row_count = len(rows)
     payload_rows = _restricted_structured_rows(rows) if user_tier >= 3 else rows
     preview_rows = payload_rows[:5]
@@ -4962,10 +5059,31 @@ workflow = NRGWorkflow()
 jwt_handler = JWTHandler()
 
 
+def _run_workflow(
+    query: str,
+    *,
+    user_tier: int,
+    session_id: str | None,
+    user_id: str | None,
+) -> JSONDict:
+    return _as_json_dict(
+        workflow.run(
+            query,
+            user_tier=user_tier,
+            session_id=session_id,
+            user_id=user_id,
+        )
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Graceful shutdown handler - drains connections before exit."""
     logger.info("Starting NRG API server...")
+    logger.info(
+        "OpenAPI metrics schema exposure",
+        extra={"OPENAPI_METRICS": os.getenv("OPENAPI_METRICS", "false")},
+    )
     blocking_workers = int(os.getenv("NRG_API_BLOCKING_WORKERS", "64"))
     blocking_executor = ThreadPoolExecutor(
         max_workers=blocking_workers,
@@ -5035,6 +5153,7 @@ async def lifespan(app: FastAPI):
     await drain_connections()
     blocking_executor.shutdown(wait=False, cancel_futures=True)
     shutdown_audit_append_executor()
+    shutdown_answer_record_executor()
     logger.info("Shutdown complete, exiting.")
 
 
@@ -5047,13 +5166,13 @@ async def drain_connections():
 class RequestLoggingMiddleware:
     """Log every request with method, path, status, and duration in structured JSON."""
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
         self.app = app
 
     def _write_envelope_profile(
         self,
         *,
-        scope: dict,
+        scope: Scope,
         status_code: int,
         response_content_length: int | None,
         request_id: str,
@@ -5062,7 +5181,8 @@ class RequestLoggingMiddleware:
         if not _env_flag("NRG_REQUEST_ENVELOPE_PROFILE"):
             return
 
-        payload = {
+        client = scope.get("client")
+        payload: JSONDict = {
             "timestamp": datetime.now(UTC).isoformat(),
             "request_id": request_id,
             "method": scope.get("method"),
@@ -5070,7 +5190,7 @@ class RequestLoggingMiddleware:
             "status": status_code,
             "duration_ms": round(duration_ms, 3),
             "response_content_length": response_content_length,
-            "client_ip": scope.get("client", [None])[0] if scope.get("client") else None,
+            "client_ip": client[0] if client else None,
         }
         path = Path(os.getenv("NRG_REQUEST_ENVELOPE_PROFILE_FILE", ".cache/request_envelope_profile.jsonl"))
         try:
@@ -5080,7 +5200,7 @@ class RequestLoggingMiddleware:
         except Exception:
             logger.debug("Request envelope profile write failed", exc_info=True)
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
@@ -5089,7 +5209,7 @@ class RequestLoggingMiddleware:
         request_id = str(uuid.uuid4())
         response_started = False
 
-        async def send_with_request_id(message):
+        async def send_with_request_id(message: Message) -> None:
             nonlocal response_started
             if message["type"] == "http.response.start":
                 response_started = True
@@ -5106,6 +5226,7 @@ class RequestLoggingMiddleware:
                 log_all_requests = os.getenv("NRG_LOG_ALL_REQUESTS", "").lower() in {"1", "true", "yes"}
                 slow_request_ms = float(os.getenv("NRG_SLOW_REQUEST_LOG_MS", "1000"))
                 should_log = log_all_requests or status_code >= 500 or duration >= slow_request_ms
+                client = scope.get("client")
                 if should_log:
                     logger.info(
                         "request completed",
@@ -5115,7 +5236,7 @@ class RequestLoggingMiddleware:
                             "path": scope.get("path"),
                             "status": status_code,
                             "duration_ms": round(duration, 2),
-                            "client_ip": scope.get("client", [None])[0] if scope.get("client") else None,
+                            "client_ip": client[0] if client else None,
                         }
                     )
                 self._write_envelope_profile(
@@ -5147,10 +5268,7 @@ def _app_gzip_minimum_size() -> int | None:
     try:
         minimum_size = int(raw_value)
     except (TypeError, ValueError):
-        logger.warning(
-            "Invalid NRG_APP_GZIP_MIN_SIZE=%r; using 8192 bytes",
-            raw_value,
-        )
+        logger.warning(f"Invalid NRG_APP_GZIP_MIN_SIZE={raw_value!r}; using 8192 bytes")
         minimum_size = 8192
     if minimum_size <= 0:
         return None
@@ -5162,8 +5280,43 @@ app = FastAPI(
     version="1.0.0",
     description="Sovereign AI platform for Indian research intelligence",
     lifespan=lifespan,
-    default_response_class=ORJSONResponse,
+    default_response_class=ORJSONResponse,  # pyright: ignore[reportDeprecated]
 )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_audit_handler(request: Request, exc: HTTPException) -> Response:
+    if exc.status_code < 500:
+        return await http_exception_handler(request, exc)
+
+    audit_event_id = await _internal_error_audit_event_id(request, exc)
+    content: JSONDict
+    if isinstance(exc.detail, Mapping):
+        content = _as_json_dict(exc.detail)
+        content.setdefault("audit_event_id", audit_event_id)
+    else:
+        content = {
+            "detail": exc.detail or "Internal server error",
+            "audit_event_id": audit_event_id,
+        }
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=content,
+        headers=exc.headers,
+    )
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_audit_handler(request: Request, exc: Exception) -> JSONResponse:
+    audit_event_id = await _internal_error_audit_event_id(request, exc)
+    logger.error("Unhandled API exception", exc_info=True)
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error",
+            "audit_event_id": audit_event_id,
+        },
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -5205,7 +5358,7 @@ configure_health_router(
     vector_drift_health=_get_vector_drift_health,
     data_quality_health=_get_data_quality_health,
     qdrant_vector_count_health=lambda: _get_qdrant_vector_count_health(),
-    qdrant_client_factory=lambda **kwargs: QdrantClient(**kwargs),
+    qdrant_client_factory=_make_qdrant_client,
     killer_query_health_file=KILLER_QUERY_HEALTH_FILE,
 )
 app.include_router(health_router)
@@ -5239,7 +5392,7 @@ app.include_router(query_router)
 def _build_stream_answer_payload(
     request: QueryRequest,
     *,
-    token_payload: dict,
+    token_payload: TokenPayload,
     raw_request: Request | None,
 ) -> dict[str, Any]:
     user_tier = token_payload.get("tier", 1)
@@ -5247,10 +5400,10 @@ def _build_stream_answer_payload(
     jwt_kid = token_payload.get("kid")
     request_fp = getattr(raw_request.state, "request_fingerprint", None) if raw_request else None
 
-    cache_key = _api_cache._make_cache_key(request.query, user_tier)
+    cache_key = _api_cache.make_cache_key(request.query, user_tier)
     cached = _api_cache.get(cache_key)
     if cached is not None:
-        cached_response = dict(cached) if isinstance(cached, dict) else cached
+        cached_response = _as_json_dict(cached) if isinstance(cached, Mapping) else cached
         if isinstance(cached_response, dict):
             cached_response["cached"] = True
         return _apply_tier_response_filter(
@@ -5282,14 +5435,14 @@ def _build_stream_answer_payload(
     )
 
     if result is None:
-        result = workflow.run(
+        result = _run_workflow(
             request.query,
             user_tier=user_tier,
             session_id=request.session_id,
             user_id=user_id,
         )
 
-    if audit_event_id and isinstance(result, dict):
+    if audit_event_id:
         result.setdefault("audit_event_id", audit_event_id)
 
     response_payload = _normalise_stream_answer_payload(
@@ -5306,7 +5459,7 @@ def _build_stream_answer_payload(
         request_fingerprint=request_fp,
         endpoint="/api/query/stream",
     )
-    _persist_answer_record(user_id, request.session_id, response_payload)
+    _schedule_answer_record_persist(user_id, request.session_id, response_payload)
     _api_cache.set(cache_key, response_payload, ttl=QUERY_RESULT_CACHE_TTL_SECONDS)
     _remember_sql_domain_context(context_key, request.query, response_payload.get("sql_query"))
     return response_payload
@@ -5315,7 +5468,7 @@ def _build_stream_answer_payload(
 async def _query_stream_response(
     request: QueryRequest,
     *,
-    token_payload: dict,
+    token_payload: TokenPayload,
     raw_request: Request | None,
 ) -> StreamingResponse:
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
@@ -5324,15 +5477,25 @@ async def _query_stream_response(
 
     allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(user_id, user_tier, client_ip)
     if not allowed:
-        raise HTTPException(status_code=429, detail="Rate limit exceeded", headers=rate_headers)
+        raise HTTPException(
+            status_code=429,
+            detail=await _rate_limit_detail(
+                user_id=user_id,
+                message="Rate limit exceeded",
+                client_ip=client_ip,
+                limit_scope="tier",
+            ),
+            headers=rate_headers,
+        )
 
     from src.services.consent import get_consent_service
     consent_service = get_consent_service()
     if not consent_service.has_consent(user_id, "research_access"):
         raise HTTPException(status_code=403, detail="Consent required for research_access")
 
-    async def event_generator():
+    async def event_generator() -> AsyncIterator[str]:
         started_at = time.time()
+        yield "retry: 300\n\n"
 
         def phase_payload(phase: str, label: str, progress: float, **extra: Any) -> dict[str, Any]:
             return {
@@ -5394,8 +5557,17 @@ async def _query_stream_response(
             yield _sse("answer", answer_payload)
             yield _sse("done", "")
         except Exception as e:
-            logger.error("Streaming query error: %s", e, exc_info=True)
-            yield _sse("error", {"phase": "error", "message": "Something went wrong. Please try again."})
+            logger.error(f"Streaming query error: {e}", exc_info=True)
+            yield _sse(
+                "error",
+                {
+                    "phase": "error",
+                    "message": (
+                        "The streaming answer stopped before verification. "
+                        "Run the query again; the signed audit trail remains intact."
+                    ),
+                },
+            )
             yield _sse("done", "")
 
     return StreamingResponse(
@@ -5411,9 +5583,9 @@ async def _query_stream_response(
 
 async def _query_with_langgraph_impl(
     request: QueryRequest,
-    token_payload: dict,
-    raw_request: Request = None,
-):
+    token_payload: TokenPayload,
+    raw_request: Request | None = None,
+) -> Any:
     """Process query using LangGraph orchestration with full security hardening."""
     client_ip = None
     if raw_request and raw_request.client:
@@ -5423,23 +5595,33 @@ async def _query_with_langgraph_impl(
     user_id = token_payload.get("sub", "anonymous")
     profiler = _QueryStageProfiler(query=request.query, user_tier=user_tier, user_id=user_id)
 
-    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+    allowed, _remaining, _reset_time, rate_headers = check_tier_rate_limit(
         user_id, user_tier, client_ip
     )
     if not allowed:
         raise HTTPException(
             status_code=429,
-            detail="Rate limit exceeded",
+            detail=await _rate_limit_detail(
+                user_id=user_id,
+                message="Rate limit exceeded",
+                client_ip=client_ip,
+                limit_scope="tier",
+            ),
             headers=rate_headers,
         )
 
-    allowed_endpoint, remaining_endpoint, reset_endpoint, endpoint_headers = check_endpoint_rate_limit(
+    allowed_endpoint, _remaining_endpoint, _reset_endpoint, endpoint_headers = check_endpoint_rate_limit(
         "/query", user_id
     )
     if not allowed_endpoint:
         raise HTTPException(
             status_code=429,
-            detail="Query rate limit exceeded (10/min). Please wait before submitting another query.",
+            detail=await _rate_limit_detail(
+                user_id=user_id,
+                message="Query rate limit exceeded (10/min). Please wait before submitting another query.",
+                client_ip=client_ip,
+                limit_scope="endpoint:/query",
+            ),
             headers={**rate_headers, **endpoint_headers},
         )
 
@@ -5447,9 +5629,9 @@ async def _query_with_langgraph_impl(
         from src.api.middleware.security import IPAllowlist
         if not IPAllowlist.is_allowed(client_ip or ""):
             logger.warning(
-                "Government tier access blocked for non-whitelisted IP: ip=%s user=%s",
-                client_ip,
-                user_id,
+                "Government tier access blocked for non-whitelisted IP",
+                client_ip=client_ip,
+                user=user_id,
             )
             raise HTTPException(
                 status_code=403,
@@ -5462,7 +5644,15 @@ async def _query_with_langgraph_impl(
         if not validation["valid"]:
             logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
             if validation["reason"] == "RATE_LIMITED":
-                raise HTTPException(status_code=429, detail="Rate limit exceeded")
+                raise HTTPException(
+                    status_code=429,
+                    detail=await _rate_limit_detail(
+                        user_id=user_id,
+                        message="Rate limit exceeded",
+                        client_ip=client_ip,
+                        limit_scope="prompt_sanitiser",
+                    ),
+                )
             audit_event_id = None
             if validation["reason"] != "RATE_LIMITED":
                 try:
@@ -5508,21 +5698,23 @@ async def _query_with_langgraph_impl(
         profiler.mark("consent_check")
 
         # Use normalized cache key for better hit rate
-        cache_key = _api_cache._make_cache_key(request.query, user_tier)
+        cache_key = _api_cache.make_cache_key(request.query, user_tier)
         cached = _api_cache.get(cache_key)
         profiler.mark("cache_lookup")
         if cached is not None:
-            cached_response = dict(cached) if isinstance(cached, dict) else cached
-            if isinstance(cached_response, dict):
-                cached_response["cached"] = True
+            cached_response: Any = cached
+            if isinstance(cached, Mapping):
+                cached_response_dict = _as_json_dict(cached)
+                cached_response_dict["cached"] = True
                 if (
-                    cached_response.get("_tier_filter_applied") is True
-                    and cached_response.get("_tier_filter_tier") == user_tier
+                    cached_response_dict.get("_tier_filter_applied") is True
+                    and cached_response_dict.get("_tier_filter_tier") == user_tier
                 ):
-                    cached_response.pop("_tier_filter_applied", None)
-                    cached_response.pop("_tier_filter_tier", None)
+                    cached_response_dict.pop("_tier_filter_applied", None)
+                    cached_response_dict.pop("_tier_filter_tier", None)
                     profiler.finish(route="cache", outcome="success", cache_hit=True)
-                    return cached_response
+                    return cached_response_dict
+                cached_response = cached_response_dict
             filtered_cached = _apply_tier_response_filter(
                 cached_response,
                 user_tier,
@@ -5592,18 +5784,20 @@ async def _query_with_langgraph_impl(
             )
             profiler.mark("c4_singleflight")
             if c4_payload is not None:
-                response_payload = dict(c4_payload) if isinstance(c4_payload, dict) else c4_payload
-                if isinstance(response_payload, dict):
+                response_payload: Any = c4_payload
+                if isinstance(c4_payload, Mapping):
+                    response_payload_dict = _as_json_dict(c4_payload)
                     if c4_cache_hit:
-                        response_payload["cached"] = True
+                        response_payload_dict["cached"] = True
                     if (
-                        response_payload.get("_tier_filter_applied") is True
-                        and response_payload.get("_tier_filter_tier") == user_tier
+                        response_payload_dict.get("_tier_filter_applied") is True
+                        and response_payload_dict.get("_tier_filter_tier") == user_tier
                     ):
-                        response_payload.pop("_tier_filter_applied", None)
-                        response_payload.pop("_tier_filter_tier", None)
+                        response_payload_dict.pop("_tier_filter_applied", None)
+                        response_payload_dict.pop("_tier_filter_tier", None)
                         profiler.finish(route="c4_read_model", outcome="success", cache_hit=c4_cache_hit)
-                        return response_payload
+                        return response_payload_dict
+                    response_payload = response_payload_dict
                 filtered_c4_payload = _apply_tier_response_filter(
                     response_payload,
                     user_tier,
@@ -5854,7 +6048,7 @@ async def _query_with_langgraph_impl(
             logger.warning("Audit log_query failed at API layer", exc_info=True)
         profiler.mark("audit_append")
 
-        result = None
+        result: JSONDict | None = None
         try:
             from src.config.database import get_database_manager
             db = get_database_manager()
@@ -5865,7 +6059,7 @@ async def _query_with_langgraph_impl(
                 )
 
             result = await asyncio.to_thread(
-                workflow.run,
+                _run_workflow,
                 request.query,
                 user_tier=user_tier,
                 session_id=request.session_id,
@@ -5877,8 +6071,8 @@ async def _query_with_langgraph_impl(
             slo_tracker.decrement_concurrency()
             slo_tracker.record_latency(latency_ms)
             if result is not None:
-                citations = result.get("citations", [])
-                synthesis_method = result.get("synthesis_method", "unknown")
+                citations = _as_sequence_for_count(result.get("citations", []))
+                synthesis_method = str(result.get("synthesis_method", "unknown"))
             else:
                 citations = []
                 synthesis_method = "error"
@@ -5887,8 +6081,10 @@ async def _query_with_langgraph_impl(
                 synthesis_method=synthesis_method,
             )
 
-        synthesis_method = result.get("synthesis_method", "unknown")
-        warnings_text = " ".join(str(item).lower() for item in result.get("warnings", []))
+        if result is None:
+            result = {}
+        synthesis_method = str(result.get("synthesis_method", "unknown"))
+        warnings_text = " ".join(str(item).lower() for item in _as_sequence_for_count(result.get("warnings", [])))
         explicit_sql_only_degradation = synthesis_method == "sql_only" and (
             "vector" in warnings_text or "qdrant" in warnings_text
         )
@@ -5897,7 +6093,7 @@ async def _query_with_langgraph_impl(
             or (synthesis_method == "sql_only" and not explicit_sql_only_degradation)
         ) and result.get("synthesized_response"):
             synthesis_method = "rule_based"
-        provenance = result.get("provenance", {}) or {}
+        provenance = _as_json_dict(result.get("provenance", {}) or {})
         if "synth" not in provenance:
             provenance["synth"] = synthesis_method if synthesis_method != "unknown" else "rule_based"
         provenance.setdefault("cloud_synthesis_used", "cloud" in str(provenance.get("synth", "")))
@@ -5961,7 +6157,7 @@ async def _query_with_langgraph_impl(
         logger.error(f"Workflow execution error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-def _get_qdrant_vector_count_health() -> dict:
+def _get_qdrant_vector_count_health() -> JSONDict:
     return get_qdrant_vector_count_health(client_factory=QdrantClient)
 
 

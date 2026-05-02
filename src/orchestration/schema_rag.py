@@ -9,7 +9,6 @@ Usage:
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 from src.skills.text_to_sql.schema_retriever import SchemaRetriever, get_default_retriever
@@ -30,10 +29,14 @@ class SchemaRAG:
         self._retriever.load()
         self._initialized = True
 
+    def _active_retriever(self) -> SchemaRetriever:
+        self._init()
+        assert self._retriever is not None
+        return self._retriever
+
     def retrieve(self, query: str, top_k: int = 5) -> list[str]:
         """Return top-k DDL chunks relevant to the natural-language query."""
-        self._init()
-        return self._retriever.retrieve_ddl(query, top_k=top_k)
+        return self._active_retriever().retrieve_ddl(query, top_k=top_k)
 
     def retrieve_with_join_graph(
         self,
@@ -41,9 +44,9 @@ class SchemaRAG:
         top_k: int = 5,
     ) -> dict[str, Any]:
         """Return DDL chunks plus join-graph metadata for multi-hop queries."""
-        self._init()
-        ddl_chunks = self._retriever.retrieve_ddl(query, top_k=top_k)
-        join_graph = self._retriever.get_join_graph_for_query(query)
+        retriever = self._active_retriever()
+        ddl_chunks = retriever.retrieve_ddl(query, top_k=top_k)
+        join_graph = retriever.get_join_graph_for_query(query)
         return {
             "ddl_chunks": ddl_chunks,
             "join_graph": join_graph,
@@ -52,14 +55,13 @@ class SchemaRAG:
 
     def get_glossary_hint(self, term: str) -> str | None:
         """Return glossary disambiguation hint for an ambiguous term."""
-        self._init()
-        return self._retriever.get_glossary_hint(term)
+        return self._active_retriever().get_glossary_hint(term)
 
     def token_reduction_vs_full_schema(self, query: str, top_k: int = 5) -> dict[str, Any]:
         """Compare token count: schema-RAG vs full schema dump."""
-        self._init()
-        rag_chunks = self._retriever.retrieve_ddl(query, top_k=top_k)
-        full_schema = self._retriever.get_full_schema_ddl()
+        retriever = self._active_retriever()
+        rag_chunks = retriever.retrieve_ddl(query, top_k=top_k)
+        full_schema = retriever.get_full_schema_ddl()
         rag_tokens = sum(len(chunk) for chunk in rag_chunks) // 4
         full_tokens = len(full_schema) // 4
         return {
@@ -67,5 +69,5 @@ class SchemaRAG:
             "full_tokens": full_tokens,
             "reduction_pct": round((1 - rag_tokens / max(full_tokens, 1)) * 100, 1),
             "tables_included": len(rag_chunks),
-            "total_tables": len(self._retriever._tables),
+            "total_tables": retriever.table_count(),
         }

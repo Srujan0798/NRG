@@ -5,18 +5,14 @@ from __future__ import annotations
 import os
 import re
 import time
-import uuid
 from collections import OrderedDict, deque
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
-from fastapi import Depends, HTTPException, Request
 from pydantic import BaseModel, Field, model_validator
-from starlette.responses import JSONResponse
 
 from src.api.logging_config import get_logger
 from src.api.response_filter import (
-    TierResponseFilterReport,
     apply_k_anonymity_threshold,
     filter_response_payload_for_tier,
 )
@@ -25,12 +21,11 @@ from src.auth.jwt_handler import JWTHandler
 from src.data.database_v2 import NRGDatabase
 from src.orchestration.graph import NRGWorkflow
 
-from src.auth.middleware import get_current_user  # noqa: F401
-
 brute_force_protection = __import__("src.api.middleware.security", fromlist=["brute_force_protection"]).brute_force_protection
 
 
 QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
+JSONDict = dict[str, Any]
 
 
 class _APIMemoryCache:
@@ -60,7 +55,13 @@ class _APIMemoryCache:
         filtered = [w for w in words if w not in stop_words or len(w) <= 2]
         return " ".join(filtered)
 
-    def _make_cache_key(self, query: str, user_tier: int, intent: str = None, routing: str = None) -> str:
+    def _make_cache_key(
+        self,
+        query: str,
+        user_tier: int,
+        intent: str | None = None,
+        routing: str | None = None,
+    ) -> str:
         normalized = self._normalize_query_for_cache(query)
         base = f"query:{hash(normalized.encode())}:{user_tier}"
         if intent:
@@ -170,14 +171,18 @@ def _apply_tier_response_filter(
     request_fingerprint: str | None = None,
     endpoint: str = "unknown",
 ) -> Any:
-    bounded_payload, k_anonymity_events = apply_k_anonymity_threshold(payload, tier=tier)
+    bounded_payload, _k_anonymity_events = apply_k_anonymity_threshold(payload, tier=tier)
     filtered, report = filter_response_payload_for_tier(bounded_payload, tier=tier)
     enforce_tier_response_boundary(filtered, tier)
     if report.warnings and isinstance(filtered, dict):
-        existing = filtered.get("warnings", [])
+        filtered_dict = cast(JSONDict, filtered)
+        existing = filtered_dict.get("warnings", [])
         if not isinstance(existing, list):
-            existing = [existing]
-        filtered["warnings"] = existing + report.warnings
+            existing_items = [str(existing)]
+        else:
+            existing_items = [str(item) for item in cast(list[Any], existing)]
+        filtered_dict["warnings"] = existing_items + report.warnings
+        return filtered_dict
     return filtered
 
 
@@ -212,13 +217,33 @@ def _answer_confidence_from_verification(verification_status: Any) -> str:
     return "low"
 
 
-def _format_inr_crores(value: float | int | None) -> str:
+def _format_inr_crores(value: Any) -> str:
     if value is None:
         return "₹0 Cr"
-    return f"₹{float(value):,.2f} Cr"
+    try:
+        amount = float(value)
+    except (TypeError, ValueError):
+        amount = 0.0
+    return f"₹{amount:,.2f} Cr"
 
 
-def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
+def format_inr_crores(value: Any) -> str:
+    return _format_inr_crores(value)
+
+
+def get_fast_query_context() -> dict[str, dict[str, Any]]:
+    return _fast_query_context
+
+
+def get_sql_domain_context() -> dict[str, dict[str, Any]]:
+    return _sql_domain_context
+
+
+def get_publication_count_cache() -> dict[tuple[int, bool], int]:
+    return _publication_count_cache
+
+
+def _redact_pii_from_response(response_data: JSONDict) -> tuple[JSONDict, list[str]]:
     import re
 
     pii_patterns = {
@@ -229,12 +254,10 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
     }
 
     redacted_types: list[str] = []
-    redacted_response = response_data.copy()
+    redacted_response: JSONDict = response_data.copy()
 
     def _redact_text(text: str) -> tuple[str, list[str]]:
-        if not isinstance(text, str):
-            return text, []
-        found_types = []
+        found_types: list[str] = []
         result = text
         for pii_type, pattern in pii_patterns.items():
             if pattern.search(result):
@@ -250,10 +273,10 @@ def _redact_pii_from_response(response_data: dict) -> tuple[dict, list[str]]:
             redacted_types.extend(found)
 
     if "citations" in redacted_response and isinstance(redacted_response["citations"], list):
-        redacted_citations = []
-        for citation in redacted_response["citations"]:
+        redacted_citations: list[Any] = []
+        for citation in cast(list[Any], redacted_response["citations"]):
             if isinstance(citation, dict):
-                redacted_citation = citation.copy()
+                redacted_citation = cast(JSONDict, citation).copy()
                 for key in ["text", "context", "paper_title"]:
                     if key in redacted_citation and isinstance(redacted_citation[key], str):
                         redacted_citation[key], found = _redact_text(redacted_citation[key])
@@ -282,16 +305,28 @@ def _metric_band(values: list[float]) -> str:
     return "low"
 
 
+def metric_band(values: list[float]) -> str:
+    return _metric_band(values)
+
+
+apply_tier_response_filter = _apply_tier_response_filter
+sql_context_key = _sql_context_key
+remember_sql_domain_context = _remember_sql_domain_context
+answer_confidence_from_verification = _answer_confidence_from_verification
+redact_pii_from_response = _redact_pii_from_response
+
+
 class QueryRequest(BaseModel):
     query: str
     session_id: Optional[str] = None
 
     @model_validator(mode="before")
     @classmethod
-    def accept_question_alias(cls, data):
+    def accept_question_alias(cls, data: Any) -> Any:
         if isinstance(data, dict) and "query" not in data and "question" in data:
-            return {**data, "query": data["question"]}
-        return data
+            data_dict = cast(JSONDict, data)
+            return {**data_dict, "query": data_dict["question"]}
+        return cast(Any, data)
 
 
 class LoginRequest(BaseModel):

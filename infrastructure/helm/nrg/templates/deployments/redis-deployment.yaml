@@ -49,9 +49,9 @@ spec:
             - "--appendonly"
             - "yes"
             - "--maxmemory"
-            {{ .Values.redis.config.maxmemory | default "512mb" | quote }}
+            - {{ .Values.redis.config.maxmemory | default "512mb" | quote }}
             - "--maxmemory-policy"
-            - {{ .Values.redis.config.maxmemory-policy | default "allkeys-lru" | quote }}
+            - {{ index .Values.redis.config "maxmemory-policy" | default "allkeys-lru" | quote }}
           livenessProbe:
             exec:
               command: ["redis-cli", "--raw", "incr", "healthcheck"]

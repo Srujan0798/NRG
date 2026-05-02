@@ -17,7 +17,7 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, UTC
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from src.audit.lock import AuditChainLock, AuditLockTimeout
 
@@ -173,7 +173,7 @@ def _record_db_cosign_completed(
     _publish_db_cosign_metrics(snapshot)
 
 
-def get_db_cosign_metrics() -> dict:
+def get_db_cosign_metrics() -> dict[str, Any]:
     """Return DB co-sign worker metrics for health and CI checks."""
     with _cosign_metrics_lock:
         return _db_cosign_metrics_snapshot()
@@ -932,7 +932,7 @@ class ImmutableAuditLog:
             "event_count": len(events),
         }
 
-    def get_chain_health(self, auto_repair: bool | None = None) -> dict:
+    def get_chain_health(self, auto_repair: bool | None = None) -> dict[str, Any]:
         """Get chain health status for monitoring, including explicit verifier errors."""
         if auto_repair is None:
             auto_repair = os.environ.get("AUDIT_AUTO_REPAIR_LINE1", "0").lower() in {
@@ -1031,7 +1031,7 @@ class ImmutableAuditLog:
             )
         )
 
-    def log_sql(self, user_id: str, sql: str, result: Optional[dict] = None) -> str:
+    def log_sql(self, user_id: str, sql: str, result: Optional[dict[str, Any]] = None) -> str:
         return self.append(
             AuditEvent(event_type="sql", user_id=user_id, sql=sql, result=result)
         )
@@ -1206,19 +1206,19 @@ def log_query(user_id: str, query: str, jwt_kid: Optional[str] = None, request_f
     return get_audit_log().log_query(user_id, query, jwt_kid=jwt_kid, request_fingerprint=request_fingerprint)
 
 
-def log_plan(user_id: str, query: str, plan: dict) -> str:
+def log_plan(user_id: str, query: str, plan: dict[str, Any]) -> str:
     return get_audit_log().log_plan(user_id, query, plan)
 
 
-def log_sql(user_id: str, sql: str, result: Optional[dict] = None) -> str:
+def log_sql(user_id: str, sql: str, result: Optional[dict[str, Any]] = None) -> str:
     return get_audit_log().log_sql(user_id, sql, result)
 
 
-def log_llm_call(user_id: str, prompt: str, response: dict, model: str) -> str:
+def log_llm_call(user_id: str, prompt: str, response: dict[str, Any], model: str) -> str:
     return get_audit_log().log_llm_call(user_id, prompt, response, model)
 
 
-def log_anomaly(user_id: str, anomaly_type: str, details: dict, identifier: Optional[str] = None) -> str:
+def log_anomaly(user_id: str, anomaly_type: str, details: dict[str, Any], identifier: Optional[str] = None) -> str:
     return get_audit_log().log_anomaly(user_id, anomaly_type, details, identifier)
 
 
@@ -1230,7 +1230,7 @@ def verify_chain(verify_per_user: bool = True) -> tuple[bool, list[str], int]:
 _chain_health_cache: tuple[float, bool | None, dict] | None = None
 
 
-def get_chain_health(auto_repair: bool | None = None) -> dict:
+def get_chain_health(auto_repair: bool | None = None) -> dict[str, Any]:
     """Get chain health status for monitoring. Cached for 5s to avoid repeated full-chain scans."""
     global _chain_health_cache
     now = time.time()

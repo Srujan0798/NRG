@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from pydantic import BaseModel, Field
 
@@ -10,6 +10,16 @@ RouteName = Literal["sql", "rag", "hybrid", "clarify", "blocked"]
 ConfidenceLevel = Literal["high", "medium", "low", "needs_clarification"]
 SourceType = Literal["sql_row", "document_chunk", "graph_edge"]
 BLOCKED_QUERY_PLACEHOLDER = "[blocked by security policy]"
+JSONDict = dict[str, Any]
+JSONRows = list[JSONDict]
+
+
+def _empty_str_list() -> list[str]:
+    return []
+
+
+def _empty_json_rows() -> JSONRows:
+    return []
 
 
 class AnswerConfidence(BaseModel):
@@ -25,10 +35,14 @@ class CitationRef(BaseModel):
     masked: bool = False
 
 
+def _empty_citation_refs() -> list[CitationRef]:
+    return []
+
+
 class SourceData(BaseModel):
     sql_query: str | None = None
-    rows: list[dict[str, Any]] = Field(default_factory=list)
-    documents: list[dict[str, Any]] = Field(default_factory=list)
+    rows: JSONRows = Field(default_factory=_empty_json_rows)
+    documents: JSONRows = Field(default_factory=_empty_json_rows)
 
 
 class FreshnessInfo(BaseModel):
@@ -57,17 +71,17 @@ class AnswerEngineResponse(BaseModel):
     tier: TierName
     question: str
     interpreted_question: str
-    assumptions: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=_empty_str_list)
     route: RouteName
     blocked: bool = False
     final_answer: str
     confidence: AnswerConfidence
-    citations: list[CitationRef] = Field(default_factory=list)
+    citations: list[CitationRef] = Field(default_factory=_empty_citation_refs)
     source_data: SourceData = Field(default_factory=SourceData)
     provenance: ProvenanceInfo = Field(default_factory=ProvenanceInfo)
     freshness: FreshnessInfo = Field(default_factory=FreshnessInfo)
-    caveats: list[str] = Field(default_factory=list)
-    follow_up_suggestions: list[str] = Field(default_factory=list)
+    caveats: list[str] = Field(default_factory=_empty_str_list)
+    follow_up_suggestions: list[str] = Field(default_factory=_empty_str_list)
     query_time_ms: int = 0
 
 
@@ -149,17 +163,18 @@ def normalize_citations(raw_citations: list[Any]) -> list[CitationRef]:
     for index, item in enumerate(raw_citations or [], start=1):
         if not isinstance(item, dict):
             continue
-        raw_id = str(item.get("id") or item.get("pub_id") or item.get("source_id") or index)
+        citation = cast(JSONDict, item)
+        raw_id = str(citation.get("id") or citation.get("pub_id") or citation.get("source_id") or index)
         source_type: SourceType = (
-            "document_chunk" if item.get("chunk_id") or item.get("chunk_text") else "sql_row"
+            "document_chunk" if citation.get("chunk_id") or citation.get("chunk_text") else "sql_row"
         )
         citations.append(
             CitationRef(
                 id=str(index),
                 source_type=source_type,
-                label=str(item.get("title") or item.get("source") or f"Source {index}"),
+                label=str(citation.get("title") or citation.get("source") or f"Source {index}"),
                 source_id=raw_id,
-                masked=bool(item.get("masked", False)),
+                masked=bool(citation.get("masked", False)),
             )
         )
     return citations
@@ -170,7 +185,17 @@ def _string_list(values: Any) -> list[str]:
         return []
     if not isinstance(values, list):
         values = [values]
-    return [item if isinstance(item, str) else str(item) for item in values]
+    return [item if isinstance(item, str) else str(item) for item in cast(list[Any], values)]
+
+
+def _json_dict(value: Any) -> JSONDict:
+    return cast(JSONDict, value) if isinstance(value, dict) else {}
+
+
+def _json_rows(value: Any) -> JSONRows:
+    if not isinstance(value, list):
+        return []
+    return [cast(JSONDict, item) for item in cast(list[Any], value) if isinstance(item, dict)]
 
 
 def blocked_answer_payload(
@@ -233,9 +258,9 @@ def normalize_workflow_result(
     tier: int,
     audit_event_id: str | None,
     elapsed_ms: float,
-    result: dict[str, Any],
-) -> dict[str, Any]:
-    planner_metadata = result.get("planner_metadata") or {}
+    result: JSONDict,
+) -> JSONDict:
+    planner_metadata = _json_dict(result.get("planner_metadata"))
     response = AnswerEngineResponse(
         query_id=str(result.get("query_id") or uuid.uuid4()),
         answer_id=str(result.get("answer_id") or uuid.uuid4()),
@@ -245,7 +270,7 @@ def normalize_workflow_result(
         interpreted_question=str(
             result.get("interpreted_question") or result.get("user_query") or question
         ),
-        assumptions=list(result.get("assumptions") or planner_metadata.get("assumptions") or []),
+        assumptions=_string_list(result.get("assumptions") or planner_metadata.get("assumptions") or []),
         route=normalize_route(result.get("routing_decision"), result.get("intent")),
         final_answer=str(
             result.get("final_answer")
@@ -256,20 +281,20 @@ def normalize_workflow_result(
         confidence=normalize_confidence(
             result.get("answer_confidence"), result.get("verification_status")
         ),
-        citations=normalize_citations(result.get("citations", [])),
+        citations=normalize_citations(cast(list[Any], result.get("citations", []))),
         source_data=SourceData(
-            sql_query=result.get("sql_query"),
-            rows=list(result.get("sql_results") or []),
-            documents=list(result.get("retrieved_chunks") or []),
+            sql_query=str(result.get("sql_query")) if result.get("sql_query") is not None else None,
+            rows=_json_rows(result.get("sql_results")),
+            documents=_json_rows(result.get("retrieved_chunks")),
         ),
-        provenance=ProvenanceInfo(**dict(result.get("provenance") or {})),
-        freshness=FreshnessInfo(**dict(result.get("freshness") or {})),
+        provenance=ProvenanceInfo(**_json_dict(result.get("provenance"))),
+        freshness=FreshnessInfo(**_json_dict(result.get("freshness"))),
         caveats=_string_list(result.get("caveats") or result.get("warnings") or []),
         follow_up_suggestions=_string_list(result.get("follow_up_suggestions") or []),
         query_time_ms=int(elapsed_ms),
     )
     payload = response.model_dump()
-    for citation in payload["citations"]:
+    for citation in _json_rows(payload["citations"]):
         citation.setdefault("title", citation.get("label"))
         citation.setdefault("publication_id", citation.get("source_id"))
         citation.setdefault("paper_id", citation.get("source_id"))

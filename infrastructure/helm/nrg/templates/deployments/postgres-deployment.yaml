@@ -109,7 +109,7 @@ spec:
             - "agent"
             - "-log-level=info"
             - "-exit-on-efficacy"
-            - "-template=/vault/secrets/db_password:{{ secret "secret/data/nrg/database" "postgres_password" }}"
+            - '-template=/vault/secrets/db_password:{{ "{{" }} with secret "secret/data/nrg/database" {{ "}}" }}{{ "{{" }} .Data.data.postgres_password {{ "}}" }}{{ "{{" }} end {{ "}}" }}'
           volumeMounts:
             - name: vault-secrets
               mountPath: /vault/secrets

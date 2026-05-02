@@ -1,9 +1,12 @@
-import pytest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from threading import Barrier
 
+import pytest
+
+from scripts.rotate_jwt_secret import generate_jwt_secret
 from src.auth import jwt_handler as jwt_handler_module
 from src.auth.jwt_handler import JWTHandler, AuthError, validate_jwt_secret
-from scripts.rotate_jwt_secret import generate_jwt_secret
 
 
 @pytest.fixture
@@ -62,6 +65,53 @@ def test_rotation_script_generates_32_byte_secret():
     assert len(secret.encode("utf-8")) >= 32
 
 
+def test_rotated_secret_accepts_in_flight_access_token_during_grace():
+    handler = JWTHandler(
+        algorithm="HS256",
+        secret_key="old-secret-that-is-long-enough-for-this-test",
+        access_token_ttl_seconds=300,
+        users={},
+    )
+    user = {
+        "user_id": "rotating-user",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    token = handler.issue_token_pair(user)["access_token"]
+
+    handler.rotate_secret("new-secret-that-is-long-enough-for-this-test")
+
+    claims = handler.verify_access_token(token)
+    assert claims["sub"] == "rotating-user"
+    assert handler.rotation_grace_seconds == 300
+
+
+def test_rotated_secret_rejects_access_token_after_grace_expires():
+    handler = JWTHandler(
+        algorithm="HS256",
+        secret_key="old-secret-that-is-long-enough-for-this-test",
+        access_token_ttl_seconds=300,
+        users={},
+        rotation_grace_seconds=300,
+    )
+    user = {
+        "user_id": "expired-rotation-user",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    token = handler.issue_token_pair(user)["access_token"]
+    old_kid = handler._signing_key_id
+
+    handler.rotate_secret("new-secret-that-is-long-enough-for-this-test")
+    old_key, _expires_at = handler._previous_verification_keys[old_kid]
+    handler._previous_verification_keys[old_kid] = (old_key, 0)
+
+    with pytest.raises(AuthError):
+        handler.verify_access_token(token)
+
+
 def test_refresh_rotates_refresh_token_and_revokes_old_one(jwt_handler):
     user = {
         "user_id": "user-2",
@@ -78,6 +128,40 @@ def test_refresh_rotates_refresh_token_and_revokes_old_one(jwt_handler):
 
     with pytest.raises(AuthError):
         jwt_handler.verify_refresh_token(tokens["refresh_token"])
+
+
+def test_concurrent_refresh_allows_only_one_rotation(tmp_path, monkeypatch):
+    db_path = tmp_path / "tokens.db"
+    monkeypatch.setenv("DATABASE_URL", f"sqlite:///{db_path}")
+    handler = JWTHandler(
+        algorithm="HS256",
+        secret_key="test-secret",
+        access_token_ttl_seconds=1,
+        refresh_token_ttl_seconds=60,
+        users={},
+    )
+    user = {
+        "user_id": "refresh-race-user",
+        "username": "researcher_user",
+        "role": "researcher",
+        "tier": 1,
+    }
+    tokens = handler.issue_token_pair(user)
+    barrier = Barrier(10)
+
+    def refresh_once() -> bool:
+        barrier.wait(timeout=5)
+        try:
+            handler.refresh_access_token(tokens["refresh_token"])
+            return True
+        except AuthError:
+            return False
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        results = list(executor.map(lambda _: refresh_once(), range(10)))
+
+    assert results.count(True) == 1
+    assert results.count(False) == 9
 
 
 def test_revoked_access_token_is_rejected(jwt_handler):

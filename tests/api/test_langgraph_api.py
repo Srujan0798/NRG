@@ -1011,7 +1011,7 @@ def test_release_seed_graph_covers_hydrogen_visualization():
     assert all(node["type"] in {"paper", "author", "institution", "topic"} for node in graph["nodes"])
 
 
-def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
+def test_query_rate_limited_validation_returns_audit_bound_detail(monkeypatch):
     def rate_limited_validation(payload, identifier=None):
         return {
             "valid": False,
@@ -1020,11 +1020,7 @@ def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
             "rate_limit_triggered": True,
         }
 
-    def fail_log_anomaly(*args, **kwargs):
-        raise AssertionError("rate-limited validation should not append anomaly events")
-
     monkeypatch.setattr(api_main.prompt_sanitiser, "validate_query", rate_limited_validation)
-    monkeypatch.setattr("src.audit.log_anomaly", fail_log_anomaly)
 
     client = TestClient(api_main.app)
     response = client.post(
@@ -1034,4 +1030,7 @@ def test_query_rate_limited_validation_does_not_append_anomaly(monkeypatch):
     )
 
     assert response.status_code == 429
-    assert response.json()["detail"] == "Rate limit exceeded"
+    detail = response.json()["detail"]
+    assert detail["error"] == "Rate limit exceeded"
+    assert detail["limit_scope"] == "prompt_sanitiser"
+    assert detail["audit_event_id"]

@@ -18,7 +18,7 @@ class JSONFormatter(logging.Formatter):
         self.include_extra = include_extra
 
     def format(self, record: logging.LogRecord) -> str:
-        log_entry = {
+        log_entry: dict[str, Any] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "level": record.levelname,
             "logger": record.name,
@@ -30,8 +30,9 @@ class JSONFormatter(logging.Formatter):
             "thread_id": record.thread,
         }
 
-        if hasattr(record, "request_id"):
-            log_entry["request_id"] = record.request_id
+        request_id = getattr(record, "request_id", None)
+        if request_id is not None:
+            log_entry["request_id"] = request_id
 
         if record.exc_info:
             log_entry["exception"] = self.formatException(record.exc_info)
@@ -40,7 +41,7 @@ class JSONFormatter(logging.Formatter):
             extra_fields = {
                 k: v for k, v in record.__dict__.items()
                 if k not in logging.LogRecord(
-                    "", "", 0, "", (), None, None
+                    name="", level=0, pathname="", lineno=0, msg="", args=(), exc_info=None
                 ).__dict__ and not k.startswith("_")
             }
             log_entry["extra"] = extra_fields

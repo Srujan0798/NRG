@@ -50,7 +50,8 @@ backup:
 # Enable monitoring
 prometheus:
   enabled: true
-  scrapeInterval: "15s"
+  metricsScrapeInterval: "60s"
+  healthScrapeInterval: "15s"
 
 # Enable compliance logging
 observability:

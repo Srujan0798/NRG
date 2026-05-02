@@ -7,9 +7,10 @@ import logging
 import os
 import time
 import uuid
+from collections.abc import Callable, Mapping
 from functools import wraps
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from dotenv import load_dotenv
 from langgraph.graph import END, StateGraph
@@ -22,11 +23,43 @@ from src.orchestration.nodes.router import router_node
 from src.orchestration.nodes.synthesizer import synthesizer_node
 from src.orchestration.state import NRGState
 
+JSONDict = dict[str, Any]
+NodeFn = Callable[[Any], Any]
+
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _float_dict(value: Any) -> dict[str, float]:
+    result: dict[str, float] = {}
+    for key, raw_value in _as_json_dict(value).items():
+        if isinstance(raw_value, (int, float)) and not isinstance(raw_value, bool):
+            result[key] = float(raw_value)
+    return result
+
+
+def _node_timings_from_state(state: Any) -> dict[str, float]:
+    if isinstance(state, Mapping):
+        return _float_dict(cast(Mapping[str, Any], state).get("node_timings", {}))
+    raw_timings = getattr(state, "node_timings", {})
+    return _float_dict(raw_timings)
+
+
+def _assign_node_timings(state: Any, node_timings: dict[str, float]) -> None:
+    if isinstance(state, dict):
+        state["node_timings"] = node_timings
+    elif hasattr(state, "node_timings"):
+        state.node_timings = node_timings
+
+
 try:
     from src.orchestration.nodes.planner import planner_node
 except ModuleNotFoundError:
 
-    def planner_node(state: Any) -> dict:
+    def planner_node(state: Any) -> JSONDict:
         """Phase 1 fallback planner.
 
         The experimental cloud planner is quarantined until it is wired through
@@ -39,31 +72,25 @@ try:
     from src.orchestration.nodes.verifier import verifier_node
 except ModuleNotFoundError:
 
-    def verifier_node(state: Any) -> dict:
+    def verifier_node(state: Any) -> JSONDict:
         """Phase 1 fallback verifier."""
-        if isinstance(state, dict):
-            response = state.get("synthesized_response")
+        if isinstance(state, Mapping):
+            response = cast(Mapping[str, Any], state).get("synthesized_response")
         else:
             response = getattr(state, "synthesized_response", None)
         return {"verification_status": bool(response)}
 
 
-def _timed_node(node_name: str, fn):
+def _timed_node(node_name: str, fn: NodeFn) -> Callable[[Any], JSONDict]:
     """Wrap a node function to record elapsed time in state['node_timings']."""
     @wraps(fn)
-    def wrapper(state: Any) -> dict:
+    def wrapper(state: Any) -> JSONDict:
         t0 = time.perf_counter()
-        result = fn(state)
+        result = _as_json_dict(fn(state))
         elapsed_ms = (time.perf_counter() - t0) * 1000
         elapsed_rounded = round(elapsed_ms, 2)
-        if isinstance(state, dict):
-            node_timings = dict(state.get("node_timings", {}))
-            state["node_timings"] = node_timings
-        elif hasattr(state, "node_timings"):
-            node_timings = dict(state.node_timings)
-            state.node_timings = node_timings
-        else:
-            node_timings = {}
+        node_timings = _node_timings_from_state(state)
+        _assign_node_timings(state, node_timings)
         node_timings[node_name] = elapsed_rounded
         logger.info(
             "pipeline node completed",
@@ -73,9 +100,7 @@ def _timed_node(node_name: str, fn):
                 "budget_ms": PIPELINE_NODE_LATENCY_BUDGET_MS.get(node_name),
             },
         )
-        if isinstance(result, dict):
-            result = dict(result)
-            result["node_timings"] = node_timings
+        result["node_timings"] = node_timings
         return result
     return wrapper
 
@@ -84,7 +109,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-PIPELINE_NODE_LATENCY_BUDGET_MS = {
+PIPELINE_NODE_LATENCY_BUDGET_MS: dict[str, int] = {
     "receiver": 25,
     "planner": 250,
     "router": 75,
@@ -97,17 +122,17 @@ PIPELINE_NODE_LATENCY_BUDGET_MS = {
 class NRGWorkflow:
     """Main LangGraph workflow for NRG orchestration."""
 
-    def __init__(self, test_mode: bool = False):
+    def __init__(self, test_mode: bool = False) -> None:
         self.test_mode = test_mode
-        self.session_history: dict[str, list[dict]] = {}
-        self.checkpointer = None
+        self.session_history: dict[str, list[JSONDict]] = {}
+        self.checkpointer: Any | None = None
         if os.getenv("ENABLE_LANGGRAPH_CHECKPOINTS", "false").lower() == "true":
             from src.orchestration.checkpoint import get_checkpointer
 
             self.checkpointer = get_checkpointer()
         self.graph = self._build_graph()
 
-    def _build_graph(self):
+    def _build_graph(self) -> Any:
         workflow = StateGraph(NRGState)
 
         workflow.add_node("receiver", self._receiver_wrapper)
@@ -125,16 +150,17 @@ class NRGWorkflow:
         workflow.add_edge("synthesizer", "verifier")
 
         # Verification loop: retry synthesis if faithfulness < 0.7
-        def _should_retry(state) -> str:
+        def _should_retry(state: Any) -> str:
             """Conditional edge: retry synthesis if verification indicates low faithfulness."""
             if hasattr(state, "__dataclass_fields__"):
-                faithfulness = getattr(state, "faithfulness_score", 0.0)
-                verification_status = getattr(state, "verification_status", "ok")
-                verification_retries = getattr(state, "verification_retries", 0)
+                faithfulness = float(getattr(state, "faithfulness_score", 0.0) or 0.0)
+                verification_status = str(getattr(state, "verification_status", "ok") or "ok")
+                verification_retries = int(getattr(state, "verification_retries", 0) or 0)
             else:
-                faithfulness = state.get("faithfulness_score", 0.0)
-                verification_status = state.get("verification_status", "ok")
-                verification_retries = state.get("verification_retries", 0)
+                state_dict = _as_json_dict(state)
+                faithfulness = float(state_dict.get("faithfulness_score", 0.0) or 0.0)
+                verification_status = str(state_dict.get("verification_status", "ok") or "ok")
+                verification_retries = int(state_dict.get("verification_retries", 0) or 0)
 
             if verification_retries >= 1:
                 return "end_retry"
@@ -163,19 +189,13 @@ class NRGWorkflow:
             logger.warning("Checkpoint backend is not LangGraph-native; compiling without it")
             return workflow.compile()
 
-    def _receiver_wrapper(self, state: dict) -> dict:
+    def _receiver_wrapper(self, state: Any) -> JSONDict:
         t0 = time.perf_counter()
-        result = dict(receiver_node(state))
+        result = _as_json_dict(receiver_node(state))
         elapsed_ms = (time.perf_counter() - t0) * 1000
         elapsed_rounded = round(elapsed_ms, 2)
-        if isinstance(state, dict):
-            node_timings = dict(state.get("node_timings", {}))
-            state["node_timings"] = node_timings
-        elif hasattr(state, "node_timings"):
-            node_timings = dict(state.node_timings)
-            state.node_timings = node_timings
-        else:
-            node_timings = {}
+        node_timings = _node_timings_from_state(state)
+        _assign_node_timings(state, node_timings)
         node_timings["receiver"] = elapsed_rounded
         logger.info(
             "pipeline node completed",
@@ -188,10 +208,10 @@ class NRGWorkflow:
         result["node_timings"] = node_timings
         return result
 
-    def _get_session_history(self, session_id: str) -> list[dict]:
+    def _get_session_history(self, session_id: str) -> list[JSONDict]:
         return list(self.session_history.get(session_id, []))
 
-    def _append_session_turn(self, session_id: str, query: str, result: dict) -> list[dict]:
+    def _append_session_turn(self, session_id: str, query: str, result: JSONDict) -> list[JSONDict]:
         history = self.session_history.setdefault(session_id, [])
         history.append(
             {
@@ -208,7 +228,7 @@ class NRGWorkflow:
         user_tier: int = 1,
         session_id: str | None = None,
         user_id: str | None = None,
-    ) -> dict:
+    ) -> JSONDict:
         """Execute a query through the workflow."""
         active_session_id = session_id or str(uuid.uuid4())
 
@@ -225,8 +245,8 @@ class NRGWorkflow:
             conversation_history=conversation_history,
         )
 
-        config = {"configurable": {"thread_id": active_session_id}}
-        result: dict = self.graph.invoke(initial_state, config)
+        config: JSONDict = {"configurable": {"thread_id": active_session_id}}
+        result = _as_json_dict(self.graph.invoke(initial_state, config))
         result["session_id"] = active_session_id
         result["conversation_history"] = self._append_session_turn(
             active_session_id,
@@ -246,7 +266,7 @@ class NRGWorkflow:
 
         return dict(result)
 
-    def _save_state(self, state: dict) -> None:
+    def _save_state(self, state: JSONDict) -> None:
         import os
 
         protocol_dir = Path(os.environ.get("NRG_PROTOCOL_DIR", ".protocol"))

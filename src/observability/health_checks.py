@@ -13,7 +13,7 @@ def get_qdrant_vector_count_health(
     host: str | None = None,
     port: int | None = None,
     timeout: float = 1.0,
-) -> dict:
+) -> dict[str, Any]:
     """Return honest Qdrant vector health without auto-repair side effects."""
     if client_factory is None:
         from qdrant_client import QdrantClient

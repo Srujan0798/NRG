@@ -2,26 +2,46 @@
 
 from __future__ import annotations
 
+import os
 import time
+from collections.abc import Callable, Mapping
+from typing import Any, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 
 from src.api.logging_config import get_logger
-from src.auth.middleware import get_current_user
+from src.auth.middleware import TokenClaims, get_current_user
 from src.observability.metrics import get_metrics_content_type, get_slo_tracker
 
 router = APIRouter(prefix="", tags=["admin"])
 logger = get_logger(__name__)
+OPENAPI_METRICS_ENABLED = os.getenv("OPENAPI_METRICS", "").lower() in {"1", "true", "yes"}
+JSONDict = dict[str, Any]
+
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _as_string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in cast(list[Any], value)]
+    return []
+
+
+def _require_admin_or_system(token_payload: TokenClaims, detail: str = "Admin access required") -> None:
+    if token_payload.get("role", "") not in ("admin", "system"):
+        raise HTTPException(status_code=403, detail=detail)
 
 
 @router.get("/admin/slo")
 async def get_slo_status(
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
-    if role != "admin":
-        raise HTTPException(status_code=403, detail="Admin access required")
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    _require_admin_or_system(token_payload)
 
     tracker = get_slo_tracker()
     slo_status = tracker.get_slo_status()
@@ -42,9 +62,9 @@ async def get_slo_status(
 @router.post("/api/reindex")
 async def trigger_vector_reindex(
     reason: str = "manual",
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role not in ("admin", "system"):
         raise HTTPException(status_code=403, detail="Admin or system role required for reindex")
 
@@ -59,8 +79,11 @@ async def trigger_vector_reindex(
 
     reindex_id = f"reindex-{int(time.time())}"
     logger.warning(
-        "Reindex triggered: id=%s reason=%s collection=%s vectors=%s",
-        reindex_id, reason, collection, info.get("vectors_count", "unknown"),
+        "Reindex triggered",
+        reindex_id=reindex_id,
+        reason=reason,
+        collection=collection,
+        vectors=info.get("vectors_count", "unknown"),
     )
 
     return {
@@ -73,14 +96,15 @@ async def trigger_vector_reindex(
     }
 
 
-@router.get("/metrics")
-async def metrics():
+@router.get("/metrics", include_in_schema=OPENAPI_METRICS_ENABLED)
+async def metrics(token_payload: TokenClaims = Depends(get_current_user)) -> Response:
+    _require_admin_or_system(token_payload)
     content_type, metrics_output = get_metrics_content_type()
     return Response(content=metrics_output, media_type=content_type)
 
 
-@router.get("/api/metrics")
-async def api_metrics(request: Request):
+@router.get("/api/metrics", include_in_schema=OPENAPI_METRICS_ENABLED, response_model=None)
+async def api_metrics(request: Request, token_payload: TokenClaims = Depends(get_current_user)) -> Response | JSONDict:
     """
     Comprehensive metrics endpoint for Tier 1 operators.
 
@@ -88,16 +112,16 @@ async def api_metrics(request: Request):
     """
     accept = request.headers.get("Accept", "application/json")
 
+    from src.auth.middleware import get_user_tier
+
+    claims = token_payload
+    tier = get_user_tier(claims)
+    if tier != 1 and token_payload.get("role", "") not in ("admin", "system"):
+        raise HTTPException(status_code=403, detail="Tier 1 (Researcher) access required for metrics")
+
     if "text/plain" in accept:
         content_type, metrics_output = get_metrics_content_type()
         return Response(content=metrics_output, media_type=content_type)
-
-    from src.auth.middleware import get_user_tier
-
-    claims = getattr(request.state, "auth_claims", None) or {}
-    tier = get_user_tier(claims)
-    if tier != 1:
-        raise HTTPException(status_code=403, detail="Tier 1 (Researcher) access required for metrics")
 
     slo_tracker = get_slo_tracker()
     slo_status = slo_tracker.get_slo_status()
@@ -107,11 +131,14 @@ async def api_metrics(request: Request):
         from src.config.llm_config import get_llm_mesh
 
         mesh = get_llm_mesh()
-        provider_health = mesh.get_provider_health()
-        circuit_trips = {}
-        for p, state in mesh._circuit_state.items():
+        get_provider_health = cast(Callable[[], JSONDict], getattr(mesh, "get_provider_health"))
+        provider_health = _as_json_dict(get_provider_health())
+        circuit_trips: JSONDict = {}
+        for provider, health in provider_health.items():
+            health_data = _as_json_dict(health)
+            state = health_data.get("circuit")
             if state == "open":
-                circuit_trips[p] = state
+                circuit_trips[provider] = state
     except Exception:
         provider_health = {}
         circuit_trips = {}
@@ -122,8 +149,8 @@ async def api_metrics(request: Request):
         audit_health = _get_chain_health_no_repair(get_chain_health)
         audit_chain_length = int(audit_health.get("chain_length", 0) or 0)
         chain_valid = bool(audit_health.get("chain_valid", True))
-        chain_errors = audit_health.get("errors", []) or []
-        db_cosign_metrics = get_db_cosign_metrics()
+        chain_errors = _as_string_list(audit_health.get("errors", []) or [])
+        db_cosign_metrics = _as_json_dict(get_db_cosign_metrics())
         valid_count = int(
             audit_health.get(
                 "valid_events",
@@ -138,11 +165,12 @@ async def api_metrics(request: Request):
         valid_count = 0
         db_cosign_metrics = {}
 
-    from src.observability.langfuse_tracer import _init_langfuse
+    from src.observability.langfuse_tracer import is_langfuse_enabled
 
-    langfuse_enabled = _init_langfuse() is not None
+    langfuse_enabled = is_langfuse_enabled()
 
     cache_hit_rate = 0.0
+    hits = 0.0
     try:
         from prometheus_client import REGISTRY
 
@@ -156,7 +184,7 @@ async def api_metrics(request: Request):
     except Exception:
         pass
 
-    query_counts = {"by_tier": {}, "by_intent": {}, "by_status": {}}
+    query_counts: dict[str, dict[str, float]] = {"by_tier": {}, "by_intent": {}, "by_status": {}}
     try:
         from prometheus_client import REGISTRY
 
@@ -179,7 +207,8 @@ async def api_metrics(request: Request):
         from src.training.data_collector import get_training_collector
 
         collector = get_training_collector()
-        training_data = collector.get_stats()
+        get_stats = cast(Callable[[], JSONDict], getattr(collector, "get_stats"))
+        training_data = _as_json_dict(get_stats())
         from src.training.export import ExportPipeline
 
         exports = ExportPipeline().get_export_history()
@@ -216,20 +245,20 @@ async def api_metrics(request: Request):
     }
 
 
-def _get_chain_health_no_repair(get_chain_health_fn):
+def _get_chain_health_no_repair(get_chain_health_fn: Callable[..., JSONDict]) -> JSONDict:
     try:
         return get_chain_health_fn(auto_repair=False)
     except TypeError:
         return get_chain_health_fn()
 
 
-def _get_node_latency_stats(limit: int = 500) -> dict:
+def _get_node_latency_stats(limit: int = 500) -> JSONDict:
     """Compute per-node p50/p95 latency from recent training pairs."""
     try:
         from src.training.data_collector import get_training_collector
 
         collector = get_training_collector()
-        conn = collector._get_connection()
+        conn = collector.get_connection()
         try:
             cur = conn.execute(
                 "SELECT node_timings FROM training_pairs "
@@ -246,15 +275,15 @@ def _get_node_latency_stats(limit: int = 500) -> dict:
             all_node_data: dict[str, list[float]] = {}
             for (nt_json,) in rows:
                 try:
-                    timings = json.loads(nt_json)
-                    if isinstance(timings, dict):
+                    timings = _as_json_dict(json.loads(nt_json))
+                    if timings:
                         for node, ms in timings.items():
                             if isinstance(ms, (int, float)) and ms > 0:
                                 all_node_data.setdefault(node, []).append(float(ms))
                 except Exception:
                     continue
 
-            result = {}
+            result: JSONDict = {}
             for node, values in sorted(all_node_data.items()):
                 if len(values) < 3:
                     continue
@@ -274,7 +303,7 @@ def _get_node_latency_stats(limit: int = 500) -> dict:
         return {}
 
 
-def _get_db_pool_stats() -> dict:
+def _get_db_pool_stats() -> JSONDict:
     """Get PostgreSQL connection pool stats for /api/metrics."""
     try:
         from src.config.database import get_database_manager
@@ -298,9 +327,9 @@ def _get_db_pool_stats() -> dict:
 
 @router.get("/api/admin/rbac", tags=["admin"])
 async def list_rbac_policies(
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
@@ -332,17 +361,17 @@ async def list_rbac_policies(
 @router.post("/api/admin/rbac", tags=["admin"], status_code=201)
 async def create_or_update_rbac_persona(
     persona: str,
-    spec: dict,
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    spec: JSONDict,
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
-    if not persona or not isinstance(persona, str):
+    if not persona:
         raise HTTPException(status_code=400, detail="persona must be a non-empty string")
 
-    if not spec or not isinstance(spec, dict):
+    if not spec:
         raise HTTPException(status_code=400, detail="spec must be a non-empty dict")
 
     required_fields = {"tier", "column_visibility", "pii_masking", "output_format"}
@@ -370,7 +399,7 @@ async def create_or_update_rbac_persona(
         audit = get_audit_log()
         audit.append(AuditEvent(
             event_type="rbac_policy_change",
-            user_id=token_payload.get("user_id", "unknown"),
+            user_id=str(token_payload.get("user_id", "unknown")),
             result={
                 "persona": persona,
                 "change_type": "create_or_update",
@@ -396,10 +425,10 @@ async def create_or_update_rbac_persona(
 @router.put("/api/admin/rbac/{persona_name}", tags=["admin"])
 async def update_rbac_persona(
     persona_name: str,
-    spec: dict,
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    spec: JSONDict,
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
@@ -420,7 +449,7 @@ async def update_rbac_persona(
         audit = get_audit_log()
         audit.append(AuditEvent(
             event_type="rbac_policy_change",
-            user_id=token_payload.get("user_id", "unknown"),
+            user_id=str(token_payload.get("user_id", "unknown")),
             result={
                 "persona": persona_name,
                 "change_type": "update",
@@ -445,9 +474,9 @@ async def update_rbac_persona(
 @router.delete("/api/admin/rbac/{persona_name}", tags=["admin"])
 async def delete_rbac_persona(
     persona_name: str,
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 
@@ -473,7 +502,7 @@ async def delete_rbac_persona(
         audit = get_audit_log()
         audit.append(AuditEvent(
             event_type="rbac_policy_change",
-            user_id=token_payload.get("user_id", "unknown"),
+            user_id=str(token_payload.get("user_id", "unknown")),
             result={
                 "persona": persona_name,
                 "change_type": "soft_delete",
@@ -489,9 +518,9 @@ async def delete_rbac_persona(
 @router.get("/api/admin/rbac/{persona_name}", tags=["admin"])
 async def get_rbac_persona(
     persona_name: str,
-    token_payload: dict = Depends(get_current_user),
-):
-    role = token_payload.get("role", "")
+    token_payload: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
+    role = str(token_payload.get("role", ""))
     if role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
 

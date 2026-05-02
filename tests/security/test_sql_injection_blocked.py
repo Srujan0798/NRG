@@ -110,7 +110,7 @@ class TestSQLInjectionBlocked:
             json={"query": payload},
         )
 
-        assert response.status_code in [200, 400], f"Boolean injection should not crash with 5xx"
+        assert response.status_code in [200, 400], "Boolean injection should not crash with 5xx"
 
     def test_stacked_queries_injection_returns_safe_response(self, client):
         """Stacked queries SQL injection should return safe response."""

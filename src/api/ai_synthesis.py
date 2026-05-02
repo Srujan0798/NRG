@@ -7,13 +7,14 @@ import os
 import re
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from typing import Any
+from typing import Any, cast
 
 from src.api.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 _AI_SYNTH_EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="nrg-ai-synth")
+JSONDict = dict[str, Any]
 
 
 def _enabled() -> bool:
@@ -48,10 +49,14 @@ def _safe_json(value: Any, *, limit: int = 6000) -> str:
     return text[:limit]
 
 
-def _build_system_prompt(payload: dict[str, Any], *, user_tier: int) -> str:
-    citations = payload.get("citations") or []
-    sql_results = payload.get("sql_results") or []
-    source_tables = payload.get("retrieval_sources") or []
+def _list_any(value: Any) -> list[Any]:
+    return cast(list[Any], value) if isinstance(value, list) else []
+
+
+def _build_system_prompt(payload: JSONDict, *, user_tier: int) -> str:
+    citations = _list_any(payload.get("citations"))
+    sql_results = _list_any(payload.get("sql_results"))
+    source_tables = _list_any(payload.get("retrieval_sources"))
     sql_query = payload.get("sql_query") or ""
     confidence = payload.get("answer_confidence") or payload.get("confidence") or "medium"
     return "\n".join(
@@ -78,19 +83,20 @@ def _build_system_prompt(payload: dict[str, Any], *, user_tier: int) -> str:
     )
 
 
-def _primary_citation_marker(payload: dict[str, Any]) -> str:
-    citations = payload.get("citations") or []
+def _primary_citation_marker(payload: JSONDict) -> str:
+    citations = _list_any(payload.get("citations"))
     if citations:
-        citation_id = citations[0].get("id") or citations[0].get("pub_id")
+        first_citation = cast(JSONDict, citations[0]) if isinstance(citations[0], dict) else {}
+        citation_id = first_citation.get("id") or first_citation.get("pub_id")
         if citation_id:
             return f"[cite:{citation_id}]"
-    sources = payload.get("retrieval_sources") or []
+    sources = _list_any(payload.get("retrieval_sources"))
     if sources:
         return f"[cite:{sources[0]}:aggregate]"
     return "[cite:nrg:evidence]"
 
 
-def _ensure_cited_numbers(text: str, payload: dict[str, Any]) -> str:
+def _ensure_cited_numbers(text: str, payload: JSONDict) -> str:
     if not re.search(r"\d", text):
         return text
     if "[cite:" in text or re.search(r"\[\d+\]", text):
@@ -100,7 +106,7 @@ def _ensure_cited_numbers(text: str, payload: dict[str, Any]) -> str:
     return "\n\n".join(paragraphs)
 
 
-def _with_ai_latency(payload: dict[str, Any], elapsed_ms: float) -> int:
+def _with_ai_latency(payload: JSONDict, elapsed_ms: float) -> int:
     try:
         base_ms = float(payload.get("query_time_ms") or 0)
     except (TypeError, ValueError):
@@ -109,18 +115,18 @@ def _with_ai_latency(payload: dict[str, Any], elapsed_ms: float) -> int:
 
 
 def synthesize_payload_with_ai(
-    payload: dict[str, Any],
+    payload: JSONDict,
     *,
     query: str,
     user_tier: int,
-) -> dict[str, Any]:
+) -> JSONDict:
     """Use MiniMax/mesh for visible answer prose after API-tier filtering.
 
     Deterministic SQL/results remain the source of truth. This function only
     rewrites the human answer and records provenance when the cloud synthesis
     path succeeds.
     """
-    if not isinstance(payload, dict) or not _enabled():
+    if not _enabled():
         return payload
 
     provenance = dict(payload.get("provenance") or {})

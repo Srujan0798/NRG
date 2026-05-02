@@ -107,9 +107,10 @@ def classify_complexity(query: str, user_tier: int = 1) -> ComplexityResult:
 
     for level, patterns in COMPLEXITY_PATTERNS.items():
         for pattern, weight in patterns:
-            if re.search(pattern, query_lower, re.IGNORECASE):
+            match = re.search(pattern, query_lower, re.IGNORECASE)
+            if match:
                 scores[level] += weight
-                signals[level].append(re.search(pattern, query_lower, re.IGNORECASE).group(0))
+                signals[level].append(match.group(0))
 
     dag_indicators = ["compare", "and", "gap", "versus", "synthesis", "both", "funding", "output"]
     if sum(1 for ind in dag_indicators if ind in query_lower) >= 3:
@@ -160,7 +161,10 @@ def _detect_query_type(query_lower: str) -> str:
             type_scores[qtype] = score
     if not type_scores:
         return "lookup"
-    return max(type_scores, key=type_scores.get)
+    return max(type_scores, key=lambda qtype: type_scores[qtype])
+
+
+detect_query_type = _detect_query_type
 
 
 def get_complexity_for_routing(query: str, user_tier: int = 1) -> ComplexityResult:

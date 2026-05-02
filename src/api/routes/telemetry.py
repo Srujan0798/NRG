@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 import threading
-from typing import Any
+from typing import Any, cast
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel, Field, model_validator
@@ -67,9 +67,10 @@ def _redact_telemetry_pii(value: Any) -> Any:
             redacted = pattern.sub(replacement, redacted)
         return redacted
     if isinstance(value, list):
-        return [_redact_telemetry_pii(item) for item in value]
+        return [_redact_telemetry_pii(item) for item in cast(list[Any], value)]
     if isinstance(value, dict):
-        return {key: _redact_telemetry_pii(item) for key, item in value.items()}
+        value_dict = cast(dict[str, Any], value)
+        return {key: _redact_telemetry_pii(item) for key, item in value_dict.items()}
     return value
 
 

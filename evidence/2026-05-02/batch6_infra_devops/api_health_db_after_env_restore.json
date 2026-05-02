@@ -1,0 +1,1 @@
+{"ready":false,"dialect":"sqlite","error":"(psycopg2.OperationalError) connection to server at \"pgbouncer\" (172.28.0.4), port 6432 failed: FATAL:  password authentication failed for user \"nrg_dev\"\n\n(Background on this error at: https://sqlalche.me/e/20/e3q8)"}

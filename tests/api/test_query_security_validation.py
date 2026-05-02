@@ -1,7 +1,6 @@
 """Regression tests for /query security validation before workflow execution."""
 
 import pytest
-import pytest_asyncio
 from fastapi.testclient import TestClient
 
 import src.api.deps as api_deps

@@ -8,7 +8,7 @@ import os
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 from fastapi import APIRouter, HTTPException
@@ -91,7 +91,7 @@ def _qdrant_count_health() -> dict[str, Any]:
     return _qdrant_vector_count_health()
 
 
-def _new_qdrant_client(**kwargs) -> Any:
+def _new_qdrant_client(**kwargs: Any) -> Any:
     if _qdrant_client_factory is None:
         raise RuntimeError("Health router is not configured with a Qdrant client factory")
     return _qdrant_client_factory(**kwargs)
@@ -103,15 +103,42 @@ def _killer_query_health_path() -> Path:
     return _killer_query_health_file
 
 
+def _with_health_contract(
+    payload: dict[str, Any],
+    *,
+    status: str | None = None,
+    healthy: bool | None = None,
+) -> dict[str, Any]:
+    """Add the shared health response contract while preserving endpoint details."""
+    resolved_status = status or str(payload.get("status") or "")
+    if healthy is None:
+        if "ready" in payload:
+            healthy = bool(payload.get("ready"))
+        elif resolved_status:
+            healthy = resolved_status in {"healthy", "operational", "ok"}
+        else:
+            healthy = False
+    if not resolved_status:
+        resolved_status = "healthy" if healthy else "unhealthy"
+    response = dict(payload)
+    response["status"] = resolved_status
+    response["healthy"] = bool(healthy)
+    return response
+
+
 @router.get("/health")
 async def health_check():
-    retriever_health = {"status": "skipped", "message": "Deep retriever health disabled for fast readiness checks"}
+    retriever_health: dict[str, Any] = {
+        "status": "skipped",
+        "message": "Deep retriever health disabled for fast readiness checks",
+    }
 
     def _resolve_audit_health() -> dict[str, Any]:
         from src.audit import get_chain_health
 
         health = _audit_health_no_repair(get_chain_health)
-        lineage = health.get("lineage_break", {}) or {}
+        lineage_candidate: Any = health.get("lineage_break")
+        lineage = cast(dict[str, Any], lineage_candidate) if isinstance(lineage_candidate, dict) else {}
         if (
             health.get("status") == "CRITICAL"
             or lineage.get("repair_required")
@@ -142,7 +169,7 @@ async def health_check():
 
     try:
         db = _db()
-        stats = db.get_stats()
+        stats = cast(dict[str, Any], db.get_stats())
         if getattr(db, "dialect", "") == "postgresql":
             table_count_query = (
                 "SELECT COUNT(*) AS table_count "
@@ -155,7 +182,7 @@ async def health_check():
                 "FROM sqlite_master "
                 "WHERE type='table' AND name NOT LIKE 'sqlite_%'"
             )
-        table_count_rows = db.execute(table_count_query) if hasattr(db, "execute") else []
+        table_count_rows = cast(list[dict[str, Any]], db.execute(table_count_query)) if hasattr(db, "execute") else []
         table_count = int(table_count_rows[0].get("table_count", 0)) if table_count_rows else None
         db_health = {
             "status": "healthy",
@@ -208,7 +235,8 @@ async def health_check():
             audit_health = {"status": "error", "chain_valid": None, "message": str(exc)}
 
     overall = "healthy"
-    audit_lineage = audit_health.get("lineage_break") or {}
+    audit_lineage_candidate: Any = audit_health.get("lineage_break")
+    audit_lineage = cast(dict[str, Any], audit_lineage_candidate) if isinstance(audit_lineage_candidate, dict) else {}
     if (
         audit_health.get("status") == "CRITICAL"
         or audit_health.get("chain_valid") is False
@@ -234,8 +262,8 @@ async def health_check():
 
     drift_score = None
     if retriever_health.get("status") == "ok":
-        indexed = retriever_health.get("vectors_indexed", 0)
-        total = retriever_health.get("vectors_total", 0)
+        indexed = int(cast(int | str, retriever_health.get("vectors_indexed", 0)) or 0)
+        total = int(cast(int | str, retriever_health.get("vectors_total", 0)) or 0)
         if total > 0:
             drift_score = indexed / total
     if drift_score is not None:
@@ -270,8 +298,9 @@ async def health_check():
         overall = "CRITICAL"
     rag_health = build_rag_health(qdrant_health, retriever_health)
 
-    payload = {
+    payload: dict[str, Any] = {
         "status": overall,
+        "healthy": overall == "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
         "consent_service": "operational",
         "retriever": retriever_health,
@@ -293,15 +322,18 @@ async def health_killer_queries():
     """Return the last LB-3 killer-query health snapshot."""
     health_path = _killer_query_health_path()
     if not health_path.exists():
-        return {
+        return _with_health_contract({
             "status": "unknown",
             "last_run_time": None,
             "queries": [],
             "message": "No killer-query evidence snapshot has been written yet.",
-        }
+        }, healthy=False)
 
     try:
-        return json.loads(health_path.read_text())
+        payload = json.loads(health_path.read_text())
+        if isinstance(payload, dict):
+            return _with_health_contract(cast(dict[str, Any], payload))
+        return _with_health_contract({"status": "error", "message": "Killer-query snapshot is not an object"}, healthy=False)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Invalid killer-query health snapshot: {exc}") from exc
 
@@ -310,16 +342,17 @@ async def health_killer_queries():
 async def health_llm():
     """Check LLM provider health including local llama.cpp model status."""
     from src.config.llm_config import LLMConfigError, get_llm_client
-    from src.config.local_llm import _llama_cpp_health_cache, get_llama_cpp_client
+    from src.config.local_llm import get_llama_cpp_client, get_llama_cpp_health_cache
 
-    local_info = {"available": False, "model_loaded": False, "load_time": None}
+    local_info: dict[str, Any] = {"available": False, "model_loaded": False, "load_time": None}
 
     llama_client = get_llama_cpp_client()
     if llama_client is not None:
         local_info["available"] = True
         local_info["model_loaded"] = True
-        if _llama_cpp_health_cache is not None:
-            local_info["load_time"] = _llama_cpp_health_cache[0]
+        llama_cache = get_llama_cpp_health_cache()
+        if llama_cache is not None:
+            local_info["load_time"] = llama_cache[0]
     else:
         try:
             response = httpx.get("http://localhost:8080/health", timeout=2.0)
@@ -335,31 +368,31 @@ async def health_llm():
     try:
         client = get_llm_client()
         if client is None:
-            return {
+            return _with_health_contract({
                 "ready": False,
                 "provider": None,
                 "error": "No LLM configured. Set GEMINI_API_KEY or OPENAI_API_KEY in .env",
                 "local": local_info,
-            }
+            }, status="unhealthy")
         test_response = client.generate(
             "You are a health check system.",
             "Respond with 'OK' only.",
-            [],
+            cast(list[dict[str, Any]], []),
         )
         settings = getattr(client, "settings", None)
         provider = getattr(settings, "provider", "unknown") if settings else "unknown"
         model = getattr(settings, "model", "unknown") if settings else "unknown"
-        return {
+        return _with_health_contract({
             "ready": True,
             "provider": provider,
             "model": model,
             "test_response": test_response[:10] if test_response else None,
             "local": local_info,
-        }
+        })
     except LLMConfigError as exc:
-        return {"ready": False, "provider": None, "error": str(exc), "local": local_info}
+        return _with_health_contract({"ready": False, "provider": None, "error": str(exc), "local": local_info}, status="unhealthy")
     except Exception as exc:
-        return {"ready": False, "provider": None, "error": str(exc), "local": local_info}
+        return _with_health_contract({"ready": False, "provider": None, "error": str(exc), "local": local_info}, status="unhealthy")
 
 
 @router.get("/api/providers/health")
@@ -373,7 +406,10 @@ async def providers_health():
     try:
         mesh = get_llm_mesh()
         health = mesh.get_provider_health()
-        return {"providers": health, "timeout_budget_seconds": mesh.mesh_config.query_timeout_budget_seconds}
+        return _with_health_contract({
+            "providers": health,
+            "timeout_budget_seconds": mesh.mesh_config.query_timeout_budget_seconds,
+        }, status="healthy", healthy=True)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Provider health check failed: {exc}") from exc
 
@@ -384,19 +420,19 @@ async def health_db():
     try:
         db = _db()
         stats = db.get_stats()
-        return {
+        return _with_health_contract({
             "ready": True,
             "dialect": db.dialect,
             "path": str(resolve_database_path()),
             "researcher_count": stats.get("researchers", 0),
             "publication_count": stats.get("publications", 0),
-        }
+        })
     except Exception as exc:
-        return {
+        return _with_health_contract({
             "ready": False,
             "dialect": "sqlite",
             "error": str(exc),
-        }
+        }, status="unhealthy")
 
 
 @router.get("/health/qdrant")
@@ -410,22 +446,22 @@ async def health_qdrant():
         client = _new_qdrant_client(host=host, port=port, timeout=2.0)
         collections = client.get_collections()
         names = [item.name for item in getattr(collections, "collections", [])]
-        return {
+        return _with_health_contract({
             "ready": True,
             "host": host,
             "port": port,
             "collection": collection,
             "collection_exists": collection in names,
             "collections": names,
-        }
+        })
     except Exception as exc:
-        return {
+        return _with_health_contract({
             "ready": False,
             "host": host,
             "port": port,
             "collection": collection,
             "error": str(exc),
-        }
+        }, status="unhealthy")
 
 
 @router.get("/api/vectors/health")
@@ -441,7 +477,7 @@ async def vectors_health():
     try:
         from qdrant_client import QdrantClient
 
-        client = QdrantClient(host=host, port=port, timeout=5.0)
+        client = QdrantClient(host=host, port=port, timeout=5)
         collection_info = client.get_collection(collection_name=collection)
         points_count = collection_info.points_count
         indexed_count = collection_info.indexed_vectors_count
@@ -471,6 +507,8 @@ async def vectors_health():
             scroll_filter=None,
         )
         last_doc = scroll_result[0][0].payload if scroll_result and scroll_result[0] else {}
+        if last_doc is None:
+            last_doc = {}
         last_ingestion = last_doc.get("ingested_at")
 
         if not indexed_count and points_count and points_count > 0 and not threshold_exempt:
@@ -483,17 +521,26 @@ async def vectors_health():
                 ),
             )
 
-        return {
+        vector_params = None
+        if collection_info.config and collection_info.config.params:
+            vectors = cast(Any, collection_info.config.params.vectors)
+            if isinstance(vectors, dict):
+                vector_map = cast(dict[str, Any], vectors)
+                vector_params = next(iter(vector_map.values()))
+            else:
+                vector_params = vectors
+
+        return _with_health_contract({
             "collection_name": collection,
             "vector_count": points_count,
             "indexed_vectors_count": indexed_count,
             "index_built": index_status == "green",
             "indexing_threshold": indexing_threshold,
-            "dimension": collection_info.config.params.vectors.size if collection_info.config and collection_info.config.params else None,
-            "distance_metric": collection_info.config.params.vectors.distance.name if collection_info.config and collection_info.config.params else None,
+            "dimension": getattr(vector_params, "size", None),
+            "distance_metric": getattr(getattr(vector_params, "distance", None), "name", None),
             "index_status": index_status,
             "last_ingestion_time": last_ingestion,
-        }
+        }, healthy=index_status == "green")
     except HTTPException:
         raise
     except Exception as exc:
@@ -503,7 +550,7 @@ async def vectors_health():
 @router.get("/health/all")
 async def health_all():
     """Combined health check for all services."""
-    checks = {
+    checks: dict[str, dict[str, Any]] = {
         "api": {"status": "healthy", "timestamp": datetime.now(UTC).isoformat()},
         "local_llm": {"status": "unknown"},
         "qdrant": {"status": "unknown"},
@@ -524,16 +571,16 @@ async def health_all():
 
         host = os.getenv("QDRANT_HOST", "localhost")
         port = int(os.getenv("QDRANT_PORT", "6333"))
-        client = QdrantClient(host=host, port=port, timeout=2.0)
+        client = QdrantClient(host=host, port=port, timeout=2)
         cols = client.get_collections()
         checks["qdrant"] = {"status": "healthy", "collections": [c.name for c in getattr(cols, "collections", [])]}
     except Exception as exc:
         checks["qdrant"] = {"status": "unhealthy", "error": str(exc)}
 
     try:
-        from src.caching.redis_layer import _get_redis
+        from src.caching.redis_layer import get_redis_client
 
-        redis_client = _get_redis()
+        redis_client = get_redis_client()
         if redis_client and redis_client.ping():
             checks["redis"] = {"status": "healthy"}
         else:
@@ -553,4 +600,7 @@ async def health_all():
     required_services = ("api", "qdrant", "redis")
     overall = all(checks[name].get("status") == "healthy" for name in required_services)
     overall = overall and checks["consent_service"].get("status") in {"healthy", "operational"}
-    return {"status": "healthy" if overall else "degraded", "services": checks}
+    return _with_health_contract(
+        {"status": "healthy" if overall else "degraded", "services": checks},
+        healthy=overall,
+    )

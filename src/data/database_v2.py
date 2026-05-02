@@ -354,12 +354,16 @@ class NRGDatabase:
         try:
             session.execute(text("SELECT 1"))
             yield session
+            session.commit()
+        except Exception:
+            session.rollback()
+            raise
         finally:
             session.close()
 
-    def execute(self, query: str, params: Optional[Dict] = None) -> List[Dict]:
+    def execute(self, query: str, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
         start = datetime.now()
-        with self.engine.connect() as conn:
+        with self.engine.begin() as conn:
             result = conn.execute(text(query), params or {})
             rows = [dict(row._mapping) for row in result]
             execution_time = (datetime.now() - start).total_seconds() * 1000

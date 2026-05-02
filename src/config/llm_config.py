@@ -9,7 +9,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Optional, Protocol
+from typing import Any, Optional, Protocol
 
 import requests  # type: ignore[import-untyped]
 
@@ -54,7 +54,7 @@ class LLMClient(Protocol):
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: list[dict],
+        conversation_history: list[dict[str, Any]],
     ) -> str: ...
 
 
@@ -1001,7 +1001,7 @@ class SovereignLLMMesh:
         self,
         system_prompt: str,
         user_prompt: str,
-        conversation_history: Optional[list[dict]] = None,
+        conversation_history: Optional[list[dict[str, Any]]] = None,
         complexity: Optional[str] = None,
     ) -> str:
         """
@@ -1156,9 +1156,9 @@ class SovereignLLMMesh:
         """Get list of available LLM providers in mesh."""
         return list(self.clients.keys())
 
-    def get_provider_health(self) -> dict:
+    def get_provider_health(self) -> dict[str, dict[str, Any]]:
         """Return per-provider health status with latency and success rate metrics."""
-        result = {}
+        result: dict[str, dict[str, Any]] = {}
         providers = self._get_health_weighted_providers()
         all_providers = list(self.clients.keys())
 

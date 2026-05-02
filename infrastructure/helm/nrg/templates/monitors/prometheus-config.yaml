@@ -13,14 +13,32 @@ metadata:
 data:
   prometheus.yml: |
     global:
-      scrape_interval: {{ .Values.prometheus.scrapeInterval | default "15s" }}
+      scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default (.Values.prometheus.scrapeInterval | default "60s") }}
       evaluation_interval: {{ .Values.prometheus.evaluationInterval | default "15s" }}
       external_labels:
         cluster: 'nrg-production'
         env: 'production'
 
     scrape_configs:
-      - job_name: 'nrg-api'
+      - job_name: 'nrg-api-health'
+        scrape_interval: {{ .Values.prometheus.healthScrapeInterval | default "15s" }}
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - {{ .Values.namespace | default "nrg-production" }}
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: nrg-api
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - action: labelmap
+            regex: __meta_kubernetes_pod_label_(.+)
+        metrics_path: /health
+
+      - job_name: 'nrg-api-metrics'
+        scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
         kubernetes_sd_configs:
           - role: pod
             namespaces:
@@ -37,6 +55,7 @@ data:
         metrics_path: /metrics
 
       - job_name: 'nrg-postgres'
+        scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
@@ -54,6 +73,7 @@ data:
               alias: nrg-postgres
 
       - job_name: 'nrg-qdrant'
+        scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
@@ -67,6 +87,7 @@ data:
               alias: nrg-qdrant
 
       - job_name: 'nrg-redis'
+        scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:
@@ -80,6 +101,7 @@ data:
               alias: nrg-redis
 
       - job_name: 'nrg-kong'
+        scrape_interval: {{ .Values.prometheus.metricsScrapeInterval | default "60s" }}
         kubernetes_sd_configs:
           - role: pod
         relabel_configs:

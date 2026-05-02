@@ -35,3 +35,26 @@ async def test_audit_append_executor_serializes_by_default(monkeypatch):
 
     assert sorted(results) == list(range(8))
     assert max_active == 1
+
+
+@pytest.mark.asyncio
+async def test_audit_append_executor_does_not_block_event_loop(monkeypatch):
+    async_append.shutdown_audit_append_executor()
+    monkeypatch.setenv("NRG_AUDIT_APPEND_WORKERS", "1")
+
+    def slow_append(index: int) -> int:
+        time.sleep(0.01)
+        return index
+
+    try:
+        tasks = [
+            asyncio.create_task(async_append.run_audit_append(slow_append, index))
+            for index in range(100)
+        ]
+        started = time.perf_counter()
+        await asyncio.sleep(0.02)
+        event_loop_delta_ms = (time.perf_counter() - started) * 1000
+        assert event_loop_delta_ms < 100
+        assert sorted(await asyncio.gather(*tasks)) == list(range(100))
+    finally:
+        async_append.shutdown_audit_append_executor()

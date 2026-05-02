@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import os
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -13,7 +13,7 @@ from starlette.responses import Response
 from src.api.deps import brute_force_protection
 from src.api.logging_config import get_logger
 from src.auth.jwt_handler import AuthError, JWTHandler
-from src.auth.middleware import get_current_user
+from src.auth.middleware import TokenClaims, get_current_user
 from src.security.rate_limiter import check_tier_rate_limit
 from src.services.consent import get_consent_service
 
@@ -24,6 +24,7 @@ REFRESH_COOKIE_NAME = "nrg_refresh_token"
 
 _jwt_handler: JWTHandler | None = None
 logger = get_logger(__name__)
+JSONDict = dict[str, Any]
 
 
 class SSOCallbackRequest(BaseModel):
@@ -71,23 +72,24 @@ def _cookie_secure() -> bool:
 
 def _set_auth_cookies(response: Response, tokens: dict[str, Any]) -> None:
     jwt_handler = _get_jwt_handler()
-    cookie_options = {
-        "httponly": True,
-        "secure": _cookie_secure(),
-        "samesite": "lax",
-        "path": "/",
-    }
+    secure_cookie = _cookie_secure()
     response.set_cookie(
         ACCESS_COOKIE_NAME,
         tokens["access_token"],
         max_age=int(tokens.get("expires_in", jwt_handler.access_token_ttl_seconds)),
-        **cookie_options,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        path="/",
     )
     response.set_cookie(
         REFRESH_COOKIE_NAME,
         tokens["refresh_token"],
         max_age=int(tokens.get("refresh_expires_in", jwt_handler.refresh_token_ttl_seconds)),
-        **cookie_options,
+        httponly=True,
+        secure=secure_cookie,
+        samesite="lax",
+        path="/",
     )
 
 
@@ -102,7 +104,7 @@ def _clear_auth_cookies(response: Response) -> None:
         )
 
 
-def _auth_response_payload(user: dict[str, Any], tokens: dict[str, Any], rate_limit: dict[str, Any]) -> dict[str, Any]:
+def _auth_response_payload(user: JSONDict, tokens: JSONDict, rate_limit: JSONDict) -> JSONDict:
     return {
         **tokens,
         "persona": user["role"],
@@ -119,9 +121,9 @@ def _auth_response_payload(user: dict[str, Any], tokens: dict[str, Any], rate_li
     }
 
 
-@router.post("/auth/login")
-@router.post("/login")
-async def login(request: LoginRequest, response: Response, raw_request: Request = None):
+@router.post("/auth/login", include_in_schema=False)
+@router.post("/login", include_in_schema=False)
+async def login(request: LoginRequest, response: Response, raw_request: Request) -> JSONDict:
     """Authenticate a user and return access/refresh tokens."""
     jwt_handler = _get_jwt_handler()
     client_ip = raw_request.client.host if raw_request and raw_request.client else None
@@ -167,7 +169,7 @@ async def login(request: LoginRequest, response: Response, raw_request: Request 
         )
 
     tier = user.get("tier", 1)
-    allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
+    _allowed, remaining, reset_time, rate_headers = check_tier_rate_limit(
         user["user_id"], tier, client_ip
     )
 
@@ -184,7 +186,7 @@ async def login(request: LoginRequest, response: Response, raw_request: Request 
 
 
 @router.get("/auth/sso/login", response_model=SSOAuthorizationResponse, tags=["auth"])
-async def sso_login():
+async def sso_login() -> SSOAuthorizationResponse:
     """Initiate SSO login and return the institutional IdP redirect URL."""
     from src.auth.sso_handler import get_sso_handler, is_sso_enabled
 
@@ -201,7 +203,7 @@ async def sso_login():
 
 
 @router.post("/auth/sso/callback", tags=["auth"])
-async def sso_callback(request: SSOCallbackRequest):
+async def sso_callback(request: SSOCallbackRequest) -> JSONDict:
     """Handle SSO IdP callback and issue JWTs on success."""
     from src.auth.sso_handler import get_sso_handler, is_sso_enabled
 
@@ -226,7 +228,7 @@ async def sso_callback(request: SSOCallbackRequest):
 
 
 @router.get("/auth/sso/status", tags=["auth"])
-async def sso_status():
+async def sso_status() -> JSONDict:
     """Return SSO configuration status."""
     from src.auth.sso_handler import is_sso_enabled
 
@@ -238,8 +240,9 @@ async def sso_status():
 
 
 @router.get("/auth/session")
-async def auth_session(request: Request):
-    claims: dict = getattr(request.state, "auth_claims", None) or {}
+async def auth_session(request: Request) -> JSONDict:
+    raw_claims = getattr(request.state, "auth_claims", None)
+    claims = cast(TokenClaims, raw_claims if isinstance(raw_claims, dict) else {})
     if not claims:
         return {
             "authenticated": False,
@@ -262,7 +265,7 @@ async def auth_session(request: Request):
 
 @router.post("/auth/refresh")
 @router.post("/refresh")
-async def refresh_tokens(request: RefreshRequest, response: Response, raw_request: Request = None):
+async def refresh_tokens(request: RefreshRequest, response: Response, raw_request: Request) -> JSONDict:
     jwt_handler = _get_jwt_handler()
     try:
         refresh_token = request.refresh_token or (
@@ -282,8 +285,8 @@ async def refresh_tokens(request: RefreshRequest, response: Response, raw_reques
             logs = get_rotation_logs()
             if logs:
                 logger.info(
-                    "Token refreshed successfully: last_rotation=%s",
-                    logs[-1].get("timestamp", "unknown"),
+                    "Token refreshed successfully",
+                    last_rotation=logs[-1].get("timestamp", "unknown"),
                 )
         except Exception:
             pass
@@ -299,8 +302,8 @@ async def logout(
     request: LogoutRequest,
     response: Response,
     raw_request: Request,
-    claims: dict = Depends(get_current_user),
-):
+    claims: TokenClaims = Depends(get_current_user),
+) -> JSONDict:
     jwt_handler = _get_jwt_handler()
     authorization = raw_request.headers.get("Authorization")
     access_cookie = raw_request.cookies.get(ACCESS_COOKIE_NAME)

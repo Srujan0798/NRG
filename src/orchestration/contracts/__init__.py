@@ -6,7 +6,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 CONTRACT_DIR = Path(__file__).resolve().parent
 CONTRACT_EDGE_NAMES = (
@@ -49,14 +49,15 @@ def validate_edge_payload(edge: str, payload: dict[str, Any]) -> list[str]:
 
 def validate_payload(schema: dict[str, Any], payload: dict[str, Any]) -> list[str]:
     try:
-        from jsonschema import Draft202012Validator
+        from jsonschema import Draft202012Validator  # type: ignore[reportMissingModuleSource]
     except Exception:
         return _fallback_validate(schema, payload, "$")
 
-    validator = Draft202012Validator(schema)
+    validator = cast(Any, Draft202012Validator(schema))
+    errors = list(validator.iter_errors(payload))
     return [
         f"{'/'.join(str(part) for part in error.absolute_path) or '$'}: {error.message}"
-        for error in sorted(validator.iter_errors(payload), key=lambda item: list(item.absolute_path))
+        for error in sorted(errors, key=lambda item: list(item.absolute_path))
     ]
 
 
@@ -186,7 +187,7 @@ def _fallback_validate(schema: dict[str, Any], value: Any, path: str) -> list[st
                 errors.extend(_fallback_validate(child_schema, value[key], f"{path}.{key}"))
 
     if isinstance(value, list) and "items" in schema:
-        for index, item in enumerate(value):
+        for index, item in enumerate(cast(list[Any], value)):
             errors.extend(_fallback_validate(schema["items"], item, f"{path}[{index}]"))
 
     if isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -198,7 +199,7 @@ def _fallback_validate(schema: dict[str, Any], value: Any, path: str) -> list[st
     if isinstance(value, str) and "minLength" in schema and len(value) < schema["minLength"]:
         errors.append(f"{path}: string is shorter than {schema['minLength']}")
 
-    if isinstance(value, list) and "minItems" in schema and len(value) < schema["minItems"]:
+    if isinstance(value, list) and "minItems" in schema and len(cast(list[Any], value)) < schema["minItems"]:
         errors.append(f"{path}: array has fewer than {schema['minItems']} items")
 
     return errors
