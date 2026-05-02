@@ -30,6 +30,7 @@ if not CHAIN_KEY and os.environ.get("NRG_ENV", "dev") != "dev":
 AUDIT_CHAIN_VERSION = 1
 AUDIT_ALERT_WEBHOOK = os.environ.get("AUDIT_ALERT_WEBHOOK")
 AUDIT_LOCK_TIMEOUT = float(os.environ.get("AUDIT_LOCK_TIMEOUT", "5.0"))
+GENESIS_PIN_FILE_MODE = 0o444
 _chain_key_cache: bytes | None = None
 _chain_key_lock = threading.Lock()
 _cosign_executor: ThreadPoolExecutor | None = None
@@ -655,8 +656,16 @@ class ImmutableAuditLog:
     def _read_genesis_pin(self) -> str | None:
         if not self.genesis_pin_file.exists():
             return None
+        self._harden_genesis_pin()
         value = self.genesis_pin_file.read_text().strip()
         return value or None
+
+    def _harden_genesis_pin(self) -> None:
+        """Best-effort local write-once hardening for the genesis anchor file."""
+        try:
+            self.genesis_pin_file.chmod(GENESIS_PIN_FILE_MODE)
+        except OSError:
+            logger.warning("Could not harden genesis pin permissions", exc_info=True)
 
     def _pin_genesis_hash(self, genesis_hash: str | None) -> str | None:
         if not genesis_hash:
@@ -664,7 +673,20 @@ class ImmutableAuditLog:
         pinned_hash = self._read_genesis_pin()
         if pinned_hash:
             return pinned_hash
-        self.genesis_pin_file.write_text(f"{genesis_hash}\n")
+        try:
+            fd = os.open(
+                self.genesis_pin_file,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                GENESIS_PIN_FILE_MODE,
+            )
+        except FileExistsError:
+            return self._read_genesis_pin()
+
+        with os.fdopen(fd, "w") as f:
+            f.write(f"{genesis_hash}\n")
+            f.flush()
+            os.fsync(f.fileno())
+        self._harden_genesis_pin()
         return genesis_hash
 
     def _lineage_break_metadata(

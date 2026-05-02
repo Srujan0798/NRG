@@ -36,6 +36,9 @@ from src.audit import AuditEvent, ImmutableAuditLog, get_audit_log
 from src.audit.per_user_keys import get_per_user_key_manager
 
 
+GENESIS_PIN_FILE_MODE = 0o444
+
+
 def compute_hash(chain_key: str, prev_hash: str, event: AuditEvent) -> str:
     """Compute HMAC-SHA256 hash for an event."""
     message = prev_hash + event.serialize()
@@ -89,10 +92,24 @@ def ensure_genesis_pin(audit_dir: Path, chain_path: Path) -> None:
     """Create the genesis pin when an older chain predates ADR-006."""
     pin_file = audit_dir / "genesis_hash.pin"
     if pin_file.exists():
+        pin_file.chmod(GENESIS_PIN_FILE_MODE)
         return
     active_hash = first_event_hash(chain_path)
     if active_hash:
-        pin_file.write_text(f"{active_hash}\n")
+        try:
+            fd = os.open(
+                pin_file,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                GENESIS_PIN_FILE_MODE,
+            )
+        except FileExistsError:
+            pin_file.chmod(GENESIS_PIN_FILE_MODE)
+            return
+        with os.fdopen(fd, "w") as f:
+            f.write(f"{active_hash}\n")
+            f.flush()
+            os.fsync(f.fileno())
+        pin_file.chmod(GENESIS_PIN_FILE_MODE)
 
 
 def rebuild_chain(corrupted_path: str, new_path: str, chain_key: str) -> dict:

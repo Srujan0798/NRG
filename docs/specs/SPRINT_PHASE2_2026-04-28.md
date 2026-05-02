@@ -171,7 +171,7 @@ K-GAP ITEMS (all CLOSED):
 | 17 | **WL-7** — v1.0.0-eternal tag | Cluster-gated | P1 | ⏸️ BLOCKED | WL-1..WL-6 + C4 evidence | `v1.0.0-eternal` lightweight tag on old commit; do not retag until live evidence |
 | 18 | **C4** — SLO load test (P99<500ms @ 1000 users) | Quality Bar | P1 | ⏸️ BLOCKED | Cluster access | `tests/load/locustfile_c4.py` ready; `scripts/load_test_run.py` ready; Locust CSV P99 target <500ms |
 | 19 | **ADR-006** — Audit chain lineage documentation | Phase 2 | P4 | ✅ COMPLETED | None | `docs/adr/ADR-006-audit-chain-auto-repair-lineage-break.md` accepted; `verify_chain()` → `(True, [], 8382)` |
-| 20 | **ADR-006-action** — Genesis hash pinning (WORM) | Phase 2 | P4 | ⏸️ TODO | None (not started) | `lineage_break` field added to `get_chain_health()`; WORM file storage not yet implemented |
+| 20 | **ADR-006-action** — Genesis hash pinning (WORM) | Phase 2 | P4 | ✅ COMPLETED locally | None | `.audit/genesis_hash.pin` is created once, fsynced, hardened to `0444`, and checked by `get_chain_health()` plus `scripts/audit_rebuild.py --preserve-lineage`; production object-lock storage remains a deployment control |
 | 21 | **PY-V2** — Pydantic v2 migration plan | Phase 2 | P4 | ✅ COMPLETED | None | `docs/engineering/PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md`; `scripts/check_pydantic_migration_guard.py --json -> ok: true` |
 | 22 | **PY-V2-action** — Python 3.14 compat lane | Phase 2 | P4 | ⏸️ TODO | None (deferred) | CI job `python-314-compat` runs as allowed-to-fail; promote to required after migration branch |
 | 23 | **DQS** — Data quality scorecard | Phase 2 | P4 | ✅ COMPLETED | None (operational) | `docs/ops/data_quality_scorecard.md`; `pytest tests/data/test_data_quality.py -q --no-cov -> 5 passed`; local SQLite score: FAIL (0.571) due to local dev data, not P0 leak |
@@ -213,7 +213,7 @@ python3 scripts/phase7_preflight.py --skip-cluster-contact
 
 - **K-gap closure:** All 5 K-gaps (K-1 through K-5A) are verified CLOSED. K-2 remains PARTIAL because while 100-user stable run passes, >50-QPS pacing still fails due to lazy embedding model loading under load — this is a capacity bug, not an authentication/rate-limit failure.
 - **Local vs cluster:** Items marked ✅ CLOSED with "None" as blocker are locally complete. Items marked ⏸️ BLOCKED require sovereign cluster access which is not currently available.
-- **Phase 2 items:** All Phase 2 engineering infrastructure items (ADR-006, Pydantic v2 plan, data quality scorecard, pipeline contracts, Phase 7 trigger protocol, commercial tracker) are COMPLETED. The ADR-006 lineage break is documented but the genesis hash WORM-pinning action item remains open.
+- **Phase 2 items:** All Phase 2 engineering infrastructure items (ADR-006, Pydantic v2 plan, data quality scorecard, pipeline contracts, Phase 7 trigger protocol, commercial tracker) are COMPLETED locally. ADR-006 lineage repair is documented and the local genesis hash WORM-pinning action is implemented; production object-lock storage remains a deployment control.
 - **Commercial items C1–C8:** Founder-owned. Engineering has created the tracker and draft assets but cannot complete entity registration, IP letters, auditor procurement, pricing approval, cap table, or warm introductions without founder action and external counterparties.
 - **v1.0.0-eternal tag:** The existing `v1.0.0-eternal` tag is a **lightweight tag on an old commit** (`1562d694`). It must not be moved. A new signed tag requires all WL items complete plus C4 evidence.
 

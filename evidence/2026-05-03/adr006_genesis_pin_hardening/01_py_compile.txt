@@ -1,0 +1,2 @@
+python3 -m py_compile scripts/audit_rebuild.py src/audit/__init__.py tests/audit/test_chain_integrity.py scripts/batch4_data_sql_schema_audit.py
+PASS

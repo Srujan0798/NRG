@@ -363,6 +363,7 @@ class TestAuditChainIntegrity:
         log.append(AuditEvent(event_type="query", user_id="u1", query="first"))
         pin_file = Path(log.genesis_pin_file)
         assert pin_file.exists()
+        pin_file.chmod(0o644)
         pin_file.write_text("f" * 64 + "\n")
 
         health = log.get_chain_health(auto_repair=False)
@@ -372,6 +373,20 @@ class TestAuditChainIntegrity:
         assert health["lineage_intact"] is False
         assert health["lineage_break"]["lineage_intact"] is False
         assert health["lineage_break"]["genesis_pin_matches"] is False
+
+    def test_genesis_pin_is_created_once_and_hardened_read_only(self, fresh_audit_log):
+        """Genesis pin is a local write-once anchor, not a mutable runtime cursor."""
+        log = fresh_audit_log
+
+        first_hash = log.append(AuditEvent(event_type="query", user_id="u1", query="first"))
+        pin_file = Path(log.genesis_pin_file)
+
+        assert pin_file.read_text().strip() == first_hash
+        assert pin_file.stat().st_mode & 0o777 == 0o444
+
+        second_hash = log.append(AuditEvent(event_type="query", user_id="u2", query="second"))
+        assert pin_file.read_text().strip() == first_hash
+        assert pin_file.read_text().strip() != second_hash
 
     def test_merkle_root_persistence(self, fresh_audit_log):
         """Test that daily Merkle roots are persisted."""
@@ -480,6 +495,33 @@ class TestAuditChainRebuildScript:
 
         assert verify_genesis_pin(audit_dir, chain_file, force=False) is False
         assert verify_genesis_pin(audit_dir, chain_file, force=True) is True
+
+    def test_rebuild_script_ensure_genesis_pin_hardens_existing_anchor(
+        self,
+        temp_audit_dir,
+    ):
+        """Rebuild helper must create a hardened pin without replacing existing anchors."""
+        import sys
+        from pathlib import Path as P
+        sys.path.insert(0, str(P(__file__).parent.parent.parent))
+        from scripts.audit_rebuild import ensure_genesis_pin
+
+        audit_dir = P(temp_audit_dir)
+        chain_file = audit_dir / "chain.jsonl"
+        first_hash = "a" * 64
+        chain_file.write_text(json.dumps({"event_type": "test", "hash": first_hash}) + "\n")
+
+        ensure_genesis_pin(audit_dir, chain_file)
+        pin_file = audit_dir / "genesis_hash.pin"
+
+        assert pin_file.read_text().strip() == first_hash
+        assert pin_file.stat().st_mode & 0o777 == 0o444
+
+        replacement_hash = "b" * 64
+        chain_file.write_text(json.dumps({"event_type": "test", "hash": replacement_hash}) + "\n")
+        ensure_genesis_pin(audit_dir, chain_file)
+
+        assert pin_file.read_text().strip() == first_hash
 
 
 def test_audit_investigate_script_runs_directly(tmp_path):
