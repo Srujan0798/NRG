@@ -536,9 +536,9 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | Gap ID | Issue | Severity | Owner | Status | Evidence |
 |---|---|---|---|---|---|
 | **AUDIT-CHAIN** | Hash mismatch at line 381369 — chain actively corrupting | 🔴 P0 | DevOps Agent | **RESOLVED with ADR-006** — auto-repair reseeded chain; lineage documented as broken | `docs/adr/ADR-006-audit-chain-auto-repair-lineage-break.md` |
-| GAP-B | Vector drift 60-second scheduler not deployed | 🔴 P0 | Backend Agent | **ASSIGNED** — `FIX-GAP-B-001` | `evidence/2026-04-25/19_gap_fixes.md` |
-| GAP-A | DB co-sign module exists but acceptance untested | 🟡 P1 | DevOps Agent | **ASSIGNED** — `VERIFY-GAP-A-001` | `evidence/2026-04-25/05_audit_binding.log` |
-| GAP-C | `docs/compliance/hall-of-shame.md` exists (195 lines) but needs verification | 🟡 P1 | Backend Agent | **ASSIGNED** — `VERIFY-GAP-C-001` | `evidence/2026-04-25/19_gap_fixes.md` |
+| GAP-B | Vector drift 60-second scheduler not deployed | 🔴 P0 | Backend Agent | **RESOLVED locally** — scheduler and observability tests pass | `evidence/2026-05-02/backlog_local_gap_truth_sync/01_vector_drift_scheduler_tests.log` |
+| GAP-A | DB co-sign module exists but acceptance untested | 🟡 P1 | DevOps Agent | **VERIFIED locally** — DB co-sign tests pass end-to-end | `evidence/2026-05-02/backlog_local_gap_truth_sync/02_db_cosign_tests.log` |
+| GAP-C | `docs/compliance/hall-of-shame.md` exists (195 lines) but needs verification | 🟡 P1 | Backend Agent | **VERIFIED locally** — Dhairya adversarial/hall-of-shame slice passes | `evidence/2026-05-02/backlog_local_gap_truth_sync/03_hall_of_shame_tests.log` |
 
 ### Cluster-Dependent GAPS (After A/B/C Are DONE)
 
@@ -555,9 +555,9 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | Task ID | Agent | What | Evidence Target | Status |
 |---|---|---|---|---|
 | FIX-AUDIT-CHAIN-001 | DevOps | Fix hash mismatch in `src/audit/__init__.py` | `docs/adr/ADR-006-audit-chain-auto-repair-lineage-break.md` | ✅ RESOLVED — auto-repair reseeded; ADR-006 documents lineage break |
-| FIX-GAP-B-001 | Backend | Create `scripts/vector_drift_scheduler.py` + test | `evidence/2026-04-25/19_gap_fixes.md` | ⏳ ASSIGNED |
-| VERIFY-GAP-A-001 | DevOps | Verify `src/audit/db_cosign.py` works end-to-end | `evidence/2026-04-25/05_audit_binding.log` | ⏳ ASSIGNED |
-| VERIFY-GAP-C-001 | Backend | Verify `docs/compliance/hall-of-shame.md` has all 7 patterns | `evidence/2026-04-25/19_gap_fixes.md` | ⏳ ASSIGNED |
+| FIX-GAP-B-001 | Backend | Create `scripts/vector_drift_scheduler.py` + test | `evidence/2026-05-02/backlog_local_gap_truth_sync/01_vector_drift_scheduler_tests.log` | ✅ RESOLVED locally — 20 tests passed |
+| VERIFY-GAP-A-001 | DevOps | Verify `src/audit/db_cosign.py` works end-to-end | `evidence/2026-05-02/backlog_local_gap_truth_sync/02_db_cosign_tests.log` | ✅ VERIFIED locally — 21 tests passed |
+| VERIFY-GAP-C-001 | Backend | Verify `docs/compliance/hall-of-shame.md` has all 7 patterns | `evidence/2026-05-02/backlog_local_gap_truth_sync/03_hall_of_shame_tests.log` | ✅ VERIFIED locally — 10 selected tests passed |
 
 ### Performance Debt (Wave 3)
 

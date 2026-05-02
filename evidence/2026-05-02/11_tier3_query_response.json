@@ -2,9 +2,9 @@
   "tier": 3,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "e4511c6f-f899-4b7e-ad96-459cc9abc017",
-    "answer_id": "ab957711-5a96-401d-84cc-4500bbcbb245",
-    "audit_event_id": "e7307008e0d925d8bd56567820b6b5c3e3650aed7552b911ff6e9c74c12f04b0",
+    "query_id": "57c62f32-c908-4123-b41b-84206d0272c5",
+    "answer_id": "4590e5dd-96a0-4094-937b-13b9a738c671",
+    "audit_event_id": "8dcd3f5963843508c0e3394959b1224dd51f96b9fd7a9056bdafe996f4602d1a",
     "tier": 3,
     "question": "top AI funding institutions",
     "interpreted_question": "top AI funding institutions",
@@ -102,7 +102,7 @@
         "reason": "Evidence and citations passed verification."
       },
       "citation_validity": 1.0,
-      "audit_event_id": "e7307008e0d925d8bd56567820b6b5c3e3650aed7552b911ff6e9c74c12f04b0"
+      "audit_event_id": "8dcd3f5963843508c0e3394959b1224dd51f96b9fd7a9056bdafe996f4602d1a"
     },
     "citation_validity": 1.0,
     "plan": null,
