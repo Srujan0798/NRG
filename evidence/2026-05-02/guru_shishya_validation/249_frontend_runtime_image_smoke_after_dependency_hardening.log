@@ -1,0 +1,11 @@
+    1 nginx     0:00 nginx: master process nginx -g daemon off;
+   21 nginx     0:00 nginx: worker process
+   22 nginx     0:00 nginx: worker process
+   23 nginx     0:00 nginx: worker process
+   24 nginx     0:00 nginx: worker process
+   31 nginx     0:00 ps aux
+tcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      1/nginx: master pro
+container=af4cac479b4fa53efc4aafdcca6cd44b6abf1acb7ffa2dff529a1e90766adebb
+health=pass
+nginx version: nginx/1.25.5
+user=nginx image=nrg-frontend:dependency-audit-20260502

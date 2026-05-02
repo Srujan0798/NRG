@@ -61,7 +61,7 @@ and
 | Local product proof | PASS local / external pending | Backend, frontend, tier, audit, accessibility, local Qdrant/Redis, managed full-suite, dependency audit, and local quota-neutral C4 evidence pass locally. |
 | C4 SLO | PASS local quota-neutral / cluster pending | Latest strict local scorecard: 1000 users, 82,365 samples, 0 failures, aggregate P99 79 ms; quota-policy and deployed/cluster proof remain pending. |
 | Full Python suite | PASS managed live orchestration | `scripts/run_test_suite.sh --live-api` separates non-live and live API phases; latest evidence has 1,830 non-live tests with 0 failures/errors and 36 live API tests with 0 failures/errors. |
-| Dependency audit | PASS local clean audit / production image pending | Frontend `npm audit` now reports 0 total vulnerabilities locally after Storybook/Vite/Jest hardening and removal of the vulnerable essentials/actions path. |
+| Dependency audit | PASS local clean audit / PARTIAL image replay | Frontend `npm audit` now reports 0 total vulnerabilities locally. Frontend nginx runtime image build/smoke passed, but CVE scanner output plus API and deployed image scans remain pending. |
 | External production gates | BLOCKED | Need deployed URLs, production service context, cluster C4, production Qdrant target, production image dependency checks, and founder signing. |
 
 ## Rule Hierarchy
@@ -272,8 +272,11 @@ follow this order:
      Qdrant/Redis health, cluster C4, and founder signing.
 
 2. **Production image dependency replay**
-   - Re-run dependency checks against the deployable image/runtime surface, not
-     only the local frontend package tree.
+   - Frontend runtime image build/smoke evidence exists for the local nginx
+     image.
+   - Run CVE scanner output where `trivy`, `grype`, or `syft` is available.
+   - Scan the API image and deployed images, not only the local frontend package
+     tree.
 
 3. **Cluster C4 replay**
    - Use the same strict scorecard semantics as the local pass.
