@@ -27,7 +27,7 @@ This changelog entry covers the recent local verification line from
 
 ## Operations
 
-- Comprehensive batch verification: B1 (11 tasks), F2 (11 tasks), S3 (11 tasks), A5 (10 tasks) — 419 tests passing, 0 regressions (`6baae945`).
+- Comprehensive batch verification: B1 (11 tasks), F2 (11 tasks), S3 (11 tasks), A5 (10 tasks), with 419 tests passing and 0 regressions (`6baae945`).
 - Frontend evidence refreshed with latest artifacts and screenshots.
 - Tier drawer screenshots updated for all 3 persona tiers.
 

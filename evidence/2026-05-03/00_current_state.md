@@ -17,7 +17,10 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 
 - `L1-CR-006` active drift boundary is closed locally. Exported
   `src/api/query_helpers.py` fast-path helpers delegate to the live
-  answer-engine implementation in `src/api/main.py`.
+  answer-engine contract.
+- Live `/query` and `/api/query/stream` behavior is now owned by
+  `QueryAnswerService` in `src/api/query_service.py`; `src/api/main.py` keeps
+  app setup, dependency binding, and router registration.
 - Null aggregate values from `/api/data/stats` are preserved instead of
   silently converted to zero.
 - Frontend stats surfaces render missing aggregate values as `Pending`.
@@ -53,6 +56,12 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   - Result: `"ok": true`.
 - `bash scripts/forbidden_vocab_check.sh`
   - Result: passed.
+- Post-state replay:
+  - `npm run build`: passed.
+  - `npm test -- --runInBand`: 32 suites passed, 107 tests passed.
+  - `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x`: 419 passed, 6 skipped, 35 deselected.
+  - corpus sync, forbidden-vocabulary guard, audit-chain verify, and diff
+    whitespace checks passed.
 - `.venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/2026-05-03/final_external_gates_after_88d3a0db`
   - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
     target, explicit cluster-load context, and founder signatures.
@@ -62,12 +71,16 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/l1_query_helper_drift_closure/README.md`
 - `evidence/2026-05-03/local_continuation/README.md`
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
+- `evidence/2026-05-03/query_service_extraction/README.md`
+- `evidence/2026-05-03/post_state_replay/README.md`
+- `docs/adr/ADR-007-main-py-answer-engine-split.md`
 - `evidence/2026-05-03_rt14_live_response_diagnostic.json`
 
 ## Boundaries
 
-- Physical removal of dormant duplicated helper code remains a future
-  query-service extraction task.
+- `src/api/query_helpers.py` remains a compatibility/helper module. New query
+  behavior should target `QueryAnswerService`, with drift tests for any helper
+  delegation.
 - External deployed browser proof, cluster load replay, production Qdrant/API
   proof, production UAT, strict API no-fix image remediation, and founder
   signing remain outside this local pass.

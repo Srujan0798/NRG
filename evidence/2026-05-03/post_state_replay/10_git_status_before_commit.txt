@@ -1,0 +1,24 @@
+$ git status --short --branch --untracked-files=all
+## main...nrg/main [ahead 6]
+ M .claude/CURRENT_STATE.md
+ M CHANGELOG.md
+ M evidence/2026-05-02/session_report.md
+ M evidence/2026-05-03/00_current_state.md
+ M evidence/2026-05-03/post_state_replay/session_report.md
+?? evidence/2026-05-03/post_state_replay/00_requested_frontend_build_and_test.txt
+?? evidence/2026-05-03/post_state_replay/01_frontend_build.txt
+?? evidence/2026-05-03/post_state_replay/02_batch5_orchestration_skills_pytest.txt
+?? evidence/2026-05-03/post_state_replay/02_frontend_jest.txt
+?? evidence/2026-05-03/post_state_replay/03_corpus_sync.txt
+?? evidence/2026-05-03/post_state_replay/04_forbidden_vocab_check.txt
+?? evidence/2026-05-03/post_state_replay/05_current_chain_verify.txt
+?? evidence/2026-05-03/post_state_replay/06_git_diff_check.txt
+?? evidence/2026-05-03/post_state_replay/07_git_status_before_replay_commit.txt
+?? evidence/2026-05-03/post_state_replay/08_final_git_diff_check.txt
+?? evidence/2026-05-03/post_state_replay/08_forbidden_vocab_after_doc_patch.txt
+?? evidence/2026-05-03/post_state_replay/09_final_corpus_sync.txt
+?? evidence/2026-05-03/post_state_replay/09_git_diff_check_after_doc_patch.txt
+?? evidence/2026-05-03/post_state_replay/10_final_forbidden_vocab_check.txt
+?? evidence/2026-05-03/post_state_replay/10_git_status_before_commit.txt
+?? evidence/2026-05-03/post_state_replay/11_final_git_status_before_commit.txt
+?? evidence/2026-05-03/post_state_replay/README.md

@@ -1,0 +1,14 @@
+$ git status --short --branch --untracked-files=all
+## main...nrg/main [ahead 4]
+ M CHANGELOG.md
+?? docs/specs/adr/ADR-007_main_py_split.md
+?? evidence/2026-05-02/session_report.md
+?? evidence/2026-05-03/post_state_replay/01_frontend_build.txt
+?? evidence/2026-05-03/post_state_replay/01_frontend_build_and_test.txt
+?? evidence/2026-05-03/post_state_replay/02_batch5_orchestration_skills_pytest.txt
+?? evidence/2026-05-03/post_state_replay/03_corpus_sync.txt
+?? evidence/2026-05-03/post_state_replay/04_forbidden_vocab_check.txt
+?? evidence/2026-05-03/post_state_replay/05_current_chain_verify.txt
+?? evidence/2026-05-03/post_state_replay/06_git_diff_check.txt
+?? evidence/2026-05-03/post_state_replay/07_git_status_before_replay_commit.txt
+?? memory/INDEX.md
