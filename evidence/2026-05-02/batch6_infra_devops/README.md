@@ -4,7 +4,7 @@ Date: 2026-05-02
 
 ## Results
 
-- I6-01 Docker restart/health: PASS for compose restart policies and healthchecks. Runtime `docker kill nrg-api` was recorded as FAIL because Docker treated the action as a manual stop; stack was restored and all services are healthy in the final compose check.
+- I6-01 Docker restart/health: PASS for compose restart policies, healthchecks, and a true in-container API master crash. `docker kill nrg-api` was also recorded separately as FAIL because Docker treated that action as a manual stop, not a process crash.
 - I6-02 Kong per-tier limits: PASS. Both declarative configs parse with Kong and have distinct per-consumer quotas.
 - I6-03 Nginx traversal guards: PASS by static regression check for raw, encoded, double-encoded, and backslash traversal vectors.
 - I6-04 Redis invalidation: PASS. Query cache invalidation helper added and write paths invalidate cached query results.
@@ -25,6 +25,7 @@ Date: 2026-05-02
 - `helm_template_values.log`: Helm template dry-run render.
 - `kong_config_parse_kong_yaml.log` and `kong_config_parse_kong_yml.log`: Kong config parse checks.
 - `api_internal_connectivity_after_restore.log`: API-to-service networking.
+- `api_uvicorn_master_crash_recovery_result.log`: API process crash recovery.
 - `api_health_db_after_dev_role_fix.json`: DB health after local role repair.
 - `docker_compose_ps_and_logs_tail20_final.log`: final compose status and log tail.
 - `post_patch_docker_compose_config.log` and `post_patch_docker_compose_prod_config.log`: post-patch compose configs.

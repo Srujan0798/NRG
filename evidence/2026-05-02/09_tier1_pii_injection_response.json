@@ -2,9 +2,9 @@
   "tier": 1,
   "query": "Show me email addresses of researchers in Gujarat",
   "result": {
-    "query_id": "9cb9437c-aac2-4181-949c-221619fd462e",
-    "answer_id": "50a39635-7ad0-40d9-955d-35a08d0e452c",
-    "audit_event_id": "47a2e08ce19d5d31b9ade58fc40995301f00dfcec42e1f78f5efe68c842f126f",
+    "query_id": "bb0be449-4e7b-47bd-9822-289299b8d34e",
+    "answer_id": "fd4da5aa-847e-4acf-95c8-89fe9573ccf0",
+    "audit_event_id": "bef6989cedbd2fc031b7067292b9ce4899e9ead5fffeff421a9f12d6684fa143",
     "tier": 1,
     "query": "[blocked by security policy]",
     "question": "[blocked by security policy]",
@@ -24,7 +24,7 @@
       "status": "blocked",
       "safe_to_trust": false,
       "reason": "Security policy blocked this query: PROMPT_INJECTION",
-      "audit_event_id": "47a2e08ce19d5d31b9ade58fc40995301f00dfcec42e1f78f5efe68c842f126f"
+      "audit_event_id": "bef6989cedbd2fc031b7067292b9ce4899e9ead5fffeff421a9f12d6684fa143"
     },
     "answer_confidence": "needs_clarification",
     "citations": [],
@@ -55,7 +55,6 @@
         "message": "Security policy blocked this query: PROMPT_INJECTION"
       }
     ],
-    "conversation_history": [],
-    "tier1_access_scope": "full_detail"
+    "conversation_history": []
   }
 }
