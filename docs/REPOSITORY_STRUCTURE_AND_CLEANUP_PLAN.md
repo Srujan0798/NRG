@@ -1,6 +1,6 @@
 # Repository Structure And Cleanup Plan
 
-Date: 2026-05-02
+Date: 2026-05-03
 
 This plan records the current repository structure, cleanup decisions, and the
 target company-level organization for NRG. It is intentionally conservative:
@@ -244,12 +244,21 @@ Remaining route splits:
   `src/api/main.py` into `src/api/query_service.py`, preserved route contracts,
   and added architecture tests that keep `main.py` wrappers thin while checking
   blocking answer paths stay behind `asyncio.to_thread`.
+- 2026-05-03 endpoint-matrix closure added
+  `docs/specs/API_ENDPOINT_MATRIX.md`, documenting 59 registered FastAPI route
+  operations with owner, access guard, and purpose columns. The guard test
+  `tests/api/test_api_endpoint_matrix.py` compares the matrix against
+  `src.api.main.app`, so route additions/removals must update the matrix in the
+  same change.
 
 Next backend hardening:
 
 - Continue query-service hardening with broader messy-query, Dhairya,
   external-template, tier-shaping, stream-contract, and frontend adapter
   regressions before any further answer-path refactor.
+- Keep `tests/api/test_api_endpoint_matrix.py` in every route-moving change;
+  the endpoint inventory is now part of the route contract, not an optional
+  documentation artifact.
 
 ### Wave 5.5: Agent Workflow Hygiene
 

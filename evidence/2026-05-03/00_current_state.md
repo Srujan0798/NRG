@@ -13,6 +13,13 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   - `e62502bc fix(data): preserve NULL aggregates instead of fabricating zero`
   - `082beb17 evidence: complete batch5 orchestration/AI/RAG reverify — 10/10 tasks pass`
 
+## Current HEAD After Endpoint Matrix Commit
+
+- `9ace4501 docs: add API endpoint matrix guard`
+- The endpoint-matrix commit adds the route inventory drift guard, S3-09
+  remediation-gate hardening, and current-state evidence links. It does not
+  change public API behavior.
+
 ## PASS Locally
 
 - `L1-CR-006` active drift boundary is closed locally. Exported
@@ -80,12 +87,16 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `.venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/2026-05-03/final_external_gates_after_88d3a0db`
   - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
     target, explicit cluster-load context, and founder signatures.
+- `.venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/2026-05-03/final_external_gates_after_9ace4501`
+  - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
+    target, explicit cluster-load context, and founder signatures.
 
 ## Evidence
 
 - `evidence/2026-05-03/l1_query_helper_drift_closure/README.md`
 - `evidence/2026-05-03/local_continuation/README.md`
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
+- `evidence/2026-05-03/final_external_gates_after_9ace4501/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/query_service_extraction/README.md`
 - `evidence/2026-05-03/post_state_replay/README.md`
 - `evidence/2026-05-03/s3_09_remediation_gate/README.md`
