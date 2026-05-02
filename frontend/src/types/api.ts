@@ -42,12 +42,14 @@ export interface LoginResponse {
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
 
+export type StatsMetric = number | string | null
+
 /** Government-tier /stats response — all aggregate fields */
 export interface GovernmentStatsResponse {
-  total_researchers: number
-  total_publications: number
-  total_institutions: number
-  total_labs: number
+  total_researchers: StatsMetric
+  total_publications: StatsMetric
+  total_institutions: StatsMetric
+  total_labs: StatsMetric
   /** Array of {area, count} — NOT string[]. Government sees counts. */
   research_area_distribution: Array<{ area: string; count: number }>
   /** Array of {state, count} — Government sees per-state breakdown. */
@@ -56,17 +58,17 @@ export interface GovernmentStatsResponse {
 
 /** Industry-tier /stats response — limited, anonymized fields only */
 export interface IndustryStatsResponse {
-  total_researchers: number
-  total_publications: number
+  total_researchers: StatsMetric
+  total_publications: StatsMetric
   /** Simple list of top-5 area names (no counts for industry) */
   research_areas: string[]
 }
 
 /** Researcher-tier /stats response — partial stats only */
 export interface ResearcherStatsResponse {
-  total_researchers: number
-  total_publications: number
-  total_institutions: number
+  total_researchers: StatsMetric
+  total_publications: StatsMetric
+  total_institutions: StatsMetric
 }
 
 export type StatsResponse = GovernmentStatsResponse | IndustryStatsResponse | ResearcherStatsResponse

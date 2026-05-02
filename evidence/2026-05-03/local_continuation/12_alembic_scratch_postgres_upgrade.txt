@@ -1,0 +1,18 @@
+scratch_db=nrg_migration_check_1777748823
+alembic_exit=0
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 6d878bf70def, initial schema
+INFO  [alembic.runtime.migration] Running upgrade 6d878bf70def -> b1c2d3e4f001, add_missing_foreign_keys
+INFO  [alembic.runtime.migration] Running upgrade b1c2d3e4f001 -> a1b2c3d4e002, add_check_constraints
+INFO  [alembic.runtime.migration] Running upgrade a1b2c3d4e002 -> add_production_tables_001, Add production tables from official PostgreSQL schema
+INFO  [alembic.runtime.migration] Running upgrade add_production_tables_001 -> schema_parity_columns_001, Add db_struct.sql columns missing from production table migration.
+INFO  [alembic.runtime.migration] Running upgrade schema_parity_columns_001 -> add_audit_cosign_trigger_001, Add audit_db_cosign table and DB co-sign trigger.
+INFO  [alembic.runtime.migration] Running upgrade add_audit_cosign_trigger_001 -> llm_cost_log_001, Add llm_cost_log table for CostGuard budget tracking.
+INFO  [alembic.runtime.migration] Running upgrade llm_cost_log_001 -> lb6_indexes_rls_001, Add LB-6 hot-path indexes, TRL view, and tier row policies.
+INFO  [alembic.runtime.migration] Running upgrade lb6_indexes_rls_001 -> add_trl_stages_view_001, Add trl_stages view alias for the TRL source table.
+INFO  [alembic.runtime.migration] Running upgrade add_trl_stages_view_001 -> add_tech_trl_stages_view_002, Add tech_trl_stages safe alias and normalize TRL view columns.
+INFO  [alembic.runtime.migration] Running upgrade add_tech_trl_stages_view_002 -> d4_data_constraints_indexes_001, Batch 4 data constraints, FK repairs, and hot-path indexes.
+INFO  [alembic.runtime.migration] Running upgrade d4_data_constraints_indexes_001 -> d4_hot_path_indexes_002, Batch 4 hot-path application indexes.
+
+dropped_scratch_db=nrg_migration_check_1777748823

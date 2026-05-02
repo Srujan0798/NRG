@@ -56,9 +56,9 @@ interface QuerySurfaceProps extends SurfaceRouteProps {
 }
 
 interface StatPayload {
-  total_researchers?: number
-  total_publications?: number
-  total_institutions?: number
+  total_researchers?: number | string | null
+  total_publications?: number | string | null
+  total_institutions?: number | string | null
   tables?: number
   table_count?: number
   database?: { tables?: number; table_count?: number }
@@ -136,8 +136,11 @@ const SUPPORTING_PANELS = [
   },
 ]
 
-const formatNumber = (value: number | void, fallback: string) => {
-  if (!value) return fallback
+const formatNumber = (value: number | string | null | undefined, fallback: string) => {
+  if (value === null) return 'Pending'
+  if (value === undefined || value === '') return fallback
+  if (typeof value === 'string') return value
+  if (!Number.isFinite(value)) return fallback
   return new Intl.NumberFormat('en-IN').format(value)
 }
 

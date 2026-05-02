@@ -1,0 +1,3 @@
+
+> nrg-frontend@1.0.0 test:contrast
+> jest --runInBand tests/a11y/contrast.test.ts

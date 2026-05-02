@@ -232,13 +232,20 @@ Remaining route splits:
   and answer-record persistence. This was intentionally limited to helper
   extraction because `src/api/query_helpers.py` and the live fast-path logic in
   `src/api/main.py` currently diverge.
+- 2026-05-03 follow-up closed the active drift boundary: exported fast-path
+  helpers in `src/api/query_helpers.py` now delegate to the live answer-engine
+  implementation in `src/api/main.py`, and regression tests cover the known
+  drift cases. The old helper copy is still present as dormant implementation
+  detail and should be physically slimmed only during a broader query-service
+  extraction.
 
 Next backend split:
 
-- Reconcile `src/api/query_helpers.py` against the live fast-path code in
-  `src/api/main.py` before moving retrieval/fast-path branches. Do not switch
-  the query route to that helper module until messy-query, Dhairya, GLM,
-  Minimax, tier-shaping, and stream-contract tests prove behavior parity.
+- Extract the heavy answer-engine implementation from `src/api/main.py` into a
+  focused query-service module. Keep `/query` and `/api/query/stream` public
+  response fields unchanged, preserve the current async boundary, and rerun
+  messy-query, Dhairya, GLM, Minimax, tier-shaping, stream-contract, and
+  frontend adapter tests before changing route wiring.
 
 ### Wave 5.5: Agent Workflow Hygiene
 

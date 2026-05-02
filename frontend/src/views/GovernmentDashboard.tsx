@@ -242,7 +242,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <StatsCard
                         label={t("auto.views.GovernmentDashboard.4")}
                         labelHi="कुल शोधकर्ता"
-                        value={statsData?.total_researchers ?? 0}
+                        value={statsData?.total_researchers}
                         sublabel="Across government institutions"
                         accentColor="var(--nrg-chart-1)"
                         icon={<Users size={20} />}
@@ -252,7 +252,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <StatsCard
                         label={t("auto.views.GovernmentDashboard.5")}
                         labelHi="प्रकाशन"
-                        value={statsData?.total_publications ?? 0}
+                        value={statsData?.total_publications}
                         sublabel="Peer-reviewed works"
                         accentColor="var(--nrg-chart-2)"
                         icon={<FileText size={20} />}
@@ -262,7 +262,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <StatsCard
                         label={t("auto.views.GovernmentDashboard.6")}
                         labelHi="शोध प्रयोगशालाएं"
-                        value={statsData?.total_labs ?? 0}
+                        value={statsData?.total_labs}
                         sublabel="Across institutions"
                         accentColor="var(--nrg-chart-3)"
                         icon={<Building size={20} />}
@@ -272,7 +272,7 @@ export function GovernmentDashboard({ onThemeToggle, theme }: GovernmentDashboar
                       <StatsCard
                         label={t("auto.views.GovernmentDashboard.7")}
                         labelHi="संस्थान"
-                        value={statsData?.total_institutions ?? 0}
+                        value={statsData?.total_institutions}
                         sublabel="Government affiliated"
                         accentColor="var(--nrg-chart-4)"
                         icon={<Shield size={20} />}

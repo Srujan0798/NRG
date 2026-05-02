@@ -1,0 +1,21 @@
+
+Running 16 tests using 1 worker
+
+  ✓   1 [chromium] › tests/a11y/axe.test.ts:67:7 › login has no axe violations and five or fewer warnings (3.4s)
+  ✓   2 [chromium] › tests/a11y/axe.test.ts:67:7 › hero has no axe violations and five or fewer warnings (2.4s)
+  ✓   3 [chromium] › tests/a11y/axe.test.ts:67:7 › founder has no axe violations and five or fewer warnings (3.2s)
+  ✓   4 [chromium] › tests/a11y/axe.test.ts:67:7 › researcher-dashboard has no axe violations and five or fewer warnings (2.7s)
+  ✓   5 [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings (2.1s)
+  ✓   6 [chromium] › tests/a11y/axe.test.ts:67:7 › industry-dashboard has no axe violations and five or fewer warnings (2.0s)
+  ✓   7 [chromium] › tests/a11y/keyboard.test.ts:4:5 › skip link is the first focusable element and moves focus to main content (407ms)
+  ✓   8 [chromium] › tests/a11y/keyboard.test.ts:23:5 › hero query controls are keyboard operable (504ms)
+  ✓   9 [chromium] › tests/a11y/keyboard.test.ts:36:5 › reduced motion preference is reflected in the app shell (491ms)
+  ✓  10 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 1 (2.2s)
+  ✓  11 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 2 (2.7s)
+  ✓  12 [chromium] › tests/e2e/drawer_tiers.spec.ts:23:7 › source citation and audit drawers render for Tier 3 (2.1s)
+  ✓  13 [chromium] › tests/e2e/fetch_abort_navigation.spec.ts:8:5 › pending stats fetch is aborted when navigating away from query page (4.6s)
+  ✓  14 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 375px (614ms)
+  ✓  15 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 768px (622ms)
+  ✓  16 [chromium] › tests/e2e/sse_reconnect_stability.spec.ts:8:5 › active stream stays visually stable across transient token-refresh reconnect (6.4s)
+
+  16 passed (43.7s)

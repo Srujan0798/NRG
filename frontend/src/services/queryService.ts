@@ -129,12 +129,14 @@ const api = axios.create({
   timeout: 90000,
 });
 
+export type StatsMetric = number | string | null;
+
 export interface StatsResponse {
-  total_researchers: number;
-  total_publications: number;
-  total_institutions?: number;
-  total_labs?: number;
-  total_funding_amount?: number;
+  total_researchers: StatsMetric;
+  total_publications: StatsMetric;
+  total_institutions?: StatsMetric;
+  total_labs?: StatsMetric;
+  total_funding_amount?: StatsMetric;
   research_area_distribution?: Array<{ area: string; count: number }>;
   state_distribution?: Array<{ state: string; count: number }>;
   research_areas?: string[];

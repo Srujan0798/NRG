@@ -1,0 +1,9 @@
+{"login_status": 200}
+{
+  "status": 200,
+  "contains_at": false,
+  "contains_phone_word": false,
+  "contains_plus91": false,
+  "contains_91dash": false,
+  "prefix": "{\"query_id\":\"81456eeb-4438-44e3-bd20-2e880b79230f\",\"answer_id\":\"a5f9daaf-ad8f-48fc-93a7-cc54fec62244\",\"audit_event_id\":\"ab65b0dd6128bc29448c9bc310b616bd29d42bf04d3ced7f0e8598ccd361b0fa\",\"tier\":3,\"query\":\"[blocked by security policy]\",\"question\":\"[blocked by security policy]\",\"interpreted_question\":\"[blocked by security policy]\",\"assumptions\":[],\"route\":\"blocked\",\"blocked\":true,\"final_answer\":\"I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.\",\"response\":\"I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.\",\"status\":\"blocked\",\"verification_status\":false,\"confidence\":{\"level\":\"needs_clarification\",\"reason\":\"Security policy blocked this query: PROMPT_INJECTION\"},\"verification\":{\"status\":\"blocked\",\"safe_to_trust\":false,\"reason\":\"Security policy blocked this query: PROMPT_INJECTION\",\"audit_event_id\":\"ab65b0dd6128bc29448c9bc310b616bd29d42bf04d3ced7f0e8598ccd361b0fa\"},\"answer_confidence\":\"needs_clarification\",\"cit"
+}

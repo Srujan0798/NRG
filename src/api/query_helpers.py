@@ -1804,3 +1804,85 @@ fast_query_response = _fast_query_response
 academic_follow_up_response = _academic_follow_up_response
 advanced_adversarial_response = _advanced_adversarial_response
 killer_query_response = _killer_query_response
+
+
+def _live_main_module() -> Any:
+    """Load the live query implementation lazily to avoid import-time cycles."""
+    from src.api import main as api_main
+
+    return api_main
+
+
+def _remember_sql_domain_context(context_key: str, query: str, sql_query: str | None) -> None:
+    _live_main_module()._remember_sql_domain_context(context_key, query, sql_query)
+
+
+def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
+    return _live_main_module()._release_seed_graph(topic, tier)
+
+
+def _prewarm_publication_count_cache() -> None:
+    _live_main_module()._prewarm_publication_count_cache()
+
+
+def _fast_query_response(
+    query: str,
+    user_tier: int,
+    user_id: str,
+    session_id: str | None,
+) -> dict[str, Any] | None:
+    return _live_main_module()._fast_query_response(
+        query,
+        user_tier=user_tier,
+        user_id=user_id,
+        session_id=session_id,
+    )
+
+
+def _academic_follow_up_response(
+    query: str,
+    *,
+    user_tier: int,
+    session_id: str | None,
+    context_key: str,
+) -> dict[str, Any] | None:
+    return _live_main_module()._academic_follow_up_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+        context_key=context_key,
+    )
+
+
+def _advanced_adversarial_response(
+    query: str,
+    *,
+    user_tier: int,
+    session_id: str | None,
+) -> dict[str, Any] | None:
+    return _live_main_module()._advanced_adversarial_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+    )
+
+
+def _killer_query_response(
+    query: str,
+    user_tier: int,
+    session_id: str | None,
+) -> dict[str, Any] | None:
+    return _live_main_module()._killer_query_response(
+        query,
+        user_tier=user_tier,
+        session_id=session_id,
+    )
+
+
+remember_sql_domain_context = _remember_sql_domain_context
+release_seed_graph = _release_seed_graph
+prewarm_publication_count_cache = _prewarm_publication_count_cache
+fast_query_response = _fast_query_response
+academic_follow_up_response = _academic_follow_up_response
+advanced_adversarial_response = _advanced_adversarial_response
+killer_query_response = _killer_query_response

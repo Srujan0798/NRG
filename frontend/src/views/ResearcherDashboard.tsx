@@ -436,7 +436,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <StatsCard
                   label={t("auto.views.ResearcherDashboard.19")}
                   labelHi="कुल शोधकर्ता"
-                  value={statsData?.total_researchers ?? 5615}
+                  value={statsData?.total_researchers}
                   sublabel="Across 181 institutions"
                   accentColor="var(--nrg-chart-5)"
                   icon={<Users size={20} />}
@@ -446,7 +446,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <StatsCard
                   label={t("auto.views.ResearcherDashboard.20")}
                   labelHi="प्रकाशन"
-                  value={statsData?.total_publications ?? 12847}
+                  value={statsData?.total_publications}
                   sublabel="Peer-reviewed works"
                   accentColor="var(--nrg-chart-2)"
                   icon={<FileText size={20} />}
@@ -456,7 +456,7 @@ export function ResearcherDashboard({ onThemeToggle, theme }: ResearcherDashboar
                 <StatsCard
                   label={t("auto.views.ResearcherDashboard.21")}
                   labelHi="संस्थान"
-                  value={statsData?.total_institutions ?? 181}
+                  value={statsData?.total_institutions}
                   sublabel="Academic + Research"
                   accentColor="var(--nrg-chart-3)"
                   icon={<Building size={20} />}

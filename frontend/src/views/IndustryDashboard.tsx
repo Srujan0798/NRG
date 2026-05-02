@@ -248,7 +248,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 <StatsCard
                   label={t("auto.views.IndustryDashboard.2")}
                   labelHi="साझेदारी के अवसर"
-                  value={statsData?.total_researchers ?? 847}
+                  value={statsData?.total_researchers}
                   sublabel="Active opportunities"
                   accentColor="var(--nrg-chart-3)"
                   icon={<HeartHandshake size={20} />}
@@ -258,7 +258,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 <StatsCard
                   label={t("auto.views.IndustryDashboard.3")}
                   labelHi="साझेदार संस्थान"
-                  value={statsData?.total_institutions ?? 156}
+                  value={statsData?.total_institutions}
                   sublabel="IITs, IISc, NITs, AIIMS"
                   accentColor="var(--nrg-chart-2)"
                   icon={<Building2 size={20} />}
@@ -268,7 +268,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 <StatsCard
                   label={t("auto.views.IndustryDashboard.4")}
                   labelHi="सक्रिय शोधकर्ता"
-                  value={statsData?.total_researchers ?? 3421}
+                  value={statsData?.total_researchers}
                   sublabel="Available for collab"
                   accentColor="var(--nrg-chart-1)"
                   icon={<Users size={20} />}
@@ -278,7 +278,7 @@ export function IndustryDashboard({ onThemeToggle, theme }: IndustryDashboardPro
                 <StatsCard
                   label={t("auto.views.IndustryDashboard.5")}
                   labelHi="शोध प्रकाशन"
-                  value={statsData?.total_publications ?? 12847}
+                  value={statsData?.total_publications}
                   sublabel="In partnering institutions"
                   accentColor="var(--nrg-chart-5)"
                   icon={<FileText size={20} />}

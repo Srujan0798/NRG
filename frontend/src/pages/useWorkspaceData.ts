@@ -41,10 +41,10 @@ export interface PublicationRow {
 }
 
 export interface StatsResponse {
-  total_researchers?: number
-  total_publications?: number
-  total_institutions?: number
-  total_labs?: number
+  total_researchers?: number | string | null
+  total_publications?: number | string | null
+  total_institutions?: number | string | null
+  total_labs?: number | string | null
   research_area_distribution?: Array<{ area: string; count: number }>
   state_distribution?: Array<{ state: string; count: number }>
 }

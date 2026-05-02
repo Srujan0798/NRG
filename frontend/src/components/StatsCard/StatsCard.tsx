@@ -87,7 +87,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
 }) => {
   const hasNumericValue = typeof value === 'number' && Number.isFinite(value)
   const animatedValue = useAnimatedCounter(hasNumericValue ? value : 0, 1600, delay)
-  const displayValue = hasNumericValue ? formatNumber(animatedValue, format) : String(value ?? 0)
+  const displayValue = hasNumericValue ? formatNumber(animatedValue, format) : String(value ?? 'Pending')
   const isHindi = !!labelHi
 
   return (
