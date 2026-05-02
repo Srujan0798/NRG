@@ -82,6 +82,11 @@ def _bucket_stats_for_tier3(stats: JSONDict) -> JSONDict:
     return bucketed
 
 
+def _nullable_stat(stats: JSONDict, key: str) -> Any:
+    """Preserve database NULL/missing aggregate values instead of fabricating zero."""
+    return stats.get(key)
+
+
 @router.get("/researchers")
 async def get_researchers(
     state: Optional[str] = None,
@@ -132,12 +137,12 @@ async def get_stats(token_payload: TokenClaims = Depends(get_current_user)) -> A
         )
 
     stats = cast(JSONDict, _db().get_stats())
-    researcher_count = stats.get("researchers", 0)
-    publication_count = stats.get("publications", 0)
-    institution_count = stats.get("institutions", 0)
-    lab_count = stats.get("labs", 0)
+    researcher_count = _nullable_stat(stats, "researchers")
+    publication_count = _nullable_stat(stats, "publications")
+    institution_count = _nullable_stat(stats, "institutions")
+    lab_count = _nullable_stat(stats, "labs")
     research_areas = stats.get("research_areas", [])
-    funding_total = stats.get("funding_records", 0)
+    funding_total = _nullable_stat(stats, "funding_records")
     role = token_payload.get("role", "researcher")
 
     if role == "industry":
