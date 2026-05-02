@@ -66,7 +66,7 @@ const PHASES: Record<StreamPhaseName, StreamPhase> = {
   error: { phase: 'error', label: 'Answer paused', progress: 0 },
 }
 
-const SILENCE_ERROR = 'This is taking longer than usual. Please try again.'
+const SILENCE_ERROR = errorCopy.slowStream
 const CONNECTION_ERROR = errorCopy.generic
 
 const toStreamCitation = (citation: Citation | StreamCitation): StreamCitation => ({
@@ -468,7 +468,11 @@ export function useStreamingQuery(options: UseStreamingQueryOptions = {}) {
 
     eventSource.onerror = () => {
       if (terminalEventRef.current) return
-      failRecoverably(CONNECTION_ERROR)
+      emitTelemetry('query.stream_reconnecting', {
+        phase_at_reconnect: currentPhaseRef.current,
+        query_id: queryTelemetryIdRef.current,
+      })
+      resetSilenceTimer()
     }
   }, [abortStream, failRecoverably, handleEvent, resetSilenceTimer, setPhase])
 

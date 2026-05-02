@@ -1,8 +1,10 @@
 import type { Page } from '@playwright/test'
-import { installAuthenticatedSession } from './auth_session'
+import { installAuthenticatedSession, loadAnswerEngineApp } from './auth_session'
 
-export async function installStreamingQueryMock(page: Page) {
-  await installAuthenticatedSession(page)
+export { loadAnswerEngineApp }
+
+export async function installStreamingQueryMock(page: Page, role: 'researcher' | 'government' | 'industry' = 'researcher') {
+  await installAuthenticatedSession(page, role)
 
   await page.addInitScript(() => {
     type Listener = (event: MessageEvent<string>) => void

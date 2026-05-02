@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Citation } from '../../services/queryService'
 import { queryService } from '../../services/queryService'
@@ -7,6 +7,7 @@ import { X, Copy, FileText, Database, GitMerge, Shield } from 'lucide-react'
 import { t } from '../../i18n'
 import { emitTelemetry } from '../../lib/telemetry'
 import HmacProof from '../HmacProof/HmacProof'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 interface CitationDrawerProps {
   citation: Citation | null
@@ -68,6 +69,8 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
   const [details, setDetails] = useState<any>(null)
   const [activeSection, setActiveSection] = useState<'source' | 'metadata' | 'context' | 'proof'>('source')
   const [copied, setCopied] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+  useFocusTrap(panelRef, isOpen, onClose)
 
   const parseCiteToken = (id: string): { pubId: string; chunkId: string } | null => {
     const match = id?.match(/^cite:(.+?):(.+)$/)
@@ -155,15 +158,6 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
     }
   }, [citation, isOpen, fetchCitationDetails])
 
-  useEffect(() => {
-    if (!isOpen) return undefined
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handleEscape)
-    return () => window.removeEventListener('keydown', handleEscape)
-  }, [isOpen, onClose])
-
   const handleCopy = async () => {
     if (!details) return
     const text = `${details.title}. ${details.authors.join(', ')} (${details.year}). ${details.journal}.`
@@ -180,6 +174,7 @@ export const CitationDrawer: React.FC<CitationDrawerProps> = ({
 
       <AnimatePresence>
         {isOpen && <motion.div
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="citation-drawer-title"

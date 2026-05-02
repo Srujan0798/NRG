@@ -1,6 +1,7 @@
 import { useDPDPStore } from '../stores/dpdpStore';
 import { useState } from 'react';
 import { t } from '../i18n'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 
 export function DPDPAuditLog() {
   const { auditLog, clearAuditLog } = useDPDPStore();
@@ -29,7 +30,7 @@ export function DPDPAuditLog() {
     setVerifying(true);
     setVerifyStatus(null);
     try {
-      const response = await fetch('/health', { signal: AbortSignal.timeout(5000) });
+      const response = await fetchWithTimeout('/health', { timeoutMs: 5000 });
       const payload = await response.json();
       const chainValid = payload?.audit?.chain_valid;
       const chainLength = payload?.audit?.chain_length ?? 0;

@@ -45,3 +45,11 @@ export async function installAuthenticatedSession(page: Page, role: TestRole = '
     }))
   }, { role, user })
 }
+
+export async function loadAnswerEngineApp(page: Page) {
+  await page.evaluate(() => {
+    const maybeWindow = window as Window & { __nrgLoadApp?: () => Promise<unknown> }
+    return maybeWindow.__nrgLoadApp?.()
+  })
+  await page.getByTestId('answer-engine-query').waitFor({ state: 'visible', timeout: 15000 })
+}

@@ -4,6 +4,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary/ErrorBoundary'
 import { useAuth } from '../hooks/useAuth'
 import { useQuery } from '@tanstack/react-query'
 import { t } from '../i18n'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import {
   Activity, Zap, Shield, Database, Clock, TrendingUp,
   AlertTriangle, CheckCircle, Server, Cpu, HardDrive
@@ -64,12 +65,14 @@ export default function MetricsDashboard() {
 
   const { data, isLoading, error, refetch } = useQuery<MetricsData>({
     queryKey: ['admin-metrics'],
-    queryFn: async () => {
-      const response = await fetch('/api/metrics', {
+    queryFn: async ({ signal }) => {
+      const response = await fetchWithTimeout('/api/metrics', {
         credentials: 'include',
         headers: {
           'Accept': 'application/json',
         },
+        signal,
+        timeoutMs: 15000,
       })
       if (!response.ok) throw new Error(`Failed to load metrics: ${response.status}`)
       return response.json()

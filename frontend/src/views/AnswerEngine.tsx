@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { PersonaRole } from '../services/authService'
 import { queryService } from '../services/queryService'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 import { Button, Card, Drawer, Input, Pill, Select, Skeleton } from '../components/ui'
 import { StreamingAnswerPanel, type StreamingProofPayload } from '../components/StreamingAnswerPanel'
 import HmacProof from '../components/HmacProof/HmacProof'
@@ -166,7 +167,8 @@ function useStats() {
       return void 0
     }
     let active = true
-    fetch('/stats')
+    const controller = new AbortController()
+    fetchWithTimeout('/stats', { signal: controller.signal, timeoutMs: 8000 })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
         if (active) setStats(payload)
@@ -176,6 +178,7 @@ function useStats() {
       })
     return () => {
       active = false
+      controller.abort()
     }
   }, [])
   return stats

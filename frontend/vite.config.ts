@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000'
+const apiTokenHeader = process.env.VITE_API_TOKEN_HEADER || 'Authorization'
+const MAX_CHUNK_BYTES = 500 * 1024
+const MAX_TOTAL_BYTES = 2 * 1024 * 1024
 
 const deferredAppEntryPlugin = () => ({
   name: 'nrg-deferred-app-entry',
@@ -20,8 +23,56 @@ const deferredAppEntryPlugin = () => ({
   }
 })
 
+const bundleBudgetPlugin = () => ({
+  name: 'nrg-bundle-budget',
+  generateBundle(_options: unknown, bundle: Record<string, any>) {
+    let totalBytes = 0
+    const oversized: string[] = []
+
+    for (const [fileName, item] of Object.entries(bundle)) {
+      if (fileName.endsWith('.map')) continue
+      const isChunk = item.type === 'chunk'
+      const isBudgetedAsset = item.type === 'asset' && /\.css$/.test(fileName)
+      if (!isChunk && !isBudgetedAsset) continue
+
+      const size = isChunk
+        ? Buffer.byteLength(item.code || '', 'utf8')
+        : Buffer.byteLength(String(item.source || ''), 'utf8')
+
+      totalBytes += size
+      if (size > MAX_CHUNK_BYTES) oversized.push(`${fileName} ${(size / 1024).toFixed(1)}KB`)
+    }
+
+    if (oversized.length > 0 || totalBytes > MAX_TOTAL_BYTES) {
+      const totalKb = (totalBytes / 1024).toFixed(1)
+      this.error([
+        'NRG frontend bundle budget exceeded.',
+        oversized.length ? `Oversized chunks: ${oversized.join(', ')}` : null,
+        `Total JS/CSS budgeted size: ${totalKb}KB`,
+        'Limits: each chunk <=500KB, total <=2048KB',
+      ].filter(Boolean).join('\n'))
+    }
+  }
+})
+
+const manualChunks = (id: string) => {
+  const normalized = id.replace(/\\/g, '/')
+  if (!normalized.includes('/node_modules/')) return undefined
+  if (normalized.includes('/node_modules/react/') || normalized.includes('/node_modules/react-dom/') || normalized.includes('/node_modules/scheduler/')) {
+    return 'vendor-react'
+  }
+  if (normalized.includes('/node_modules/framer-motion/')) return 'vendor-motion'
+  if (normalized.includes('/node_modules/victory-vendor/')) return 'vendor-victory'
+  if (normalized.includes('/node_modules/d3-')) return 'vendor-d3'
+  if (normalized.includes('/node_modules/recharts/')) return 'vendor-recharts'
+  return undefined
+}
+
 export default defineConfig({
-  plugins: [react(), deferredAppEntryPlugin()],
+  define: {
+    __NRG_API_TOKEN_HEADER__: JSON.stringify(apiTokenHeader),
+  },
+  plugins: [react(), deferredAppEntryPlugin(), bundleBudgetPlugin()],
   server: {
     port: 3000,
     proxy: {
@@ -130,14 +181,7 @@ export default defineConfig({
         index: 'index.html',
         app: 'src/main.tsx',
       },
-      output: {
-        manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
-          'vendor-d3': ['d3-force', 'd3-zoom', 'd3-drag', 'd3-selection'],
-          'vendor-recharts': ['recharts'],
-          'vendor-motion': ['framer-motion'],
-        }
-      }
+      output: { manualChunks }
     }
   }
 })

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 
 interface Researcher {
   researcher_id: string;
@@ -23,11 +24,7 @@ function TestApp() {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const response = await fetch('/researchers', {
-        headers: {
-          'Authorization': 'Bearer dev-key-insecure-change-in-production'
-        }
-      });
+      const response = await fetchWithTimeout('/researchers', { timeoutMs: 10000 });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

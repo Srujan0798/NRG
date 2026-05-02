@@ -1,5 +1,6 @@
 import React, { createContext, startTransition, useContext, useEffect, useRef, useState } from 'react'
 import { AuthSession, AuthUser, authService } from '../services/authService'
+import { fetchWithTimeout } from '../utils/fetchWithTimeout'
 
 interface AuthContextType {
   user: AuthUser | null
@@ -85,7 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!mounted) return
 
       try {
-        const res = await fetch('/health/db', { signal: AbortSignal.timeout(5000) })
+        const res = await fetchWithTimeout('/health/db', { timeoutMs: 5000 })
         if (!mounted) return
 
         if (res.ok) {

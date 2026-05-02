@@ -1,6 +1,7 @@
 import React, { act, useEffect } from 'react'
 import { createRoot, Root } from 'react-dom/client'
 import { useStreamingQuery, EventSourceLike } from '../../src/hooks/useStreamingQuery'
+import { errorCopy } from '../../src/i18n/en-IN'
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true
 
@@ -20,6 +21,10 @@ class FakeEventSource implements EventSourceLike {
 
   close() {
     this.closed = true
+  }
+
+  failTransiently() {
+    this.onerror?.(new Event('error'))
   }
 
   emit(type: string, payload: unknown = {}) {
@@ -119,7 +124,7 @@ describe('useStreamingQuery', () => {
 
     expect(hook.latest().isStreaming).toBe(false)
     expect(hook.latest().isRecoverableError).toBe(true)
-    expect(hook.latest().error).toBe('This is taking longer than usual. Please try again.')
+    expect(hook.latest().error).toBe(errorCopy.slowStream)
     expect(source.closed).toBe(true)
   })
 
@@ -139,6 +144,39 @@ describe('useStreamingQuery', () => {
     })
 
     expect(hook.latest().answerConfidence).toBe('needs_clarification')
+    expect(hook.latest().isVerified).toBe(true)
+  })
+
+  it('keeps streamed text stable during a transient reconnect', () => {
+    const source = new FakeEventSource()
+    const hook = renderHook(source)
+
+    act(() => {
+      hook.latest().startStream('Top quantum researchers')
+      source.emit('synthesizing', { phase: 'synthesizing', token: 'IISc and IIT Bombay ' })
+    })
+
+    expect(hook.latest().fullText).toBe('IISc and IIT Bombay ')
+
+    act(() => {
+      source.failTransiently()
+    })
+
+    expect(source.closed).toBe(false)
+    expect(hook.latest().isStreaming).toBe(true)
+    expect(hook.latest().error).toBeNull()
+    expect(hook.latest().fullText).toBe('IISc and IIT Bombay ')
+
+    act(() => {
+      source.emit('synthesizing', { phase: 'synthesizing', token: 'remain visible after reconnect.' })
+      source.emit('verified', {
+        phase: 'verified',
+        citations: [],
+        audit_event_id: 'stream-reconnect-001',
+      })
+    })
+
+    expect(hook.latest().fullText).toBe('IISc and IIT Bombay remain visible after reconnect.')
     expect(hook.latest().isVerified).toBe(true)
   })
 })

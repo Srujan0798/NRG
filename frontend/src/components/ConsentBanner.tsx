@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, X, ChevronDown } from 'lucide-react';
 import { t } from '../i18n'
@@ -31,8 +31,18 @@ const ROLE_LABELS = {
 } as const;
 
 export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCount = 0 }: ConsentBannerProps) {
-  const [dismissed, setDismissed] = useState(false);
+  const storageKey = `nrg.consentBanner.dismissed.${role}`;
+  const [dismissed, setDismissed] = useState(() => localStorage.getItem(storageKey) === 'true');
   const labels = ROLE_LABELS[role];
+
+  useEffect(() => {
+    setDismissed(localStorage.getItem(storageKey) === 'true');
+  }, [storageKey]);
+
+  const dismissBanner = useCallback(() => {
+    localStorage.setItem(storageKey, 'true');
+    setDismissed(true);
+  }, [storageKey]);
 
   if (dismissed) return null;
 
@@ -79,7 +89,7 @@ export function ConsentBanner({ role = 'researcher', onManageConsent, expiringCo
                   </button>
                 )}
                 <button
-                  onClick={() => setDismissed(true)}
+                  onClick={dismissBanner}
                   className="w-6 h-6 rounded flex items-center justify-center text-saffron-500 hover:text-saffron-700 hover:bg-saffron-100/70 dark:hover:bg-saffron-900/40 transition-colors"
                   aria-label={t("auto.components.ConsentBanner.5")}
                   data-testid="dismiss-consent-banner"

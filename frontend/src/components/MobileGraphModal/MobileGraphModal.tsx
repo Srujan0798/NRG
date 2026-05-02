@@ -4,6 +4,7 @@ import { X } from 'lucide-react'
 import { ForceGraph } from '../ForceGraph'
 import { GraphData, GraphNode } from '../../services/queryService'
 import { t } from '../../i18n'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 interface MobileGraphModalProps {
   data: GraphData
@@ -19,7 +20,9 @@ export function MobileGraphModal({
   onNodeClick,
 }: MobileGraphModalProps) {
   const frameRef = useRef<HTMLDivElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
   const [frameWidth, setFrameWidth] = useState(360)
+  useFocusTrap(panelRef, isOpen, onClose)
 
   useEffect(() => {
     if (!isOpen) return undefined
@@ -33,21 +36,11 @@ export function MobileGraphModal({
     return () => observer.disconnect()
   }, [isOpen])
 
-  useEffect(() => {
-    if (!isOpen) return undefined
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
-
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
+          ref={panelRef}
           role="dialog"
           aria-modal="true"
           aria-label={t('auto.components.MobileGraphModal.1')}

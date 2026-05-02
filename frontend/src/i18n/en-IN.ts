@@ -284,7 +284,7 @@ export const generatedCopy: Record<string, string> = {
   "auto.components.Login.14": "Enter password",
   "auto.components.Login.15": "Authenticating...",
   "auto.components.Login.16": "Forgot password?",
-  "auto.components.Login.17": "Secured by Kong API Gateway · JWT Bearer Tokens · RS256",
+  "auto.components.Login.17": "Secured by Kong API Gateway · JWT access tokens · RS256",
   "auto.components.Login.2": "National Research Graph",
   "auto.components.Login.3": "Sovereign Intelligence",
   "auto.components.Login.4": "for India's Research",

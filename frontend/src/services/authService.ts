@@ -2,6 +2,10 @@ import axios, { AxiosError } from 'axios'
 
 const API_BASE = ''
 const STORAGE_KEY = 'nrg.auth.session'
+const API_TOKEN_HEADER = typeof __NRG_API_TOKEN_HEADER__ === 'string' && __NRG_API_TOKEN_HEADER__.trim()
+  ? __NRG_API_TOKEN_HEADER__.trim()
+  : 'Authorization'
+const DEFAULT_TOKEN_TYPE = 'bearer'
 
 export type PersonaRole = 'researcher' | 'government' | 'industry'
 
@@ -38,6 +42,12 @@ interface RefreshApiResponse {
   access_token: string
   refresh_token: string
   token_type: string
+}
+
+const formatTokenType = (tokenType: string): string => {
+  const trimmed = tokenType.trim()
+  if (!trimmed) return ''
+  return `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1).toLowerCase()}`
 }
 
 const api = axios.create({
@@ -193,8 +203,10 @@ export const authService = {
     localStorage.removeItem(STORAGE_KEY)
   },
 
-  getAuthHeaders(accessToken?: string | null): Record<string, string> {
-    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {}
+  getAuthHeaders(accessToken?: string | null, tokenType?: string | null): Record<string, string> {
+    if (!accessToken) return {}
+    const resolvedType = formatTokenType(tokenType || this.getStoredSession()?.tokenType || DEFAULT_TOKEN_TYPE)
+    return { [API_TOKEN_HEADER]: resolvedType ? `${resolvedType} ${accessToken}` : accessToken }
   },
 
   async withAuthenticatedRequest<T>(

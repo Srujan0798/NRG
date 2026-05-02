@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react'
+import React, { useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { actionCopy } from '../../i18n'
+import { useFocusTrap } from '../../hooks/useFocusTrap'
 
 type Size = 'sm' | 'md' | 'lg'
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -216,20 +217,14 @@ export interface DrawerProps {
 }
 
 export function Drawer({ open, title, onClose, children, testId }: DrawerProps) {
-  useEffect(() => {
-    if (!open) return void 0
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose, open])
+  const panelRef = useRef<HTMLElement>(null)
+  useFocusTrap(panelRef, open, onClose)
 
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title} data-testid={testId}>
-      <button className="absolute inset-0 bg-fg/20" type="button" aria-label={actionCopy.closeDrawer} onClick={onClose} />
-      <aside className="absolute bottom-0 right-0 top-0 flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-lg max-md:max-w-none">
+      <button className="absolute inset-0 bg-fg/20" type="button" tabIndex={-1} aria-label={actionCopy.closeDrawer} onClick={onClose} />
+      <aside ref={panelRef} className="absolute bottom-0 right-0 top-0 flex w-full max-w-xl flex-col border-l border-border bg-surface shadow-lg max-md:max-w-none">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
           <h2 className="text-base font-bold text-fg">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose}>{actionCopy.close}</Button>
@@ -243,20 +238,14 @@ export function Drawer({ open, title, onClose, children, testId }: DrawerProps) 
 export type ModalProps = DrawerProps
 
 export function Modal({ open, title, onClose, children }: ModalProps) {
-  useEffect(() => {
-    if (!open) return void 0
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKeyDown)
-    return () => document.removeEventListener('keydown', onKeyDown)
-  }, [onClose, open])
+  const panelRef = useRef<HTMLElement>(null)
+  useFocusTrap(panelRef, open, onClose)
 
   if (!open) return null
   return (
     <div className="fixed inset-0 z-50 grid place-items-center p-4" role="dialog" aria-modal="true" aria-label={title}>
-      <button className="absolute inset-0 bg-fg/20" type="button" aria-label={actionCopy.closeModal} onClick={onClose} />
-      <section className="relative w-full max-w-lg rounded-lg border border-border bg-surface p-5 shadow-lg">
+      <button className="absolute inset-0 bg-fg/20" type="button" tabIndex={-1} aria-label={actionCopy.closeModal} onClick={onClose} />
+      <section ref={panelRef} className="relative w-full max-w-lg rounded-lg border border-border bg-surface p-5 shadow-lg">
         <div className="mb-4 flex items-center justify-between gap-3">
           <h2 className="text-base font-bold text-fg">{title}</h2>
           <Button variant="ghost" size="sm" onClick={onClose}>{actionCopy.close}</Button>

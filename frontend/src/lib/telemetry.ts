@@ -7,6 +7,7 @@ export const telemetryEventNames = [
   'query.phase_observed',
   'query.completed',
   'query.aborted',
+  'query.stream_reconnecting',
   'citation.opened',
   'audit.verified',
   'proof.verify_clicked',
