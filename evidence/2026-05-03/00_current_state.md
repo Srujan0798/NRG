@@ -31,6 +31,16 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   required. The same pass rebuilt the API image, verified the route-module
   `/health/qdrant` handler is active, and proved `/health/qdrant` plus
   `/api/vectors/health` healthy against the rebuilt local stack.
+- Latest base local closure commit before final continuation evidence:
+  - `8335d68 evidence: close local s3 and batch4 verification`
+  - This commit records local S3-09 rewritten-history scanner `PASS` with 0
+    findings, Batch 4/D4 partition evidence, healthy rebuilt Qdrant/vector
+    endpoints, and 20 focused final targeted tests.
+- Latest external-gate preflight for `8335d68`:
+  - `evidence/2026-05-03/final_external_gates_after_8335d68/EXTERNAL_GATE_SUMMARY.md`
+  - Result: `BLOCKED` by missing deployed frontend/API URLs, production
+    API/Qdrant target, explicit cluster-load flag/context, and founder signing
+    inputs.
 
 ## PASS Locally
 
@@ -137,6 +147,7 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/local_continuation/README.md`
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_external_gates_after_9ace4501/EXTERNAL_GATE_SUMMARY.md`
+- `evidence/2026-05-03/final_external_gates_after_8335d68/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/README.md`
 - `evidence/2026-05-03/s3_09_local_history_purge/README.md`
 - `evidence/2026-05-03/final_continuation_verification.md`
