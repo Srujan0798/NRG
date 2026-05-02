@@ -1,0 +1,7 @@
+{
+  "direct_pydantic_v1_imports": [],
+  "migration_doc": "docs/engineering/PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md",
+  "ok": true,
+  "violations": [],
+  "workflow": ".github/workflows/ci.yml"
+}

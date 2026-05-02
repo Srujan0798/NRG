@@ -39,9 +39,9 @@ Initial guard output:
 | Migration guard regression tests | PASS, 4 tests | `02_pydantic_guard_tests.txt` |
 | Python compile | PASS | `03_py_compile.txt` |
 | Ruff changed files | PASS | `04_ruff.txt` |
-| Git diff whitespace | PASS | `05_git_diff_check.txt` |
-| Production vocabulary gate | PASS | `06_forbidden_vocab.txt` |
-| Corpus mirror sync | PASS | `07_corpus_sync.txt` |
+| Git diff whitespace guard | PASS | `05_git_diff_check.txt` |
+| Corpus sync | PASS, `"ok": true` | `06_corpus_sync.txt` |
+| Forbidden-vocabulary guard | PASS | `07_forbidden_vocab_check.txt` |
 
 ## Boundary
 

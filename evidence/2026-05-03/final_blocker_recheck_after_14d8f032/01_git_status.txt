@@ -1,0 +1,15 @@
+## main...nrg/main [ahead 2]
+ M BACKLOG.md
+ M evidence/2026-05-03/00_current_state.md
+ M evidence/2026-05-03/python314_compat_lane_closure/01_pydantic_guard.json
+ M evidence/2026-05-03/python314_compat_lane_closure/02_pydantic_guard_tests.txt
+ D evidence/2026-05-03/python314_compat_lane_closure/06_forbidden_vocab.txt
+ D evidence/2026-05-03/python314_compat_lane_closure/07_corpus_sync.txt
+ M evidence/2026-05-03/python314_compat_lane_closure/README.md
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/00_git_head.txt
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/01_git_status.txt
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/02_s3_09_env_history_secret_scan.exit
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/02_s3_09_env_history_secret_scan.json
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/EXTERNAL_GATE_SUMMARY.md
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/external_gate_status.json
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/handover_sha256_manifest.txt

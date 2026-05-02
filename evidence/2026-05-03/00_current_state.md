@@ -20,6 +20,13 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   remediation-gate hardening, and current-state evidence links. It does not
   change public API behavior.
 
+## Local Follow-Up After State Sync
+
+- `ad66a737 docs: sync state after endpoint matrix`
+- The Python 3.14/Pydantic guardrail pass adds the missing migration plan,
+  regression coverage for the guard's migration-plan requirement, and evidence
+  showing the guard now reports `ok: true`.
+
 ## PASS Locally
 
 - `L1-CR-006` active drift boundary is closed locally. Exported
@@ -84,6 +91,13 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
     `src.api.main.app` so route changes must update the document.
   - Endpoint matrix, route registration, and S3-09 scanner combined regression:
     10 passed.
+- Python 3.14/Pydantic guardrail:
+  - `.venv/bin/python scripts/check_pydantic_migration_guard.py --json`:
+    `ok: true`.
+  - `.venv/bin/python -m pytest tests/scripts/test_pydantic_migration_guard.py -q --tb=short --no-cov`:
+    4 passed.
+  - The compatibility lane remains allowed-to-fail until promotion criteria in
+    `docs/engineering/PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md` pass under CI.
 - `.venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/2026-05-03/final_external_gates_after_88d3a0db`
   - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
     target, explicit cluster-load context, and founder signatures.
@@ -101,7 +115,9 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/post_state_replay/README.md`
 - `evidence/2026-05-03/s3_09_remediation_gate/README.md`
 - `evidence/2026-05-03/api_endpoint_matrix_closure/README.md`
+- `evidence/2026-05-03/python314_compat_lane_closure/README.md`
 - `docs/specs/API_ENDPOINT_MATRIX.md`
+- `docs/engineering/PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md`
 - `docs/adr/ADR-007-main-py-answer-engine-split.md`
 - `evidence/2026-05-03_rt14_live_response_diagnostic.json`
 
