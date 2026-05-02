@@ -52,3 +52,39 @@
 
 #13 [builder  7/12] RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 #13 7.462 Looking in indexes: https://download.pytorch.org/whl/cpu
+#13 9.518 Collecting torch
+#13 10.80   Downloading torch-2.11.0%2Bcpu-cp311-cp311-manylinux_2_28_aarch64.whl.metadata (29 kB)
+#13 11.90 Collecting filelock (from torch)
+#13 12.25   Downloading filelock-3.25.2-py3-none-any.whl.metadata (2.0 kB)
+#13 13.03 Collecting typing-extensions>=4.10.0 (from torch)
+#13 13.08   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+#13 13.80 Collecting setuptools<82 (from torch)
+#13 13.84   Downloading setuptools-70.2.0-py3-none-any.whl.metadata (5.8 kB)
+#13 14.93 Collecting sympy>=1.13.3 (from torch)
+#13 14.99   Downloading sympy-1.14.0-py3-none-any.whl.metadata (12 kB)
+#13 16.23 Collecting networkx>=2.5.1 (from torch)
+#13 16.28   Downloading networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+#13 17.10 Collecting jinja2 (from torch)
+#13 17.22   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#13 18.31 Collecting fsspec>=0.8.5 (from torch)
+#13 18.37   Downloading fsspec-2026.2.0-py3-none-any.whl.metadata (10 kB)
+#13 19.41 Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch)
+#13 19.46   Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+#13 20.57 Collecting MarkupSafe>=2.0 (from jinja2->torch)
+#13 20.64   Downloading markupsafe-3.0.3-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl.metadata (2.7 kB)
+#13 20.72 Downloading torch-2.11.0%2Bcpu-cp311-cp311-manylinux_2_28_aarch64.whl (148.1 MB)
+#13 40.37    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 148.1/148.1 MB 7.7 MB/s  0:00:19
+#13 40.50 Downloading setuptools-70.2.0-py3-none-any.whl (930 kB)
+#13 40.78    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 930.8/930.8 kB 15.5 MB/s  0:00:00
+#13 40.86 Downloading fsspec-2026.2.0-py3-none-any.whl (202 kB)
+#13 40.95 Downloading networkx-3.6.1-py3-none-any.whl (2.1 MB)
+#13 41.10    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 16.2 MB/s  0:00:00
+#13 41.14 Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+#13 41.67    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 13.6 MB/s  0:00:00
+#13 41.74 Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+#13 41.74    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 61.3 MB/s  0:00:00
+#13 41.79 Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+#13 41.90 Downloading filelock-3.25.2-py3-none-any.whl (26 kB)
+#13 41.95 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#13 42.05 Downloading markupsafe-3.0.3-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl (24 kB)
+#13 47.13 Installing collected packages: mpmath, typing-extensions, sympy, setuptools, networkx, MarkupSafe, fsspec, filelock, jinja2, torch

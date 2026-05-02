@@ -1,0 +1,18 @@
+{
+  "existing_invalid_rows": {
+    "email": 0,
+    "phone": 0
+  },
+  "summary": {
+    "existing_invalid_email_rows": 0,
+    "existing_invalid_phone_rows": 0,
+    "invalid_email_rejected": true,
+    "invalid_phone_rejected": true,
+    "valid_contact_accepted_then_rolled_back": true
+  },
+  "write_tests": {
+    "invalid_email_rejected": true,
+    "invalid_phone_rejected": true,
+    "valid_contact_accepted_then_rolled_back": true
+  }
+}

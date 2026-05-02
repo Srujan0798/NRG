@@ -35,6 +35,7 @@ from src.skills.text_to_sql.schema_sync_check import (  # noqa: E402
 TEXT_EXTENSIONS = {".md", ".py", ".sql", ".yaml", ".yml", ".json", ".toml"}
 SCAN_DIRS = ("src", "tests", "scripts", "docs")
 SKIP_PARTS = {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "node_modules"}
+DHAIRYA_QUERY_TIMEOUT_MS = 5000
 
 CONTACT_CHECKS = {
     "email": r"^[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}$",
@@ -199,22 +200,37 @@ def write_dhairya_replay(engine: Engine, output_dir: Path) -> dict[str, Any]:
         started = time.perf_counter()
         with engine.connect() as conn:
             try:
-                count = conn.execute(text(f"SELECT COUNT(*) FROM ({sql}) AS batch4_q")).scalar()
+                conn.execute(text(f"SET statement_timeout TO {DHAIRYA_QUERY_TIMEOUT_MS}"))
                 sample_rows = conn.execute(text(f"SELECT * FROM ({sql}) AS batch4_q LIMIT 20")).mappings().all()
                 elapsed_ms = (time.perf_counter() - started) * 1000
                 safe_rows = [json_safe(dict(row)) for row in sample_rows]
                 result.update(
                     {
                         "status": "PASS",
-                        "row_count": int(count or 0),
                         "sample_rows": safe_rows,
-                        "result_hash": sha256_json({"row_count": int(count or 0), "sample": safe_rows}),
+                        "result_hash": sha256_json({"sample": safe_rows}),
                         "elapsed_ms": round(elapsed_ms, 3),
+                        "query_timeout_ms": DHAIRYA_QUERY_TIMEOUT_MS,
                     }
                 )
             except SQLAlchemyError as exc:
                 conn.rollback()
                 result.update({"status": "FAIL", "error": str(exc)})
+                results.append(result)
+                continue
+
+        with engine.connect() as conn:
+            try:
+                conn.execute(text(f"SET statement_timeout TO {DHAIRYA_QUERY_TIMEOUT_MS}"))
+                count = conn.execute(text(f"SELECT COUNT(*) FROM ({sql}) AS batch4_q")).scalar()
+                result["row_count"] = int(count or 0)
+                result["result_hash"] = sha256_json(
+                    {"row_count": result["row_count"], "sample": result["sample_rows"]}
+                )
+            except SQLAlchemyError as exc:
+                conn.rollback()
+                result["row_count"] = None
+                result["row_count_error"] = str(exc)
         results.append(result)
 
     passed = sum(1 for result in results if result["status"] == "PASS")

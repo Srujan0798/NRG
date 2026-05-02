@@ -1,0 +1,9 @@
+usage: batch4_data_sql_schema_audit.py [-h] [--database-url DATABASE_URL]
+                                       [--output-root OUTPUT_ROOT]
+
+Generate Batch 4 data, SQL, schema, and migration evidence.
+
+options:
+  -h, --help            show this help message and exit
+  --database-url DATABASE_URL
+  --output-root OUTPUT_ROOT

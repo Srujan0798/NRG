@@ -107,6 +107,9 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - Final blocker recheck after `14d8f032`:
   - S3-09 history scan remains `FAIL` with 286 redacted findings.
   - Local Docker stack is up and `/health/all` returns `status=healthy`.
+  - Local Qdrant alias repair returns `/api/vectors/health` HTTP 200 after
+    alias creation, and `/health/qdrant` alias fallback is covered by focused
+    regression tests.
   - External final gates remain `BLOCKED` by missing deployed URLs, production
     API/Qdrant target, explicit cluster-load context, and founder signatures.
 

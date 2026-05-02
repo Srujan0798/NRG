@@ -491,6 +491,28 @@ def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
     assert payload["collection"] == "nrg_research"
 
 
+def test_qdrant_health_endpoint_accepts_alias_collection(monkeypatch):
+    class AliasOnlyQdrantClient(FakeQdrantClient):
+        def get_collections(self):
+            return FakeCollections()
+
+        def get_collection(self, collection_name: str):
+            assert collection_name == "nrg_research_dev"
+            return {"status": "green"}
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research_dev")
+    monkeypatch.setattr(api_main, "QdrantClient", AliasOnlyQdrantClient)
+    client = TestClient(api_main.app)
+
+    response = client.get("/health/qdrant")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ready"] is True
+    assert payload["collection"] == "nrg_research_dev"
+    assert payload["collection_exists"] is True
+
+
 def test_health_endpoints_share_status_and_healthy_contract(monkeypatch, tmp_path):
     class FakeDB:
         dialect = "sqlite"

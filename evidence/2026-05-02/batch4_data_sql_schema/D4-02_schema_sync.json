@@ -1,0 +1,405 @@
+{
+  "dhairya_required_tables": [
+    "academic_courses_details",
+    "combined_ipo_patent_data",
+    "financial_expenses_capital",
+    "financial_expenses_operational",
+    "incubation_details",
+    "innovation_grant_from_govt",
+    "trl_stages"
+  ],
+  "extra_columns": {},
+  "extra_tables": [
+    "alembic_version",
+    "audit_events",
+    "collaborations",
+    "funding",
+    "funding_records",
+    "institutions",
+    "keywords",
+    "labs",
+    "llm_cost_log",
+    "patents",
+    "projects",
+    "publication_keywords",
+    "publications",
+    "research_documents",
+    "researcher_labs",
+    "researcher_publications",
+    "researchers"
+  ],
+  "has_drift": true,
+  "missing_columns": {},
+  "missing_tables": [],
+  "nullable_mismatches": {},
+  "type_mismatches": {
+    "auth_group.name": {
+      "actual": "VARCHAR(150)",
+      "expected": "CHARACTER"
+    },
+    "auth_permission.codename": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "auth_permission.name": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "auth_user.email": {
+      "actual": "VARCHAR(254)",
+      "expected": "CHARACTER"
+    },
+    "auth_user.first_name": {
+      "actual": "VARCHAR(150)",
+      "expected": "CHARACTER"
+    },
+    "auth_user.last_name": {
+      "actual": "VARCHAR(150)",
+      "expected": "CHARACTER"
+    },
+    "auth_user.password": {
+      "actual": "VARCHAR(128)",
+      "expected": "CHARACTER"
+    },
+    "auth_user.username": {
+      "actual": "VARCHAR(150)",
+      "expected": "CHARACTER"
+    },
+    "django_admin_log.object_repr": {
+      "actual": "VARCHAR(200)",
+      "expected": "CHARACTER"
+    },
+    "django_content_type.app_label": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "django_content_type.model": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "django_migrations.app": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "django_migrations.name": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "django_session.session_key": {
+      "actual": "VARCHAR(40)",
+      "expected": "CHARACTER"
+    },
+    "expertise.department": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.designation": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.email": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.image": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.institute": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.phd": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.phone": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "expertise.research": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.academic_year": {
+      "actual": "VARCHAR(10)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.as_on": {
+      "actual": "VARCHAR(20)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.female_strength": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.institute": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.male_strength": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.total_sanctioned_strength": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.total_strength": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.types": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.uploaded_on": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "faculty_strength.url": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "master_expertise.department": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "master_expertise.institute": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "nirf_extracted_table.title": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "nirf_pdf_record.institute": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "nirf_pdf_record.pdf_name": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "nirf_pdf_record.uploaded_by": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "nirf_pdf_record.year": {
+      "actual": "VARCHAR(10)",
+      "expected": "CHARACTER"
+    },
+    "package_data.name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "package_data.package": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "package_data.status": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "role_data.name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "role_data.status": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.achievement_level": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.as_on_year": {
+      "actual": "VARCHAR(10)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.dpiit_no": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.govt_org": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.institute": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.startup_name": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.type_of_investment": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "seed_funding.year_of_receiving_fund": {
+      "actual": "VARCHAR(10)",
+      "expected": "CHARACTER"
+    },
+    "tb_academic_year_mstr.academic_year": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_course_program_types.program_name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.address": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.email": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.phone_no": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.short_name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_goi_ministries_mstr.website": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.address": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.city": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.institute_name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.institute_type": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.short_name": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.state": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_mstr.website_url": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_scrap_data_url.city": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_scrap_data_url.institute_name": {
+      "actual": "VARCHAR(255)",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_scrap_data_url.institute_type": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_scrap_data_url.short_name": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "tb_institute_scrap_data_url.state": {
+      "actual": "VARCHAR(100)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.confirm_password": {
+      "actual": "VARCHAR(128)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.deleted_by": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.email": {
+      "actual": "VARCHAR(254)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.email_otp": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.email_status": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.first_password": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.password": {
+      "actual": "VARCHAR(128)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.phone_number": {
+      "actual": "VARCHAR(15)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.role": {
+      "actual": "VARCHAR(20)",
+      "expected": "CHARACTER"
+    },
+    "user_registration.status": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.user_info": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration.username": {
+      "actual": "VARCHAR(50)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.confirm_password": {
+      "actual": "VARCHAR(128)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.email": {
+      "actual": "VARCHAR(254)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.password": {
+      "actual": "VARCHAR(128)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.phone_number": {
+      "actual": "VARCHAR(15)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.role": {
+      "actual": "VARCHAR(20)",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.user_info": {
+      "actual": "VARCHAR",
+      "expected": "CHARACTER"
+    },
+    "user_registration_old.username": {
+      "actual": "VARCHAR(50)",
+      "expected": "CHARACTER"
+    }
+  }
+}

@@ -446,12 +446,19 @@ async def health_qdrant():
         client = _new_qdrant_client(host=host, port=port, timeout=2.0)
         collections = client.get_collections()
         names = [item.name for item in getattr(collections, "collections", [])]
+        collection_exists = collection in names
+        if not collection_exists:
+            try:
+                client.get_collection(collection_name=collection)
+                collection_exists = True
+            except Exception:
+                collection_exists = False
         return _with_health_contract({
             "ready": True,
             "host": host,
             "port": port,
             "collection": collection,
-            "collection_exists": collection in names,
+            "collection_exists": collection_exists,
             "collections": names,
         })
     except Exception as exc:

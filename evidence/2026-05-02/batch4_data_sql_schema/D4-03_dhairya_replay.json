@@ -1,0 +1,769 @@
+{
+  "failed": 0,
+  "passed": 17,
+  "results": [
+    {
+      "elapsed_ms": 205.659,
+      "id": "1",
+      "question": "Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not just course count?",
+      "result_hash": "7a6a67697d1fb82aa750487fb28821ba64a428726d2adcecca5ad36443c514f2",
+      "row_count": 10,
+      "sample_rows": [
+        {
+          "institute": "IIT Bombay",
+          "total_courses": 1000,
+          "total_innovation_intensity": 6000.0
+        },
+        {
+          "institute": "IIT Kharagpur",
+          "total_courses": 1000,
+          "total_innovation_intensity": 4000.0
+        },
+        {
+          "institute": "IIT Gandhinagar",
+          "total_courses": 1000,
+          "total_innovation_intensity": 4000.0
+        },
+        {
+          "institute": "IIT Ropar",
+          "total_courses": 1000,
+          "total_innovation_intensity": 4000.0
+        },
+        {
+          "institute": "IIT Roorkee",
+          "total_courses": 1000,
+          "total_innovation_intensity": 4000.0
+        },
+        {
+          "institute": "IIT Madras",
+          "total_courses": 1000,
+          "total_innovation_intensity": 4000.0
+        },
+        {
+          "institute": "IIT Guwahati",
+          "total_courses": 1000,
+          "total_innovation_intensity": 3000.0
+        },
+        {
+          "institute": "IIT Hyderabad",
+          "total_courses": 1000,
+          "total_innovation_intensity": 3000.0
+        },
+        {
+          "institute": "IIT Kanpur",
+          "total_courses": 1000,
+          "total_innovation_intensity": 3000.0
+        },
+        {
+          "institute": "IIT Delhi",
+          "total_courses": 1000,
+          "total_innovation_intensity": 3000.0
+        }
+      ],
+      "sql": "SELECT \n    institute,\n    COUNT(*) AS total_courses,\n    SUM(\n        SPLIT_PART(total_credit_score, ':', 1)::double precision\n    ) AS total_innovation_intensity\nFROM academic_courses_details\nWHERE financial_year = '2022-23'\nGROUP BY institute\nORDER BY total_innovation_intensity DESC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 35.234,
+      "id": "2",
+      "question": "Show me the ratio of PhD level innovation courses to Undergraduate ones for IIT Bombay.",
+      "result_hash": "4249742e2429a305d491a667b4bfd2572e62511cbf21cdd923656634f14cbd20",
+      "row_count": 2,
+      "sample_rows": [
+        {
+          "course_count": 1667,
+          "level_of_course": "UG"
+        },
+        {
+          "course_count": 1666,
+          "level_of_course": "PhD"
+        }
+      ],
+      "sql": "SELECT \n    level_of_course, \n    COUNT(*) as course_count\nFROM \n    academic_courses_details\nWHERE \n    institute = 'IIT Bombay'\n    AND level_of_course IN ('UG', 'PhD')\nGROUP BY \n    level_of_course",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 717.909,
+      "id": "3",
+      "question": "Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-2021 to 2021-22.",
+      "result_hash": "2a6afdd4d4e3e3d7529bb42e76992e60c5c488c0ec627284d5e04bf0b6f80335",
+      "row_count": 0,
+      "sample_rows": [],
+      "sql": "WITH YearlyGrants AS (\n    SELECT \n        institute, \n        year_of_receiving, \n        SUM(grant_received) as total_funding\n    FROM \n        innovation_grant_from_govt\n    GROUP BY \n        institute, year_of_receiving\n)\nSELECT \n    current_year.institute,\n    current_year.year_of_receiving as current_year,\n    current_year.total_funding as current_funding,\n    prev_year.total_funding as previous_funding,\n    ((current_year.total_funding - prev_year.total_funding)\n        / prev_year.total_funding::float) * 100 as growth_percentage\nFROM \n    YearlyGrants current_year\nJOIN \n    YearlyGrants prev_year\n    ON current_year.institute = prev_year.institute\n    AND prev_year.year_of_receiving = '2020-21'\nWHERE \n    current_year.year_of_receiving = '2022-23'\n    AND ((current_year.total_funding - prev_year.total_funding)\n        / prev_year.total_funding::float) < -0.5",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 101.328,
+      "id": "4",
+      "question": "Who are the top 5 unique funding agencies providing grants to us?",
+      "result_hash": "47d31aa3e394de0d20524fcc5855e63debc44618f245c2b7541bd323730a6bb6",
+      "row_count": 5,
+      "sample_rows": [
+        {
+          "gov_organisation_name": "DBT",
+          "grant_count": 7143,
+          "total_amount": 7703710000.0
+        },
+        {
+          "gov_organisation_name": "ANRF",
+          "grant_count": 7143,
+          "total_amount": 7703500000.0
+        },
+        {
+          "gov_organisation_name": "ICMR",
+          "grant_count": 7143,
+          "total_amount": 7703320000.0
+        },
+        {
+          "gov_organisation_name": "CSIR",
+          "grant_count": 7143,
+          "total_amount": 7702930000.0
+        },
+        {
+          "gov_organisation_name": "MeitY",
+          "grant_count": 7143,
+          "total_amount": 7702750000.0
+        }
+      ],
+      "sql": "SELECT \n    gov_organisation_name, \n    COUNT(*) as grant_count, \n    SUM(grant_received) as total_amount\nFROM \n    innovation_grant_from_govt\nGROUP BY \n    gov_organisation_name\nORDER BY \n    total_amount DESC\nLIMIT 5",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 55.053,
+      "id": "5",
+      "question": "Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?",
+      "result_hash": "541bff4d181c9b4090f58ab7e80b9b65530a928a3554b0b66ed22489c8c847b7",
+      "row_count": 9,
+      "sample_rows": [
+        {
+          "innovation_count": 8166,
+          "percentage_share": 54.44,
+          "stage_of_technology": "Level 4"
+        },
+        {
+          "innovation_count": 2166,
+          "percentage_share": 14.44,
+          "stage_of_technology": "Level 9"
+        },
+        {
+          "innovation_count": 668,
+          "percentage_share": 4.453333333333333,
+          "stage_of_technology": "Level 2"
+        },
+        {
+          "innovation_count": 667,
+          "percentage_share": 4.446666666666666,
+          "stage_of_technology": "Level 7"
+        },
+        {
+          "innovation_count": 667,
+          "percentage_share": 4.446666666666666,
+          "stage_of_technology": "Level 1"
+        },
+        {
+          "innovation_count": 667,
+          "percentage_share": 4.446666666666666,
+          "stage_of_technology": "Level 3"
+        },
+        {
+          "innovation_count": 667,
+          "percentage_share": 4.446666666666666,
+          "stage_of_technology": "Level 6"
+        },
+        {
+          "innovation_count": 666,
+          "percentage_share": 4.44,
+          "stage_of_technology": "Level 8"
+        },
+        {
+          "innovation_count": 666,
+          "percentage_share": 4.44,
+          "stage_of_technology": "Level 5"
+        }
+      ],
+      "sql": "SELECT \n    stage_of_technology,\n    COUNT(*) as innovation_count,\n    (COUNT(*) * 100.0 / (\n        SELECT COUNT(*)\n        FROM innovations_at_various_stages_of_technology_readiness_level\n        WHERE institute = 'IIT Madras'\n    )) as percentage_share\nFROM \n    innovations_at_various_stages_of_technology_readiness_level\nWHERE \n    institute = 'IIT Madras'\nGROUP BY \n    stage_of_technology\nORDER BY \n    innovation_count DESC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 365.55,
+      "id": "6",
+      "question": "List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.",
+      "result_hash": "0a2e1095087fbb82df27127541a5fafa6c5e12ddf9860835066e66b0c6e05d3f",
+      "row_count": 2166,
+      "sample_rows": [
+        {
+          "financial_year": "2022-23",
+          "innovation_name": "NRG Local Technology 20"
+        },
+        {
+          "financial_year": "2024-25",
+          "innovation_name": "NRG Local Technology 40"
+        },
+        {
+          "financial_year": "2023-24",
+          "innovation_name": "NRG Local Technology 80"
+        },
+        {
+          "financial_year": "2022-23",
+          "innovation_name": "NRG Local Technology 120"
+        },
+        {
+          "financial_year": "2024-25",
+          "innovation_name": "NRG Local Technology 140"
+        },
+        {
+          "financial_year": "2021-22",
+          "innovation_name": "NRG Local Technology 161"
+        },
+        {
+          "financial_year": "2023-24",
+          "innovation_name": "NRG Local Technology 180"
+        },
+        {
+          "financial_year": "2021-22",
+          "innovation_name": "NRG Local Technology 215"
+        },
+        {
+          "financial_year": "2022-23",
+          "innovation_name": "NRG Local Technology 220"
+        },
+        {
+          "financial_year": "2024-25",
+          "innovation_name": "NRG Local Technology 240"
+        },
+        {
+          "financial_year": "2020-21",
+          "innovation_name": "NRG Local Technology 251"
+        },
+        {
+          "financial_year": "2021-22",
+          "innovation_name": "NRG Local Technology 260"
+        },
+        {
+          "financial_year": "2023-24",
+          "innovation_name": "NRG Local Technology 280"
+        },
+        {
+          "financial_year": "2020-21",
+          "innovation_name": "NRG Local Technology 305"
+        },
+        {
+          "financial_year": "2022-23",
+          "innovation_name": "NRG Local Technology 320"
+        },
+        {
+          "financial_year": "2024-25",
+          "innovation_name": "NRG Local Technology 340"
+        },
+        {
+          "financial_year": "2020-21",
+          "innovation_name": "NRG Local Technology 350"
+        },
+        {
+          "financial_year": "2023-24",
+          "innovation_name": "NRG Local Technology 380"
+        },
+        {
+          "financial_year": "2022-23",
+          "innovation_name": "NRG Local Technology 420"
+        },
+        {
+          "financial_year": "2024-25",
+          "innovation_name": "NRG Local Technology 440"
+        }
+      ],
+      "sql": "SELECT \n    innovation_name, \n    financial_year\nFROM \n    innovations_at_various_stages_of_technology_readiness_level\nWHERE \n    stage_of_technology = 'Level 9'\n    AND institute = 'IIT Madras'",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 1215.977,
+      "id": "7",
+      "question": "Calculate the 'Cost of Innovation': How much government grant money do we spend for every 1 Patent granted?",
+      "result_hash": "5f3399e50d5576d78cc10e0607034e12ce4d8e1faf339f49a75870a39b5c1678",
+      "row_count": 10,
+      "sample_rows": [
+        {
+          "cost_per_patent": 951791.5831663327,
+          "institute": "IIT Delhi",
+          "total_money": 4749440000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 951903.8076152304,
+          "institute": "IIT Hyderabad",
+          "total_money": 4750000000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 951903.8076152304,
+          "institute": "IIT Bombay",
+          "total_money": 4750000000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 951959.9198396794,
+          "institute": "IIT Guwahati",
+          "total_money": 4750280000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1021987.9759519038,
+          "institute": "IIT Kharagpur",
+          "total_money": 5099720000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1022044.0881763527,
+          "institute": "IIT Roorkee",
+          "total_money": 5100000000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1022100.2004008016,
+          "institute": "IIT Ropar",
+          "total_money": 5100280000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1262657.3146292586,
+          "institute": "IIT Kanpur",
+          "total_money": 6300660000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1334593.1863727455,
+          "institute": "IIT Madras",
+          "total_money": 6659620000.0,
+          "total_patents": 4990
+        },
+        {
+          "cost_per_patent": 1334613.226452906,
+          "institute": "IIT Gandhinagar",
+          "total_money": 6659720000.0,
+          "total_patents": 4990
+        }
+      ],
+      "sql": "WITH GrantData AS (\n    SELECT institute, SUM(grant_received) as total_money\n    FROM innovation_grant_from_govt\n    GROUP BY institute\n),\nPatentData AS (\n    SELECT applicants, COUNT(id) as total_patents\n    FROM combined_ipo_patent_data\n    WHERE status = 'Granted'\n    GROUP BY applicants\n)\nSELECT \n    g.institute,\n    g.total_money,\n    p.total_patents,\n    (g.total_money / NULLIF(p.total_patents, 0)) as cost_per_patent\nFROM \n    GrantData g\nJOIN \n    PatentData p ON g.institute = p.applicants\nORDER BY \n    cost_per_patent ASC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 775.116,
+      "id": "8",
+      "question": "Show me all PG innovation courses at IIT Madras for the last 3 years starting from FY 2021-22.",
+      "result_hash": "f639089bdf4d7c4b95ac354e00c5f1762a097547198008d0a4c7a3e85d44145d",
+      "row_count": 1000,
+      "sample_rows": [
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 31",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 61",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 121",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 181",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 211",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 271",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 331",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 361",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 421",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 481",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 511",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 571",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 631",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 661",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 21",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 81",
+          "total_credit_score": "3:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 111",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2022-23",
+          "title_of_course": "NRG Innovation Systems 171",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2023-24",
+          "title_of_course": "NRG Innovation Systems 231",
+          "total_credit_score": "5:1"
+        },
+        {
+          "financial_year": "2021-22",
+          "title_of_course": "NRG Innovation Systems 261",
+          "total_credit_score": "3:1"
+        }
+      ],
+      "sql": "SELECT title_of_course, financial_year, total_credit_score\nFROM academic_courses_details\nWHERE institute = 'IIT Madras'\n  AND level_of_course = 'PG'\n  AND financial_year IN ('2021-22', '2022-23', '2023-24')",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 97.978,
+      "id": "9",
+      "question": "Which institute has the most PhD courses?",
+      "result_hash": "790614fcc13b5457eaf28f99d7b95d5a33d1ac33ae90e745766a0e5d2e7ffd5c",
+      "row_count": 1,
+      "sample_rows": [
+        {
+          "institute": "IIT Delhi",
+          "phd_course_count": 1667
+        }
+      ],
+      "sql": "SELECT institute, COUNT(*) as phd_course_count\nFROM academic_courses_details\nWHERE level_of_course = 'PhD'\nGROUP BY institute\nORDER BY phd_course_count DESC\nLIMIT 1",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 44.351,
+      "id": "10",
+      "question": "How does that compare to their UG numbers? *(Contextual Follow-up)*",
+      "result_hash": "3356c63e34f4b1e30290ac8cd6a7c816feaac5e0d07db58304e97da293cbff44",
+      "row_count": 3,
+      "sample_rows": [
+        {
+          "course_count": 1667,
+          "level_of_course": "UG"
+        },
+        {
+          "course_count": 1666,
+          "level_of_course": "PhD"
+        },
+        {
+          "course_count": 1667,
+          "level_of_course": "PG"
+        }
+      ],
+      "sql": "SELECT level_of_course, COUNT(*) as course_count\nFROM academic_courses_details\nWHERE institute = 'IIT Hyderabad'\nGROUP BY level_of_course",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 244.066,
+      "id": "11",
+      "question": "Identify growth trends: Calculate Year-Over-Year growth for PG courses in IIT Madras.",
+      "result_hash": "1443643824f0b768241a65ba04e84c450579f8a4dfe40b553df950879326c610",
+      "row_count": 10,
+      "sample_rows": [
+        {
+          "current_count": 333,
+          "current_year": "2024-25",
+          "growth_rate": 0.0,
+          "prev_count": 333
+        },
+        {
+          "current_count": 333,
+          "current_year": "2024-25",
+          "growth_rate": 0.0,
+          "prev_count": 333
+        },
+        {
+          "current_count": 333,
+          "current_year": "2024-25",
+          "growth_rate": -0.29940119760479045,
+          "prev_count": 334
+        },
+        {
+          "current_count": 333,
+          "current_year": "2024-25",
+          "growth_rate": -0.29940119760479045,
+          "prev_count": 334
+        },
+        {
+          "current_count": 334,
+          "current_year": "2023-24",
+          "growth_rate": 0.3003003003003003,
+          "prev_count": 333
+        },
+        {
+          "current_count": 334,
+          "current_year": "2023-24",
+          "growth_rate": 0.0,
+          "prev_count": 334
+        },
+        {
+          "current_count": 334,
+          "current_year": "2023-24",
+          "growth_rate": 0.3003003003003003,
+          "prev_count": 333
+        },
+        {
+          "current_count": 333,
+          "current_year": "2022-23",
+          "growth_rate": 0.0,
+          "prev_count": 333
+        },
+        {
+          "current_count": 333,
+          "current_year": "2022-23",
+          "growth_rate": -0.29940119760479045,
+          "prev_count": 334
+        },
+        {
+          "current_count": 333,
+          "current_year": "2021-22",
+          "growth_rate": -0.29940119760479045,
+          "prev_count": 334
+        }
+      ],
+      "sql": "WITH YearlyData AS (\n    SELECT financial_year, COUNT(*) as course_count\n    FROM academic_courses_details\n    WHERE institute = 'IIT Madras' AND level_of_course = 'PG'\n    GROUP BY financial_year\n)\nSELECT \n    t1.financial_year as current_year,\n    t1.course_count as current_count,\n    t2.course_count as prev_count,\n    ((t1.course_count - t2.course_count)::float / t2.course_count) * 100 as growth_rate\nFROM YearlyData t1\nJOIN YearlyData t2\n    ON t1.financial_year > t2.financial_year\nORDER BY t1.financial_year DESC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 46.375,
+      "id": "12",
+      "question": "Detect Strategy Shift: Institute stops UG but spikes in PhD in IIT Madras.",
+      "result_hash": "5cb950013f725aee79549bd917a076723ebb5fefa2a72732d8bf3c022b3e11df",
+      "row_count": 5,
+      "sample_rows": [
+        {
+          "financial_year": "2020-21",
+          "phd_count": 333,
+          "ug_count": 333
+        },
+        {
+          "financial_year": "2021-22",
+          "phd_count": 334,
+          "ug_count": 333
+        },
+        {
+          "financial_year": "2022-23",
+          "phd_count": 333,
+          "ug_count": 334
+        },
+        {
+          "financial_year": "2023-24",
+          "phd_count": 333,
+          "ug_count": 333
+        },
+        {
+          "financial_year": "2024-25",
+          "phd_count": 334,
+          "ug_count": 333
+        }
+      ],
+      "sql": "SELECT financial_year,\n    SUM(CASE WHEN level_of_course = 'UG' THEN 1 ELSE 0 END) as ug_count,\n    SUM(CASE WHEN level_of_course = 'PhD' THEN 1 ELSE 0 END) as phd_count\nFROM academic_courses_details\nWHERE institute = 'IIT Madras'\nGROUP BY financial_year\nORDER BY financial_year",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 140.249,
+      "id": "13",
+      "question": "Correlation: Innovation Courses vs. Startups Incubated (Cross-Module).",
+      "result_hash": "2a6afdd4d4e3e3d7529bb42e76992e60c5c488c0ec627284d5e04bf0b6f80335",
+      "row_count": 0,
+      "sample_rows": [],
+      "sql": "WITH CourseData AS (\n    SELECT institute, COUNT(*) as total_courses\n    FROM academic_courses_details\n    GROUP BY institute\n),\nStartupData AS (\n    SELECT institute, COUNT(*) as total_startups\n    FROM incubation_details\n    GROUP BY institute\n)\nSELECT c.institute, c.total_courses, s.total_startups\nFROM CourseData c\nJOIN StartupData s ON c.institute = s.institute",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 469.294,
+      "id": "14",
+      "question": "Gap Analysis: High Capital Expenses but Low Innovation Courses in FY 2023-24.",
+      "result_hash": "8474c1fc8e3d87cef1a5afaec0cb6a1e6304c7a0eff03d0dbceb89773854031e",
+      "row_count": 2,
+      "sample_rows": [
+        {
+          "course_count": 100000,
+          "institute": "IIT Kanpur",
+          "total_capital_expense": 950600000000.0
+        },
+        {
+          "course_count": 100000,
+          "institute": "IIT Delhi",
+          "total_capital_expense": 949100000000.0
+        }
+      ],
+      "sql": "SELECT \n    c.institute, \n    COUNT(c.id) as course_count, \n    SUM(f.capital_assets) as total_capital_expense\nFROM academic_courses_details c\nJOIN financial_expenses_capital f\n    ON c.institute = f.institute\n    AND c.financial_year = f.financial_year\nWHERE c.financial_year = '2023-24'\nGROUP BY c.institute\nORDER BY total_capital_expense DESC, course_count ASC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 152.409,
+      "id": "15",
+      "question": "Rising Stars: Institutes growing funding while the average declines.",
+      "result_hash": "2a6afdd4d4e3e3d7529bb42e76992e60c5c488c0ec627284d5e04bf0b6f80335",
+      "row_count": 0,
+      "sample_rows": [],
+      "sql": "SELECT institute, SUM(grant_received) as total_funding\nFROM innovation_grant_from_govt\nWHERE as_on_year = '2024'\nGROUP BY institute\nORDER BY total_funding DESC",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 259.535,
+      "id": "16",
+      "question": "Utilization Audit: High Grants vs Low Expenditure.",
+      "result_hash": "2a6afdd4d4e3e3d7529bb42e76992e60c5c488c0ec627284d5e04bf0b6f80335",
+      "row_count": 0,
+      "sample_rows": [],
+      "sql": "SELECT \n    g.institute, \n    SUM(g.grant_received) as grants_received,\n    SUM(e.salaries + e.maintenance + e.seminars) as operational_expenses\nFROM innovation_grant_from_govt g\nJOIN financial_expenses_operational e ON g.institute = e.institute\nWHERE g.as_on_year = '2024' AND e.as_on_year = '2023'\nGROUP BY g.institute\nHAVING SUM(g.grant_received) > (SUM(e.salaries + e.maintenance + e.seminars) * 2)",
+      "status": "PASS"
+    },
+    {
+      "elapsed_ms": 454.163,
+      "id": "17",
+      "question": "Pipeline Progression: Are we moving from Low TRL to High TRL?",
+      "result_hash": "db34d76a5886e891448c68d7d51aff7a69517f8ee8d3eca6a5281e1b7f128ea3",
+      "row_count": 45,
+      "sample_rows": [
+        {
+          "financial_year": "2020-21",
+          "project_count": 1112,
+          "stage_of_technology": "Level 1"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 2"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 3"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 4"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 5"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 6"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 7"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 8"
+        },
+        {
+          "financial_year": "2020-21",
+          "project_count": 1111,
+          "stage_of_technology": "Level 9"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 1"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1112,
+          "stage_of_technology": "Level 2"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 3"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 4"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 5"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 6"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 7"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 8"
+        },
+        {
+          "financial_year": "2021-22",
+          "project_count": 1111,
+          "stage_of_technology": "Level 9"
+        },
+        {
+          "financial_year": "2022-23",
+          "project_count": 778,
+          "stage_of_technology": "Level 1"
+        },
+        {
+          "financial_year": "2022-23",
+          "project_count": 778,
+          "stage_of_technology": "Level 2"
+        }
+      ],
+      "sql": "SELECT financial_year, stage_of_technology, COUNT(*) as project_count\nFROM innovations_at_various_stages_of_technology_readiness_level\nGROUP BY financial_year, stage_of_technology\nORDER BY financial_year, stage_of_technology",
+      "status": "PASS"
+    }
+  ],
+  "total": 17
+}

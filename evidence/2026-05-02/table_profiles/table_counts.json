@@ -1,0 +1,1236 @@
+{
+  "db_struct_table_count": 58,
+  "live_table_count": 75,
+  "nonzero_table_count": 21,
+  "priority_by_reference_frequency": [
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1865,
+      "rows": 50000,
+      "table": "researchers"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 810,
+      "rows": 50000,
+      "table": "publications"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 807,
+      "rows": 0,
+      "table": "funding"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 536,
+      "rows": 181,
+      "table": "institutions"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 515,
+      "rows": 0,
+      "table": "projects"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 349,
+      "rows": 0,
+      "table": "labs"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 306,
+      "rows": 50000,
+      "table": "innovation_grant_from_govt"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 305,
+      "rows": 50000,
+      "table": "academic_courses_details"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 282,
+      "rows": 0,
+      "table": "keywords"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 261,
+      "rows": 0,
+      "table": "patents"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 184,
+      "rows": 50000,
+      "table": "combined_ipo_patent_data"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 169,
+      "rows": 0,
+      "table": "funding_records"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 165,
+      "rows": 0,
+      "table": "collaborations"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 119,
+      "rows": 0,
+      "table": "research_documents"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 118,
+      "rows": 50000,
+      "table": "innovations_at_various_stages_of_technology_readiness_level"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 89,
+      "rows": 1000,
+      "table": "sanctioned_intake"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 88,
+      "rows": 0,
+      "table": "advance_search_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 88,
+      "rows": 1000,
+      "table": "tb_institute_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 79,
+      "rows": 1000,
+      "table": "phd_students"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 78,
+      "rows": 1000,
+      "table": "actual_student_strength"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 73,
+      "rows": 1000,
+      "table": "financial_expenses_capital"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 73,
+      "rows": 1000,
+      "table": "financial_expenses_operational"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 71,
+      "rows": 0,
+      "table": "researcher_publications"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 68,
+      "rows": 0,
+      "table": "incubation_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 67,
+      "rows": 0,
+      "table": "expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 65,
+      "rows": 1000,
+      "table": "patents_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 57,
+      "rows": 0,
+      "table": "seed_funding"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 49,
+      "rows": 0,
+      "table": "scraped_data"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 47,
+      "rows": 0,
+      "table": "researcher_labs"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_data_save"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_raw_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_15_12"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "combined_ipo_patent_data_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "fdi_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 41,
+      "rows": 0,
+      "table": "faculty_strength"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 38,
+      "rows": 807,
+      "table": "audit_events"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 37,
+      "rows": 0,
+      "table": "ipo_patent_details_flat"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 0,
+      "table": "nirf_extracted_table"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 1000,
+      "table": "placements_and_higher_studies"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 1000,
+      "table": "research_consultancy_details_consultancy"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 35,
+      "rows": 0,
+      "table": "startups_turnover_50_lacs"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 34,
+      "rows": 0,
+      "table": "ipo_patent_details_flat_old"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 32,
+      "rows": 0,
+      "table": "publication_keywords"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 31,
+      "rows": 1000,
+      "table": "research_consultancy_details_sponsered"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 31,
+      "rows": 1000,
+      "table": "startup_recognition"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 29,
+      "rows": 0,
+      "table": "user_registration"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 28,
+      "rows": 0,
+      "table": "nirf_pdf_record"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 26,
+      "rows": 1000,
+      "table": "faculty_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 25,
+      "rows": 0,
+      "table": "tb_institute_scrap_data_url"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "fdp_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "nirf_table_row"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "package_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "tb_goi_ministries_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 23,
+      "rows": 0,
+      "table": "tb_academic_year_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 22,
+      "rows": 0,
+      "table": "tb_course_program_types"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "founders_of_fortune_500_companies"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "master_expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "startup_receiving_vc_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 19,
+      "rows": 0,
+      "table": "auth_user"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 17,
+      "rows": 0,
+      "table": "role_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "auth_group"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "llm_cost_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "auth_permission"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "django_session"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_group_permissions"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_user_groups"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_content_type"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_migrations"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "user_registration_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "auth_user_user_permissions"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "django_admin_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "startup_recognition_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 12,
+      "rows": 0,
+      "table": "adv_se"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 1,
+      "table": "alembic_version"
+    }
+  ],
+  "tables": [
+    {
+      "in_db_struct": true,
+      "reference_frequency": 305,
+      "rows": 50000,
+      "table": "academic_courses_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 78,
+      "rows": 1000,
+      "table": "actual_student_strength"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 12,
+      "rows": 0,
+      "table": "adv_se"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 88,
+      "rows": 0,
+      "table": "advance_search_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_15_12"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_old"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 1,
+      "table": "alembic_version"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 38,
+      "rows": 807,
+      "table": "audit_events"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "auth_group"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_group_permissions"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "auth_permission"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 19,
+      "rows": 0,
+      "table": "auth_user"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_user_groups"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "auth_user_user_permissions"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 165,
+      "rows": 0,
+      "table": "collaborations"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 184,
+      "rows": 50000,
+      "table": "combined_ipo_patent_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "combined_ipo_patent_data_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "django_admin_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_content_type"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_migrations"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "django_session"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 67,
+      "rows": 0,
+      "table": "expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 26,
+      "rows": 1000,
+      "table": "faculty_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 41,
+      "rows": 0,
+      "table": "faculty_strength"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "fdi_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "fdp_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 73,
+      "rows": 1000,
+      "table": "financial_expenses_capital"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 73,
+      "rows": 1000,
+      "table": "financial_expenses_operational"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "founders_of_fortune_500_companies"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 807,
+      "rows": 0,
+      "table": "funding"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 169,
+      "rows": 0,
+      "table": "funding_records"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 68,
+      "rows": 0,
+      "table": "incubation_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 306,
+      "rows": 50000,
+      "table": "innovation_grant_from_govt"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 118,
+      "rows": 50000,
+      "table": "innovations_at_various_stages_of_technology_readiness_level"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 536,
+      "rows": 181,
+      "table": "institutions"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 37,
+      "rows": 0,
+      "table": "ipo_patent_details_flat"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 34,
+      "rows": 0,
+      "table": "ipo_patent_details_flat_old"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 282,
+      "rows": 0,
+      "table": "keywords"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 349,
+      "rows": 0,
+      "table": "labs"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "llm_cost_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "master_expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 0,
+      "table": "nirf_extracted_table"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 28,
+      "rows": 0,
+      "table": "nirf_pdf_record"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "nirf_table_row"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "package_data"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 261,
+      "rows": 0,
+      "table": "patents"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 65,
+      "rows": 1000,
+      "table": "patents_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 79,
+      "rows": 1000,
+      "table": "phd_students"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 1000,
+      "table": "placements_and_higher_studies"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 515,
+      "rows": 0,
+      "table": "projects"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 32,
+      "rows": 0,
+      "table": "publication_keywords"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 810,
+      "rows": 50000,
+      "table": "publications"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 1000,
+      "table": "research_consultancy_details_consultancy"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 31,
+      "rows": 1000,
+      "table": "research_consultancy_details_sponsered"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 119,
+      "rows": 0,
+      "table": "research_documents"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 47,
+      "rows": 0,
+      "table": "researcher_labs"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 71,
+      "rows": 0,
+      "table": "researcher_publications"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1865,
+      "rows": 50000,
+      "table": "researchers"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 17,
+      "rows": 0,
+      "table": "role_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 89,
+      "rows": 1000,
+      "table": "sanctioned_intake"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 49,
+      "rows": 0,
+      "table": "scraped_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_data_save"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_raw_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 57,
+      "rows": 0,
+      "table": "seed_funding"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "startup_receiving_vc_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 31,
+      "rows": 1000,
+      "table": "startup_recognition"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "startup_recognition_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 35,
+      "rows": 0,
+      "table": "startups_turnover_50_lacs"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 23,
+      "rows": 0,
+      "table": "tb_academic_year_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 22,
+      "rows": 0,
+      "table": "tb_course_program_types"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "tb_goi_ministries_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 88,
+      "rows": 1000,
+      "table": "tb_institute_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 25,
+      "rows": 0,
+      "table": "tb_institute_scrap_data_url"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 29,
+      "rows": 0,
+      "table": "user_registration"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "user_registration_old"
+    }
+  ],
+  "zero_row_table_count": 54,
+  "zero_row_tables": [
+    {
+      "in_db_struct": true,
+      "reference_frequency": 12,
+      "rows": 0,
+      "table": "adv_se"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 88,
+      "rows": 0,
+      "table": "advance_search_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_15_12"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "advance_search_data_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "auth_group"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_group_permissions"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "auth_permission"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 19,
+      "rows": 0,
+      "table": "auth_user"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "auth_user_groups"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "auth_user_user_permissions"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 165,
+      "rows": 0,
+      "table": "collaborations"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "combined_ipo_patent_data_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "django_admin_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_content_type"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "django_migrations"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 15,
+      "rows": 0,
+      "table": "django_session"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 67,
+      "rows": 0,
+      "table": "expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 41,
+      "rows": 0,
+      "table": "faculty_strength"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 42,
+      "rows": 0,
+      "table": "fdi_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "fdp_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "founders_of_fortune_500_companies"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 807,
+      "rows": 0,
+      "table": "funding"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 169,
+      "rows": 0,
+      "table": "funding_records"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 68,
+      "rows": 0,
+      "table": "incubation_details"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 37,
+      "rows": 0,
+      "table": "ipo_patent_details_flat"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 34,
+      "rows": 0,
+      "table": "ipo_patent_details_flat_old"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 282,
+      "rows": 0,
+      "table": "keywords"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 349,
+      "rows": 0,
+      "table": "labs"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 16,
+      "rows": 0,
+      "table": "llm_cost_log"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "master_expertise"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 36,
+      "rows": 0,
+      "table": "nirf_extracted_table"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 28,
+      "rows": 0,
+      "table": "nirf_pdf_record"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "nirf_table_row"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "package_data"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 261,
+      "rows": 0,
+      "table": "patents"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 515,
+      "rows": 0,
+      "table": "projects"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 32,
+      "rows": 0,
+      "table": "publication_keywords"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 119,
+      "rows": 0,
+      "table": "research_documents"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 47,
+      "rows": 0,
+      "table": "researcher_labs"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 71,
+      "rows": 0,
+      "table": "researcher_publications"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 17,
+      "rows": 0,
+      "table": "role_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 49,
+      "rows": 0,
+      "table": "scraped_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_data_save"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 46,
+      "rows": 0,
+      "table": "scraped_raw_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 57,
+      "rows": 0,
+      "table": "seed_funding"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 21,
+      "rows": 0,
+      "table": "startup_receiving_vc_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 13,
+      "rows": 0,
+      "table": "startup_recognition_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 35,
+      "rows": 0,
+      "table": "startups_turnover_50_lacs"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 23,
+      "rows": 0,
+      "table": "tb_academic_year_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 22,
+      "rows": 0,
+      "table": "tb_course_program_types"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 24,
+      "rows": 0,
+      "table": "tb_goi_ministries_mstr"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 25,
+      "rows": 0,
+      "table": "tb_institute_scrap_data_url"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 29,
+      "rows": 0,
+      "table": "user_registration"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
+      "table": "user_registration_old"
+    }
+  ]
+}
