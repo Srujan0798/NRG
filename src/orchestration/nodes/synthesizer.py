@@ -1212,15 +1212,28 @@ def _dedupe_document_contexts(
             continue
 
         if normalized not in grouped:
-            grouped[normalized] = {"context": context, "citations": []}
+            grouped[normalized] = {
+                "context": context,
+                "citations": [],
+                "citation_pub_ids": set(),
+            }
             ordered_keys.append(normalized)
 
         original_chunk = original_chunks[idx] if idx < len(original_chunks) else safe_chunk
         citation = _citation_for_chunk(original_chunk, idx)
-        if citation not in grouped[normalized]["citations"]:
+        citation_match = CITATION_PATTERN.fullmatch(citation)
+        citation_key = citation_match.group(1) if citation_match else citation
+        if citation_key not in grouped[normalized]["citation_pub_ids"]:
             grouped[normalized]["citations"].append(citation)
+            grouped[normalized]["citation_pub_ids"].add(citation_key)
 
-    return [grouped[key] for key in ordered_keys]
+    return [
+        {
+            "context": grouped[key]["context"],
+            "citations": grouped[key]["citations"],
+        }
+        for key in ordered_keys
+    ]
 
 
 def _hybrid_structured_finding(safe_sql_results: EvidenceList) -> str:

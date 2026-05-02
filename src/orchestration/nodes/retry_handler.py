@@ -49,14 +49,14 @@ class RetryHandler:
         """
         last_exception: Optional[BaseException] = None
 
-        for attempt in range(self.max_retries):
+        for attempt in range(self.max_retries + 1):
             try:
                 # Try the operation
                 result = operation(*args, **kwargs)
                 return result
             except Exception as e:
                 last_exception = e
-                if attempt < self.max_retries - 1:
+                if attempt < self.max_retries:
                     delay = self.backoff_seconds(attempt)
                     logger.warning(
                         f"Operation failed (attempt {attempt + 1}), retrying in {delay:.2f}s: {e}"
@@ -64,7 +64,7 @@ class RetryHandler:
                     self.sleep_fn(delay)
                 else:
                     logger.error(
-                        f"Operation failed after {self.max_retries} attempts: {e}"
+                        f"Operation failed after {self.max_retries} retries: {e}"
                     )
                     raise last_exception
 

@@ -97,15 +97,19 @@ class TestRetryHandler:
     def test_max_retries_exhausted(self):
         sleeps = []
         handler = RetryHandler(max_retries=3, sleep_fn=sleeps.append)
+        call_count = 0
 
         def always_fails():
+            nonlocal call_count
+            call_count += 1
             raise ValueError("always fails")
 
         with pytest.raises(ValueError, match="always fails"):
             handler.handle_retry(always_fails)
-        assert sleeps == [1.0, 2.0]
+        assert call_count == 4
+        assert sleeps == [1.0, 2.0, 4.0]
 
-    def test_retry_caps_at_three_attempts(self):
+    def test_retry_caps_at_three_retries(self):
         sleeps = []
         handler = RetryHandler(max_retries=10, sleep_fn=sleeps.append)
         assert handler.max_retries == 3
