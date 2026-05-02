@@ -12,7 +12,7 @@
 > **Data Sources**: 5 mandatory reads (Core Idea, db_struct.sql, BACKLOG.md, Dhairya Audit, NRG_SELF_AUDIT_REPORT)
 > **Schema**: db_struct.sql = 58 tables (11 Django + 42 NRG core + 5 archive). Actual PG has 73 tables. Reconciliation doc: `docs/audits/schema_reconciliation.md`. db_struct.sql = minimum viable Dhairya schema; 15 missing tables need live dump to confirm.
 > **Protocols**: 9 Guru-format assignments complete. P1 (code commit+baseline), P3 (feature completion) done.
-> **Current Baseline**: 9.2/10 — 26 components verified working, 2 cluster-dependent (C4 locust, C5 vector-drift), GAP-H (GPG signatures) ready for founder key ceremony.
+> **Current Baseline**: 9.2/10 — 26 components verified working; remaining proof is external/deployed: sovereign-cluster C4 replay, production vector-drift/data-quality replay, and GAP-H founder GPG signatures.
 > **Assignments**: `ASSIGNMENTS_2026-04-27-ACTIVE.md` COMPLETE. All 8 LBs committed.
 
 ---
@@ -141,10 +141,10 @@ Source: External co-work audit. Per `external_audit.md` Rule 1, all external fin
 | C1 DPDP Indian PII | ✅ 10/10 | PASS | — |
 | C2 Per-user audit binding | ✅ 26/26 | PASS | Chain valid but lineage broken (ADR-006) |
 | C3 Multi-hop DAG planner | ✅ 28/28 | PASS | — |
-| C4 P99 < 500ms @ 1000 concurrent | ⏭️ | **PENDING** | No fresh evidence since Apr 26 |
+| C4 P99 < 500ms @ 1000 concurrent | ✅ local quota-neutral | **PASS locally / external replay pending** | 82,365 samples, 0 failures, aggregate P99 79 ms; replay on sovereign cluster before deployed load claim |
 | C5 Vector drift auto-retrain | ✅ | PASS | 60s cron daemon deployed |
 | C6 Schema allowlist egress | ✅ 35/35 | PASS | — |
-| **Overall** | **5/6** | **NOT FULLY COMPLIANT** | C4 blocked; C2 has lineage caveat |
+| **Overall** | **6/6 local quota-neutral** | **PASS locally / external gates pending** | C4 deployed/cluster replay, quota-policy proof, production-data proof, UAT, and founder signatures remain separate gates |
 
 ---
 
@@ -588,21 +588,27 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | 9 | Founder sign-off (8 GPG signatures) | ⏸️ Pending | Sign all handover docs | `signatures/*.asc` |
 | 10 | Git tag v1.0.0-eternal | ⏸️ Pending | After all 9 above complete | — |
 
-**Note**: Steps 1–8 require deployed/staging or `kubectl` access to the sovereign cluster. Step 9 requires the Founder GPG key configured. The latest local external-gate preflight is `evidence/2026-05-02/final_external_gates_after_21d60b4/EXTERNAL_GATE_ATTEMPT_2026-05-02.md`.
+**Note**: Steps 1–8 require deployed/staging or `kubectl` access to the sovereign cluster. Step 9 requires the Founder GPG key configured. The latest local external-gate preflights are `evidence/2026-05-02/final_external_gates_after_bbe589c/EXTERNAL_GATE_SUMMARY.md` and `evidence/2026-05-02/final_external_gates_after_21d60b4/EXTERNAL_GATE_ATTEMPT_2026-05-02.md`.
 
 ---
 
-## QUALITY BAR STATUS (2026-04-24 — V4 AUDIT)
+## QUALITY BAR STATUS (2026-04-24 — V4 AUDIT, SUPERSEDED LOCALLY)
+
+The historical V4 audit below is preserved for lineage. Current May 2 local
+quota-neutral evidence supersedes the C4 row locally: the latest scorecard ran
+1000 users with 82,365 samples, 0 failures, and aggregate P99 79 ms. Keep
+deployed/cluster, quota-policy, and production-data claims pending until they
+have separate evidence.
 
 | # | Constraint | Score | Status | Evidence | V4 Delta |
 |---|---|---|---|---|---|
 | C1 | DPDP Indian PII | ✅ 10/10 (was 8/10) | **PASS** | `tests/security/test_pii_compliance.py` (+ test_pii_scan.py, test_security_regression.py, test_security_perimeter.py) | +Verhoeff checksum, +GSTIN regex |
 | C2 | Per-user audit binding | ✅ 26/26 (100%) | PASS | `tests/security/test_per_user_audit_binding.py` | DB co-sign integrated (fire-and-forget in append); verify_cosign permissive. ⚠️ Chain lineage broken per ADR-006 — cryptographically new genesis. |
 | C3 | Multi-hop DAG planner | ✅ 28/28 (100%) | PASS | `tests/orchestration/test_multi_hop_planner.py` | Cycle + edge tests pending |
-| C4 | P99<500ms @ 1000 concurrent | ⏭️ Needs sovereign cluster | **PENDING** | `evidence/02_load_report.md` | C4 SKIP in scorecard |
+| C4 | P99<500ms @ 1000 concurrent | ✅ local quota-neutral / external replay pending | **PASS locally / external replay pending** | `evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json` | Historical skip superseded locally; sovereign-cluster replay still required |
 | C5 | Vector drift auto-retrain | ✅ 1/1 | **PASS** | `scripts/vector_drift_check.py`, `infrastructure/cron/nrg-drift-monitor` | drift_result bug fixed; 60s cron daemon added |
 | C6 | Schema allowlist egress | ✅ 35/35 (100%) | PASS | `tests/security/test_egress_allowlist.py` | Path restructure pending |
-| | **Overall** | **5/6** | **NOT FULLY COMPLIANT** | C4 needs fresh load evidence; C2 has lineage caveat (ADR-006); C1+C3+C5+C6 PASS | V4: C1 lifts to 10/10 |
+| | **Overall** | **6/6 local quota-neutral** | **PASS locally / external gates pending** | C4 deployed/cluster replay, quota-policy proof, production-data proof, UAT, and founder signatures remain separate gates | V4 lineage preserved; May 2 local state is the active baseline |
 
 ---
 
