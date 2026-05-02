@@ -1,0 +1,2 @@
+$ .venv/bin/ruff check scripts/scan_env_history_secrets.py tests/scripts/test_scan_env_history_secrets.py tests/api/test_api_endpoint_matrix.py
+All checks passed!

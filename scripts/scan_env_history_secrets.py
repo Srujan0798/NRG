@@ -51,6 +51,15 @@ class Finding:
     value_sha256: str
 
 
+ROTATION_CLASS_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
+    ("postgresql", re.compile(r"(POSTGRES|DATABASE_URL)", re.IGNORECASE)),
+    ("redis", re.compile(r"(REDIS)", re.IGNORECASE)),
+    ("jwt", re.compile(r"(JWT)", re.IGNORECASE)),
+    ("model_api", re.compile(r"(OPENAI|ANTHROPIC|GEMINI|API_KEY)", re.IGNORECASE)),
+    ("acceptance_users", re.compile(r"(RESEARCHER|GOV|INDUSTRY).*PASSWORD", re.IGNORECASE)),
+)
+
+
 def run_git(repo: Path, args: list[str]) -> str:
     proc = subprocess.run(
         ["git", "-C", str(repo), *args],
@@ -141,9 +150,57 @@ def write_json(path: Path, findings: list[Finding], commits_scanned: int, file_v
         "file_versions_scanned": file_versions,
         "finding_count": len(findings),
         "key_counts": dict(sorted(Counter(f.key for f in findings).items())),
+        "remediation": build_remediation_summary(findings, commits_scanned, file_versions),
         "findings": [dataclasses.asdict(finding) for finding in findings],
     }
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+
+
+def rotation_classes_for_key(key: str) -> list[str]:
+    classes = [name for name, pattern in ROTATION_CLASS_PATTERNS if pattern.search(key)]
+    return classes or ["unknown_secret"]
+
+
+def build_remediation_summary(
+    findings: list[Finding],
+    commits_scanned: int,
+    file_versions: int,
+) -> dict[str, object]:
+    affected_paths = sorted({finding.path for finding in findings})
+    affected_keys = sorted({finding.key for finding in findings})
+    unique_fingerprints = sorted({f"{finding.key}:{finding.value_sha256}" for finding in findings})
+    rotation_classes = sorted(
+        {
+            rotation_class
+            for key in affected_keys
+            for rotation_class in rotation_classes_for_key(key)
+        }
+    )
+    filter_repo_args = [item for path in affected_paths for item in ("--path", path)]
+
+    required_actions: list[str] = []
+    if findings:
+        required_actions = [
+            "freeze repository writes and branch automation",
+            "rotate all affected credential classes before unfreezing writes",
+            "rewrite runtime environment-file history in an approved mirror clone",
+            "force-push rewritten refs only after repository-owner approval",
+            "require contributors and CI runners to re-clone or drop stale refs",
+            "rerun this scanner on the rewritten history and require zero findings",
+        ]
+
+    return {
+        "status": "FAIL" if findings else "PASS",
+        "commits_scanned": commits_scanned,
+        "file_versions_scanned": file_versions,
+        "finding_count": len(findings),
+        "unique_secret_fingerprint_count": len(unique_fingerprints),
+        "affected_paths": affected_paths,
+        "affected_keys": affected_keys,
+        "rotation_classes": rotation_classes,
+        "filter_repo_args": filter_repo_args,
+        "required_actions": required_actions,
+    }
 
 
 def print_text(findings: list[Finding], commits_scanned: int, file_versions: int, max_findings: int) -> None:

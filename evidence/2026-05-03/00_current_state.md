@@ -62,6 +62,21 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   - `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x`: 419 passed, 6 skipped, 35 deselected.
   - corpus sync, forbidden-vocabulary guard, audit-chain verify, and diff
     whitespace checks passed.
+- S3-09 remediation gate:
+  - `.venv/bin/python -m pytest tests/scripts/test_scan_env_history_secrets.py -q --tb=short --no-cov`: 6 passed.
+  - `.venv/bin/python -m pytest tests/api/test_api_endpoint_matrix.py tests/scripts/test_scan_env_history_secrets.py -q --tb=short --no-cov`: 7 passed.
+  - `scripts/scan_env_history_secrets.py` now writes a redacted remediation
+    summary with affected paths, affected keys, unique fingerprints, rotation
+    classes, filter-repo path args, and required closure actions.
+  - Current history scan remains `FAIL` with 286 redacted findings until
+    approved credential rotation and history remediation are completed.
+- API endpoint matrix:
+  - `docs/specs/API_ENDPOINT_MATRIX.md` documents the registered FastAPI route
+    inventory.
+  - `tests/api/test_api_endpoint_matrix.py` compares the matrix against
+    `src.api.main.app` so route changes must update the document.
+  - Endpoint matrix, route registration, and S3-09 scanner combined regression:
+    10 passed.
 - `.venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/2026-05-03/final_external_gates_after_88d3a0db`
   - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
     target, explicit cluster-load context, and founder signatures.
@@ -73,6 +88,9 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/query_service_extraction/README.md`
 - `evidence/2026-05-03/post_state_replay/README.md`
+- `evidence/2026-05-03/s3_09_remediation_gate/README.md`
+- `evidence/2026-05-03/api_endpoint_matrix_closure/README.md`
+- `docs/specs/API_ENDPOINT_MATRIX.md`
 - `docs/adr/ADR-007-main-py-answer-engine-split.md`
 - `evidence/2026-05-03_rt14_live_response_diagnostic.json`
 

@@ -15,6 +15,15 @@ Local evidence shows:
 
 Evidence is under `evidence/2026-05-02/batch3_security_compliance/`.
 
+The scanner output now includes a redacted `remediation` block with:
+
+- affected runtime environment-file paths;
+- affected key names;
+- unique secret fingerprint count;
+- credential classes that must be rotated;
+- `git filter-repo` path arguments;
+- required closure actions.
+
 ## Use This Runbook When
 
 Use this when closing S3-09 for a shared repository or any remote that has received the old commits. This requires repository-owner approval because it rewrites Git history and requires credential rotation outside the source tree.
@@ -84,6 +93,10 @@ Use this when closing S3-09 for a shared repository or any remote that has recei
      --json-output evidence/<date>/batch3_security_compliance/S3-09_env_history_secret_scan.json
    ```
    - Expected result: 0 secret-like assignments for removed runtime `.env*` history.
+   - Confirm the JSON `remediation.status` is `PASS`.
+   - If findings remain, use the JSON `remediation.affected_paths`,
+     `remediation.rotation_classes`, and `remediation.filter_repo_args` fields
+     to update the purge and rotation checklist without exposing secret values.
    - Save the new proof under `evidence/<date>/batch3_security_compliance/`.
 
 ## Rollback

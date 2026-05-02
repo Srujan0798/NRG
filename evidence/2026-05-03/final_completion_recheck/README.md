@@ -28,6 +28,13 @@ Interpretation:
   affected credentials, move live secrets out of tracked files, and decide
   whether history rewrite or external auditor exception handling is required.
 
+Follow-up hardening:
+
+- `evidence/2026-05-03/s3_09_remediation_gate/README.md`
+- The scanner JSON now includes a redacted `remediation` block so operators can
+  see affected paths, rotation classes, filter-repo path arguments, and required
+  closure actions without exposing raw secret values.
+
 ## Related Generated Evidence
 
 The broader recheck also regenerated the tracked tier JSON files under

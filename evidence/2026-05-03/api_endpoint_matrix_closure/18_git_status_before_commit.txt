@@ -1,0 +1,44 @@
+$ git status --short --branch --untracked-files=all
+## main...nrg/main
+ M .claude/CURRENT_STATE.md
+ M docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md
+ M evidence/2026-05-02/session_report.md
+ M evidence/2026-05-03/00_current_state.md
+ M evidence/2026-05-03/final_completion_recheck/README.md
+ M scripts/scan_env_history_secrets.py
+ M tests/scripts/test_scan_env_history_secrets.py
+?? docs/specs/API_ENDPOINT_MATRIX.md
+?? evidence/2026-05-03/api_endpoint_matrix_closure/01_registered_route_inventory.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/02_py_compile.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/03_ruff.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/04_matrix_and_route_registration_pytest.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/05_corpus_sync.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/06_forbidden_vocab_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/07_git_diff_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/08_audit_chain_verify.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/09_combined_endpoint_s3_route_pytest.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/10_ruff_combined.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/11_final_targeted_pytest.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/12_final_ruff.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/13_final_corpus_sync.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/14_final_forbidden_vocab_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/15_final_git_diff_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/16_post_readme_forbidden_vocab_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/17_post_readme_git_diff_check.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/18_git_status_before_commit.txt
+?? evidence/2026-05-03/api_endpoint_matrix_closure/README.md
+?? evidence/2026-05-03/s3_09_remediation_gate/01_scan_env_history_tests.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/02_env_history_secret_scan_with_remediation.json
+?? evidence/2026-05-03/s3_09_remediation_gate/02_env_history_secret_scan_with_remediation.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/03_endpoint_matrix_and_s3_09_tests.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/04_py_compile.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/05_targeted_tests_final.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/06_git_diff_check.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/07_corpus_sync.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/08_forbidden_vocab_check.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/09_ruff_changed_files.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/10_git_diff_check_final.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/11_corpus_sync_final.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/12_forbidden_vocab_check_final.txt
+?? evidence/2026-05-03/s3_09_remediation_gate/README.md
+?? tests/api/test_api_endpoint_matrix.py

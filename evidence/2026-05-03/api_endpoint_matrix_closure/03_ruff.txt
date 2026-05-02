@@ -1,0 +1,2 @@
+$ .venv/bin/ruff check tests/api/test_api_endpoint_matrix.py
+All checks passed!

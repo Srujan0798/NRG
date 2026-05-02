@@ -15,7 +15,7 @@ Batch 1/2/3/5 evidence line and the early May 3 follow-up commits.
 | Orchestration/AI/RAG checks | PASS |
 | Data/schema checks | PARTIAL, with SQLite/PostgreSQL drift documented |
 | Infra checks | PARTIAL, with external deployment checks blocked |
-| Documentation cleanup | PARTIAL, normalized in the May 3 post-state replay |
+| Documentation cleanup | PARTIAL, normalized in the May 3 post-state replay; API endpoint matrix now added with a drift guard |
 
 ## Commit Line
 
@@ -35,6 +35,7 @@ Batch 1/2/3/5 evidence line and the early May 3 follow-up commits.
 - `evidence/2026-05-03/adr006_genesis_pin_hardening/README.md`
 - `evidence/2026-05-03/final_completion_recheck/README.md`
 - `evidence/2026-05-03/post_state_replay/README.md`
+- `evidence/2026-05-03/api_endpoint_matrix_closure/README.md`
 
 ## Follow-Up Boundaries
 
@@ -45,3 +46,6 @@ Batch 1/2/3/5 evidence line and the early May 3 follow-up commits.
    verification.
 3. Project memory remains canonical under `.claude/memory/`; no root `memory/`
    tree is accepted.
+4. The earlier H7-07 API endpoint matrix gap is now locally closed by
+   `docs/specs/API_ENDPOINT_MATRIX.md` and
+   `tests/api/test_api_endpoint_matrix.py`.
