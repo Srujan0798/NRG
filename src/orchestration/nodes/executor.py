@@ -67,6 +67,16 @@ class ExecutionResult:
     execution_time_ms: dict[str, float] = field(default_factory=_float_dict)
 
 
+def _close_cached_skill(skill: Any) -> None:
+    close = getattr(skill, "close", None)
+    if not callable(close):
+        return
+    try:
+        close()
+    except Exception:
+        logger.debug("Cached skill close failed during replacement", exc_info=True)
+
+
 def _get_sql_skill() -> TextToSQLSkill:
     """Get cached TextToSQLSkill instance (thread-safe, auto-invalidates on patch)."""
     global _sql_skill_instance, _sql_skill_class_id
@@ -75,6 +85,8 @@ def _get_sql_skill() -> TextToSQLSkill:
     if _sql_skill_instance is None or _sql_skill_class_id != current_id:
         with _lock:
             if _sql_skill_instance is None or _sql_skill_class_id != current_id:
+                if _sql_skill_instance is not None and _sql_skill_class_id != current_id:
+                    _close_cached_skill(_sql_skill_instance)
                 _sql_skill_instance = _TextToSQLSkill()
                 _sql_skill_class_id = current_id
     assert _sql_skill_instance is not None
@@ -89,6 +101,8 @@ def _get_rag_skill() -> RAGSkill:
     if _rag_skill_instance is None or _rag_skill_class_id != current_id:
         with _lock:
             if _rag_skill_instance is None or _rag_skill_class_id != current_id:
+                if _rag_skill_instance is not None and _rag_skill_class_id != current_id:
+                    _close_cached_skill(_rag_skill_instance)
                 instance = _RAGSkill()
                 _rag_skill_instance = instance
                 _rag_skill_class_id = current_id
@@ -110,7 +124,6 @@ def _execute_sql(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         "warnings": [],
     }
 
-    sql_skill = None
     try:
         sql_skill = _get_sql_skill()
         sql_response = sql_skill.execute(user_query, user_tier=user_tier)
@@ -134,9 +147,6 @@ def _execute_sql(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         warning = {"node": "executor", "skill": "text_to_sql", "error_type": type(exc).__name__, "message": str(exc)}
         cast(list[JSONDict], result["errors"]).append(warning)
         cast(list[JSONDict], result["warnings"]).append(warning)
-    finally:
-        if sql_skill is not None:
-            sql_skill.close()
 
     execution_time = (datetime.now() - start).total_seconds() * 1000
     return result, execution_time
@@ -153,7 +163,6 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         "retrieval_sources": [],
     }
 
-    rag_skill = None
     try:
         rag_skill = _get_rag_skill()
         rag_response = rag_skill.retrieve(user_query, user_tier=user_tier, top_k=5)
@@ -180,9 +189,6 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         warning = {"node": "executor", "skill": "rag", "error_type": type(exc).__name__, "message": str(exc)}
         cast(list[JSONDict], result["errors"]).append(warning)
         cast(list[JSONDict], result["warnings"]).append(warning)
-    finally:
-        if rag_skill is not None:
-            rag_skill.close()
 
     execution_time = (datetime.now() - start).total_seconds() * 1000
     return result, execution_time

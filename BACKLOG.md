@@ -80,7 +80,7 @@ the table below.
 | L1-CR-005 | P0 | `src/api/query_helpers.py` references `os.getenv` without importing `os`; modular `/query` publication fast path can 500. | Backend | ✅ VERIFIED CLOSED locally — module compiles and local DB override path test passes; `tests/security/test_p0_security_regressions.py` 6 passed |
 | L1-CR-006 | P0 | `src/api/main.py` and `src/api/query_helpers.py` duplicated fast paths have drifted, losing local bounded-query and citation/provenance behavior on router path. | Backend | OPEN — needs focused backend route/helper drift audit and extraction pass; not closed by security regression proof |
 | L1-CR-007 | P1 | Async `/query` handlers call synchronous workflow execution directly, risking event-loop stalls on cache misses. | Backend | UNKNOWN in this pass — keep for backend performance/refactor wave |
-| L1-CR-008 | P1 | `TextToSQLSkill` is cached as a singleton but closed after every SQL request, disposing the PostgreSQL engine and defeating pooling. | Backend | UNKNOWN in this pass — keep for SQL skill lifecycle audit |
+| L1-CR-008 | P1 | `TextToSQLSkill` is cached as a singleton but closed after every SQL request, disposing the PostgreSQL engine and defeating pooling. | Backend | ✅ VERIFIED CLOSED locally — executor keeps cached SQL/RAG skills warm across requests and closes only replaced cached instances; 23 executor/workflow tests passed |
 
 ---
 

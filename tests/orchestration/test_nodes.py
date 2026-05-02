@@ -138,7 +138,7 @@ class TestExecutorNode:
         })
         assert len(result["sql_results"]) > 0
         assert result["sql_query"] == "SELECT COUNT(*) FROM researchers"
-        mock_sql.close.assert_called_once()
+        mock_sql.close.assert_not_called()
 
     @patch("src.orchestration.nodes.executor.RAGSkill")
     @patch("src.orchestration.nodes.executor.TextToSQLSkill")
@@ -159,7 +159,7 @@ class TestExecutorNode:
             "plan": {},
         })
         assert len(result["retrieved_chunks"]) > 0
-        mock_rag.close.assert_called_once()
+        mock_rag.close.assert_not_called()
 
     @patch("src.orchestration.nodes.executor.RAGSkill")
     @patch("src.orchestration.nodes.executor.TextToSQLSkill")
@@ -177,7 +177,7 @@ class TestExecutorNode:
             "plan": {},
         })
         assert len(result["errors"]) > 0
-        mock_sql.close.assert_called_once()
+        mock_sql.close.assert_not_called()
 
     @patch("src.orchestration.nodes.executor.RAGSkill")
     @patch("src.orchestration.nodes.executor.TextToSQLSkill")
@@ -201,3 +201,5 @@ class TestExecutorNode:
         })
         assert len(result["sql_results"]) > 0
         assert len(result["retrieved_chunks"]) > 0
+        mock_sql.close.assert_not_called()
+        mock_rag.close.assert_not_called()
