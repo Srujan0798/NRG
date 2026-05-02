@@ -19,8 +19,7 @@
     "lighthouse:mobile": "node scripts/run_lighthouse.mjs mobile",
     "lighthouse:desktop": "node scripts/run_lighthouse.mjs desktop",
     "storybook:build": "storybook build -o ../dist/storybook",
-    "storybook:dev": "storybook dev -p 6006",
-    "loki:test": "loki test"
+    "storybook:dev": "storybook dev -p 6006"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.99.0",
@@ -46,18 +45,6 @@
     "terser": "^5.46.1",
     "zustand": "^5.0.12"
   },
-  "loki": {
-    "configurations": {
-      "chrome.desktop": {
-        "target": "chrome.app",
-        "width": 1366,
-        "height": 768,
-        "deviceScaleFactor": 1,
-        "mobile": false
-      }
-    },
-    "chromeSelector": "#storybook-root"
-  },
   "overrides": {
     "tar": "7.5.13"
   },
@@ -79,7 +66,6 @@
     "http-server": "^14.1.1",
     "jest": "^29.0.0",
     "jest-environment-jsdom": "^29.0.0",
-    "loki": "^0.35.1",
     "storybook": "^7.6.24",
     "ts-jest": "^29.0.0",
     "typescript": "^5.0.0",
