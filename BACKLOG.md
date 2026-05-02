@@ -582,13 +582,13 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | 3 | UAT session — T2 Ministry | ⏸️ Pending | 1hr session, 10 queries, liaison | `evidence/03_uat_t2.md` |
 | 4 | UAT session — T3 Industry | ⏸️ Pending | 1hr session, 10 queries, partner | `evidence/03_uat_t3.md` |
 | 5 | UAT results (UAT_RESULTS.md) | ⏸️ Pending | Fill during/after UAT sessions | `evidence/03_uat_*.md` |
-| 6 | C4 Quality Bar (SLO load test) | ⏸️ Pending | `locust --users 1000 --run-time 5m` on cluster | `evidence/02_load_report.md` |
+| 6 | C4 Quality Bar cluster replay | ⏸️ Pending external replay | Local quota-neutral 1000-user scorecard passed on 2026-05-02; replay the strict scorecard on the cluster with `KUBECONFIG` before making a deployed load claim | `evidence/02_load_report.md` |
 | 7 | PostgreSQL staging apply | ⏸️ Pending | `alembic upgrade head` + seed on live PG | `evidence/01_stage_up.json` |
 | 8 | Chain seal + C1/C2/C6 attestation | ⏸️ Pending | Run test suite on live egress | `evidence/05_chain_seal.json` |
 | 9 | Founder sign-off (8 GPG signatures) | ⏸️ Pending | Sign all handover docs | `signatures/*.asc` |
 | 10 | Git tag v1.0.0-eternal | ⏸️ Pending | After all 9 above complete | — |
 
-**Note**: Steps 1–9 require `kubectl` access to sovereign cluster. Step 10 (tag) requires Founder GPG key configured.
+**Note**: Steps 1–8 require deployed/staging or `kubectl` access to the sovereign cluster. Step 9 requires the Founder GPG key configured. The latest local external-gate preflight is `evidence/2026-05-02/final_external_gates_after_21d60b4/EXTERNAL_GATE_ATTEMPT_2026-05-02.md`.
 
 ---
 
