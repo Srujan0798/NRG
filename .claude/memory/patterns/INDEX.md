@@ -31,6 +31,7 @@ Permanent learnings from user feedback, architectural decisions, and operational
 |---------|--------|----------|
 | [analytical-answer-contract](analytical-answer-contract.md) | MiniMax | Analytical answers must expose metric contract, baseline, counts, confidence, caveat, and safe interpretation |
 | [audit-reliability-check](audit-reliability-check.md) | Founder | When two same-day self-audits disagree by ≥3 points, reconcile before any external session |
+| [frontend-dependency-gate](frontend-dependency-gate.md) | Dependency audit | High-severity npm audit gates need before/after audit JSON, dependency-tree proof, frontend build/test/lint/a11y evidence, and residual low/moderate risk tracking |
 | [fusion-claim-boundary](fusion-claim-boundary.md) | Founder | External fusion/accounting completion must never be presented as whole-product readiness without validation-matrix evidence |
 | [live-evidence-requirement](live-evidence-requirement.md) | Founder | Every Quality Bar PASS needs evidence against running stack with ≥50k seed rows |
 | [llm-pipeline-boundary](llm-pipeline-boundary.md) | MiniMax | LLM-heavy features must separate deterministic policy/calculation stages from model synthesis with schema parsing and traceability |

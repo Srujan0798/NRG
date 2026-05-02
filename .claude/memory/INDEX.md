@@ -7,7 +7,7 @@
 | Category | What | Count |
 |----------|------|-------|
 | [bugs/](bugs/INDEX.md) | Known bugs, root causes, permanent fixes | 9 |
-| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 27 |
+| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 28 |
 | [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 9 |
 | [projects/](projects/INDEX.md) | Multi-session project trackers | 2 |
 

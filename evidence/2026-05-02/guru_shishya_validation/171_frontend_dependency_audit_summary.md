@@ -12,6 +12,8 @@ Date: 2026-05-02
 - `186_frontend_jest_after_lint_cleanup.log`
 - `187_frontend_lint_after_lint_cleanup.log`
 - `188_frontend_contrast_after_lint_cleanup.log`
+- `189_frontend_npm_audit_high_final_after_lint_cleanup.json`
+- `190_frontend_dependency_tree_after_lint_cleanup.log`
 
 ## Before
 
@@ -60,6 +62,7 @@ Dependency count from the final audit metadata:
 - `npm test -- --runInBand`: passed, 99 tests
 - `npm run test:contrast`: passed, 20 tests
 - `npm run lint`: passed with 0 warnings after lint cleanup
+- `npm ls` for remediated dependency paths: passed; Storybook's `giget` path resolves `tar@7.5.13 overridden`, and TypeScript ESLint resolves v8.59.1
 
 ## Outdated Result
 

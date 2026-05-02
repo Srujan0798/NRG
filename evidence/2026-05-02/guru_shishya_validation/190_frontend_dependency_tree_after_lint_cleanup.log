@@ -1,0 +1,42 @@
+nrg-frontend@1.0.0 /Users/srujansai/Desktop/NRG/frontend
+├─┬ @storybook/addon-essentials@7.6.24
+│ └─┬ @storybook/core-common@7.6.24
+│   └─┬ glob@10.5.0
+│     └── minimatch@9.0.9
+├─┬ @storybook/react-vite@7.6.24
+│ └─┬ @joshwooding/vite-plugin-react-docgen-typescript@0.3.0
+│   └─┬ glob@7.2.3
+│     └── minimatch@3.1.5
+├─┬ @typescript-eslint/eslint-plugin@8.59.1
+│ └── @typescript-eslint/parser@8.59.1 deduped
+├─┬ @typescript-eslint/parser@8.59.1
+│ └─┬ @typescript-eslint/typescript-estree@8.59.1
+│   └── minimatch@10.2.5
+├─┬ eslint@8.57.1
+│ ├─┬ @eslint/eslintrc@2.1.4
+│ │ └── minimatch@3.1.5
+│ ├─┬ @humanwhocodes/config-array@0.13.0
+│ │ └── minimatch@3.1.5
+│ └── minimatch@3.1.5
+├─┬ jest-environment-jsdom@29.7.0
+│ └─┬ jsdom@20.0.3
+│   └─┬ http-proxy-agent@5.0.0
+│     └── @tootallnate/once@2.0.0
+├─┬ storybook@7.6.24
+│ └─┬ @storybook/cli@7.6.24
+│   ├─┬ @storybook/core-server@7.6.24
+│   │ └─┬ @storybook/builder-manager@7.6.24
+│   │   └─┬ ejs@3.1.10
+│   │     └─┬ jake@10.9.4
+│   │       └─┬ filelist@1.0.6
+│   │         └── minimatch@5.1.9
+│   ├─┬ giget@1.2.5
+│   │ └── tar@7.5.13 overridden
+│   └─┬ jscodeshift@0.15.2
+│     └─┬ node-dir@0.1.17
+│       └── minimatch@3.1.5
+└─┬ ts-jest@29.4.9
+  └─┬ @jest/transform@29.7.0
+    └─┬ babel-plugin-istanbul@6.1.1
+      └─┬ test-exclude@6.0.0
+        └── minimatch@3.1.5
