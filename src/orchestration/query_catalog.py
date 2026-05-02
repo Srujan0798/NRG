@@ -186,6 +186,8 @@ class SchemaCatalog:
 
         has_structured_terms = any(_contains_term(normalized, term) for term in STRUCTURED_TERMS)
         has_explanatory_terms = any(_contains_term(normalized, term) for term in EXPLANATORY_TERMS)
+        if _contains_term(normalized, "how many"):
+            has_explanatory_terms = False
         has_vague_ranking = any(_contains_term(normalized, term) for term in VAGUE_RANKING_TERMS)
 
         if has_vague_ranking and not matches and len(tokens) <= 5:
