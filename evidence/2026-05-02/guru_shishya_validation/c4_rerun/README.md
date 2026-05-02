@@ -79,6 +79,13 @@ This folder records the C4 follow-up after the Guru/Shishya validation matrix. I
 | `142_asgi_middleware_authcache_summary.md` | Summary of duplicate middleware removal, ASGI middleware conversion, verified-token cache, and current C4 status. |
 | `136_quality_bar_scorecard_60s_4workers_uvloop_httptools_locust4.json` | Negative multi-process Locust diagnostic: `locust_processes=4`, failure rate 99.53%, mostly HTTP 0. Not pass evidence. |
 | `144_multilocust_and_topology_followup.md` | Documents multi-process Locust tooling, failed local multi-process evidence, and local Docker/Colima topology blocker. |
+| `147_c4_prewarm_4workers_uvloop_httptools_isolated_rerun.json` | Isolated `uvloop`/`httptools` prewarm before the multi-process rerun: 312/312 requests succeeded, zero missing audit event IDs, 60 expected blocked adversarial requests. |
+| `149_quality_bar_scorecard_60s_4workers_uvloop_httptools_isolated_rerun.json` | Clean multi-process Locust rerun: 1000 users, 4 Locust workers, 72,084 samples, 0 failures, aggregate P99 1100 ms, C4 failed. |
+| `150_locust_report_60s_4workers_uvloop_httptools_isolated_rerun.html` | Locust HTML report for the isolated multi-process rerun. |
+| `151_isolated_multilocust_rerun_summary.md` | Interprets the isolated multi-process rerun and records the remaining adversarial tail: researcher P99 740 ms, government P99 770 ms, adversarial P99 2600 ms. |
+| `152_c4_prewarm_8workers_uvloop_httptools_isolated_rerun.json` | Negative 8-worker prewarm evidence: 159/624 requests succeeded, 465 connection/reset failures, and 465 missing audit event IDs. |
+| `160_final_verification_after_isolated_rerun.md` | Final verification summary after capturing the isolated rerun evidence: compile passed, targeted scorecard tests passed, corpus sync passed, forbidden vocabulary guard passed, cached diff check passed after trimming generated HTML whitespace, and port 8000 was cleaned up. |
+| `161_isolated_8worker_prewarm_rejection.md` | Interprets the failed isolated 8-worker prewarm and rejects that local topology as a C4 closure path. |
 
 ## Current C4 Status
 
@@ -91,6 +98,8 @@ The root-cause boundary moved:
 - Previous blocker: C4 run was polluted by JWT replay failures and weak metric parsing.
 - Current blocker: `/query` succeeds with zero failures but queues under 1000-user Locust load; local P99 remains above the 500 ms target. The latest warmed no-profile 4-worker 60-second diagnostic reports 45,559 samples, 0 failures, aggregate P99 2100 ms, researcher P99 2100 ms, government P99 2100 ms, and adversarial query P99 2400 ms.
 - Latest blocker update: pure ASGI middleware reduced the best stable local aggregate P99 to 970 ms with 47,233 samples and 0 failures, but this still misses the 500 ms C4 gate. The 8-worker topology created HTTP 0 failures and is not an improvement.
+- Latest isolated multi-process update: the `uvloop`/`httptools` rerun completed with 4 Locust workers, 72,084 samples, and 0 failures, but aggregate P99 was 1100 ms. Researcher and government P99 were below 800 ms; adversarial P99 remained 2600 ms.
+- Latest 8-worker update: the isolated 8-worker prewarm failed before scorecard execution, with 465 connection/reset failures out of 624 requests. Do not use 8 local API workers as the next C4 path on this machine.
 - Profile finding: sampled cache-hit route-handler work is low millisecond to sub-millisecond, while the full server request envelope and Locust client-observed timings are much larger under burst load. Combined profile evidence shows route-handler P99 1.589 ms, server `/query` envelope P99 538.303 ms, and client-observed aggregate P99 1000 ms in the same diagnostic window.
 - Warmed-read-model finding: declared prewarm removed cold-key setup from the test, but P99 still missed the 500 ms gate. The remaining problem is not only cold cache creation; request lifecycle, queueing, transport scheduling, worker concurrency, and audit-envelope behavior remain the likely boundary.
 - New guardrail: future C4 evidence must inspect workload-specific metrics and treat any 429 as request failure.
