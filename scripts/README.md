@@ -16,7 +16,7 @@ For per-script status, ownership, and cleanup decisions, see
 | Ingestion and vector index | Load documents, DB rows, embeddings, and Qdrant payloads | `ingest_qdrant.py`, `ingest_documents.py`, `build_qdrant_index.py` |
 | Audit and security | Investigate, rebuild, seal, replay, or check audit/security paths | `audit_investigate.py`, `audit_rebuild.py`, `red_team_live_replay.py` |
 | Performance and load | Run load tests, cold-query profiles, SLO reports | `load_test.py`, `slo_report.py` |
-| Deployment and operations | Deploy, backup, preflight, and external-gate verification | `deploy.py`, `deployment_gate.py`, `backup_nrg.sh`, `run_final_external_gates.py` |
+| Deployment and operations | Deploy, backup, preflight, image scan gates, and external-gate verification | `deploy.py`, `deployment_gate.py`, `runtime_image_scan_gate.py`, `backup_nrg.sh`, `run_final_external_gates.py` |
 | Subpackages | Larger script families that already have internal structure | `ingestion/`, `migration/`, `audit/`, `security/`, `strategy/`, `compliance/` |
 
 ## Cleanup Rules

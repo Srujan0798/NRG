@@ -31,7 +31,7 @@ move or deletion.
 | Seeding | `seed_release_data.py`, `seed_production_initial_dataset.py`, `seed_production_tables.py`, `seed_acceptance_data.py`, `seed_acceptance_users.py`, `seed_local_quality_fixtures.py` | Keep until a dedicated seed package replaces them |
 | Ingestion and vectors | `ingest_qdrant.py`, `ingest_documents.py`, `ingest_nrg_db.py`, `build_qdrant_index.py`, `repair_qdrant_payloads.py`, `init_qdrant.py` | Current RAG/vector data path |
 | Migration | `migrate_data_to_postgresql.py`, `migrate_sqlite_to_pg.py`, `verify_db_merge.py`, `verify_intake_bundle.py` | Keep pending migration package consolidation |
-| Deployment and backup | `deploy.py`, `deploy.sh`, `deployment_gate.py`, `backup_nrg.sh`, `backup_db.sh` | `deploy.sh` and `backup_db.sh` are compatibility wrappers |
+| Deployment and backup | `deploy.py`, `deploy.sh`, `deployment_gate.py`, `runtime_image_scan_gate.py`, `backup_nrg.sh`, `backup_db.sh` | `runtime_image_scan_gate.py` validates captured runtime-image scan artifacts; `deploy.sh` and `backup_db.sh` are compatibility wrappers |
 | Performance and cost | `load_test.py`, `load_test_100users.py`, `run_load_test.py`, `slo_report.py`, `llm_cost_report.py` | Keep until C4/performance gates are consolidated |
 | Acceptance and evidence | `run_acceptance_verification.py`, `run_critical_path.sh`, `run_critical_path_final.sh`, `capture_killer_query_evidence.py`, `uat_run_session.py`, `build_before_after_gallery.mjs` | Current acceptance and evidence helpers |
 | JWT and security utilities | `generate_jwt_keys.sh`, `issue_test_jwt.py`, `rotate_jwt_secret.py`, `check_jwt_secret_config.py` | Keep; secret values must never be printed |

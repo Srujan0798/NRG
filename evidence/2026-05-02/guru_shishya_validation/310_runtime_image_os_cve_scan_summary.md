@@ -15,6 +15,7 @@ Docker images.
 | API runtime before OS hardening | FAIL | `289_api_runtime_image_trivy_scan_after_dependency_audit_fix.json`, `290_api_runtime_image_trivy_scan_after_dependency_audit_fix_summary.log` |
 | API runtime after OS hardening, strict Trivy | PARTIAL | `291_api_runtime_image_build_after_multistage_os_hardening.log`, `294_api_runtime_image_smoke_after_multistage_os_hardening.log`, `299_api_runtime_image_trivy_scan_after_multistage_os_hardening.json`, `300_api_runtime_image_trivy_scan_after_multistage_os_hardening_summary.log` |
 | API runtime after OS hardening, fixable-only Trivy | PASS | `301_api_runtime_image_trivy_scan_after_multistage_os_hardening_ignore_unfixed.json`, `302_api_runtime_image_trivy_scan_after_multistage_os_hardening_ignore_unfixed_summary.log` |
+| Runtime image scan claim gate | PASS with API strict boundary | `scripts/runtime_image_scan_gate.py`, `317_runtime_image_scan_gate_summary.md` |
 
 ## Changes Made
 
@@ -55,3 +56,15 @@ fixed version. Treat the API strict OS scan as PARTIAL until an upstream base
 image or approved alternate runtime base removes those no-fix findings. Deployed
 image scans remain external and must be rerun against the registry/deployment
 artifacts.
+
+## Reproducible Gate Command
+
+```bash
+python3 scripts/runtime_image_scan_gate.py \
+  --frontend-trivy evidence/2026-05-02/guru_shishya_validation/287_frontend_runtime_image_trivy_scan_after_apk_upgrade.json \
+  --nginx-trivy evidence/2026-05-02/guru_shishya_validation/308_nginx_runtime_image_trivy_scan_after_os_base_update.json \
+  --api-pip-audit evidence/2026-05-02/guru_shishya_validation/295_api_runtime_image_pip_audit_after_multistage_os_hardening.json \
+  --api-trivy-strict evidence/2026-05-02/guru_shishya_validation/299_api_runtime_image_trivy_scan_after_multistage_os_hardening.json \
+  --api-trivy-fixable evidence/2026-05-02/guru_shishya_validation/301_api_runtime_image_trivy_scan_after_multistage_os_hardening_ignore_unfixed.json \
+  --summary-out evidence/2026-05-02/guru_shishya_validation/317_runtime_image_scan_gate_summary.md
+```

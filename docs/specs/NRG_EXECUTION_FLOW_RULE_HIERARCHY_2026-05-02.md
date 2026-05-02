@@ -277,6 +277,8 @@ follow this order:
    - Frontend and reverse-proxy local runtime OS scans now pass with Trivy.
    - API runtime Python package audit and fixable-only Trivy scan pass, but
      strict Trivy still has no-fix Debian base findings.
+   - Re-run `scripts/runtime_image_scan_gate.py` against current scan artifacts
+     before updating any dependency/image claim.
    - Resolve the API no-fix base-image boundary when an upstream patched base or
      approved alternate runtime base is available.
    - Scan deployed images, not only local image builds.
