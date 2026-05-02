@@ -4,6 +4,7 @@ from pathlib import Path
 
 from scripts.check_pydantic_migration_guard import (
     find_direct_v1_imports,
+    main,
     validate_ci_python_guard,
 )
 
@@ -65,3 +66,42 @@ def test_direct_pydantic_v1_import_inventory_ignores_docs_and_reports_code(tmp_p
     imports = find_direct_v1_imports(tmp_path)
 
     assert imports == [Path("src/bad.py")]
+
+
+def test_main_requires_migration_plan_document(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github" / "workflows" / "ci.yml"
+    workflow.parent.mkdir(parents=True)
+    workflow.write_text(
+        """
+jobs:
+  unit:
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+  python-314-compat:
+    continue-on-error: true
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+""",
+        encoding="utf-8",
+    )
+
+    args = [
+        "--repo-root",
+        str(tmp_path),
+        "--workflow",
+        ".github/workflows/ci.yml",
+        "--migration-doc",
+        "docs/engineering/PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md",
+        "--json",
+    ]
+    assert main(args) == 1
+
+    migration_doc = tmp_path / "docs" / "engineering" / "PYDANTIC_V2_MIGRATION_PLAN_2026-04-28.md"
+    migration_doc.parent.mkdir(parents=True)
+    migration_doc.write_text("# Migration Plan\n", encoding="utf-8")
+
+    assert main(args) == 0
