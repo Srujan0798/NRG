@@ -148,3 +148,44 @@ def test_hybrid_fallback_keeps_three_sources_and_deduplicates_repeated_context(m
     assert "[cite:DOC-FUNDING-3:ch_2]" in text
     assert text.count("Shared mission-mode funding pattern supports translation") == 1
     assert result["provenance"]["hybrid_evidence"] == {"sql_rows": 3, "document_chunks": 3}
+
+
+def test_hybrid_fallback_keeps_same_publication_distinct_chunk_citations(monkeypatch):
+    monkeypatch.delenv("CLOUD_SYNTHESIS_ALLOWED", raising=False)
+    monkeypatch.setattr(synthesizer_module, "get_local_llm_client", lambda: None)
+    monkeypatch.setattr(synthesizer_module, "log_llm_call", lambda *args, **kwargs: None)
+
+    result = synthesizer_module.synthesizer_node(
+        {
+            "user_query": "Synthesize repeated policy chunks",
+            "sql_results": [{"gov_organisation_name": "MeitY", "total_grant": 47338100000}],
+            "retrieved_chunks": [
+                {
+                    "publication_id": "DOC-FUNDING-1",
+                    "chunk_id": "ch_0",
+                    "title": "Funding policy",
+                    "content": "Shared mission-mode funding pattern supports translation.",
+                },
+                {
+                    "publication_id": "DOC-FUNDING-1",
+                    "chunk_id": "ch_1",
+                    "title": "Funding policy",
+                    "content": "Shared mission-mode funding pattern supports translation.",
+                },
+            ],
+            "user_tier": 2,
+            "conversation_history": [],
+            "intent": "hybrid",
+            "routing_decision": "text_to_sql+rag",
+        }
+    )
+
+    text = result["synthesized_response"]
+    assert text.count("Shared mission-mode funding pattern supports translation") == 1
+    assert "[cite:DOC-FUNDING-1:ch_0]" in text
+    assert "[cite:DOC-FUNDING-1:ch_1]" in text
+    assert result["citations"] == [
+        {"id": "structured:0", "pub_id": "structured", "chunk_id": "0"},
+        {"id": "DOC-FUNDING-1:ch_0", "pub_id": "DOC-FUNDING-1", "chunk_id": "ch_0"},
+        {"id": "DOC-FUNDING-1:ch_1", "pub_id": "DOC-FUNDING-1", "chunk_id": "ch_1"},
+    ]

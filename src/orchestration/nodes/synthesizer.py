@@ -1215,17 +1215,21 @@ def _dedupe_document_contexts(
             grouped[normalized] = {
                 "context": context,
                 "citations": [],
-                "citation_pub_ids": set(),
+                "citation_ids": set(),
             }
             ordered_keys.append(normalized)
 
         original_chunk = original_chunks[idx] if idx < len(original_chunks) else safe_chunk
         citation = _citation_for_chunk(original_chunk, idx)
         citation_match = CITATION_PATTERN.fullmatch(citation)
-        citation_key = citation_match.group(1) if citation_match else citation
-        if citation_key not in grouped[normalized]["citation_pub_ids"]:
+        citation_key = (
+            f"{citation_match.group(1)}:{citation_match.group(2)}"
+            if citation_match
+            else citation
+        )
+        if citation_key not in grouped[normalized]["citation_ids"]:
             grouped[normalized]["citations"].append(citation)
-            grouped[normalized]["citation_pub_ids"].add(citation_key)
+            grouped[normalized]["citation_ids"].add(citation_key)
 
     return [
         {

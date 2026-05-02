@@ -1,0 +1,13 @@
+Rev: d4_data_constraints_indexes_001 (head)
+Parent: add_tech_trl_stages_view_002
+Path: /Users/srujansai/Desktop/NRG/src/migrations/versions/d4_data_constraints_indexes_001.py
+
+    Batch 4 data constraints, FK repairs, and hot-path indexes.
+
+    Revision ID: d4_data_constraints_indexes_001
+    Revises: add_tech_trl_stages_view_002
+    Create Date: 2026-05-02
+
+    This revision is intentionally forward-only and idempotent. It repairs live
+    PostgreSQL drift observed in the local May 2 Batch 4 audit without rewriting
+    large populated tables.
