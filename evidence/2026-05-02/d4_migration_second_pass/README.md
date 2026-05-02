@@ -18,7 +18,7 @@ This pass tightened the D4 Alembic migration after review:
 | Evidence | Result |
 | --- | --- |
 | `01_py_compile.log` | PASS |
-| `02_targeted_tests.log` | PASS: 29 tests passed |
+| `02_targeted_tests.log` | PASS: 31 tests passed |
 | `03_ruff.log` | PASS |
 | `04_alembic_heads_verbose.log` | PASS: D4 is the sole `src/migrations` head |
 | `05_git_diff_check.log` | PASS |
