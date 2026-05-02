@@ -37,7 +37,7 @@ Initial guard output:
 |---|---:|---|
 | Pydantic/Python migration guard | PASS, `ok: true` | `01_pydantic_guard.json` |
 | Migration guard regression tests | PASS, 4 tests | `02_pydantic_guard_tests.txt` |
-| Python compile | PASS | `03_py_compile.txt` |
+| Python compile | PASS, no stderr/stdout | `03_py_compile.txt` |
 | Ruff changed files | PASS | `04_ruff.txt` |
 | Git diff whitespace guard | PASS | `05_git_diff_check.txt` |
 | Corpus sync | PASS, `"ok": true` | `06_corpus_sync.txt` |

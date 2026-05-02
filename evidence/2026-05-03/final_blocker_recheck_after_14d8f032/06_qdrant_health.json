@@ -1,0 +1,1 @@
+{"ready":true,"host":"qdrant","port":6333,"collection":"nrg_research_dev","collection_exists":false,"collections":["nrg_research"]}

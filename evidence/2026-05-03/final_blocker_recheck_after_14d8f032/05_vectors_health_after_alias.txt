@@ -1,0 +1,2 @@
+{"collection_name":"nrg_research_dev","vector_count":1800,"indexed_vectors_count":0,"index_built":true,"indexing_threshold":20000,"dimension":1024,"distance_metric":"COSINE","index_status":"green","last_ingestion_time":null}
+http_status=200

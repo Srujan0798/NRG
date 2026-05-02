@@ -1,0 +1,54 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 554B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile.api
+#2 transferring dockerfile:
+#2 transferring dockerfile: 3.29kB 0.2s done
+#2 DONE 0.5s
+
+#3 [internal] load metadata for docker.io/library/python:3.11-slim
+#3 ...
+
+#4 [auth] library/python:pull token for registry-1.docker.io
+#4 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.11-slim
+#3 DONE 3.0s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 457B 0.1s done
+#5 DONE 0.2s
+
+#6 [builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#6 ...
+
+#7 [internal] load build context
+#7 DONE 0.0s
+
+#6 [builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#6 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#6 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2 0.2s done
+#6 DONE 0.3s
+
+#7 [internal] load build context
+#7 transferring context: 8.63MB 1.1s done
+#7 DONE 1.2s
+
+#8 [builder  4/12] RUN python -m venv /app/venv
+#8 CACHED
+
+#9 [builder  2/12] WORKDIR /app
+#9 CACHED
+
+#10 [builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#10 CACHED
+
+#11 [builder  5/12] RUN pip install --upgrade "pip>=26.0" wheel setuptools
+#11 CACHED
+
+#12 [builder  6/12] COPY pyproject.toml .
+#12 DONE 0.4s
+
+#13 [builder  7/12] RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+#13 7.462 Looking in indexes: https://download.pytorch.org/whl/cpu

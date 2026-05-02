@@ -1,0 +1,2 @@
+{"detail":"Vector health check failed: Unexpected Response: 404 (Not Found)\nRaw response content:\nb'{\"status\":{\"error\":\"Not found: Collection `nrg_research_dev` doesn\\'t exist!\"},\"time\":0.000313708}'"}
+http_status=503
