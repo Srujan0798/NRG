@@ -1,0 +1,261 @@
+{
+  "hot_path_query_timings": {
+    "audit_events_recent": {
+      "elapsed_ms": 13.073,
+      "result": 807,
+      "status": "PASS"
+    },
+    "publications_year": {
+      "elapsed_ms": 25.216,
+      "result": 10000,
+      "status": "PASS"
+    },
+    "researchers_area": {
+      "elapsed_ms": 131.474,
+      "result": 0,
+      "status": "PASS"
+    },
+    "researchers_state": {
+      "elapsed_ms": 4.183,
+      "result": 0,
+      "status": "PASS"
+    }
+  },
+  "indexes": {
+    "audit_events": [
+      {
+        "definition": "CREATE UNIQUE INDEX audit_events_pkey ON public.audit_events USING btree (event_id)",
+        "name": "audit_events_pkey"
+      },
+      {
+        "definition": "CREATE INDEX idx_audit_events_created_at_brin ON public.audit_events USING brin (created_at)",
+        "name": "idx_audit_events_created_at_brin"
+      },
+      {
+        "definition": "CREATE INDEX idx_audit_events_event_type_created_at ON public.audit_events USING btree (event_type, created_at)",
+        "name": "idx_audit_events_event_type_created_at"
+      }
+    ],
+    "collaborations": [
+      {
+        "definition": "CREATE UNIQUE INDEX collaborations_pkey ON public.collaborations USING btree (collaboration_id)",
+        "name": "collaborations_pkey"
+      },
+      {
+        "definition": "CREATE INDEX idx_collaborations_country ON public.collaborations USING btree (partner_country)",
+        "name": "idx_collaborations_country"
+      },
+      {
+        "definition": "CREATE INDEX idx_collaborations_partner ON public.collaborations USING btree (partner_institution)",
+        "name": "idx_collaborations_partner"
+      },
+      {
+        "definition": "CREATE INDEX idx_collaborations_status ON public.collaborations USING btree (status)",
+        "name": "idx_collaborations_status"
+      },
+      {
+        "definition": "CREATE INDEX idx_collaborations_tier ON public.collaborations USING btree (access_tier)",
+        "name": "idx_collaborations_tier"
+      },
+      {
+        "definition": "CREATE INDEX idx_collaborations_type ON public.collaborations USING btree (collaboration_type)",
+        "name": "idx_collaborations_type"
+      }
+    ],
+    "funding_records": [
+      {
+        "definition": "CREATE UNIQUE INDEX funding_records_pkey ON public.funding_records USING btree (funding_id)",
+        "name": "funding_records_pkey"
+      },
+      {
+        "definition": "CREATE INDEX idx_funding_amount ON public.funding_records USING btree (amount)",
+        "name": "idx_funding_amount"
+      },
+      {
+        "definition": "CREATE INDEX idx_funding_fiscal_year ON public.funding_records USING btree (fiscal_year)",
+        "name": "idx_funding_fiscal_year"
+      },
+      {
+        "definition": "CREATE INDEX idx_funding_project ON public.funding_records USING btree (project_id)",
+        "name": "idx_funding_project"
+      },
+      {
+        "definition": "CREATE INDEX idx_funding_tier ON public.funding_records USING btree (access_tier)",
+        "name": "idx_funding_tier"
+      }
+    ],
+    "labs": [
+      {
+        "definition": "CREATE INDEX idx_labs_institution ON public.labs USING btree (institution_id)",
+        "name": "idx_labs_institution"
+      },
+      {
+        "definition": "CREATE INDEX idx_labs_research_area ON public.labs USING btree (research_area)",
+        "name": "idx_labs_research_area"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX labs_pkey ON public.labs USING btree (lab_id)",
+        "name": "labs_pkey"
+      }
+    ],
+    "patents": [
+      {
+        "definition": "CREATE INDEX idx_patents_research_area ON public.patents USING btree (research_area)",
+        "name": "idx_patents_research_area"
+      },
+      {
+        "definition": "CREATE INDEX idx_patents_status ON public.patents USING btree (status)",
+        "name": "idx_patents_status"
+      },
+      {
+        "definition": "CREATE INDEX idx_patents_tier ON public.patents USING btree (access_tier)",
+        "name": "idx_patents_tier"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX patents_pkey ON public.patents USING btree (patent_id)",
+        "name": "patents_pkey"
+      }
+    ],
+    "projects": [
+      {
+        "definition": "CREATE INDEX idx_projects_agency ON public.projects USING btree (funding_agency)",
+        "name": "idx_projects_agency"
+      },
+      {
+        "definition": "CREATE INDEX idx_projects_pi ON public.projects USING btree (principal_investigator_id)",
+        "name": "idx_projects_pi"
+      },
+      {
+        "definition": "CREATE INDEX idx_projects_research_area ON public.projects USING btree (research_area)",
+        "name": "idx_projects_research_area"
+      },
+      {
+        "definition": "CREATE INDEX idx_projects_status ON public.projects USING btree (status)",
+        "name": "idx_projects_status"
+      },
+      {
+        "definition": "CREATE INDEX idx_projects_tier ON public.projects USING btree (access_tier)",
+        "name": "idx_projects_tier"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX projects_pkey ON public.projects USING btree (project_id)",
+        "name": "projects_pkey"
+      }
+    ],
+    "publications": [
+      {
+        "definition": "CREATE INDEX idx_publications_citations ON public.publications USING btree (citations)",
+        "name": "idx_publications_citations"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_doi ON public.publications USING btree (doi)",
+        "name": "idx_publications_doi"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_research_area ON public.publications USING btree (research_area)",
+        "name": "idx_publications_research_area"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_tier ON public.publications USING btree (access_tier)",
+        "name": "idx_publications_tier"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_venue ON public.publications USING btree (venue)",
+        "name": "idx_publications_venue"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_year ON public.publications USING btree (year)",
+        "name": "idx_publications_year"
+      },
+      {
+        "definition": "CREATE INDEX idx_publications_year_venue ON public.publications USING btree (year, venue)",
+        "name": "idx_publications_year_venue"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX publications_pkey ON public.publications USING btree (publication_id)",
+        "name": "publications_pkey"
+      }
+    ],
+    "research_documents": [
+      {
+        "definition": "CREATE INDEX idx_research_docs_category ON public.research_documents USING btree (category)",
+        "name": "idx_research_docs_category"
+      },
+      {
+        "definition": "CREATE INDEX idx_research_docs_tier ON public.research_documents USING btree (access_tier)",
+        "name": "idx_research_docs_tier"
+      },
+      {
+        "definition": "CREATE INDEX idx_research_docs_year ON public.research_documents USING btree (publication_year)",
+        "name": "idx_research_docs_year"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX research_documents_pkey ON public.research_documents USING btree (document_id)",
+        "name": "research_documents_pkey"
+      }
+    ],
+    "researchers": [
+      {
+        "definition": "CREATE INDEX idx_researchers_department ON public.researchers USING btree (department)",
+        "name": "idx_researchers_department"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_h_index ON public.researchers USING btree (h_index)",
+        "name": "idx_researchers_h_index"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_institution ON public.researchers USING btree (institution_id)",
+        "name": "idx_researchers_institution"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_institution_state ON public.researchers USING btree (institution_id, state)",
+        "name": "idx_researchers_institution_state"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_research_area ON public.researchers USING btree (research_area)",
+        "name": "idx_researchers_research_area"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_research_area_year ON public.researchers USING btree (research_area, year_joined)",
+        "name": "idx_researchers_research_area_year"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_state ON public.researchers USING btree (state)",
+        "name": "idx_researchers_state"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_tier ON public.researchers USING btree (access_tier)",
+        "name": "idx_researchers_tier"
+      },
+      {
+        "definition": "CREATE INDEX idx_researchers_year ON public.researchers USING btree (year_joined)",
+        "name": "idx_researchers_year"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX researchers_email_key ON public.researchers USING btree (email)",
+        "name": "researchers_email_key"
+      },
+      {
+        "definition": "CREATE UNIQUE INDEX researchers_pkey ON public.researchers USING btree (researcher_id)",
+        "name": "researchers_pkey"
+      }
+    ]
+  },
+  "summary": {
+    "audit_events_partitioned": false,
+    "hot_path_timing_max_ms": 131.474,
+    "hot_path_timing_under_200ms": true,
+    "query_logs_exists": false
+  },
+  "time_series": {
+    "audit_events": {
+      "child_partition_count": 0,
+      "exists": true,
+      "partitioned": false
+    },
+    "query_logs": {
+      "exists": false,
+      "partitioned": false
+    }
+  }
+}

@@ -1,0 +1,1 @@
+4a7380fb fix: close qdrant health alias and batch4 evidence

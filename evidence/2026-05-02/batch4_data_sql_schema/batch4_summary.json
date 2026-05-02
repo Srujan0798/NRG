@@ -1,0 +1,46 @@
+{
+  "contact_constraints": {
+    "existing_invalid_email_rows": 0,
+    "existing_invalid_phone_rows": 0,
+    "invalid_email_rejected": true,
+    "invalid_phone_rejected": true,
+    "valid_contact_accepted_then_rolled_back": true
+  },
+  "database": "postgresql://nrg:***@localhost:5432/nrg",
+  "dhairya_replay": {
+    "failed": 0,
+    "passed": 17,
+    "total": 17
+  },
+  "foreign_keys": {
+    "failing_relationships": 2,
+    "missing_constraints_on_clean_relationships": 0,
+    "relationships_checked": 9
+  },
+  "generated_at": "2026-05-02T20:13:58.635956+00:00",
+  "migration_audit": {
+    "heads": [],
+    "migration_count": 12,
+    "risky_upgrade_count": 11,
+    "single_head": false
+  },
+  "partition_and_indexes": {
+    "audit_events_partitioned": false,
+    "hot_path_timing_max_ms": 131.474,
+    "hot_path_timing_under_200ms": true,
+    "query_logs_exists": false
+  },
+  "schema_sync": {
+    "extra_tables": 17,
+    "has_drift": true,
+    "missing_column_tables": 0,
+    "missing_tables": 0,
+    "type_mismatches": 92
+  },
+  "table_profiles": {
+    "db_struct_table_count": 58,
+    "live_table_count": 75,
+    "nonzero_table_count": 21,
+    "zero_row_table_count": 54
+  }
+}

@@ -1,0 +1,9 @@
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-05_fk_orphans.json
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-05_fk_orphans.md
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.json
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.md
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-11_migration_audit.json
+?? evidence/2026-05-02/batch4_data_sql_schema/D4-11_migration_audit.md
+?? evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.json
+?? evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.md
+?? evidence/2026-05-03/s3_09_local_history_purge/

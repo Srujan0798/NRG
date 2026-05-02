@@ -1,0 +1,90 @@
+{
+  "relationships": [
+    {
+      "child_column": "institution_id",
+      "child_table": "researchers",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "institution_id",
+      "parent_table": "institutions",
+      "status": "PASS"
+    },
+    {
+      "child_column": "researcher_id",
+      "child_table": "funding_records",
+      "constraint_present": false,
+      "error": "(psycopg2.errors.UndefinedFunction) operator does not exist: character varying = uuid\nLINE 5:                   ON child_rows.\"researcher_id\" = parent_row...\n                                                        ^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n\n[SQL: \n                SELECT COUNT(*)\n                FROM \"funding_records\" child_rows\n                LEFT JOIN \"researchers\" parent_rows\n                  ON child_rows.\"researcher_id\" = parent_rows.\"researcher_id\"\n                WHERE child_rows.\"researcher_id\" IS NOT NULL\n                  AND parent_rows.\"researcher_id\" IS NULL\n                ]\n(Background on this error at: https://sqlalche.me/e/20/f405)",
+      "parent_column": "researcher_id",
+      "parent_table": "researchers",
+      "status": "FAIL"
+    },
+    {
+      "child_column": "institution_id",
+      "child_table": "funding_records",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "institution_id",
+      "parent_table": "institutions",
+      "status": "PASS"
+    },
+    {
+      "child_column": "project_id",
+      "child_table": "funding_records",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "project_id",
+      "parent_table": "projects",
+      "status": "PASS"
+    },
+    {
+      "child_column": "principal_investigator_id",
+      "child_table": "projects",
+      "constraint_present": false,
+      "error": "(psycopg2.errors.UndefinedFunction) operator does not exist: character varying = uuid\nLINE 5: ...        ON child_rows.\"principal_investigator_id\" = parent_r...\n                                                             ^\nHINT:  No operator matches the given name and argument types. You might need to add explicit type casts.\n\n[SQL: \n                SELECT COUNT(*)\n                FROM \"projects\" child_rows\n                LEFT JOIN \"researchers\" parent_rows\n                  ON child_rows.\"principal_investigator_id\" = parent_rows.\"researcher_id\"\n                WHERE child_rows.\"principal_investigator_id\" IS NOT NULL\n                  AND parent_rows.\"researcher_id\" IS NULL\n                ]\n(Background on this error at: https://sqlalche.me/e/20/f405)",
+      "parent_column": "researcher_id",
+      "parent_table": "researchers",
+      "status": "FAIL"
+    },
+    {
+      "child_column": "researcher_id",
+      "child_table": "researcher_publications",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "researcher_id",
+      "parent_table": "researchers",
+      "status": "PASS"
+    },
+    {
+      "child_column": "publication_id",
+      "child_table": "researcher_publications",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "publication_id",
+      "parent_table": "publications",
+      "status": "PASS"
+    },
+    {
+      "child_column": "publication_id",
+      "child_table": "publication_keywords",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "publication_id",
+      "parent_table": "publications",
+      "status": "PASS"
+    },
+    {
+      "child_column": "institution_id",
+      "child_table": "labs",
+      "constraint_present": true,
+      "orphan_count": 0,
+      "parent_column": "institution_id",
+      "parent_table": "institutions",
+      "status": "PASS"
+    }
+  ],
+  "summary": {
+    "failing_relationships": 2,
+    "missing_constraints_on_clean_relationships": 0,
+    "relationships_checked": 9
+  }
+}

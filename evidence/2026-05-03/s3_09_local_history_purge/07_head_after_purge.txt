@@ -1,0 +1,1 @@
+316c43a fix: close qdrant health alias and batch4 evidence

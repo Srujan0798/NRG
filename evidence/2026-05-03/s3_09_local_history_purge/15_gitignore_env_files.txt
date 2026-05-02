@@ -1,0 +1,6 @@
+.gitignore:11:.env	.env
+.gitignore:12:.env.dev	.env.dev
+.gitignore:96:.env.local	.env.local
+.gitignore:13:.env.prod	.env.prod
+.gitignore:14:.env.staging	.env.staging
+.gitignore:16:.jwt_secret	.jwt_secret
