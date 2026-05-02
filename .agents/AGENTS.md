@@ -33,7 +33,7 @@
 | C1 | DPDP Indian PII detection | `tests/security/test_pii_indian.py` | ✅ |
 | C2 | Per-user audit binding | `tests/security/test_per_user_audit_binding.py` | ✅ |
 | C3 | Multi-hop DAG planner | `tests/orchestration/test_multi_hop_planner.py` | ✅ |
-| C4 | P99 <500ms @ 1000 concurrent | `tests/load/test_slo_under_load.py` | ⏳ pending |
+| C4 | P99 <500ms @ 1000 concurrent | `scripts/quality_bar_scorecard.py` with `tests/load/locustfile_c4.py` | ✅ local quota-neutral / cluster pending |
 | C5 | Vector drift auto-retrain | `scripts/vector_drift_check.py` | ✅ |
 | C6 | Schema egress allowlist | `tests/security/test_egress_allowlist.py` | ✅ |
 
@@ -41,7 +41,7 @@ Full constraint spec: `.claude/quality-bar.md`
 
 ---
 
-## Your Skills Arsenal (46 in .agents/skills/ + 83 in .claude/skills/)
+## Your Skills Arsenal (51 in .agents/skills/ + 86 in .claude/skills/)
 
 ### .agents/skills/ — Execution Skills
 | Category | Skills |

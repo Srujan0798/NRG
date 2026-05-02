@@ -18,36 +18,39 @@ C4 asks one focused question:
 > Can the running NRG query path handle at least 1000 concurrent users with
 > zero request failures and P99 latency below 500 ms?
 
-Current answer: **No. C4 is FAIL.**
+Current local quota-neutral answer: **PASS**.
 
-Fresh May 2 evidence fixed the runner/auth measurement defects. Later C4
-diagnostics added combined request-envelope profiling and a declared
-prewarm/no-profile run. The latest usable 1000-user local run still reports:
+Fresh May 2 evidence fixed the runner/auth measurement defects, made HTTP 429 a
+load failure, exposed per-workload `/query` metrics, and moved request-path
+audit appends onto a bounded dedicated executor while preserving the synchronous
+audit-chain contract. The latest strict 1000-user local quota-neutral run
+reports:
 
-| Metric | Current Evidence | Required |
+| Metric | Current Local Quota-Neutral Evidence | Required |
 | --- | ---: | ---: |
-| Total samples | 45,559 | measured, non-zero |
+| Total samples | 82,365 | measured, non-zero |
 | Failures | 0 | 0 |
-| Aggregate P99 | 2100 ms | < 500 ms |
-| Researcher P99 | 2100 ms | < 500 ms |
-| Government P99 | 2100 ms | < 500 ms |
-| Adversarial P99 | 2400 ms | < 500 ms |
+| Aggregate P99 | 79 ms | < 500 ms |
+| Researcher P99 | 64 ms | < 500 ms |
+| Government P99 | 80 ms | < 500 ms |
+| Adversarial P99 | 170 ms | < 500 ms |
 
 Evidence:
-`evidence/2026-05-02/guru_shishya_validation/c4_rerun/93_declared_prewarm_no_profile_summary.md`
+`evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`
+and
+`evidence/2026-05-02/guru_shishya_validation/c4_rerun/167_bounded_audit_executor_c4_pass_summary.md`.
 
-The clearest diagnostic split is:
+Boundary: this run used `NRG_QUOTA_DISABLED=1`, 4 uvicorn workers, 4 Locust
+processes, 1000 users, 100/s spawn rate, and 60s runtime. It proves local
+capacity for the current checkout. It does **not** prove quota-policy behavior
+or deployed/cluster C4 until those modes are replayed with the same strict
+scorecard.
 
-- sampled route-handler P99: 1.589 ms
-- server `/query` envelope P99: 538.303 ms
-- Locust client-observed aggregate P99: 1000 ms in the profiled run
-- declared prewarm/no-profile aggregate P99: 2100 ms
-
-Evidence:
+Superseded diagnostics remain useful for root-cause history, but they are not
+the current status. The key historical files are
 `evidence/2026-05-02/guru_shishya_validation/c4_rerun/86_combined_query_envelope_profile_summary.md`
-
-So the project is **on track in process** because the measurement is now honest,
-strict, and repeatable. The project is **not certified** because C4 still fails.
+and
+`evidence/2026-05-02/guru_shishya_validation/c4_rerun/93_declared_prewarm_no_profile_summary.md`.
 
 ## Current Track Verdict
 
@@ -55,11 +58,11 @@ strict, and repeatable. The project is **not certified** because C4 still fails.
 | --- | --- | --- |
 | Rule hierarchy | PASS | The repo has a clear canonical order; this document makes it explicit. |
 | Repo-contained skills | PASS | NRG uses `.claude/skills` and `.agents/skills`, not user-home skill caches. |
-| Local product proof | PARTIAL | Many backend, frontend, tier, audit, and accessibility gates passed locally. |
-| C4 SLO | FAIL | 1000-user P99 is above 500 ms. |
-| Full Python suite | FAIL | Latest broad single command is not green. |
-| Dependency audit | FAIL | High-severity frontend dependency findings remain open. |
-| External production gates | BLOCKED | Need deployed URLs, production service context, cluster C4, and founder signing. |
+| Local product proof | PASS local / external pending | Backend, frontend, tier, audit, accessibility, local Qdrant/Redis, managed full-suite, dependency audit, and local quota-neutral C4 evidence pass locally. |
+| C4 SLO | PASS local quota-neutral / cluster pending | Latest strict local scorecard: 1000 users, 82,365 samples, 0 failures, aggregate P99 79 ms; quota-policy and deployed/cluster proof remain pending. |
+| Full Python suite | PASS managed live orchestration | `scripts/run_test_suite.sh --live-api` separates non-live and live API phases; latest evidence has 1,830 non-live tests with 0 failures/errors and 36 live API tests with 0 failures/errors. |
+| Dependency audit | PASS local clean audit / production image pending | Frontend `npm audit` now reports 0 total vulnerabilities locally after Storybook/Vite/Jest hardening and removal of the vulnerable essentials/actions path. |
+| External production gates | BLOCKED | Need deployed URLs, production service context, cluster C4, production Qdrant target, production image dependency checks, and founder signing. |
 
 ## Rule Hierarchy
 
@@ -191,7 +194,9 @@ Every NRG work session should follow this order.
 
 ## C4-Specific Flow
 
-Use this flow for the next C4 wave.
+Use this flow for any new C4 wave. Do not rerun local C4 just to re-prove the
+same claim unless code, dependencies, runtime settings, or evidence freshness
+requires it.
 
 1. **Choose C4 mode before running**
    - Quota-on C4: use enough distinct load identities so the run measures query
@@ -221,17 +226,15 @@ Use this flow for the next C4 wave.
    - Per-workload `/query` P99: below 500 ms.
    - Audit-chain verification after load: valid.
 
-6. **Current next engineering options**
-   - Use the combined profile to isolate the remaining request-envelope and
-     client-observed tail between route handler, middleware, process scheduling,
-     socket/backpressure, and Locust client contention.
-   - Keep declared warmed read-model traffic explicit in evidence; prewarm alone
-     did not close C4.
-   - If cold cache misses must synchronously seal into one JSONL HMAC chain
-     before response, design a larger audit-writer path; the current file-lock
-     micro-optimizations are not enough.
-   - Repeat C4 on the sovereign cluster to remove laptop client/server
-     contention from the final claim.
+6. **Current next proof options**
+   - Replay the same strict scorecard on the sovereign cluster before making a
+     deployed/cluster C4 claim.
+   - Run quota-on C4 with enough distinct load identities before making a
+     quota-policy claim.
+   - Preserve the `NRG_QUOTA_DISABLED=1` boundary whenever using the latest
+     local capacity evidence.
+   - Re-run local C4 only after performance-sensitive code, dependency,
+     runtime, or evidence-freshness changes.
 
 ## Whole-Product Proof Flow
 
@@ -264,29 +267,27 @@ unknown row blocks a whole-product pass claim.
 The next execution wave should not scatter across all skills at once. It should
 follow this order:
 
-1. **C4 tail closure**
-   - Use the latest combined profile and declared prewarm run as the baseline.
-   - Decide whether the next fix is middleware/envelope, process scheduling,
-     response serialization, socket/backpressure, or cluster-only validation.
-   - Produce one C4 blocker report with the next implementation target.
-
-2. **Dependency audit closure**
-   - Triage high-severity frontend findings.
-   - Patch only safe dependency paths.
-   - Re-run frontend tests and build.
-
-3. **Full-suite orchestration**
-   - Separate live-required tests from local-only tests.
-   - Make one reproducible command green for the local slice.
-
-4. **External gate package**
+1. **External gate package**
    - Prepare exact operator commands for deployed browser replay, production
      Qdrant/Redis health, cluster C4, and founder signing.
 
+2. **Production image dependency replay**
+   - Re-run dependency checks against the deployable image/runtime surface, not
+     only the local frontend package tree.
+
+3. **Cluster C4 replay**
+   - Use the same strict scorecard semantics as the local pass.
+   - Record users, spawn rate, runtime, failures, aggregate P99, per-workload
+     `/query` P99, and audit-chain verification.
+
+4. **Data completion for empty official core tables**
+   - Keep `db_struct.sql`, Dhairya regression expectations, and query evidence
+     aligned before external product claims.
+
 ## Do Not Claim
 
-- Do not claim C4 is closed.
-- Do not claim 6/6 Quality Bar compliance.
+- Do not claim deployed/cluster C4 is closed from local quota-neutral evidence.
+- Do not claim quota-policy C4 is closed from `NRG_QUOTA_DISABLED=1` evidence.
 - Do not claim production readiness from laptop-only evidence.
 - Do not treat skill inventory as product proof.
 - Do not treat external source accounting as running-product proof.
