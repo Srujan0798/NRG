@@ -5,8 +5,9 @@ from __future__ import annotations
 import logging
 import os
 import re
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
-from typing import Any, TypedDict, Generator
+from collections.abc import Callable, Generator, Mapping
+from concurrent.futures import Future, ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from typing import Any, Protocol, TypeVar, TypedDict, cast
 from pathlib import Path
 
 from src.config.llm_config import get_llm_mesh
@@ -16,6 +17,23 @@ from src.observability.langfuse_tracer import trace_llm_call
 from src.auth.rbac import get_policy_engine
 
 logger = logging.getLogger(__name__)
+
+JSONDict = dict[str, Any]
+EvidenceItem = JSONDict | str
+EvidenceList = list[EvidenceItem]
+ConversationHistory = list[JSONDict]
+SourceList = list[str]
+LineList = list[str]
+R = TypeVar("R")
+
+
+def _state_get(state: Any, key: str, default: Any) -> Any:
+    if isinstance(state, Mapping):
+        mapping = cast(Mapping[str, Any], state)
+        return mapping.get(key, default)
+    return getattr(state, key, default)
+
+
 SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system.md"
 LOCAL_SYNTH_PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "synth_system_local.md"
 CITATION_PATTERN = re.compile(r"\[cite:([^:\]]+):([^\]]+)\]")
@@ -73,14 +91,46 @@ def _synthesis_timeout_seconds() -> float:
     return max(0.001, float(os.getenv("SYNTHESIS_LLM_TIMEOUT_SECONDS", "5.0")))
 
 
-def _call_llm_with_timeout(label: str, func, *args, **kwargs):
+def _call_llm_with_timeout(label: str, func: Callable[..., R], *args: Any, **kwargs: Any) -> R:
     timeout = _synthesis_timeout_seconds()
-    future = _LLM_TIMEOUT_EXECUTOR.submit(func, *args, **kwargs)
+    future: Future[R] = _LLM_TIMEOUT_EXECUTOR.submit(func, *args, **kwargs)
     try:
         return future.result(timeout=timeout)
     except FutureTimeoutError as exc:
         future.cancel()
         raise TimeoutError(f"{label} exceeded {timeout:.2f}s synthesis timeout") from exc
+
+
+def _coerce_llm_response_text(raw_response: Any) -> str:
+    """Normalize model output and reject malformed structured responses."""
+    if not isinstance(raw_response, str):
+        raise ValueError(f"LLM response must be text, got {type(raw_response).__name__}")
+
+    response = re.sub(r"<think>.*?</think>", "", raw_response, flags=re.DOTALL).strip()
+    if not response:
+        raise ValueError("LLM response was empty")
+
+    if response.startswith(("{", "[")):
+        import json
+
+        try:
+            parsed = json.loads(response)
+        except json.JSONDecodeError as exc:
+            raise ValueError("LLM returned malformed JSON-like output") from exc
+        if isinstance(parsed, dict):
+            parsed_dict = cast(dict[str, Any], parsed)
+            for key in ("answer", "response", "synthesized_response", "text"):
+                value = parsed_dict.get(key)
+                if isinstance(value, str) and value.strip():
+                    return value.strip()
+            raise ValueError("LLM structured output did not contain answer text")
+        if isinstance(parsed, list):
+            joined = "\n".join(str(item) for item in cast(list[Any], parsed) if item)
+            if joined.strip():
+                return joined.strip()
+            raise ValueError("LLM structured list output was empty")
+
+    return response
 
 
 class TokenBudget:
@@ -109,13 +159,13 @@ class TokenBudget:
             return False, f"Response exceeds budget: {estimated_response_tokens} > {self.max_output_tokens}"
         return True, "ok"
 
-    def record_usage(self, input_tokens: int, output_tokens: int, cost: float = 0.0):
+    def record_usage(self, input_tokens: int, output_tokens: int, cost: float = 0.0) -> None:
         """Record actual token usage."""
         self.input_tokens_used = input_tokens
         self.output_tokens_used = output_tokens
         self.total_cost += cost
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> JSONDict:
         return {
             "input_tokens_used": self.input_tokens_used,
             "output_tokens_used": self.output_tokens_used,
@@ -137,13 +187,18 @@ class ContextWindowManager:
         self.max_context_tokens = max_context_tokens
         self.current_tokens = 0
 
-    def estimate_turn_tokens(self, turn: dict) -> int:
+    def estimate_turn_tokens(self, turn: JSONDict) -> int:
         """Estimate tokens for a conversation turn."""
         query_len = len(turn.get("query", "") or "")
         response_len = len(turn.get("response", "") or "")
         return (query_len + response_len) // 4
 
-    def trim_history(self, history: list[dict], system_prompt: str = "", user_query: str = "") -> list[dict]:
+    def trim_history(
+        self,
+        history: ConversationHistory,
+        system_prompt: str = "",
+        user_query: str = "",
+    ) -> ConversationHistory:
         """Intelligently trim conversation history to fit context window."""
         if not history:
             return []
@@ -153,7 +208,7 @@ class ContextWindowManager:
 
         available = self.max_context_tokens - system_tokens - query_tokens - 500
 
-        trimmed: list[dict] = []
+        trimmed: ConversationHistory = []
         total_tokens = 0
 
         for turn in reversed(history):
@@ -171,7 +226,7 @@ class ContextWindowManager:
 
         return trimmed
 
-    def summarize_old_turns(self, history: list[dict], max_turns: int = 3) -> list[dict]:
+    def summarize_old_turns(self, history: ConversationHistory, max_turns: int = 3) -> ConversationHistory:
         """Summarize older turns while keeping recent ones intact."""
         if len(history) <= max_turns:
             return history
@@ -187,11 +242,11 @@ class ContextWindowManager:
         return [summary] + recent
 
 
-def _summarize_turns(turns: list[dict]) -> str:
+def _summarize_turns(turns: ConversationHistory) -> str:
     """Create a brief summary of older turns."""
     if not turns:
         return ""
-    topics = []
+    topics: list[str] = []
     for turn in turns:
         q = turn.get("query", "")[:50]
         if q:
@@ -206,59 +261,38 @@ class SynthesizerState(TypedDict):
     verification_status: bool
 
 
+class StreamingLLM(Protocol):
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: ConversationHistory | None = None,
+        complexity: str | None = None,
+    ) -> str:
+        ...
+
+    def generate_streaming(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: ConversationHistory | None = None,
+        complexity: str | None = None,
+    ) -> Generator[str, None, None]:
+        ...
+
+
 @trace_llm_call("synthesizer")
-def synthesizer_node(state):
+def synthesizer_node(state: Any) -> JSONDict:
     """Synthesize retrieved data into coherent response."""
-    if hasattr(state, "user_query"):
-        user_query = state.user_query
-    elif isinstance(state, dict):
-        user_query = state.get("user_query", "")
-    else:
-        user_query = ""
+    user_query = str(_state_get(state, "user_query", "") or "")
+    sql_results = cast(EvidenceList, _state_get(state, "sql_results", []) or [])
+    retrieved_chunks = cast(EvidenceList, _state_get(state, "retrieved_chunks", []) or [])
+    user_tier = int(_state_get(state, "user_tier", 1) or 1)
+    conversation_history = cast(ConversationHistory, _state_get(state, "conversation_history", []) or [])
+    intent = str(_state_get(state, "intent", "") or "")
+    routing_decision = str(_state_get(state, "routing_decision", "") or "")
 
-    if hasattr(state, "sql_results"):
-        sql_results = state.sql_results
-    elif isinstance(state, dict):
-        sql_results = state.get("sql_results", [])
-    else:
-        sql_results = []
-
-    if hasattr(state, "retrieved_chunks"):
-        retrieved_chunks = state.retrieved_chunks
-    elif isinstance(state, dict):
-        retrieved_chunks = state.get("retrieved_chunks", [])
-    else:
-        retrieved_chunks = []
-
-    if hasattr(state, "user_tier"):
-        user_tier = state.user_tier
-    elif isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
-    else:
-        user_tier = 1
-
-    if hasattr(state, "conversation_history"):
-        conversation_history = state.conversation_history
-    elif isinstance(state, dict):
-        conversation_history = state.get("conversation_history", [])
-    else:
-        conversation_history = []
-
-    if hasattr(state, "intent"):
-        intent = state.intent
-    elif isinstance(state, dict):
-        intent = state.get("intent", "")
-    else:
-        intent = ""
-
-    if hasattr(state, "routing_decision"):
-        routing_decision = state.routing_decision
-    elif isinstance(state, dict):
-        routing_decision = state.get("routing_decision", "")
-    else:
-        routing_decision = ""
-
-    data_sources = []
+    data_sources: SourceList = []
 
     if sql_results:
         data_sources.append(f"Structured data: {len(sql_results)} records")
@@ -268,16 +302,12 @@ def synthesizer_node(state):
 
     context_summary = _build_context_summary(conversation_history)
 
-    complexity = "moderate"
-    if hasattr(state, "complexity"):
-        complexity = getattr(state, "complexity", "moderate")
-    elif isinstance(state, dict):
-        complexity = state.get("complexity", "moderate")
+    complexity = str(_state_get(state, "complexity", "moderate") or "moderate")
 
     if not data_sources:
         synthesized = _fallback_response(user_query, context_summary)
         verification = False
-        provenance = {"synth": "rule_based", "cloud_synthesis_used": False}
+        provenance: JSONDict = {"synth": "rule_based", "cloud_synthesis_used": False}
     else:
         synthesized, provenance = _synthesize(
             user_query,
@@ -302,63 +332,22 @@ def synthesizer_node(state):
     }
 
 
-def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
+def synthesizer_node_streaming(state: Any) -> Generator[JSONDict, None, JSONDict]:
     """Streaming synthesizer that yields SSE events for progressive response delivery.
 
     Yields dicts with 'event' and 'data' keys for SSE formatting:
     - event: 'token', 'done', 'error'
     - data: token text, final response, or error message
     """
-    if hasattr(state, "user_query"):
-        user_query = state.user_query
-    elif isinstance(state, dict):
-        user_query = state.get("user_query", "")
-    else:
-        user_query = ""
+    user_query = str(_state_get(state, "user_query", "") or "")
+    sql_results = cast(EvidenceList, _state_get(state, "sql_results", []) or [])
+    retrieved_chunks = cast(EvidenceList, _state_get(state, "retrieved_chunks", []) or [])
+    user_tier = int(_state_get(state, "user_tier", 1) or 1)
+    conversation_history = cast(ConversationHistory, _state_get(state, "conversation_history", []) or [])
+    intent = str(_state_get(state, "intent", "") or "")
+    routing_decision = str(_state_get(state, "routing_decision", "") or "")
 
-    if hasattr(state, "sql_results"):
-        sql_results = state.sql_results
-    elif isinstance(state, dict):
-        sql_results = state.get("sql_results", [])
-    else:
-        sql_results = []
-
-    if hasattr(state, "retrieved_chunks"):
-        retrieved_chunks = state.retrieved_chunks
-    elif isinstance(state, dict):
-        retrieved_chunks = state.get("retrieved_chunks", [])
-    else:
-        retrieved_chunks = []
-
-    if hasattr(state, "user_tier"):
-        user_tier = state.user_tier
-    elif isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
-    else:
-        user_tier = 1
-
-    if hasattr(state, "conversation_history"):
-        conversation_history = state.conversation_history
-    elif isinstance(state, dict):
-        conversation_history = state.get("conversation_history", [])
-    else:
-        conversation_history = []
-
-    if hasattr(state, "intent"):
-        intent = state.intent
-    elif isinstance(state, dict):
-        intent = state.get("intent", "")
-    else:
-        intent = ""
-
-    if hasattr(state, "routing_decision"):
-        routing_decision = state.routing_decision
-    elif isinstance(state, dict):
-        routing_decision = state.get("routing_decision", "")
-    else:
-        routing_decision = ""
-
-    data_sources = []
+    data_sources: SourceList = []
     if sql_results:
         data_sources.append(f"Structured data: {len(sql_results)} records")
     if retrieved_chunks:
@@ -391,7 +380,7 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
     )
 
     cloud_allowed = os.getenv("CLOUD_SYNTHESIS_ALLOWED", "false").lower() == "true"
-    mesh = get_llm_mesh() if cloud_allowed else None
+    mesh = cast(StreamingLLM | None, get_llm_mesh()) if cloud_allowed else None
 
     streaming_response = ""
 
@@ -411,28 +400,27 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
         if not within_budget:
             logger.warning("Budget exceeded: %s, falling back to local", budget_msg)
 
-        if hasattr(mesh, "generate_streaming"):
-            try:
-                for token in mesh.generate_streaming(
-                    system_prompt,
-                    user_query,
-                    trimmed_history,
-                ):
-                    streaming_response += token
-                    yield {"event": "token", "data": token}
+        try:
+            for token in mesh.generate_streaming(
+                system_prompt,
+                user_query,
+                trimmed_history,
+            ):
+                streaming_response += token
+                yield {"event": "token", "data": token}
 
-                yield {"event": "done", "data": streaming_response}
-                return {
-                    "synthesized_response": streaming_response,
-                    "citations": _extract_citations(streaming_response),
-                    "verification_status": True,
-                    "context_summary": context_summary,
-                    "provenance": {"synth": "cloud_llm_streaming", "cloud_synthesis_used": True},
-                    "synthesis_method": "cloud_llm_streaming",
-                    "token_budget": budget.to_dict(),
-                }
-            except Exception as e:
-                logger.warning("Streaming failed: %s, trying non-streaming", e)
+            yield {"event": "done", "data": streaming_response}
+            return {
+                "synthesized_response": streaming_response,
+                "citations": _extract_citations(streaming_response),
+                "verification_status": True,
+                "context_summary": context_summary,
+                "provenance": {"synth": "cloud_llm_streaming", "cloud_synthesis_used": True},
+                "synthesis_method": "cloud_llm_streaming",
+                "token_budget": budget.to_dict(),
+            }
+        except Exception as e:
+            logger.warning("Streaming failed: %s, trying non-streaming", e)
 
         try:
             response = mesh.generate(
@@ -508,15 +496,15 @@ def synthesizer_node_streaming(state) -> Generator[dict, None, dict]:
 
 def _synthesize(
     query: str,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     user_tier: int,
     context_summary: str,
     intent: str = "",
     routing_decision: str = "",
     complexity: str = "moderate",
-) -> tuple[str, dict]:
+) -> tuple[str, JSONDict]:
     """Synthesize data into response using cloud LLM, local LLM, or rule-based fallback.
 
     Phase 2 cost-aware routing:
@@ -611,13 +599,14 @@ def _synthesize(
             user_prompt = f"User Query: {query}"
             try:
                 logger.info("Complexity=simple — using local SLM for synthesis")
-                response = _call_llm_with_timeout(
+                raw_response = _call_llm_with_timeout(
                     "local simple synthesis",
                     local_client.generate,
                     system_prompt,
                     user_prompt,
                     conversation_history=_coerce_history(context_summary),
                 )
+                response = _coerce_llm_response_text(raw_response)
                 response = response.rstrip() + "\n\n[Response generated using local model for faster service]"
                 actual_provider = "local"
                 cost_guard.record_cost(
@@ -641,7 +630,7 @@ def _synthesize(
 
     if cloud_allowed:
         try:
-            mesh = get_llm_mesh()
+            mesh = cast(StreamingLLM, get_llm_mesh())
             user_prompt = f"User Query: {query}"
             logger.info(
                 "Using SovereignLLMMesh for synthesis "
@@ -649,7 +638,7 @@ def _synthesize(
                 complexity,
                 _synthesis_timeout_seconds(),
             )
-            response = _call_llm_with_timeout(
+            raw_response = _call_llm_with_timeout(
                 "cloud synthesis",
                 mesh.generate,
                 system_prompt,
@@ -657,7 +646,7 @@ def _synthesize(
                 conversation_history=_coerce_history(context_summary),
                 complexity=complexity,
             )
-            response = re.sub(r'<think>.*?', '', response, flags=re.DOTALL).strip()
+            response = _coerce_llm_response_text(raw_response)
             actual_provider = "sovereign_mesh"
 
             tokens_in_actual = len(system_prompt) // 4
@@ -700,13 +689,14 @@ def _synthesize(
         user_prompt = f"User Query: {query}"
         try:
             logger.info("Using local LLM for synthesis")
-            response = _call_llm_with_timeout(
+            raw_response = _call_llm_with_timeout(
                 "local synthesis",
                 local_client.generate,
                 system_prompt,
                 user_prompt,
                 conversation_history=_coerce_history(context_summary),
             )
+            response = _coerce_llm_response_text(raw_response)
             response = response.rstrip() + "\n\n[Note: Response generated using local model for faster service]"
             actual_provider = "local"
             cost_guard.record_cost(
@@ -786,7 +776,7 @@ def _synthesize(
     return response, {"synth": "rule_based", "cloud_synthesis_used": False}
 
 
-def _is_sql_only_fast_path(sql_results: list, chunks: list, routing_decision: str = "") -> bool:
+def _is_sql_only_fast_path(sql_results: EvidenceList, chunks: EvidenceList, routing_decision: str = "") -> bool:
     """Bypass LLM synthesis when structured evidence already answers the query."""
     if not sql_results:
         return False
@@ -795,13 +785,13 @@ def _is_sql_only_fast_path(sql_results: list, chunks: list, routing_decision: st
     return routing_decision in ("", "text_to_sql", "sql")
 
 
-def _is_hybrid_evidence(sql_results: list, chunks: list, routing_decision: str = "") -> bool:
+def _is_hybrid_evidence(sql_results: EvidenceList, chunks: EvidenceList, routing_decision: str = "") -> bool:
     if not sql_results or not chunks:
         return False
     return routing_decision in ("", "text_to_sql+rag", "sql+rag", "hybrid")
 
 
-def _build_context_summary(conversation_history: list) -> str:
+def _build_context_summary(conversation_history: ConversationHistory) -> str:
     if not conversation_history:
         return ""
 
@@ -827,7 +817,7 @@ def _fallback_response(query: str, context_summary: str) -> str:
 def _generate_search_suggestions(query: str) -> str:
     """Generate helpful search suggestions when a query returns no results."""
     import re
-    suggestions = []
+    suggestions: list[str] = []
 
     terms = re.findall(r'\b[a-z]{3,}\b', query.lower())
     if terms:
@@ -854,34 +844,11 @@ def _generate_search_suggestions(query: str) -> str:
     return "\n".join(suggestions[:4]) if suggestions else ""
 
 
-def _format_sql_results(query: str, sql_results: list) -> str:
-    """Format SQL results as markdown for structured-query fast-path."""
-    if not sql_results:
-        return "No matching records found."
-
-    # Single aggregate (COUNT/SUM/AVG) result
-    if len(sql_results) == 1 and len(sql_results[0]) == 1:
-        key = list(sql_results[0].keys())[0]
-        return f"**{key}:** {sql_results[0][key]}"
-
-    # Build markdown table
-    headers = list(sql_results[0].keys())
-    lines = ["| " + " | ".join(headers) + " |"]
-    lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
-    for row in sql_results[:50]:  # Cap at 50 rows
-        lines.append("| " + " | ".join(str(row.get(h, "")) for h in headers) + " |")
-
-    if len(sql_results) > 50:
-        lines.append(f"\n*... and {len(sql_results) - 50} more rows*")
-
-    return "\n".join(lines)
-
-
 def _build_system_prompt(
     user_tier: int,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     use_local_prompt: bool = False,
     user_policy: Any = None,
@@ -975,7 +942,7 @@ def _answer_quality_contract() -> str:
 If the evidence cannot support a numeric claim, say "Insufficient data" instead of estimating."""
 
 
-def _minimise_sql_results(sql_results: list) -> list:
+def _minimise_sql_results(sql_results: EvidenceList) -> EvidenceList:
     """Reduce structured evidence before any LLM prompt is built."""
     safe_rows: list[Any] = []
     for row in sql_results[:10]:
@@ -992,9 +959,9 @@ def _minimise_sql_results(sql_results: list) -> list:
     return safe_rows
 
 
-def _minimise_chunks(chunks: list) -> list:
+def _minimise_chunks(chunks: EvidenceList) -> list[JSONDict]:
     """Send bounded excerpts, never full documents, to synthesis prompts."""
-    safe_chunks = []
+    safe_chunks: list[JSONDict] = []
     for idx, chunk in enumerate(chunks[:5], 1):
         if isinstance(chunk, dict):
             content = chunk.get("chunk_text") or chunk.get("content") or chunk.get("text") or ""
@@ -1023,7 +990,7 @@ def _redact_text(value: str) -> str:
     return redacted
 
 
-def _redaction_counts(sql_results: list, chunks: list) -> dict:
+def _redaction_counts(sql_results: EvidenceList, chunks: EvidenceList) -> JSONDict:
     sensitive_keys = 0
     text_matches = 0
 
@@ -1052,7 +1019,7 @@ def _count_redactions(value: str) -> int:
     return sum(len(pattern.findall(value)) for pattern in REDACTION_PATTERNS)
 
 
-def _coerce_history(context_summary: str) -> list[dict]:
+def _coerce_history(context_summary: str) -> ConversationHistory:
     if not context_summary:
         return []
     return [{"query": "Prior Session Context", "response": context_summary}]
@@ -1060,8 +1027,8 @@ def _coerce_history(context_summary: str) -> list[dict]:
 
 def _fallback_synthesis(
     query: str,
-    sql_results: list,
-    chunks: list,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     intent: str = "",
     routing_decision: str = "",
@@ -1072,7 +1039,7 @@ def _fallback_synthesis(
 
     Produces structured, readable output that feels like a real research tool.
     """
-    lines = []
+    lines: LineList = []
 
     lines.append("═" * 60)
     lines.append("  NATIONAL RESEARCH GRAPH — Research Intelligence Report")
@@ -1136,8 +1103,8 @@ def _fallback_synthesis(
 
 def _fallback_hybrid_synthesis(
     query: str,
-    sql_results: list,
-    chunks: list,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     intent: str = "",
     routing_decision: str = "",
@@ -1147,11 +1114,15 @@ def _fallback_hybrid_synthesis(
     """Deterministic answer for hybrid evidence when model synthesis is unavailable."""
     safe_sql = _minimise_sql_results(sql_results)
     safe_chunks = _minimise_chunks(chunks)
-    structured_finding = _hybrid_structured_finding(safe_sql)
-    document_context = _hybrid_document_context(safe_chunks)
-    document_citation = _citation_for_chunk(chunks[0], 0) if chunks else "[cite:structured:0]"
+    structured_findings = _dedupe_text_items(
+        [_hybrid_structured_finding([row]) for row in safe_sql],
+    )
+    document_contexts = _dedupe_document_contexts(
+        cast(EvidenceList, safe_chunks),
+        chunks,
+    )
 
-    lines = []
+    lines: LineList = []
     lines.append("═" * 60)
     lines.append("  NATIONAL RESEARCH GRAPH - Hybrid Evidence Answer")
     lines.append("  Structured summary - AI synthesis temporarily unavailable")
@@ -1173,22 +1144,32 @@ def _fallback_hybrid_synthesis(
             lines.append(f"- Routed to: {routing_decision}")
         lines.append("")
 
-    lines.append("Structured finding")
-    lines.append(f"- {structured_finding} [cite:structured:0]")
+    lines.append("Structured findings")
+    if structured_findings:
+        for idx, finding in enumerate(structured_findings, 1):
+            lines.append(f"- S{idx}: {finding} [cite:structured:0]")
+    else:
+        lines.append("- No structured rows were available [cite:structured:0]")
     lines.append("")
     lines.append("Document context")
-    lines.append(f"- {document_context} {document_citation}")
+    if document_contexts:
+        for idx, item in enumerate(document_contexts, 1):
+            citations = " ".join(item["citations"])
+            lines.append(f"- D{idx}: {item['context']} {citations}")
+    else:
+        lines.append("- No document excerpt was available [cite:structured:0]")
     lines.append("")
     lines.append("Combined answer")
     lines.append(
         "- The structured data gives the measurable finding, while the retrieved document "
         f"context explains the surrounding pattern for a tier {user_tier} user "
-        f"[cite:structured:0] {document_citation}"
+        "[cite:structured:0]"
     )
     lines.append("")
     lines.append("Evidence used")
     lines.append(f"- Structured rows: {len(sql_results)} [cite:structured:0]")
-    lines.append(f"- Document excerpts: {len(chunks)} {document_citation}")
+    for idx, item in enumerate(document_contexts, 1):
+        lines.append(f"- Document excerpt {idx}: {' '.join(item['citations'])}")
 
     if context_summary:
         lines.append("")
@@ -1200,13 +1181,49 @@ def _fallback_hybrid_synthesis(
     lines.append(
         "- This answer is deterministic and only uses retrieved SQL rows plus retrieved "
         "document excerpts; it does not infer beyond the supplied evidence "
-        f"[cite:structured:0] {document_citation}"
+        "[cite:structured:0]"
     )
 
     return "\n".join(lines)
 
 
-def _hybrid_structured_finding(safe_sql_results: list) -> str:
+def _dedupe_text_items(items: list[str]) -> list[str]:
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for item in items:
+        normalized = re.sub(r"\s+", " ", item or "").strip().lower()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(item)
+    return deduped
+
+
+def _dedupe_document_contexts(
+    safe_chunks: EvidenceList,
+    original_chunks: EvidenceList,
+) -> list[dict[str, Any]]:
+    grouped: dict[str, dict[str, Any]] = {}
+    ordered_keys: list[str] = []
+    for idx, safe_chunk in enumerate(safe_chunks):
+        context = _hybrid_document_context([safe_chunk])
+        normalized = re.sub(r"\s+", " ", context or "").strip().lower()
+        if not normalized:
+            continue
+
+        if normalized not in grouped:
+            grouped[normalized] = {"context": context, "citations": []}
+            ordered_keys.append(normalized)
+
+        original_chunk = original_chunks[idx] if idx < len(original_chunks) else safe_chunk
+        citation = _citation_for_chunk(original_chunk, idx)
+        if citation not in grouped[normalized]["citations"]:
+            grouped[normalized]["citations"].append(citation)
+
+    return [grouped[key] for key in ordered_keys]
+
+
+def _hybrid_structured_finding(safe_sql_results: EvidenceList) -> str:
     if not safe_sql_results:
         return "No structured rows were available"
     first = safe_sql_results[0]
@@ -1222,7 +1239,7 @@ def _hybrid_structured_finding(safe_sql_results: list) -> str:
     return "; ".join(readable[:4])
 
 
-def _hybrid_document_context(safe_chunks: list) -> str:
+def _hybrid_document_context(safe_chunks: EvidenceList) -> str:
     if not safe_chunks:
         return "No document excerpt was available"
     first = safe_chunks[0]
@@ -1239,7 +1256,7 @@ def _hybrid_document_context(safe_chunks: list) -> str:
     return "Retrieved document evidence is present but has no displayable excerpt"
 
 
-def _is_researcher_results(sql_results: list) -> bool:
+def _is_researcher_results(sql_results: EvidenceList) -> bool:
     if not sql_results:
         return False
     sample = sql_results[0]
@@ -1249,14 +1266,14 @@ def _is_researcher_results(sql_results: list) -> bool:
     )
 
 
-def _is_publication_results(sql_results: list) -> bool:
+def _is_publication_results(sql_results: EvidenceList) -> bool:
     if not sql_results:
         return False
     sample = sql_results[0]
     return isinstance(sample, dict) and "title" in sample
 
 
-def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> list:
+def _format_researcher_table(lines: LineList, sql_results: EvidenceList, user_tier: int) -> LineList:
     engine = get_policy_engine()
     try:
         policy = engine.get_policy(tier=user_tier)
@@ -1303,7 +1320,7 @@ def _format_researcher_table(lines: list, sql_results: list, user_tier: int) -> 
     return lines
 
 
-def _format_publication_table(lines: list, sql_results: list) -> list:
+def _format_publication_table(lines: LineList, sql_results: EvidenceList) -> LineList:
     lines.append("  PUBLICATIONS")
     lines.append("  " + "-" * 56)
 
@@ -1329,13 +1346,13 @@ def _format_publication_table(lines: list, sql_results: list) -> list:
     return lines
 
 
-def _format_generic_table(lines: list, sql_results: list) -> list:
+def _format_generic_table(lines: LineList, sql_results: EvidenceList) -> LineList:
     for i, row in enumerate(sql_results[:15], 1):
         if not isinstance(row, dict):
             lines.append(f"  {i}. {row}")
             continue
 
-        parts = []
+        parts: list[str] = []
         for key, value in row.items():
             if key in ("created_at", "updated_at", "id", "researcher_id", "institution_id"):
                 continue
@@ -1352,7 +1369,7 @@ def _format_generic_table(lines: list, sql_results: list) -> list:
     return lines
 
 
-def _format_chunks(lines: list, chunks: list) -> list:
+def _format_chunks(lines: LineList, chunks: EvidenceList) -> LineList:
     for i, chunk in enumerate(chunks[:3], 1):
         if isinstance(chunk, dict):
             content = chunk.get("content") or chunk.get("excerpt") or chunk.get("chunk_text") or ""
@@ -1369,14 +1386,14 @@ def _format_chunks(lines: list, chunks: list) -> list:
     return lines
 
 
-def _citation_for_row(row: dict) -> str:
+def _citation_for_row(row: JSONDict) -> str:
     for key in ("publication_id", "funding_id"):
         if row.get(key):
             return f"[cite:{row[key]}:0]"
     return "[cite:structured:0]"
 
 
-def _citation_for_chunk(chunk, index: int) -> str:
+def _citation_for_chunk(chunk: EvidenceItem, index: int) -> str:
     if isinstance(chunk, dict):
         pub_id = chunk.get("publication_id") or chunk.get("pub_id") or chunk.get("source_id") or f"chunk_{index}"
         chunk_id = chunk.get("chunk_id") or chunk.get("id") or str(index)
@@ -1384,9 +1401,9 @@ def _citation_for_chunk(chunk, index: int) -> str:
     return f"[cite:chunk_{index}:{index}]"
 
 
-def _extract_citations(response: str) -> list[dict]:
+def _extract_citations(response: str) -> list[JSONDict]:
     """Regex-extract [cite:...], [ref:...], and plain PUB-ID tokens (not inside brackets)."""
-    citations: list[dict] = []
+    citations: list[JSONDict] = []
     seen_ids: set[str] = set()
 
     for pub_id, chunk_id in CITATION_PATTERN.findall(response or ""):
@@ -1414,9 +1431,9 @@ def _extract_citations(response: str) -> list[dict]:
 
 def build_adaptive_system_prompt(
     user_tier: int,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     provider: str = "unknown",
     model: str = "unknown",
@@ -1435,18 +1452,18 @@ def build_adaptive_system_prompt(
     safe_chunks = _minimise_chunks(chunks)
 
     if context_size <= 4096:
-        return _build_condensed_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
+        return _build_condensed_prompt(user_tier, sources, safe_sql_results, cast(EvidenceList, safe_chunks), context_summary, user_policy=user_policy)
     elif context_size <= 8192:
-        return _build_standard_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
+        return _build_standard_prompt(user_tier, sources, safe_sql_results, cast(EvidenceList, safe_chunks), context_summary, user_policy=user_policy)
     else:
-        return _build_full_prompt(user_tier, sources, safe_sql_results, safe_chunks, context_summary, user_policy=user_policy)
+        return _build_full_prompt(user_tier, sources, safe_sql_results, cast(EvidenceList, safe_chunks), context_summary, user_policy=user_policy)
 
 
 def _build_condensed_prompt(
     user_tier: int,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     user_policy: Any = None,
 ) -> str:
@@ -1494,9 +1511,9 @@ Context: {context_summary or 'none'}
 
 def _build_standard_prompt(
     user_tier: int,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     user_policy: Any = None,
 ) -> str:
@@ -1550,9 +1567,9 @@ Session Context: {context_summary or 'none'}
 
 def _build_full_prompt(
     user_tier: int,
-    sources: list,
-    sql_results: list,
-    chunks: list,
+    sources: SourceList,
+    sql_results: EvidenceList,
+    chunks: EvidenceList,
     context_summary: str,
     user_policy: Any = None,
 ) -> str:

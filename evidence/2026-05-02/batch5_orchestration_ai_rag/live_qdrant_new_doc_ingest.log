@@ -1,0 +1,38 @@
+{
+  "collection": {
+    "name": "nrg_batch5_test",
+    "points_count": 1,
+    "vectors_count": null
+  },
+  "ingest": {
+    "chunks": 1,
+    "collection": "nrg_batch5_test",
+    "documents": 1,
+    "vectors_upserted": 1
+  },
+  "retrieved_chunks": [
+    "Batch 5 isolated Qdrant proof chunk for fresh document ingestion and retrieval."
+  ],
+  "retrieved_metadata": [
+    {
+      "access_tier": 1,
+      "affiliation": "",
+      "chunk_id": "ch_0",
+      "chunk_index": 0,
+      "document_id": "batch5-live-doc",
+      "institution": "",
+      "keywords": [],
+      "publication_year": null,
+      "research_area_tags": [],
+      "researcher_ids": [],
+      "source_id": "batch5-live-doc",
+      "source_type": "document",
+      "title": "Batch 5 live vector evidence",
+      "topics": []
+    }
+  ],
+  "retrieved_scores": [
+    1.0
+  ]
+}
+cleanup: deleted nrg_batch5_test

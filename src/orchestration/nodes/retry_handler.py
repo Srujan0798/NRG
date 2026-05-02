@@ -4,11 +4,10 @@ Retry Handler for Agentic Workflow Engine
 Handles failure recovery for complex queries
 """
 
-import logging
 import sys
-from typing import Any, Callable, Optional
+import logging
 import time
-import random
+from typing import Callable, Optional, ParamSpec, TypeVar
 
 # Configure logging
 logging.basicConfig(
@@ -20,16 +19,23 @@ logging.basicConfig(
     ],
 )
 logger = logging.getLogger(__name__)
+P = ParamSpec("P")
+R = TypeVar("R")
 
 
 class RetryHandler:
     """Retry handler for agentic workflow engine"""
 
-    def __init__(self, max_retries: int = 3):
-        self.max_retries = max_retries
-        self.retry_delay = 1.0  # seconds
+    def __init__(self, max_retries: int = 3, sleep_fn: Callable[[float], None] | None = None):
+        self.max_retries = max(1, min(int(max_retries), 3))
+        self.sleep_fn = sleep_fn or time.sleep
 
-    def handle_retry(self, operation: Callable, *args, **kwargs) -> Any:
+    @staticmethod
+    def backoff_seconds(attempt: int) -> float:
+        """Return deterministic exponential backoff: 2^n seconds."""
+        return float(2 ** max(attempt, 0))
+
+    def handle_retry(self, operation: Callable[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         """
         Handle operation with automatic retry on failures
 
@@ -51,12 +57,11 @@ class RetryHandler:
             except Exception as e:
                 last_exception = e
                 if attempt < self.max_retries - 1:
-                    # Wait before retry with exponential backoff
-                    delay = self.retry_delay * (2**attempt) + random.uniform(0, 1)
+                    delay = self.backoff_seconds(attempt)
                     logger.warning(
                         f"Operation failed (attempt {attempt + 1}), retrying in {delay:.2f}s: {e}"
                     )
-                    time.sleep(delay)
+                    self.sleep_fn(delay)
                 else:
                     logger.error(
                         f"Operation failed after {self.max_retries} attempts: {e}"
@@ -68,7 +73,7 @@ class RetryHandler:
         raise last_exception
 
 
-def main():
+def main() -> None:
     """Main function for retry handler"""
     logger.info("Retry handler initialized")
 

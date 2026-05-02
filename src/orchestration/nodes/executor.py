@@ -8,14 +8,14 @@ import sys
 import threading
 import concurrent.futures
 from collections import defaultdict
-from typing import Any
+from typing import Any, cast
 from dataclasses import dataclass, field
 from datetime import datetime
 
 from src.skills.text_to_sql.skill import TextToSQLSkill
 from src.skills.rag.skill import RAGSkill
 from src.audit import log_sql
-from src.orchestration.state import NRGState
+from src.orchestration.state import JSONDict, NRGState
 from src.observability.langfuse_tracer import trace_llm_call
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,22 @@ _parallel_executor = concurrent.futures.ThreadPoolExecutor(max_workers=4, thread
 
 _executor_shutdown = False
 
-def _shutdown_executor():
+JSONList = list[Any]
+
+
+def _json_list() -> JSONList:
+    return []
+
+
+def _json_dict_list() -> list[JSONDict]:
+    return []
+
+
+def _float_dict() -> dict[str, float]:
+    return {}
+
+
+def _shutdown_executor() -> None:
     """Clean shutdown of executor thread pool."""
     global _parallel_executor, _executor_shutdown
     _parallel_executor.shutdown(wait=False)
@@ -42,14 +57,14 @@ atexit.register(_shutdown_executor)
 @dataclass
 class ExecutionResult:
     """Container for parallel execution results."""
-    sql_results: list = field(default_factory=list)
+    sql_results: JSONList = field(default_factory=_json_list)
     sql_query: str | None = None
-    retrieved_chunks: list = field(default_factory=list)
-    retrieval_metadata: list = field(default_factory=list)
-    retrieval_sources: list = field(default_factory=list)
-    errors: list = field(default_factory=list)
-    warnings: list = field(default_factory=list)
-    execution_time_ms: dict = field(default_factory=dict)
+    retrieved_chunks: JSONList = field(default_factory=_json_list)
+    retrieval_metadata: JSONList = field(default_factory=_json_list)
+    retrieval_sources: list[str] = field(default_factory=lambda: [])
+    errors: list[JSONDict] = field(default_factory=_json_dict_list)
+    warnings: list[JSONDict] = field(default_factory=_json_dict_list)
+    execution_time_ms: dict[str, float] = field(default_factory=_float_dict)
 
 
 def _get_sql_skill() -> TextToSQLSkill:
@@ -62,6 +77,7 @@ def _get_sql_skill() -> TextToSQLSkill:
             if _sql_skill_instance is None or _sql_skill_class_id != current_id:
                 _sql_skill_instance = _TextToSQLSkill()
                 _sql_skill_class_id = current_id
+    assert _sql_skill_instance is not None
     return _sql_skill_instance
 
 
@@ -73,12 +89,14 @@ def _get_rag_skill() -> RAGSkill:
     if _rag_skill_instance is None or _rag_skill_class_id != current_id:
         with _lock:
             if _rag_skill_instance is None or _rag_skill_class_id != current_id:
-                _rag_skill_instance = _RAGSkill()
+                instance = _RAGSkill()
+                _rag_skill_instance = instance
                 _rag_skill_class_id = current_id
                 try:
-                    _rag_skill_instance.warmup()
+                    instance.warmup()
                 except Exception:
                     pass
+    assert _rag_skill_instance is not None
     return _rag_skill_instance
 
 
@@ -114,8 +132,8 @@ def _execute_sql(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
     except Exception as exc:
         logger.error("Text-to-SQL execution failed: %s", exc, exc_info=True)
         warning = {"node": "executor", "skill": "text_to_sql", "error_type": type(exc).__name__, "message": str(exc)}
-        result["errors"].append(warning)
-        result["warnings"].append(warning)
+        cast(list[JSONDict], result["errors"]).append(warning)
+        cast(list[JSONDict], result["warnings"]).append(warning)
     finally:
         if sql_skill is not None:
             sql_skill.close()
@@ -141,10 +159,10 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         rag_response = rag_skill.retrieve(user_query, user_tier=user_tier, top_k=5)
         chunks = rag_response.get("chunks", [])
         metadata = rag_response.get("metadata", [])
-        zipped_chunks = []
+        zipped_chunks: list[JSONDict] = []
         for idx, (chunk, meta) in enumerate(zip(chunks, metadata)):
             if isinstance(chunk, dict):
-                zipped_chunks.append(chunk)
+                zipped_chunks.append(cast(JSONDict, chunk))
             else:
                 zipped_chunks.append({
                     "chunk_text": chunk,
@@ -156,12 +174,12 @@ def _execute_rag(user_query: str, user_tier: int) -> tuple[dict[str, Any], float
         result["retrieved_chunks"] = zipped_chunks if zipped_chunks else chunks
         result["retrieval_metadata"] = metadata
         if result["retrieved_chunks"] or result["retrieval_metadata"]:
-            result["retrieval_sources"].append("rag")
+            cast(list[str], result["retrieval_sources"]).append("rag")
     except Exception as exc:
         logger.error("RAG retrieval failed: %s", exc, exc_info=True)
         warning = {"node": "executor", "skill": "rag", "error_type": type(exc).__name__, "message": str(exc)}
-        result["errors"].append(warning)
-        result["warnings"].append(warning)
+        cast(list[JSONDict], result["errors"]).append(warning)
+        cast(list[JSONDict], result["warnings"]).append(warning)
     finally:
         if rag_skill is not None:
             rag_skill.close()
@@ -185,7 +203,7 @@ def _copy_sql_confidence(target: dict[str, Any], source: dict[str, Any]) -> None
             target[key] = source[key]
 
 
-def _with_answer_engine_evidence(result: dict[str, Any]) -> dict[str, Any]:
+def _with_answer_engine_evidence(result: JSONDict) -> JSONDict:
     enriched = dict(result)
     enriched.setdefault(
         "freshness",
@@ -203,7 +221,7 @@ def _with_answer_engine_evidence(result: dict[str, Any]) -> dict[str, Any]:
     return enriched
 
 
-def _common_c4_fast_path(user_query: str) -> dict[str, Any] | None:
+def _common_c4_fast_path(user_query: str) -> JSONDict | None:
     query = user_query.lower()
     shapes: list[tuple[tuple[str, ...], list[dict[str, Any]], str]] = [
         (
@@ -273,18 +291,18 @@ def _common_c4_fast_path(user_query: str) -> dict[str, Any] | None:
 
 
 @trace_llm_call("executor")
-def executor_node(state) -> dict:
+def executor_node(state: NRGState | JSONDict) -> JSONDict:
     """Execute skills based on routing decision with parallel hybrid and DAG execution."""
     if isinstance(state, NRGState):
         user_query = state.user_query
         routing = state.routing_decision or "text_to_sql"
         user_tier = state.user_tier
-        plan = getattr(state, "plan", None) or {}
+        plan = cast(JSONDict, getattr(state, "plan", None) or {})
     else:
-        user_query = state.get("user_query", "")
-        routing = state.get("routing_decision", "text_to_sql")
-        user_tier = state.get("user_tier", 1)
-        plan = state.get("plan", {})
+        user_query = str(state.get("user_query", "") or "")
+        routing = str(state.get("routing_decision", "text_to_sql") or "text_to_sql")
+        user_tier = int(state.get("user_tier", 1) or 1)
+        plan = cast(JSONDict, state.get("plan", {}) or {})
 
     fast_path = _common_c4_fast_path(user_query)
     if fast_path is not None:
@@ -313,7 +331,7 @@ def executor_node(state) -> dict:
         })
 
 
-def _execute_parallel(user_query: str, user_tier: int) -> dict:
+def _execute_parallel(user_query: str, user_tier: int) -> JSONDict:
     """Execute SQL and RAG in parallel for hybrid queries using shared thread pool."""
     sql_future = _parallel_executor.submit(_execute_sql, user_query, user_tier)
     rag_future = _parallel_executor.submit(_execute_rag, user_query, user_tier)
@@ -332,10 +350,11 @@ def _execute_parallel(user_query: str, user_tier: int) -> dict:
     }
     _copy_sql_confidence(results, sql_result)
 
+    retrieval_sources = cast(list[str], results["retrieval_sources"])
     if results["sql_results"]:
-        results["retrieval_sources"].append("structured")
+        retrieval_sources.append("structured")
     if rag_result.get("retrieval_sources"):
-        results["retrieval_sources"].extend(rag_result.get("retrieval_sources"))
+        retrieval_sources.extend(cast(list[str], rag_result.get("retrieval_sources", [])))
 
     results["execution_time_ms"] = {
         "sql": sql_time,
@@ -355,7 +374,7 @@ def _execute_parallel(user_query: str, user_tier: int) -> dict:
     return _with_answer_engine_evidence(results)
 
 
-def _execute_sql_only(user_query: str, user_tier: int) -> dict:
+def _execute_sql_only(user_query: str, user_tier: int) -> JSONDict:
     """Execute SQL only."""
     result, exec_time = _execute_sql(user_query, user_tier)
 
@@ -372,12 +391,12 @@ def _execute_sql_only(user_query: str, user_tier: int) -> dict:
     _copy_sql_confidence(results, result)
 
     if results["sql_results"]:
-        results["retrieval_sources"].append("structured")
+        cast(list[str], results["retrieval_sources"]).append("structured")
 
     return _with_answer_engine_evidence(results)
 
 
-def _execute_rag_only(user_query: str, user_tier: int) -> dict:
+def _execute_rag_only(user_query: str, user_tier: int) -> JSONDict:
     """Execute RAG only."""
     result, exec_time = _execute_rag(user_query, user_tier)
 
@@ -393,24 +412,24 @@ def _execute_rag_only(user_query: str, user_tier: int) -> dict:
     })
 
 
-def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
+def _build_dag(nodes: list[JSONDict]) -> tuple[dict[str, JSONDict], list[str]]:
     """Build adjacency list and topological order from DAG nodes.
     
     Returns (node_map, execution_order) where execution_order is nodes
     in topological sort (parents before children).
     """
-    node_map: dict[str, dict] = {n["id"]: n for n in nodes}
-    in_degree: dict[str, int] = {n["id"]: 0 for n in nodes}
+    node_map: dict[str, JSONDict] = {str(n["id"]): n for n in nodes}
+    in_degree: dict[str, int] = {str(n["id"]): 0 for n in nodes}
     children: dict[str, list[str]] = defaultdict(list)
 
     for n in nodes:
-        for parent_id in n.get("depends_on", []):
+        for parent_id in cast(list[str], n.get("depends_on", [])):
             if parent_id in node_map:
-                children[parent_id].append(n["id"])
-                in_degree[n["id"]] += 1
+                children[parent_id].append(str(n["id"]))
+                in_degree[str(n["id"])] += 1
 
     queue = [nid for nid, deg in in_degree.items() if deg == 0]
-    order = []
+    order: list[str] = []
     while queue:
         nid = queue.pop(0)
         order.append(nid)
@@ -422,7 +441,7 @@ def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
     return node_map, order
 
 
-def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
+def _execute_dag(dag_nodes: list[JSONDict], root_id: str, user_tier: int) -> JSONDict:
     """Execute DAG nodes in topological order, passing parent results as context."""
     if not dag_nodes:
         return _with_answer_engine_evidence({
@@ -435,22 +454,44 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
         })
 
     node_map, exec_order = _build_dag(dag_nodes)
-    results_map: dict[str, dict] = {}
-    all_errors: list[dict] = []
-    all_warnings: list[dict] = []
-    all_sql_results: list = []
+    results_map: dict[str, JSONDict] = {}
+    all_errors: list[JSONDict] = []
+    all_warnings: list[JSONDict] = []
+    all_sql_results: JSONList = []
     all_sql_queries: list[str] = []
-    all_chunks: list = []
+    all_chunks: JSONList = []
     dag_execution_times: dict[str, float] = {}
     sql_confidence: dict[str, Any] = {}
+
+    if not exec_order:
+        warning = {
+            "node": "executor",
+            "stage": "dag",
+            "error_type": "DAGDeadEnd",
+            "message": "DAG has no executable start node; check for cycles or unresolved dependencies.",
+        }
+        logger.warning(warning["message"])
+        return _with_answer_engine_evidence({
+            "sql_results": [],
+            "sql_query": None,
+            "sql_queries": [],
+            "retrieved_chunks": [],
+            "retrieval_metadata": [],
+            "errors": [warning],
+            "warnings": [warning],
+            "retrieval_sources": [],
+            "execution_time_ms": {"total": 0.0},
+            "dag_node_count": 0,
+            "dag_root_id": root_id,
+        })
 
     for node_id in exec_order:
         node = node_map[node_id]
         if node.get("optional") and node_id not in results_map:
             continue
 
-        context_parts = []
-        for parent_id in node.get("depends_on", []):
+        context_parts: list[str] = []
+        for parent_id in cast(list[str], node.get("depends_on", [])):
             if parent_id in results_map:
                 parent_result = results_map[parent_id]
                 context_parts.append(f"[Context from {parent_id}]: ")
@@ -459,11 +500,11 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
                 if parent_result.get("retrieved_chunks"):
                     context_parts.append(f"RAG chunks: {len(parent_result['retrieved_chunks'])} items; ")
 
-        enriched_query = node["subquery"]
+        enriched_query = str(node["subquery"])
         if context_parts:
             enriched_query = " ".join(context_parts) + "\n\nOriginal query: " + enriched_query
 
-        skill = node.get("skill", "sql")
+        skill = str(node.get("skill", "sql") or "sql")
         t0 = datetime.now()
 
         try:
@@ -475,17 +516,17 @@ def _execute_dag(dag_nodes: list[dict], root_id: str, user_tier: int) -> dict:
             logger.warning("DAG node %s failed: %s", node_id, exc)
             if not node.get("optional"):
                 all_errors.append({"node": node_id, "error": str(exc)})
-            result = {"sql_results": [], "retrieved_chunks": [], "errors": [str(exc)]}
+            result = {"sql_results": [], "retrieved_chunks": [], "errors": [{"node": node_id, "error": str(exc)}]}
 
         dag_execution_times[node_id] = (datetime.now() - t0).total_seconds() * 1000
         results_map[node_id] = result
 
-        all_errors.extend(result.get("errors", []))
-        all_warnings.extend(result.get("warnings", []))
-        all_sql_results.extend(result.get("sql_results", []))
+        all_errors.extend(cast(list[JSONDict], result.get("errors", [])))
+        all_warnings.extend(cast(list[JSONDict], result.get("warnings", [])))
+        all_sql_results.extend(cast(JSONList, result.get("sql_results", [])))
         if result.get("sql_query"):
-            all_sql_queries.append(result["sql_query"])
-        all_chunks.extend(result.get("retrieved_chunks", []))
+            all_sql_queries.append(str(result["sql_query"]))
+        all_chunks.extend(cast(JSONList, result.get("retrieved_chunks", [])))
         _copy_sql_confidence(sql_confidence, result)
 
     total_time = sum(dag_execution_times.values())

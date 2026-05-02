@@ -204,6 +204,61 @@ class TestRetriever:
         assert retriever.host == "custom-host"
         assert retriever.port == 9999
 
+    @patch("src.skills.rag.retriever.QdrantClient")
+    def test_retriever_deduplicates_chunks_and_preserves_offsets(self, mock_qc):
+        from src.skills.rag.retriever import Retriever
+
+        def point(source_id, chunk_id, score, text):
+            result = MagicMock()
+            result.score = score
+            result.payload = {
+                "source_id": source_id,
+                "document_id": source_id,
+                "chunk_id": chunk_id,
+                "chunk_text": text,
+                "title": f"{source_id} title",
+                "access_tier": 1,
+            }
+            return result
+
+        mock_client = MagicMock()
+        mock_client.search.return_value = [
+            point("doc-1", "ch_0", 0.99, "duplicate chunk"),
+            point("doc-1", "ch_0", 0.95, "duplicate chunk lower score"),
+            point("doc-2", "ch_1", 0.94, "unique two"),
+            point("doc-3", "ch_2", 0.93, "unique three"),
+            point("doc-4", "ch_3", 0.92, "unique four"),
+            point("doc-5", "ch_4", 0.91, "unique five"),
+        ]
+        mock_qc.return_value = mock_client
+
+        retriever = Retriever()
+        retriever._cached_vector_size = 3
+        retriever._rerank_enabled = False
+        result = retriever.retrieve([0.1, 0.2, 0.3], top_k=5)
+
+        assert len(result["chunks"]) == 5
+        assert len(set(result["chunks"])) == 5
+        assert [meta["chunk_index"] for meta in result["metadata"]] == [0, 1, 2, 3, 4]
+        assert result["metadata"][0]["source_id"] == "doc-1"
+        assert result["scores"][0] == 0.99
+        assert mock_client.search.call_args.kwargs["limit"] >= 15
+
+    @patch("src.skills.rag.retriever.QdrantClient")
+    def test_similarity_threshold_calibration_meets_precision_recall_targets(self, mock_qc):
+        from src.skills.rag.retriever import Retriever
+
+        mock_qc.return_value = MagicMock()
+        retriever = Retriever()
+        result = retriever.calibrate_similarity_threshold(
+            relevant_scores=[0.91, 0.88, 0.89, 0.93, 0.87, 0.90],
+            irrelevant_scores=[0.22, 0.31, 0.28, 0.42, 0.18, 0.34],
+        )
+
+        assert result["recall"] > 0.85
+        assert result["precision"] > 0.80
+        assert 0.0 < result["threshold"] <= 1.0
+
 
 class TestDeterministicTestEmbeddingModel:
     def test_deterministic_encode(self):

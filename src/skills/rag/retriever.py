@@ -4,6 +4,7 @@ import os
 import logging
 import time
 import threading
+import re
 from typing import List, Dict, Any, Optional
 from collections import deque
 from datetime import datetime, UTC
@@ -169,6 +170,43 @@ class RetrieverUnavailable(RuntimeError):
     """Raised when the vector store cannot serve retrieval requests."""
 
 
+class SimilarityThresholdCalibrator:
+    """Calibrate a binary similarity threshold from labeled retrieval scores."""
+
+    @staticmethod
+    def evaluate(
+        relevant_scores: list[float],
+        irrelevant_scores: list[float],
+        *,
+        min_recall: float = 0.85,
+        min_precision: float = 0.80,
+    ) -> dict[str, float]:
+        scores = sorted({float(score) for score in relevant_scores + irrelevant_scores}, reverse=True)
+        if not scores:
+            return {"threshold": 0.0, "recall": 0.0, "precision": 0.0}
+
+        best = {"threshold": scores[-1], "recall": 0.0, "precision": 0.0}
+        best_f1 = -1.0
+        for threshold in scores:
+            tp = sum(score >= threshold for score in relevant_scores)
+            fp = sum(score >= threshold for score in irrelevant_scores)
+            fn = sum(score < threshold for score in relevant_scores)
+            recall = tp / max(tp + fn, 1)
+            precision = tp / max(tp + fp, 1)
+            f1 = 2 * precision * recall / max(precision + recall, 1e-9)
+            candidate = {
+                "threshold": float(threshold),
+                "recall": round(recall, 4),
+                "precision": round(precision, 4),
+            }
+            if recall >= min_recall and precision >= min_precision:
+                return candidate
+            if f1 > best_f1:
+                best = candidate
+                best_f1 = f1
+        return best
+
+
 class Retriever:
     """Local Qdrant retriever with access-tier filtering, drift detection, and re-ranking."""
 
@@ -177,6 +215,7 @@ class Retriever:
         self.port = port or int(os.getenv("QDRANT_PORT", "6333"))
         self._timeout = int(timeout)
         self.collection_name = os.getenv("QDRANT_COLLECTION", "nrg_research")
+        self._min_similarity = float(os.getenv("RAG_MIN_SIMILARITY", "0.0"))
 
         self._client = None
 
@@ -270,8 +309,8 @@ class Retriever:
         query_vector = self._coerce_test_vector_dimension(query_vector)
         filter_obj = self._build_filter(user_tier, institution, topics)
 
-        # Retrieve more candidates for re-ranking
-        retrieve_limit = self._rerank_top_k if self._rerank_enabled else top_k
+        # Retrieve extra candidates so deduplication can still return top_k unique chunks.
+        retrieve_limit = max(top_k * 3, self._rerank_top_k if self._rerank_enabled else top_k)
 
         try:
             if hasattr(self.client, "search"):
@@ -302,7 +341,8 @@ class Retriever:
             payload = result.payload or {}
 
             chunk_text = (
-                payload.get("text")
+                payload.get("chunk_text")
+                or payload.get("text")
                 or payload.get("content")
                 or payload.get("abstract")
                 or payload.get("description")
@@ -314,6 +354,14 @@ class Retriever:
                 "payload": payload,
                 "vector_score": result.score,
             })
+
+        candidates = self._dedupe_candidates(candidates)
+        if self._min_similarity > 0:
+            candidates = [
+                candidate
+                for candidate in candidates
+                if float(candidate.get("vector_score", 0.0) or 0.0) >= self._min_similarity
+            ]
 
         # Apply cross-encoder re-ranking if enabled
         if self._rerank_enabled and candidates and len(candidates) > top_k:
@@ -337,7 +385,7 @@ class Retriever:
                 {
                     "source_id": str(payload.get("source_id", payload.get("document_id", ""))),
                     "document_id": str(payload.get("document_id", payload.get("source_id", ""))),
-                    "chunk_index": payload.get("chunk_index"),
+                    "chunk_index": self._coerce_chunk_index(payload),
                     "chunk_id": payload.get("chunk_id"),
                     "title": payload.get("title", ""),
                     "publication_year": payload.get("publication_year", payload.get("year")),
@@ -361,6 +409,64 @@ class Retriever:
                 logger.warning("Vector retrieval quality degraded: drift_score=%.3f", drift_status["drift_score"])
 
         return {"chunks": chunks, "metadata": metadata, "scores": scores}
+
+    def calibrate_similarity_threshold(
+        self,
+        relevant_scores: list[float],
+        irrelevant_scores: list[float],
+        *,
+        min_recall: float = 0.85,
+        min_precision: float = 0.80,
+    ) -> dict[str, float]:
+        """Return a calibrated threshold and measured recall/precision."""
+        return SimilarityThresholdCalibrator.evaluate(
+            relevant_scores,
+            irrelevant_scores,
+            min_recall=min_recall,
+            min_precision=min_precision,
+        )
+
+    def _dedupe_candidates(self, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        best_by_key: dict[str, dict[str, Any]] = {}
+        order: list[str] = []
+        for candidate in candidates:
+            key = self._candidate_key(candidate)
+            current = best_by_key.get(key)
+            if current is None:
+                best_by_key[key] = candidate
+                order.append(key)
+                continue
+            if float(candidate.get("vector_score", 0.0) or 0.0) > float(current.get("vector_score", 0.0) or 0.0):
+                best_by_key[key] = candidate
+        return [best_by_key[key] for key in order]
+
+    def _candidate_key(self, candidate: dict[str, Any]) -> str:
+        payload = candidate.get("payload") or {}
+        source = (
+            payload.get("source_id")
+            or payload.get("document_id")
+            or payload.get("publication_id")
+            or ""
+        )
+        chunk_id = payload.get("chunk_id")
+        chunk_index = self._coerce_chunk_index(payload)
+        if source and (chunk_id is not None or chunk_index is not None):
+            return f"{source}:{chunk_id if chunk_id is not None else chunk_index}"
+        chunk = str(candidate.get("chunk") or "").strip().lower()
+        return re.sub(r"\s+", " ", chunk)[:500]
+
+    def _coerce_chunk_index(self, payload: dict[str, Any]) -> int | None:
+        raw_index = payload.get("chunk_index")
+        if raw_index is not None:
+            try:
+                return int(raw_index)
+            except (TypeError, ValueError):
+                pass
+        raw_chunk_id = payload.get("chunk_id")
+        if raw_chunk_id is None:
+            return None
+        match = re.search(r"(\d+)$", str(raw_chunk_id))
+        return int(match.group(1)) if match else None
 
     def _rerank_candidates(
         self,

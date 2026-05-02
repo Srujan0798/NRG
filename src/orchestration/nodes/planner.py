@@ -6,8 +6,9 @@ import json
 import logging
 import os
 import re
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, cast
 
 from pydantic import BaseModel, Field, ValidationError
 
@@ -19,6 +20,35 @@ from src.security.egress.schema_allowlist_loader import get_allowlist
 from src.skills.text_to_sql.sqlite_schema_extractor import SQLiteSchemaExtractor
 
 logger = logging.getLogger(__name__)
+
+JSONDict = dict[str, Any]
+
+
+class PlannerClient(Protocol):
+    def generate(self, system_prompt: str, user_prompt: str, history: list[JSONDict]) -> str: ...
+
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _as_string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in cast(list[Any], value)]
+    return []
+
+
+def _json_dict_list(value: Any) -> list[JSONDict]:
+    if not isinstance(value, list):
+        return []
+    return [_as_json_dict(item) for item in cast(list[Any], value) if isinstance(item, Mapping)]
+
+
+def _empty_json_dict_list() -> list[JSONDict]:
+    return []
+
 
 PROMPT_PATH = Path(__file__).resolve().parents[2] / "prompts" / "planner_system.md"
 
@@ -126,7 +156,7 @@ def _detect_domain_from_tables(tables: list[str]) -> str:
             domain_counts[domain] = domain_counts.get(domain, 0) + 1
     if not domain_counts:
         return "other"
-    return max(domain_counts, key=domain_counts.get)
+    return max(domain_counts, key=lambda domain: domain_counts[domain])
 
 
 def _default_assumptions(query: str) -> list[str]:
@@ -147,28 +177,28 @@ class Plan(BaseModel):
     schema_tables: list[str] = Field(default_factory=list)
     desired_skills: list[str] = Field(default_factory=list)
     expected_output_shape: str = ""
-    dag_nodes: list[dict] = Field(default_factory=list)
+    dag_nodes: list[JSONDict] = Field(default_factory=_empty_json_dict_list)
     dag_root_id: str = Field(default="")
     is_dag: bool = Field(default=False)
     subqueries: list[str] = Field(default_factory=list)
 
 
 @trace_llm_call("planner")
-def planner_node(state: Any) -> dict:
+def planner_node(state: Any) -> JSONDict:
     """Build a schema-only execution plan for downstream router/executor."""
-    user_query = _state_get(state, "user_query", "")
-    conversation_history = _state_get(state, "conversation_history", [])
-    user_id = _state_get(state, "user_id", "planner")
-    previous_domain = _state_get(state, "active_domain", "")
+    user_query = str(_state_get(state, "user_query", "") or "")
+    conversation_history = _json_dict_list(_state_get(state, "conversation_history", []))
+    user_id = str(_state_get(state, "user_id", "planner") or "planner")
+    previous_domain = str(_state_get(state, "active_domain", "") or "")
     planning_query = _enrich_followup_query(
         user_query,
-        last_domain_table=_state_get(state, "last_domain_table", ""),
-        last_primary_entity=_state_get(state, "last_primary_entity", ""),
-        last_query_type=_state_get(state, "last_query_type", ""),
+        last_domain_table=str(_state_get(state, "last_domain_table", "") or ""),
+        last_primary_entity=str(_state_get(state, "last_primary_entity", "") or ""),
+        last_query_type=str(_state_get(state, "last_query_type", "") or ""),
     )
     catalog_classification = classify_query(
         planning_query,
-        user_tier=_state_get(state, "user_tier", 1) or 1,
+        user_tier=int(_state_get(state, "user_tier", 1) or 1),
     )
 
     client = _get_planner_client()
@@ -187,7 +217,7 @@ def planner_node(state: Any) -> dict:
         try:
             raw = client.generate(system_prompt, user_prompt, conversation_history[-3:])
             plan = _parse_plan(raw)
-            plan_dict = plan.model_dump()
+            plan_dict: JSONDict = plan.model_dump()
             try:
                 log_plan(user_id, planning_query, plan_dict)
                 log_llm_call(
@@ -204,7 +234,7 @@ def planner_node(state: Any) -> dict:
                 "planner_metadata": {
                     "mode": "llm",
                     "model": _client_model_name(client),
-                    "catalog": catalog_classification.to_dict(),
+                    "catalog": _as_json_dict(catalog_classification.to_dict()),
                 },
                 "assumptions": _default_assumptions(planning_query),
                 "interpreted_question": planning_query,
@@ -230,7 +260,7 @@ def planner_node(state: Any) -> dict:
                     "planner_metadata": {
                         "mode": "llm_repaired",
                         "model": _client_model_name(client),
-                        "catalog": catalog_classification.to_dict(),
+                        "catalog": _as_json_dict(catalog_classification.to_dict()),
                     },
                     "assumptions": _default_assumptions(planning_query),
                     "interpreted_question": planning_query,
@@ -240,7 +270,7 @@ def planner_node(state: Any) -> dict:
             except Exception:
                 pass
 
-    fallback_plan = _heuristic_decompose(
+    fallback_plan: JSONDict = _heuristic_decompose(
         planning_query,
         schema_prompt,
         catalog_classification,
@@ -255,7 +285,7 @@ def planner_node(state: Any) -> dict:
         "planner_metadata": {
             "mode": "heuristic_fallback",
             "reason": "llm_unavailable_or_failed",
-            "catalog": catalog_classification.to_dict(),
+            "catalog": _as_json_dict(catalog_classification.to_dict()),
         },
         "assumptions": _default_assumptions(planning_query),
         "interpreted_question": planning_query,
@@ -264,9 +294,9 @@ def planner_node(state: Any) -> dict:
     }
 
 
-def _domain_update(plan_dict: dict, previous_domain: str) -> dict:
+def _domain_update(plan_dict: JSONDict, previous_domain: str) -> JSONDict:
     """Compute domain state updates from a plan's schema_tables."""
-    tables = plan_dict.get("schema_tables", [])
+    tables = _as_string_list(plan_dict.get("schema_tables", []))
     current_domain = _detect_domain_from_tables(tables)
     domain_switch = bool(
         previous_domain
@@ -302,17 +332,17 @@ def _enrich_followup_query(
     return f"[Context: {'; '.join(context_parts)}] {query}"
 
 
-def _context_update(plan_dict: dict, state: Any, planning_query: str) -> dict:
-    tables = plan_dict.get("schema_tables", [])
-    previous_table = _state_get(state, "last_domain_table", "")
+def _context_update(plan_dict: JSONDict, state: Any, planning_query: str) -> JSONDict:
+    tables = _as_string_list(plan_dict.get("schema_tables", []))
+    previous_table = str(_state_get(state, "last_domain_table", "") or "")
     last_domain_table = tables[0] if tables else previous_table
 
     primary_entity = (
-        _extract_primary_entity(_state_get(state, "user_query", ""))
-        or _state_get(state, "last_primary_entity", "")
+        _extract_primary_entity(str(_state_get(state, "user_query", "") or ""))
+        or str(_state_get(state, "last_primary_entity", "") or "")
         or _extract_primary_entity(planning_query)
     )
-    query_type = _infer_query_type(planning_query) or _state_get(state, "last_query_type", "")
+    query_type = _infer_query_type(planning_query) or str(_state_get(state, "last_query_type", "") or "")
     return {
         "last_domain_table": last_domain_table,
         "last_primary_entity": primary_entity,
@@ -357,7 +387,7 @@ def _heuristic_decompose(
     user_query: str,
     schema_prompt: str,
     catalog_classification: QueryClassification | None = None,
-) -> dict:
+) -> JSONDict:
     """Perform heuristic query decomposition producing a DAG when LLM unavailable."""
     import uuid
 
@@ -390,7 +420,7 @@ def _heuristic_decompose(
         if is_multi_hop and len(subqueries) == 1:
             root_id = f"node_{uuid.uuid4().hex[:6]}"
             sq = subqueries[0]
-            dag_nodes = [
+            dag_nodes: list[JSONDict] = [
                 {
                     "id": root_id,
                     "subquery": sq,
@@ -425,27 +455,14 @@ def _heuristic_decompose(
                 "dag_root_id": root_id,
                 "is_dag": len(dag_nodes) > 1,
             }
-        root_id = f"node_{uuid.uuid4().hex[:6]}"
-        dag_nodes = [
-            {
-                "id": root_id,
-                "subquery": sq,
-                "skill": skills[0] if skills else "sql",
-                "depends_on": [],
-                "tables": tables,
-                "output_shape": output_shape,
-                "optional": False,
-            }
-            for sq in subqueries
-        ]
         return {
             "subqueries": subqueries,
             "schema_tables": tables,
             "desired_skills": skills,
             "expected_output_shape": output_shape,
-            "dag_nodes": dag_nodes,
-            "dag_root_id": root_id if dag_nodes else "",
-            "is_dag": True,
+            "dag_nodes": [],
+            "dag_root_id": "",
+            "is_dag": False,
         }
 
     multi_hop_indicators = [
@@ -465,7 +482,7 @@ def _heuristic_decompose(
     is_true_comparison = any(ind in query_lower for ind in true_comparison_indicators)
 
     root_id = f"node_{uuid.uuid4().hex[:6]}"
-    dag_nodes = []
+    dag_nodes: list[JSONDict] = []
 
     if is_true_comparison:
         for i, sq in enumerate(subqueries):
@@ -525,11 +542,12 @@ def _heuristic_decompose(
 
 def _extract_subqueries(query_lower: str) -> list[str]:
     """Extract potential subqueries from the user query using sentence segmentation."""
-    sentences = re.split(r"[?,;]", query_lower)
-    subqueries = []
+    normalized = re.sub(r"\b(?:then|next|after that|afterwards)\b", ".", query_lower)
+    sentences = re.split(r"[?.;]+", normalized)
+    subqueries: list[str] = []
     for sent in sentences:
         sent = sent.strip()
-        if len(sent) > 10 and not sent.startswith(("list", "find", "show", "what", "how")):
+        if len(sent) > 3:
             subqueries.append(sent)
     if not subqueries:
         subqueries = [query_lower]
@@ -627,7 +645,7 @@ def _build_heuristic_schema_prompt(user_query: str) -> str:
 
 def _determine_skills(query_lower: str) -> list[str]:
     """Determine which skills are needed based on query keywords."""
-    skills = set()
+    skills: set[str] = set()
 
     for skill, keywords in SKILL_KEYWORDS.items():
         for keyword in keywords:
@@ -700,7 +718,7 @@ def _extract_comparison_entities(query_lower: str) -> list[str]:
         "usa",
         "china",
     ]
-    found = []
+    found: list[str] = []
     for entity in known_entities:
         if entity in query_lower:
             found.append(entity)
@@ -734,7 +752,7 @@ def _load_prompt() -> str:
     return PROMPT_PATH.read_text()
 
 
-def _get_planner_client() -> Any | None:
+def _get_planner_client() -> PlannerClient | None:
     """
     Get planner LLM client with schema allowlisting for sovereign egress control.
 
@@ -778,13 +796,13 @@ def _get_planner_client() -> Any | None:
 _SCHEMA_ALLOWLIST = None
 
 
-def _get_schema_allowlist() -> set:
+def _get_schema_allowlist() -> set[str]:
     """Get cached schema allowlist from YAML loader."""
     allowlist = get_allowlist()
-    return allowlist.get_allowed_tables()
+    return {str(table) for table in allowlist.get_allowed_tables()}
 
 
-def _filter_schema_prompt(schema_prompt: str, allowlist: set) -> str:
+def _filter_schema_prompt(schema_prompt: str, allowlist: set[str]) -> str:
     """
     Filter schema prompt to only include allowlisted table/column names.
     This ensures LLM only sees approved schema elements, preventing
@@ -793,7 +811,7 @@ def _filter_schema_prompt(schema_prompt: str, allowlist: set) -> str:
 
     # Remove any non-allowlisted table references
     lines = schema_prompt.split("\n")
-    filtered_lines = []
+    filtered_lines: list[str] = []
     for line in lines:
         # Skip lines with unlisted table names (but keep headers and structure)
         # Allow any line that doesn't reference a specific table name
@@ -822,11 +840,11 @@ class _SchemaAllowlistingClient:
     Ensures no schema fingerprinting via prompt analysis.
     """
 
-    def __init__(self, base_client: Any, allowlist: set):
+    def __init__(self, base_client: Any, allowlist: set[str]) -> None:
         self._client = base_client
         self._allowlist = allowlist
 
-    def generate(self, system_prompt: str, user_prompt: str, history: list) -> str:
+    def generate(self, system_prompt: str, user_prompt: str, history: list[JSONDict]) -> str:
         """Generate with schema filtering applied to system prompt."""
         # Filter system prompt to only expose allowlisted schema elements
         filtered_system = _filter_schema_prompt(system_prompt, self._allowlist)
@@ -877,12 +895,12 @@ def _client_model_name(client: Any) -> str:
 
 
 def _state_get(state: Any, key: str, default: Any = None) -> Any:
-    if isinstance(state, dict):
-        return state.get(key, default)
+    if isinstance(state, Mapping):
+        return cast(Mapping[str, Any], state).get(key, default)
     return getattr(state, key, default)
 
 
-def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
+def build_dag(nodes: list[JSONDict]) -> tuple[dict[str, JSONDict], list[str]]:
     """Build adjacency list and topological order from DAG nodes.
 
     Returns (node_map, execution_order) where execution_order is nodes
@@ -890,18 +908,19 @@ def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
     """
     from collections import defaultdict
 
-    node_map: dict[str, dict] = {n["id"]: n for n in nodes}
-    in_degree: dict[str, int] = {n["id"]: 0 for n in nodes}
+    node_map: dict[str, JSONDict] = {str(n["id"]): n for n in nodes}
+    in_degree: dict[str, int] = {str(n["id"]): 0 for n in nodes}
     children: dict[str, list[str]] = defaultdict(list)
 
     for n in nodes:
-        for parent_id in n.get("depends_on", []):
+        node_id = str(n["id"])
+        for parent_id in _as_string_list(n.get("depends_on", [])):
             if parent_id in node_map:
-                children[parent_id].append(n["id"])
-                in_degree[n["id"]] += 1
+                children[parent_id].append(node_id)
+                in_degree[node_id] += 1
 
     queue = [nid for nid, deg in in_degree.items() if deg == 0]
-    order = []
+    order: list[str] = []
     while queue:
         nid = queue.pop(0)
         order.append(nid)
@@ -911,3 +930,11 @@ def _build_dag(nodes: list[dict]) -> tuple[dict[str, dict], list[str]]:
                 queue.append(child_id)
 
     return node_map, order
+
+
+def _build_dag(nodes: list[JSONDict]) -> tuple[dict[str, JSONDict], list[str]]:
+    """Backward-compatible alias for planner DAG tests and older callers."""
+    return build_dag(nodes)
+
+
+build_dag_for_tests = _build_dag

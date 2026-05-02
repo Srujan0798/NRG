@@ -78,7 +78,8 @@ class TestRetryHandler:
         assert call_count == 1
 
     def test_retry_on_failure_then_success(self):
-        handler = RetryHandler(max_retries=3)
+        sleeps = []
+        handler = RetryHandler(max_retries=3, sleep_fn=sleeps.append)
         call_count = 0
 
         def flaky_op():
@@ -91,15 +92,26 @@ class TestRetryHandler:
         result = handler.handle_retry(flaky_op)
         assert result == "recovered"
         assert call_count == 3
+        assert sleeps == [1.0, 2.0]
 
     def test_max_retries_exhausted(self):
-        handler = RetryHandler(max_retries=3)
+        sleeps = []
+        handler = RetryHandler(max_retries=3, sleep_fn=sleeps.append)
 
         def always_fails():
             raise ValueError("always fails")
 
         with pytest.raises(ValueError, match="always fails"):
             handler.handle_retry(always_fails)
+        assert sleeps == [1.0, 2.0]
+
+    def test_retry_caps_at_three_attempts(self):
+        sleeps = []
+        handler = RetryHandler(max_retries=10, sleep_fn=sleeps.append)
+        assert handler.max_retries == 3
+        assert handler.backoff_seconds(0) == 1.0
+        assert handler.backoff_seconds(1) == 2.0
+        assert handler.backoff_seconds(2) == 4.0
 
     def test_retry_with_args(self):
         handler = RetryHandler(max_retries=2)

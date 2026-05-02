@@ -103,6 +103,39 @@ class TestIngestPublications:
         assert result["publications"] == 0
         assert result["chunks"] == 0
 
+    @patch("src.skills.rag.ingest.get_audit_log")
+    def test_ingest_documents_embeds_and_upserts_new_document(self, mock_audit):
+        from src.skills.rag.ingest import ingest_documents
+
+        embedder = MagicMock()
+        embedder.chunk.return_value = ["new chunk one", "new chunk two"]
+        embedder.embed.return_value = [[0.1] * 4, [0.2] * 4]
+        retriever = MagicMock()
+        retriever.collection_name = "nrg_research"
+
+        result = ingest_documents(
+            [
+                {
+                    "document_id": "doc-new",
+                    "title": "New battery recycling evidence",
+                    "content": "New content for vector indexing.",
+                    "access_tier": 1,
+                }
+            ],
+            embedder=embedder,
+            retriever=retriever,
+        )
+
+        assert result["documents"] == 1
+        assert result["vectors_upserted"] == 2
+        embedder.embed.assert_called_once_with(["new chunk one", "new chunk two"])
+        ids, embeddings, payloads = retriever.upsert.call_args.args
+        assert len(ids) == 2
+        assert embeddings == [[0.1] * 4, [0.2] * 4]
+        assert payloads[0]["document_id"] == "doc-new"
+        assert payloads[0]["chunk_index"] == 0
+        assert payloads[1]["chunk_index"] == 1
+
 
 class TestReranker:
     def test_rerank_empty_candidates(self):

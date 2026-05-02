@@ -1,0 +1,38 @@
+{
+  "collection": {
+    "name": "nrg_batch5_final_test",
+    "points_count": 1,
+    "vectors_count": null
+  },
+  "ingest": {
+    "chunks": 1,
+    "collection": "nrg_batch5_final_test",
+    "documents": 1,
+    "vectors_upserted": 1
+  },
+  "retrieved_chunks": [
+    "Batch 5 final Qdrant proof chunk for fresh document ingestion and retrieval."
+  ],
+  "retrieved_metadata": [
+    {
+      "access_tier": 1,
+      "affiliation": "",
+      "chunk_id": "ch_0",
+      "chunk_index": 0,
+      "document_id": "batch5-final-doc",
+      "institution": "",
+      "keywords": [],
+      "publication_year": null,
+      "research_area_tags": [],
+      "researcher_ids": [],
+      "source_id": "batch5-final-doc",
+      "source_type": "document",
+      "title": "Batch 5 final vector evidence",
+      "topics": []
+    }
+  ],
+  "retrieved_scores": [
+    1.0
+  ]
+}
+cleanup: deleted nrg_batch5_final_test

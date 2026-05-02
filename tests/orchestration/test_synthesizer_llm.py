@@ -75,3 +75,51 @@ def test_synthesizer_falls_back_on_llm_failure(monkeypatch):
 
     assert "Fallback" in result["synthesized_response"] or "Structured summary" in result["synthesized_response"]
     assert result["verification_status"] is True
+
+
+def test_synthesizer_falls_back_on_malformed_llm_response(monkeypatch):
+    class MalformedMesh:
+        def generate(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
+            return "{not valid json"
+
+        def generate_streaming(self, system_prompt, user_prompt, conversation_history=None, complexity=None):
+            yield "{not valid json"
+
+    monkeypatch.setenv("CLOUD_SYNTHESIS_ALLOWED", "true")
+    monkeypatch.setattr(
+        "src.orchestration.nodes.synthesizer.get_llm_mesh",
+        lambda: MalformedMesh(),
+    )
+    monkeypatch.setattr(
+        "src.orchestration.nodes.synthesizer.get_local_llm_client",
+        lambda: None,
+    )
+    monkeypatch.setattr(
+        "src.orchestration.nodes.synthesizer.log_llm_call",
+        lambda *args, **kwargs: None,
+    )
+
+    result = synthesizer_node(
+        {
+            "user_query": "Summarize robotics funding with policy evidence",
+            "sql_results": [{"agency": "MeitY", "total_grant": 1200000}],
+            "retrieved_chunks": [
+                {
+                    "publication_id": "DOC-ROB-1",
+                    "chunk_id": "ch_0",
+                    "title": "Robotics funding note",
+                    "content": "Mission-mode grants support robotics translation.",
+                }
+            ],
+            "user_tier": 1,
+            "conversation_history": [],
+            "intent": "hybrid",
+            "routing_decision": "text_to_sql+rag",
+            "complexity": "moderate",
+        }
+    )
+
+    assert result["verification_status"] is True
+    assert result["provenance"]["synth"] == "rule_based_hybrid"
+    assert "Hybrid Evidence Answer" in result["synthesized_response"]
+    assert "{not valid json" not in result["synthesized_response"]

@@ -19,7 +19,9 @@ Phase 3 - Immortalize:
 
 from __future__ import annotations
 
-from typing import TypedDict, Optional, NamedTuple
+from collections.abc import Mapping, Sequence
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from typing import Any, NamedTuple, Optional, Protocol, TypedDict, cast
 import json
 import re
 import logging
@@ -33,6 +35,35 @@ from src.orchestration.query_catalog import QueryClassification, classify_query
 
 
 logger = logging.getLogger(__name__)
+
+JSONDict = dict[str, Any]
+
+
+class RouterLLM(Protocol):
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        conversation_history: list[JSONDict],
+    ) -> str: ...
+
+
+def _as_json_dict(value: Any) -> JSONDict:
+    if not isinstance(value, Mapping):
+        return {}
+    return dict(cast(Mapping[str, Any], value))
+
+
+def _as_string_list(value: Any) -> list[str]:
+    if isinstance(value, list):
+        return [str(item) for item in cast(list[Any], value)]
+    return []
+
+
+def _state_get(state: Any, key: str, default: Any) -> Any:
+    if isinstance(state, Mapping):
+        return cast(Mapping[str, Any], state).get(key, default)
+    return getattr(state, key, default)
 
 
 class IntentType(str, Enum):
@@ -186,7 +217,7 @@ class RoutingMetrics:
         self.ambiguity_rate = 0.0
         self.ambiguity_count = 0
         self.llm_enhancement_count = 0
-        self.self_calibration_data: list[dict] = []
+        self.self_calibration_data: list[JSONDict] = []
 
     @classmethod
     def reset(cls):
@@ -227,7 +258,7 @@ class RoutingMetrics:
             if len(self.self_calibration_data) > 1000:
                 self.self_calibration_data = self.self_calibration_data[-500:]
 
-    def get_metrics(self) -> dict:
+    def get_metrics(self) -> JSONDict:
         """Get current routing metrics."""
         avg_confidence = self.confidence_sum / self.total_routes if self.total_routes > 0 else 0.0
         return {
@@ -241,7 +272,7 @@ class RoutingMetrics:
             "self_calibration_samples": len(self.self_calibration_data),
         }
 
-    def recalibrate_confidence(self, intent: str, observed_accuracy: float) -> dict[str, float]:
+    def recalibrate_confidence(self, intent: str, observed_accuracy: float) -> dict[str, Any]:
         """Recalibrate confidence thresholds based on observed accuracy."""
         if len(self.self_calibration_data) < 10:
             return {}
@@ -286,7 +317,7 @@ def _sanitize_query(query: str) -> str:
 
 def _detect_ambiguity(query: str) -> tuple[bool, list[str]]:
     """Detect ambiguous terms and return (is_ambiguous, list_of_issues)."""
-    issues = []
+    issues: list[str] = []
     query_lower = query.lower()
     for pattern in AMBIGUITY_PATTERNS:
         match = re.search(pattern, query_lower)
@@ -297,7 +328,7 @@ def _detect_ambiguity(query: str) -> tuple[bool, list[str]]:
 
 def _detect_multi_intent(query: str) -> tuple[bool, list[str]]:
     """Detect if query contains multiple intents that need decomposition."""
-    subqueries = []
+    subqueries: list[str] = []
     query_lower = query.lower()
 
     SHORT_ACCEPTABLE_PREFIXES = (
@@ -328,7 +359,7 @@ def _detect_multi_intent(query: str) -> tuple[bool, list[str]]:
     return len(subqueries) >= 2, subqueries
 
 
-def _classify_intent_with_confidence(query: str) -> tuple[str, float, dict]:
+def _classify_intent_with_confidence(query: str) -> tuple[str, float, JSONDict]:
     """Classify query intent based on patterns with confidence scoring.
 
     Returns:
@@ -490,19 +521,20 @@ def _classify_intent_via_llm(
                     return None, 0.0
             if client is None:
                 return None, 0.0
+            llm_client = cast(RouterLLM, client)
 
             prompt = INTENT_CLASSIFICATION_PROMPT.format(
                 query=query,
                 stage1_intent=stage1_intent,
                 stage1_confidence=stage1_confidence,
             )
-            response = client.generate(
+            response = llm_client.generate(
                 system_prompt="You are an expert research query classifier. Return ONLY valid JSON.",
                 user_prompt=prompt,
                 conversation_history=[],
             )
 
-            data = json.loads(response)
+            data = _as_json_dict(json.loads(response))
             route = data.get("route", "")
             confidence = float(data.get("confidence", 0.8))
 
@@ -532,8 +564,6 @@ def _classify_intent_via_llm(
             return None, 0.0
 
     try:
-        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(_call_llm)
             intent, confidence = future.result(timeout=2.0)
@@ -547,7 +577,7 @@ def _classify_intent_via_llm(
     return intent, confidence
 
 
-def _decompose_intent_via_llm(query: str) -> list[str]:
+def decompose_intent_via_llm(query: str) -> list[str]:
     """Decompose multi-intent query into sub-queries using LLM."""
     try:
         from src.config.llm_config import get_llm_client
@@ -562,24 +592,25 @@ def _decompose_intent_via_llm(query: str) -> list[str]:
                 return [query]
         if client is None:
             return [query]
+        llm_client = cast(RouterLLM, client)
 
         prompt = MULTI_INTENT_DECOMPOSITION_PROMPT.format(query=query)
-        response = client.generate(
+        response = llm_client.generate(
             system_prompt="You are a query decomposer. Return ONLY a JSON array of strings.",
             user_prompt=prompt,
             conversation_history=[],
         )
 
         try:
-            subqueries = json.loads(response)
-            if isinstance(subqueries, list) and all(isinstance(q, str) for q in subqueries):
+            subqueries = _as_string_list(json.loads(response))
+            if subqueries:
                 logger.info("LLM decomposed query into %d sub-queries", len(subqueries))
                 return subqueries
         except json.JSONDecodeError:
             match = re.search(r"\[.*\]", response, re.DOTALL)
             if match:
-                subqueries = json.loads(match.group(0))
-                if isinstance(subqueries, list):
+                subqueries = _as_string_list(json.loads(match.group(0)))
+                if subqueries:
                     return subqueries
 
         return [query]
@@ -590,7 +621,7 @@ def _decompose_intent_via_llm(query: str) -> list[str]:
 
 def _apply_default_clarifications(query: str) -> list[str]:
     """Apply default clarifications for ambiguous terms."""
-    clarifications = []
+    clarifications: list[str] = []
     query_lower = query.lower()
 
     if "best" in query_lower or "top" in query_lower:
@@ -628,7 +659,7 @@ def _catalog_routing_result(
     classification: QueryClassification,
     user_query: str,
     user_tier: int,
-) -> dict:
+) -> JSONDict:
     detected_ambiguous, detected_issues = _detect_ambiguity(user_query)
     ambiguity_is_resolved = _catalog_resolves_ambiguity(user_query, detected_issues)
     intent = _intent_for_catalog_route(classification.route)
@@ -644,10 +675,10 @@ def _catalog_routing_result(
     is_ambiguous = classification.needs_clarification or (
         detected_ambiguous and not ambiguity_is_resolved
     )
-    ambiguity_issues = ["needs_clarification"] if classification.needs_clarification else []
+    ambiguity_issues: list[str] = ["needs_clarification"] if classification.needs_clarification else []
     if is_ambiguous:
         ambiguity_issues.extend(detected_issues)
-    clarifications = []
+    clarifications: list[str] = []
     if classification.clarification_question:
         clarifications.append(classification.clarification_question)
     if is_ambiguous:
@@ -733,7 +764,7 @@ def _catalog_resolves_ambiguity(user_query: str, ambiguity_issues: list[str]) ->
 
 def _stage1_regex_classification(
     user_query: str,
-) -> tuple[str, float, dict, bool, list[str]]:
+) -> tuple[str, float, JSONDict, bool, list[str]]:
     """Stage 1: Fast regex-based classification.
 
     Returns:
@@ -761,17 +792,12 @@ def _stage2_llm_confirmation(
     if not is_ambiguous and confidence >= CONFIDENCE_THRESHOLD_HIGH:
         return intent, confidence, is_ambiguous, ambiguity_issues, [], False
 
-    clarifications = []
+    clarifications: list[str] = []
     llm_enhanced = False
 
     if is_ambiguous or confidence < CONFIDENCE_THRESHOLD_HIGH:
         llm_result = _classify_intent_via_llm(user_query, intent, confidence)
-        if isinstance(llm_result, tuple) and len(llm_result) == 2:
-            llm_intent, llm_confidence = llm_result
-        elif isinstance(llm_result, str):
-            llm_intent, llm_confidence = llm_result, 0.85
-        else:
-            llm_intent, llm_confidence = None, 0.0
+        llm_intent, llm_confidence = _coerce_llm_route_result(llm_result, confidence)
         if llm_intent:
             resolved_intent = llm_intent
             resolved_confidence = max(llm_confidence, confidence + 0.05)
@@ -809,7 +835,43 @@ def _stage2_llm_confirmation(
     return intent, confidence, is_ambiguous, ambiguity_issues, clarifications, llm_enhanced
 
 
-def router_node(state) -> dict:
+def _coerce_llm_route_result(result: Any, fallback_confidence: float) -> tuple[Optional[str], float]:
+    """Normalize legacy string and current tuple/dict LLM route results."""
+    if isinstance(result, str):
+        intent = result if result in ("structured", "unstructured", "hybrid") else None
+        return intent, max(fallback_confidence, CONFIDENCE_THRESHOLD_LOW)
+
+    raw_intent: Any
+    raw_confidence: Any
+    if isinstance(result, Mapping):
+        result_map = cast(Mapping[str, Any], result)
+        raw_intent = result_map.get("intent") or result_map.get("route")
+        raw_confidence = result_map.get("confidence", fallback_confidence)
+    elif isinstance(result, (tuple, list)):
+        result_sequence = cast(Sequence[Any], result)
+        raw_intent = result_sequence[0] if len(result_sequence) > 0 else None
+        raw_confidence = result_sequence[1] if len(result_sequence) > 1 else fallback_confidence
+    else:
+        return None, fallback_confidence
+
+    route_map = {
+        "text_to_sql": "structured",
+        "rag": "unstructured",
+        "text_to_sql+rag": "hybrid",
+        "structured": "structured",
+        "unstructured": "unstructured",
+        "hybrid": "hybrid",
+    }
+    normalized_intent = route_map.get(str(raw_intent or ""))
+    try:
+        normalized_confidence = float(raw_confidence)
+    except (TypeError, ValueError):
+        normalized_confidence = fallback_confidence
+
+    return normalized_intent, normalized_confidence
+
+
+def router_node(state: Any) -> JSONDict:
     """Route query to appropriate skill(s) with confidence scoring and rationale.
 
     2-stage routing:
@@ -824,10 +886,11 @@ def router_node(state) -> dict:
     """
     metrics = RoutingMetrics()
 
-    plan = state.get("plan") if isinstance(state, dict) else getattr(state, "plan", None)
+    plan = _as_json_dict(_state_get(state, "plan", {}))
 
-    if isinstance(plan, dict) and plan.get("desired_skills"):
-        desired = {str(skill).lower() for skill in plan["desired_skills"]}
+    desired_skills = _as_string_list(plan.get("desired_skills", []))
+    if desired_skills:
+        desired = {skill.lower() for skill in desired_skills}
         if "sql+rag" in desired or {"sql", "rag"}.issubset(desired):
             result = {
                 "intent": "hybrid",
@@ -894,18 +957,9 @@ def router_node(state) -> dict:
             metrics.record("unstructured", 0.9, False, False)
             return result
 
-    if hasattr(state, "user_query"):
-        user_query = state.user_query
-    elif isinstance(state, dict):
-        user_query = state.get("user_query", "")
-    else:
-        user_query = ""
+    user_query = str(_state_get(state, "user_query", "") or "")
 
-    user_tier = 1
-    if isinstance(state, dict):
-        user_tier = state.get("user_tier", 1)
-    elif hasattr(state, "user_tier"):
-        user_tier = state.user_tier
+    user_tier = int(_state_get(state, "user_tier", 1) or 1)
 
     if not user_query or not user_query.strip():
         logger.warning("Empty query received, defaulting to hybrid")
@@ -976,9 +1030,9 @@ def router_node(state) -> dict:
     if _catalog_should_short_circuit(catalog_classification):
         result = _catalog_routing_result(catalog_classification, user_query, user_tier)
         metrics.record(
-            result["intent"],
-            result["routing_confidence"],
-            result["is_ambiguous"],
+            str(result["intent"]),
+            float(result["routing_confidence"]),
+            bool(result["is_ambiguous"]),
             False,
         )
         return result
@@ -1024,9 +1078,10 @@ def router_node(state) -> dict:
 
     routing_decision = _route_to_skill(intent)
 
-    reasoning_parts = []
-    if details.get("matched_patterns"):
-        reasoning_parts.append(f"Patterns: {', '.join(details['matched_patterns'][:3])}")
+    reasoning_parts: list[str] = []
+    matched_patterns = _as_string_list(details.get("matched_patterns", []))
+    if matched_patterns:
+        reasoning_parts.append(f"Patterns: {', '.join(matched_patterns[:3])}")
     if is_ambiguous:
         reasoning_parts.append(f"Ambiguity detected: {', '.join(ambiguity_issues[:2])}")
     if llm_enhanced:
@@ -1043,12 +1098,12 @@ def router_node(state) -> dict:
         else f"{intent.title()} query routed to {routing_decision}"
     )
 
-    rationale = [
+    rationale: list[str] = [
         f"Stage: {details.get('stage', 'unknown')}",
         f"Intent: {intent}",
         f"Confidence: {confidence:.2f}",
         f"Threshold check: {'PASS' if confidence >= CONFIDENCE_THRESHOLD_LOW else 'FAIL (forced hybrid)'}",
-        f"Matched patterns: {details.get('matched_patterns', [])}",
+        f"Matched patterns: {matched_patterns}",
         f"Reason: {details.get('reason', 'N/A')}",
     ]
     if is_ambiguous:

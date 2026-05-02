@@ -12,28 +12,27 @@ Verifies:
 
 import pytest
 
-pytestmark = pytest.mark.slow
-
 from src.orchestration.nodes.planner import (
     _heuristic_decompose,
     _build_dag as planner_build_dag,
 )
 from src.orchestration.nodes.executor import _build_dag as exec_build_dag, _execute_dag
 
+pytestmark = pytest.mark.slow
+
 
 class TestDAGDecomposition:
     """Test DAG structure generation from queries."""
 
     def test_simple_query_single_node(self):
-        """Single subquery produces single-node DAG."""
+        """Single subquery bypasses DAG execution."""
         result = _heuristic_decompose(
             "Find all AI researchers in Gujarat",
             "table: researchers\ntable: publications"
         )
-        assert result["is_dag"] is True
-        assert len(result["dag_nodes"]) == 1
-        assert result["dag_root_id"] == result["dag_nodes"][0]["id"]
-        assert result["dag_nodes"][0]["depends_on"] == []
+        assert result["is_dag"] is False
+        assert result["dag_nodes"] == []
+        assert result["dag_root_id"] == ""
 
     def test_comparison_query_parallel_branches(self):
         """Compare Gujarat and Karnataka produces root + parallel branches."""
@@ -68,7 +67,8 @@ class TestDAGDecomposition:
             "table: researchers"
         )
         assert "subqueries" in result
-        assert result["is_dag"] is True
+        assert result["is_dag"] is False
+        assert result["dag_nodes"] == []
 
     def test_dag_node_fields_complete(self):
         """Each DAG node has all required fields."""
@@ -202,12 +202,24 @@ class TestDAGDecompositionFull:
             "Find robotics researchers. Then list their publications. Then show their funding.",
             "table: researchers\ntable: publications\ntable: funding_records"
         )
-        if result["is_dag"] and len(result["dag_nodes"]) >= 3:
-            ids = [n["id"] for n in result["dag_nodes"]]
-            root = next(n for n in result["dag_nodes"] if n["id"] == result["dag_root_id"])
-            assert root["depends_on"] == []
-            chain_nodes = [n for n in result["dag_nodes"] if n["depends_on"]]
-            assert all(dep in ids for node in chain_nodes for dep in node["depends_on"])
+        assert result["is_dag"] is True
+        assert len(result["dag_nodes"]) == 3
+        ids = [n["id"] for n in result["dag_nodes"]]
+        root = next(n for n in result["dag_nodes"] if n["id"] == result["dag_root_id"])
+        assert root["depends_on"] == []
+        chain_nodes = [n for n in result["dag_nodes"] if n["depends_on"]]
+        assert all(dep in ids for node in chain_nodes for dep in node["depends_on"])
+
+    def test_four_hop_sequential_chain_deps(self):
+        """Sequential query produces a valid 4-hop chain."""
+        result = _heuristic_decompose(
+            "Find robotics researchers. Then list their publications. Then show their funding. Then summarize institute gaps.",
+            "table: researchers\ntable: publications\ntable: funding_records\ntable: institutions"
+        )
+        assert result["is_dag"] is True
+        assert len(result["dag_nodes"]) == 4
+        _, order = exec_build_dag(result["dag_nodes"])
+        assert order == [node["id"] for node in result["dag_nodes"]]
 
     def test_diamond_dag(self):
         """Diamond DAG: root -> a,b -> c. Root before children, c last."""
@@ -267,6 +279,17 @@ class TestDAGDecompositionFull:
         _, order = exec_build_dag(nodes)
         assert len(order) < 3
 
+    def test_cycle_dead_end_returns_graceful_error(self):
+        """Executor returns a structured error instead of hanging on a cyclic DAG."""
+        nodes = [
+            {"id": "a", "subquery": "a", "skill": "sql", "depends_on": ["c"], "tables": [], "output_shape": "list"},
+            {"id": "b", "subquery": "b", "skill": "sql", "depends_on": ["a"], "tables": [], "output_shape": "list"},
+            {"id": "c", "subquery": "c", "skill": "sql", "depends_on": ["b"], "tables": [], "output_shape": "list"},
+        ]
+        result = _execute_dag(nodes, "a", user_tier=1)
+        assert result["dag_node_count"] == 0
+        assert result["errors"][0]["error_type"] == "DAGDeadEnd"
+
     def test_explicit_dag_edges_are_id_lists_not_ordinal(self):
         """depends_on is a list of node ID strings, not ordinal positions."""
         result = _heuristic_decompose(
@@ -323,15 +346,14 @@ class TestDAGDecompositionFull:
         assert result["execution_time_ms"]["root"] >= 0
 
     def test_single_hop_query_produces_single_node(self):
-        """Single-hop query produces 1 node with no dependencies."""
+        """Single-hop query bypasses DAG metadata and executes directly."""
         result = _heuristic_decompose(
             "Find all AI researchers in Gujarat",
             "table: researchers\ntable: publications"
         )
-        assert result["is_dag"] is True
-        assert len(result["dag_nodes"]) == 1
-        assert result["dag_nodes"][0]["depends_on"] == []
-        assert result["dag_root_id"] == result["dag_nodes"][0]["id"]
+        assert result["is_dag"] is False
+        assert result["dag_nodes"] == []
+        assert result["dag_root_id"] == ""
 
     def test_dag_node_output_shape_preserved(self):
         """Each node's output_shape is propagated through execution."""
@@ -373,3 +395,32 @@ class TestExecutorDAGPath:
             mock_exec.return_value = {"sql_results": [], "dag_node_count": 2}
             result = executor_node(mock_state)
             assert result["dag_node_count"] == 2
+
+    def test_executor_bypasses_dag_for_simple_plan(self):
+        """Simple plans with is_dag=False execute directly instead of entering DAG mode."""
+        from unittest.mock import patch
+        from src.orchestration.nodes.executor import executor_node
+
+        mock_state = {
+            "user_query": "How many publications in 2023?",
+            "routing_decision": "text_to_sql",
+            "user_tier": 1,
+            "plan": {
+                "is_dag": False,
+                "dag_nodes": [],
+                "dag_root_id": "",
+            },
+        }
+
+        with patch(
+            "src.orchestration.nodes.executor._execute_dag",
+            side_effect=AssertionError("DAG path should not run"),
+        ), patch(
+            "src.orchestration.nodes.executor._execute_sql_only",
+            return_value={"sql_results": [{"count": 42}], "dag_node_count": 0},
+        ) as mock_sql:
+            result = executor_node(mock_state)
+
+        mock_sql.assert_called_once_with("How many publications in 2023?", 1)
+        assert result["sql_results"] == [{"count": 42}]
+        assert result["dag_node_count"] == 0
