@@ -44,11 +44,16 @@ PII_KEYWORDS = (
 
 
 def _login(username: str) -> str:
-    resp = requests.post(
-        f"{API_URL}/login",
-        json={"username": username, "password": PASSWORDS[username]},
-        timeout=15,
-    )
+    try:
+        resp = requests.post(
+            f"{API_URL}/login",
+            json={"username": username, "password": PASSWORDS[username]},
+            timeout=15,
+        )
+    except requests.RequestException as exc:
+        if os.getenv("NRG_REQUIRE_LIVE_API") == "1":
+            raise
+        pytest.skip(f"Live API not reachable at {API_URL}: {exc}")
     assert resp.status_code == 200, f"Login failed for {username}: {resp.text}"
     return resp.json()["access_token"]
 

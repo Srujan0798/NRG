@@ -1,0 +1,2 @@
+Command: bash -n scripts/run_test_suite.sh
+RESULT: shell syntax check passed

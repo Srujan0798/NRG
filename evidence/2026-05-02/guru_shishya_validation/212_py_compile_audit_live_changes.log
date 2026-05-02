@@ -1,0 +1,3 @@
+Command: .venv/bin/python -m py_compile src/audit/__init__.py tests/conftest.py tests/api/test_tier_isolation_live.py tests/security/test_red_team_v41.py tests/api/test_query_security_validation.py tests/audit/test_audit_singleton_reset.py
+Timestamp: 2026-05-02T08:35:09Z
+RESULT: py_compile passed

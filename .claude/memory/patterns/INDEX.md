@@ -34,6 +34,7 @@ Permanent learnings from user feedback, architectural decisions, and operational
 | [frontend-dependency-gate](frontend-dependency-gate.md) | Dependency audit | High-severity npm audit gates need before/after audit JSON, dependency-tree proof, frontend build/test/lint/a11y evidence, and residual low/moderate risk tracking |
 | [fusion-claim-boundary](fusion-claim-boundary.md) | Founder | External fusion/accounting completion must never be presented as whole-product readiness without validation-matrix evidence |
 | [live-evidence-requirement](live-evidence-requirement.md) | Founder | Every Quality Bar PASS needs evidence against running stack with ≥50k seed rows |
+| [live-api-test-orchestration](live-api-test-orchestration.md) | Full-suite closure | Live API tests must be explicit, serial, `/health/db`-ready, required-live hard-failing, and allowed enough cold-start timeout |
 | [llm-pipeline-boundary](llm-pipeline-boundary.md) | MiniMax | LLM-heavy features must separate deterministic policy/calculation stages from model synthesis with schema parsing and traceability |
 | [prompt-contract-discipline](prompt-contract-discipline.md) | MiniMax | Production-path prompt changes need task/input/schema/constraint contracts plus parser behavior and regression evidence |
 | [agentic-execution-plan-contract](agentic-execution-plan-contract.md) | MiniMax | Multi-task agentic work needs task ids, dependencies, file ownership, test/verify commands, disjoint write scopes, review gates, and human approval for destructive actions |

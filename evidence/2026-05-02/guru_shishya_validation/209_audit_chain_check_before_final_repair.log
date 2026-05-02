@@ -1,0 +1,20 @@
+============================================================
+ AUDIT CHAIN STATUS CHECK
+============================================================
+Chain file: .audit/chain.jsonl
+Total events: 282,700
+
+Verifying chain integrity...
+RESULT: Chain is INVALID
+Errors found: 92
+First 10 errors:
+  Line 282486: per-user binding failure: binding mismatch: computed=cb4911e5a2bdded4 stored=1f71b505b6d66975
+  Line 282487: per-user binding failure: binding mismatch: computed=93fdfed3f1cf62a1 stored=85991daf59fc1d0f
+  Line 282488: per-user binding failure: binding mismatch: computed=7ec67bf24a52c9e0 stored=e2df075fa36710d7
+  Line 282489: per-user binding failure: binding mismatch: computed=e77d5782499bab36 stored=ba93ed12317bcd62
+  Line 282490: per-user binding failure: binding mismatch: computed=2687633d27b83ef3 stored=3e538f42a8fe65e7
+  Line 282491: per-user binding failure: binding mismatch: computed=468e7b24a012c570 stored=7a222546e3d92bbb
+  Line 282492: per-user binding failure: binding mismatch: computed=b5ef7d94c44453df stored=4a59f388baf742e1
+  Line 282493: per-user binding failure: binding mismatch: computed=3b47dbc4c1a534c6 stored=e520666a760e8985
+  Line 282494: per-user binding failure: binding mismatch: computed=17ee7dab7755fe2d stored=dcf0412351f57604
+  Line 282495: per-user binding failure: binding mismatch: computed=1b6882bc647c4411 stored=e4424c5913b4b8d9

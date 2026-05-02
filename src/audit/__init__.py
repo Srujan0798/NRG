@@ -380,8 +380,14 @@ class ImmutableAuditLog:
             if os.environ.get("AUDIT_PERSIST_MERKLE_ON_INIT", "").lower() in {"1", "true", "yes", "on"}:
                 self._persist_merkle_root()
 
-            from src.audit.per_user_keys import get_per_user_key_manager
-            self._per_user_key_manager = get_per_user_key_manager(self.CHAIN_KEY)
+            from src.audit.per_user_keys import PerUserKeyManager, RotatingSaltStore
+
+            self._per_user_key_manager = PerUserKeyManager(
+                self.CHAIN_KEY,
+                RotatingSaltStore(
+                    storage_path=str(self.storage_path / "per_user_salts.jsonl")
+                ),
+            )
             self._file_lock = AuditChainLock(
                 self.storage_path / ".chain.lock",
                 timeout=AUDIT_LOCK_TIMEOUT,

@@ -4,11 +4,28 @@ Defines markers, fixtures, and test categorization for CI blocking gates.
 """
 
 import os
+import json
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 os.environ["NRG_ENV"] = "dev"
 os.environ["NRG_QUOTA_DISABLED"] = "1"
 os.environ.setdefault("DATABASE_URL", "sqlite:///nrg_research.db")
+
+
+def _configure_isolated_audit_dir() -> None:
+    """Give each xdist worker its own audit chain when the suite asks for isolation."""
+    if os.environ.get("NRG_TEST_ISOLATE_AUDIT") != "1":
+        return
+    base = Path(os.environ.get("NRG_TEST_AUDIT_BASE", ".pytest_audit"))
+    worker_id = os.environ.get("PYTEST_XDIST_WORKER", "main")
+    audit_dir = base / worker_id
+    audit_dir.mkdir(parents=True, exist_ok=True)
+    os.environ["NRG_AUDIT_DIR"] = str(audit_dir)
+
+
+_configure_isolated_audit_dir()
 
 import pytest
 
@@ -51,6 +68,11 @@ XDIST_GROUP_BY_DIR = {
     "performance": "load-stack",
     "uat": "e2e-stack",
 }
+LIVE_API_TEST_PREFIXES = (
+    "tests/api/test_tier_isolation_live.py",
+    "tests/security/test_red_team_v41.py",
+)
+_LIVE_API_REACHABLE: bool | None = None
 
 
 def pytest_configure(config):
@@ -116,6 +138,34 @@ def _is_service_available(env_var: str) -> bool:
     return False
 
 
+def _live_api_base_url() -> str:
+    return (
+        os.environ.get("API_URL")
+        or os.environ.get("NRG_BASE_URL")
+        or os.environ.get("NRG_API_URL")
+        or "http://localhost:8000"
+    ).rstrip("/")
+
+
+def _is_live_api_reachable() -> bool:
+    """Return whether the local/live API is ready for request-based tests."""
+    global _LIVE_API_REACHABLE
+    if _LIVE_API_REACHABLE is not None:
+        return _LIVE_API_REACHABLE
+
+    try:
+        timeout = float(os.environ.get("NRG_LIVE_API_HEALTH_TIMEOUT", "5"))
+        with urllib.request.urlopen(f"{_live_api_base_url()}/health/db", timeout=timeout) as response:
+            if not (200 <= response.status < 500):
+                _LIVE_API_REACHABLE = False
+            else:
+                payload = json.loads(response.read().decode("utf-8"))
+                _LIVE_API_REACHABLE = payload.get("ready") is True
+    except (OSError, urllib.error.URLError, json.JSONDecodeError):
+        _LIVE_API_REACHABLE = False
+    return _LIVE_API_REACHABLE
+
+
 def _test_subdir(item: pytest.Item) -> str:
     """Return the first path component under tests/ for a collected item."""
     path = Path(str(item.fspath))
@@ -135,6 +185,11 @@ def _add_marker_once(item: pytest.Item, marker_name: str) -> None:
 
 def _add_xdist_group(item: pytest.Item, group_name: str) -> None:
     item.add_marker(pytest.mark.xdist_group(group_name))
+
+
+def _is_live_api_test(item: pytest.Item) -> bool:
+    nodeid = item.nodeid.replace("\\", "/")
+    return any(nodeid.startswith(prefix) for prefix in LIVE_API_TEST_PREFIXES)
 
 
 def _apply_tier_marker(item: pytest.Item, subdir: str) -> None:
@@ -159,6 +214,7 @@ def pytest_collection_modifyitems(items):
     """Auto-mark tests based on their location; skip tests requiring unavailable services."""
     for item in items:
         subdir = _test_subdir(item)
+        live_api_test = _is_live_api_test(item)
 
         for marker_name in PATH_CATEGORY_MARKERS.get(subdir, ()):
             _add_marker_once(item, marker_name)
@@ -174,10 +230,22 @@ def pytest_collection_modifyitems(items):
             _add_marker_once(item, "e2e")
         if "test_regression" in item.nodeid:
             _add_marker_once(item, "regression")
+        if live_api_test:
+            _add_marker_once(item, "uat")
+            _add_xdist_group(item, "live-api")
+            if os.environ.get("NRG_REQUIRE_LIVE_API") != "1" and not _is_live_api_reachable():
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason=(
+                            "Live API not reachable; run "
+                            "`scripts/run_test_suite.sh --live-api` for managed live API tests"
+                        )
+                    )
+                )
 
         _apply_tier_marker(item, subdir)
 
-        if subdir in XDIST_GROUP_BY_DIR:
+        if subdir in XDIST_GROUP_BY_DIR and not live_api_test:
             _add_xdist_group(item, XDIST_GROUP_BY_DIR[subdir])
         if item.get_closest_marker("requires_qdrant"):
             _add_xdist_group(item, "external-service")

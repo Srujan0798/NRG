@@ -1,0 +1,8 @@
+============================================================
+ AUDIT CHAIN STATUS CHECK
+============================================================
+Chain file: .audit/chain.jsonl
+Total events: 282,701
+
+Verifying chain integrity...
+RESULT: Chain is VALID

@@ -1,0 +1,21 @@
+INFO:     Started server process [90721]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-02T08:13:37.932470+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-02T08:13:37.932721+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-02T08:13:37.932776+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-02T08:13:38.662599+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55627 - "GET /health/db HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55631 - "POST /login HTTP/1.1" 200 OK
+{"timestamp": "2026-05-02T08:13:40.221347+00:00", "level": "WARNING", "logger": "src.api.main", "message": "Security violation: PROMPT_INJECTION - Blocked patterns: path_traversal", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:55633 - "POST /query HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55635 - "POST /login HTTP/1.1" 200 OK
+{"timestamp": "2026-05-02T08:13:40.242804+00:00", "level": "WARNING", "logger": "src.api.main", "message": "Security violation: PROMPT_INJECTION - Blocked patterns: command_injection", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+INFO:     127.0.0.1:55637 - "POST /query HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+{"timestamp": "2026-05-02T08:13:40.550476+00:00", "level": "INFO", "logger": "src.api.main", "message": "Received shutdown signal, draining connections...", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+{"timestamp": "2026-05-02T08:13:41.052904+00:00", "level": "INFO", "logger": "src.api.main", "message": "Shutdown complete, exiting.", "module": "logging_config", "function": "_log", "line": 68, "process_id": 90721, "thread_id": 8413098240, "extra": {}}
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90721]
