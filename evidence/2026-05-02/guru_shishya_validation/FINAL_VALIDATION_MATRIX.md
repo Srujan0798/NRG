@@ -24,7 +24,7 @@ production-readiness certificate.
 | Live browser main query flow | PASS | `live_quantum_recheck/` | Desktop/mobile screenshots, video, citation drawer, source-data drawer, audit-proof drawer, console-error capture, raw Researcher JSON, and Tier 3 blocked JSON were captured for the messy quantum researcher flow. |
 | Accessibility | PASS | `30_frontend_contrast_after_install.log`, `36_frontend_playwright_a11y.log` | 20 contrast tests passed; 9 Playwright axe/keyboard/reduced-motion checks passed. |
 | Frontend lint | PASS | `39_frontend_lint.log` | Lint exits 0 with one React hook dependency warning in `frontend/src/views/AnswerEngine.tsx`. |
-| Dependency audit | FAIL | `35_frontend_npm_audit_high.log`, `59_frontend_npm_audit_high_json.json`, `169_frontend_npm_audit_current.json`, `170_frontend_npm_outdated_current.json`, `171_frontend_dependency_audit_summary.md` | Current `npm audit` JSON reports 39 vulnerabilities: 0 critical, 10 high, 23 moderate, and 6 low. Several audit fixes require major toolchain/dev-tool upgrades, so this remains a controlled dependency-upgrade blocker. |
+| Dependency audit | PASS high-severity gate | `169_frontend_npm_audit_current.json`, `170_frontend_npm_outdated_current.json`, `171_frontend_dependency_audit_summary.md`, `179_frontend_npm_audit_high_after_tooling_update.json`, `180_frontend_npm_outdated_after_tooling_update.json` | `npm audit --audit-level=high --json` now exits 0 after dev-tooling upgrades. Remaining findings are 0 critical, 0 high, 25 moderate, and 6 low; do not claim full dependency cleanliness until those are remediated or risk-accepted. |
 | Full Python suite | FAIL | `38_full_pytest_tests_ignore_scripts.log`, `47_isolated_health_contracts_after_audit_rebuild.log`, `52_live_tier_isolation_redteam_retry_all.log` | Broad command produced 1,679 passed, 56 skipped, 26 failed, 6 errors. Most live failures were API-not-running errors; isolated health tests passed after audit rebuild and live tier/red-team passed after starting the API. The single broad command is still not green. |
 | Live local health | PASS | `64_live_health_all_after_services.json`, `65_live_health_qdrant_after_services.json`, `66_live_vectors_health_after_services.json`, `69_post_service_verification.log`, `74_colima_stack_health_all.json` | `/health/all`, `/health/qdrant`, and `/api/vectors/health` passed after local Qdrant/Redis service startup. Local LLM remains optional unavailable and does not make health fail. Final host `lsof` showed no host uvicorn listener on port 8000; Colima-side stack health is also healthy. |
 | C4 performance/load | PASS local quota-neutral capacity | `c4_rerun/163_c4_prewarm_4workers_bounded_audit_executor.json`, `c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`, `c4_rerun/166_locust_report_60s_4workers_bounded_audit_executor.html`, `c4_rerun/167_bounded_audit_executor_c4_pass_summary.md` | The bounded audit append executor moved request-path audit writes out of the general API blocking pool while preserving synchronous chain-hash return. Latest strict scorecard reports Quality Bar `6/6`, C4 PASS, 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms, researcher P99 64 ms, government P99 80 ms, and adversarial P99 170 ms. This used `NRG_QUOTA_DISABLED=1`, so it is local capacity evidence, not quota-policy or deployed-cluster proof. |
@@ -48,8 +48,8 @@ production-readiness certificate.
 - Do not claim deployed/cluster C4 compliance until replayed in that environment.
 - Do not claim deployed RAG is fully operational until the production Qdrant
   baseline is rerun against the deployed target.
-- Do not claim dependency security is clean until `npm audit --audit-level=high`
-  exits 0 or the vulnerable dev dependency path is formally risk-accepted.
+- Do not claim dependency security is fully clean until remaining low/moderate
+  findings are remediated or formally risk-accepted.
 - Do not claim the full Python suite is green until the single broad command
   passes without needing manual API reruns.
 - Do not claim deployed-browser or production-cluster proof until external
@@ -62,7 +62,8 @@ Close remaining non-C4 gates:
 
 1. Rerun C4 in the sovereign cluster with the same strict scorecard and explicit
    quota mode.
-2. Remediate or risk-accept the high-severity frontend dependency audit.
+2. Remediate or risk-accept the remaining low/moderate frontend dependency
+   audit findings.
 3. Turn the full Python suite into a single green orchestration command, with
    live-test prerequisites handled explicitly.
 4. Rerun external gates with deployed URLs, production Qdrant target, cluster

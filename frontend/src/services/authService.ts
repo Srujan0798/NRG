@@ -158,7 +158,7 @@ export const authService = {
           headers: this.getAuthHeaders(activeSession?.accessToken),
         }
       )
-    } catch (_error) {
+    } catch {
       // Best-effort logout; local cleanup still happens.
     }
 
@@ -173,7 +173,7 @@ export const authService = {
 
     try {
       return JSON.parse(rawSession) as AuthSession
-    } catch (_error) {
+    } catch {
       this.clearSession()
       return null
     }

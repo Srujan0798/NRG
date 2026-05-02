@@ -240,7 +240,7 @@ export function Drawer({ open, title, onClose, children, testId }: DrawerProps) 
   )
 }
 
-export interface ModalProps extends DrawerProps {}
+export type ModalProps = DrawerProps
 
 export function Modal({ open, title, onClose, children }: ModalProps) {
   useEffect(() => {

@@ -582,7 +582,7 @@ export function AnswerEngineAnswer({ role, tier, username, onLogout, onPersonaCh
   const fullText = proof?.response || ''
   const sql = proof?.sqlQuery || ''
   const retrievedCount = proof?.rowsReturned || 0
-  const citations = proof?.citations || []
+  const citations = useMemo(() => proof?.citations ?? [], [proof?.citations])
   const auditEventId = proof?.auditEventId || null
   const signatureBytes = auditEventId ? 26 : null
   const confidence: Confidence = !query ? 'low' : proof?.confidence || 'medium'

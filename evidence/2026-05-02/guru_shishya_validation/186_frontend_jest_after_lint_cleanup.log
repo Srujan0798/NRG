@@ -1,0 +1,39 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand
+
+(node:54765) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+PASS tests/components/AppAnswerEngineRoutes.test.tsx
+PASS tests/i18n/no_raw_strings.test.ts
+PASS tests/components/AnswerEngineSurface.test.tsx
+PASS tests/components/AnswerPanelSqlResults.test.tsx
+PASS src/__tests__/ProductionWorkspace.test.tsx
+PASS tests/components/QueryWorkbench.test.tsx
+PASS tests/components/ErrorBoundary.test.tsx
+PASS tests/components/ErrorState.test.tsx
+PASS tests/components/EmptyState.test.tsx
+PASS tests/components/ProofInspector.test.tsx
+PASS tests/components/StreamingAnswerPanel.test.tsx
+PASS tests/components/PersonaToggle.test.tsx
+PASS tests/components/AnswerTrustActions.test.tsx
+PASS src/components/__snapshots__/ComponentSnapshots.test.tsx
+PASS tests/components/SearchBar.test.tsx
+PASS tests/hooks/useStreamingQuery.test.ts
+PASS tests/design-system/no_raw_values.test.ts
+PASS src/__tests__/TestApp.test.tsx
+PASS tests/components/OperationsShell.test.tsx
+PASS tests/design-system/font_loading.test.ts
+PASS tests/components/SuggestionChips.test.tsx
+PASS src/utils/parseCitations.test.ts
+PASS tests/a11y/contrast.test.ts
+PASS tests/lib/queryServiceSanitization.test.ts
+PASS tests/lib/answerEngineContract.test.ts
+PASS tests/lib/telemetry.test.ts
+PASS src/__tests__/graph-view-export.test.tsx
+
+Test Suites: 27 passed, 27 total
+Tests:       99 passed, 99 total
+Snapshots:   0 total
+Time:        19.375 s
+Ran all test suites.

@@ -35,7 +35,7 @@ function TestApp() {
       
       const data = await response.json();
       setResearchers(data);
-    } catch (error) {
+    } catch {
       setErrorMessage('Failed to fetch researchers. Please try again.');
     }
     setLoading(false);

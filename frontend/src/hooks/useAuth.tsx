@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false)
       })
       return nextSession
-    } catch (_error) {
+    } catch {
       await logout()
       return null
     }
