@@ -13,7 +13,15 @@ Batch 4, S3-09, and service-health rechecks.
 | Check | Result |
 |---|---|
 | Latest HEAD external-gate preflight | BLOCKED on missing deployed/cluster/founder inputs |
+| Batch 5 replay: `pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` | 419 passed, 6 skipped, 35 deselected |
+| Batch 2 frontend replay: `npm run build && npm test -- --runInBand` | Build PASS; 107 Jest tests passed |
+| Frontend lint | PASS |
+| Local PostgreSQL partition probe | `audit_events` relkind `p`, 3 child partitions, plan relation `audit_events_2026` |
+| Local `/health/all`, `/health/qdrant`, `/api/vectors/health` | healthy; Qdrant collection exists; vector count 1800 |
 | `git diff --check` | PASS |
+| `python3 scripts/verify_corpus_sync.py` | `ok: true` |
+| `bash scripts/forbidden_vocab_check.sh --all` | PASS |
+| `git diff --cached --check` | PASS |
 | `bash scripts/forbidden_vocab_check.sh` | PASS |
 
 ## Referenced Committed Evidence
