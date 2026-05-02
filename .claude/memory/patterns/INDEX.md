@@ -17,6 +17,7 @@ Permanent learnings from user feedback, architectural decisions, and operational
 | Pattern | Source | Key Rule |
 |---------|--------|----------|
 | [async-compute-queue](async-compute-queue.md) | Founder | Gov LBs kill HTTP at 60s; return 202+task_id and poll/WebSocket |
+| [bounded-audit-append](bounded-audit-append.md) | C4 validation | Request-path audit appends must use a bounded dedicated executor and still return the real chain hash |
 | [dashboard-decoupled-metadata](dashboard-decoupled-metadata.md) | Founder | Hero counters render from `display_metadata.yaml`, not `COUNT(*)` on seeded rows |
 | [db-layer-defence](db-layer-defence.md) | Founder | Third defence layer: pg_anonymizer dynamic masking + PL/pgSQL HMAC trigger |
 | [partitioning-pitr](partitioning-pitr.md) | Founder | Range-partition by year for >50M-row tables; quarterly DR drill with WAL replay |

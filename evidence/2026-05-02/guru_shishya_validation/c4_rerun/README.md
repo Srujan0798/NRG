@@ -2,7 +2,9 @@
 
 Date: 2026-05-02
 
-This folder records the C4 follow-up after the Guru/Shishya validation matrix. It is not a C4 pass certificate.
+This folder records the C4 follow-up after the Guru/Shishya validation matrix.
+The latest local quota-neutral C4 capacity run passes; external production
+gates still need their own deployed/cluster/founder evidence.
 
 ## What Changed
 
@@ -17,6 +19,7 @@ This folder records the C4 follow-up after the Guru/Shishya validation matrix. I
 - `tests/load/locustfile_c4.py` no longer sends synthetic `X-Forwarded-For` headers when using a preissued token. This fixed the JWT replay failure storm.
 - `src/services/consent.py` now caches repeated `has_consent()` checks for a short TTL and invalidates on grant, revoke, and erase, reducing repeated consent-ledger reads on the query hot path.
 - `src/audit/__init__.py` now avoids repeated same-process JSONL tail rereads after the process has established the current tail, and precomputes immutable event serialization before entering the audit file-lock critical section.
+- `src/audit/async_append.py` now runs request-path audit appends through a bounded dedicated executor. `/query` still waits for the append and returns the real chain hash, but audit writes no longer compete with the general API blocking pool under 1000-user load.
 
 ## Evidence
 
@@ -86,35 +89,48 @@ This folder records the C4 follow-up after the Guru/Shishya validation matrix. I
 | `152_c4_prewarm_8workers_uvloop_httptools_isolated_rerun.json` | Negative 8-worker prewarm evidence: 159/624 requests succeeded, 465 connection/reset failures, and 465 missing audit event IDs. |
 | `160_final_verification_after_isolated_rerun.md` | Final verification summary after capturing the isolated rerun evidence: compile passed, targeted scorecard tests passed, corpus sync passed, forbidden vocabulary guard passed, cached diff check passed after trimming generated HTML whitespace, and port 8000 was cleaned up. |
 | `161_isolated_8worker_prewarm_rejection.md` | Interprets the failed isolated 8-worker prewarm and rejects that local topology as a C4 closure path. |
+| `156_query_stage_profile_4workers_tail.jsonl` | Sequential route-stage sample showing normal warm `/query` paths were already low-millisecond and that the remaining issue was concurrency tail behavior. |
+| `158_query_stage_profile_4workers_loadsample.jsonl` | 1000-user diagnostic route-stage sample showing blocked/adversarial audit append contention under load before the bounded executor fix. |
+| `160_quality_bar_scorecard_20s_4workers_profile_sample.json` | Diagnostic 20-second profiled run; not C4 pass evidence because profiling overhead distorted P99. |
+| `161_locust_report_20s_4workers_profile_sample.html` | Locust HTML report for the diagnostic profiled run. |
+| `163_c4_prewarm_4workers_bounded_audit_executor.json` | Bounded audit executor prewarm: 312/312 requests succeeded, 60 expected blocked envelopes, 0 missing audit IDs. |
+| `165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json` | Passing local quota-neutral C4 capacity run: 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms. |
+| `166_locust_report_60s_4workers_bounded_audit_executor.html` | Locust HTML report for the passing bounded audit executor run. |
+| `167_bounded_audit_executor_c4_pass_summary.md` | Summary of the bounded audit executor change, passing C4 metrics, and remaining external-production boundaries. |
+| `168_final_verification_bounded_audit_executor.md` | Final verification after bounded audit executor: 101 targeted tests passed, compile passed, diff check passed, corpus sync passed, forbidden-vocabulary guard passed, and port 8000 was clean. |
 
 ## Current C4 Status
 
-C4 remains **FAIL**. The runner/auth defects are fixed, but the measured 1000-user P99 target is not met on this local machine.
+C4 is **PASS** for the latest local quota-neutral capacity run. The scorecard
+reports `6/6` with C4 aggregate P99 79 ms, 0 failures, 82,365 samples, 1000
+users, and 4 Locust processes.
 
 A 60-second after-cache probe showed lower early latency but is invalid as C4 evidence because the API process shut down during the run and produced HTTP 0 failures. Do not use that probe as a pass claim.
 
 The root-cause boundary moved:
 
 - Previous blocker: C4 run was polluted by JWT replay failures and weak metric parsing.
-- Current blocker: `/query` succeeds with zero failures but queues under 1000-user Locust load; local P99 remains above the 500 ms target. The latest warmed no-profile 4-worker 60-second diagnostic reports 45,559 samples, 0 failures, aggregate P99 2100 ms, researcher P99 2100 ms, government P99 2100 ms, and adversarial query P99 2400 ms.
+- Closed blocker: `/query` previously succeeded with zero failures but queued under 1000-user Locust load. The bounded audit append executor removed the audit-threadpool contention and the latest 4-worker 60-second run reports aggregate P99 79 ms, researcher P99 64 ms, government P99 80 ms, and adversarial P99 170 ms.
 - Latest blocker update: pure ASGI middleware reduced the best stable local aggregate P99 to 970 ms with 47,233 samples and 0 failures, but this still misses the 500 ms C4 gate. The 8-worker topology created HTTP 0 failures and is not an improvement.
 - Latest isolated multi-process update: the `uvloop`/`httptools` rerun completed with 4 Locust workers, 72,084 samples, and 0 failures, but aggregate P99 was 1100 ms. Researcher and government P99 were below 800 ms; adversarial P99 remained 2600 ms.
 - Latest 8-worker update: the isolated 8-worker prewarm failed before scorecard execution, with 465 connection/reset failures out of 624 requests. Do not use 8 local API workers as the next C4 path on this machine.
 - Profile finding: sampled cache-hit route-handler work is low millisecond to sub-millisecond, while the full server request envelope and Locust client-observed timings are much larger under burst load. Combined profile evidence shows route-handler P99 1.589 ms, server `/query` envelope P99 538.303 ms, and client-observed aggregate P99 1000 ms in the same diagnostic window.
 - Warmed-read-model finding: declared prewarm removed cold-key setup from the test, but P99 still missed the 500 ms gate. The remaining problem is not only cold cache creation; request lifecycle, queueing, transport scheduling, worker concurrency, and audit-envelope behavior remain the likely boundary.
 - New guardrail: future C4 evidence must inspect workload-specific metrics and treat any 429 as request failure.
-- Mode boundary: quota-on C4 needs distinct load identities; quota-neutral C4 must explicitly document `NRG_QUOTA_DISABLED=1` and cannot be presented as quota-policy proof.
+- Mode boundary: this pass used `NRG_QUOTA_DISABLED=1`, so it is capacity evidence, not quota-policy proof. Quota-on C4 still needs distinct load identities.
 
 ## Do Not Claim
 
-- Do not claim `6/6` quality-bar compliance.
-- Do not claim the C4 1000-user bar is closed.
+- Do not claim external production readiness.
+- Do not claim the deployed/cluster C4 bar is closed until replayed in that environment.
 - Do not lower the C4 threshold or parse target text as a passing P99.
 
 ## Next Engineering Options
 
-1. Treat C4 as a queueing/envelope architecture task, not a query-parser task.
-2. Add bounded admission/backpressure or a separate worker topology for the 1000-user workload, then rerun the same strict scorecard.
-3. If every query must synchronously seal into one JSONL HMAC chain before response, design a larger audit writer architecture; micro-optimizing the current file-lock path is not enough.
-4. Repeat C4 on the sovereign cluster, because local same-machine client/server load is still a likely confounder.
-5. Keep the current C4 status as FAIL until a fresh measured 1000-user run reports P99 under 500 ms.
+1. Rerun the same scorecard in the sovereign cluster with the same strict
+   metrics and explicit quota mode.
+2. Keep the bounded audit executor covered by targeted tests before changing
+   any audit hot-path behavior.
+3. Close dependency-audit remediation and full-suite orchestration separately.
+4. Keep external production gates BLOCKED until deployed URLs, production
+   Qdrant, cluster context, and founder signing key evidence exist.

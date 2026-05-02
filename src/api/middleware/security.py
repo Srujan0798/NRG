@@ -1,7 +1,6 @@
 """Security middleware: brute-force protection, security headers, IP allowlisting, prompt sanitisation."""
 
 import time
-import asyncio
 import hashlib
 import hmac
 import ipaddress
@@ -16,6 +15,7 @@ from starlette.datastructures import Headers, MutableHeaders
 from starlette.responses import JSONResponse
 
 from src.api.answer_contract import blocked_answer_payload
+from src.audit.async_append import run_audit_append
 from src.security.gateway.prompt_sanitiser import PromptSanitiser
 
 logger = logging.getLogger(__name__)
@@ -275,7 +275,7 @@ class PromptSanitiserMiddleware:
                     state = scope.get("state") or {}
                     claims = state.get("auth_claims") or {}
                     user_id = claims.get("sub", "anonymous")
-                    audit_event_id = await asyncio.to_thread(
+                    audit_event_id = await run_audit_append(
                         log_anomaly,
                         user_id=user_id,
                         anomaly_type=validation["reason"],

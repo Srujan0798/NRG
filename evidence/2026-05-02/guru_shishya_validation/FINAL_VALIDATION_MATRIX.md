@@ -27,7 +27,7 @@ production-readiness certificate.
 | Dependency audit | FAIL | `35_frontend_npm_audit_high.log`, `59_frontend_npm_audit_high_json.json` | `npm audit --audit-level=high` exits 1 with 39 vulnerabilities, including 10 high-severity findings. Several audit fixes require major toolchain upgrades, so this remains a controlled dependency-upgrade blocker. |
 | Full Python suite | FAIL | `38_full_pytest_tests_ignore_scripts.log`, `47_isolated_health_contracts_after_audit_rebuild.log`, `52_live_tier_isolation_redteam_retry_all.log` | Broad command produced 1,679 passed, 56 skipped, 26 failed, 6 errors. Most live failures were API-not-running errors; isolated health tests passed after audit rebuild and live tier/red-team passed after starting the API. The single broad command is still not green. |
 | Live local health | PASS | `64_live_health_all_after_services.json`, `65_live_health_qdrant_after_services.json`, `66_live_vectors_health_after_services.json`, `69_post_service_verification.log`, `74_colima_stack_health_all.json` | `/health/all`, `/health/qdrant`, and `/api/vectors/health` passed after local Qdrant/Redis service startup. Local LLM remains optional unavailable and does not make health fail. Final host `lsof` showed no host uvicorn listener on port 8000; Colima-side stack health is also healthy. |
-| C4 performance/load | FAIL | `25_quality_bar_scorecard_with_live_api.log`, `31_c4_scorecard_raw_summary.log`, `58_c4_scorecard_cache_regression.log`, `c4_rerun/README.md`, `c4_rerun/43_final_local_verification.md`, `c4_rerun/44_c4_truth_contract_after_429_endpoint_metrics.md`, `c4_rerun/58_request_envelope_profiler.md`, `c4_rerun/68_audit_chain_security_after_critical_section.log`, `c4_rerun/86_combined_query_envelope_profile_summary.md`, `c4_rerun/93_declared_prewarm_no_profile_summary.md`, `c4_rerun/75_rate_limit_and_quota_mode_boundary.md` | The C4 runner is now stricter and uses the maintained C4 Locust file. HTTP 429 now fails load evidence, and query metrics are split by researcher/government/adversarial workload. Quota-on C4 needs distinct load identities; quota-neutral C4 must explicitly document `NRG_QUOTA_DISABLED=1`. Audit append was safely micro-optimized by caching same-process tail reads and moving immutable event serialization outside the file-lock critical section; 87 audit/per-user/cosign tests passed after both changes. Combined profiling shows route-handler P99 1.589 ms, server `/query` envelope P99 538.303 ms, and Locust client-observed P99 1000 ms. Declared prewarm then proved 312/312 workload prewarm requests succeeded, but the warmed no-profile scorecard still failed C4 with 45,559 samples, 0 failures, aggregate P99 2100 ms, researcher P99 2100 ms, government P99 2100 ms, and adversarial P99 2400 ms. C4 remains failed until the measured 1000-user P99 target passes. |
+| C4 performance/load | PASS local quota-neutral capacity | `c4_rerun/163_c4_prewarm_4workers_bounded_audit_executor.json`, `c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`, `c4_rerun/166_locust_report_60s_4workers_bounded_audit_executor.html`, `c4_rerun/167_bounded_audit_executor_c4_pass_summary.md` | The bounded audit append executor moved request-path audit writes out of the general API blocking pool while preserving synchronous chain-hash return. Latest strict scorecard reports Quality Bar `6/6`, C4 PASS, 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms, researcher P99 64 ms, government P99 80 ms, and adversarial P99 170 ms. This used `NRG_QUOTA_DISABLED=1`, so it is local capacity evidence, not quota-policy or deployed-cluster proof. |
 | Evidence discipline | PASS | `00_guru_assignment_protocol.md`, this file | All major claims are mapped to evidence files. |
 | External production gates | BLOCKED | `../final_external_gates/EXTERNAL_GATE_SUMMARY.md` | Missing deployed frontend/API URLs, production Qdrant target, explicit cluster-load flag, and founder GPG signatures. |
 
@@ -45,7 +45,7 @@ production-readiness certificate.
 ## Do Not Claim Yet
 
 - Do not claim full production readiness.
-- Do not claim C4 compliance.
+- Do not claim deployed/cluster C4 compliance until replayed in that environment.
 - Do not claim deployed RAG is fully operational until the production Qdrant
   baseline is rerun against the deployed target.
 - Do not claim dependency security is clean until `npm audit --audit-level=high`
@@ -58,15 +58,12 @@ production-readiness certificate.
 
 ## Next Engineering Target
 
-Close C4 and external gates:
+Close remaining non-C4 gates:
 
-1. Treat C4 as a request-envelope and queueing architecture task, not a query
-   parser task.
-2. Add bounded admission/backpressure, a separate worker topology, or cluster
-   replay evidence for the 1000-user workload.
-3. If every cold query must be synchronously sealed into one JSONL HMAC chain,
-   design a larger audit writer architecture; micro-optimizing the current
-   file-lock path did not close the C4 target.
-4. Rerun the quality-bar scorecard and update evidence only after C4 passes.
+1. Rerun C4 in the sovereign cluster with the same strict scorecard and explicit
+   quota mode.
+2. Remediate or risk-accept the high-severity frontend dependency audit.
+3. Turn the full Python suite into a single green orchestration command, with
+   live-test prerequisites handled explicitly.
 4. Rerun external gates with deployed URLs, production Qdrant target, cluster
    context, and founder signing key.

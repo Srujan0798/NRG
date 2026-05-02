@@ -68,6 +68,11 @@ from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.security.rate_limiter import check_tier_rate_limit, check_endpoint_rate_limit
 from src.audit import log_query as audit_log_query
+from src.audit import log_anomaly as audit_log_anomaly
+from src.audit.async_append import (
+    run_audit_append,
+    shutdown_audit_append_executor,
+)
 from src.observability.health_checks import get_qdrant_vector_count_health
 from src.observability.metrics import instrument_app
 from qdrant_client import QdrantClient
@@ -91,7 +96,11 @@ def _get_chain_health_no_repair(get_chain_health_fn):
 
 
 async def _audit_log_query_async(*args: Any, **kwargs: Any) -> Any:
-    return await asyncio.to_thread(audit_log_query, *args, **kwargs)
+    return await run_audit_append(audit_log_query, *args, **kwargs)
+
+
+async def _audit_log_anomaly_async(*args: Any, **kwargs: Any) -> Any:
+    return await run_audit_append(audit_log_anomaly, *args, **kwargs)
 
 
 def _get_vector_drift_health() -> dict[str, Any]:
@@ -5025,6 +5034,7 @@ async def lifespan(app: FastAPI):
     logger.info("Received shutdown signal, draining connections...")
     await drain_connections()
     blocking_executor.shutdown(wait=False, cancel_futures=True)
+    shutdown_audit_append_executor()
     logger.info("Shutdown complete, exiting.")
 
 
@@ -5456,9 +5466,7 @@ async def _query_with_langgraph_impl(
             audit_event_id = None
             if validation["reason"] != "RATE_LIMITED":
                 try:
-                    from src.audit import log_anomaly
-                    audit_event_id = await asyncio.to_thread(
-                        log_anomaly,
+                    audit_event_id = await _audit_log_anomaly_async(
                         user_id=user_id,
                         anomaly_type=validation["reason"],
                         details={
