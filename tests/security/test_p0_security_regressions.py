@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import sqlite3
 
 import pytest
 
@@ -66,3 +67,56 @@ def test_egress_guard_missing_allowlist_fails_closed(tmp_path):
     missing_path = tmp_path / "missing-egress-allowlist.yaml"
     with pytest.raises(EgressSecurityError):
         EgressGuard(allowlist_path=missing_path)
+
+
+def test_dpdp_purge_rolls_back_if_audit_logging_fails(tmp_path, monkeypatch):
+    """PII deletion must not commit before the deletion audit path succeeds."""
+    from src.security import dpdp_compliance
+
+    db_path = tmp_path / "dpdp.sqlite"
+    conn = sqlite3.connect(db_path)
+    try:
+        conn.execute("CREATE TABLE consent_ledger (user_id TEXT)")
+        conn.execute("CREATE TABLE audit_events (user_id TEXT, query TEXT, action TEXT)")
+        conn.execute("CREATE TABLE refresh_tokens (user_id TEXT)")
+        conn.execute("INSERT INTO consent_ledger (user_id) VALUES ('u-rollback')")
+        conn.execute(
+            "INSERT INTO audit_events (user_id, query, action) VALUES ('u-rollback', 'q', 'QUERY')"
+        )
+        conn.execute("INSERT INTO refresh_tokens (user_id) VALUES ('u-rollback')")
+        conn.commit()
+    finally:
+        conn.close()
+
+    def fail_log_deletion(*_args, **_kwargs):
+        raise RuntimeError("audit write failed")
+
+    monkeypatch.setattr(dpdp_compliance, "log_deletion", fail_log_deletion)
+
+    compliance = dpdp_compliance.DPDPCompliance(db_path=str(db_path))
+    with pytest.raises(RuntimeError, match="audit write failed"):
+        compliance.purge_user_data("u-rollback")
+
+    conn = sqlite3.connect(db_path)
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM consent_ledger").fetchone()[0] == 1
+        assert conn.execute("SELECT user_id, query, action FROM audit_events").fetchone() == (
+            "u-rollback",
+            "q",
+            "QUERY",
+        )
+        assert conn.execute("SELECT COUNT(*) FROM refresh_tokens").fetchone()[0] == 1
+    finally:
+        conn.close()
+
+
+def test_query_helpers_local_db_path_uses_env_override(tmp_path, monkeypatch):
+    """The modular query helper path must import os and honor the local DB override."""
+    from src.api import query_helpers
+
+    local_db = tmp_path / "nrg_research.db"
+    local_db.write_bytes(b"SQLite format 3\x00")
+
+    monkeypatch.setenv("NRG_LOCAL_RESEARCH_DB", str(local_db))
+
+    assert query_helpers._local_research_db_path() == local_db
