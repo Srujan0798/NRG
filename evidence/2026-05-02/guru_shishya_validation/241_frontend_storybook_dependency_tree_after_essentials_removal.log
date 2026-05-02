@@ -1,0 +1,4 @@
+nrg-frontend@1.0.0 /Users/srujansai/Desktop/NRG/frontend
+├── @storybook/addon-a11y@8.6.18
+├── @storybook/react-vite@8.6.18
+└── storybook@8.6.18

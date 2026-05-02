@@ -1,0 +1,7 @@
+{
+  "error": {
+    "code": "EEXIST",
+    "summary": "Invalid response body while trying to fetch https://registry.npmjs.org/@tanstack%2freact-query: EACCES: permission denied, rename '/Users/srujansai/.npm/_cacache/tmp/abfaef16' -> '/Users/srujansai/.npm/_cacache/content-v2/sha512/9f/a4/315f7dc9ad9810961631d0d5e02ff5405e10a5a92cce33728b1286fb8dc5e873fb807572b58ba3b23c58cae8160c4a61d9fbecef23b2679db16dc25423b5'\nFile exists: /Users/srujansai/.npm/_cacache/content-v2/sha512/9f/a4/315f7dc9ad9810961631d0d5e02ff5405e10a5a92cce33728b1286fb8dc5e873fb807572b58ba3b23c58cae8160c4a61d9fbecef23b2679db16dc25423b5",
+    "detail": "Remove the existing file and try again, or run npm\nwith --force to overwrite files recklessly."
+  }
+}

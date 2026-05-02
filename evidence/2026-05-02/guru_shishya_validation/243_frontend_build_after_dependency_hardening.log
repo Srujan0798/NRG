@@ -1,0 +1,42 @@
+
+> nrg-frontend@1.0.0 build
+> tsc && vite build --emptyOutDir
+
+vite v6.4.2 building for production...
+transforming...
+✓ 2578 modules transformed.
+Generated an empty chunk: "vendor-react".
+rendering chunks...
+computing gzip size...
+../dist/frontend/index.html                                7.87 kB │ gzip:   2.52 kB
+../dist/frontend/assets/index-DHN7Fb4K.css                75.48 kB │ gzip:  14.17 kB
+../dist/frontend/assets/vendor-react-l0sNRNKZ.js           0.05 kB │ gzip:   0.07 kB │ map:     0.11 kB
+../dist/frontend/assets/x-circle-DSWKN9fe.js               0.24 kB │ gzip:   0.21 kB │ map:     0.83 kB
+../dist/frontend/assets/trending-up-DMovCriJ.js            0.25 kB │ gzip:   0.21 kB │ map:     0.75 kB
+../dist/frontend/assets/queryClient-l0xBjyZ7.js            0.26 kB │ gzip:   0.22 kB │ map:     0.67 kB
+../dist/frontend/assets/building-2-DFccMdto.js             0.48 kB │ gzip:   0.28 kB │ map:     1.25 kB
+../dist/frontend/assets/users-cMxaeqWO.js                  0.89 kB │ gzip:   0.48 kB │ map:     3.05 kB
+../dist/frontend/assets/app-EwZcEQ3T.js                    2.40 kB │ gzip:   1.18 kB │ map:     2.54 kB
+../dist/frontend/assets/ThemeProvider-mDMsrUjU.js          3.82 kB │ gzip:   1.53 kB │ map:    13.16 kB
+../dist/frontend/assets/AuditEvent-CKE-ZVIk.js             3.98 kB │ gzip:   1.53 kB │ map:     8.84 kB
+../dist/frontend/assets/useQuery-D4UkfvSk.js              11.00 kB │ gzip:   3.98 kB │ map:    43.95 kB
+../dist/frontend/assets/queryClient-DAoVxEPn.js           13.52 kB │ gzip:   4.23 kB │ map:    48.00 kB
+../dist/frontend/assets/index-DTvE5tAd.js                 14.91 kB │ gzip:   5.02 kB │ map:    57.23 kB
+../dist/frontend/assets/FounderDashboard-9qMpCY8k.js      15.10 kB │ gzip:   3.94 kB │ map:    31.30 kB
+../dist/frontend/assets/GraphView-TUEQfjSs.js             15.39 kB │ gzip:   4.63 kB │ map:    42.38 kB
+../dist/frontend/assets/query-BNmctG62.js                 15.64 kB │ gzip:   5.31 kB │ map:    60.15 kB
+../dist/frontend/assets/ProductionWorkspace-Da7n1ABt.js   24.25 kB │ gzip:   5.80 kB │ map:    60.35 kB
+../dist/frontend/assets/IndustryDashboard-Dc29u1eZ.js     24.54 kB │ gzip:   7.33 kB │ map:    57.13 kB
+../dist/frontend/assets/GovernmentDashboard-1cWXQHIO.js   32.92 kB │ gzip:   8.91 kB │ map:    92.38 kB
+../dist/frontend/assets/ResearcherDashboard-BOYPSYGo.js   42.75 kB │ gzip:  11.81 kB │ map:   103.22 kB
+../dist/frontend/assets/vendor-d3-CZDcED8m.js             64.62 kB │ gzip:  21.03 kB │ map:   267.54 kB
+../dist/frontend/assets/emptyResults-7Vdqg2Ib.js          75.60 kB │ gzip:  20.45 kB │ map:   205.86 kB
+../dist/frontend/assets/vendor-motion-CA3Fd4DX.js        122.35 kB │ gzip:  39.42 kB │ map:   653.75 kB
+../dist/frontend/assets/App-B7us-YdC.js                  211.66 kB │ gzip:  62.25 kB │ map:   673.61 kB
+../dist/frontend/assets/vendor-recharts-ChLfxKjI.js      504.27 kB │ gzip: 146.65 kB │ map: 2,249.77 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 14.44s

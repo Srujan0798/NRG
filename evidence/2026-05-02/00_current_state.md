@@ -33,6 +33,7 @@ readiness.
 | Forbidden vocabulary guard | PASS | `wrapup_forbidden_vocab.log` |
 | Targeted backend/API/security/query tests | PASS after one extraction fix | `wrapup_backend_targeted.log`, `wrapup_backend_targeted_rerun.log` |
 | Frontend build | PASS after local dependency install | `wrapup_frontend_build.log`, `wrapup_frontend_npm_install.log`, `wrapup_frontend_npm_install_local_cache.log`, `wrapup_frontend_build_rerun2.log` |
+| Frontend dependency audit | PASS local clean audit | `guru_shishya_validation/240_frontend_npm_audit_after_storybook_essentials_removal.json`, `guru_shishya_validation/247_frontend_dependency_full_audit_closure_summary.md` |
 
 ## Notes
 
@@ -42,10 +43,10 @@ readiness.
 - First frontend build failed because `frontend/node_modules` was missing. A
   normal `npm install` was blocked by user-level npm cache permissions; rerun
   with a project-local npm cache succeeded.
-- `npm install` reported 39 dependency vulnerabilities in the frontend
-  dependency tree. They were not changed in this wrap-up because `npm audit fix`
-  can alter dependency versions and should be handled as a separate dependency
-  maintenance task.
+- Follow-up frontend dependency work closed the local npm audit to 0 total
+  vulnerabilities by removing unused Loki, upgrading Storybook/Vite/Jest, and
+  removing the unused Storybook essentials/actions chain. Production image audit
+  replay is still required before deployed dependency claims.
 - The next safe backend split is to reconcile the existing
   `src/api/query_helpers.py` against the live fast-path logic in
   `src/api/main.py`; do not switch query execution to that helper module until

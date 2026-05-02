@@ -1,0 +1,146 @@
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "@storybook/addon-actions": {
+      "name": "@storybook/addon-actions",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "uuid"
+      ],
+      "effects": [
+        "@storybook/addon-essentials"
+      ],
+      "range": "<=0.0.0-pr-34011-sha-c45b0f3f || 3.1.6 - 6.2.0-rc.13 || 7.0.7 - 9.0.0-rc.5",
+      "nodes": [
+        "node_modules/@storybook/addon-actions"
+      ],
+      "fixAvailable": {
+        "name": "@storybook/addon-essentials",
+        "version": "7.0.6",
+        "isSemVerMajor": true
+      }
+    },
+    "@storybook/addon-essentials": {
+      "name": "@storybook/addon-essentials",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "@storybook/addon-actions"
+      ],
+      "effects": [],
+      "range": "<=5.3.0-rc.14 || 6.0.0-alpha.0 - 6.2.0-rc.13 || 7.0.7 - 9.0.0-alpha.3",
+      "nodes": [
+        "node_modules/@storybook/addon-essentials"
+      ],
+      "fixAvailable": {
+        "name": "@storybook/addon-essentials",
+        "version": "7.0.6",
+        "isSemVerMajor": true
+      }
+    },
+    "storybook": {
+      "name": "storybook",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        {
+          "source": 1111900,
+          "name": "storybook",
+          "dependency": "storybook",
+          "title": "Storybook manager bundle may expose environment variables during build",
+          "url": "https://github.com/advisories/GHSA-8452-54wp-rmv6",
+          "severity": "high",
+          "cwe": [
+            "CWE-200",
+            "CWE-538",
+            "CWE-541"
+          ],
+          "cvss": {
+            "score": 7.3,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:L/A:L"
+          },
+          "range": ">=8.0.0 <8.6.15"
+        },
+        {
+          "source": 1113531,
+          "name": "storybook",
+          "dependency": "storybook",
+          "title": "Storybook Dev Server is Vulnerable to WebSocket Hijacking",
+          "url": "https://github.com/advisories/GHSA-mjf5-7g4m-gx5w",
+          "severity": "high",
+          "cwe": [
+            "CWE-74",
+            "CWE-79",
+            "CWE-1385"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": ">=8.1.0 <8.6.17"
+        }
+      ],
+      "effects": [],
+      "range": "8.0.0 - 8.6.16",
+      "nodes": [
+        "node_modules/storybook"
+      ],
+      "fixAvailable": true
+    },
+    "uuid": {
+      "name": "uuid",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1116970,
+          "name": "uuid",
+          "dependency": "uuid",
+          "title": "uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-787",
+            "CWE-1285"
+          ],
+          "cvss": {
+            "score": 0,
+            "vectorString": null
+          },
+          "range": "<14.0.0"
+        }
+      ],
+      "effects": [
+        "@storybook/addon-actions"
+      ],
+      "range": "<14.0.0",
+      "nodes": [
+        "node_modules/uuid"
+      ],
+      "fixAvailable": {
+        "name": "@storybook/addon-essentials",
+        "version": "7.0.6",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 1,
+      "critical": 0,
+      "total": 4
+    },
+    "dependencies": {
+      "prod": 202,
+      "dev": 633,
+      "optional": 79,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 835
+    }
+  }
+}

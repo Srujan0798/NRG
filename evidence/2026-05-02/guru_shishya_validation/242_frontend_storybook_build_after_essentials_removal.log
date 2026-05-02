@@ -1,0 +1,53 @@
+
+> nrg-frontend@1.0.0 storybook:build
+> storybook build -o ../dist/storybook
+
+@storybook/core v8.6.18
+
+info => Cleaning outputDir: ../dist/storybook
+info => Loading presets
+info => Building manager..
+info => Manager built ([38;2;181;126;229m80 ms[39m)
+info => Building preview..
+info Using tsconfig paths for react-docgen
+vite v6.4.2 building for production...
+transforming...
+✓ 1698 modules transformed.
+node_modules/@storybook/core/dist/preview/runtime.js (3683:15): Use of eval in "node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+node_modules/@storybook/core/dist/preview/runtime.js (3685:16): Use of eval in "node_modules/@storybook/core/dist/preview/runtime.js" is strongly discouraged as it poses security risks and may cause issues with minification.
+rendering chunks...
+computing gzip size...
+../dist/storybook/iframe.html                                17.54 kB │ gzip:   4.97 kB
+../dist/storybook/assets/preview-rJ1Fd1Fq.css                75.48 kB │ gzip:  14.17 kB
+../dist/storybook/assets/react-FmFgRqLi.js                    0.03 kB │ gzip:   0.05 kB
+../dist/storybook/assets/preview-CZqRaHQB.js                  0.08 kB │ gzip:   0.09 kB
+../dist/storybook/assets/_commonjsHelpers-CqkleIqs.js         0.12 kB │ gzip:   0.13 kB
+../dist/storybook/assets/shield-alert-Ci4lUWk7.js             0.24 kB │ gzip:   0.20 kB
+../dist/storybook/assets/createLucideIcon-CwNB_eCV.js         0.68 kB │ gzip:   0.46 kB
+../dist/storybook/assets/react-18-BNVwCQ75.js                 0.93 kB │ gzip:   0.53 kB
+../dist/storybook/assets/jsx-runtime-DSvmvvsx.js              1.00 kB │ gzip:   0.62 kB
+../dist/storybook/assets/PromptBlocked.stories-DOQeM6wI.js    1.91 kB │ gzip:   0.92 kB
+../dist/storybook/assets/ScaleStrip.stories-GreHsthb.js       2.04 kB │ gzip:   1.09 kB
+../dist/storybook/assets/EmptyState.stories-a9uqE_R7.js       4.09 kB │ gzip:   1.54 kB
+../dist/storybook/assets/index-B0WjJBI_.js                    7.28 kB │ gzip:   2.97 kB
+../dist/storybook/assets/ErrorState.stories-DK95c5fW.js       9.22 kB │ gzip:   3.03 kB
+../dist/storybook/assets/test-utils-BbFy5Eiq.js              13.09 kB │ gzip:   5.09 kB
+../dist/storybook/assets/HmacProof.stories-VV6jc2F5.js       14.16 kB │ gzip:   4.62 kB
+../dist/storybook/assets/matchers-7Z3WT2CE-OIiPHzXs.js       29.81 kB │ gzip:  10.23 kB
+../dist/storybook/assets/entry-preview-BKTnkjfn.js           30.35 kB │ gzip:   9.75 kB
+../dist/storybook/assets/Atoms.stories-DGZLMrjG.js           31.46 kB │ gzip:   9.42 kB
+../dist/storybook/assets/en-IN-BRP-emim.js                   33.67 kB │ gzip:   8.58 kB
+../dist/storybook/assets/telemetry-CaYh8mKO.js               42.24 kB │ gzip:  16.58 kB
+../dist/storybook/assets/index-B58f2Zce.js                  111.90 kB │ gzip:  36.75 kB
+../dist/storybook/assets/index-B2UzP9c-.js                  134.66 kB │ gzip:  43.24 kB
+../dist/storybook/assets/iframe-DTZD9VKt.js                 211.04 kB │ gzip:  70.91 kB
+../dist/storybook/assets/axe-NdQ5sM6y.js                    583.97 kB │ gzip: 160.51 kB
+../dist/storybook/assets/preview-6C2vHj4p.js                662.84 kB │ gzip: 157.02 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 3.34s
+info => Preview built ([38;2;181;126;229m3.87 s[39m)
+info => Output directory: /Users/srujansai/Desktop/NRG/dist/storybook

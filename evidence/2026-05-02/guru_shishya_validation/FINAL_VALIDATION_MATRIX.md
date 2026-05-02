@@ -24,7 +24,7 @@ production-readiness certificate.
 | Live browser main query flow | PASS | `live_quantum_recheck/` | Desktop/mobile screenshots, video, citation drawer, source-data drawer, audit-proof drawer, console-error capture, raw Researcher JSON, and Tier 3 blocked JSON were captured for the messy quantum researcher flow. |
 | Accessibility | PASS | `30_frontend_contrast_after_install.log`, `36_frontend_playwright_a11y.log` | 20 contrast tests passed; 9 Playwright axe/keyboard/reduced-motion checks passed. |
 | Frontend lint | PASS | `187_frontend_lint_after_lint_cleanup.log` | Lint exits 0 with 0 warnings after the TypeScript ESLint upgrade cleanup. |
-| Dependency audit | PASS high-severity gate | `169_frontend_npm_audit_current.json`, `170_frontend_npm_outdated_current.json`, `171_frontend_dependency_audit_summary.md`, `189_frontend_npm_audit_high_final_after_lint_cleanup.json`, `190_frontend_dependency_tree_after_lint_cleanup.log`, `221_frontend_npm_audit_after_loki_removal.json`, `222_frontend_npm_audit_high_after_loki_removal.json`, `223_frontend_lint_after_loki_removal.log`, `224_frontend_build_after_loki_removal.log`, `225_frontend_jest_after_loki_removal.log`, `226_frontend_contrast_after_loki_removal.log`, `227_frontend_npm_outdated_local_cache_after_loki_removal.json`, `228_frontend_loki_reference_check.log`, `229_frontend_loki_dependency_retirement_summary.md` | `npm audit --audit-level=high` exits 0 after removing the unused Loki visual-regression dependency; lint, production build, Jest, and contrast checks pass. Remaining findings are 0 critical, 0 high, 18 moderate, and 5 low; do not claim full dependency cleanliness until those are remediated or risk-accepted. |
+| Dependency audit | PASS local clean audit | `232_frontend_npm_audit_before_storybook_jest_vite_upgrade.json`, `234_frontend_dependency_tree_before_storybook_jest_vite_upgrade.json`, `240_frontend_npm_audit_after_storybook_essentials_removal.json`, `241_frontend_storybook_dependency_tree_after_essentials_removal.log`, `242_frontend_storybook_build_after_essentials_removal.log`, `243_frontend_build_after_dependency_hardening.log`, `244_frontend_lint_after_dependency_hardening.log`, `245_frontend_jest_after_dependency_hardening.log`, `246_frontend_contrast_after_dependency_hardening.log`, `247_frontend_dependency_full_audit_closure_summary.md` | Frontend `npm audit` now reports 0 total vulnerabilities after removing unused Loki and the vulnerable Storybook essentials/actions path, while preserving Storybook a11y, production build, lint, Jest, and contrast gates. This is local dependency evidence, not deployed-browser proof. |
 | Full Python suite | PASS managed live orchestration | `204_full_suite_live_orchestration_summary.md`, `208_run_test_suite_live_api_key_store_fix.log`, `full_suite_live_orchestration5/test_suite_full_final.xml`, `full_suite_live_orchestration5/test_suite_live_api.xml`, `217_no_leftover_port_8000_after_final_runner.log`, `211_audit_chain_check_after_final_repair.log`, `220_live_tests_skip_without_api_final.log` | `scripts/run_test_suite.sh --live-api` now separates non-live and live API files. Latest current-code run: non-live JUnit 1,830 tests, 0 failures, 0 errors, 56 skipped; live API JUnit 36 tests, 0 failures, 0 errors, 0 skipped; runtime budget passed in 33.0s. Raw `pytest tests/` skips live API files when no API is reachable. |
 | Live local health | PASS | `64_live_health_all_after_services.json`, `65_live_health_qdrant_after_services.json`, `66_live_vectors_health_after_services.json`, `69_post_service_verification.log`, `74_colima_stack_health_all.json` | `/health/all`, `/health/qdrant`, and `/api/vectors/health` passed after local Qdrant/Redis service startup. Local LLM remains optional unavailable and does not make health fail. Final host `lsof` showed no host uvicorn listener on port 8000; Colima-side stack health is also healthy. |
 | C4 performance/load | PASS local quota-neutral capacity | `c4_rerun/163_c4_prewarm_4workers_bounded_audit_executor.json`, `c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`, `c4_rerun/166_locust_report_60s_4workers_bounded_audit_executor.html`, `c4_rerun/167_bounded_audit_executor_c4_pass_summary.md` | The bounded audit append executor moved request-path audit writes out of the general API blocking pool while preserving synchronous chain-hash return. Latest strict scorecard reports Quality Bar `6/6`, C4 PASS, 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms, researcher P99 64 ms, government P99 80 ms, and adversarial P99 170 ms. This used `NRG_QUOTA_DISABLED=1`, so it is local capacity evidence, not quota-policy or deployed-cluster proof. |
@@ -48,8 +48,9 @@ production-readiness certificate.
   or poison the active `.audit` chain.
 - Preserved live red-team coverage while aligning RT-20/RT-21 with the
   production blocked answer-engine envelope contract.
-- Removed the unused frontend `loki` visual-regression dependency, reducing
-  residual frontend audit findings while preserving the production build.
+- Removed the unused frontend `loki` visual-regression dependency and then
+  closed the remaining local npm audit findings by upgrading Storybook/Vite/Jest
+  tooling and dropping the unused Storybook essentials/actions chain.
 
 ## Do Not Claim Yet
 
@@ -57,8 +58,8 @@ production-readiness certificate.
 - Do not claim deployed/cluster C4 compliance until replayed in that environment.
 - Do not claim deployed RAG is fully operational until the production Qdrant
   baseline is rerun against the deployed target.
-- Do not claim dependency security is fully clean until remaining low/moderate
-  findings are remediated or formally risk-accepted.
+- Do not claim deployed dependency/security posture from local npm audit alone;
+  production deployment images still need their own audit gate.
 - Do not claim deployed-browser or production-cluster proof until external
   gates are rerun with the required target URLs, Qdrant, cluster context, and
   founder signing key.
@@ -69,7 +70,6 @@ Close remaining non-C4 gates:
 
 1. Rerun C4 in the sovereign cluster with the same strict scorecard and explicit
    quota mode.
-2. Remediate or risk-accept the remaining low/moderate frontend dependency
-   audit findings.
+2. Rerun production image/deployed dependency checks after the next build.
 3. Rerun external gates with deployed URLs, production Qdrant target, cluster
    context, and founder signing key.

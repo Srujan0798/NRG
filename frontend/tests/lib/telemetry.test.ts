@@ -13,10 +13,7 @@ import {
 describe('telemetry event contract', () => {
   beforeEach(() => {
     resetTelemetryQueueForTests()
-    Object.defineProperty(window, 'location', {
-      value: { pathname: '/app' },
-      writable: true,
-    })
+    window.history.pushState({}, '', '/app')
     window.sessionStorage.clear()
   })
 

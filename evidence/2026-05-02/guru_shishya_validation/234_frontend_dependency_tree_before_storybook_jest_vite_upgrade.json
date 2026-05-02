@@ -1,0 +1,92 @@
+{
+  "version": "1.0.0",
+  "name": "nrg-frontend",
+  "dependencies": {
+    "@storybook/addon-a11y": {
+      "version": "7.6.24",
+      "resolved": "https://registry.npmjs.org/@storybook/addon-a11y/-/addon-a11y-7.6.24.tgz",
+      "overridden": false
+    },
+    "@storybook/addon-essentials": {
+      "version": "7.6.24",
+      "resolved": "https://registry.npmjs.org/@storybook/addon-essentials/-/addon-essentials-7.6.24.tgz",
+      "overridden": false
+    },
+    "@storybook/react-vite": {
+      "version": "7.6.24",
+      "resolved": "https://registry.npmjs.org/@storybook/react-vite/-/react-vite-7.6.24.tgz",
+      "overridden": false,
+      "dependencies": {
+        "@joshwooding/vite-plugin-react-docgen-typescript": {
+          "version": "0.3.0",
+          "resolved": "https://registry.npmjs.org/@joshwooding/vite-plugin-react-docgen-typescript/-/vite-plugin-react-docgen-typescript-0.3.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "vite": {
+              "version": "4.5.14"
+            }
+          }
+        },
+        "@storybook/builder-vite": {
+          "version": "7.6.24",
+          "resolved": "https://registry.npmjs.org/@storybook/builder-vite/-/builder-vite-7.6.24.tgz",
+          "overridden": false,
+          "dependencies": {
+            "vite": {
+              "version": "4.5.14"
+            }
+          }
+        },
+        "@vitejs/plugin-react": {
+          "version": "3.1.0",
+          "resolved": "https://registry.npmjs.org/@vitejs/plugin-react/-/plugin-react-3.1.0.tgz",
+          "overridden": false,
+          "dependencies": {
+            "vite": {
+              "version": "4.5.14"
+            }
+          }
+        },
+        "vite": {
+          "version": "4.5.14"
+        }
+      }
+    },
+    "@vitejs/plugin-react": {
+      "version": "4.7.0",
+      "overridden": false,
+      "dependencies": {
+        "vite": {
+          "version": "4.5.14"
+        }
+      }
+    },
+    "jest-environment-jsdom": {
+      "version": "29.7.0",
+      "overridden": false
+    },
+    "jest": {
+      "version": "29.7.0",
+      "overridden": false
+    },
+    "storybook": {
+      "version": "7.6.24",
+      "resolved": "https://registry.npmjs.org/storybook/-/storybook-7.6.24.tgz",
+      "overridden": false
+    },
+    "ts-jest": {
+      "version": "29.4.9",
+      "overridden": false,
+      "dependencies": {
+        "jest": {
+          "version": "29.7.0"
+        }
+      }
+    },
+    "vite": {
+      "version": "4.5.14",
+      "resolved": "https://registry.npmjs.org/vite/-/vite-4.5.14.tgz",
+      "overridden": false
+    }
+  }
+}
