@@ -1,11 +1,11 @@
 {
   "db_struct_table_count": 58,
-  "live_table_count": 75,
-  "nonzero_table_count": 21,
+  "live_table_count": 80,
+  "nonzero_table_count": 24,
   "priority_by_reference_frequency": [
     {
       "in_db_struct": false,
-      "reference_frequency": 1865,
+      "reference_frequency": 1867,
       "rows": 50000,
       "table": "researchers"
     },
@@ -29,7 +29,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 515,
+      "reference_frequency": 518,
       "rows": 0,
       "table": "projects"
     },
@@ -71,7 +71,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 169,
+      "reference_frequency": 172,
       "rows": 0,
       "table": "funding_records"
     },
@@ -190,6 +190,12 @@
       "table": "scraped_raw_data"
     },
     {
+      "in_db_struct": false,
+      "reference_frequency": 44,
+      "rows": 807,
+      "table": "audit_events"
+    },
+    {
       "in_db_struct": true,
       "reference_frequency": 42,
       "rows": 0,
@@ -218,12 +224,6 @@
       "reference_frequency": 41,
       "rows": 0,
       "table": "faculty_strength"
-    },
-    {
-      "in_db_struct": false,
-      "reference_frequency": 38,
-      "rows": 807,
-      "table": "audit_events"
     },
     {
       "in_db_struct": true,
@@ -449,9 +449,39 @@
     },
     {
       "in_db_struct": false,
+      "reference_frequency": 2,
+      "rows": 807,
+      "table": "audit_event_ids"
+    },
+    {
+      "in_db_struct": false,
       "reference_frequency": 1,
       "rows": 1,
       "table": "alembic_version"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 807,
+      "table": "audit_events_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_after_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_before_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 807,
+      "table": "audit_events_unpartitioned_d4_backup"
     }
   ],
   "tables": [
@@ -499,9 +529,39 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 38,
+      "reference_frequency": 2,
+      "rows": 807,
+      "table": "audit_event_ids"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 44,
       "rows": 807,
       "table": "audit_events"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 807,
+      "table": "audit_events_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_after_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_before_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 807,
+      "table": "audit_events_unpartitioned_d4_backup"
     },
     {
       "in_db_struct": true,
@@ -637,7 +697,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 169,
+      "reference_frequency": 172,
       "rows": 0,
       "table": "funding_records"
     },
@@ -751,7 +811,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 515,
+      "reference_frequency": 518,
       "rows": 0,
       "table": "projects"
     },
@@ -799,7 +859,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 1865,
+      "reference_frequency": 1867,
       "rows": 50000,
       "table": "researchers"
     },
@@ -906,7 +966,7 @@
       "table": "user_registration_old"
     }
   ],
-  "zero_row_table_count": 54,
+  "zero_row_table_count": 56,
   "zero_row_tables": [
     {
       "in_db_struct": true,
@@ -931,6 +991,18 @@
       "reference_frequency": 42,
       "rows": 0,
       "table": "advance_search_data_old"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_after_2026"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 1,
+      "rows": 0,
+      "table": "audit_events_before_2026"
     },
     {
       "in_db_struct": true,
@@ -1042,7 +1114,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 169,
+      "reference_frequency": 172,
       "rows": 0,
       "table": "funding_records"
     },
@@ -1120,7 +1192,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 515,
+      "reference_frequency": 518,
       "rows": 0,
       "table": "projects"
     },

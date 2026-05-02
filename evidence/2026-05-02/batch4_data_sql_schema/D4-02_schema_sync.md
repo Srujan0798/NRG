@@ -1,9 +1,14 @@
 SCHEMA SYNC REPORT
 ============================================================
 
-⚠️ EXTRA TABLES in live DB (17):
+⚠️ EXTRA TABLES in live DB (22):
    - alembic_version
+   - audit_event_ids
    - audit_events
+   - audit_events_2026
+   - audit_events_after_2026
+   - audit_events_before_2026
+   - audit_events_unpartitioned_d4_backup
    - collaborations
    - funding
    - funding_records

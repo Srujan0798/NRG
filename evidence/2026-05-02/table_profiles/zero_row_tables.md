@@ -6,6 +6,8 @@
 | `advance_search_data` | True | 88 |
 | `advance_search_data_15_12` | True | 42 |
 | `advance_search_data_old` | True | 42 |
+| `audit_events_after_2026` | False | 1 |
+| `audit_events_before_2026` | False | 1 |
 | `auth_group` | True | 16 |
 | `auth_group_permissions` | True | 14 |
 | `auth_permission` | True | 15 |
@@ -24,7 +26,7 @@
 | `fdp_details` | True | 24 |
 | `founders_of_fortune_500_companies` | True | 21 |
 | `funding` | False | 807 |
-| `funding_records` | False | 169 |
+| `funding_records` | False | 172 |
 | `incubation_details` | True | 68 |
 | `ipo_patent_details_flat` | True | 37 |
 | `ipo_patent_details_flat_old` | True | 34 |
@@ -37,7 +39,7 @@
 | `nirf_table_row` | True | 24 |
 | `package_data` | True | 24 |
 | `patents` | False | 261 |
-| `projects` | False | 515 |
+| `projects` | False | 518 |
 | `publication_keywords` | False | 32 |
 | `research_documents` | False | 119 |
 | `researcher_labs` | False | 47 |

@@ -354,6 +354,7 @@ def write_partition_and_index_report(engine: Engine, output_dir: Path) -> dict[s
             payload["indexes"][table_name] = list_indexes(conn, table_name)
         for query_name, sql in HOT_PATH_QUERIES:
             payload["hot_path_query_timings"][query_name] = timed_query(conn, sql)
+        payload["partition_pruning_explain"] = audit_events_partition_pruning(conn)
 
     timings = [
         item["elapsed_ms"]
@@ -363,6 +364,7 @@ def write_partition_and_index_report(engine: Engine, output_dir: Path) -> dict[s
     payload["summary"] = {
         "audit_events_partitioned": payload["time_series"]["audit_events"].get("partitioned"),
         "query_logs_exists": payload["time_series"]["query_logs"].get("exists"),
+        "partition_pruning_relations": payload["partition_pruning_explain"].get("relation_names", []),
         "hot_path_timing_max_ms": max(timings) if timings else None,
         "hot_path_timing_under_200ms": bool(timings) and max(timings) < 200,
     }
@@ -624,14 +626,51 @@ def timed_query(conn: Connection, sql: str) -> dict[str, Any]:
         return {"status": "FAIL", "error": str(exc)}
 
 
+def audit_events_partition_pruning(conn: Connection) -> dict[str, Any]:
+    state = time_series_table_state(conn, "audit_events")
+    if not state.get("partitioned"):
+        return {"status": "SKIPPED", "reason": "audit_events is not partitioned"}
+    sql = """
+        EXPLAIN (ANALYZE, VERBOSE, FORMAT JSON)
+        SELECT COUNT(*)
+        FROM audit_events
+        WHERE created_at >= TIMESTAMP '2026-01-01'
+          AND created_at < TIMESTAMP '2027-01-01'
+    """
+    try:
+        plan_value = conn.execute(text(sql)).scalar()
+        plan = plan_value if isinstance(plan_value, list) else json.loads(plan_value)
+        relation_names = sorted(set(collect_plan_relations(plan[0]["Plan"])))
+        return {
+            "status": "PASS",
+            "query": "created_at >= 2026-01-01 AND created_at < 2027-01-01",
+            "relation_names": relation_names,
+            "plan": json_safe(plan),
+        }
+    except (SQLAlchemyError, json.JSONDecodeError, KeyError, TypeError) as exc:
+        conn.rollback()
+        return {"status": "FAIL", "error": str(exc)}
+
+
+def collect_plan_relations(node: dict[str, Any]) -> list[str]:
+    relation_names = []
+    relation_name = node.get("Relation Name")
+    if relation_name:
+        relation_names.append(str(relation_name))
+    for child in node.get("Plans", []):
+        relation_names.extend(collect_plan_relations(child))
+    return relation_names
+
+
 def read_module_constant(source: str, name: str) -> str | list[str] | None:
     tree = ast.parse(source)
     for node in tree.body:
-        if not isinstance(node, ast.Assign):
-            continue
-        if not any(isinstance(target, ast.Name) and target.id == name for target in node.targets):
-            continue
-        return ast.literal_eval(node.value)
+        if isinstance(node, ast.Assign):
+            if not any(isinstance(target, ast.Name) and target.id == name for target in node.targets):
+                continue
+            return ast.literal_eval(node.value)
+        if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == name:
+            return ast.literal_eval(node.value)
     return None
 
 
@@ -644,7 +683,11 @@ def iter_down_revisions(value: str | list[str] | tuple[str, ...] | None) -> set[
 
 
 def upgrade_risk_markers(source: str) -> list[str]:
-    upgrade_match = re.search(r"def upgrade\(.*?\):(.*?)(?:\ndef downgrade|\Z)", source, re.DOTALL)
+    upgrade_match = re.search(
+        r"def\s+upgrade\s*\([^)]*\)\s*(?:->\s*[^:]+)?\s*:(.*?)(?:\ndef\s+downgrade|\Z)",
+        source,
+        re.DOTALL,
+    )
     if not upgrade_match:
         return ["missing_upgrade_function"]
     upgrade_body = upgrade_match.group(1).lower()
@@ -787,6 +830,16 @@ def render_partition_indexes(payload: dict[str, Any]) -> str:
     lines.extend(["", "## Index Counts", "", "| Table | Index count |", "|---|---:|"])
     for table_name, indexes in payload["indexes"].items():
         lines.append(f"| `{table_name}` | {len(indexes)} |")
+    explain = payload.get("partition_pruning_explain", {})
+    lines.extend(
+        [
+            "",
+            "## Partition Pruning",
+            "",
+            f"- Status: {explain.get('status')}",
+            f"- Relations in plan: {', '.join(explain.get('relation_names', []))}",
+        ]
+    )
     return "\n".join(lines)
 
 

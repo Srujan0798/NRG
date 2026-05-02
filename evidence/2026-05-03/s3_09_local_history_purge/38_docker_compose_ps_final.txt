@@ -1,0 +1,7 @@
+NAME            IMAGE                                                                     COMMAND                  SERVICE     CREATED        STATUS                   PORTS
+nrg-api         sha256:2d269d96d5bba6a679d09a50ec6f569e70362ce5973e7fea9ba2ec44ffa757c5   "sh -c 'uvicorn src.…"   api         5 hours ago    Up 6 minutes (healthy)   0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+nrg-frontend    nrg-frontend                                                              "/docker-entrypoint.…"   frontend    3 days ago     Up 9 hours (healthy)     0.0.0.0:5173->80/tcp, [::]:5173->80/tcp
+nrg-pgbouncer   edoburu/pgbouncer:latest                                                  "/entrypoint.sh /usr…"   pgbouncer   5 hours ago    Up 5 hours (healthy)     5432/tcp, 0.0.0.0:6432->6432/tcp, [::]:6432->6432/tcp
+nrg-postgres    postgres:16-alpine                                                        "docker-entrypoint.s…"   postgres    5 hours ago    Up 5 hours (healthy)     0.0.0.0:5432->5432/tcp, [::]:5432->5432/tcp
+nrg-qdrant      qdrant/qdrant:v1.11.3                                                     "./entrypoint.sh"        qdrant      33 hours ago   Up 9 hours (healthy)     0.0.0.0:6333-6334->6333-6334/tcp, [::]:6333-6334->6333-6334/tcp
+nrg-redis       redis:7-alpine                                                            "docker-entrypoint.s…"   redis       33 hours ago   Up 9 hours (healthy)     0.0.0.0:6379->6379/tcp, [::]:6379->6379/tcp

@@ -26,6 +26,11 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - The Python 3.14/Pydantic guardrail pass adds the missing migration plan,
   regression coverage for the guard's migration-plan requirement, and evidence
   showing the guard now reports `ok: true`.
+- Subsequent May 3 local closure records S3-09 as PASS only in the rewritten
+  local clone, not remotely; credential rotation and remote coordination remain
+  required. The same pass rebuilt the API image, verified the route-module
+  `/health/qdrant` handler is active, and proved `/health/qdrant` plus
+  `/api/vectors/health` healthy against the rebuilt local stack.
 
 ## PASS Locally
 
@@ -105,13 +110,26 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
   - Result: BLOCKED by missing external deployed URLs, production API/Qdrant
     target, explicit cluster-load context, and founder signatures.
 - Final blocker recheck after `14d8f032`:
-  - S3-09 history scan remains `FAIL` with 286 redacted findings.
+  - Initial S3-09 scan found 286 redacted findings; the local rewritten clone
+    now reports S3-09 scanner `PASS` with 0 findings.
   - Local Docker stack is up and `/health/all` returns `status=healthy`.
   - Local Qdrant alias repair returns `/api/vectors/health` HTTP 200 after
-    alias creation, and `/health/qdrant` alias fallback is covered by focused
-    regression tests.
+    alias creation, `/health/qdrant` alias fallback is covered by focused
+    regression tests, and the rebuilt API image now returns healthy runtime
+    responses for `/health/qdrant` and `/api/vectors/health`.
   - External final gates remain `BLOCKED` by missing deployed URLs, production
     API/Qdrant target, explicit cluster-load context, and founder signatures.
+- S3-09 local history purge after the final blocker recheck:
+  - Local rewritten history scanner reports `PASS` with 0 findings.
+  - Remote force-push coordination and credential rotation remain pending.
+  - Full local security suite after the API restart passed with 619 passed and
+    13 skipped.
+- Batch 4 D4 partitioning closure:
+  - Local PostgreSQL now has partitioned `audit_events` with 3 child partitions.
+  - The Batch 4 audit script records partition pruning to `audit_events_2026`.
+  - Focused final regressions passed with 20 targeted tests covering
+    Qdrant/vector health, the D4 partition migration, Batch 4 parser behavior,
+    S3-09 scanner behavior, and the Python 3.14/Pydantic guardrail.
 
 ## Evidence
 
@@ -120,6 +138,8 @@ Guru/Shishya validation work and the Batch 1/2/3/5 verification evidence.
 - `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_external_gates_after_9ace4501/EXTERNAL_GATE_SUMMARY.md`
 - `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/README.md`
+- `evidence/2026-05-03/s3_09_local_history_purge/README.md`
+- `evidence/2026-05-03/final_continuation_verification.md`
 - `evidence/2026-05-03/query_service_extraction/README.md`
 - `evidence/2026-05-03/post_state_replay/README.md`
 - `evidence/2026-05-03/s3_09_remediation_gate/README.md`

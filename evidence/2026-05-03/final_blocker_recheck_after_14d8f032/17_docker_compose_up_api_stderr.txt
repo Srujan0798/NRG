@@ -1,0 +1,8 @@
+time="2026-05-03T01:53:56+05:30" level=warning msg="volume \"nrg_api_auth_data\" already exists but was not created by Docker Compose. Use `external: true` to use an existing volume"
+ Container nrg-redis Running
+ Container nrg-qdrant Running
+ Container nrg-postgres Recreate
+ Container nrg-postgres Recreated
+ Container nrg-pgbouncer Recreate
+ Container nrg-pgbouncer Error response from daemon: removal of container 6be86acb9d0e7b7a40e06e294c18ffba2f73ce77abf3815841bb5e7d722da6de is already in progress
+Error response from daemon: removal of container 6be86acb9d0e7b7a40e06e294c18ffba2f73ce77abf3815841bb5e7d722da6de is already in progress

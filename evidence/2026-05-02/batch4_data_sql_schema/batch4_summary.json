@@ -13,25 +13,30 @@
     "total": 17
   },
   "foreign_keys": {
-    "failing_relationships": 2,
+    "failing_relationships": 0,
     "missing_constraints_on_clean_relationships": 0,
     "relationships_checked": 9
   },
-  "generated_at": "2026-05-02T20:13:58.635956+00:00",
+  "generated_at": "2026-05-02T20:27:39.156593+00:00",
   "migration_audit": {
-    "heads": [],
-    "migration_count": 12,
-    "risky_upgrade_count": 11,
-    "single_head": false
+    "heads": [
+      "d4_partition_audit_events_004"
+    ],
+    "migration_count": 14,
+    "risky_upgrade_count": 0,
+    "single_head": true
   },
   "partition_and_indexes": {
-    "audit_events_partitioned": false,
-    "hot_path_timing_max_ms": 131.474,
+    "audit_events_partitioned": true,
+    "hot_path_timing_max_ms": 12.666,
     "hot_path_timing_under_200ms": true,
+    "partition_pruning_relations": [
+      "audit_events_2026"
+    ],
     "query_logs_exists": false
   },
   "schema_sync": {
-    "extra_tables": 17,
+    "extra_tables": 22,
     "has_drift": true,
     "missing_column_tables": 0,
     "missing_tables": 0,
@@ -39,8 +44,8 @@
   },
   "table_profiles": {
     "db_struct_table_count": 58,
-    "live_table_count": 75,
-    "nonzero_table_count": 21,
-    "zero_row_table_count": 54
+    "live_table_count": 80,
+    "nonzero_table_count": 24,
+    "zero_row_table_count": 56
   }
 }

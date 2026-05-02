@@ -1,0 +1,4 @@
+{
+  "ok": true,
+  "evidence": "/Users/srujansai/Desktop/NRG/evidence/2026-05-02/batch4_data_sql_schema"
+}

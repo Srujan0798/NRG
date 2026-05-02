@@ -1,0 +1,31 @@
+ M evidence/2026-05-02/batch3_security_compliance/README.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-02_schema_sync.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-02_schema_sync.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-03_dhairya_replay.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-03_dhairya_replay.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-04_contact_constraints.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-04_contact_constraints.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-05_fk_orphans.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-05_fk_orphans.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-11_migration_audit.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-11_migration_audit.md
+ M evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.json
+ M evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.md
+ M evidence/2026-05-02/batch4_data_sql_schema/run_after_annassign_fix.txt
+ M evidence/2026-05-02/table_profiles/table_counts.json
+ M evidence/2026-05-02/table_profiles/table_profiles.md
+ M evidence/2026-05-02/table_profiles/zero_row_tables.md
+ M evidence/2026-05-03/all_batches_final/80_TASK_MASTER_FINAL.md
+ M scripts/batch4_data_sql_schema_audit.py
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/13_qdrant_health_after_rebuild.exit
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/13_qdrant_health_after_rebuild.txt
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/14_vectors_health_after_rebuild.exit
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/14_vectors_health_after_rebuild.txt
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/15_docker_compose_ps_after_rebuild.txt
+?? evidence/2026-05-03/final_blocker_recheck_after_14d8f032/16_docker_compose_build_api_stderr.txt
+?? evidence/2026-05-03/s3_09_local_history_purge/28_rt14_response_redacted_before_fix.json
+?? evidence/2026-05-03/s3_09_local_history_purge/36_s3_09_env_history_secret_scan_final.json
+?? evidence/2026-05-03/s3_09_local_history_purge/37_git_status_final.txt
+?? evidence/2026-05-03/s3_09_local_history_purge/README.md

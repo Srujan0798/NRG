@@ -4,17 +4,17 @@
 
 | Table | Exists | Partitioned | Child partitions |
 |---|---|---|---:|
-| `audit_events` | True | False | 0 |
+| `audit_events` | True | True | 3 |
 | `query_logs` | False | False | 0 |
 
 ## Hot-Path Timings
 
 | Query | Status | Elapsed ms | Result |
 |---|---|---:|---:|
-| `researchers_state` | PASS | 4.183 | 0 |
-| `researchers_area` | PASS | 131.474 | 0 |
-| `publications_year` | PASS | 25.216 | 10000 |
-| `audit_events_recent` | PASS | 13.073 | 807 |
+| `researchers_state` | PASS | 0.447 | 0 |
+| `researchers_area` | PASS | 12.666 | 0 |
+| `publications_year` | PASS | 1.016 | 10000 |
+| `audit_events_recent` | PASS | 0.907 | 807 |
 
 ## Index Counts
 
@@ -28,4 +28,9 @@
 | `patents` | 4 |
 | `collaborations` | 6 |
 | `research_documents` | 4 |
-| `audit_events` | 3 |
+| `audit_events` | 4 |
+
+## Partition Pruning
+
+- Status: PASS
+- Relations in plan: audit_events_2026

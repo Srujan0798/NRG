@@ -14,7 +14,7 @@ Date: 2026-05-02
 | S3-06 JWT rotation grace | PASS | `S3-06_jwt_rotation_tests.log`: 4 JWT refresh/rotation tests passed, including 300s grace for in-flight access token |
 | S3-07 revoked consent export | PASS | `S3-07_dpdp_revoked_export_attempt2.log`: revoked `research_access` returns 403 for export endpoints |
 | S3-08 HMAC compare timing | PASS | `S3-08_hmac_validation_rerun.log`: 11 HMAC/request signer tests passed; malformed signatures compare with fixed-length candidate |
-| S3-09 committed `.env*` secrets | FAIL local history | Current tracked `.env*`: none; `.gitignore` covers `.env*` targets. History scan found 11,109 redacted secret-like assignments in deleted env files. Requires history purge plus credential rotation outside this code batch. |
+| S3-09 committed `.env*` secrets | PASS local rewritten history; remote/rotation pending | Current tracked `.env*`: none; `.gitignore` covers `.env*` targets. May 3 local history purge scanner reports 0 findings. Remote force-push coordination and credential rotation remain operational closure items. |
 | S3-10 XSS vectors | PASS | `S3-02_08_10_11_security_tests.log` and `S3-05_10_adversarial_inputs.log`: script tag, `javascript:`, SVG/onload, iframe URI vectors blocked |
 | S3-11 egress allowlist | PASS | `S3-11_egress_allowlist_baseline.log` and `S3-02_08_10_11_security_tests.log`: 35 egress allowlist tests passed |
 
@@ -31,7 +31,7 @@ Date: 2026-05-02
 - `finalcheck_batch3_targeted_pytest.log`: 334 passed, 22 deselected, 118 warnings across the targeted Batch 3 security slice.
 - `finalcheck_S3-07_revoked_export_slow.log`: 1 passed for revoked consent blocking `/me/data` and `/dpdp/export`.
 - `finalcheck_S3-09_scanner_tests.log`: 3 passed for the redacted env-history scanner.
-- `finalcheck_S3-09_env_history_secret_scan.log`: scanner exited 1 with 286 redacted secret-like assignments across 41 runtime env file versions.
+- `finalcheck_S3-09_env_history_secret_scan.log`: historical pre-purge scan found 286 redacted secret-like assignments across 41 runtime env file versions.
 - `finalcheck_S3-09_env_history_secret_scan.json`: full redacted scanner output; no secret values are printed.
 - `finalcheck_python_compileall.log`: `src` and `tests` compile successfully.
 - `finalcheck_git_diff_check.log`: no diff whitespace errors.
@@ -46,9 +46,13 @@ Date: 2026-05-02
 - `finalcheck2_python_compileall.log`: `scripts`, `src`, and `tests` compile successfully.
 - `finalcheck2_forbidden_vocab.log`: production-vocabulary gate exited 0.
 - `finalcheck2_git_diff_check.log`: no diff whitespace errors.
+- `../s3_09_local_history_purge/10_env_history_after_purge.txt`: local rewritten history has no `.env*` file history output.
+- `../s3_09_local_history_purge/11_s3_09_env_history_secret_scan_after_purge.json`: local S3-09 scanner result is PASS with 0 findings.
+- `../s3_09_local_history_purge/30_security_suite_live_timeout_after_rt14_recheck.log`: full security suite PASS, 619 passed and 13 skipped.
+- `../s3_09_local_history_purge/36_s3_09_env_history_secret_scan_final.json`: post-evidence-sync scanner result remains PASS with 0 findings.
 
 ## Known Gaps
 
-- S3-09 cannot be closed by normal source edits. The repository history still contains redacted secret-like `.env*` values. Treat all matching historical credentials as exposed until rotated, and clean history with an approved secret-removal procedure.
+- S3-09 is closed in this local rewritten clone only. Treat all historically exposed credentials as compromised until rotated, and coordinate any remote force-push/reclone with repository owners.
 - S3-09 remediation runbook: `docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md`.
 - Deployed/cluster egress and dependency claims were not made; this is local checkout evidence only.

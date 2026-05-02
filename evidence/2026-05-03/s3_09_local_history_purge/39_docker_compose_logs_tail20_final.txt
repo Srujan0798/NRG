@@ -1,0 +1,120 @@
+nrg-api  | {"timestamp": "2026-05-02T20:23:33.601585+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "close.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | INFO:     127.0.0.1:37028 - "GET /health/all HTTP/1.1" 200 OK
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.324385+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "connect_tcp.started host='localhost' port=8080 local_address=None timeout=2.0 socket_options=None", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.329200+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "connect_tcp.failed exception=ConnectError(ConnectionRefusedError(111, 'Connection refused'))", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.341328+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "connect_tcp.started host='qdrant' port=6333 local_address=None timeout=2 socket_options=None", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.349644+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0xecb518bae610>", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.350017+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "send_request_headers.started request=<Request [b'GET']>", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.353088+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "send_request_headers.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.353257+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "send_request_body.started request=<Request [b'GET']>", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.353475+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "send_request_body.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.353841+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "receive_response_headers.started request=<Request [b'GET']>", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.365511+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'transfer-encoding', b'chunked'), (b'vary', b'accept-encoding, Origin, Access-Control-Request-Method, Access-Control-Request-Headers'), (b'content-type', b'application/json'), (b'content-encoding', b'zstd'), (b'date', b'Sat, 02 May 2026 20:23:49 GMT')])", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.366801+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://qdrant:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.367315+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "receive_response_body.started request=<Request [b'GET']>", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.367865+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "receive_response_body.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.368085+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "response_closed.started", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.368229+00:00", "level": "DEBUG", "logger": "httpcore.http11", "message": "response_closed.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.389113+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "close.started", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | {"timestamp": "2026-05-02T20:23:49.389483+00:00", "level": "DEBUG", "logger": "httpcore.connection", "message": "close.complete", "module": "_trace", "function": "trace", "line": 47, "process_id": 9, "thread_id": 260262945699008, "extra": {}}
+nrg-api  | INFO:     127.0.0.1:38832 - "GET /health/all HTTP/1.1" 200 OK
+nrg-redis  | 1:M 02 May 2026 19:15:40.704 * 100 changes in 300 seconds. Saving...
+nrg-redis  | 1:M 02 May 2026 19:15:40.737 * Background saving started by pid 14160
+nrg-redis  | 14160:C 02 May 2026 19:15:40.764 * DB saved on disk
+nrg-redis  | 14160:C 02 May 2026 19:15:40.765 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+nrg-redis  | 1:M 02 May 2026 19:15:40.842 * Background saving terminated with success
+nrg-redis  | 1:M 02 May 2026 19:32:26.913 * 100 changes in 300 seconds. Saving...
+nrg-redis  | 1:M 02 May 2026 19:32:26.914 * Background saving started by pid 14748
+nrg-redis  | 14748:C 02 May 2026 19:32:26.918 * DB saved on disk
+nrg-redis  | 14748:C 02 May 2026 19:32:26.918 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+nrg-redis  | 1:M 02 May 2026 19:32:27.021 * Background saving terminated with success
+nrg-redis  | 1:M 02 May 2026 19:49:44.415 * 100 changes in 300 seconds. Saving...
+nrg-redis  | 1:M 02 May 2026 19:49:44.481 * Background saving started by pid 15329
+nrg-redis  | 15329:C 02 May 2026 19:49:44.541 * DB saved on disk
+nrg-redis  | 15329:C 02 May 2026 19:49:44.542 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+nrg-redis  | 1:M 02 May 2026 19:49:44.585 * Background saving terminated with success
+nrg-redis  | 1:M 02 May 2026 20:06:57.123 * 100 changes in 300 seconds. Saving...
+nrg-redis  | 1:M 02 May 2026 20:06:57.154 * Background saving started by pid 15917
+nrg-redis  | 15917:C 02 May 2026 20:06:57.184 * DB saved on disk
+nrg-redis  | 15917:C 02 May 2026 20:06:57.234 * Fork CoW for RDB: current 0 MB, peak 0 MB, average 0 MB
+nrg-redis  | 1:M 02 May 2026 20:06:57.257 * Background saving terminated with success
+nrg-pgbouncer  | 2026-05-02 20:21:38.440 UTC [1] LOG C-0xe928677526a0: nrg_dev/nrg_dev@172.28.0.7:58472 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:38.440 UTC [1] LOG C-0xe92867752988: nrg_dev/nrg_dev@172.28.0.7:58484 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:38.441 UTC [1] LOG C-0xe92867752c70: nrg_dev/nrg_dev@172.28.0.7:58496 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:38.442 UTC [1] LOG C-0xe92867752f58: nrg_dev/nrg_dev@172.28.0.7:58498 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:38.443 UTC [1] LOG C-0xe92867753240: nrg_dev/nrg_dev@172.28.0.7:58510 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:48.382 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:56292 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:21:58.462 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:38262 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:08.630 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:50224 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:13.262 UTC [1] LOG stats: 0 xacts/s, 0 queries/s, 0 client parses/s, 0 server parses/s, 0 binds/s, in 0 B/s, out 0 B/s, xact 0 us, query 0 us, wait 0 us
+nrg-pgbouncer  | 2026-05-02 20:22:18.767 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:42166 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:29.162 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:48370 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:39.322 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:34108 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:49.455 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:33414 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:22:59.492 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:39918 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:23:09.768 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:49736 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:23:13.260 UTC [1] LOG stats: 0 xacts/s, 0 queries/s, 0 client parses/s, 0 server parses/s, 0 binds/s, in 0 B/s, out 0 B/s, xact 0 us, query 0 us, wait 0 us
+nrg-pgbouncer  | 2026-05-02 20:23:20.042 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:45934 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:23:31.046 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:36464 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:23:41.282 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:37536 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-pgbouncer  | 2026-05-02 20:23:51.500 UTC [1] LOG C-0xe92867753528: nrg_dev/nrg_dev@127.0.0.1:39894 login attempt: db=nrg_dev user=nrg_dev tls=no replication=no
+nrg-frontend   | /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+nrg-frontend   | /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+nrg-frontend   | 10-listen-on-ipv6-by-default.sh: info: can not modify /etc/nginx/conf.d/default.conf (read-only file system?)
+nrg-frontend   | /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+nrg-frontend   | /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+nrg-frontend   | /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+nrg-frontend   | /docker-entrypoint.sh: Configuration complete; ready for start up
+nrg-frontend   | 2026/05/02 11:40:34 [warn] 1#1: the "user" directive makes sense only if the master process runs with super-user privileges, ignored in /etc/nginx/nginx.conf:2
+nrg-frontend   | nginx: [warn] the "user" directive makes sense only if the master process runs with super-user privileges, ignored in /etc/nginx/nginx.conf:2
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: using the "epoll" event method
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: nginx/1.25.5
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: built by gcc 13.2.1 20231014 (Alpine 13.2.1_git20231014)
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: OS: Linux 6.8.0-100-generic
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1024:524288
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: start worker processes
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: start worker process 21
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: start worker process 22
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: start worker process 23
+nrg-frontend   | 2026/05/02 11:40:34 [notice] 1#1: start worker process 24
+nrg-frontend   | 172.28.0.1 - - [02/May/2026:11:47:01 +0000] "GET / HTTP/1.1" 200 7881 "-" "Codex local server discovery" "-"
+nrg-postgres   | 	ORDER BY total_funding DESC) AS batch4_q LIMIT 20
+nrg-postgres   | 2026-05-02 20:19:15.358 UTC [12582] ERROR:  relation "innovation_grant_from_govt" does not exist at character 166
+nrg-postgres   | 2026-05-02 20:19:15.358 UTC [12582] STATEMENT:  SELECT * FROM (SELECT
+nrg-postgres   | 	    g.institute,
+nrg-postgres   | 	    SUM(g.grant_received) as grants_received,
+nrg-postgres   | 	    SUM(e.salaries + e.maintenance + e.seminars) as operational_expenses
+nrg-postgres   | 	FROM innovation_grant_from_govt g
+nrg-postgres   | 	JOIN financial_expenses_operational e ON g.institute = e.institute
+nrg-postgres   | 	WHERE g.as_on_year = '2024' AND e.as_on_year = '2023'
+nrg-postgres   | 	GROUP BY g.institute
+nrg-postgres   | 	HAVING SUM(g.grant_received) > (SUM(e.salaries + e.maintenance + e.seminars) * 2)) AS batch4_q LIMIT 20
+nrg-postgres   | 2026-05-02 20:19:15.367 UTC [12582] ERROR:  relation "innovations_at_various_stages_of_technology_readiness_level" does not exist at character 91
+nrg-postgres   | 2026-05-02 20:19:15.367 UTC [12582] STATEMENT:  SELECT * FROM (SELECT financial_year, stage_of_technology, COUNT(*) as project_count
+nrg-postgres   | 	FROM innovations_at_various_stages_of_technology_readiness_level
+nrg-postgres   | 	GROUP BY financial_year, stage_of_technology
+nrg-postgres   | 	ORDER BY financial_year, stage_of_technology) AS batch4_q LIMIT 20
+nrg-postgres   | 2026-05-02 20:19:16.619 UTC [12582] ERROR:  relation "audit_events" does not exist at character 22
+nrg-postgres   | 2026-05-02 20:19:16.619 UTC [12582] STATEMENT:  SELECT COUNT(*) FROM audit_events WHERE created_at >= now() - interval '30 days'
+nrg-postgres   | 2026-05-02 20:22:07.129 UTC [27] LOG:  checkpoint starting: time
+nrg-postgres   | 2026-05-02 20:22:10.213 UTC [27] LOG:  checkpoint complete: wrote 23 buffers (0.1%); 0 WAL file(s) added, 0 removed, 0 recycled; write=2.726 s, sync=0.015 s, total=3.086 s; sync files=14, longest=0.014 s, average=0.002 s; distance=3 kB, estimate=4482 kB; lsn=0/24896C80, redo lsn=0/24896C48
+nrg-qdrant     | 2026-05-02T20:20:12.553546Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.005234
+nrg-qdrant     | 2026-05-02T20:20:27.773322Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.001414
+nrg-qdrant     | 2026-05-02T20:20:43.167523Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 85 "-" "python-httpx/0.28.1" 0.005578
+nrg-qdrant     | 2026-05-02T20:20:58.375473Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 87 "-" "python-httpx/0.28.1" 0.001388
+nrg-qdrant     | 2026-05-02T20:21:13.607542Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.001740
+nrg-qdrant     | 2026-05-02T20:21:28.795087Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 85 "-" "python-httpx/0.28.1" 0.002875
+nrg-qdrant     | 2026-05-02T20:21:43.547830Z  INFO actix_web::middleware::logger: 172.28.0.1 "GET /collections/nrg_research HTTP/1.1" 200 392 "-" "python-httpx/0.28.1" 0.019648
+nrg-qdrant     | 2026-05-02T20:21:44.073585Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.010637
+nrg-qdrant     | 2026-05-02T20:21:50.460222Z  INFO actix_web::middleware::logger: 172.28.0.1 "GET /collections/nrg_research HTTP/1.1" 200 391 "-" "python-httpx/0.28.1" 0.006169
+nrg-qdrant     | 2026-05-02T20:21:52.511276Z  INFO actix_web::middleware::logger: 172.28.0.1 "POST /collections/nrg_research/points/search HTTP/1.1" 200 22359 "-" "python-httpx/0.28.1" 1.992892
+nrg-qdrant     | 2026-05-02T20:21:52.548019Z  INFO actix_web::middleware::logger: 172.28.0.1 "GET /collections/nrg_research HTTP/1.1" 200 391 "-" "python-httpx/0.28.1" 0.005842
+nrg-qdrant     | 2026-05-02T20:21:52.552344Z  INFO actix_web::middleware::logger: 172.28.0.1 "GET /collections/nrg_research HTTP/1.1" 200 393 "-" "python-httpx/0.28.1" 0.000324
+nrg-qdrant     | 2026-05-02T20:21:59.568248Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 87 "-" "python-httpx/0.28.1" 0.007329
+nrg-qdrant     | 2026-05-02T20:22:16.154217Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.060794
+nrg-qdrant     | 2026-05-02T20:22:31.393216Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.001493
+nrg-qdrant     | 2026-05-02T20:22:47.083198Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 86 "-" "python-httpx/0.28.1" 0.046155
+nrg-qdrant     | 2026-05-02T20:23:02.563762Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 83 "-" "python-httpx/0.28.1" 0.004132
+nrg-qdrant     | 2026-05-02T20:23:17.990941Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 83 "-" "python-httpx/0.28.1" 0.011990
+nrg-qdrant     | 2026-05-02T20:23:33.592060Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 88 "-" "python-httpx/0.28.1" 0.001371
+nrg-qdrant     | 2026-05-02T20:23:49.363875Z  INFO actix_web::middleware::logger: 172.28.0.7 "GET /collections HTTP/1.1" 200 85 "-" "python-httpx/0.28.1" 0.012359

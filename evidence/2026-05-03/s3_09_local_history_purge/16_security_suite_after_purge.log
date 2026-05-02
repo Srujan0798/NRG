@@ -1,0 +1,104 @@
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 632 items
+
+tests/security/test_admin_rbac_routes.py [32m.[0m[33m                               [  0%][0m
+tests/security/test_adversarial_inputs.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [  4%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                 [  6%][0m
+tests/security/test_audit_chain.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [  8%][0m
+tests/security/test_data_boundary.py [32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [  9%][0m
+tests/security/test_egress_allowlist.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 14%]
+[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                      [ 15%][0m
+tests/security/test_egress_guard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 17%][0m
+tests/security/test_gateway.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[33ms[0m[33ms[0m[32m.[0m[33m                                 [ 18%][0m
+tests/security/test_hmac_validation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 19%][0m
+tests/security/test_kong_dlp_runtime.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m                            [ 20%][0m
+tests/security/test_p0_security_regressions.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                    [ 21%][0m
+tests/security/test_per_user_audit_binding.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 25%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 26%][0m
+tests/security/test_pii_compliance.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 27%][0m
+tests/security/test_pii_indian.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                          [ 29%][0m
+tests/security/test_pii_scan.py [32m.[0m[32m.[0m[33m                                       [ 30%][0m
+tests/security/test_postgresql_rbac.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 30%][0m
+tests/security/test_prompt_injection.py [32m.[0m[32m.[0m[32m.[0m[33m                              [ 31%][0m
+tests/security/test_prompt_sanitiser_middleware.py [32m.[0m[32m.[0m[33m                    [ 31%][0m
+tests/security/test_qdrant_rbac.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                            [ 33%][0m
+tests/security/test_rate_limit_enforced.py [33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 34%][0m
+tests/security/test_rbac.py [32m.[0m[33ms[0m[32m.[0m[33ms[0m[33m                                         [ 34%][0m
+tests/security/test_rbac_isolation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 35%][0m
+tests/security/test_rbac_middleware.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 37%][0m
+tests/security/test_rbac_policies.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m          [ 41%][0m
+tests/security/test_red_team_v41.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[31mF[0m
+
+=================================== FAILURES ===================================
+[31m[1m__________________ test_rt05_researcher_escalates_to_industry __________________[0m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connectionpool.py[0m:787: in urlopen
+    [0mresponse = [96mself[39;49;00m._make_request([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connectionpool.py[0m:534: in _make_request
+    [0mresponse = conn.getresponse()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connection.py[0m:571: in getresponse
+    [0mhttplib_response = [96msuper[39;49;00m().getresponse()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:1386: in getresponse
+    [0mresponse.begin()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:325: in begin
+    [0mversion, status, reason = [96mself[39;49;00m._read_status()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:294: in _read_status
+    [0m[94mraise[39;49;00m RemoteDisconnected([33m"[39;49;00m[33mRemote end closed connection without[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   http.client.RemoteDisconnected: Remote end closed connection without response[0m
+
+[33mDuring handling of the above exception, another exception occurred:[0m
+[1m[31m.venv/lib/python3.11/site-packages/requests/adapters.py[0m:645: in send
+    [0mresp = conn.urlopen([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connectionpool.py[0m:841: in urlopen
+    [0mretries = retries.increment([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/util/retry.py[0m:490: in increment
+    [0m[94mraise[39;49;00m reraise([96mtype[39;49;00m(error), error, _stacktrace)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/util/util.py[0m:38: in reraise
+    [0m[94mraise[39;49;00m value.with_traceback(tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connectionpool.py[0m:787: in urlopen
+    [0mresponse = [96mself[39;49;00m._make_request([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connectionpool.py[0m:534: in _make_request
+    [0mresponse = conn.getresponse()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/urllib3/connection.py[0m:571: in getresponse
+    [0mhttplib_response = [96msuper[39;49;00m().getresponse()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:1386: in getresponse
+    [0mresponse.begin()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:325: in begin
+    [0mversion, status, reason = [96mself[39;49;00m._read_status()[90m[39;49;00m
+[1m[31m../../.local/share/uv/python/cpython-3.11.7-macos-aarch64-none/lib/python3.11/http/client.py[0m:294: in _read_status
+    [0m[94mraise[39;49;00m RemoteDisconnected([33m"[39;49;00m[33mRemote end closed connection without[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))[0m
+
+[33mDuring handling of the above exception, another exception occurred:[0m
+[1m[31mtests/security/test_red_team_v41.py[0m:130: in test_rt05_researcher_escalates_to_industry
+    [0mresp = query([33m"[39;49;00m[33mShow anonymized research data[39;49;00m[33m"[39;49;00m, token)[90m[39;49;00m
+[1m[31mtests/security/test_red_team_v41.py[0m:54: in query
+    [0m[94mreturn[39;49;00m requests.post([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/requests/api.py[0m:115: in post
+    [0m[94mreturn[39;49;00m request([33m"[39;49;00m[33mpost[39;49;00m[33m"[39;49;00m, url, data=data, json=json, **kwargs)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/requests/api.py[0m:59: in request
+    [0m[94mreturn[39;49;00m session.request(method=method, url=url, **kwargs)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/requests/sessions.py[0m:592: in request
+    [0mresp = [96mself[39;49;00m.send(prep, **send_kwargs)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/requests/sessions.py[0m:706: in send
+    [0mr = adapter.send(request, **kwargs)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/requests/adapters.py[0m:660: in send
+    [0m[94mraise[39;49;00m [96mConnectionError[39;49;00m(err, request=request)[90m[39;49;00m
+[1m[31mE   requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))[0m
+[33m=============================== warnings summary ===============================[0m
+tests/security/test_admin_rbac_routes.py: 1 warning
+tests/security/test_adversarial_inputs.py: 36 warnings
+tests/security/test_hmac_validation.py: 7 warnings
+tests/security/test_rate_limit_enforced.py: 5 warnings
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/security/test_red_team_v41.py::[1mtest_rt05_researcher_escalates_to_industry[0m - requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconne...
+[31m!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!![0m
+[31m====== [31m[1m1 failed[0m, [32m255 passed[0m, [33m12 skipped[0m, [33m49 warnings[0m[31m in 60.10s (0:01:00)[0m[31m =======[0m

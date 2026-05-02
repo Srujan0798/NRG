@@ -1,0 +1,2 @@
+{"ready":true,"host":"qdrant","port":6333,"collection":"nrg_research","collection_exists":true,"collections":["nrg_research"],"status":"healthy","healthy":true}
+http_status=200
