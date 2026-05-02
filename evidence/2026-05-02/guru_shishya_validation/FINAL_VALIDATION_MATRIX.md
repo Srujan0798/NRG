@@ -1,7 +1,7 @@
 # Guru/Shishya Validation Matrix
 
 Date: 2026-05-02
-Base commit: `0db43517d47e3d69cb6b2720842b9b1edeaa277c`
+Base commit: `cc55d80a8baf932da8ecf8b2f27b1c23c2d0ab92`
 
 This report is an evidence matrix for the current local checkout. It is not a
 production-readiness certificate.
@@ -24,7 +24,7 @@ production-readiness certificate.
 | Live browser main query flow | PASS | `live_quantum_recheck/` | Desktop/mobile screenshots, video, citation drawer, source-data drawer, audit-proof drawer, console-error capture, raw Researcher JSON, and Tier 3 blocked JSON were captured for the messy quantum researcher flow. |
 | Accessibility | PASS | `30_frontend_contrast_after_install.log`, `36_frontend_playwright_a11y.log` | 20 contrast tests passed; 9 Playwright axe/keyboard/reduced-motion checks passed. |
 | Frontend lint | PASS | `39_frontend_lint.log` | Lint exits 0 with one React hook dependency warning in `frontend/src/views/AnswerEngine.tsx`. |
-| Dependency audit | FAIL | `35_frontend_npm_audit_high.log`, `59_frontend_npm_audit_high_json.json` | `npm audit --audit-level=high` exits 1 with 39 vulnerabilities, including 10 high-severity findings. Several audit fixes require major toolchain upgrades, so this remains a controlled dependency-upgrade blocker. |
+| Dependency audit | FAIL | `35_frontend_npm_audit_high.log`, `59_frontend_npm_audit_high_json.json`, `169_frontend_npm_audit_current.json`, `170_frontend_npm_outdated_current.json`, `171_frontend_dependency_audit_summary.md` | Current `npm audit` JSON reports 39 vulnerabilities: 0 critical, 10 high, 23 moderate, and 6 low. Several audit fixes require major toolchain/dev-tool upgrades, so this remains a controlled dependency-upgrade blocker. |
 | Full Python suite | FAIL | `38_full_pytest_tests_ignore_scripts.log`, `47_isolated_health_contracts_after_audit_rebuild.log`, `52_live_tier_isolation_redteam_retry_all.log` | Broad command produced 1,679 passed, 56 skipped, 26 failed, 6 errors. Most live failures were API-not-running errors; isolated health tests passed after audit rebuild and live tier/red-team passed after starting the API. The single broad command is still not green. |
 | Live local health | PASS | `64_live_health_all_after_services.json`, `65_live_health_qdrant_after_services.json`, `66_live_vectors_health_after_services.json`, `69_post_service_verification.log`, `74_colima_stack_health_all.json` | `/health/all`, `/health/qdrant`, and `/api/vectors/health` passed after local Qdrant/Redis service startup. Local LLM remains optional unavailable and does not make health fail. Final host `lsof` showed no host uvicorn listener on port 8000; Colima-side stack health is also healthy. |
 | C4 performance/load | PASS local quota-neutral capacity | `c4_rerun/163_c4_prewarm_4workers_bounded_audit_executor.json`, `c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`, `c4_rerun/166_locust_report_60s_4workers_bounded_audit_executor.html`, `c4_rerun/167_bounded_audit_executor_c4_pass_summary.md` | The bounded audit append executor moved request-path audit writes out of the general API blocking pool while preserving synchronous chain-hash return. Latest strict scorecard reports Quality Bar `6/6`, C4 PASS, 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms, researcher P99 64 ms, government P99 80 ms, and adversarial P99 170 ms. This used `NRG_QUOTA_DISABLED=1`, so it is local capacity evidence, not quota-policy or deployed-cluster proof. |
