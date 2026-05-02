@@ -6,7 +6,7 @@ Create Date: 2026-05-02
 
 This revision is intentionally forward-only and idempotent. It repairs live
 PostgreSQL drift observed in the local May 2 Batch 4 audit without rewriting
-large populated tables.
+large populated tables or changing NRG's canonical string identifier types.
 """
 
 from __future__ import annotations
@@ -21,6 +21,7 @@ revision: str = "d4_data_constraints_indexes_001"
 down_revision: Union[str, None] = "add_tech_trl_stages_view_002"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
+
 
 def _table_exists(table_name: str) -> bool:
     bind = op.get_bind()
@@ -70,6 +71,35 @@ def _constraint_exists(table_name: str, constraint_name: str) -> bool:
     )
 
 
+def _column_type(table_name: str, column_name: str) -> str | None:
+    bind = op.get_bind()
+    value = bind.execute(
+        sa.text(
+            """
+            SELECT data_type
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = :table_name
+              AND column_name = :column_name
+            """
+        ),
+        {"table_name": table_name, "column_name": column_name},
+    ).scalar()
+    return str(value) if value is not None else None
+
+
+def _column_types_match(
+    table_name: str,
+    column_name: str,
+    referred_table: str,
+    referred_column: str,
+) -> bool:
+    return _column_type(table_name, column_name) == _column_type(
+        referred_table,
+        referred_column,
+    )
+
+
 def _index_exists(index_name: str) -> bool:
     bind = op.get_bind()
     return bool(
@@ -97,7 +127,10 @@ def _add_column_if_missing(table_name: str, column: sa.Column) -> None:
 def _create_index_if_missing(index_name: str, table_name: str, columns: str) -> None:
     if _table_exists(table_name) and not _index_exists(index_name):
         with op.get_context().autocommit_block():
-            op.execute(f"CREATE INDEX CONCURRENTLY IF NOT EXISTS {index_name} ON {table_name} {columns}")
+            op.execute(
+                f"CREATE INDEX CONCURRENTLY IF NOT EXISTS "
+                f"{index_name} ON {table_name} {columns}"
+            )
 
 
 def _drop_index_if_exists(index_name: str) -> None:
@@ -114,11 +147,6 @@ def _add_check_if_missing(table_name: str, constraint_name: str, condition: str)
     )
 
 
-def _validate_constraint_if_exists(table_name: str, constraint_name: str) -> None:
-    if _table_exists(table_name) and _constraint_exists(table_name, constraint_name):
-        op.execute(f'ALTER TABLE "{table_name}" VALIDATE CONSTRAINT "{constraint_name}"')
-
-
 def _add_fk_if_missing(
     table_name: str,
     constraint_name: str,
@@ -133,6 +161,12 @@ def _add_fk_if_missing(
         or not _table_exists(referred_table)
         or not _column_exists(table_name, column_name)
         or not _column_exists(referred_table, referred_column)
+        or not _column_types_match(
+            table_name,
+            column_name,
+            referred_table,
+            referred_column,
+        )
         or _constraint_exists(table_name, constraint_name)
     ):
         return
