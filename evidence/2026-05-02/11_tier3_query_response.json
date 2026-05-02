@@ -2,9 +2,9 @@
   "tier": 3,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "8365de81-0de4-4ca6-8fd2-60ab56ca7834",
-    "answer_id": "6c5dda9d-3856-4c57-8101-0dd4487ab3b2",
-    "audit_event_id": "aea719dbe87bb58bbb4710bce19c928f9fca8b1a02d2fe86fed3a4318722979e",
+    "query_id": "409a3df9-e92e-4965-b72e-da6d10f7f9af",
+    "answer_id": "1ab6a000-d0a8-4787-b49f-19024f9e0411",
+    "audit_event_id": "8566c3c04068c24c49b51c3e4a6372a5f0211271ad446a31ca777e72e72fc04f",
     "tier": 3,
     "question": "top AI funding institutions",
     "interpreted_question": "top AI funding institutions",
@@ -102,7 +102,7 @@
         "reason": "Evidence and citations passed verification."
       },
       "citation_validity": 1.0,
-      "audit_event_id": "aea719dbe87bb58bbb4710bce19c928f9fca8b1a02d2fe86fed3a4318722979e"
+      "audit_event_id": "8566c3c04068c24c49b51c3e4a6372a5f0211271ad446a31ca777e72e72fc04f"
     },
     "citation_validity": 1.0,
     "plan": null,
@@ -156,6 +156,7 @@
       },
       "Response policy applied: pii_strip:tier3:debug_trace"
     ],
-    "tier3_access_scope": "industry_anonymized"
+    "tier3_access_scope": "industry_anonymized",
+    "cached": true
   }
 }
