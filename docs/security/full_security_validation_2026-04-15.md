@@ -16,9 +16,9 @@ Date: 2026-04-15
 
 ## Evidence
 
-- UAT results: [docs/uat/uat_report_2026-04-15.json](/Users/roshwinram/Desktop/National-Research-Graph/docs/uat/uat_report_2026-04-15.json)
-- API pen-test results: [docs/security/api_pentest_2026-04-15.json](/Users/roshwinram/Desktop/National-Research-Graph/docs/security/api_pentest_2026-04-15.json)
-- Live red-team results: [docs/security/redteam_live_2026-04-15.json](/Users/roshwinram/Desktop/National-Research-Graph/docs/security/redteam_live_2026-04-15.json)
+- UAT results: [docs/uat/uat_report_2026-04-15.json](../uat/uat_report_2026-04-15.json)
+- API pen-test results: [docs/security/api_pentest_2026-04-15.json](api_pentest_2026-04-15.json)
+- Live red-team results: [docs/security/redteam_live_2026-04-15.json](redteam_live_2026-04-15.json)
 
 ## Summary
 
@@ -42,8 +42,8 @@ This means some malicious prompts are not stopped entirely at Kong and can still
 
 Relevant code:
 
-- [src/orchestration/nodes/executor.py](/Users/roshwinram/Desktop/National-Research-Graph/src/orchestration/nodes/executor.py)
-- [tests/security/redteam/client.py](/Users/roshwinram/Desktop/National-Research-Graph/tests/security/redteam/client.py)
+- [src/orchestration/nodes/executor.py](../../src/orchestration/nodes/executor.py)
+- [tests/security/redteam/client.py](../../tests/security/redteam/client.py)
 
 ### 2. Medium: refresh-token policy is single-active-token per user
 
@@ -56,11 +56,11 @@ Evidence:
 
 Relevant code:
 
-- [src/auth/jwt_handler.py](/Users/roshwinram/Desktop/National-Research-Graph/src/auth/jwt_handler.py)
+- [src/auth/jwt_handler.py](../../src/auth/jwt_handler.py)
 
 ### 3. Medium: DPDP compliance documentation overstates implementation
 
-The repository claims full DPDP compliance in [docs/compliance/dpdp_2023_assessment.md](/Users/roshwinram/Desktop/National-Research-Graph/docs/compliance/dpdp_2023_assessment.md), including consent handling, notice, right to erasure, immutable audit logs, and retention enforcement. I did not find implemented API flows or durable infrastructure proving those claims.
+The repository claims full DPDP compliance in `docs/compliance/dpdp_2023_assessment.md`, including consent handling, notice, right to erasure, immutable audit logs, and retention enforcement. I did not find implemented API flows or durable infrastructure proving those claims.
 
 Observed gaps:
 
