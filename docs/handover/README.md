@@ -44,7 +44,7 @@ Supporting documents outside this directory:
 | [../SCHEMA.md](../SCHEMA.md) | 58-table schema reference generated from `db_struct.sql` |
 | [../PRODUCTION_WALKTHROUGH.md](../PRODUCTION_WALKTHROUGH.md) | Presenter workflow and critical query sequence |
 | [../PRODUCTION_READINESS_SUMMARY.md](../PRODUCTION_READINESS_SUMMARY.md) | Engineering summary of fixes, evidence, and remaining external gates |
-| [../../FRONTEND_PRODUCTION_READINESS_REPORT.md](../../FRONTEND_PRODUCTION_READINESS_REPORT.md) | Frontend hardening report, screen coverage, evidence, and remaining physical-device gates |
+| [Frontend evidence README](../../evidence/2026-05-02/batch2_frontend_polish/README.md) | Frontend hardening evidence: ESLint, mobile, axe-core, SSE reconnect, AbortController, error copy, focus trap, bundle size, consent |
 
 ## Evidence Index
 
