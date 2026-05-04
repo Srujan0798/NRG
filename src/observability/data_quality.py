@@ -74,6 +74,8 @@ FRESHNESS_COLUMN_HINTS = (
     "timestamp",
     "date",
 )
+FRESHNESS_EXCLUDED_TABLE_PREFIXES = ("audit_",)
+FRESHNESS_EXCLUDED_TABLE_SUFFIXES = ("_backup",)
 PII_PATTERNS = {
     "aadhaar": re.compile(r"\b\d{4}[-\s]?\d{4}[-\s]?\d{4}\b"),
     "pan": re.compile(r"\b[A-Z]{5}\d{4}[A-Z]\b"),
@@ -340,6 +342,8 @@ class DataQualityMonitor:
         invalid: list[dict[str, str]] = []
 
         for table in sorted(tables):
+            if _skip_freshness_table(table):
+                continue
             column_name = _freshness_column(inspector.get_columns(table))
             if not column_name or self._count_rows(table) == 0:
                 continue
@@ -690,6 +694,13 @@ def _freshness_column(columns: list[dict[str, Any]]) -> str | None:
         if lowered_name.endswith("_at") or lowered_name.endswith("_date"):
             return name
     return None
+
+
+def _skip_freshness_table(table_name: str) -> bool:
+    normalized = table_name.lower()
+    return normalized.startswith(FRESHNESS_EXCLUDED_TABLE_PREFIXES) or normalized.endswith(
+        FRESHNESS_EXCLUDED_TABLE_SUFFIXES
+    )
 
 
 def _parse_datetime(value: Any) -> datetime | None:

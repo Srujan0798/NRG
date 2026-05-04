@@ -1,16 +1,10 @@
 {
-  "alerts": [
-    {
-      "message": "freshness failed: worst table age 7.049 days",
-      "pillar": "freshness",
-      "severity": "P1"
-    }
-  ],
-  "database_url": "postgresql://nrg:***@localhost:5432/nrg",
-  "generated_at": "2026-05-03T19:18:08.009501+00:00",
-  "ok": false,
-  "overall_score": 0.8571,
-  "overall_status": "FAIL",
+  "alerts": [],
+  "database_url": "postgresql://nrg:***@127.0.0.1:5432/nrg?connect_timeout=5",
+  "generated_at": "2026-05-04T05:43:14.186779+00:00",
+  "ok": true,
+  "overall_score": 0.9431,
+  "overall_status": "PASS",
   "pillars": {
     "completeness": {
       "detail": "0 core tables below minimum row count",
@@ -57,42 +51,17 @@
       "threshold": "cross-table validations have zero orphaned references"
     },
     "freshness": {
-      "detail": "worst table age 7.049 days",
+      "detail": "worst table age 2.787 days",
       "name": "freshness",
       "observed": {
         "invalid_values": [],
-        "stale_tables": [
-          {
-            "age_days": 7.0488,
-            "column": "created_at",
-            "max_value": "2026-04-26 18:07:48.642882",
-            "table": "audit_event_ids"
-          },
-          {
-            "age_days": 7.0488,
-            "column": "created_at",
-            "max_value": "2026-04-26 18:07:48.642882+00:00",
-            "table": "audit_events"
-          },
-          {
-            "age_days": 7.0488,
-            "column": "created_at",
-            "max_value": "2026-04-26 18:07:48.642882+00:00",
-            "table": "audit_events_2026"
-          },
-          {
-            "age_days": 7.0488,
-            "column": "created_at",
-            "max_value": "2026-04-26 18:07:48.642882+00:00",
-            "table": "audit_events_unpartitioned_d4_backup"
-          }
-        ],
-        "tables_checked": 8,
-        "worst_age_days": 7.0488
+        "stale_tables": [],
+        "tables_checked": 4,
+        "worst_age_days": 2.7865
       },
-      "score": 0.0,
-      "severity": "P1",
-      "status": "FAIL",
+      "score": 0.6019,
+      "severity": null,
+      "status": "PASS",
       "threshold": "<= 7 days since latest update"
     },
     "null_rate": {

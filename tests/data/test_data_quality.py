@@ -292,3 +292,70 @@ def test_freshness_reports_real_age_days_without_clamping(tmp_path):
     assert freshness.status == "FAIL"
     assert freshness.observed["worst_age_days"] > 9
     assert freshness.observed["stale_tables"][0]["age_days"] > 9
+
+
+def test_freshness_ignores_audit_and_backup_tables(tmp_path):
+    db_url = f"sqlite:///{tmp_path / 'audit_backup_freshness.sqlite'}"
+    engine = create_engine(db_url)
+    now = datetime.now(UTC).isoformat()
+    stale = (datetime.now(UTC) - timedelta(days=30)).isoformat()
+
+    with engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE institutions (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                state TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE audit_events (
+                id INTEGER PRIMARY KEY,
+                event_id TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE audit_events_unpartitioned_d4_backup (
+                id INTEGER PRIMARY KEY,
+                event_id TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.exec_driver_sql(
+            "INSERT INTO institutions VALUES (1, 'IIT Bombay', 'Maharashtra', ?), (2, 'IISc', 'Karnataka', ?)",
+            (now, now),
+        )
+        conn.exec_driver_sql(
+            "INSERT INTO audit_events VALUES (1, 'evt-1', ?)",
+            (stale,),
+        )
+        conn.exec_driver_sql(
+            "INSERT INTO audit_events_unpartitioned_d4_backup VALUES (1, 'evt-1', ?)",
+            (stale,),
+        )
+
+    scorecard = DataQualityMonitor(
+        db_url,
+        expected_tables={"institutions"},
+        core_tables={"institutions"},
+        non_pii_tables={"institutions"},
+        thresholds=DataQualityThresholds(
+            expected_table_count=1,
+            min_core_rows=2,
+            max_freshness_days=7,
+        ),
+    ).run()
+
+    freshness = scorecard.pillar("freshness")
+
+    assert freshness.status == "PASS"
+    assert freshness.observed["tables_checked"] == 1
+    assert freshness.observed["stale_tables"] == []
