@@ -1,9 +1,9 @@
 # Batch 4 Data / SQL / Schema Summary
 
-- Generated at: 2026-05-02T20:27:39.156593+00:00
+- Generated at: 2026-05-04T06:15:59.385119+00:00
 - Database: `postgresql://nrg:***@localhost:5432/nrg`
 - D4-01 live tables: 80
-- D4-02 schema drift: True
+- D4-02 schema drift: False
 - D4-03 Dhairya replay: 17/17 passed
 - D4-04 invalid email rejected: True
 - D4-04 invalid phone rejected: True

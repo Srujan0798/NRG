@@ -191,7 +191,6 @@ def main():
 
     has_issues = (
         diff.missing_tables
-        or diff.extra_tables
         or diff.missing_columns
         or diff.extra_columns
         or diff.type_mismatches

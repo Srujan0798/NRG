@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from sqlalchemy import create_engine
 
 SRC_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_HINTS_PATH = SRC_ROOT / "src" / "data" / "schema" / "schema_hints.md"
@@ -372,6 +373,16 @@ class TestSchemaSyncCheck:
         assert "level_of_course" in col_names
         assert "total_credit_score" in col_names
 
+    def test_parse_preserves_multi_word_postgres_types(self, schema_sync_check_module):
+        """Verify character varying/timestamp variants are parsed as full PostgreSQL types."""
+        schema = schema_sync_check_module.parse_db_struct_sql()
+
+        auth_user = schema["auth_user"]
+        column_types = {column.name: column.data_type for column in auth_user.columns}
+
+        assert column_types["username"] == "character varying(150)"
+        assert column_types["date_joined"] == "timestamp with time zone"
+
     def test_parse_contains_primary_keys(self, schema_sync_check_module):
         """Verify parsed schema contains primary key information for tables with explicit PK constraints.
 
@@ -403,6 +414,27 @@ class TestSchemaSyncCheck:
         assert normalize("TEXT") == "TEXT"
         assert normalize("timestamp with time zone") == "TIMESTAMP"
         assert normalize("integer") == "INTEGER"
+
+    def test_extra_live_tables_are_reported_but_not_blocking(self, schema_sync_check_module, tmp_path):
+        """Application-owned live tables should not fail db_struct coverage checks."""
+        engine = create_engine(f"sqlite:///{tmp_path / 'schema_sync.sqlite'}")
+        with engine.begin() as conn:
+            conn.exec_driver_sql("CREATE TABLE canonical_table (id INTEGER)")
+            conn.exec_driver_sql("CREATE TABLE app_owned_extra_table (id INTEGER)")
+
+        authoritative = {
+            "canonical_table": schema_sync_check_module.TableDef(
+                name="canonical_table",
+                columns=[schema_sync_check_module.ColumnDef(name="id", data_type="integer")],
+            )
+        }
+        diff = schema_sync_check_module.check_schema_sync(engine, authoritative)
+        report = schema_sync_check_module.format_diff_report(diff)
+
+        assert diff.extra_tables == ["app_owned_extra_table"]
+        assert not diff.missing_tables
+        assert not diff.type_mismatches
+        assert "No blocking schema drift detected" in report
 
 
 class TestProductionMigrationParity:

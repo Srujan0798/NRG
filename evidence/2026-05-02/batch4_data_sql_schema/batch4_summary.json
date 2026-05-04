@@ -17,7 +17,7 @@
     "missing_constraints_on_clean_relationships": 0,
     "relationships_checked": 9
   },
-  "generated_at": "2026-05-02T20:27:39.156593+00:00",
+  "generated_at": "2026-05-04T06:15:59.385119+00:00",
   "migration_audit": {
     "heads": [
       "d4_partition_audit_events_004"
@@ -28,7 +28,7 @@
   },
   "partition_and_indexes": {
     "audit_events_partitioned": true,
-    "hot_path_timing_max_ms": 12.666,
+    "hot_path_timing_max_ms": 12.923,
     "hot_path_timing_under_200ms": true,
     "partition_pruning_relations": [
       "audit_events_2026"
@@ -37,10 +37,10 @@
   },
   "schema_sync": {
     "extra_tables": 22,
-    "has_drift": true,
+    "has_drift": false,
     "missing_column_tables": 0,
     "missing_tables": 0,
-    "type_mismatches": 92
+    "type_mismatches": 0
   },
   "table_profiles": {
     "db_struct_table_count": 58,

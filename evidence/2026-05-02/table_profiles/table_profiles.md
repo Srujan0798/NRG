@@ -7,10 +7,10 @@
 
 | Priority | Table | Rows | In db_struct.sql | Reference frequency |
 |---:|---|---:|---|---:|
-| 1 | `researchers` | 50000 | False | 1867 |
+| 1 | `researchers` | 50000 | False | 1869 |
 | 2 | `publications` | 50000 | False | 810 |
 | 3 | `funding` | 0 | False | 807 |
-| 4 | `institutions` | 181 | False | 536 |
+| 4 | `institutions` | 181 | False | 543 |
 | 5 | `projects` | 0 | False | 518 |
 | 6 | `labs` | 0 | False | 349 |
 | 7 | `innovation_grant_from_govt` | 50000 | True | 306 |
@@ -34,11 +34,11 @@
 | 25 | `expertise` | 0 | True | 67 |
 | 26 | `patents_details` | 1000 | True | 65 |
 | 27 | `seed_funding` | 0 | True | 57 |
-| 28 | `scraped_data` | 0 | True | 49 |
-| 29 | `researcher_labs` | 0 | False | 47 |
-| 30 | `scraped_data_save` | 0 | True | 46 |
-| 31 | `scraped_raw_data` | 0 | True | 46 |
-| 32 | `audit_events` | 807 | False | 44 |
+| 28 | `audit_events` | 807 | False | 49 |
+| 29 | `scraped_data` | 0 | True | 49 |
+| 30 | `researcher_labs` | 0 | False | 47 |
+| 31 | `scraped_data_save` | 0 | True | 46 |
+| 32 | `scraped_raw_data` | 0 | True | 46 |
 | 33 | `advance_search_data_15_12` | 0 | True | 42 |
 | 34 | `advance_search_data_old` | 0 | True | 42 |
 | 35 | `combined_ipo_patent_data_old` | 0 | True | 42 |
@@ -62,11 +62,11 @@
 | 53 | `package_data` | 0 | True | 24 |
 | 54 | `tb_goi_ministries_mstr` | 0 | True | 24 |
 | 55 | `tb_academic_year_mstr` | 0 | True | 23 |
-| 56 | `tb_course_program_types` | 0 | True | 22 |
-| 57 | `founders_of_fortune_500_companies` | 0 | True | 21 |
-| 58 | `master_expertise` | 0 | True | 21 |
-| 59 | `startup_receiving_vc_investment` | 0 | True | 21 |
-| 60 | `auth_user` | 0 | True | 19 |
+| 56 | `auth_user` | 0 | True | 22 |
+| 57 | `tb_course_program_types` | 0 | True | 22 |
+| 58 | `founders_of_fortune_500_companies` | 0 | True | 21 |
+| 59 | `master_expertise` | 0 | True | 21 |
+| 60 | `startup_receiving_vc_investment` | 0 | True | 21 |
 | 61 | `role_data` | 0 | True | 17 |
 | 62 | `auth_group` | 0 | True | 16 |
 | 63 | `llm_cost_log` | 0 | False | 16 |
@@ -81,9 +81,9 @@
 | 72 | `django_admin_log` | 0 | True | 13 |
 | 73 | `startup_recognition_old` | 0 | True | 13 |
 | 74 | `adv_se` | 0 | True | 12 |
-| 75 | `audit_event_ids` | 807 | False | 2 |
-| 76 | `alembic_version` | 1 | False | 1 |
-| 77 | `audit_events_2026` | 807 | False | 1 |
-| 78 | `audit_events_after_2026` | 0 | False | 1 |
-| 79 | `audit_events_before_2026` | 0 | False | 1 |
-| 80 | `audit_events_unpartitioned_d4_backup` | 807 | False | 1 |
+| 75 | `audit_events_unpartitioned_d4_backup` | 807 | False | 5 |
+| 76 | `audit_events_2026` | 807 | False | 4 |
+| 77 | `audit_event_ids` | 807 | False | 2 |
+| 78 | `alembic_version` | 1 | False | 1 |
+| 79 | `audit_events_after_2026` | 0 | False | 1 |
+| 80 | `audit_events_before_2026` | 0 | False | 1 |

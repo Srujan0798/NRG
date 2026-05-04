@@ -11,7 +11,7 @@
 | `auth_group` | True | 16 |
 | `auth_group_permissions` | True | 14 |
 | `auth_permission` | True | 15 |
-| `auth_user` | True | 19 |
+| `auth_user` | True | 22 |
 | `auth_user_groups` | True | 14 |
 | `auth_user_user_permissions` | True | 13 |
 | `collaborations` | False | 165 |

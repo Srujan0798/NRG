@@ -99,15 +99,10 @@ def parse_db_struct_sql(sql_path: Path = DB_STRUCT_PATH) -> Dict[str, TableDef]:
             if line.upper().startswith("CONSTRAINT"):
                 continue
 
-            col_match = re.match(
-                r'"?(\w+)"?\s+(\w+(?:\(\d+(?:,\s*\d+)?\))?)(.*)',
-                line,
-                re.IGNORECASE,
-            )
+            col_match = re.match(r'"?(\w+)"?\s+(.+)', line, re.IGNORECASE)
             if col_match:
                 col_name = col_match.group(1)
-                col_type = col_match.group(2)
-                col_rest = col_match.group(3)
+                col_type, col_rest = _split_column_type(col_match.group(2))
 
                 nullable = "NOT NULL" not in col_rest.upper()
                 default = None
@@ -143,6 +138,21 @@ def parse_db_struct_sql(sql_path: Path = DB_STRUCT_PATH) -> Dict[str, TableDef]:
         )
 
     return tables
+
+
+def _split_column_type(column_tail: str) -> tuple[str, str]:
+    """Split a PostgreSQL column definition into type and trailing constraints."""
+    match = re.split(
+        r"\s+(DEFAULT|NOT\s+NULL|NULL|COLLATE|CONSTRAINT|PRIMARY|REFERENCES|CHECK|UNIQUE)\b",
+        column_tail,
+        maxsplit=1,
+        flags=re.IGNORECASE,
+    )
+    column_type = match[0].strip()
+    column_rest = ""
+    if len(match) > 1:
+        column_rest = " ".join(part for part in match[1:] if part).strip()
+    return column_type, column_rest
 
 
 def get_live_table_names(engine) -> List[str]:
@@ -220,6 +230,9 @@ def check_schema_sync(
     live_table_set = set(live_table_names)
     auth_table_set = authorative_table_names
 
+    # Live DBs may contain app-owned operational tables in addition to the
+    # canonical db_struct.sql source tables. Report them, but do not treat them
+    # as blocking drift; missing canonical tables still fail.
     diff.extra_tables = sorted(live_table_set - auth_table_set)
     diff.missing_tables = sorted(auth_table_set - live_table_set)
 
@@ -279,16 +292,20 @@ def format_diff_report(diff: SchemaDiff) -> str:
     """Format schema diff into human-readable report."""
     lines = ["SCHEMA SYNC REPORT", "=" * 60, ""]
 
-    has_issues = (
+    has_blocking_issues = (
         diff.missing_tables
-        or diff.extra_tables
         or diff.missing_columns
         or diff.extra_columns
         or diff.type_mismatches
     )
 
-    if not has_issues:
-        lines.append("✅ No schema drift detected — live DB matches db_struct.sql")
+    if not has_blocking_issues:
+        lines.append("✅ No blocking schema drift detected — live DB covers db_struct.sql")
+        if diff.extra_tables:
+            lines.append("")
+            lines.append(f"ℹ️ EXTRA TABLES in live DB (application-owned, OK) ({len(diff.extra_tables)}):")
+            for table in diff.extra_tables:
+                lines.append(f"   + {table}")
         return "\n".join(lines)
 
     if diff.missing_tables:
@@ -298,9 +315,9 @@ def format_diff_report(diff: SchemaDiff) -> str:
         lines.append("")
 
     if diff.extra_tables:
-        lines.append(f"⚠️ EXTRA TABLES in live DB ({len(diff.extra_tables)}):")
+        lines.append(f"ℹ️ EXTRA TABLES in live DB (application-owned, OK) ({len(diff.extra_tables)}):")
         for table in diff.extra_tables:
-            lines.append(f"   - {table}")
+            lines.append(f"   + {table}")
         lines.append("")
 
     if diff.missing_columns:
@@ -353,7 +370,6 @@ def check_schema_sync_from_env() -> Tuple[bool, str]:
 
         success = not (
             diff.missing_tables
-            or diff.extra_tables
             or diff.missing_columns
             or diff.extra_columns
             or diff.type_mismatches

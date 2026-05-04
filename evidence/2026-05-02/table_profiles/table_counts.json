@@ -5,7 +5,7 @@
   "priority_by_reference_frequency": [
     {
       "in_db_struct": false,
-      "reference_frequency": 1867,
+      "reference_frequency": 1869,
       "rows": 50000,
       "table": "researchers"
     },
@@ -23,7 +23,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 536,
+      "reference_frequency": 543,
       "rows": 181,
       "table": "institutions"
     },
@@ -166,6 +166,12 @@
       "table": "seed_funding"
     },
     {
+      "in_db_struct": false,
+      "reference_frequency": 49,
+      "rows": 807,
+      "table": "audit_events"
+    },
+    {
       "in_db_struct": true,
       "reference_frequency": 49,
       "rows": 0,
@@ -188,12 +194,6 @@
       "reference_frequency": 46,
       "rows": 0,
       "table": "scraped_raw_data"
-    },
-    {
-      "in_db_struct": false,
-      "reference_frequency": 44,
-      "rows": 807,
-      "table": "audit_events"
     },
     {
       "in_db_struct": true,
@@ -337,6 +337,12 @@
       "in_db_struct": true,
       "reference_frequency": 22,
       "rows": 0,
+      "table": "auth_user"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 22,
+      "rows": 0,
       "table": "tb_course_program_types"
     },
     {
@@ -356,12 +362,6 @@
       "reference_frequency": 21,
       "rows": 0,
       "table": "startup_receiving_vc_investment"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 19,
-      "rows": 0,
-      "table": "auth_user"
     },
     {
       "in_db_struct": true,
@@ -449,6 +449,18 @@
     },
     {
       "in_db_struct": false,
+      "reference_frequency": 5,
+      "rows": 807,
+      "table": "audit_events_unpartitioned_d4_backup"
+    },
+    {
+      "in_db_struct": false,
+      "reference_frequency": 4,
+      "rows": 807,
+      "table": "audit_events_2026"
+    },
+    {
+      "in_db_struct": false,
       "reference_frequency": 2,
       "rows": 807,
       "table": "audit_event_ids"
@@ -462,12 +474,6 @@
     {
       "in_db_struct": false,
       "reference_frequency": 1,
-      "rows": 807,
-      "table": "audit_events_2026"
-    },
-    {
-      "in_db_struct": false,
-      "reference_frequency": 1,
       "rows": 0,
       "table": "audit_events_after_2026"
     },
@@ -476,12 +482,6 @@
       "reference_frequency": 1,
       "rows": 0,
       "table": "audit_events_before_2026"
-    },
-    {
-      "in_db_struct": false,
-      "reference_frequency": 1,
-      "rows": 807,
-      "table": "audit_events_unpartitioned_d4_backup"
     }
   ],
   "tables": [
@@ -535,13 +535,13 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 44,
+      "reference_frequency": 49,
       "rows": 807,
       "table": "audit_events"
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 1,
+      "reference_frequency": 4,
       "rows": 807,
       "table": "audit_events_2026"
     },
@@ -559,7 +559,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 1,
+      "reference_frequency": 5,
       "rows": 807,
       "table": "audit_events_unpartitioned_d4_backup"
     },
@@ -583,7 +583,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 19,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "auth_user"
     },
@@ -721,7 +721,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 536,
+      "reference_frequency": 543,
       "rows": 181,
       "table": "institutions"
     },
@@ -859,7 +859,7 @@
     },
     {
       "in_db_struct": false,
-      "reference_frequency": 1867,
+      "reference_frequency": 1869,
       "rows": 50000,
       "table": "researchers"
     },
@@ -1024,7 +1024,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 19,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "auth_user"
     },

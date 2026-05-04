@@ -6,7 +6,7 @@
 | Metric | May 1 Baseline | Current |
 |---|---:|---:|
 | Overall status | PASS | PASS |
-| Overall score | 0.9039 | 0.9431 |
+| Overall score | 0.9039 | 0.9427 |
 | Alerts | 0 | 0 |
 
 Current rerun source: `scripts/data_quality_scorecard.py` against local

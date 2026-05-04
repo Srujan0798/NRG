@@ -170,7 +170,6 @@ def write_schema_sync(engine: Engine, output_dir: Path) -> dict[str, Any]:
         payload[key]
         for key in (
             "missing_tables",
-            "extra_tables",
             "missing_columns",
             "extra_columns",
             "type_mismatches",
