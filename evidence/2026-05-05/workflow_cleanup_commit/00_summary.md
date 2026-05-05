@@ -15,7 +15,7 @@
 
 ## Files Modified
 - `prompts_hybrid/07_show_readiness_handover_stone.md` (mandates staging URL)
-- `prompts_hybrid/06_evidence_acceptance_stone.md` (5 artifacts per task)
+- `prompts_hybrid/06_evidence_acceptance_stone.md` (strict ten-fact evidence gate plus deployment boundary)
 - `.claude/CURRENT_STATE.md` (simplified to 80 lines)
 - `.claude/CLAUDE.md` (forbidden vocab purge)
 - `.claude/MANIFEST.md` (corrected skill counts)
@@ -39,3 +39,18 @@
   - 572 commits in local not in remote
   - Likely caused by prior history rewrite (secret purge) that was never force-pushed
   - DO NOT force-push without founder approval per `09_deployment_gate_stone.md` rule 4
+
+## Push Resolution Recorded For Commit `5c6629b1`
+
+- **Action**: Force-push was performed after founder approval in the active session.
+- **Command**: `git push --force-with-lease nrg main`
+- **Result**: SUCCESS
+- **Remote update**: `9ace4501...5c6629b1 main -> main (forced update)`
+- **Remote HEAD**: `5c6629b1`
+
+## Current Boundary After Later Local Evidence Commits
+
+Later local evidence commits were added after that push. Current check:
+`git rev-list --left-right --count main...nrg/main` returns `2 0`. Re-run the
+command before any new push or readiness statement. Do not infer current remote
+sync from this older force-push event.
