@@ -1,0 +1,240 @@
+{
+  "query_id": "53c5885e-93c2-44eb-ab86-50f1e4ac7497",
+  "answer_id": "8f5f75aa-8ded-43c0-adef-1faecb162c0b",
+  "audit_event_id": "f1bd4143972dfc9261058daf5216bdb447616f31cc00ff0c7ef9aaa8ed58327e",
+  "tier": 1,
+  "question": "best quantum researchers....",
+  "interpreted_question": "best quantum researchers....",
+  "assumptions": [],
+  "route": "sql",
+  "blocked": false,
+  "final_answer": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Rohit Thakur | IISc Bangalore | Karnataka | Quantum Information Science | 84 | ₹0.86 Cr |\n| 2 | Vishal Gupta | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | ₹0.83 Cr |\n| 3 | Mohan Dave | IIT Bombay | Maharashtra | Quantum Information Science | 83 | ₹1.95 Cr |\n| 4 | Lakshmi Das | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | ₹0.98 Cr |\n| 5 | Sunita Shukla | Delhi University | Delhi | Quantum Computing | 80 | ₹10.95 Cr |\n\nTop contact shown for Tier 1 researcher access: [EMAIL_REDACTED]",
+  "confidence": {
+    "level": "high",
+    "reason": "Evidence and citations passed verification."
+  },
+  "citations": [
+    {
+      "id": "1",
+      "source_type": "document_chunk",
+      "label": "NRG researcher catalogue: Quantum Computing",
+      "source_id": "nrg-researchers:quantum-computing",
+      "masked": false,
+      "title": "NRG researcher catalogue: Quantum Computing",
+      "publication_id": "nrg-researchers:quantum-computing",
+      "paper_id": "nrg-researchers:quantum-computing",
+      "pub_id": "nrg-researchers:quantum-computing"
+    },
+    {
+      "id": "2",
+      "source_type": "document_chunk",
+      "label": "NRG institution metadata supporting Quantum Computing",
+      "source_id": "nrg-institutions:quantum-computing",
+      "masked": false,
+      "title": "NRG institution metadata supporting Quantum Computing",
+      "publication_id": "nrg-institutions:quantum-computing",
+      "paper_id": "nrg-institutions:quantum-computing",
+      "pub_id": "nrg-institutions:quantum-computing"
+    }
+  ],
+  "source_data": {
+    "sql_query": "SELECT r.researcher_id AS researcher_id, r.name AS name, coalesce(i.name, r.institution_id) AS institution, r.state AS state, r.department AS department, r.research_area AS research_area, r.secondary_research_areas AS secondary_research_areas, coalesce(r.h_index, 0) AS h_index, coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr, r.email AS email FROM researchers r LEFT JOIN institutions i ON i.institution_id = r.institution_id WHERE lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) ORDER BY h_index DESC, funding_cr DESC, r.name ASC LIMIT 5",
+    "rows": [
+      {
+        "researcher_id": "RES-002857",
+        "name": "Rohit Thakur",
+        "institution": "IISc Bangalore",
+        "state": "Karnataka",
+        "department": "Electrical Engineering",
+        "research_area": "Wind Energy",
+        "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+        "h_index": 84,
+        "funding_cr": 0.86,
+        "email": "[EMAIL_REDACTED]"
+      },
+      {
+        "researcher_id": "RES-000778",
+        "name": "Vishal Gupta",
+        "institution": "IIT Kharagpur",
+        "state": "West Bengal",
+        "department": "Sustainable Energy",
+        "research_area": "Robotics",
+        "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
+        "h_index": 84,
+        "funding_cr": 0.83,
+        "email": "[EMAIL_REDACTED]"
+      },
+      {
+        "researcher_id": "RES-001849",
+        "name": "Mohan Dave",
+        "institution": "IIT Bombay",
+        "state": "Maharashtra",
+        "department": "Biotechnology",
+        "research_area": "Quantum Information Science",
+        "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
+        "h_index": 83,
+        "funding_cr": 1.95,
+        "email": "[EMAIL_REDACTED]"
+      },
+      {
+        "researcher_id": "RES-001230",
+        "name": "Lakshmi Das",
+        "institution": "IIT Gandhinagar",
+        "state": "Gujarat",
+        "department": "Agricultural Engineering",
+        "research_area": "VLSI Design",
+        "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
+        "h_index": 81,
+        "funding_cr": 0.98,
+        "email": "[EMAIL_REDACTED]"
+      },
+      {
+        "researcher_id": "RES-001081",
+        "name": "Sunita Shukla",
+        "institution": "Delhi University",
+        "state": "Delhi",
+        "department": "Pharmaceutical Sciences",
+        "research_area": "Quantum Computing",
+        "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
+        "h_index": 80,
+        "funding_cr": 10.95,
+        "email": "[EMAIL_REDACTED]"
+      }
+    ],
+    "documents": []
+  },
+  "provenance": {
+    "planner": "researcher_lookup_fast_path",
+    "synth": "rule_based",
+    "verifier": "row_count_and_citation",
+    "cloud_synthesis_used": false,
+    "nrg-researchers:quantum-computing": {
+      "found_in": "researchers",
+      "chunk_id": "quantum-computing"
+    },
+    "nrg-institutions:quantum-computing": {
+      "found_in": "institutions",
+      "chunk_id": "quantum-computing"
+    }
+  },
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "caveats": [
+    "{'message': 'Fast bounded synthesis used for researcher ranking query.'}"
+  ],
+  "follow_up_suggestions": [],
+  "query_time_ms": 0,
+  "query": "best quantum researchers....",
+  "response": "Top matching Quantum Computing researchers in the NRG catalogue, ranked by h-index and then disclosed funding. [cite:nrg-researchers:quantum-computing] [cite:nrg-institutions:quantum-computing]\n\n| Rank | Researcher | Institution | State | Area | h-index | Funding |\n| --- | --- | --- | --- | --- | ---: | ---: |\n| 1 | Rohit Thakur | IISc Bangalore | Karnataka | Quantum Information Science | 84 | ₹0.86 Cr |\n| 2 | Vishal Gupta | IIT Kharagpur | West Bengal | Quantum Information Science | 84 | ₹0.83 Cr |\n| 3 | Mohan Dave | IIT Bombay | Maharashtra | Quantum Information Science | 83 | ₹1.95 Cr |\n| 4 | Lakshmi Das | IIT Gandhinagar | Gujarat | Quantum Computing | 81 | ₹0.98 Cr |\n| 5 | Sunita Shukla | Delhi University | Delhi | Quantum Computing | 80 | ₹10.95 Cr |\n\nTop contact shown for Tier 1 researcher access: [EMAIL_REDACTED]",
+  "status": "success",
+  "session_id": "live-quantum-api-recheck",
+  "intent": "researcher_ranking",
+  "routing_decision": "fast_path",
+  "verification_status": true,
+  "verification": {
+    "status": true,
+    "safe_to_trust": true,
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "citation_validity": 1,
+    "audit_event_id": "f1bd4143972dfc9261058daf5216bdb447616f31cc00ff0c7ef9aaa8ed58327e"
+  },
+  "citation_validity": 1,
+  "plan": null,
+  "planner_metadata": {},
+  "answer_confidence": "high",
+  "answer_confidence_score": 0.95,
+  "sql_anomaly_report": {},
+  "sql_query": "SELECT r.researcher_id AS researcher_id, r.name AS name, coalesce(i.name, r.institution_id) AS institution, r.state AS state, r.department AS department, r.research_area AS research_area, r.secondary_research_areas AS secondary_research_areas, coalesce(r.h_index, 0) AS h_index, coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr, r.email AS email FROM researchers r LEFT JOIN institutions i ON i.institution_id = r.institution_id WHERE lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) ORDER BY h_index DESC, funding_cr DESC, r.name ASC LIMIT 5",
+  "sql_queries": [
+    "SELECT r.researcher_id AS researcher_id, r.name AS name, coalesce(i.name, r.institution_id) AS institution, r.state AS state, r.department AS department, r.research_area AS research_area, r.secondary_research_areas AS secondary_research_areas, coalesce(r.h_index, 0) AS h_index, coalesce(r.total_funding_received_inr_crores, 0) AS funding_cr, r.email AS email FROM researchers r LEFT JOIN institutions i ON i.institution_id = r.institution_id WHERE lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) OR lower(coalesce(r.research_area, '')) LIKE lower(?) OR lower(coalesce(r.secondary_research_areas, '')) LIKE lower(?) OR lower(coalesce(r.department, '')) LIKE lower(?) ORDER BY h_index DESC, funding_cr DESC, r.name ASC LIMIT 5"
+  ],
+  "sql_results": [
+    {
+      "researcher_id": "RES-002857",
+      "name": "Rohit Thakur",
+      "institution": "IISc Bangalore",
+      "state": "Karnataka",
+      "department": "Electrical Engineering",
+      "research_area": "Wind Energy",
+      "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
+      "h_index": 84,
+      "funding_cr": 0.86,
+      "email": "[EMAIL_REDACTED]"
+    },
+    {
+      "researcher_id": "RES-000778",
+      "name": "Vishal Gupta",
+      "institution": "IIT Kharagpur",
+      "state": "West Bengal",
+      "department": "Sustainable Energy",
+      "research_area": "Robotics",
+      "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
+      "h_index": 84,
+      "funding_cr": 0.83,
+      "email": "[EMAIL_REDACTED]"
+    },
+    {
+      "researcher_id": "RES-001849",
+      "name": "Mohan Dave",
+      "institution": "IIT Bombay",
+      "state": "Maharashtra",
+      "department": "Biotechnology",
+      "research_area": "Quantum Information Science",
+      "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
+      "h_index": 83,
+      "funding_cr": 1.95,
+      "email": "[EMAIL_REDACTED]"
+    },
+    {
+      "researcher_id": "RES-001230",
+      "name": "Lakshmi Das",
+      "institution": "IIT Gandhinagar",
+      "state": "Gujarat",
+      "department": "Agricultural Engineering",
+      "research_area": "VLSI Design",
+      "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
+      "h_index": 81,
+      "funding_cr": 0.98,
+      "email": "[EMAIL_REDACTED]"
+    },
+    {
+      "researcher_id": "RES-001081",
+      "name": "Sunita Shukla",
+      "institution": "Delhi University",
+      "state": "Delhi",
+      "department": "Pharmaceutical Sciences",
+      "research_area": "Quantum Computing",
+      "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
+      "h_index": 80,
+      "funding_cr": 10.95,
+      "email": "[EMAIL_REDACTED]"
+    }
+  ],
+  "retrieval_sources": [
+    "researchers",
+    "institutions"
+  ],
+  "synthesis_method": "rule_based",
+  "conversation_history": [],
+  "node_timings": {
+    "receiver": 0,
+    "planner": 0,
+    "router": 0,
+    "executor": 0,
+    "synthesizer": 0,
+    "verifier": 0
+  },
+  "warnings": [
+    {
+      "message": "Fast bounded synthesis used for researcher ranking query."
+    },
+    "PII redaction applied to response: EMAIL"
+  ],
+  "tier1_access_scope": "full_detail"
+}
