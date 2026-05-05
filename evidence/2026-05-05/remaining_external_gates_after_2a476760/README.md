@@ -1,32 +1,25 @@
 # Remaining External Gates After 2a476760
 
-Date: 2026-05-05  
-Head: `2a476760 evidence: close final local leftovers`
+Date: 2026-05-05
 
-This pass attempted to close the remaining non-local gates after the local
-browser, API health, audit, frontend, and docs evidence had been captured.
+Scope: companion current-head external-gate preflight after
+`2a476760 evidence: close final local leftovers`.
 
 ## Results
 
-| Gate | Status | Evidence |
+| Surface | Status | Evidence |
 | --- | --- | --- |
-| Deployed browser replay | BLOCKED | `external_gate_status.json` and `EXTERNAL_GATE_SUMMARY.md`: `NRG_DEPLOYED_FRONTEND_URL` plus deployed API URL are missing. GitHub deployments API returned `[]`. |
-| Production Qdrant/API baseline | BLOCKED | `external_gate_status.json`: `NRG_PRODUCTION_API_URL` or `NRG_DEPLOYED_API_URL` is missing. |
-| Sovereign-cluster C4 replay | BLOCKED | `kubectl_contexts.log`: current context is not set. `external_gate_status.json` records missing reachable Kubernetes cluster. |
-| Founder GPG signatures | BLOCKED | `gpg_and_signature_files.log`: no secret keys listed and no `.asc` handover signatures found. |
-| S3-09 remote history closure | BLOCKED/FAIL | `s3_09_scan_all_refs.log`: 286 secret-like assignments remain reachable from fetched remote refs. `local_vs_remote_secret_history.log` shows local `HEAD` does not contain the representative secret-bearing commit, while `nrg/main` does. |
+| External gate runner | BLOCKED | `EXTERNAL_GATE_SUMMARY.md`: deployed URLs, production API/Qdrant target, reachable Kubernetes cluster, and founder signatures are missing. |
+| Kubernetes context | BLOCKED | `kubectl_cluster_info.log` and `kubectl_contexts.log`: no usable current context; cluster lookup falls back to refused localhost. |
 | Normal push | BLOCKED | `git_push_dry_run.log`: rejected non-fast-forward. |
-| Force-with-lease push | OPERATOR ACTION REQUIRED | `git_force_with_lease_dry_run.log`: dry-run shows `9ace4501...2a476760 main -> main (forced update)`. No actual force-push was performed. |
+| Force-with-lease | NOT PERFORMED | `git_force_with_lease_dry_run.log` is a dry-run artifact only; `../final_leftovers_state_sync/remote_main_after_dry_run_confirm.log` confirms `nrg/main` remained `9ace45013f72a8261f2d3fe13df919a969bcdc44`. |
+| GitHub deployments | BLOCKED | `github_deployments.json`: empty deployment list. |
+| GitHub Actions | FAIL remote | `github_runs_latest.json`: latest remote runs on `nrg/main` are failing. |
+| S3 env-history scan | FAIL | `s3_09_scan_all_refs.log` / `.json`: 286 secret-like assignments across historical runtime env-file versions. |
+| Founder signatures | BLOCKED | `gpg_and_signature_files.log` and `gpg_secret_key_check.log`: signature files/private signing context are not complete in this workspace. |
 
 ## Boundary
 
-No remote rewrite, credential rotation, deployed replay, cluster load run, or
-founder signing was performed. Closing the remaining gates requires:
-
-- explicit repository-owner approval for `git push --force-with-lease nrg main:main`
-- rotation of affected PostgreSQL, Redis, JWT, model API, and acceptance-user
-  credentials before unfreezing remote writes
-- deployed frontend/API URLs
-- production API/Qdrant target
-- reachable sovereign-cluster kubeconfig/context
-- founder private GPG key and detached signatures for the handover documents
+This folder proves the remaining gates are not local code leftovers. They need
+external operator/founder action, remote-history handling, deployed targets, and
+cluster access.

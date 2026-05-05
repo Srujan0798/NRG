@@ -595,7 +595,7 @@ These entries supersede earlier DONE claims until the linked evidence is clean.
 | 9 | Founder sign-off (8 GPG signatures) | ⏸️ Pending | Sign all handover docs | `signatures/*.asc` |
 | 10 | Git tag v1.0.0-eternal | ⏸️ Pending | After all 9 above complete | — |
 
-**Note**: Steps 1–8 require deployed/staging or `kubectl` access to the sovereign cluster. Step 9 requires the Founder GPG key configured. The latest current-head local external-gate preflight is `evidence/2026-05-05/final_leftovers_state_sync/external_gates_current_head/EXTERNAL_GATE_SUMMARY.md`; the companion cluster/remote/S3 preflight is `evidence/2026-05-05/remaining_external_gates_after_2a476760/EXTERNAL_GATE_SUMMARY.md`; the latest remote blocker refresh is `evidence/2026-05-05/final_leftovers_state_sync/README.md`.
+**Note**: Steps 1–8 require deployed/staging or `kubectl` access to the sovereign cluster. Step 9 requires the Founder GPG key configured. The latest current-head local external-gate preflight is `evidence/2026-05-05/final_leftovers_state_sync/external_gates_current_head/EXTERNAL_GATE_SUMMARY.md`; the companion cluster/remote/S3 preflight is `evidence/2026-05-05/remaining_external_gates_after_2a476760/README.md`; the latest remote blocker refresh is `evidence/2026-05-05/final_leftovers_state_sync/README.md`.
 
 ---
 
