@@ -93,6 +93,21 @@ The SPA fallback is included because it is a registered project route.
 - Metrics and administrative routes require admin/system or explicitly scoped
   Tier 1 access as listed above.
 
+## Tier And Response-Shape Contracts
+
+| Route family | Tier contract | Response-shape contract |
+|---|---|---|
+| Auth/session routes | Public login/SSO entry points or authenticated session mutation | JSON auth/session payloads; tokens are returned through the established auth contract and cookies where configured. |
+| Query and stream routes | Authenticated; tier filtering and audit binding are mandatory | `/query` returns an answer envelope with audit event id, tier-shaped source rows/citations, and normalized answer fields. `/api/query/stream` returns SSE events without blocking initial stream start on async answer-record writes. |
+| Data catalogue routes | Authenticated; Tier 1 full rows, Tier 2 aggregated/safe fields, Tier 3 anonymized or aggregated fields | JSON arrays or aggregate objects after last-mile response filtering. NULL aggregate inputs must remain NULL unless the endpoint contract explicitly defines a zero count. |
+| Graph and tier-diff routes | Authenticated; Tier 1 for internal tier diagnostics | JSON graph/tier-diff payloads after tier response-shape filtering. |
+| DPDP routes | Authenticated data-subject or admin/government scope depending on path | JSON consent/export/erase status payloads; no cross-user data leakage. |
+| Audit routes | Authenticated; admin broader scope, users own events only | JSON audit event, list, or verification payloads with audit ids and chain status. |
+| Health/provider/vector routes | Public operational probes | Small JSON health payloads using the normalized health response contract; no user or PII fields. |
+| Metrics/admin routes | Admin/system or explicit Tier 1 metrics scope | Prometheus text or bounded JSON metrics/admin payloads; no raw secrets or user PII. |
+| Ingest routes | Authenticated Tier 1 only | JSON job creation/status payloads bounded to job metadata. |
+| SPA fallback | Public | Static frontend shell response. |
+
 ## Drift Guard
 
 `tests/api/test_api_endpoint_matrix.py` compares this table against the

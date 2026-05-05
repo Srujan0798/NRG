@@ -7,7 +7,7 @@
 | Category | What | Count |
 |----------|------|-------|
 | [bugs/](bugs/INDEX.md) | Known bugs, root causes, permanent fixes | 9 |
-| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 29 |
+| [patterns/](patterns/INDEX.md) | Engineering patterns, user feedback, constraints | 30 |
 | [references/](references/INDEX.md) | External benchmarks, protocols, definitions | 9 |
 | [projects/](projects/INDEX.md) | Multi-session project trackers | 2 |
 
@@ -23,7 +23,7 @@
 - **Central execution flow**: See [docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md](../../docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md)
 - **Durable directives**: See [INDEX.md](INDEX.md)
 - **Guru violations**: See [guru_violations.md](guru_violations.md)
-- **Repo-contained skills only**: 137 current repo skill directories counted on 2026-05-02 under `.claude/skills` and `.agents/skills`; ignore user-home/global skill inventories for NRG work. See [references/installed-skills.md](references/installed-skills.md)
+- **Repo-contained skills only**: 137 current repo skill directories counted on 2026-05-05 under `.claude/skills` and `.agents/skills`; ignore user-home/global skill inventories for NRG work. See [references/installed-skills.md](references/installed-skills.md)
 
 ## Per-Session Checklist
 

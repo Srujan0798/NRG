@@ -11,9 +11,9 @@ credential-rotation, or founder-signature completion.
 
 | Task | Local status | Evidence / result |
 | --- | --- | --- |
-| H7-01 evidence binary index | PARTIAL | 148 binary evidence files scanned. Four exact-duplicate hash groups were found. They are indexed but not moved because historical evidence reports link directly to those paths. |
+| H7-01 evidence binary index | PASS local | Duplicate binary evidence paths are preserved as relative symlinks to canonical artifacts; see `evidence/BINARY_EVIDENCE_INDEX.md`. |
 | H7-02 script registry | PASS | `scripts/README.md` points to `scripts/REGISTRY.md`, which records active entry points, compatibility wrappers, retired scripts, and review-before-moving candidates. |
-| H7-03 documentation links | PASS | Docs-link scan covered 140 markdown files, checked 26 local links, and found 0 broken links. `scripts/check_docs_links.py` now provides a reusable docs-link gate. |
+| H7-03 documentation links | PASS | Docs-link scan covered 143 markdown files, checked 28 local links, and found 0 broken links. `scripts/check_docs_links.py` now provides a reusable docs-link gate. |
 | H7-04 changelog | PASS local | `CHANGELOG.md` includes May 3 closure entries and wave updates; current docs link scan passed. |
 | H7-05 runbook check | PASS local / external blocked | `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` exists; external final gates remain blocked by missing deployed/cluster/founder inputs. |
 | H7-06 README stale paths | PASS local | README was included in the local markdown link scan; 0 broken local links. |
@@ -30,18 +30,19 @@ credential-rotation, or founder-signature completion.
 
 | Check | Result |
 | --- | --- |
-| Markdown local-link scan over README, CHANGELOG, BACKLOG, CORPUS README, and `docs/**/*.md` | PASS: 140 files, 26 local links, 0 broken |
-| `.venv/bin/python scripts/check_docs_links.py` | PASS: `docs link integrity: OK (140 files, 26 internal links)` |
+| Markdown local-link scan over README, CHANGELOG, BACKLOG, CORPUS README, and `docs/**/*.md` | PASS: 143 files, 28 local links, 0 broken |
+| `.venv/bin/python scripts/check_docs_links.py` | PASS: `docs link integrity: OK (143 files, 28 internal links)` |
 | `bash scripts/check_workflow_links.sh` | PASS: `workflow link integrity: OK` |
 | Repo skill frontmatter scan | PASS: 137 checked, 0 errors |
+| Binary evidence symlink resolution check | PASS: all 16 archived duplicate symlinks resolve |
 | `bash scripts/forbidden_vocab_check.sh` | PASS |
 | `git diff --check` | PASS |
 
 ## Binary Evidence Duplicate Index
 
 Exact duplicate groups were found for repeated login/dashboard screenshots and
-one repeated quantum-answer screenshot. These were not archived because current
-and historical evidence reports reference their original paths.
+one repeated query-home screenshot. Older duplicate paths were preserved as
+relative symlinks so historical evidence links keep resolving.
 
 | SHA-256 prefix | Count | Representative paths |
 | --- | ---: | --- |
