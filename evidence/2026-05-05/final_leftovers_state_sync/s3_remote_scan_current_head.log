@@ -1,0 +1,72 @@
+$ .venv/bin/python scripts/scan_env_history_secrets.py --json evidence/2026-05-05/final_leftovers_state_sync/s3_remote_scan_current_head.json
+S3-09 env history scan: FAIL
+commits scanned: 14
+runtime env file versions scanned: 41
+secret-like assignments: 286
+key counts:
+  POSTGRES_PASSWORD: 40
+  DATABASE_URL: 40
+  REDIS_URL: 40
+  RESEARCHER_PASSWORD: 22
+  GOV_PASSWORD: 22
+  JWT_SECRET_KEY: 22
+  REDIS_PASSWORD: 22
+  GEMINI_API_KEY: 22
+  JWT_SECRET: 17
+  INDUSTRY_PASSWORD: 16
+  DEMO_INDUSTRY_PASSWORD: 11
+  DEMO_RESEARCHER_PASSWORD: 5
+  DEMO_GOVERNMENT_PASSWORD: 5
+  OPENAI_API_KEY: 1
+  ANTHROPIC_API_KEY: 1
+sample findings, first 50:
+  1ef17427225c .env.dev:13 POSTGRES_PASSWORD len=34 sha256=bb408f6b86b1
+  1ef17427225c .env.dev:15 DATABASE_URL len=77 sha256=eabc1955075c
+  1ef17427225c .env.dev:26 REDIS_URL len=20 sha256=e50f870293dc
+  1ef17427225c .env.dev:31 JWT_SECRET len=44 sha256=d94ed91225e6
+  1ef17427225c .env.dev:68 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  1ef17427225c .env.dev:70 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  1ef17427225c .env.dev:72 DEMO_INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  1ef17427225c .env.dev:75 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  1ef17427225c .env.dev:76 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  1ef17427225c .env.dev:77 INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  1ef17427225c .env.local:8 DATABASE_URL len=56 sha256=6612b248d95c
+  1ef17427225c .env.local:10 POSTGRES_PASSWORD len=20 sha256=6ebcca62aef9
+  1ef17427225c .env.local:21 REDIS_URL len=24 sha256=efb43d30782a
+  1ef17427225c .env.local:31 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  1ef17427225c .env.local:32 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  1ef17427225c .env.local:33 INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  1ef17427225c .env.local:35 JWT_SECRET len=27 sha256=6388c360d48a
+  1ef17427225c .env.prod:15 POSTGRES_PASSWORD len=29 sha256=5a321cc22dd9
+  1ef17427225c .env.prod:16 JWT_SECRET_KEY len=43 sha256=afa12f01f7cb
+  1ef17427225c .env.prod:17 REDIS_PASSWORD len=43 sha256=afa12f01f7cb
+  1ef17427225c .env.prod:23 DATABASE_URL len=79 sha256=6c78e5f040de
+  1ef17427225c .env.prod:34 REDIS_URL len=39 sha256=0341e941614d
+  1ef17427225c .env.prod:60 GEMINI_API_KEY len=31 sha256=301d58c0475d
+  1ef17427225c .env.staging:14 POSTGRES_PASSWORD len=26 sha256=321387889e3f
+  1ef17427225c .env.staging:15 JWT_SECRET_KEY len=43 sha256=afa12f01f7cb
+  1ef17427225c .env.staging:16 REDIS_PASSWORD len=43 sha256=afa12f01f7cb
+  1ef17427225c .env.staging:22 DATABASE_URL len=79 sha256=6c78e5f040de
+  1ef17427225c .env.staging:33 REDIS_URL len=39 sha256=0341e941614d
+  1ef17427225c .env.staging:47 GEMINI_API_KEY len=28 sha256=026e28473bd2
+  2582f6d32645 .env.dev:13 POSTGRES_PASSWORD len=34 sha256=bb408f6b86b1
+  2582f6d32645 .env.dev:15 DATABASE_URL len=77 sha256=eabc1955075c
+  2582f6d32645 .env.dev:26 REDIS_URL len=20 sha256=e50f870293dc
+  2582f6d32645 .env.dev:31 JWT_SECRET len=44 sha256=d94ed91225e6
+  2582f6d32645 .env.dev:67 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  2582f6d32645 .env.dev:69 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  2582f6d32645 .env.dev:71 DEMO_INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  2582f6d32645 .env.dev:74 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  2582f6d32645 .env.dev:75 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  2582f6d32645 .env.dev:76 INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  2582f6d32645 .env.local:8 DATABASE_URL len=56 sha256=6612b248d95c
+  2582f6d32645 .env.local:10 POSTGRES_PASSWORD len=20 sha256=6ebcca62aef9
+  2582f6d32645 .env.local:21 REDIS_URL len=24 sha256=efb43d30782a
+  2582f6d32645 .env.local:31 RESEARCHER_PASSWORD len=15 sha256=034e94f7bff7
+  2582f6d32645 .env.local:32 GOV_PASSWORD len=15 sha256=1bd5daf03508
+  2582f6d32645 .env.local:33 INDUSTRY_PASSWORD len=13 sha256=c0af9ca66c6c
+  2582f6d32645 .env.local:35 JWT_SECRET len=27 sha256=6388c360d48a
+  2582f6d32645 .env.prod:15 POSTGRES_PASSWORD len=29 sha256=5a321cc22dd9
+  2582f6d32645 .env.prod:16 JWT_SECRET_KEY len=43 sha256=afa12f01f7cb
+  2582f6d32645 .env.prod:17 REDIS_PASSWORD len=43 sha256=afa12f01f7cb
+  2582f6d32645 .env.prod:22 DATABASE_URL len=79 sha256=6c78e5f040de

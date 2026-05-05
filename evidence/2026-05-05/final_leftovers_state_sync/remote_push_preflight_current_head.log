@@ -1,0 +1,15 @@
+$ git fetch nrg main
+From https://github.com/Srujan0798/NRG
+ * branch              main       -> FETCH_HEAD
+
+$ git rev-list --left-right --count main...nrg/main
+567	531
+
+$ git push --dry-run nrg main
+To https://github.com/Srujan0798/NRG.git
+ ! [rejected]          main -> main (non-fast-forward)
+error: failed to push some refs to 'https://github.com/Srujan0798/NRG.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.

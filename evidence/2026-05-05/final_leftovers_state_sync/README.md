@@ -13,6 +13,8 @@ leftovers closure commit.
 
 | Check | Status | Evidence |
 | --- | --- | --- |
+| Frontend build and Jest | PASS | `frontend_build_jest_current_tree.log`: Vite build completed; Jest `32` suites / `107` tests passed. |
+| Batch 5 orchestration/skills pytest | PASS | `orchestration_skills_current_tree.log`: `419 passed`, `6 skipped`, `35 deselected`. |
 | External final gates | BLOCKED | `external_gates_current_head/EXTERNAL_GATE_SUMMARY.md`: missing deployed frontend/API URL, production API/Qdrant target, explicit cluster-load execution context, and founder signatures. |
 | Remote divergence and push preflight | BLOCKED | `remote_push_preflight_current_head.log`: local `main` is `567` commits ahead and `531` commits behind `nrg/main`; normal dry-run push is rejected non-fast-forward. |
 | S3 env-history remote scan | FAIL | `s3_remote_scan_current_head.log` / `.json`: 286 secret-like assignments across 14 commits and 41 runtime env-file versions. |

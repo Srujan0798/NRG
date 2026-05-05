@@ -1,0 +1,9 @@
+$ git ls-remote nrg refs/heads/main
+9ace45013f72a8261f2d3fe13df919a969bcdc44	refs/heads/main
+
+$ git status -sb
+## main...nrg/main [ahead 567, behind 531]
+ M .claude/CURRENT_STATE.md
+ M BACKLOG.md
+?? evidence/2026-05-05/final_leftovers_state_sync/
+?? evidence/2026-05-05/remaining_external_gates_after_2a476760/

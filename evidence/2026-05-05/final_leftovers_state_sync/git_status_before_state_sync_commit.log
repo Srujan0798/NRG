@@ -1,0 +1,2 @@
+$ git status --short --untracked-files=all
+ M evidence/2026-05-05/final_leftovers_state_sync/README.md
