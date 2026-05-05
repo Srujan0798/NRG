@@ -27,6 +27,7 @@ env:
   DATABASE_URL: "sqlite:///data/nrg_research.db"
   NRG_TEST_DATABASE_URL: "sqlite:///data/nrg_research.db"
   NRG_LOCAL_RESEARCH_DB: "data/nrg_research.db"
+  POSTGRES_PASSWORD: "nrg_ci_password"
   JWT_ALGORITHM: "HS256"
   JWT_SECRET: "ci-jwt-secret-for-deploy-workflow-2026-minimum-32-bytes"
 

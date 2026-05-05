@@ -13,7 +13,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-nrg}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB: ${POSTGRES_DB:-nrg}
       POSTGRES_INITDB_ARGS: "-c wal_level=logical -c max_connections=200"
     ports:
@@ -41,7 +41,7 @@ services:
     container_name: nrg-pgbouncer
     restart: unless-stopped
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-}@postgres:5432/${POSTGRES_DB:-nrg}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/${POSTGRES_DB:-nrg}
       - LISTEN_PORT=6432
       - AUTH_TYPE=plain
       - POOL_MODE=transaction
@@ -138,7 +138,7 @@ services:
       - NRG_AUDIT_DIR=/var/lib/nrg/audit
       - NRG_PROTOCOL_DIR=/var/lib/nrg/protocol
       - NRG_LOCAL_RESEARCH_DB=/app/data/nrg_research.db
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-}@pgbouncer:6432/${POSTGRES_DB:-nrg}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@pgbouncer:6432/${POSTGRES_DB:-nrg}
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=${QDRANT_COLLECTION:-nrg_research}

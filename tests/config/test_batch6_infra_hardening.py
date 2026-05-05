@@ -136,6 +136,7 @@ def test_cd_build_pushes_authenticated_ghcr_images_before_smoke():
     workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
     assert workflow["permissions"]["contents"] == "read"
     assert workflow["permissions"]["packages"] == "write"
+    assert workflow["env"]["POSTGRES_PASSWORD"] == "nrg_ci_password"
 
     build_steps = workflow["jobs"]["build"]["steps"]
     step_names = [step.get("name") for step in build_steps]
