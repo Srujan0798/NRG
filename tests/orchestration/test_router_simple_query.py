@@ -3,7 +3,6 @@
 Covers A5-07: Query planner over-classification — simple queries should bypass multi-hop.
 """
 
-import pytest
 from src.orchestration.nodes.router import router_node
 
 

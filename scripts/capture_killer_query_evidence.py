@@ -40,19 +40,18 @@ def resolve_local_database_url() -> str:
 
     configured = os.getenv("DATABASE_URL")
     populated = ROOT / "data/nrg_research.db"
-    if populated.exists():
-        if not configured:
-            return f"sqlite:///{populated}"
-        if configured in {
-            "sqlite:///nrg_research.db",
-            f"sqlite:///{ROOT / 'nrg_research.db'}",
-        }:
-            return f"sqlite:///{populated}"
+    if not configured:
+        return f"sqlite:///{populated}"
+    if configured in {
+        "sqlite:///nrg_research.db",
+        f"sqlite:///{ROOT / 'nrg_research.db'}",
+    }:
+        return f"sqlite:///{populated}"
 
     if configured:
         return configured
 
-    return f"sqlite:///{ROOT / 'nrg_research.db'}"
+    return f"sqlite:///{populated}"
 
 
 class LocalClient:

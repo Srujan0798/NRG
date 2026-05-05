@@ -1,0 +1,11 @@
+title = "NRG gitleaks configuration"
+
+[allowlist]
+description = "Known non-secret test fixtures and scanner evidence tokens."
+regexes = [
+  '''Tier3_Industry''',
+  '''AKIAIOSFODNN7EXAMPLE''',
+  '''eyJhbGciOiJIUzI1NiJ9\.eyJzdWIiOiJ1LTEifQ\.abcDEFghiJKL1234567890''',
+  '''test-chain-key-1234''',
+  '''A035C8C19219BA821ECEA86B64E628F8D684696D''',
+]

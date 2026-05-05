@@ -221,10 +221,10 @@ def on_test_stop(environment, **kwargs):
 
     if p99 >= P99_THRESHOLD_MS:
         print(f"\n  ⚠️  P99 ({p99:.1f}ms) exceeds threshold ({P99_THRESHOLD_MS}ms)")
-        print(f"  Suggestions:")
-        print(f"    - Enable Redis caching (rate limiting reduces DB load)")
-        print(f"    - Scale API replicas: kubectl scale deploy/api --replicas=3")
-        print(f"    - Enable query result caching in CostGuard")
-        print(f"    - Check Qdrant latency at :6333/dashboard")
+        print("  Suggestions:")
+        print("    - Enable Redis caching (rate limiting reduces DB load)")
+        print("    - Scale API replicas: kubectl scale deploy/api --replicas=3")
+        print("    - Enable query result caching in CostGuard")
+        print("    - Check Qdrant latency at :6333/dashboard")
 
     print(f"{'='*60}\n")

@@ -7,7 +7,6 @@ Detection is based on DATABASE_URL environment variable.
 import os
 import re
 from typing import List, Dict, Any, Optional
-from pathlib import Path
 from sqlalchemy import create_engine, inspect
 
 from src.auth.rbac import get_policy_engine

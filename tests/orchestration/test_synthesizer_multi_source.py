@@ -4,7 +4,6 @@ Covers A5-09: Synthesizer drops information when merging multi-source results.
 Covers A5-11: Knowledge synthesis doesn't deduplicate across 3+ sources.
 """
 
-import pytest
 from src.orchestration.nodes import synthesizer as synth_module
 
 

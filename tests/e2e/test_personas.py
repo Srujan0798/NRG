@@ -19,7 +19,7 @@ import sys
 import os
 import re
 from pathlib import Path
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Page
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
@@ -341,4 +341,4 @@ class TestScreenshotsOnFailure:
         save_screenshot(page, "health_check")
 
         assert response.status_code == 200, "Health endpoint should be healthy"
-        assert response.json().get("ok") == True
+        assert response.json().get("ok")

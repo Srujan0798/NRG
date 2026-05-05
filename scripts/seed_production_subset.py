@@ -37,6 +37,15 @@ TARGETS = {
     "researchers": 5_000,
 }
 
+CI_TARGETS = {
+    "academic_courses_details": 300,
+    "innovations_at_various_stages_of_technology_readiness_level": 150,
+    "innovation_grant_from_govt": 300,
+    "combined_ipo_patent_data": 250,
+    "publications": 500,
+    "researchers": 120,
+}
+
 
 def connect() -> sqlite3.Connection:
     database_url = os.getenv("DATABASE_URL", "")
@@ -55,6 +64,142 @@ def count_rows(conn: sqlite3.Connection, table: str) -> int:
     return int(conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
 
 
+def ensure_schema(conn: sqlite3.Connection) -> None:
+    """Create the minimal local SQLite schema needed by query gates."""
+    conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS researchers (
+            researcher_id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            institution_id TEXT,
+            state TEXT,
+            department TEXT,
+            research_area TEXT,
+            secondary_research_areas TEXT,
+            years_experience INTEGER,
+            year_joined INTEGER,
+            h_index INTEGER,
+            total_funding_received_inr_crores REAL,
+            email TEXT,
+            phone TEXT,
+            orcid TEXT,
+            tier_access TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS publications (
+            publication_id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            abstract TEXT,
+            authors TEXT,
+            researcher_ids TEXT,
+            venue TEXT,
+            year INTEGER,
+            volume TEXT,
+            issue TEXT,
+            pages TEXT,
+            doi TEXT,
+            pmid TEXT,
+            citations INTEGER,
+            impact_factor REAL,
+            publication_type TEXT,
+            research_area TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS academic_courses_details (
+            id TEXT PRIMARY KEY,
+            financial_year TEXT,
+            title_of_course TEXT,
+            course_code TEXT,
+            type_of_course TEXT,
+            level_of_course TEXT,
+            course_offering_department TEXT,
+            total_credit_score TEXT,
+            institute TEXT,
+            as_on_year TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS innovations_at_various_stages_of_technology_readiness_level (
+            id TEXT PRIMARY KEY,
+            innovation_name TEXT,
+            stage_of_technology TEXT,
+            financial_year TEXT,
+            institute TEXT,
+            as_on_year TEXT,
+            technology_domain TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE VIEW IF NOT EXISTS trl_stages AS
+        SELECT * FROM innovations_at_various_stages_of_technology_readiness_level;
+
+        CREATE TABLE IF NOT EXISTS innovation_grant_from_govt (
+            id TEXT PRIMARY KEY,
+            gov_organisation_name TEXT,
+            grant_received REAL,
+            year_of_receiving TEXT,
+            institute TEXT,
+            as_on_year TEXT,
+            scheme_name TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS combined_ipo_patent_data (
+            id TEXT PRIMARY KEY,
+            oid TEXT,
+            application_number TEXT,
+            inserted_at TEXT,
+            source_collection TEXT,
+            invention_title TEXT,
+            publication_number TEXT,
+            publication_date TEXT,
+            publication_type TEXT,
+            application_filing_date TEXT,
+            field_of_invention TEXT,
+            inventors TEXT,
+            applicants TEXT,
+            abstract TEXT,
+            email_record TEXT,
+            additional_email TEXT,
+            application_type TEXT,
+            examination_request_date TEXT,
+            first_examination_report_date TEXT,
+            certificate_issue_date TEXT,
+            post_grant_journal_date TEXT,
+            reply_to_fer_date TEXT,
+            status TEXT,
+            patent_number TEXT,
+            date_of_grant TEXT,
+            legal_status TEXT,
+            due_date_next_renewal TEXT,
+            renewal_history TEXT,
+            aishe_code TEXT,
+            fetched_at TEXT,
+            granted_patent_title TEXT,
+            patent_grant_number TEXT,
+            university_name TEXT,
+            fetched_from TEXT,
+            title TEXT,
+            filing_date TEXT,
+            grant_date TEXT,
+            institute TEXT,
+            financial_year TEXT,
+            access_tier INTEGER DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
+
+
 def delete_owned_rows(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM academic_courses_details WHERE id LIKE 'LB3-AC-%'")
     conn.execute(
@@ -63,6 +208,7 @@ def delete_owned_rows(conn: sqlite3.Connection) -> None:
     conn.execute("DELETE FROM innovation_grant_from_govt WHERE id LIKE 'LB3-IG-%'")
     conn.execute("DELETE FROM combined_ipo_patent_data WHERE id LIKE 'LB3-PAT-%'")
     conn.execute("DELETE FROM publications WHERE publication_id LIKE 'LB3-PUB-%'")
+    conn.execute("DELETE FROM researchers WHERE researcher_id LIKE 'LB3-RES-%'")
 
 
 def ensure_indexes(conn: sqlite3.Connection) -> None:
@@ -283,6 +429,44 @@ def seed_publications(conn: sqlite3.Connection, target: int) -> int:
     return count_rows(conn, "publications")
 
 
+def seed_researchers(conn: sqlite3.Connection, target: int) -> int:
+    existing = count_rows(conn, "researchers")
+    needed = max(0, target - existing)
+    if needed == 0:
+        return existing
+
+    def rows() -> Iterable[tuple]:
+        for i in range(needed):
+            institute = INSTITUTES[i % len(INSTITUTES)]
+            area = ["AI/ML", "Nanotechnology", "Sustainable Energy", "Robotics"][i % 4]
+            yield (
+                f"LB3-RES-{i:06d}",
+                f"LB3 Researcher {i:06d}",
+                institute,
+                ["Maharashtra", "Tamil Nadu", "Delhi", "Gujarat"][i % 4],
+                ["Computer Science", "Physics", "Energy", "Design"][i % 4],
+                area,
+                3 + (i % 25),
+                2000 + (i % 25),
+                5 + (i % 50),
+                round(0.5 + (i % 30) / 10, 2),
+                f"lb3.researcher.{i:06d}@example.in",
+                "researcher",
+                1,
+            )
+
+    sql = (
+        "INSERT INTO researchers "
+        "(researcher_id, name, institution_id, state, department, research_area, "
+        "years_experience, year_joined, h_index, total_funding_received_inr_crores, "
+        "email, tier_access, access_tier) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    )
+    for batch in batched(rows()):
+        conn.executemany(sql, batch)
+    return count_rows(conn, "researchers")
+
+
 def append_audit(summary: dict[str, int]) -> str | None:
     try:
         from src.audit import AuditEvent, get_audit_log
@@ -301,22 +485,30 @@ def append_audit(summary: dict[str, int]) -> str | None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Seed LB-3 volumetric subset.")
     parser.add_argument("--no-audit", action="store_true")
+    parser.add_argument(
+        "--profile",
+        choices=("full", "ci"),
+        default=os.getenv("NRG_SEED_PROFILE", "full"),
+        help="Use smaller deterministic row counts for CI collection/runtime gates.",
+    )
     args = parser.parse_args()
+    targets = CI_TARGETS if args.profile == "ci" else TARGETS
 
     started = datetime.now(UTC).isoformat()
     with connect() as conn:
+        ensure_schema(conn)
         delete_owned_rows(conn)
         conn.commit()
         summary = {
-            "academic_courses_details": seed_courses(conn, TARGETS["academic_courses_details"]),
+            "researchers": seed_researchers(conn, targets["researchers"]),
+            "academic_courses_details": seed_courses(conn, targets["academic_courses_details"]),
             "innovations_at_various_stages_of_technology_readiness_level": seed_trl(
                 conn,
-                TARGETS["innovations_at_various_stages_of_technology_readiness_level"],
+                targets["innovations_at_various_stages_of_technology_readiness_level"],
             ),
-            "innovation_grant_from_govt": seed_grants(conn, TARGETS["innovation_grant_from_govt"]),
-            "combined_ipo_patent_data": seed_patents(conn, TARGETS["combined_ipo_patent_data"]),
-            "publications": seed_publications(conn, TARGETS["publications"]),
-            "researchers": count_rows(conn, "researchers"),
+            "innovation_grant_from_govt": seed_grants(conn, targets["innovation_grant_from_govt"]),
+            "combined_ipo_patent_data": seed_patents(conn, targets["combined_ipo_patent_data"]),
+            "publications": seed_publications(conn, targets["publications"]),
         }
         ensure_indexes(conn)
         conn.commit()

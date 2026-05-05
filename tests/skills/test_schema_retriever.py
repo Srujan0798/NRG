@@ -363,7 +363,6 @@ class TestGetRelevantDDL:
 class TestBuildRelevantDDLPromptSection:
     def test_build_prompt_section_contains_ddl(self):
         from src.skills.text_to_sql.schema_retriever import (
-            SchemaRetriever,
             build_relevant_ddl_prompt_section,
         )
 

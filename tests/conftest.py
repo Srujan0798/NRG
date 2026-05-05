@@ -5,6 +5,10 @@ Defines markers, fixtures, and test categorization for CI blocking gates.
 
 import os
 import json
+import shutil
+import subprocess
+import sys
+import time
 import urllib.error
 import urllib.request
 from pathlib import Path
@@ -27,7 +31,74 @@ def _configure_isolated_audit_dir() -> None:
 
 _configure_isolated_audit_dir()
 
-import pytest
+
+def _prepare_ci_sqlite_database() -> None:
+    """Build the ignored local SQLite mirror on GitHub runners before collection."""
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        return
+    if os.environ.get("NRG_SKIP_CI_SQLITE_PREP") == "1":
+        return
+
+    repo_root = Path(__file__).resolve().parents[1]
+    default_root_urls = {
+        "",
+        "sqlite:///nrg_research.db",
+        f"sqlite:///{repo_root / 'nrg_research.db'}",
+    }
+    db_url = os.environ.get("DATABASE_URL", "")
+    if db_url in default_root_urls:
+        db_url = "sqlite:///data/nrg_research.db"
+        os.environ["DATABASE_URL"] = db_url
+    os.environ.setdefault("NRG_TEST_DATABASE_URL", db_url)
+    if not db_url.startswith("sqlite:///"):
+        return
+
+    raw_path = Path(db_url.removeprefix("sqlite:///"))
+    db_path = raw_path if raw_path.is_absolute() else repo_root / raw_path
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    marker = db_path.with_suffix(db_path.suffix + ".ci-ready")
+    lock_dir = db_path.with_suffix(db_path.suffix + ".lock")
+    deadline = time.monotonic() + 60
+
+    while True:
+        try:
+            lock_dir.mkdir()
+            break
+        except FileExistsError:
+            if marker.exists():
+                return
+            if time.monotonic() > deadline:
+                raise RuntimeError(f"Timed out waiting for CI SQLite seed lock: {lock_dir}")
+            time.sleep(0.2)
+
+    try:
+        if marker.exists():
+            return
+        existing_root_db = repo_root / "nrg_research.db"
+        if existing_root_db.exists() and not db_path.exists():
+            shutil.copyfile(existing_root_db, db_path)
+        subprocess.run(
+            [
+                sys.executable,
+                str(repo_root / "scripts" / "seed_production_subset.py"),
+                "--profile",
+                "ci",
+                "--no-audit",
+            ],
+            cwd=repo_root,
+            check=True,
+        )
+        marker.write_text("ready\n", encoding="utf-8")
+    finally:
+        try:
+            lock_dir.rmdir()
+        except OSError:
+            pass
+
+
+_prepare_ci_sqlite_database()
+
+import pytest  # noqa: E402
 
 
 PATH_CATEGORY_MARKERS: dict[str, tuple[str, ...]] = {

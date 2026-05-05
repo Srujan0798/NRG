@@ -72,6 +72,7 @@ def mock_llm(monkeypatch):
     fake = FakeCloudLLMClient()
     fake_mesh = FakeLLMMesh(fake)
     import src.config.llm_config as llm_module
+    import src.api.query_service as query_service_module
     import src.orchestration.nodes.synthesizer as synth_module
 
     def mock_get_llm_client(provider=None):
@@ -94,6 +95,34 @@ def mock_llm(monkeypatch):
     monkeypatch.setattr(api_main, "_advanced_adversarial_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_should_use_c4_read_model", lambda *args, **kwargs: False)
     monkeypatch.setattr(api_main, "_c4_read_model_response", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        api_main.prompt_sanitiser,
+        "validate_query",
+        lambda query_data, identifier=None: {
+            "valid": True,
+            "query_hash": "slo-test-query",
+            "sanitised_query": str(query_data.get("query", "")),
+        },
+        raising=False,
+    )
+    monkeypatch.setattr(api_main, "_remember_sql_domain_context", lambda *args, **kwargs: None)
+    monkeypatch.setattr(query_service_module, "schedule_answer_record_persist", lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        query_service_module,
+        "check_tier_rate_limit",
+        lambda *args, **kwargs: (True, 0, 0.0, {}),
+    )
+    monkeypatch.setattr(
+        query_service_module,
+        "check_endpoint_rate_limit",
+        lambda *args, **kwargs: (True, 0, 0.0, {}),
+    )
+
+    class StubConsentService:
+        def has_consent(self, user_id, scope):
+            return True
+
+    monkeypatch.setattr(query_service_module, "get_consent_service", lambda: StubConsentService())
 
     async def mock_audit_log_query_async(*args, **kwargs):
         return "audit-test-event"

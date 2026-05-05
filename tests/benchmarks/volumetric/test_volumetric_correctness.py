@@ -9,7 +9,6 @@ Run with: .venv/bin/python -m pytest tests/benchmarks/volumetric/ -v
 import pytest
 import concurrent.futures
 import os
-from typing import List
 
 pytestmark = pytest.mark.skipif(
     os.getenv("NRG_RUN_LIVE_E2E") != "1",
@@ -22,7 +21,9 @@ class TestVolumetricDataIntegrity:
 
     @pytest.fixture(scope="class")
     def api_client(self):
-        import requests, time, os
+        import requests
+        import time
+        import os
         base_url = os.environ.get("NRG_API_URL", "http://localhost:8000")
 
         # Get token directly (skip health check since server is already running)
@@ -58,8 +59,6 @@ class TestVolumetricDataIntegrity:
         ]
 
         results = []
-        errors = []
-
         def run_query(q: str) -> dict:
             try:
                 resp = api_client["requests"].post(
@@ -179,12 +178,10 @@ class TestVolumetricDataIntegrity:
 
         # Every citation in the response should be in the citations list
         for pub_id, chunk_id in cited_ids:
-            found = any(
+            _ = any(
                 c.get("pub_id") == pub_id and c.get("chunk_id") == chunk_id
                 for c in citations
             )
-            # Not strictly required but good to verify
-            # assert found, f"Citation [{pub_id}:{chunk_id}] in text but not in citations list"
 
     def test_tier_enforcement_at_scale(self, api_client):
         """Tier 1 users must not access Tier 2 data at high query volume."""

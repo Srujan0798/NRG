@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
 
 from src.skills.text_to_sql.result_anomaly_detector import detect_result_anomalies
 

@@ -1487,7 +1487,7 @@ FOLLOW-UP QUERIES:
     def _fallback_trl(self, query: str, query_lower: str) -> str:
         """Generate SQL for trl_stages queries."""
         conditions = []
-        trl_table = "innovations_at_various_stages_of_technology_readiness_level"
+        trl_table = "trl_stages"
 
         if "iit" in query_lower:
             institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)

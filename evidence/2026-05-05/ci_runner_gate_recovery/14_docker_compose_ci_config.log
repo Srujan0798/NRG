@@ -1,0 +1,387 @@
+name: nrg
+services:
+  api:
+    build:
+      context: /Users/srujansai/Desktop/NRG
+      dockerfile: Dockerfile.api
+      args:
+        BUILDKIT_INLINE_CACHE: "1"
+    container_name: nrg-api
+    depends_on:
+      pgbouncer:
+        condition: service_healthy
+        required: true
+      postgres:
+        condition: service_healthy
+        required: false
+      qdrant:
+        condition: service_healthy
+        required: true
+      redis:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: "2147483648"
+        reservations:
+          memory: "1073741824"
+    environment:
+      API_PORT: "8000"
+      APP_ENV: dev
+      CORS_ORIGINS: http://localhost:3000,http://localhost:8080
+      DATABASE_URL: postgresql://nrg:nrg_ci_password@pgbouncer:6432/nrg
+      DEMO_INDUSTRY_PASSWORD: industry-pass
+      DEMO_INDUSTRY_USERNAME: industry_user
+      EMBEDDING_FALLBACK_MODEL: sentence-transformers/all-MiniLM-L6-v2
+      EMBEDDING_MODEL: BAAI/bge-m3
+      FEATURE_CONSENT_UI: "true"
+      FEATURE_KG: "true"
+      FRONTEND_PORT: "5173"
+      GEMINI_API_KEY: your_gemini_key_here
+      GEMINI_MODEL: gemini-1.5-flash
+      GOV_PASSWORD: government-pass
+      GOV_USERNAME: gov_user
+      INDUSTRY_PASSWORD: industry-pass
+      JWT_ACCESS_TTL_MINUTES: "30"
+      JWT_ALGORITHM: HS256
+      JWT_AUDIENCE: nrg-clients
+      JWT_EXPIRY_SECONDS: "3600"
+      JWT_ISSUER: nrg-iitgn
+      JWT_REFRESH_TTL_DAYS: "7"
+      JWT_SECRET: development-secret-key-2026-minimum-32-bytes
+      KONG_PORT: "8080"
+      KONG_SSL_PORT: "8443"
+      LANGFUSE_HOST: ""
+      LANGFUSE_PUBLIC_KEY: ""
+      LANGFUSE_SECRET_KEY: ""
+      LLM_PROVIDER: gemini
+      LOG_FORMAT: json
+      LOG_LEVEL: INFO
+      NGINX_PORT: "80"
+      NGINX_SSL_PORT: "443"
+      NRG_AUDIT_DIR: /var/lib/nrg/audit
+      NRG_AUTH_DB_PATH: sqlite:////var/lib/nrg/nrg_auth.db
+      NRG_LOCAL_RESEARCH_DB: /app/data/nrg_research.db
+      NRG_PII_ENCRYPTION_KEY: ZGV2LW5yZy1waWktZW5jcnlwdGlvbi1rZXktMzIhISE=
+      NRG_PROTOCOL_DIR: /var/lib/nrg/protocol
+      NRG_QUOTA_DISABLED: "1"
+      OTEL_EXPORTER_OTLP_ENDPOINT: ""
+      POSTGRES_DB: nrg_dev
+      POSTGRES_HOST: postgres
+      POSTGRES_PASSWORD: dev_secret_password_change_in_prod
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: nrg_dev
+      PYTHONUNBUFFERED: "1"
+      QDRANT_COLLECTION: nrg_research
+      QDRANT_GRPC_PORT: "6334"
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: "6333"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      REDIS_URL: redis://redis:6379/0
+      RESEARCHER_PASSWORD: researcher-pass
+      RESEARCHER_USERNAME: researcher_user
+      TRUST_PROXY_HEADERS: "true"
+      UVICORN_GRACEFUL_TIMEOUT: "30"
+      UVICORN_WORKERS: "4"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/all', timeout=5).read()
+      timeout: 10s
+      interval: 15s
+      retries: 5
+      start_period: 30s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8000"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/srujansai/Desktop/NRG/infrastructure/kong/ssl
+        target: /app/infrastructure/kong/ssl
+        read_only: true
+        bind: {}
+      - type: bind
+        source: /Users/srujansai/Desktop/NRG/data
+        target: /app/data
+        read_only: true
+        bind: {}
+      - type: volume
+        source: api_auth_data
+        target: /var/lib/nrg
+        volume: {}
+  frontend:
+    build:
+      context: /Users/srujansai/Desktop/NRG
+      dockerfile: Dockerfile.frontend
+      args:
+        NODE_ENV: production
+    container_name: nrg-frontend
+    depends_on:
+      api:
+        condition: service_healthy
+        required: true
+    deploy:
+      resources:
+        limits:
+          memory: "268435456"
+        reservations:
+          memory: "134217728"
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - -q
+        - --spider
+        - http://127.0.0.1/health
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 10s
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 80
+        published: "5173"
+        protocol: tcp
+    restart: unless-stopped
+  kong:
+    profiles:
+      - dev
+      - prod
+    container_name: nrg-kong
+    depends_on:
+      api:
+        condition: service_started
+        required: true
+      redis:
+        condition: service_started
+        required: true
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yaml
+      KONG_LOG_LEVEL: info
+      KONG_NGINX_WORKER_PROCESSES: "2"
+      KONG_PLUGINS: bundled,rate-limiting-advanced
+    healthcheck:
+      test:
+        - CMD
+        - kong
+        - health
+      timeout: 10s
+      interval: 30s
+      retries: 3
+      start_period: 20s
+    image: kong:3.6
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 8000
+        published: "8080"
+        protocol: tcp
+      - mode: ingress
+        target: 8443
+        published: "8443"
+        protocol: tcp
+      - mode: ingress
+        target: 8001
+        published: "8001"
+        protocol: tcp
+      - mode: ingress
+        target: 8444
+        published: "8444"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: bind
+        source: /Users/srujansai/Desktop/NRG/infrastructure/kong
+        target: /kong
+        read_only: true
+        bind: {}
+  pgbouncer:
+    container_name: nrg-pgbouncer
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: false
+    deploy:
+      resources:
+        limits:
+          memory: "134217728"
+        reservations:
+          memory: "67108864"
+    environment:
+      AUTH_TYPE: plain
+      DATABASE_URL: postgresql://nrg:nrg_ci_password@postgres:5432/nrg
+      DEFAULT_POOL_SIZE: "20"
+      LISTEN_PORT: "6432"
+      MAX_CLIENT_CONN: "200"
+      POOL_MODE: transaction
+      RESERVE_POOL_SIZE: "5"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -h localhost -p 6432 -U nrg -d nrg
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    image: edoburu/pgbouncer:latest
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 6432
+        published: "6432"
+        protocol: tcp
+    restart: unless-stopped
+  postgres:
+    container_name: nrg-postgres
+    deploy:
+      resources:
+        limits:
+          memory: "536870912"
+        reservations:
+          memory: "268435456"
+    environment:
+      POSTGRES_DB: nrg
+      POSTGRES_INITDB_ARGS: -c wal_level=logical -c max_connections=200
+      POSTGRES_PASSWORD: nrg_ci_password
+      POSTGRES_USER: nrg
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U nrg -d nrg
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    image: postgres:16-alpine
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 5432
+        published: "5432"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: postgres_data
+        target: /var/lib/postgresql/data
+        volume: {}
+      - type: bind
+        source: /Users/srujansai/Desktop/NRG/db/seed
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+        bind: {}
+  qdrant:
+    container_name: nrg-qdrant
+    deploy:
+      resources:
+        limits:
+          memory: "1073741824"
+        reservations:
+          memory: "536870912"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - bash -c 'echo > /dev/tcp/localhost/6333'
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    image: qdrant/qdrant:v1.11.3
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 6333
+        published: "6333"
+        protocol: tcp
+      - mode: ingress
+        target: 6334
+        published: "6334"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: qdrant_data
+        target: /qdrant/storage
+        volume: {}
+  redis:
+    command:
+      - redis-server
+      - --appendonly
+      - "yes"
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+    container_name: nrg-redis
+    deploy:
+      resources:
+        limits:
+          memory: "536870912"
+        reservations:
+          memory: "134217728"
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - healthcheck
+      timeout: 5s
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    image: redis:7-alpine
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        target: 6379
+        published: "6379"
+        protocol: tcp
+    restart: unless-stopped
+    volumes:
+      - type: volume
+        source: redis_data
+        target: /data
+        volume: {}
+networks:
+  default:
+    name: nrg-network
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.28.0.0/16
+volumes:
+  api_auth_data:
+    name: nrg_api_auth_data
+    driver: local
+  postgres_data:
+    name: nrg_postgres_data
+    driver: local
+  qdrant_data:
+    name: nrg_qdrant_data
+    driver: local
+  redis_data:
+    name: nrg_redis_data
+    driver: local
+
+exit_code=0

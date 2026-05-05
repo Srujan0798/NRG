@@ -1,0 +1,21 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+...ss...s...                                                             [100%]
+=============================== warnings summary ===============================
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p50_latency_under_100ms
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p95_latency_under_300ms
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p99_latency_under_500ms
+tests/performance/test_slo_compliance.py::TestConcurrencySLO::test_all_tiers_concurrent
+tests/performance/test_slo_compliance.py::TestCitationRateSLO::test_citation_rate_above_80_percent
+tests/performance/test_slo_compliance.py::TestSynthesisCascadeSLO::test_cloud_llm_primary_path
+tests/performance/test_slo_compliance.py::TestQdrantIndexSLO::test_qdrant_fully_indexed
+tests/performance/test_slo_compliance.py::TestHealthCheckSLO::test_health_check_responsive
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+9 passed, 3 skipped, 8 warnings in 9.41s
+
+exit_code=0
