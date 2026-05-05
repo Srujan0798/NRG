@@ -33,16 +33,6 @@ DERIVED = [
     "CORPUS/CORPUS_INDEX.md",
     "CORPUS/README.md",
     "CORPUS/VERIFY.md",
-    "CORPUS/architecture/system_overview.md",
-    "CORPUS/architecture/data_pipeline.md",
-    "CORPUS/architecture/security_model.md",
-    "CORPUS/api/auth_flow.md",
-    "CORPUS/frontend/structure.md",
-    "CORPUS/frontend/design_system.md",
-    "CORPUS/quality/testing_strategy.md",
-    "CORPUS/tech_stack.md",
-    "CORPUS/deployment/docker_compose.md",
-    "CORPUS/deployment/infrastructure.md",
 ]
 
 

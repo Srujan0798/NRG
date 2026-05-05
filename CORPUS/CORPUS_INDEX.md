@@ -8,63 +8,82 @@ NRG (National Research Graph) is a sovereign research-intelligence platform for 
 
 **NRG is not a chatbot. NRG is not a search engine. NRG is the Research OS of India.**
 
-## Reading Order for AI Agents
+## Reading Order
 
-Read these in order. Do not skip.
-
-### Step 1 — Product Truth (5 min)
+### Step 1 — Product Truth
 1. `Core_Idea_Clean.md` — what NRG is, what it is not, product principles, UX contract
 
-### Step 2 — Data Truth (10 min)
+### Step 2 — Data Truth
 2. `db_struct.sql` — canonical PostgreSQL schema (58 tables)
 3. `schema/schema_hints.md` — text-to-SQL hints for every table
 4. `schema/business_term_glossary.yaml` — business terms mapped to schema
 
-### Step 3 — Quality & State (5 min)
-5. `quality/quality_bar.md` — 6 hard constraints (C1-C6). Every task must satisfy these.
+### Step 3 — Quality & State
+5. `quality/quality_bar.md` — 6 hard constraints (C1-C6)
 6. `state/current_state.md` — what is blocked, what is in progress, what shipped
+7. `state/source_of_truth_map.md` — canonical files vs mirrors
 
-### Step 4 — Audit & Benchmarks (10 min)
-7. `SQL_AUDIT_REPORT_DHAIRYA.md` — formatted audit of 17 benchmark queries (41% baseline)
-8. `killer_queries.yaml` — 3 launch killer queries + 10 adversarial breakers
-9. `SQL_AUDIT_RAW_dhairya.sql` — raw Dhairya audit SQL
+### Step 4 — Audit & Benchmarks
+8. `SQL_AUDIT_REPORT_DHAIRYA.md` — formatted audit of 17 benchmark queries
+9. `killer_queries.yaml` — 3 launch killer queries + 10 adversarial breakers
+10. `SQL_AUDIT_RAW_dhairya.sql` — raw Dhairya audit SQL
 
-### Step 5 — Architecture (10 min)
-10. `architecture/system_overview.md` — how backend, frontend, infra fit together
-11. `architecture/data_pipeline.md` — ingestion → storage → query → answer flow
-12. `architecture/security_model.md` — auth tiers, DPDP, PII, audit chain
+### Step 5 — Verification Rule
+11. `VERIFY.md` — **how to verify reality by scanning actual source files**
 
-### Step 6 — API & Frontend (10 min)
-13. `api/endpoint_matrix.md` — every FastAPI endpoint, method, auth guard
-14. `api/auth_flow.md` — JWT, 3 tiers, login/logout
-15. `frontend/structure.md` — pages, components, routing, key files
-16. `frontend/design_system.md` — design tokens, component library
+## How to Verify This Project
 
-### Step 7 — Operations (5 min)
-17. `tech_stack.md` — what tech is used where, versions
-18. `deployment/docker_compose.md` — services, ports, env vars
-19. `deployment/infrastructure.md` — K8s, nginx, kong, grafana, prometheus
-20. `quality/testing_strategy.md` — test structure, how to run, key commands
+**CORPUS/ contains exact mirrors of canonical files + one verification rule.**
 
-### Step 8 — Source Map (2 min)
-21. `state/source_of_truth_map.md` — canonical files vs mirrors, what overrides what
+To understand the full project, an AI must:
+1. Read the exact mirrors above for requirements
+2. Read `VERIFY.md` for what actual source files to scan
+3. Scan `src/`, `frontend/src/`, `tests/`, `docker-compose.yml`, `infrastructure/` directly
+4. Verify: does source code match requirements?
 
 ## Quick Commands
 
 ```bash
-# Verify corpus is in sync with canonical files
+# Verify corpus mirrors are in sync
 python3 scripts/verify_corpus_sync.py
 
-# Run all tests
-.venv/bin/python -m pytest tests/ -q --tb=short
-
-# Start stack
-bash scripts/run_critical_path_final.sh
-
-# Check quality bar
-.venv/bin/python scripts/quality_bar_scorecard.py
+# Scan actual source (run from repo root)
+grep -r "@router" src/api/routes/ | wc -l        # count API routes
+ls src/auth/rbac.py src/auth/middleware.py        # check auth
+ls src/security/pii/ src/security/egress_guard/   # check security
+ls src/audit/ .audit/chain.jsonl                  # check audit
+ls src/orchestration/nodes/planner.py             # check planner
+ls frontend/src/App.tsx frontend/src/views/       # check frontend
+find tests/ -name "test_*.py" | wc -l             # count tests
+ls docker-compose.yml infrastructure/helm/        # check deployment
 ```
 
-## Corpus Mirror Rule
+## What Is in CORPUS/
 
-`CORPUS/` is a portable AI handoff pack. Canonical files live in their normal repo locations. Before trusting `CORPUS/`, run `scripts/verify_corpus_sync.py`. If it says `ok: true`, the mirrors match.
+**Exact mirrors (byte-identical to canonical files):**
+- `Core_Idea_Clean.md`
+- `db_struct.sql`
+- `killer_queries.yaml`
+- `api/endpoint_matrix.md`
+- `quality/quality_bar.md`
+- `state/current_state.md`
+- `state/source_of_truth_map.md`
+- `SQL_AUDIT_REPORT_DHAIRYA.md`
+- `SQL_AUDIT_RAW_dhairya.sql`
+- `SQL_AUDIT_REPORT_CLEAN.md`
+- `schema/*` (5 files)
+
+**Meta files:**
+- `CORPUS_INDEX.md` — this file
+- `README.md` — corpus explanation
+- `VERIFY.md` — verification rule and source scan commands
+
+**What is NOT in CORPUS/:**
+- No summaries of source code
+- No interpreted architecture docs
+- No condensed frontend/deployment descriptions
+- Those live in their actual source locations: `src/`, `frontend/src/`, `infrastructure/`, etc.
+
+## Size
+
+~15 files. Estimated reading time: 30 minutes for mirrors + verification rule.
