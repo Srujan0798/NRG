@@ -144,6 +144,7 @@ def test_cd_quality_bar_starts_seeded_api_before_c4_scorecard():
     assert workflow["env"]["NRG_LOCAL_RESEARCH_DB"] == "data/nrg_research.db"
     assert "python scripts/seed_production_subset.py --profile ci --no-audit" in start_script
     assert "python -m src.api.main" in start_script
+    assert "NRG_QUOTA_DISABLED=1" in start_script
     assert "curl -sf http://localhost:8000/health" in start_script
 
 

@@ -55,7 +55,7 @@ jobs:
       - name: Start seeded API for C4 scorecard
         run: |
           python scripts/seed_production_subset.py --profile ci --no-audit
-          nohup python -m src.api.main > /tmp/nrg-c4-api.log 2>&1 &
+          NRG_QUOTA_DISABLED=1 nohup python -m src.api.main > /tmp/nrg-c4-api.log 2>&1 &
           for i in {1..30}; do
             if curl -sf http://localhost:8000/health; then
               echo "API ready for C4 scorecard"
