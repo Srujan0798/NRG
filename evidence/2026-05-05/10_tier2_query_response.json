@@ -1,0 +1,165 @@
+{
+  "tier": 2,
+  "query": "top AI funding institutions",
+  "result": {
+    "query_id": "a02e43de-5864-4fb4-b97e-090a36648dbd",
+    "answer_id": "5fc92f61-7237-465a-a049-2e5cf1214fd1",
+    "audit_event_id": "0a6e1bfc70d813616cf7e755dace93e48ffd5b346c2597196ec1583ec138a1cd",
+    "tier": 2,
+    "question": "top AI funding institutions",
+    "interpreted_question": "top AI funding institutions",
+    "assumptions": [],
+    "route": "sql",
+    "blocked": false,
+    "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+    "confidence": {
+      "level": "high",
+      "reason": "Evidence and citations passed verification."
+    },
+    "citations": [
+      {
+        "id": "1",
+        "source_type": "document_chunk",
+        "label": "NRG C4 read model: innovation_grant_from_govt",
+        "source_id": "innovation_grant_from_govt:c4-read-model",
+        "masked": false,
+        "title": "NRG C4 read model: innovation_grant_from_govt",
+        "publication_id": "innovation_grant_from_govt:c4-read-model",
+        "paper_id": "innovation_grant_from_govt:c4-read-model",
+        "pub_id": "innovation_grant_from_govt:c4-read-model"
+      },
+      {
+        "id": "2",
+        "source_type": "document_chunk",
+        "label": "NRG C4 read model: researchers",
+        "source_id": "researchers:c4-read-model",
+        "masked": false,
+        "title": "NRG C4 read model: researchers",
+        "publication_id": "researchers:c4-read-model",
+        "paper_id": "researchers:c4-read-model",
+        "pub_id": "researchers:c4-read-model"
+      }
+    ],
+    "source_data": {
+      "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+      "rows": [
+        {
+          "institute": "IIT Madras",
+          "grant_count": 3755,
+          "funding_cr": 3907.71
+        },
+        {
+          "institute": "IIT Bombay",
+          "grant_count": 3754,
+          "funding_cr": 3903.59
+        },
+        {
+          "institute": "IIT Delhi",
+          "grant_count": 3751,
+          "funding_cr": 3898.35
+        },
+        {
+          "institute": "IIT Hyderabad",
+          "grant_count": 3748,
+          "funding_cr": 3148.22
+        },
+        {
+          "institute": "IIT Roorkee",
+          "grant_count": 3747,
+          "funding_cr": 3147.82
+        }
+      ],
+      "documents": []
+    },
+    "provenance": {
+      "planner": "c4_read_model",
+      "synth": "rule_based_read_model",
+      "verifier": "row_count_and_citation",
+      "cloud_synthesis_used": false
+    },
+    "freshness": {
+      "database_snapshot": null,
+      "document_indexed_at": null,
+      "warning": null
+    },
+    "caveats": [
+      "{'message': 'C4 bounded read model used; no executor/RAG call required.'}"
+    ],
+    "follow_up_suggestions": [],
+    "query_time_ms": 0,
+    "query": "top AI funding institutions",
+    "response": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+    "status": "success",
+    "session_id": null,
+    "intent": "funding_aggregate",
+    "routing_decision": "fast_path",
+    "verification_status": true,
+    "verification": {
+      "status": true,
+      "safe_to_trust": true,
+      "confidence": {
+        "level": "high",
+        "reason": "Evidence and citations passed verification."
+      },
+      "citation_validity": 1.0,
+      "audit_event_id": "0a6e1bfc70d813616cf7e755dace93e48ffd5b346c2597196ec1583ec138a1cd"
+    },
+    "citation_validity": 1.0,
+    "plan": null,
+    "planner_metadata": {},
+    "answer_confidence": "high",
+    "answer_confidence_score": 0.96,
+    "sql_anomaly_report": {},
+    "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+    "sql_queries": [
+      "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5"
+    ],
+    "sql_results": [
+      {
+        "institute": "IIT Madras",
+        "grant_count": 3755,
+        "funding_cr": 3907.71
+      },
+      {
+        "institute": "IIT Bombay",
+        "grant_count": 3754,
+        "funding_cr": 3903.59
+      },
+      {
+        "institute": "IIT Delhi",
+        "grant_count": 3751,
+        "funding_cr": 3898.35
+      },
+      {
+        "institute": "IIT Hyderabad",
+        "grant_count": 3748,
+        "funding_cr": 3148.22
+      },
+      {
+        "institute": "IIT Roorkee",
+        "grant_count": 3747,
+        "funding_cr": 3147.82
+      }
+    ],
+    "retrieval_sources": [
+      "innovation_grant_from_govt",
+      "researchers"
+    ],
+    "synthesis_method": "rule_based_read_model",
+    "conversation_history": [],
+    "node_timings": {
+      "receiver": 0.0,
+      "planner": 0.0,
+      "router": 0.0,
+      "executor": 0.0,
+      "synthesizer": 0.0,
+      "verifier": 0.0
+    },
+    "warnings": [
+      {
+        "message": "C4 bounded read model used; no executor/RAG call required."
+      }
+    ],
+    "tier2_access_scope": "government_aggregate"
+  }
+}
