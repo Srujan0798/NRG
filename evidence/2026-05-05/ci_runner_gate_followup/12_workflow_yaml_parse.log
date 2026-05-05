@@ -1,0 +1,4 @@
+.github/workflows/cd.yml: ok
+.github/workflows/deploy.yml: ok
+.github/workflows/bench-weekly.yml: ok
+.github/workflows/ci.yml: ok

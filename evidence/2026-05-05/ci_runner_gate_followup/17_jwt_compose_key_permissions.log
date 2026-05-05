@@ -1,0 +1,3 @@
+644 infrastructure/kong/ssl/jwt_rsa.key
+644 infrastructure/kong/ssl/jwt_rsa.pub
+644 infrastructure/kong/ssl/jwt_rsa.key.pub

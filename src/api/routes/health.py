@@ -430,7 +430,15 @@ async def providers_health():
             "timeout_budget_seconds": mesh.mesh_config.query_timeout_budget_seconds,
         }, status="healthy", healthy=True)
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Provider health check failed: {exc}") from exc
+        return _with_health_contract(
+            {
+                "providers": {},
+                "timeout_budget_seconds": None,
+                "error": f"Provider health check failed: {exc}",
+            },
+            status="unhealthy",
+            healthy=False,
+        )
 
 
 @router.get("/health/db")

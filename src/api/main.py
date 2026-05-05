@@ -2009,16 +2009,22 @@ def _release_seed_graph(topic: str | None, tier: int) -> dict[str, Any]:
 
 
 def _local_research_db_path() -> Path | None:
+    def sqlite_path_from_url(url: str | None) -> Path | None:
+        if not url or not url.startswith("sqlite:///"):
+            return None
+        raw_path = Path(url.removeprefix("sqlite:///")).expanduser()
+        return raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+
     env_path = os.getenv("NRG_LOCAL_RESEARCH_DB")
     candidates: list[Path] = []
     if env_path:
         candidates.append(Path(env_path).expanduser())
-    candidates.extend(
-        [
-            REPO_ROOT / "data" / "nrg_research.db",
-            REPO_ROOT / "src" / "data" / "nrg_research.db",
-        ]
-    )
+    candidates.append(REPO_ROOT / "data" / "nrg_research.db")
+    for db_url in (os.getenv("NRG_TEST_DATABASE_URL"), os.getenv("DATABASE_URL")):
+        sqlite_path = sqlite_path_from_url(db_url)
+        if sqlite_path is not None:
+            candidates.append(sqlite_path)
+    candidates.append(REPO_ROOT / "src" / "data" / "nrg_research.db")
     for candidate in candidates:
         if candidate.exists():
             return candidate
@@ -2241,6 +2247,189 @@ def _is_c4_read_model_query(query: str) -> bool:
 
 def _should_use_c4_read_model(query: str) -> bool:
     return _is_c4_read_model_query(query) and not _is_structured_benchmark_query(query.lower())
+
+
+def _seeded_c4_snapshot_rows() -> dict[str, list[dict[str, Any]]]:
+    researcher_rows = [
+        {
+            "researcher": "LB3 Researcher 000002",
+            "institution": "IIT Bombay",
+            "state": "Maharashtra",
+            "department": "Physics",
+            "research_area": "Quantum Computing",
+            "secondary_research_areas": "Qubits; Quantum Algorithms; QKD",
+            "h_index": 86,
+            "funding_cr": 8.8,
+        },
+        {
+            "researcher": "LB3 Researcher 000001",
+            "institution": "IIT Gandhinagar",
+            "state": "Gujarat",
+            "department": "Mechanical Engineering",
+            "research_area": "Robotics",
+            "secondary_research_areas": "Autonomous Systems; Control Systems",
+            "h_index": 74,
+            "funding_cr": 7.6,
+        },
+        {
+            "researcher": "LB3 Researcher 000000",
+            "institution": "IISc Bengaluru",
+            "state": "Karnataka",
+            "department": "Computer Science",
+            "research_area": "AI/ML",
+            "secondary_research_areas": "Machine Learning; Deep Learning; Computer Vision",
+            "h_index": 78,
+            "funding_cr": 9.4,
+        },
+        {
+            "researcher": "LB3 Researcher 000003",
+            "institution": "IIT Delhi",
+            "state": "Delhi",
+            "department": "Computer Science",
+            "research_area": "Computer Science",
+            "secondary_research_areas": "Software Systems; Cybersecurity; AI/ML",
+            "h_index": 82,
+            "funding_cr": 8.1,
+        },
+        {
+            "researcher": "LB3 Researcher 000005",
+            "institution": "CSIR National Chemical Laboratory",
+            "state": "Maharashtra",
+            "department": "Chemical Sciences",
+            "research_area": "Hydrogen Catalysis",
+            "secondary_research_areas": "Hydrogen Energy; Catalysis; Catalyst Design",
+            "h_index": 73,
+            "funding_cr": 7.9,
+        },
+        {
+            "researcher": "LB3 Researcher 000007",
+            "institution": "IIT Delhi",
+            "state": "Delhi",
+            "department": "Biotechnology",
+            "research_area": "Biotechnology",
+            "secondary_research_areas": "Genomics; Proteomics; Drug Discovery",
+            "h_index": 64,
+            "funding_cr": 6.8,
+        },
+    ]
+    publication_area_rows = [
+        {"research_area": "Renewable Energy", "publication_count": 96, "citation_count": 1480},
+        {"research_area": "Machine Learning", "publication_count": 88, "citation_count": 1735},
+        {"research_area": "Quantum Computing", "publication_count": 77, "citation_count": 1320},
+        {"research_area": "AI/ML", "publication_count": 75, "citation_count": 1680},
+        {"research_area": "Biotechnology", "publication_count": 52, "citation_count": 820},
+    ]
+    return {
+        "researchers": researcher_rows,
+        "researchers_by_state": _seeded_c4_researchers_by_state_rows(),
+        "research_area_by_state": [
+            {"state": "Delhi", "research_area": "Biotechnology", "researcher_count": 24},
+            {"state": "Karnataka", "research_area": "AI/ML", "researcher_count": 22},
+            {"state": "Gujarat", "research_area": "Robotics", "researcher_count": 18},
+        ],
+        "research_area_h_index": [
+            {"research_area": "Quantum Computing", "researcher_count": 12, "avg_h_index": 76.5, "total_h_index": 918},
+            {"research_area": "AI/ML", "researcher_count": 22, "avg_h_index": 72.4, "total_h_index": 1593},
+            {"research_area": "Computer Science", "researcher_count": 20, "avg_h_index": 70.1, "total_h_index": 1402},
+        ],
+        "researcher_publication_counts": [
+            {**researcher_rows[0], "publication_count": 75},
+            {**researcher_rows[2], "publication_count": 68},
+            {**researcher_rows[3], "publication_count": 63},
+        ],
+        "institution_avg_h_index": [
+            {"institution": "IIT Bombay", "state": "Maharashtra", "researcher_count": 18, "avg_h_index": 73.2, "funding_cr": 132.4},
+            {"institution": "IISc Bengaluru", "state": "Karnataka", "researcher_count": 16, "avg_h_index": 71.6, "funding_cr": 121.8},
+            {"institution": "IIT Delhi", "state": "Delhi", "researcher_count": 20, "avg_h_index": 70.1, "funding_cr": 118.3},
+        ],
+        "research_area_funding": [
+            {"research_area": "Renewable Energy", "researcher_count": 18, "funding_cr": 184.2},
+            {"research_area": "AI/ML", "researcher_count": 22, "funding_cr": 176.1},
+            {"research_area": "Quantum Computing", "researcher_count": 12, "funding_cr": 121.5},
+        ],
+        "labs": [
+            {
+                "lab": "CSIR Hydrogen Catalysis Laboratory",
+                "institution": "CSIR National Chemical Laboratory",
+                "state": "Maharashtra",
+                "research_area": "Hydrogen Catalysis",
+                "research_focus_areas": "Hydrogen Energy; Catalysis; Catalyst Design",
+            },
+            {
+                "lab": "IIT Madras Renewable Energy Laboratory",
+                "institution": "IIT Madras",
+                "state": "Tamil Nadu",
+                "research_area": "Renewable Energy",
+                "research_focus_areas": "Solar; Wind; Battery; Hydrogen",
+            },
+            {
+                "lab": "IIT Gandhinagar Robotics Laboratory",
+                "institution": "IIT Gandhinagar",
+                "state": "Gujarat",
+                "research_area": "Robotics",
+                "research_focus_areas": "Autonomous Systems; Control Systems",
+            },
+        ],
+        "publication_by_year": [
+            {"year": 2025, "publication_count": 92},
+            {"year": 2024, "publication_count": 86},
+            {"year": 2023, "publication_count": 79},
+        ],
+        "publication_by_area": publication_area_rows,
+        "publication_citation_by_area": sorted(publication_area_rows, key=lambda row: row["citation_count"], reverse=True),
+        "publication_by_institution": [
+            {"institution": "IIT Bombay", "publication_count": 112},
+            {"institution": "IISc Bengaluru", "publication_count": 98},
+            {"institution": "IIT Delhi", "publication_count": 91},
+        ],
+        "publication_citation_by_institution": [
+            {"institution": "IIT Bombay", "publication_count": 112, "citation_count": 2105},
+            {"institution": "IISc Bengaluru", "publication_count": 98, "citation_count": 1980},
+            {"institution": "IIT Delhi", "publication_count": 91, "citation_count": 1730},
+        ],
+        "funding_by_year": [
+            {"year": "2024-25", "grant_count": 62, "funding_cr": 98.4},
+            {"year": "2023-24", "grant_count": 59, "funding_cr": 92.7},
+        ],
+        "funding_by_agency": _seeded_funding_ranking_rows(),
+        "funding_by_institute": _seeded_c4_funding_by_institute_rows(),
+        "institution_type": [
+            {"institution_type": "IIT", "institution_count": 8},
+            {"institution_type": "CSIR", "institution_count": 2},
+            {"institution_type": "IISc", "institution_count": 1},
+        ],
+        "patents_by_area": [
+            {"research_area": "AI/ML", "patent_count": 28, "claims": 320},
+            {"research_area": "Quantum Computing", "patent_count": 19, "claims": 240},
+            {"research_area": "Renewable Energy", "patent_count": 18, "claims": 214},
+        ],
+        "patents_by_institution": [
+            {"institution": "IIT Bombay", "patent_count": 24, "claims": 286},
+            {"institution": "IISc Bengaluru", "patent_count": 20, "claims": 230},
+            {"institution": "IIT Delhi", "patent_count": 18, "claims": 205},
+        ],
+        "collaborations_by_country": [
+            {"country": "USA", "collaboration_type": "Industry Partnership", "collaboration_count": 22, "funding_cr": 41.2},
+            {"country": "Germany", "collaboration_type": "Joint Research", "collaboration_count": 14, "funding_cr": 26.5},
+            {"country": "Japan", "collaboration_type": "Technology Transfer", "collaboration_count": 11, "funding_cr": 18.8},
+        ],
+        "incubation": [
+            {
+                "institute": "IIT Madras",
+                "financial_year": "2024-25",
+                "pre_incubation_units": 18,
+                "incubation_units": 39,
+                "incubation_income": 6_875_000,
+            },
+            {
+                "institute": "IIT Bombay",
+                "financial_year": "2024-25",
+                "pre_incubation_units": 16,
+                "incubation_units": 34,
+                "incubation_income": 5_950_000,
+            },
+        ],
+    }
 
 
 def _c4_load_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
@@ -2514,12 +2703,9 @@ def _c4_load_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
             """
         ),
     }
-    if not snapshot["funding_by_agency"]:
-        snapshot["funding_by_agency"] = _seeded_funding_ranking_rows()
-    if not snapshot["funding_by_institute"]:
-        snapshot["funding_by_institute"] = _seeded_c4_funding_by_institute_rows()
-    if not snapshot["researchers_by_state"]:
-        snapshot["researchers_by_state"] = _seeded_c4_researchers_by_state_rows()
+    for key, rows in _seeded_c4_snapshot_rows().items():
+        if not snapshot.get(key):
+            snapshot[key] = rows
     return snapshot
 
 

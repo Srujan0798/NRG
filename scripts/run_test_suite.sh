@@ -169,6 +169,7 @@ time {
         -n auto
         --dist=loadgroup
         --junitxml="$JUNIT_XML"
+        --ignore=tests/e2e
         --ignore=tests/api/test_tier_isolation_live.py
         --ignore=tests/security/test_red_team_v41.py
     )

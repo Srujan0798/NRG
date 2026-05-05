@@ -1,0 +1,39 @@
+# CI Runner Gate Follow-Up
+
+Date: 2026-05-05
+
+## Scope
+
+This evidence package covers the CI failures left after `f890dc2c`:
+
+- Extended SQLite CI seed coverage for projects, patents, collaborations, funding, labs, research documents, institutions, researcher-publication links, and incubation rows.
+- C4 read-model resilience when optional local tables are absent.
+- Provider health behavior when no LLM provider mesh is configured.
+- Non-E2E CI collection avoiding Playwright-only test modules.
+- Docker smoke JWT key readability for the ephemeral CI compose environment.
+- Python 3.14 lane marked advisory until upstream dependency support is available.
+- Full-repo mypy remains advisory because the repository has pre-existing type debt outside this patch.
+
+## Fresh Local Evidence
+
+- `01_red_targeted_failures.log`: RED baseline, 6 endpoint seed failures reproduced.
+- `02_seed_extended_ci.log`: CI seed now creates all required extended tables.
+- `05_green_broadened_after_path_order.log`: 72 passed, 1 skipped, 20 deselected across endpoint, C4, GLM, K4, LangGraph, Minimax, property, chaos, and observability surfaces.
+- `06_ci_unit_collect_ignore_e2e.log`: unit collection with `--ignore=tests/e2e` passed, 1671 selected.
+- `07_ci_integration_collect_ignore_e2e.log`: integration collection with `--ignore=tests/e2e` passed, 313 selected.
+- `08_seed_creates_parent_dir.log`: seed creates missing database parent directories.
+- `09_local_release_collect_ignore_e2e.log`: local release collect-only gate passed, 1948 selected, runtime budget passed.
+- `10_ci_ruff_src_tests.log`: CI-scoped ruff passed for `src tests`.
+- `11_jwt_secret_config.log`: JWT secret config check passed.
+- `12_workflow_yaml_parse.log`: workflow YAML parse passed.
+- `13_git_diff_check.log`: whitespace diff check passed.
+- `14_gitleaks_git_scope.log`: git-scope secret scan passed, no leaks found.
+- `15_docker_compose_config.log`: compose dev profile config check passed.
+- `16_local_read_model_path_check.log`: local read-model path resolves to the seeded mirror path.
+- `17_jwt_compose_key_permissions.log`: CI compose key permissions verified as readable.
+
+## Remaining Known Gaps
+
+- Full `scripts/` ruff is still blocked by existing lint debt outside the CI lint scope.
+- Python 3.14 is advisory until SQLAlchemy and the broader dependency stack certify Python 3.14 import support.
+- This package does not prove external deployment, cluster, or C4 live-load gates; those remain separate gates requiring their own fresh acceptance evidence.

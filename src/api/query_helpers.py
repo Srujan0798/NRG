@@ -65,16 +65,22 @@ def _remember_sql_domain_context(context_key: str, query: str, sql_query: str | 
 
 
 def _local_research_db_path() -> Path | None:
+    def sqlite_path_from_url(url: str | None) -> Path | None:
+        if not url or not url.startswith("sqlite:///"):
+            return None
+        raw_path = Path(url.removeprefix("sqlite:///")).expanduser()
+        return raw_path if raw_path.is_absolute() else REPO_ROOT / raw_path
+
     env_path = os.getenv("NRG_LOCAL_RESEARCH_DB")
     candidates: list[Path] = []
     if env_path:
         candidates.append(Path(env_path).expanduser())
-    candidates.extend(
-        [
-            REPO_ROOT / "data" / "nrg_research.db",
-            REPO_ROOT / "src" / "data" / "nrg_research.db",
-        ]
-    )
+    candidates.append(REPO_ROOT / "data" / "nrg_research.db")
+    for db_url in (os.getenv("NRG_TEST_DATABASE_URL"), os.getenv("DATABASE_URL")):
+        sqlite_path = sqlite_path_from_url(db_url)
+        if sqlite_path is not None:
+            candidates.append(sqlite_path)
+    candidates.append(REPO_ROOT / "src" / "data" / "nrg_research.db")
     for candidate in candidates:
         if candidate.exists():
             return candidate

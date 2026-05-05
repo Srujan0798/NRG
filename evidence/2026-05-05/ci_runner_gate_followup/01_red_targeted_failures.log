@@ -1,0 +1,87 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, timeout-2.4.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 80 items / 20 deselected / 60 selected
+
+tests/api/test_new_endpoints.py [31mF[0m[32m.[0m[32m.[0m[31mF[0m[31mF[0m[32m.[0m[31mF[0m[31mF[0m[32m.[0m[31mF[0m[32m.[0m[32m.[0m[31m                             [ 20%][0m
+tests/api/test_c4_read_model.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                                    [ 28%][0m
+tests/property/test_tier_filtering_always_returns_subset.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m [ 48%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                                                               [ 65%][0m
+tests/observability/test_metrics.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m                [100%][0m
+
+=================================== FAILURES ===================================
+[31m[1m___________________ TestProjectsEndpoint.test_list_projects ____________________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:36: in test_list_projects
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+---------------------------- Captured stdout setup -----------------------------
+{"timestamp": "2026-05-05T16:23:33.352661+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log setup ------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.484261+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/projects?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/projects?limit=5 "HTTP/1.1 200 OK"
+[31m[1m____________________ TestPatentsEndpoint.test_list_patents _____________________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:59: in test_list_patents
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.781723+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/patents?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/patents?limit=5 "HTTP/1.1 200 OK"
+[31m[1m_____________ TestCollaborationsEndpoint.test_list_collaborations ______________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:70: in test_list_collaborations
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.803227+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/collaborations?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/collaborations?limit=5 "HTTP/1.1 200 OK"
+[31m[1m____________________ TestFundingEndpoint.test_list_funding _____________________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:84: in test_list_funding
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.834492+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/funding?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/funding?limit=5 "HTTP/1.1 200 OK"
+[31m[1m_______________________ TestLabsEndpoint.test_list_labs ________________________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:94: in test_list_labs
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.855176+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/labs?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/labs?limit=5 "HTTP/1.1 200 OK"
+[31m[1m_________________ TestResearchDocumentsEndpoint.test_list_docs _________________[0m
+[1m[31mtests/api/test_new_endpoints.py[0m:109: in test_list_docs
+    [0m[94massert[39;49;00m count == [94m5[39;49;00m[90m[39;49;00m
+[1m[31mE   assert 0 == 5[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T16:23:33.884446+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/research-documents?limit=5 \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 22825, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/research-documents?limit=5 "HTTP/1.1 200 OK"
+[33m=============================== warnings summary ===============================[0m
+tests/api/test_new_endpoints.py: 11 warnings
+tests/property/test_tier_filtering_always_returns_subset.py: 22 warnings
+tests/observability/test_metrics.py: 8 warnings
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestProjectsEndpoint::test_list_projects[0m - assert 0 == 5
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestPatentsEndpoint::test_list_patents[0m - assert 0 == 5
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestCollaborationsEndpoint::test_list_collaborations[0m - assert 0 == 5
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestFundingEndpoint::test_list_funding[0m - assert 0 == 5
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestLabsEndpoint::test_list_labs[0m - assert 0 == 5
+[31mFAILED[0m tests/api/test_new_endpoints.py::[1mTestResearchDocumentsEndpoint::test_list_docs[0m - assert 0 == 5
+[31m= [31m[1m6 failed[0m, [32m53 passed[0m, [33m1 skipped[0m, [33m20 deselected[0m, [33m41 warnings[0m[31m in 101.25s (0:01:41)[0m[31m =[0m
