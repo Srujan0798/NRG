@@ -21,11 +21,27 @@ MIRRORS = [
     ("src/data/schema/schema_hints.md", "CORPUS/schema/schema_hints.md"),
     ("src/data/schema/schema_value_synonyms.md", "CORPUS/schema/schema_value_synonyms.md"),
     ("src/data/schema/sqlite_schema.sql", "CORPUS/schema/sqlite_schema.sql"),
+    ("docs/specs/API_ENDPOINT_MATRIX.md", "CORPUS/api/endpoint_matrix.md"),
+    (".claude/quality-bar.md", "CORPUS/quality/quality_bar.md"),
+    (".claude/CURRENT_STATE.md", "CORPUS/state/current_state.md"),
+    ("docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md", "CORPUS/state/source_of_truth_map.md"),
+    ("docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md", "CORPUS/SQL_AUDIT_REPORT_DHAIRYA.md"),
 ]
 
 DERIVED = [
     "CORPUS/SQL_AUDIT_REPORT_CLEAN.md",
-    "docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md",
+    "CORPUS/CORPUS_INDEX.md",
+    "CORPUS/README.md",
+    "CORPUS/architecture/system_overview.md",
+    "CORPUS/architecture/data_pipeline.md",
+    "CORPUS/architecture/security_model.md",
+    "CORPUS/api/auth_flow.md",
+    "CORPUS/frontend/structure.md",
+    "CORPUS/frontend/design_system.md",
+    "CORPUS/quality/testing_strategy.md",
+    "CORPUS/tech_stack.md",
+    "CORPUS/deployment/docker_compose.md",
+    "CORPUS/deployment/infrastructure.md",
 ]
 
 

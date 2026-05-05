@@ -1,78 +1,91 @@
 # NRG Portable Corpus
 
-`CORPUS/` is useful and should stay. It is the portable AI handoff pack for
-NRG: a compact mirror of the files an agent needs to understand the product,
-schema, Dhairya SQL audit patterns, and benchmark questions quickly.
+`CORPUS/` is the portable AI handoff pack for NRG. An AI agent given only `CORPUS/` should understand the entire project: what it is, how it is built, how to run tests, how to deploy, and what is blocked.
 
-It is **not** the live source tree. Canonical files remain in their normal repo
-locations. Before giving `CORPUS/` to any AI agent, verify that the mirrors are
-in sync:
+## Verify Before Use
 
 ```bash
 .venv/bin/python scripts/verify_corpus_sync.py
 ```
 
-Expected successful run:
+Expected: `ok: true`
 
-```text
-CORPUS sync: PASS
-```
+## Reading Order for AI Agents
 
-If the virtualenv is not available yet, `python3 scripts/verify_corpus_sync.py`
-is acceptable only after dependency setup is complete and the command resolves
-to the project Python version.
+1. **Start here:** `CORPUS_INDEX.md` — master reading guide
+2. Follow the 8-step order defined in `CORPUS_INDEX.md`
 
-Latest Batch 4 verification: `PASS` on 2026-05-02. Evidence:
-`evidence/2026-05-02/batch4_data_sql_schema/D4-10_corpus_sync.json`.
+## File Inventory
 
-Latest current-tree recheck: `PASS` on 2026-05-05 with `ok: true`. Evidence:
-`evidence/2026-05-05/80_task_dispatch_recheck/README.md`.
+### Product & Data
+- `Core_Idea_Clean.md` — product vision, UX contract, principles
+- `db_struct.sql` — canonical PostgreSQL schema (58 tables)
+- `killer_queries.yaml` — 3 launch queries + 10 adversarial breakers
 
-## Canonical Files And Mirrors
+### Schema Context
+- `schema/schema_hints.md` — text-to-SQL hints
+- `schema/schema_value_synonyms.md` — value synonym rules
+- `schema/business_term_glossary.yaml` — business-term-to-schema mapping
+- `schema/nrg_full_schema.sql` — full schema reference
+- `schema/production_schema.sql` — production schema reference
+- `schema/sqlite_schema.sql` — development SQLite schema
 
-| Canonical source | Corpus mirror | Purpose |
-| --- | --- | --- |
-| `Core_Idea_Clean.md` | `CORPUS/Core_Idea_Clean.md` | Product vision, UX contract, user-visible answer-engine behavior |
-| `db_struct.sql` | `CORPUS/db_struct.sql` | Official PostgreSQL schema dump |
-| `docs/reports/SQL_AUDIT_RAW_dhairya.sql` | `CORPUS/SQL_AUDIT_RAW_dhairya.sql` | Raw external Dhairya audit log |
-| `tests/benchmarks/killer_queries.yaml` | `CORPUS/killer_queries.yaml` | Query benchmark and adversarial SQL/RAG cases |
-| `src/data/schema/schema_hints.md` | `CORPUS/schema/schema_hints.md` | Text-to-SQL table/column hints |
-| `src/data/schema/schema_value_synonyms.md` | `CORPUS/schema/schema_value_synonyms.md` | Value synonym rules |
-| `src/data/schema/business_term_glossary.yaml` | `CORPUS/schema/business_term_glossary.yaml` | Business-term-to-schema mapping |
-| `src/data/schema/*.sql` | `CORPUS/schema/*.sql` | Development and production schema references |
+### Audit & Benchmarks
+- `SQL_AUDIT_REPORT_DHAIRYA.md` — formatted Dhairya audit (17 queries, 41% baseline)
+- `SQL_AUDIT_RAW_dhairya.sql` — raw Dhairya audit SQL
+- `SQL_AUDIT_REPORT_CLEAN.md` — short derived summary
 
-## Dhairya Audit Rule
+### Architecture
+- `architecture/system_overview.md` — backend, frontend, infra fit
+- `architecture/data_pipeline.md` — ingest → store → query → answer
+- `architecture/security_model.md` — auth, DPDP, PII, audit chain
 
-The official formatted Dhairya audit is:
+### API
+- `api/endpoint_matrix.md` — every FastAPI endpoint, method, auth guard
+- `api/auth_flow.md` — JWT, tiers, login/logout/refresh
 
-```text
-docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md
-```
+### Frontend
+- `frontend/structure.md` — pages, components, routing, key files
+- `frontend/design_system.md` — design tokens, component library
 
-The raw audit is:
+### Quality & Testing
+- `quality/quality_bar.md` — 6 hard constraints (C1-C6)
+- `quality/testing_strategy.md` — test structure, commands, CI
 
-```text
-docs/reports/SQL_AUDIT_RAW_dhairya.sql
-```
+### State
+- `state/current_state.md` — blockers, in-progress, shipped
+- `state/source_of_truth_map.md` — canonical files vs mirrors
 
-`CORPUS/SQL_AUDIT_REPORT_CLEAN.md` is only a short derived summary for fast
-handoff. It must not replace the official formatted report or the raw audit.
+### Operations
+- `tech_stack.md` — what tech is used where, versions
+- `deployment/docker_compose.md` — services, ports, env vars
+- `deployment/infrastructure.md` — K8s, nginx, kong, grafana, prometheus
+
+## Canonical Files (read if you need depth)
+
+`CORPUS/` is a mirror. Canonical files live in their normal repo locations:
+
+| Canonical source | Corpus mirror |
+|-----------------|---------------|
+| `Core_Idea_Clean.md` | `CORPUS/Core_Idea_Clean.md` |
+| `db_struct.sql` | `CORPUS/db_struct.sql` |
+| `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` | `CORPUS/SQL_AUDIT_REPORT_DHAIRYA.md` |
+| `docs/reports/SQL_AUDIT_RAW_dhairya.sql` | `CORPUS/SQL_AUDIT_RAW_dhairya.sql` |
+| `tests/benchmarks/killer_queries.yaml` | `CORPUS/killer_queries.yaml` |
+| `docs/specs/API_ENDPOINT_MATRIX.md` | `CORPUS/api/endpoint_matrix.md` |
+| `.claude/quality-bar.md` | `CORPUS/quality/quality_bar.md` |
+| `.claude/CURRENT_STATE.md` | `CORPUS/state/current_state.md` |
+| `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md` | `CORPUS/state/source_of_truth_map.md` |
+| `src/data/schema/*` | `CORPUS/schema/*` |
 
 ## v1.0 Handoff Pack
 
-For any v1.0-building AI, provide this minimum pack:
+For any v1.0-building AI, provide:
+1. `CORPUS/` (this folder)
+2. `.claude/CURRENT_STATE.md`
+3. `prompts_hybrid/00_INDEX.md`
+4. `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
 
-1. `Core_Idea_Clean.md`
-2. `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`
-3. `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`
-4. `db_struct.sql`
-5. `CORPUS/`
-6. `.claude/CURRENT_STATE.md`
-7. `prompts_hybrid/00_INDEX.md`
-8. `prompts_hybrid/02_main_flow_stone.md`
-9. `prompts_hybrid/03_frontend_zero_flaw_stone.md`
-10. latest relevant `evidence/2026-04-30/`
+## Size
 
-The corpus is valuable because it prevents agents from missing schema and audit
-context. It becomes dangerous only if an agent treats it as the only truth or
-ignores the canonical files above.
+~25 files. Estimated reading time: 60-90 minutes for full comprehension.
