@@ -19,7 +19,7 @@
 > Founder correction hard rule: if asked whether NRG is "100% better", "not
 > partial", "best in every point", or stronger than an external v1.0 app across
 > appearance, UI/UX, DB, backend, accessibility, speed, and every corner, use
-> the hybrid release fusion skill, `.agents/skills/nrg-validation-campaign/SKILL.md`, and
+> the hybrid release fusion skill, `.claude/skills/nrg-validation-campaign/SKILL.md`, and
 > `prompts_hybrid/08_full_coverage_validation_campaign_stone.md`. Return a
 > proof matrix with `PASS`, `FAIL`, `BLOCKED`, or `UNKNOWN`. No evidence means
 > no claim.
@@ -41,7 +41,7 @@ Full constraint spec: `.claude/quality-bar.md`
 
 ---
 
-## Your Skills Arsenal (51 in .agents/skills/ + 86 in .claude/skills/)
+## Your Skills Arsenal (50 in .agents/skills/ + 86 in .claude/skills/)
 
 ### .agents/skills/ — Execution Skills
 | Category | Skills |

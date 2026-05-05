@@ -1,41 +1,41 @@
-# NRG — Current Sprint State
+# NRG Current Sprint State
 > **Update this file at the end of every session.** Agents read this instead of BACKLOG.md for current priorities.
 > Last updated: 2026-05-05
 
 ---
 
-## System Status
+## Blocked (cannot proceed without these)
 
-| Item | State |
-|------|-------|
-| Repo structure | Cleaned and pruned; tracked dead docs/components/scripts removed in `516991a`, tracked test-run metadata removed in `6d0ac3a` |
-| Working tree | Final May 5 local leftovers and state sync are recorded through `50214b15 evidence: sync final leftover gate logs`. Confirm with `git log -1 --oneline` and `git status --short` before editing. Branch is ahead of and behind `nrg/main`; do not push or force-push until S3-09 remote coordination and credential rotation are approved. Do not revert unrelated user or agent output. |
-| Operating flow | Central Guru/Shishya rule hierarchy now lives at `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`; use it after the source-truth map and before starting broad work. |
-| Quality Bar | **Local quota-neutral scorecard: 6/6** — May 2 bounded audit append executor rerun passed the strict 1000-user C4 scorecard with 82,365 samples, 0 failures, aggregate P99 79 ms. This used `NRG_QUOTA_DISABLED=1`, so external deployed/cluster and quota-policy proof still need separate evidence. |
-| Full test suite | PASS through the managed local runner and fresh direct local replay. `scripts/run_test_suite.sh --live-api` separates non-live tests from live API tests, isolates managed-suite audit writes under the evidence directory, starts uvicorn only for the live phase, and uses `/health/db` for readiness. Managed proof: non-live JUnit 1,830 tests with 0 failures/errors and 56 skipped; live API JUnit 36 tests with 0 failures/errors and 0 skipped. Fresh direct current-tree replay on May 2: `1858 passed, 55 skipped, 261 deselected, 285 warnings in 122.24s` via `.venv/bin/python -m pytest tests/ -x --tb=short -q`, recorded at `evidence/2026-05-02/guru_shishya_validation/352_final_full_pytest.log`. Fresh May 3 direct non-live replay: `1903 passed, 55 skipped, 261 deselected, 285 warnings in 176.32s`, recorded at `evidence/2026-05-03/local_continuation/13_full_pytest_no_cov.txt`. Raw `pytest tests/` skips live API files when no API is reachable. |
-| Frontend local refresh | PASS. May 2 refresh passed `npm run lint`, Jest `107 passed`, contrast `20 passed`, `npm run build`, and focused Playwright a11y/mobile/drawer run `14 passed`. May 5 Batch 2 recheck passed `npm run build` with largest JS chunk `319.01 kB` and Jest `32` suites / `107` tests; final May 5 closure reran frontend build/Jest plus lint and recorded clean local browser evidence with empty console/network error JSON. Evidence: `evidence/2026-05-02/batch2_frontend_polish/322_current_frontend_refresh.md`, `evidence/2026-05-05/batch2_batch5_fresh_recheck/README.md`, `evidence/2026-05-05/final_leftovers_closure/README.md`, `evidence/2026-05-05/maximum_enforcement_local_browser_final/FINAL_ACCEPTANCE_REPORT.md`. |
-| Targeted recent checks | May 1 local validation campaign passed broad backend/security/audit/query/RAG tests, killer-query capture, frontend Jest, frontend production build, corpus sync, diff hygiene, and forbidden-vocab guard. May 1 local health closure repaired stale Qdrant vectors/payload metadata, established a local vector baseline, and proved `/health`, `/health/all`, and `/api/vectors/health` green on the local stack. May 1 post data-quality validation passed 74 selected backend/Dhairya/GLM/Minimax tests, frontend build, corpus sync, Docker API rebuild, healthy `/health`, and a 10-case live `/query` matrix across Researcher/Government/Industry. May 1 local warning closure passed 78 selected backend tests, frontend build, corpus sync, Docker API rebuild, healthy `/health`, healthy `/health/all`, and an 8-case live `/query` matrix with audit IDs and persisted answer records. May 1 quantum data mount closure passed 46 selected backend/compose/GLM/Minimax tests, frontend build, corpus sync, healthy `/health`, healthy `/health/all`, and an 8-case live `/query` matrix where `best quantum researchers....` returned 5 cited ranked rows from `/app/data/nrg_research.db` and Tier 3 remained anonymized. May 2 repo wrap-up passed py_compile for API/routes, diff hygiene, corpus sync, forbidden-vocab guard, 41 selected API/security/query tests, and frontend production build after local npm dependency install. May 2 Guru/Shishya validation passed backend/security/query slice (195 passed, 1 skipped), Dhairya SQL regression (57 passed), frontend Jest (99 passed), frontend build, contrast tests, Playwright live quantum proof, Playwright axe/keyboard checks (9 passed), live tier/red-team retry-all (35 passed, 1 skipped), corpus sync, final audit verification, 136 local skill inventory classification, C4 scorecard report-parent regression, and local Qdrant/Redis health restoration through `/health/all`, `/health/qdrant`, and `/api/vectors/health`. Follow-up C4 work fixed JWT replay failures, strict metric parsing, workload-specific metrics, pure ASGI middleware overhead, auth-cache overhead, and finally audit append threadpool contention; the latest bounded audit executor scorecard passed C4 with aggregate P99 79 ms and Quality Bar `6/6` in local quota-neutral mode. Frontend dependency audit now reports 0 total vulnerabilities after Loki retirement, Storybook 8/Vite 6/Jest 30 hardening, and removal of the vulnerable Storybook essentials/actions path; Storybook build, lint, production build, 99 Jest tests, and 20 contrast tests pass. Frontend and reverse-proxy runtime images build/smoke and scan with 0 Trivy OS findings. API runtime image hardening now builds/smokes locally, imports FastAPI and embedding packages, and passes `pip-audit` with 0 vulnerabilities across 122 scanned dependencies. API fixable-only Trivy has 0 findings, but strict Trivy still reports 112 Debian findings including 7 high no-fix findings. Managed full-suite live orchestration proof remains recorded, and the latest direct local non-live replay passed with `1858 passed, 55 skipped, 261 deselected, 285 warnings in 122.24s`; scoped Ruff on changed source Python files, compileall, pyright API/orchestration, frontend build, corpus sync, forbidden-vocab guard, and diff hygiene also passed. May 2 backlog truth sync closed stale local GAP-A/B/C rows with 20 vector drift scheduler tests, 21 DB co-sign tests, 10 Dhairya adversarial/hall-of-shame tests, diff hygiene, forbidden-vocab guard, and corpus sync passing. May 2 L1 security review truth sync verified L1-CR-001 through L1-CR-005 closed locally with `tests/security/test_p0_security_regressions.py` now at 6 passed and source compile checks passing. May 2 L1-CR-007 async boundary verification passed 2 AST regression tests proving blocking answer paths are routed through `asyncio.to_thread`. May 2 L1-CR-008 lifecycle fix keeps cached SQL/RAG executor skills warm across requests and passed 23 executor/workflow tests plus executor compile. May 3 commits `e62502bc`, `6baae945`, and `88d3a0db` preserved null aggregate semantics, comprehensive batch verification evidence, L1-CR-006 helper drift closure, D4 hot-path index migration tests, frontend Pending-stat rendering, and continuation evidence. Fresh May 3 checks passed: Python compile for changed backend/tests, 15 targeted backend/security/migration tests, `npm run build`, `npm run lint`, `git diff --check`, corpus sync, and forbidden-vocabulary guard. Post-state replay passed frontend build, frontend Jest 107 tests, Batch 5 orchestration/skills 419 tests, corpus sync, forbidden-vocabulary guard, audit-chain verification, and diff hygiene. S3-09 remediation gate hardening added a redacted remediation summary to the history scanner and passed scanner unit tests; the later local history purge makes the local scanner pass with 0 findings, while remote force-push coordination and credential rotation remain pending. The API endpoint matrix now has a machine-checked route inventory and drift guard; endpoint matrix plus S3-09 scanner tests passed together. The Python 3.14/Pydantic guardrail now has the migration plan document, guard regression coverage, `check_pydantic_migration_guard.py --json -> ok: true`, and 4 passing guard tests; the CI job remains allowed-to-fail until Python 3.14 promotion criteria pass in CI. Final blocker recheck repaired the local Qdrant collection alias for `/api/vectors/health` and added a `/health/qdrant` alias fallback regression; 3 focused health/vector tests pass. Batch 5 reverify report remains preserved as external-agent evidence and must be replayed before final readiness use. May 5 Batch 2 + Batch 5 fresh recheck passed frontend build, frontend Jest `107` tests, and orchestration/skills `419` tests; the first Batch 5 attempt was blocked by sandbox localhost-socket permissions and a later rerun passed. The same pass exposed and closed a schema-parity primary-key drift in the Alembic production-table path; `d4_primary_key_alignment_005` is now the sole head and focused schema parity passes with `15 passed, 1 skipped`. |
-| Audit chain | May 2 final verification found 92 tail per-user binding failures after managed live-suite runs. `scripts/audit_rebuild.py --rebuild --preserve-lineage` archived `.audit/chain_corrupted_backup_20260502T083003Z.jsonl`, rebuilt 282,700 events, and appended a rebuild event. Latest current-tree verification reports `(True, [], 298919)`. |
-| Baseline commit before Wave 0 | `6d0ac3a` — drop tracked test run metadata |
-| Latest committed wave | Current HEAD should be confirmed with `git log -1 --oneline`; final May 5 local leftovers and state-sync commits include `50214b15`, `4d73c99b`, `345e91c1`, and `2a476760`, following browser proof `6b647d4f`, docs/evidence sync `5f0fa827`, H7 closure `7a33e784`, local schema/security closure `b2351bc2`, and earlier rewritten-history/supporting commits. Use `git log -1 --oneline` to confirm the active checkout before editing. |
-| Git tag | `v1.0.0-launch-ready` (unsigned — pending GPG ceremony) |
-| External final gates | BLOCKED on this machine. Local code/evidence leftovers are closed, but remote force-push coordination, credential rotation, deployed frontend/API URLs, production API/Qdrant target, reachable cluster context, failing remote GitHub Actions, and founder detached signatures remain pending. Latest current-head preflight: `evidence/2026-05-05/final_leftovers_state_sync/external_gates_current_head/EXTERNAL_GATE_SUMMARY.md`; companion cluster/remote/S3 preflight: `evidence/2026-05-05/remaining_external_gates_after_2a476760/README.md`. Latest remote blocker refresh: `evidence/2026-05-05/final_leftovers_state_sync/README.md`. Earlier May 2/May 3/May 5 preflights remain preserved. |
-| Latest local security/data closure | Batch 4 data/schema evidence now has 17/17 Dhairya replay, 0 FK failures, partitioned `audit_events` with pruning evidence, a single migration head, 20 focused final targeted tests, and healthy local Qdrant/vector endpoints after rebuilding the API image. Evidence: `evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.md` and `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/README.md`. |
+| Item | Owner | Blocker | Next Action |
+|------|-------|---------|-------------|
+| Deployed staging URL | Srujan | No cloud account | Create AWS/GCP account; deploy via `09_deployment_gate_stone.md` |
+| Cluster C4 (1000-user) | Srujan | No K8s cluster | Request KUBECONFIG from IIT-GN IT |
+| Founder GPG signing | Srujan | No key ceremony | Schedule with professor |
+| Secret history purge | Srujan | 286 remote findings | Run `scripts/scan_env_history_secrets.py` + filter-repo |
 
 ---
 
-## Open Items (dispatch-ready)
+## In Progress
 
-| ID | Task | Assigned? | Blocker |
-|----|------|-----------|---------|
-| W0 | State lock and evidence commit | Done | Committed `ff975b6` |
-| W1 | Backend answer-engine hardening for messy queries | Done | Committed `659ded4` |
-| W2 | Frontend main-flow polish and contract adapter verification | Done | Mocked browser gate passed; live local backend browser proof passed on 2026-04-30 |
-| W3 | Security, tier, and audit proof | Local gate passed | Blocked query audit IDs fixed; blocked envelopes now preserve authenticated tier |
-| W4 | SQL/RAG retrieval truth and regression coverage | Done locally | Committed in current Wave 4 commit; live Qdrant/PostgreSQL proof remains environment-dependent |
-| W5 | C4 concurrent query/load performance closure | PASS local quota-neutral | Latest bounded audit executor run: 1000 users, 4 Locust processes, 82,365 samples, 0 failures, aggregate P99 79 ms. External deployed/cluster replay still pending. |
-| W6 | Final handover package | Done | Show-readiness report and final evidence index committed |
-| K-6 | GPG signatures for handover | FOUNDER ONLY | Founder private key |
+| Item | Status | Evidence |
+|------|--------|----------|
+| K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
+| Frontend bundle size | PASS local | May 5 build entry chunk is 2.23 KB raw; largest lazy chunk is 319.01 KB raw / 87.80 KB gzip |
+| Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_fixed/console_errors.json` is empty |
+| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md` |
+
+---
+
+## Shipped (last 7 days)
+
+| Item | Date | Evidence |
+|------|------|----------|
+| Local C4 pass | May 2 | `evidence/2026-05-02/.../165_quality_bar_scorecard_...json` |
+| Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
+| Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
+| Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
+| Deployment gate stone | May 5 | `prompts_hybrid/09_deployment_gate_stone.md` |
+| Remote workflow | May 5 | `.claude/REMOTE_WORKFLOW.md` |
 
 ---
 
@@ -43,159 +43,43 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| ✅ | ✅ | ✅ | ✅ local quota-neutral / cluster pending | ✅ local / production pending | ✅ |
+| PASS | PASS | PASS | PASS local / cluster pending | PASS local / production pending | PASS |
 
-**C4 is closed for the latest local quota-neutral 1000-user capacity bar.** Runner issues are fixed: the scorecard creates the Locust HTML report parent, uses `tests/load/locustfile_c4.py`, preissues tokens, rejects non-numeric P99 evidence, no longer triggers token replay failures, fails HTTP 429, and reads real Locust `window.templateArgs` report metrics. Audit append now avoids repeated same-process JSONL tail rereads, reduces work inside the file-lock critical section, and runs request-path audit appends through a bounded dedicated executor. Latest evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json` reports Quality Bar `6/6`, C4 PASS, 1000 users, 82,365 samples, 0 failures, aggregate P99 79 ms. Because the run used `NRG_QUOTA_DISABLED=1`, keep quota-policy and deployed/cluster C4 claims pending until replayed in that mode/environment.
-
-Final May 2 focused verification after the C4 runner and consent hot-path changes passed: 30 targeted scorecard/Locust/consent tests, compileall, diff whitespace check, corpus sync, forbidden-vocabulary guard, and no leftover scorecard/Locust/uvicorn processes. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/43_final_local_verification.md`.
-
-Follow-up C4 truth-contract verification passed after tightening the runner further: HTTP 429 now fails load evidence, `/query` metrics are split by researcher/government/adversarial workload, and the scorecard exports per-workload failures/P99 from Locust HTML. A 4-worker 60-second diagnostic reparse shows 37,174 samples, 0 failures, aggregate P99 3100 ms, researcher P99 2700 ms, government P99 3000 ms, adversarial P99 6400 ms. The API now also has opt-in request-envelope profiling through `NRG_REQUEST_ENVELOPE_PROFILE` for the next C4 run. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/44_c4_truth_contract_after_429_endpoint_metrics.md`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/58_request_envelope_profiler.md`.
-
-C4 mode boundary is now explicit: quota-on C4 needs distinct load identities; quota-neutral C4 must document `NRG_QUOTA_DISABLED=1` and is capacity-only evidence. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/75_rate_limit_and_quota_mode_boundary.md`.
-
-Latest C4 profiling shows the remaining boundary more clearly. Combined query-stage plus request-envelope evidence reports Locust aggregate P99 1000 ms, server `/query` envelope P99 538.303 ms, and sampled route-handler P99 1.589 ms in the same diagnostic window. A declared prewarm/no-profile diagnostic then warmed 312 declared workload requests with 0 failures and reran the 1000-user scorecard; it still failed with 45,559 samples, 0 failures, aggregate P99 2100 ms, researcher P99 2100 ms, government P99 2100 ms, and adversarial P99 2400 ms. Evidence: `evidence/2026-05-02/guru_shishya_validation/c4_rerun/86_combined_query_envelope_profile_summary.md`, `evidence/2026-05-02/guru_shishya_validation/c4_rerun/93_declared_prewarm_no_profile_summary.md`.
-
-**Main product risk now:** local query/UI/security/service proof is strong, the managed Python suite is green, local quota-neutral C4 passes, the frontend local dependency audit is clean, frontend/reverse-proxy runtime OS scans are clean, API package/fixable CVE scans are clean, and the local PostgreSQL data-quality scorecard passes. External production claims still need deployed-environment replay, cluster C4 replay, deployed image dependency checks, production Qdrant/Redis health, production data-quality replay, founder signing, and an API base-image resolution for strict Trivy no-fix Debian findings.
+**C4**: Local quota-neutral 1000-user pass complete. Cluster/deployed proof pending.
 
 ---
 
-## Cluster-Blocked (do not re-do locally)
+## Quick Commands
 
-- Live red-team replay (`scripts/red_team_live_replay.py`) — needs target API/deployment context
-- Qdrant vector baseline — local Qdrant now has 1800 repaired non-zero vectors with Tier 3 metadata and a green local drift baseline; production corpus baseline still needs target deployment context
-- Locust 1000-user load test — local quota-neutral capacity passes; sovereign cluster replay still required for deployed-production claim
-- UX deployed browser recording + mobile Lighthouse — needs target deployment context
-- GPG key ceremony + `v1.0.0-eternal` signed tag — founder-only
+```bash
+# Verify workflow integrity
+python3 .claude/scripts/nrg-verify-workflow.py
 
-## Recent State-Lock Evidence
+# Count skills + flag duplicates
+python3 .claude/scripts/nrg-skill-count.py
 
-| Evidence | Status |
-|----------|--------|
-| `evidence/2026-04-29/p0_backend_security_and_query_closure.md` | Preserved; contains P0 security/query closure commands and results |
-| `evidence/2026-04-30/00_current_state.md` | Current state lock for the next agent wave |
-| `659ded4` | Latest committed backend messy-query routing and stable response-contract fix |
-| `evidence/2026-04-30/wave2_frontend_main_flow_build.md` | Frontend build, mocked browser main-flow, audit/citation proof, tier comparison, and screenshot evidence |
-| `evidence/2026-04-30/wave3_security_tier_audit_acceptance.md` | Security, tier, and audit proof with raw tier JSON, blocked-query evidence, and audit-chain verification |
-| `evidence/2026-04-30/wave3_blocked_query_responses.json` | Raw blocked-query TestClient JSON summary with audit IDs |
-| `evidence/2026-04-30/09_tier1_query_response.json` | Raw Tier 1 query response evidence |
-| `evidence/2026-04-30/10_tier2_query_response.json` | Raw Tier 2 query response evidence |
-| `evidence/2026-04-30/11_tier3_query_response.json` | Raw Tier 3 query response evidence |
-| `fb44760` | Compact nine-file Desktop AI handoff package evidence update |
-| `57f40b1` | Desktop AI handoff package note and current-state cleanup |
-| `2c23c9f` | Dhairya query benchmark routing closure |
-| `e361d4c` | Source-truth map and Dhairya corpus restoration |
-| `evidence/2026-04-30/wave5_performance_load_acceptance.md` | Performance report with before/after local 100-query profile, load tests, and C4 blocker |
-| `evidence/2026-04-30/wave5_local_100_query_profile_after.json` | Final local 100-query profile: P99 2094.72ms, 100/100 success, audit IDs present |
-| `evidence/2026-04-30/live_c4_local_smoke/README.md` | Historical pre-read-model local 100-user Locust smoke: 3602 requests, 0 failures, `/query` P99 2700ms, superseded by final read-model run. |
-| `docs/handover/SHOW_READINESS_2026-04-30.md` | Current 90-second walkthrough, evidence map, and honest blocker list |
-| `evidence/2026-04-30/FINAL_EVIDENCE_INDEX.md` | Final evidence index for current handover package |
-| `evidence/2026-04-30/desktop_ai_handoff_folder.md` | Flat nine-file Desktop AI handoff package verification |
-| `evidence/2026-04-30/live_full_stack_proof/README.md` | Live local full-stack proof: login, messy query, streaming answer, citation/source/audit drawers, mobile screenshot, Tier 3 blocked JSON |
-| `evidence/2026-04-30/live_quantum_query_recheck/README.md` | Fresh recheck that `best quantum researchers....` returns quantum-specific SQL evidence, citations, source/audit drawers, mobile screenshot, and Tier 3 blocked JSON |
-| `evidence/2026-04-30/c4_hot_path_hardening_summary.md` | Historical hot-path summary, superseded by the read-model/single-flight closure evidence. |
-| `evidence/2026-04-30/live_c4_local_smoke_after_worker_pool/locust_output.txt` | Historical pre-read-model run: 0 failures, `/query` P99 about 7.4s, aggregate P99 about 6.4s. |
-| `evidence/2026-04-30/c4_read_model_singleflight_closure.md` | Read-model/single-flight closure summary with tests, audit-chain health, and load evidence. |
-| `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/locust_output.txt` | Final passing local 100-user C4 smoke: 8522 requests, 0 failures, aggregate P99 313.2ms, `/query` P99 170ms. |
-| `evidence/2026-04-30/prompts_hybrid_freshness_pass.md` | Prompt-stone freshness pass aligning agent instructions with local C4 pass, cluster blocker, evidence-backed release query, and final-report gates. |
-| `evidence/2026-04-30/validation_campaign_stone_integration.md` | Integration note for new `prompts_hybrid/08_full_coverage_validation_campaign_stone.md` plus `.agents`/`.claude` skill wrappers, distilling broad validation strategy into NRG-safe campaign modes and evidence matrices. |
-| `evidence/2026-04-30/validation_campaign_calibration/VALIDATION_CAMPAIGN_REPORT.md` | First calibration run using the validation campaign workflow: targeted backend tests passed, API/tier/security calibration passed, frontend build passed, live browser proof passed after changing login health polling to `/health/db`; slow RAG/root-health paths remain documented findings. |
-| `evidence/2026-05-01/00_current_state.md` | May 1 state lock before external input fusion pass 3; records clean starting tree, source-truth files read, corpus sync, and current blockers. |
-| `evidence/2026-05-01/minimax_fusion_pass3_query_validation.md` | External input fusion pass 3: converted generic app-builder/UI/prompt-pack value into NRG-native query, workflow, security, UI, and performance validation material. |
-| `evidence/2026-05-01/external_fusion_validation_matrix.csv` | Thirty-seven-row seed matrix for future validation campaigns covering queries, tiers, workflows, UI states, security probes, and performance boundaries. |
-| `evidence/2026-05-01/minimax_fusion_final_inventory_review.md` | Final external inventory review: all 84 files under the external bundle accounted for; 57 reviewable text files covered by earlier evidence or final pass, 27 generated/binary/local artifacts ignored. |
-| `evidence/2026-05-01/fusion_completion_claim_boundary.md` | Founder correction encoded: external inventory/value integration is not whole-product proof; restored missing validation-campaign skill wrappers, added product-proof claim gates, and fixed top-level API `verification_status` normalization after contract tests exposed the mismatch. |
-| `evidence/2026-05-01/validation_campaign/VALIDATION_CAMPAIGN_REPORT.md` | May 1 validation-and-fix report: broad backend suite `195 passed, 1 skipped`, frontend Jest `97 passed`, frontend build passed, killer-query health passed, corpus sync passed, diff hygiene passed, forbidden-vocab guard passed. |
-| `evidence/2026-05-01/validation_campaign_backend_tests.log` | Broad backend/security/audit/query/RAG validation log after blocked-envelope and citation-contract fixes. |
-| `evidence/2026-05-01/validation_campaign_frontend_jest.log` | Frontend unit/a11y/contract/design-system test log: 26 suites, 97 tests passed. |
-| `evidence/2026-05-01/validation_campaign_frontend_build.log` | Frontend production build log. |
-| `evidence/2026-05-01/validation_campaign/killer/` | Killer-query response, health, and explain evidence for KILLER-01 through KILLER-03. |
-| `evidence/2026-05-01/final_external_gates/EXTERNAL_GATE_SUMMARY.md` | May 1 external final-gates run: deployed browser replay, production Qdrant baseline, 1000-user cluster load, and founder GPG signing remain blocked by missing deployment URLs/KUBECONFIG/founder key on this machine; runner and runbook now exist. |
-| `scripts/run_final_external_gates.py` | Repeatable external-gate runner for deployed browser proof, production Qdrant health, explicit cluster C4 load, and founder signing verification. |
-| `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` | Operator runbook for closing the remaining external gates on the production/cluster/founder-signing machine. |
-| `evidence/2026-05-01/founder_zero_partial_workflow_update.md` | Founder correction encoded permanently: future v1.0 fusion/superiority requests must use a proof matrix across appearance, UI/UX, query intelligence, DB/schema, Dhairya audit, backend/API, retrieval, security/tier, audit, accessibility, performance, evidence, and production. |
-| `evidence/2026-05-01/minimax_fusion_final_proof/FINAL_VALIDATION_REPORT.md` | Repeated Minimax fusion proof: broad local backend/security/query/RAG/audit slice passed, killer queries healthy, frontend Jest/build passed, live browser quantum flow passed against current local backend on `API_TARGET=127.0.0.1:8017`; external production gates remain BLOCKED. Do not trust a random listener on port 8000 for browser proof. |
-| `evidence/2026-05-01/minimax_fusion_last_pass/FINAL_LAST_PASS_REPORT.md` | Final last-pass Minimax v1.0 fusion: converted the remaining external sample-query value into NRG regression tests, added deterministic TRL stage distribution routing, distinct state-wise research-output routing, and tighter Tier 3 identifier filtering. Verified with 198-pass backend/security/query/audit slice, 99-pass frontend Jest run, frontend build, and corpus sync. Production/deployed gates remain BLOCKED. |
-| `evidence/2026-05-01/glm_fusion_pass/FINAL_GLM_FUSION_REPORT.md` | GLM v1.0 fusion pass: rejected direct Next.js/Prisma/SQLite replacement, converted GLM query templates into NRG regression tests, added C4 routes for hydrogen catalysis, state comparison, renewable publications, h-index/citation aggregates, IIT AI strength, CSIR labs, and quantum publication-threshold proxy. Verified with 49-pass backend/security slice, 26-pass contract/citation slice, 99-pass frontend Jest run, frontend build, corpus sync, and 15 raw tier JSON samples. Production/deployed gates remain BLOCKED. |
-| `evidence/2026-05-01/glm_fusion_second_pass/FINAL_GLM_SECOND_PASS_REPORT.md` | GLM external bundle second pass: inventoried 598 external files, converted the remaining visible query-chip value into NRG hero/persona suggestions, removed one unrouted suggestion, and proved 12 visible chips through live `/query` across Researcher, Government, and Industry with citations, source rows, and audit IDs. Verified with 10 GLM/Minimax backend tests, 22 security/HMAC tests, 99 frontend Jest tests, frontend build, corpus sync, ruff, and diff hygiene. Production/deployed gates remain BLOCKED. |
-| `evidence/2026-05-01/glm_fusion_browser_proof/FINAL_GLM_BROWSER_PROOF_REPORT.md` | GLM visible-query browser proof: added a live Playwright flow for the hydrogen-catalysis suggestion through the production frontend build and local FastAPI backend. Captured desktop/mobile screenshots, source drawer, citation drawer, audit/HMAC drawer, raw Researcher JSON, raw Tier 3 blocked JSON, empty console-error capture, video, and backend logs. Corrected an initial test route assumption, reran, and passed `1 passed (16.0s)`. |
-| `evidence/2026-05-01/glm_local_completion_gates/FINAL_LOCAL_COMPLETION_GATES_REPORT.md` | Local completion-gate pass for the GLM visible-query path: fixed success-token contrast, SQL proof focusability, audit drawer definition-list semantics, and Playwright video-save robustness. Verified frontend build, full Jest `99 passed`, live browser flow, live axe a11y flow, 30-request local latency profile, corpus sync, GLM/Minimax query regressions, and audit-chain verification. External deployed/cluster/founder gates remain BLOCKED. |
-| `evidence/2026-05-01/local_full_health_closure/` | Local full-health closure pass: fixed Qdrant threshold-exempt health handling, added `scripts/repair_qdrant_payloads.py`, repaired local Qdrant placeholder vectors and missing payload metadata, established the local vector baseline, proved vector drift GREEN, proved `/health`, `/health/all`, `/health/db`, `/health/qdrant`, and `/api/vectors/health` healthy. |
-| `evidence/2026-05-01/local_full_health_closure/data_quality_scorecard_postgres.log` | Historical PostgreSQL data-quality failure before the post data-quality closure; superseded by the May 2 current scorecard below. |
-| `evidence/2026-05-02/guru_shishya_validation/321_data_quality_scorecard_current.md` | Current local PostgreSQL data-quality scorecard: PASS, 58/58 expected tables present, 0 core tables below 1000 rows, 0 P0 alerts, and 0 PII findings in non-PII tables. Production replay remains external-gate work. |
-| `evidence/2026-05-01/local_full_health_closure/final_external_gates_after_qdrant_repair.log` | External final-gates runner remains BLOCKED by missing deployed frontend/API URLs, explicit cluster-load flag/KUBECONFIG context, and founder private signing key. |
-| `evidence/2026-05-01/post_data_quality_validation/README.md` | May 1 post data-quality validation closure: fixed verifier duplicate-citation retry, C4 funding/state empty-slice crashes, out-of-corpus clarification, and cited no-result researcher lookup. Verified with 74 selected backend/Dhairya/GLM/Minimax tests, frontend build, corpus sync, Docker rebuild, healthy `/health`, healthy `/health/all`, healthy audit chain, and 10-case live `/query` matrix. |
-| `evidence/2026-05-01/post_data_quality_validation/live_query_matrix_final_after_no_result_citation_fix.json` | Final live 10-case query matrix: capex, sanctioned/actual, patents/PhD, noisy quantum, state AI comparison, industry tier researcher ranking, government funding aggregate, PII block, injection block, and out-of-corpus clarification all returned HTTP 200 with audit IDs; allowed evidence paths include citations and rows where applicable. |
-| `evidence/2026-05-01/local_warning_closure/README.md` | May 1 local runtime warning closure: answer records now persist under writable runtime storage, sparse local researcher fallback adapts to compact schemas, optional local read-model schema misses no longer warn, Docker API rebuild passed, health passed, 8-case live query matrix produced audit IDs, and final log scan has no closed warning/error signatures. |
-| `evidence/2026-05-01/local_warning_closure/live_query_matrix.json` | Final 8-case live query matrix for capex, noisy quantum, state AI comparison, government funding, industry tier safety, PII block, injection block, and out-of-corpus clarification. Answer-record store path is `/var/lib/nrg/answer_records.sqlite`; local data still has zero quantum researcher rows, so quantum returns a truthful cited no-result until verified quantum rows are seeded/ingested. |
-| `evidence/2026-05-01/quantum_data_mount_closure/README.md` | May 1 local quantum data-path closure: Docker API now mounts `./data` read-only and sets `NRG_LOCAL_RESEARCH_DB=/app/data/nrg_research.db`; live local matrix shows `best quantum researchers....` returning `researcher_ranking`, 5 rows, 2 citations, audit ID, and Tier 3 anonymized researcher labels with no direct email in the answer. Production still needs its own populated DB or equivalent ingestion proof. |
-| `evidence/2026-05-01/quantum_data_mount_closure/live_query_matrix.json` | Final post-mount 8-case live query matrix: 717 quantum-matching researcher rows visible in the mounted local corpus; allowed paths carry citations/audit IDs; blocked/clarified paths carry audit IDs. |
-| `evidence/2026-05-01/quantum_browser_after_mount/README.md` | May 1 browser-visible quantum proof after mounting the local corpus: fixed the missing authenticated `/audit/event/{event_id}` backend route that caused audit proof drawer 500s, reran Playwright, captured desktop/mobile screenshots plus citation/source/audit drawers, proved `console_errors.json` is empty, and confirmed audit drawer calls return `200 OK`. |
-| `evidence/2026-05-02/00_current_state.md` | May 2 wrap-up: duplicate untracked agent skills removed, root `AGENTS.md` made executable-agent safe, query response helpers extracted from `src/api/main.py`, structure plan updated, backend/frontend/static checks recorded. |
-| `evidence/2026-05-02/wrapup_backend_targeted_rerun.log` | Backend/API/security query slice after fixing extraction logger bug: 41 passed, 10 deselected. |
-| `evidence/2026-05-02/wrapup_frontend_build_rerun2.log` | Frontend production build after local npm cache install: passed. |
-| `evidence/2026-05-02/guru_shishya_validation/FINAL_VALIDATION_MATRIX.md` | May 2 Guru/Shishya validation proof matrix: backend/API, Dhairya, frontend build/Jest/a11y, live quantum browser proof, live tier/red-team, audit rebuild, local Qdrant/Redis, frontend local dependency audit, local quota-neutral C4, and managed full-suite/live-API orchestration now pass. External gates remain blocked. |
-| `evidence/2026-05-02/guru_shishya_validation/52_live_tier_isolation_redteam_retry_all.log` | Live API tier isolation plus red-team retry-all: 35 passed, 1 skipped. |
-| `evidence/2026-05-02/guru_shishya_validation/53_audit_verify_final_after_live_redteam.log` | Final audit chain verification after repair and live red-team: valid=True, count=55212, errors=0. |
-| `evidence/2026-05-02/guru_shishya_validation/171_frontend_dependency_audit_summary.md` | Historical frontend dependency high-severity closure: `npm audit --audit-level=high` exited 0 with 0 critical/high findings before the final Storybook/Jest/Vite hardening pass. |
-| `evidence/2026-05-02/guru_shishya_validation/229_frontend_loki_dependency_retirement_summary.md` | Loki dependency retirement: unused Loki visual-regression tooling removed; `npm audit --audit-level=high`, lint, build, Jest, and contrast checks passed before the final Storybook/Jest/Vite hardening pass. |
-| `evidence/2026-05-02/guru_shishya_validation/247_frontend_dependency_full_audit_closure_summary.md` | Final frontend local dependency audit closure: Storybook 8.6.18, Vite 6.4.2, Jest/JSDOM 30.3.0, Storybook a11y-only config, `npm audit` 0 total vulnerabilities, Storybook build, production build, lint, Jest, and contrast all passed. |
-| `evidence/2026-05-02/batch2_frontend_polish/README.md` | Batch 2 frontend polish: hook dependency lint clean, mobile 375/768 screenshots captured, axe/keyboard/contrast passed, frontend `Bearer` scan clean, SSE reconnect state stable, fetch timeout helper applied, focus traps verified, Tier 1/2/3 drawer screenshots captured, bundle budget enforced under 500KB chunk/2MB total limits, and consent dismissal/revocation tests passed. |
-| `evidence/2026-05-02/batch5_orchestration_ai_rag/README.md` | Batch 5 orchestration/AI/RAG: 3-hop and 4-hop planner tests passed, DAG dead-end returns structured `DAGDeadEnd`, RAG retrieval deduplicates chunks and calibrates score thresholds, isolated Qdrant new-document ingest/retrieve proof passed, retry backoff is deterministic 2^n with max 3 attempts, malformed LLM output falls back safely, hybrid synthesis retains/deduplicates 3-source evidence with citations, and text-to-SQL prompt boundaries escape injection delimiters. |
-| `evidence/2026-05-02/batch3_security_compliance/README.md` | Batch 3 security/compliance local code gates pass for npm audit, Indian PII, 500 audit IDs, admin RBAC, SQL injection, JWT rotation grace, revoked-consent export blocking, HMAC comparison, XSS, and egress allowlist. S3-09 remains FAIL for historical runtime `.env*` secrets until approved history purge plus credential rotation; repeatable scanner: `scripts/scan_env_history_secrets.py`; runbook: `docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md`. |
-| `evidence/2026-05-02/guru_shishya_validation/204_full_suite_live_orchestration_summary.md` | Managed full Python suite closure: `scripts/run_test_suite.sh --live-api` runs non-live tests under xdist with per-worker audit isolation, then starts uvicorn for the live tier/red-team files. Current proof: 1,774 passed and 56 skipped in non-live phase, 36 passed in live phase, runtime budget passed, no leftover port 8000 listener, and audit chain valid after final repair. |
-| `evidence/2026-05-02/guru_shishya_validation/250_execution_flow_status_sync_summary.md` | Central execution-flow sync: `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md` and `.agents/AGENTS.md` now reflect local quota-neutral C4 PASS, managed full-suite PASS, frontend clean local dependency audit PASS, current 86/51 repo-contained skill inventory counts, and external production blockers. |
-| `evidence/2026-05-02/guru_shishya_validation/251_frontend_runtime_image_dependency_replay_summary.md` | Frontend runtime image dependency replay: local nginx runtime image build and smoke passed inside Colima; image digest, nginx user, nginx version, and `index.html` presence verified. This is not API image, deployed image, or CVE scanner proof because `trivy`, `grype`, and `syft` are unavailable locally. |
-| `evidence/2026-05-02/guru_shishya_validation/270_api_runtime_image_dependency_audit_closure_summary.md` | API runtime image dependency audit closure: initial image had 11 Python package vulnerabilities across 7 packages; fixed image build/smoke, FastAPI TestClient health probe, embedding import smoke, and `pip-audit` passed with 0 vulnerabilities across 122 scanned dependencies. OS/base-image CVE and deployed-image scans remain pending. |
-| `evidence/2026-05-02/guru_shishya_validation/310_runtime_image_os_cve_scan_summary.md` | Runtime image OS CVE scan closure: frontend and reverse-proxy local images now have 0 Trivy OS findings; API true multi-stage runtime reduced strict Trivy from 1,399 findings/146 high to 112 findings/7 high, with fixable-only Trivy at 0 findings. Remaining API strict findings have no fixed version in the current Debian base. |
-| `evidence/2026-05-02/guru_shishya_validation/317_runtime_image_scan_gate_summary.md` | Reproducible runtime image scan gate: `scripts/runtime_image_scan_gate.py` enforces frontend/reverse-proxy strict Trivy zero findings, API `pip-audit` zero vulnerabilities, API fixable Trivy zero findings, and preserves the API strict no-fix Debian boundary as PARTIAL. |
-| `evidence/2026-05-02/guru_shishya_validation/31_c4_scorecard_raw_summary.log` | C4 blocker: 1000-user local scorecard failed P99/failure target. |
-| `evidence/2026-05-02/guru_shishya_validation/55_skill_inventory.tsv` | Historical project-local skills inventory: 86 `.claude` skills and 50 `.agents` skills classified for Guru/Shishya execution before the latest `.agents` count increased to 51. |
-| `evidence/2026-05-02/guru_shishya_validation/58_c4_scorecard_cache_regression.log` | Regression proof for the C4 scorecard report-parent fix: `tests/scripts/test_quality_bar_scorecard.py` passed. |
-| `evidence/2026-05-02/guru_shishya_validation/60_guru_shishya_next_wave_protocol.md` | Next-wave Guru/Shishya protocol binding C4, dependency audit, Qdrant/Redis, broad test orchestration, and external gates to applicable local skills. |
-| `evidence/2026-05-02/guru_shishya_validation/68_qdrant_redis_local_health_report.md` | Local Qdrant/Redis health restoration: Colima started, services healthy, `/health/all` healthy, vector health green with 1,800 vectors; final persistence verified inside Colima because host Docker socket/port forwarding was inconsistent. |
-| `evidence/2026-05-02/guru_shishya_validation/c4_rerun/README.md` | C4 follow-up: fixed scorecard runner, preissued tokens, strict numeric P99 parsing, and JWT replay load-test failure storm; fresh 1000-user runs have 0 failures but still miss the P99 target. |
-| `evidence/2026-05-02/final_external_gates_after_21d60b4/EXTERNAL_GATE_ATTEMPT_2026-05-02.md` | Fresh external final-gate preflight after `21d60b4`: deployed browser replay, production Qdrant baseline, cluster load replay, and founder GPG signing remain BLOCKED by missing external inputs on this machine. |
-| `evidence/2026-05-02/final_external_gates_after_bbe589c/EXTERNAL_GATE_SUMMARY.md` | External final-gate preflight after `bbe589c`: deployed browser replay, production Qdrant baseline, sovereign-cluster load replay, and founder GPG signing remain BLOCKED by missing URLs/production API target/cluster-load context/signatures; SHA-256 handover manifest recorded. |
-| `evidence/2026-05-02/synthesizer_citation_validation/README.md` | Citation hardening evidence: same-publication RAG chunks keep distinct chunk citations; targeted migration/schema/synthesizer tests passed. |
-| `evidence/2026-05-02/d4_migration_second_pass/README.md` | D4 migration safety evidence: canonical string ID types preserved, mismatched FK types skipped, FKs remain `NOT VALID`, indexes are concurrent, D4 is the sole `src/migrations` head, and 31 targeted tests passed. |
-| `evidence/2026-05-02/backlog_local_gap_truth_sync/README.md` | Local backlog truth sync: GAP-B vector drift scheduler, GAP-A DB co-sign, and GAP-C Dhairya/hall-of-shame verification all pass locally; cluster/deployed/UAT/founder-signature gates remain separate. |
-| `evidence/2026-05-02/l1_code_review_blocker_truth_sync/README.md` | L1 code-review blocker truth sync: L1-CR-001 through L1-CR-005 are verified closed locally with security regression tests and source compile checks; L1-CR-006 remains open, L1-CR-007/L1-CR-008 remain unverified in that pass. |
-| `evidence/2026-05-02/l1_text_to_sql_lifecycle_fix/README.md` | L1-CR-008 lifecycle fix: executor keeps cached SQL/RAG skills warm across requests and closes only replaced cached instances; 23 executor/workflow tests and executor compile passed. |
-| `evidence/2026-05-02/l1_async_query_boundary_verification/README.md` | L1-CR-007 async boundary verification: query and stream handlers keep blocking answer-engine work behind `asyncio.to_thread`; 2 AST regression tests and test compile passed. |
-| `evidence/2026-05-02/batch5_orchestration_ai_rag_reverify/BATCH5_ORCHESTRATION_AI_RAG_REVERIFY.md` | External-agent Batch 5 reverify report preserved with an explicit replay boundary; do not treat it as final readiness proof without replaying referenced commands. |
-| `evidence/2026-05-03/l1_query_helper_drift_closure/README.md` | May 3 L1-CR-006 local closure: exported query helper fast paths delegate to live answer-engine behavior; helper drift, fast-path, security, async-boundary, migration, frontend build/lint/Jest/contrast, diff hygiene, forbidden-vocab, and corpus-sync evidence is preserved. |
-| `evidence/2026-05-03/query_service_extraction/README.md` | May 3 query-service extraction: live `/query` and `/api/query/stream` answer-engine body moved from `src/api/main.py` into `src/api/query_service.py`; compatibility wrappers remain thin; compile, async-boundary, stream, and LangGraph API regressions passed. |
-| `evidence/2026-05-03/adr006_genesis_pin_hardening/README.md` | May 3 audit lineage hardening: genesis hash pin is created once, fsynced, hardened to `0444`, and verified by audit/rebuild regressions; production immutable-storage proof remains deployment-controlled. |
-| `evidence/2026-05-03/final_completion_recheck/README.md` | May 3 final completion recheck evidence: tracked tier JSON outputs refreshed and S3-09 environment-history secret scan recorded as a security finding set, not a pass claim. |
-| `evidence/2026-05-03/s3_09_remediation_gate/README.md` | May 3 S3-09 hardening: scanner JSON now includes redacted remediation paths, rotation classes, filter-repo path args, required actions, and 6 scanner tests pass. Current history scan still reports 286 findings and remains FAIL until approved rotation/history remediation. |
-| `evidence/2026-05-03/api_endpoint_matrix_closure/README.md` | May 3 API endpoint matrix closure: `docs/specs/API_ENDPOINT_MATRIX.md` records 59 registered route operations and `tests/api/test_api_endpoint_matrix.py` guards the matrix against FastAPI route drift. |
-| `docs/adr/ADR-007-main-py-answer-engine-split.md` | May 3 ADR for the answer-service extraction: `QueryAnswerService` is the live query behavior owner; `main.py` stays app setup and route wiring. |
-| `evidence/2026-05-03/post_state_replay/README.md` | May 3 post-state replay: canonicalized ADR-007, rejected root `memory/` clutter, replaced partial frontend evidence with complete build/Jest logs, and preserved Batch 5 replay evidence. |
-| `evidence/2026-05-03/api_endpoint_matrix_closure/README.md` | May 3 API endpoint matrix closure: 59 route operations documented, matrix drift guard added, endpoint/route/S3-09 combined tests and Ruff checks pass. |
-| `evidence/2026-05-03/final_external_gates_after_9ace4501/EXTERNAL_GATE_SUMMARY.md` | May 3 external-gate preflight after the endpoint-matrix commit remains BLOCKED by missing deployed frontend/API URLs, production API/Qdrant target, explicit cluster-load context, and founder detached signatures. |
-| `evidence/2026-05-03/python314_compat_lane_closure/README.md` | May 3 Python 3.14 compatibility lane guardrail closure: migration plan added, guard regression coverage added, guard JSON is `ok: true`, and 4 targeted tests pass locally. |
-| `evidence/2026-05-03/final_blocker_recheck_after_14d8f032/README.md` | May 3 final blocker recheck after Python guardrail closure: local Docker stack is up with `/health/all` healthy, Qdrant/vector health repaired and rebuilt into the API image, and external gates remain BLOCKED on missing deployed/cluster/founder inputs. |
-| `evidence/2026-05-03/s3_09_local_history_purge/README.md` | May 3 local S3-09 history purge: local rewritten scanner reports 0 findings; remote force-push coordination and credential rotation remain pending. |
-| `evidence/2026-05-03/local_continuation/README.md` | Preserves May 3 continuation artifacts, including full direct non-live pytest `1903 passed`, API `146 passed`, Batch 5 orchestration/skills `419 passed`, frontend Jest `107 passed`, contrast `20 passed`, focused Playwright Batch 2 `16 passed`, scratch Alembic upgrade, corpus sync, forbidden-vocab, and diff hygiene evidence. |
-| `evidence/2026-05-03/final_external_gates_after_88d3a0db/EXTERNAL_GATE_SUMMARY.md` | May 3 external gate preflight remains BLOCKED by missing deployed frontend/API URLs, production API/Qdrant target, explicit cluster-load context, and founder detached signatures. |
-| `evidence/2026-05-03/00_current_state.md` | May 3 state sync for the current continuation pass after `88d3a0db`. |
-| `evidence/2026-05-05/batch2_batch5_fresh_recheck/README.md` | May 5 fresh Batch 2 + Batch 5 local recheck: frontend build passed with largest JS chunk `319.01 kB`, frontend Jest passed `32` suites / `107` tests, orchestration/skills passed `419` tests, schema parity passed on scratch and local PostgreSQL, and Batch 4 audit rerun reports schema drift false, Dhairya replay `17/17`, and single migration head true. |
-| `evidence/2026-05-05/batch4_data_sql_schema_recheck/README.md` | May 5 fresh Batch 4 local PostgreSQL recheck: schema sync, Dhairya replay, contact constraints, FK orphan checks, audit partition pruning, hot-path index timings, data-quality scorecard, corpus sync, focused schema/data tests, audit co-sign tests, Ruff, py_compile, and diff hygiene passed. |
-| `evidence/2026-05-05/schema_parity_pk_boundary/README.md` | May 5 schema-parity boundary: local SQLite parity passed 15 tests with only the PostgreSQL primary-key identity gate skipped; the PostgreSQL primary-key identity gate passed against the local PostgreSQL service. |
-| `evidence/2026-05-05/final_current_tree_guard_recheck/README.md` | May 5 current-tree guard pass: targeted Ruff, schema/API pytest, PostgreSQL primary-key gate, migration parity, red-team v4.1 regression, targeted py_compile, corpus sync, forbidden-vocab guard, and diff whitespace check passed. |
-| `evidence/2026-05-05/leftover_local_closure/README.md` | May 5 local closure summary for the previously dirty Batch 2, Batch 4, Batch 5, schema-parity, primary-key migration, and 500-audit-event evidence. External gates remain blocked separately. |
-| `evidence/2026-05-05/final_external_gates_after_b2351bc2/README.md` | May 5 external final-gate preflight remains BLOCKED by missing deployed frontend/API URLs, missing production API/Qdrant target, missing explicit cluster-load flag, and missing founder GPG signatures. |
-| `evidence/2026-05-05/final_remote_blockers_after_b2351bc2/README.md` | May 5 remote blocker recheck confirms `nrg/main` remains divergent, normal push dry-run is rejected non-fast-forward, and the S3 remote history scan still reports 286 secret-like assignments. |
-| `evidence/2026-05-05/maximum_enforcement_local_browser/README.md` | May 5 local-browser quantum proof captured login, dashboard, streaming answer, citation/source/audit drawers, mobile rendering, and Tier 3 blocked PII JSON; console log still contains two 400 entries and one 502 entry, so it is not a zero-console-error browser gate. |
-| `evidence/2026-05-05/h7_local_completion/README.md` | May 5 H7 local docs/cleanup closure: docs local-link scan passed, workflow-link check passed, 137 skill frontmatter checks passed, Quality Bar now has executable C1-C6 commands, CORPUS README points to May 5 sync evidence, and ADR-008 records query-helper reconciliation. External handover/signature/deployed gates remain blocked. |
-| `evidence/2026-05-05/final_leftovers_closure/README.md` | May 5 final local leftovers closure: frontend build/Jest, Batch 5 orchestration/skills pytest, frontend lint, docs link scan, diff whitespace guard, and forbidden-vocabulary guard passed. |
-| `evidence/2026-05-05/maximum_enforcement_local_browser_final/FINAL_ACCEPTANCE_REPORT.md` | May 5 final local browser proof: local API health, login, quantum query, streaming answer, citation/source/audit drawers, mobile screenshot, Tier 3 block, telemetry, and audit-chain checks passed; deployed/production surfaces remain blocked. |
-| `evidence/2026-05-05/final_leftovers_state_sync/README.md` | May 5 current-head blocker refresh: external gates remain BLOCKED, remote push remains non-fast-forward, and S3 env-history scan remains FAIL pending operator/founder action. |
-| `evidence/2026-05-05/remaining_external_gates_after_2a476760/README.md` | May 5 companion external-gate preflight: Kubernetes context is unavailable, GitHub deployments are empty, latest remote Actions runs fail, normal push is rejected, force-with-lease was dry-run only, and S3/founder-signing blockers remain. |
-| Current uncommitted work | None expected after the final leftovers state sync. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
-| `d207b54` | Prior backend messy-query fix |
-| `516991a` | Verified dead artifact prune |
-| `6d0ac3a` | Tracked test-run metadata removal |
+# Prune stale evidence (dry-run)
+python3 .claude/scripts/nrg-evidence-prune.py --days 14
+
+# Full test suite
+bash scripts/run_test_suite.sh --live-api
+
+# Start stack
+bash scripts/run_critical_path_final.sh
+```
+
+---
+
+## Deployed URLs
+
+| Environment | URL | Status |
+|-------------|-----|--------|
+| Staging frontend | not provided | BLOCKED |
+| Staging API | not provided | BLOCKED |
+| Production frontend | not provided | BLOCKED |
+| Production API | not provided | BLOCKED |
+
+**No show readiness claims until staging URLs exist.**
 
 ---
 
@@ -203,10 +87,10 @@ Latest C4 profiling shows the remaining boundary more clearly. Combined query-st
 
 | Task type | Must read |
 |-----------|-----------|
-| Any task | `BACKLOG.md` (last 50 lines), `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`, `db_struct.sql` header, `Core_Idea_Clean.md` §1-2 |
+| Any task | `BACKLOG.md` (last 50 lines), `Core_Idea_Clean.md` sections 1-2 |
 | SQL/schema | `db_struct.sql` (full), `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` |
-| v1.0 build/fusion | `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `Core_Idea_Clean.md`, `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`, `db_struct.sql`, `CORPUS/`, `prompts_hybrid/00_INDEX.md`, task stone |
 | Security/PII | `src/security/`, `.claude/rules/security.md` |
 | API/auth | `src/api/main.py`, `src/auth/` |
 | Frontend | `frontend/src/`, `.claude/rules/frontend.md` |
-| Evidence | `.claude/rules/audit/protocol.md` §2 |
+| Evidence | `.claude/rules/audit/protocol.md` section 2 |
+| Deployment | `prompts_hybrid/09_deployment_gate_stone.md`, `.claude/REMOTE_WORKFLOW.md` |

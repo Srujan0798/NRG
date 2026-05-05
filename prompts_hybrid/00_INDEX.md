@@ -21,11 +21,12 @@ Before assigning any stone, attach or tell the agent to read:
 
 Current project stance:
 
-- NRG is locally show-ready for the verified answer-engine path.
-- Local 100-user C4 smoke passed after the read-model/single-flight work:
-  `evidence/2026-04-30/live_c4_local_smoke_after_read_model_final/`.
-- Production readiness is still blocked on 1000-user sovereign-cluster proof,
-  deployed browser replay, production Qdrant baseline, and founder signing.
+- NRG is locally show-ready for the verified answer-engine path only.
+- Local quota-neutral 1000-user C4 passed after the bounded audit executor work:
+  `evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json`.
+- Deployed readiness is still blocked on staging frontend/API URLs,
+  sovereign-cluster C4 replay, production Qdrant baseline, remote
+  history/security closure, remote CI, and founder signing.
 - Do not restart broad cleanup unless a dead file blocks the product path.
 - `CORPUS/` is a portable mirror for AI handoff, not the canonical source tree.
   Run `python3 scripts/verify_corpus_sync.py` before using it.
@@ -54,7 +55,10 @@ Current project stance:
 8. Use `08_full_coverage_validation_campaign_stone.md` when the task is broad
    validation across many queries, workflows, tiers, UI states, security probes,
    audit proof, and performance evidence.
-9. Use the hybrid release fusion skill under `.claude/skills/` before merging any external
+9. Use `09_deployment_gate_stone.md` when release, handover, performance, or
+   readiness work needs a clean split between local proof, deployed proof, and
+   `BLOCKED` external gates.
+10. Use the hybrid release fusion skill under `.claude/skills/` before merging any external
    app or agent-built bundle. The required first output is a value matrix:
    source, useful idea, decision, NRG target, and verification gate.
 
@@ -68,7 +72,8 @@ Use this order unless `.claude/CURRENT_STATE.md` says otherwise:
 4. Security, tier, and audit proof.
 5. Deployment-grade performance proof, especially the 1000-user cluster C4 run.
 6. Full-coverage validation campaign when broad confidence is needed.
-7. Handover evidence and walkthrough refresh.
+7. Deployment gate proof or explicit `BLOCKED` evidence for external targets.
+8. Handover evidence and walkthrough refresh.
 
 When external app material is present, run the fusion skill before choosing a
 wave. Useful UI/UX and interaction patterns usually feed Wave 3; query examples
@@ -90,6 +95,7 @@ not to rebuild the read model again; it is to prove it in the target deployment.
 | `06_evidence_acceptance_stone.md` | evidence gates from `1`, `2`, `7`, `19`, `6`, `k`, `m`, selected `ui-ux-pro-max`, `fullstack-dev`, and spreadsheet/export gates |
 | `07_show_readiness_handover_stone.md` | show script and readiness parts from `3`, `4`, `7`, `q`, `m` |
 | `08_full_coverage_validation_campaign_stone.md` | broad coverage strategy distilled from external validation prompts, merged with NRG-specific evidence, tier, UI, query, audit, and performance gates |
+| `09_deployment_gate_stone.md` | deployed-proof boundary and external-gate status protocol |
 
 ## What Changed
 

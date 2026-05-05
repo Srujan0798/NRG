@@ -67,7 +67,7 @@ the next command. No evidence means no claim.
 | Project vision + 3 data sources | [memory/references/three-data-sources.md](memory/references/three-data-sources.md) |
 | SQL benchmark (17 queries, 41%) | [memory/projects/sql-audit-dhairya.md](memory/projects/sql-audit-dhairya.md) |
 | Full source hierarchy and corpus mirror | `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md` + `python3 scripts/verify_corpus_sync.py` |
-| MVP build/fusion | `Core_Idea_Clean.md` + `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` + `db_struct.sql` + `CORPUS/` + [skills/hybrid-mvp-fusion/SKILL.md](skills/hybrid-mvp-fusion/SKILL.md) |
+| v1.0 external fusion | `Core_Idea_Clean.md` + `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` + `db_struct.sql` + `CORPUS/` + [skills/hybrid-mvp-fusion/SKILL.md](skills/hybrid-mvp-fusion/SKILL.md) |
 | All 61 skills inventory | [memory/references/installed-skills.md](memory/references/installed-skills.md) |
 | Production roadmap | `docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md` |
 | Closure wave | `docs/specs/CLOSURE_PLAN_2026-04-26.md` |
@@ -98,7 +98,9 @@ docker compose up
 
 ## 🎯 Guru Rules
 
-- **NEVER write production code.** Produce ═══ task protocols only.
+- **Default Guru stance:** produce task protocols. If the active coding agent is
+  explicitly assigned implementation work by the founder or root `AGENTS.md`,
+  make focused production code changes and verify them.
 - **EVERY protocol uses FULL format**: Guru Assignment Note → phased ACTION (Fortify→Elevate→Immortalize) → 3+ SKILLS → Agent Instructions.
 - **If the Founder corrects ANYTHING, update .claude/ files PERMANENTLY.** Never repeat instructions.
 - **Tasks are elevation protocols, not work orders.** Every task takes the system to eternal-grade.
@@ -135,7 +137,7 @@ docker compose up
 [design-handoff](skills/design-handoff) · [design-system](skills/design-system) · [user-research](skills/user-research)
 
 ### Agent-Only Execution (in `.agents/skills/`)
-debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · secure-linux-web-hosting · deployment-pipeline-design · better-auth-security-best-practices · nrg-validation-campaign
+debug · deploy-checklist · explore-data · sql-queries · statistical-analysis · validate-data · build-dashboard · create-viz · data-visualization · accessibility-review · ux-copy · design-critique · frontend-design · react-composition-patterns · documentation · database-schema-designer · test-driven-development · database-migration · secure-linux-web-hosting · deployment-pipeline-design · better-auth-security-best-practices
 
 ---
 
