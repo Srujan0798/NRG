@@ -1,89 +1,46 @@
-# NRG Testing Strategy
+# POINTER: Testing Strategy
 
-## Test Structure
+> **Do not trust this file as the source of truth.** Read the actual files listed below to verify tests exist and pass.
 
-```
-tests/
-├── api/              # FastAPI endpoint tests
-├── audit/            # Audit chain integrity tests
-├── auth/             # Authentication & RBAC tests
-├── benchmarks/       # Dhairya regression & adversarial tests
-├── chaos/            # Chaos engineering tests
-├── config/           # Configuration tests
-├── contract/         # API contract tests
-├── data/             # Data quality & schema tests
-├── db/               # Database migration tests
-├── e2e/              # End-to-end browser tests (Playwright)
-├── evals/            # LLM evaluation tests
-├── fixtures/         # Shared test fixtures
-├── frontend/         # Frontend component tests (Jest)
-├── ingestion/        # Data ingestion tests
-├── integration/      # Integration tests
-├── load/             # Load tests (Locust)
-├── misc/             # Miscellaneous tests
-├── observability/    # Metrics & drift tests
-├── orchestration/    # LangGraph planner tests
-├── performance/      # SLO compliance tests
-├── scripts/          # Script tests
-├── security/         # Security & PII tests
-└── conftest.py       # Shared pytest fixtures
-```
+## Where to Read
 
-## Key Test Commands
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **Test config** | `pytest.ini` | Markers, plugins, defaults |
+| **API tests** | `tests/api/` | Endpoint tests |
+| **Security tests** | `tests/security/` | PII, egress, audit chain |
+| **Orchestration tests** | `tests/orchestration/` | Planner, multi-hop |
+| **Performance tests** | `tests/performance/`, `tests/load/` | SLO, Locust |
+| **E2E tests** | `tests/e2e/`, `frontend/tests/e2e/` | Playwright browser tests |
+| **Benchmarks** | `tests/benchmarks/` | Dhairya regression, adversarial |
+
+## Verification Commands
 
 ```bash
-# Full suite (non-live)
-.venv/bin/python -m pytest tests/ -q --tb=short --no-cov
+# Test structure
+ls tests/
 
-# Live API tests (requires running stack)
-bash scripts/run_test_suite.sh --live-api
+# Check pytest config
+cat pytest.ini
 
-# Security tests
-.venv/bin/python -m pytest tests/security/ -q --tb=short --no-cov
+# Count test files
+find tests/ -name "test_*.py" | wc -l
 
-# Orchestration / planner tests
-.venv/bin/python -m pytest tests/orchestration/ -q --tb=short --no-cov
+# Check CI
+ls .github/workflows/
 
-# Performance / SLO tests
-.venv/bin/python -m pytest tests/performance/ tests/load/ -q --tb=short --no-cov
-
-# Dhairya regression (slow — LLM calls)
-.venv/bin/python -m pytest tests/benchmarks/test_dhairya_regression.py -v --timeout=600
-
-# Killer queries (e2e)
-.venv/bin/python -m pytest tests/e2e/test_three_killer_queries.py -v -m e2e
-
-# Frontend tests
-cd frontend && npm run test -- --watchAll=false
-
-# Quality bar scorecard
-.venv/bin/python scripts/quality_bar_scorecard.py
+# Run a quick test subset
+.venv/bin/python -m pytest tests/security/test_pii_indian.py -q --tb=short --no-cov
 ```
 
-## Test Categories
+## Requirements to Verify Against
 
-| Category | Marker | Purpose |
-|----------|--------|---------|
-| Unit | (no marker) | Individual functions/classes |
-| Integration | `integration` | External services |
-| E2E | `e2e` | Full browser/API flows |
-| Smoke | `smoke` | Fast health checks |
-| Security | `security` | Blocks deployment if fails |
-| Slow | `slow` | Long-running tests |
+From `quality/quality_bar.md`:
+- C1: `tests/security/test_pii_*.py`
+- C2: `tests/security/test_per_user_audit_binding.py`, `tests/audit/test_chain_integrity.py`
+- C3: `tests/orchestration/test_multi_hop_planner.py`
+- C4: `tests/performance/test_slo_compliance.py`, `tests/load/test_slo_under_load.py`
+- C5: `tests/observability/test_vector_drift.py`
+- C6: `tests/security/test_egress_allowlist.py`
 
-## Quality Bar Tests
-
-| Constraint | Test Files |
-|-----------|-----------|
-| C1 DPDP PII | `tests/security/test_pii_*.py` |
-| C2 Audit Binding | `tests/security/test_per_user_audit_binding.py`, `tests/audit/test_chain_integrity.py` |
-| C3 Multi-hop | `tests/orchestration/test_multi_hop_planner.py` |
-| C4 SLO | `tests/performance/test_slo_compliance.py`, `tests/load/test_slo_under_load.py` |
-| C5 Vector Drift | `tests/observability/test_vector_drift.py` |
-| C6 Egress | `tests/security/test_egress_allowlist.py`, `tests/security/test_egress_guard.py` |
-
-## CI Integration
-
-- `.github/workflows/cd.yml` runs quality bar before build
-- Scorecard blocks deployment if not 6/6
-- Nightly cron runs full suite
+**Read the actual source files. Do not trust this pointer.**

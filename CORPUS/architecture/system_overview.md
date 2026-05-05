@@ -1,86 +1,62 @@
-# NRG System Overview
+# POINTER: System Architecture
 
-## Executive Summary
+> **Do not trust this file as the source of truth.** Read the actual files listed below and verify against `Core_Idea_Clean.md` requirements.
 
-NRG is a sovereign research-intelligence platform. Phase 1 is a truthful, runnable, deterministic PoC with a path toward a fine-tuned local model.
+## Where to Read
 
-## Runtime Architecture
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| Backend API | `src/api/main.py`, `src/api/routes/*.py` | All routes exist, auth guards work |
+| Auth & RBAC | `src/auth/rbac.py`, `src/auth/rbac_policies.yaml`, `src/auth/middleware.py` | 3 tiers, JWT RS256, persona enforcement |
+| Security | `src/security/pii/`, `src/security/egress_guard/` | PII detection, egress allowlist |
+| Audit | `src/audit/`, `.audit/chain.jsonl`, `.audit/genesis_hash.pin` | HMAC signing, per-user binding, genesis hash |
+| Planner | `src/orchestration/nodes/planner.py` | Multi-hop DAG decomposition |
+| SQL Skill | `src/skills/text_to_sql/` | Schema hints, Dhairya pattern guards |
+| RAG Skill | `src/skills/rag/` | Qdrant retrieval, embedding search |
+| Data | `src/data/schema/`, `src/config/database.py` | Schema hints, DB manager |
+| Observability | `src/observability/` | Metrics, drift detection, data quality |
+| Frontend | `frontend/src/App.tsx`, `frontend/src/views/`, `frontend/src/components/` | Routes, dashboards, answer panel, audit drawer |
 
-```text
+## High-Level Shape (verify by reading source)
+
+```
 React Dashboards (frontend/src/)
-  -> FastAPI Routes (/login, /query, /stats, /publications, /query/graph)
+  -> FastAPI Routes (src/api/)
   -> LangGraph Workflow (src/orchestration/)
   -> SQL Skill + RAG Skill (src/skills/)
-  -> Synthesizer Cascade: cloud-gated -> local -> rule-based
-  -> Response Metadata: warnings, retrieval_sources, provenance
+  -> Synthesizer
+  -> Response
 ```
 
-## Backend Structure
+## Verification Commands
 
-| Module | Path | Purpose |
-|--------|------|---------|
-| API | `src/api/` | FastAPI routes, middleware, main app |
-| Auth | `src/auth/` | JWT, RBAC, tier enforcement |
-| Security | `src/security/` | PII detection, egress guard, DPDP compliance |
-| Audit | `src/audit/` | HMAC-signed audit chain, per-user binding |
-| Orchestration | `src/orchestration/` | LangGraph planner, multi-hop DAG, nodes |
-| Skills | `src/skills/` | text_to_sql, rag, query helpers |
-| Data | `src/data/` | schema hints, synonyms, business glossary |
-| Observability | `src/observability/` | metrics, vector drift, data quality |
-| Config | `src/config/` | database manager, settings |
+```bash
+# Count API routes
+grep -r "@router" src/api/routes/ | wc -l
 
-## Frontend Structure
+# Check auth files exist
+ls src/auth/rbac.py src/auth/rbac_policies.yaml src/auth/middleware.py
 
-| Layer | Path | Purpose |
-|-------|------|---------|
-| Views | `frontend/src/views/` | Dashboard per persona (researcher/government/industry) |
-| Pages | `frontend/src/pages/` | AuditEvent, ProductionWorkspace |
-| Components | `frontend/src/components/` | Reusable UI components |
-| Hooks | `frontend/src/hooks/` | useAuth, useTheme, useReducedMotion |
-| Services | `frontend/src/services/` | API clients |
-| Design System | `frontend/src/design-system/` | ThemeProvider, tokens |
+# Check security files exist
+ls src/security/pii/ src/security/egress_guard/
 
-## Infrastructure
+# Check audit files exist
+ls src/audit/ .audit/chain.jsonl .audit/genesis_hash.pin
 
-| Service | Tech | Purpose |
-|---------|------|---------|
-| API | FastAPI + Uvicorn | Backend server |
-| Frontend | React + Vite | SPA |
-| Database | PostgreSQL 16 | Primary data store |
-| Vector Store | Qdrant | Embedding search |
-| Cache | Redis | Session, rate limit |
-| Proxy | Nginx | Reverse proxy, static files |
-| Gateway | Kong | API gateway, JWT validation |
-| Monitoring | Prometheus + Grafana | Metrics, alerting |
-| Orchestration | Kubernetes (sovereign cluster) | Production deployment |
+# Check planner exists
+ls src/orchestration/nodes/planner.py
 
-## Data Boundary
+# Check skills exist
+ls src/skills/text_to_sql/ src/skills/rag/
+```
 
-Allowed external LLM payloads (only when `CLOUD_SYNTHESIS_ALLOWED=true`):
-- User query
-- Minimal retrieved evidence packet
-- Bounded excerpts, not full documents
-- Citation/source identifiers
-- Redaction and evidence-count metadata
+## Requirements to Verify Against
 
-Blocked external LLM payloads:
-- Raw 600 GB corpus data
-- Full abstracts or full-text documents
-- Emails, phone numbers, addresses, IDs, secrets
-- Raw SQL dumps or unrestricted schema exports
+From `Core_Idea_Clean.md`:
+- 5-layer architecture
+- 6-node LangGraph
+- 3 user tiers
+- Zero-data-leakage model
+- Ask → Plan → Retrieve → Synthesize → Verify → Prove loop
 
-## Synthesis Modes
-
-| Mode | Status | Boundary |
-|------|--------|----------|
-| `cloud_synthesis` | Optional, explicit | Minimized, sanitized evidence packets only |
-| `local_slm` | Sovereign/offline path | Retrieved evidence inside deployment boundary |
-| `rule_based` | Always-available fallback | Formats local SQL/RAG output without external calls |
-
-## Key Constraints
-
-- Cloud synthesis disabled by default
-- JWT auth with RS256 asymmetric signing
-- 3 user tiers: researcher (full), government (aggregated), industry (anonymized)
-- DPDP-2023 compliant: consent, erasure, export
-- Audit chain: HMAC-signed, per-user binding, tamper-proof
+**Read the actual source files. Do not trust this pointer.**

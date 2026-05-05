@@ -1,63 +1,38 @@
-# NRG Tech Stack
+# POINTER: Tech Stack
 
-## Backend
+> **Do not trust this file as the source of truth.** Read the actual files listed below to verify what tech is used, what version, where.
 
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| Python | 3.11 | Runtime |
-| FastAPI | Latest | API framework |
-| Uvicorn | Latest | ASGI server |
-| SQLAlchemy | 2.x | ORM |
-| PostgreSQL | 16 | Primary database |
-| Pydantic | 2.x | Data validation |
-| Pytest | Latest | Testing |
-| JWT (PyJWT) | Latest | Authentication |
-| Qdrant Client | Latest | Vector store client |
-| Redis | Latest | Cache |
-| LangGraph | Latest | Query orchestration |
-| LangChain | Latest | LLM tooling |
-| OpenAI / Anthropic SDK | Latest | LLM providers |
+## Where to Read
 
-## Frontend
+| Layer | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **Backend deps** | `pyproject.toml`, `requirements.txt` | Python packages, versions |
+| **Frontend deps** | `frontend/package.json` | Node packages, versions |
+| **Database** | `docker-compose.yml` (postgres image), `db_struct.sql` | PostgreSQL 16 |
+| **Vector Store** | `docker-compose.yml` (qdrant image) | Qdrant version |
+| **Cache** | `docker-compose.yml` (redis image) | Redis version |
+| **Build tool** | `frontend/vite.config.ts` | Vite version |
+| **Test runner** | `pytest.ini`, `frontend/package.json` | Pytest, Jest versions |
+| **CI/CD** | `.github/workflows/` | GitHub Actions configs |
 
-| Technology | Version | Purpose |
-|-----------|---------|---------|
-| React | 18 | UI framework |
-| TypeScript | 5.x | Type safety |
-| Vite | 6 | Build tool |
-| Tailwind CSS | 3.x | Styling |
-| Jest | 30 | Testing |
-| Playwright | Latest | E2E testing |
+## Verification Commands
 
-## Infrastructure
+```bash
+# Backend packages
+grep -E "^dependencies|^\[" pyproject.toml | head -20
+cat requirements.txt 2>/dev/null || echo "No requirements.txt"
 
-| Technology | Purpose |
-|-----------|---------|
-| Docker + Docker Compose | Local development |
-| Nginx | Reverse proxy, static files |
-| Kong | API gateway, JWT validation |
-| Kubernetes | Production orchestration |
-| Prometheus | Metrics collection |
-| Grafana | Metrics visualization |
-| Qdrant | Vector database |
-| Redis | Cache, sessions, rate limiting |
+# Frontend packages
+grep -E '"react"|"vite"|"tailwind"|"jest"|"playwright"' frontend/package.json
 
-## DevOps
+# Docker images
+grep "image:" docker-compose.yml
 
-| Technology | Purpose |
-|-----------|---------|
-| GitHub Actions | CI/CD |
-| Alembic | Database migrations |
-| Ruff | Python linting |
-| ESLint | JavaScript/TypeScript linting |
+# Vite config
+ls frontend/vite.config.ts
 
-## Key Configuration
+# CI workflows
+ls .github/workflows/
+```
 
-| Env Var | Purpose |
-|---------|---------|
-| `DATABASE_URL` | PostgreSQL connection |
-| `QDRANT_HOST` / `QDRANT_PORT` | Vector store |
-| `REDIS_URL` | Cache |
-| `JWT_PRIVATE_KEY` / `JWT_PUBLIC_KEY` | Auth signing |
-| `CLOUD_SYNTHESIS_ALLOWED` | External LLM toggle |
-| `NRG_API_URL` | API base URL |
+**Read the actual source files. Do not trust this pointer.**

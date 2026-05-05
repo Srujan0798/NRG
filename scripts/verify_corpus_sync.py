@@ -32,6 +32,7 @@ DERIVED = [
     "CORPUS/SQL_AUDIT_REPORT_CLEAN.md",
     "CORPUS/CORPUS_INDEX.md",
     "CORPUS/README.md",
+    "CORPUS/VERIFY.md",
     "CORPUS/architecture/system_overview.md",
     "CORPUS/architecture/data_pipeline.md",
     "CORPUS/architecture/security_model.md",

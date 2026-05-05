@@ -1,68 +1,52 @@
-# NRG Frontend Structure
+# POINTER: Frontend Structure
 
-## Overview
+> **Do not trust this file as the source of truth.** Read the actual files listed below and verify against `Core_Idea_Clean.md` UX requirements.
 
-React SPA built with Vite. TypeScript. Tailwind CSS. Design system in `frontend/src/design-system/`.
+## Where to Read
 
-## Entry Point
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **Entry Point** | `frontend/src/main.tsx`, `frontend/src/App.tsx` | Router, auth provider, theme |
+| **Routes** | `frontend/src/App.tsx` | All routes defined, lazy loading |
+| **Dashboards** | `frontend/src/views/ResearcherDashboard.tsx`, `GovernmentDashboard.tsx`, `IndustryDashboard.tsx` | Tier-specific views exist |
+| **Answer Panel** | `frontend/src/views/AnswerEngine/` | Answer display, citations, SQL, audit ID |
+| **Components** | `frontend/src/components/` | Login, Skeleton, ErrorBoundary, SkipLink, NetworkStatusBanner |
+| **Auth Hook** | `frontend/src/hooks/useAuth.ts` | Token management, persona state |
+| **API Services** | `frontend/src/services/authService.ts`, `dataService.ts` | API clients |
+| **Tests** | `frontend/src/__tests__/`, `frontend/tests/e2e/` | Jest + Playwright tests |
 
-`frontend/src/main.tsx` → mounts App.tsx
-
-## Routing (App.tsx)
-
-| Route | Component | Purpose |
-|-------|-----------|---------|
-| `/` | AnswerEngineHome | Landing + query input |
-| `/login` | AnswerEngineLogin | Login page |
-| `/app/researcher` | ResearcherDashboard (lazy) | Full data dashboard |
-| `/app/government` | GovernmentDashboard (lazy) | Aggregated dashboard |
-| `/app/industry` | IndustryDashboard (lazy) | Anonymized dashboard |
-| `/app/answer/latest` | AnswerEngineAnswer | Latest query result |
-| `/app/answer/audit` | AnswerEngineAudit | Audit drawer |
-| `/audit/:eventId` | AuditEvent (lazy) | Single audit event detail |
-| `/workspace` | ProductionWorkspace (lazy) | Production tools |
-
-## Key Directories
-
-| Directory | Contents |
-|-----------|----------|
-| `views/` | Dashboard views per persona (ResearcherDashboard, GovernmentDashboard, IndustryDashboard, FounderDashboard) |
-| `pages/` | Standalone pages (AuditEvent, ProductionWorkspace) |
-| `components/` | 50+ reusable components (Login, Skeleton, ErrorBoundary, SkipLink, NetworkStatusBanner, etc.) |
-| `hooks/` | Custom hooks (useAuth, useTheme, useReducedMotion) |
-| `services/` | API clients (authService, dataService) |
-| `stores/` | State management |
-| `design-system/` | ThemeProvider, design tokens, base styles |
-| `lib/` | Utilities (telemetry, helpers) |
-| `types/` | TypeScript type definitions |
-| `styles/` | Global styles, Tailwind config |
-| `assets/` | Static assets |
-| `i18n/` | Internationalization |
-
-## Lazy Loading
-
-Dashboards and heavy pages are lazy-loaded to keep entry chunk small:
-```typescript
-const ResearcherDashboard = lazy(() => import('./views/ResearcherDashboard'))
-const GovernmentDashboard = lazy(() => import('./views/GovernmentDashboard'))
-const IndustryDashboard = lazy(() => import('./views/IndustryDashboard'))
-```
-
-## Key Features
-
-- **Tier-aware UI:** Different dashboards per persona
-- **Blocked prompt detection:** Frontend blocks PII queries before sending
-- **Streaming answers:** `/api/query/stream` for progressive response
-- **Audit drawer:** Shows SQL, citations, source data, audit ID
-- **Accessibility:** Skip links, reduced motion, contrast checks
-- **Telemetry:** First paint tracking, client telemetry to `/api/telemetry`
-
-## Build
+## Verification Commands
 
 ```bash
-cd frontend
-npm run build    # production build
-npm run dev      # dev server
-npm run test     # Jest tests
-npm run lint     # ESLint
+# Check App.tsx routes
+grep -n "Route\|path=" frontend/src/App.tsx | head -20
+
+# Check dashboards exist
+ls frontend/src/views/ResearcherDashboard.tsx frontend/src/views/GovernmentDashboard.tsx frontend/src/views/IndustryDashboard.tsx
+
+# Check answer engine views
+ls frontend/src/views/AnswerEngine/
+
+# Check components
+ls frontend/src/components/ | head -20
+
+# Check hooks
+ls frontend/src/hooks/
+
+# Check services
+ls frontend/src/services/
+
+# Check tests
+ls frontend/src/__tests__/ frontend/tests/e2e/ | head -10
 ```
+
+## Requirements to Verify Against
+
+From `Core_Idea_Clean.md`:
+- Login screen → query input → answer panel → audit drawer
+- Tier-aware UI (different dashboards per persona)
+- No stack traces, no `undefined`, no blank skeleton > 200ms
+- Answer must show: citations, SQL, source data, audit proof
+- Accessibility: keyboard nav, screen reader, reduced motion
+
+**Read the actual source files. Do not trust this pointer.**

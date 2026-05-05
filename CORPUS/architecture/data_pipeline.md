@@ -1,73 +1,51 @@
-# NRG Data Pipeline
+# POINTER: Data Pipeline
 
-## Overview
+> **Do not trust this file as the source of truth.** Read the actual files listed below and verify against `Core_Idea_Clean.md` requirements.
 
-```text
-Ingest → Store → Index → Query → Plan → Retrieve → Synthesize → Answer
+## Where to Read
+
+| Stage | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **Ingestion** | `src/api/routes/ingest.py`, `src/data/` | Document intake, background jobs |
+| **Storage** | `db_struct.sql`, `src/config/database.py` | 58 tables, PostgreSQL, migrations |
+| **Vector Store** | `src/skills/rag/`, `scripts/build_qdrant_index.py` | Qdrant collection, embeddings |
+| **Query Planning** | `src/orchestration/nodes/planner.py` | Multi-hop DAG, sub-query decomposition |
+| **SQL Generation** | `src/skills/text_to_sql/` | Schema hints, synonyms, Dhairya guards |
+| **RAG Retrieval** | `src/skills/rag/` | Vector search, evidence retrieval |
+| **Synthesis** | `src/orchestration/nodes/synthesizer.py` or equivalent | Cloud/local/rule-based cascade |
+| **Response** | `src/api/routes/query.py` | Answer format, citations, audit ID |
+| **Audit** | `src/audit/`, `.audit/chain.jsonl` | Every query logged, HMAC signed |
+
+## Verification Commands
+
+```bash
+# Check ingestion route
+grep -n "ingest" src/api/routes/ingest.py | head -5
+
+# Check schema tables
+grep -c "CREATE TABLE" db_struct.sql
+
+# Check Qdrant integration
+grep -rn "qdrant" src/skills/rag/ | head -10
+
+# Check planner
+ls src/orchestration/nodes/planner.py
+
+# Check text-to-sql
+ls src/skills/text_to_sql/
+
+# Check query route
+grep -n "def query" src/api/routes/query.py | head -5
+
+# Check audit
+ls src/audit/ .audit/chain.jsonl .audit/genesis_hash.pin
 ```
 
-## 1. Ingestion
+## Requirements to Verify Against
 
-**Path:** `src/api/routes/ingest.py`, `src/data/`
+From `Core_Idea_Clean.md`:
+- Ask → Plan → Retrieve → Synthesize → Verify → Prove loop
+- SQL for exact data, RAG for documents, graph for relationships
+- Answer must include: citations, SQL, audit ID, confidence, freshness
 
-- Documents submitted via `/api/ingest` (Tier 1 only)
-- Background job processes document
-- Extracts text, metadata, citations
-- Stores raw document + extracted fields
-
-## 2. Storage
-
-**Primary:** PostgreSQL 16 (`db_struct.sql` — 58 tables)
-
-| Data Type | Tables | Examples |
-|-----------|--------|----------|
-| Researchers | `researchers`, `researcher_labs`, `researcher_publications` | Profile, affiliations, publications |
-| Publications | `publications`, `publication_keywords` | Title, abstract, journal, keywords |
-| Funding | `funding`, `funding_records`, `innovation_grant_from_govt` | Grants, amounts, years |
-| Patents | `patents`, `combined_ipo_patent_data` | Filings, titles, inventors |
-| Labs | `labs`, `institutions` | Lab name, institution, location |
-| Courses | `academic_courses_details` | Credits, financial year, institute |
-| TRL | `innovations_at_various_stages_of_technology_readiness_level` | Innovation stage, year |
-
-**Vector Store:** Qdrant (`nrg_research` collection)
-- Embeddings for semantic search
-- Dimension from active embedder (not hardcoded)
-- Falls back gracefully if unavailable
-
-## 3. Query Flow
-
-**Path:** `src/orchestration/`, `src/skills/`
-
-1. **User asks** → `/query` or `/api/query/stream`
-2. **Planner** (`src/orchestration/nodes/planner.py`) decomposes into sub-queries
-   - Single-hop: direct SQL or RAG
-   - Multi-hop: DAG of dependent sub-queries
-3. **SQL Skill** (`src/skills/text_to_sql/`) generates PostgreSQL query
-   - Uses schema hints, synonyms, business glossary
-   - Dhairya failure patterns guard against common errors
-4. **RAG Skill** (`src/skills/rag/`) retrieves relevant documents from Qdrant
-5. **Synthesizer** combines SQL results + RAG evidence
-   - Cloud-gated first (if enabled)
-   - Local SLM second
-   - Rule-based fallback always available
-6. **Response** includes: answer, citations, SQL, audit ID, confidence
-
-## 4. Audit Trail
-
-**Path:** `src/audit/`
-
-Every query creates an audit event:
-- `user_id`, `persona`, `jwt_jti`, `request_fingerprint`
-- HMAC-signed with per-user derived key
-- Appended to `.audit/chain.jsonl`
-- Genesis hash pinned in `.audit/genesis_hash.pin`
-- Verification via `/audit/verify`
-
-## 5. Quality Checks
-
-**Path:** `src/observability/`, `scripts/`
-
-- **Data Quality:** `scripts/quality_bar_scorecard.py` — scorecard PASS/FAIL
-- **Vector Drift:** `scripts/vector_drift_check.py` — cosine shift > 0.05 triggers retrain
-- **PII Scan:** `src/security/pii/` — blocks Indian PII (PAN, Aadhaar, mobile, etc.)
-- **Egress Guard:** `src/security/egress_guard/` — only allowlisted schema fragments to LLM
+**Read the actual source files. Do not trust this pointer.**

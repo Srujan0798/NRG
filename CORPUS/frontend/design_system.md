@@ -1,81 +1,39 @@
-# NRG Design System
+# POINTER: Design System
 
-## Overview
+> **Do not trust this file as the source of truth.** Read the actual files listed below and verify against `Core_Idea_Clean.md` UX requirements.
 
-Custom design system built on Tailwind CSS. Theme-aware, accessible, responsive.
+## Where to Read
 
-## Theme Provider
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **Theme** | `frontend/src/design-system/ThemeProvider.tsx` | Light/dark mode, system preference |
+| **Styles** | `frontend/src/index.css`, `frontend/src/styles/` | Tailwind, design tokens |
+| **Components** | `frontend/src/components/` | Reusable UI components |
+| **Accessibility** | `frontend/src/components/SkipLink/`, `frontend/src/hooks/useReducedMotion.ts` | WCAG 2.1 AA |
 
-`frontend/src/design-system/ThemeProvider.tsx`
+## Verification Commands
 
-- Light/dark mode support
-- CSS custom properties for colors, spacing, typography
-- System preference detection + manual toggle
+```bash
+# Check design system
+ls frontend/src/design-system/
 
-## Design Tokens
+# Check styles
+cat frontend/tailwind.config.js 2>/dev/null || echo "Check vite config for tailwind"
 
-### Colors
-- Primary: brand color for CTAs, links
-- Secondary: muted actions
-- Success: positive states
-- Warning: caution states
-- Error: failure states
-- Background: page and card backgrounds
-- Surface: elevated surfaces
-- Text: primary, secondary, muted text colors
+# Check components
+ls frontend/src/components/ | head -20
 
-### Typography
-- Font family: system sans-serif stack
-- Sizes: xs, sm, base, lg, xl, 2xl, 3xl, 4xl
-- Weights: normal, medium, semibold, bold
+# Check accessibility components
+ls frontend/src/components/SkipLink/ frontend/src/components/ErrorBoundary/
 
-### Spacing
-- Based on 4px grid (Tailwind default)
-- Component padding: 16px, 24px
-- Card padding: 20px
-- Section gaps: 32px, 48px
+# Check reduced motion hook
+ls frontend/src/hooks/useReducedMotion.ts
+```
 
-### Border Radius
-- Small: 4px (inputs, badges)
-- Medium: 8px (cards, buttons)
-- Large: 12px (modals, drawers)
-- Full: 9999px (pills, avatars)
+## Requirements to Verify Against
 
-## Components
+From `Core_Idea_Clean.md`:
+- Visible-experience rule: no stack traces, no undefined, no blank skeleton > 200ms
+- Accessibility: keyboard navigation, screen reader support, focus indicators
 
-### Layout
-- `SkeletonLoader` — loading placeholder
-- `ErrorBoundary` — error catching
-- `SkipLink` — accessibility skip navigation
-- `NetworkStatusBanner` — offline indicator
-
-### Forms
-- `Login` — authentication form
-- Input fields with validation states
-
-### Data Display
-- Dashboard cards
-- Tables with sorting
-- Charts (if applicable)
-
-### Feedback
-- Toast notifications
-- Modal dialogs
-- Drawer panels (citations, source data, audit proof)
-
-## Accessibility
-
-- WCAG 2.1 AA target
-- Keyboard navigation
-- Screen reader support
-- Focus indicators
-- Reduced motion support (`useReducedMotion`)
-- Color contrast compliance
-
-## Responsive Breakpoints
-
-- Mobile: < 640px
-- Tablet: 640px - 1024px
-- Desktop: > 1024px
-
-Dashboards adapt layout per breakpoint.
+**Read the actual source files. Do not trust this pointer.**

@@ -1,72 +1,50 @@
-# NRG Security Model
+# POINTER: Security Model
 
-## Authentication
+> **Do not trust this file as the source of truth.** Read the actual files listed below and verify against `Core_Idea_Clean.md` and `quality/quality_bar.md` (C1, C2, C6) requirements.
 
-**Method:** JWT with RS256 asymmetric signing
-- Private key: `infrastructure/kong/ssl/jwt_rsa.key`
-- Public key: `infrastructure/kong/ssl/jwt_rsa.pub`
-- Tokens set as HttpOnly cookies + Bearer header
-- Refresh token rotation on every use
+## Where to Read
 
-**Endpoints:** `/login`, `/logout`, `/refresh`, `/auth/*`
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **JWT Auth** | `src/auth/rbac.py`, `src/auth/middleware.py`, `infrastructure/kong/ssl/jwt_rsa.key` | RS256 signing, token rotation, HttpOnly cookies |
+| **RBAC Tiers** | `src/auth/rbac_policies.yaml`, `src/auth/rbac.py` | 6 personas, 3 tiers, full/aggregated/anonymized |
+| **DPDP Compliance** | `src/api/routes/dpdp.py` | Consent, export, erasure endpoints |
+| **PII Detection** | `src/security/pii/`, `tests/security/test_pii_indian.py` | PAN, Aadhaar, mobile, email detection |
+| **Egress Guard** | `src/security/egress_guard/`, `src/security/egress_allowlist.yaml` | Allowlisted schema fragments only |
+| **Audit Chain** | `src/audit/`, `.audit/chain.jsonl`, `.audit/genesis_hash.pin` | HMAC, per-user binding, tamper-proof |
 
-## Authorization (RBAC)
+## Verification Commands
 
-**Path:** `src/auth/rbac.py`, `src/auth/rbac_policies.yaml`
+```bash
+# Check JWT keys exist
+ls infrastructure/kong/ssl/jwt_rsa.key infrastructure/kong/ssl/jwt_rsa.pub
 
-| Persona | Tier | Output Format | Use Case |
-|---------|------|---------------|----------|
-| researcher | 1 | full | Individual researcher viewing full data |
-| government | 2 | aggregated | Ministry official viewing summaries |
-| industry | 3 | anonymized | Private partner viewing redacted data |
-| peer_reviewer | 1 | aggregated | Journal reviewer |
-| department_head | 2 | aggregated | Department admin |
-| student | 3 | anonymized | Student researcher |
+# Check RBAC policies
+ls src/auth/rbac_policies.yaml src/auth/rbac.py src/auth/middleware.py
 
-**Enforcement:** `src/auth/middleware.py` — every API route checks tier before response.
+# Check DPDP routes
+grep -n "dpdp" src/api/routes/dpdp.py | head -10
 
-## DPDP Compliance (India 2023)
+# Check PII tests
+ls tests/security/test_pii_indian.py
 
-**Path:** `src/api/routes/dpdp.py`, `src/security/`
+# Check egress guard
+ls src/security/egress_guard/ src/security/egress_allowlist.yaml
 
-- **Consent:** `/consent` — user grants/revokes data processing consent
-- **Export:** `/dpdp/export` — user downloads all their data
-- **Erasure:** `/dpdp/erase` — user requests data deletion
-- **Consents list:** `/dpdp/consents`, `/me/consents`
+# Check audit chain
+ls src/audit/ .audit/chain.jsonl .audit/genesis_hash.pin
+```
 
-## PII Detection
+## Requirements to Verify Against
 
-**Path:** `src/security/pii/`
+From `quality/quality_bar.md`:
+- **C1:** DPDP PII detection — zero false negatives
+- **C2:** Per-user audit binding — HMAC with derived key
+- **C6:** Schema egress allowlist — block non-allowlisted schema fragments
 
-Detects and blocks:
-- PAN: `[A-Z]{5}[0-9]{4}[A-Z]`
-- Aadhaar: 12-digit with Verhoeff checksum
-- Indian mobile: `+91` or `0?[6-9]\d{9}`
-- Email, passport, GSTIN, bank account
+From `Core_Idea_Clean.md`:
+- Zero-data-leakage model
+- Tier boundary enforced at API/backend first
+- Cloud synthesis disabled by default
 
-**Tests:** `tests/security/test_pii_indian.py`
-
-## Audit Chain (Non-Repudiation)
-
-**Path:** `src/audit/`
-
-- Every event: `user_id`, `persona`, `jwt_jti`, `request_fingerprint`
-- HMAC-signed with per-user derived key
-- Chain file: `.audit/chain.jsonl`
-- Genesis hash: `.audit/genesis_hash.pin` (hardened to 0444)
-- Verification: `/audit/verify` returns `True/False`
-
-## Egress Guard
-
-**Path:** `src/security/egress_guard/`
-
-- Inspects every outbound LLM payload
-- Only allowlisted schema fragments may appear
-- Blocks: raw DB schema, non-allowlisted column names, sensitive metadata
-- Config: `src/security/egress_allowlist.yaml`
-
-## Cloud Synthesis Security
-
-- Disabled by default (`CLOUD_SYNTHESIS_ALLOWED=false`)
-- When enabled: only minimized, sanitized evidence packets sent
-- Never sends: raw dumps, full documents, PII, unrestricted schema
+**Read the actual source files. Do not trust this pointer.**

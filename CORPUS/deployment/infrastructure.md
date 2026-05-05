@@ -1,52 +1,31 @@
-# NRG Infrastructure
+# POINTER: Infrastructure
 
-## Sovereign Cluster (Production)
+> **Do not trust this file as the source of truth.** Read the actual files listed below.
 
-NRG deploys on a sovereign Kubernetes cluster (IIT-GN IT managed).
+## Where to Read
 
-## Components
+| Topic | Actual Source Files | What to Verify |
+|-------|--------------------|----------------|
+| **K8s** | `infrastructure/helm/` | Charts, manifests |
+| **Kong** | `infrastructure/kong/` | Gateway config, JWT validation, rate limits |
+| **Nginx** | `infrastructure/nginx/` | Reverse proxy, SSL, static files |
+| **Monitoring** | `infrastructure/prometheus/`, `infrastructure/grafana/` | Metrics, dashboards, alerts |
+| **Cron** | `infrastructure/cron/` | Scheduled jobs |
 
-| Component | Path | Purpose |
-|-----------|------|---------|
-| **Kong** | `infrastructure/kong/` | API gateway, JWT validation, rate limiting |
-| **Nginx** | `infrastructure/nginx/` | Reverse proxy, static file serving, SSL termination |
-| **Helm** | `infrastructure/helm/` | K8s deployment charts |
-| **Prometheus** | `infrastructure/prometheus/` | Metrics collection |
-| **Grafana** | `infrastructure/grafana/` | Metrics dashboards |
-| **Monitoring** | `infrastructure/monitoring/` | Alerts, SLO tracking |
-| **Llama** | `infrastructure/llama/` | Local SLM deployment path (future) |
+## Verification Commands
 
-## Kong Gateway
+```bash
+# Check helm charts
+ls infrastructure/helm/
 
-- JWT validation at edge
-- Rate limiting per tier
-- Route to API service
-- SSL certificate management
+# Check kong config
+ls infrastructure/kong/
 
-## Nginx
+# Check nginx config
+ls infrastructure/nginx/
 
-- Serves static frontend build
-- Proxies API requests to Kong
-- Handles SPA fallback routing
-- Compression, caching headers
+# Check monitoring
+ls infrastructure/prometheus/ infrastructure/grafana/
+```
 
-## Kubernetes
-
-- Namespaced deployment
-- HPA for API pods
-- Persistent volumes for PostgreSQL
-- Secrets for credentials
-- ConfigMaps for app config
-
-## Monitoring Stack
-
-- **Prometheus:** Scrapes metrics from API, Kong, Nginx
-- **Grafana:** Dashboards for latency, throughput, errors
-- **Alerts:** P0 on SLO breach, P1 on error rate spike
-
-## Security
-
-- TLS 1.3 everywhere
-- Network policies between namespaces
-- Pod security standards
-- Secrets encrypted at rest
+**Read the actual source files. Do not trust this pointer.**
