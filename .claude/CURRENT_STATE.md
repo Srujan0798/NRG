@@ -20,10 +20,11 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
-| Quality Bar scorecard | FAIL current | `scripts/quality_bar_scorecard.json` is `5/6`; C4 failed in the latest May 5 run with HTTP 0 failures because the running-stack/load gate was not healthy |
-| Frontend bundle size | PASS local | May 5 build entry chunk is 2.23 KB raw; largest lazy chunk is 319.01 KB raw / 87.80 KB gzip |
+| Quality Bar scorecard | FAIL current | `scripts/quality_bar_scorecard.json` is `5/6`; C4 failed in the latest May 5 run with HTTP 0 failures, and strict local SLO regression failed P95/P99 thresholds |
+| Local Docker/API runtime | BLOCKED | Colima reports the VM running, but Docker commands timed out after Buildx hangs and `localhost:8000` is currently unreachable |
+| Frontend bundle size | PASS prior / BLOCKED current rerun | May 5 prior build entry chunk is 2.23 KB raw; latest rerun did not finish under current machine load |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
-| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; current local evidence commits may still need a normal push |
+| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; local/remote sync must be checked before handoff |
 
 ---
 
@@ -37,6 +38,7 @@
 | Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
 | Deployment gate stone | May 5 | `prompts_hybrid/09_deployment_gate_stone.md` |
 | Remote workflow | May 5 | `.claude/REMOTE_WORKFLOW.md` |
+| Focused Dhairya regression | May 5 | `evidence/2026-05-05/dhairya_regression_full/01_full_run.log` — 43 passed |
 
 ---
 
@@ -46,9 +48,10 @@
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
 | PASS | PASS | PASS | FAIL current scorecard / historical local pass preserved / cluster pending | PASS local / production pending | PASS |
 
-**C4**: The latest scorecard JSON is `5/6` with C4 `FAIL` on May 5. The May 2
-quota-neutral 1000-user pass remains historical local evidence only. Fresh
-current-stack C4 and deployed/cluster C4 are pending.
+**C4**: The latest scorecard JSON is `5/6` with C4 `FAIL` on May 5. Strict
+local SLO regression also failed P95/P99 thresholds. The May 2 quota-neutral
+1000-user pass remains historical local evidence only. Fresh current-stack C4
+and deployed/cluster C4 are pending.
 
 ---
 

@@ -21,6 +21,7 @@ from src.api.query_response_utils import (
     schedule_answer_record_persist,
     sse,
 )
+from src.api.response_filter import warm_response_policy_cache
 from src.api.routes.query import QueryRequest, TokenPayload
 from src.config.database import get_database_manager
 from src.observability.metrics import get_slo_tracker
@@ -60,6 +61,7 @@ class QueryAnswerService:
 
     def __init__(self, deps: QueryServiceDependencies) -> None:
         self.deps = deps
+        warm_response_policy_cache()
 
     def build_stream_answer_payload(
         self,

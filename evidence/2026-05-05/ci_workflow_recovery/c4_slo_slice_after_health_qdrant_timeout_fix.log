@@ -1,0 +1,182 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 17 items
+
+tests/performance/test_slo_compliance.py [31mF[0m[31mF[0m[31mF[0m[33ms[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[31mF[0m[31mF[0m[32m.[0m[32m.[0m[31m                    [ 70%][0m
+tests/load/test_slo_under_load.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[31m                                  [100%][0m
+
+=================================== FAILURES ===================================
+[31m[1m_______________ TestQueryLatencySLO.test_p50_latency_under_100ms _______________[0m
+[1m[31mtests/performance/test_slo_compliance.py[0m:180: in test_p50_latency_under_100ms
+    [0m[94massert[39;49;00m p50_ms < [94m100[39;49;00m, [33mf[39;49;00m[33m"[39;49;00m[33mP50 latency [39;49;00m[33m{[39;49;00mp50_ms[33m:[39;49;00m[33m.0f[39;49;00m[33m}[39;49;00m[33mms exceeds 100ms Quality Bar target[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: P50 latency 105ms exceeds 100ms Quality Bar target[0m
+[1m[31mE   assert 104.93195056915283 < 100[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T12:55:17.369947+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 69, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:55:17.503389+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.370397+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 69, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.444127+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.637808+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.739161+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.835556+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:21.944656+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.177154+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.257022+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.334642+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.447082+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.556218+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:22.654648+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m src.api.main:logging_config.py:69 request completed
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m src.api.main:logging_config.py:69 request completed
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m_______________ TestQueryLatencySLO.test_p95_latency_under_300ms _______________[0m
+[1m[31mtests/performance/test_slo_compliance.py[0m:204: in test_p95_latency_under_300ms
+    [0m[94massert[39;49;00m p95_ms < [94m300[39;49;00m, [33mf[39;49;00m[33m"[39;49;00m[33mP95 latency [39;49;00m[33m{[39;49;00mp95_ms[33m:[39;49;00m[33m.0f[39;49;00m[33m}[39;49;00m[33mms exceeds 300ms Quality Bar target[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: P95 latency 2054ms exceeds 300ms Quality Bar target[0m
+[1m[31mE   assert 2054.255247116089 < 300[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T12:55:26.079833+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:26.380960+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:26.692269+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:28.308480+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:28.701439+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:28.824651+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:29.279224+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:29.537756+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:29.632008+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:31.617874+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:32.688874+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m_______________ TestQueryLatencySLO.test_p99_latency_under_500ms _______________[0m
+[1m[31mtests/performance/test_slo_compliance.py[0m:228: in test_p99_latency_under_500ms
+    [0m[94massert[39;49;00m p99_ms < [94m500[39;49;00m, [33mf[39;49;00m[33m"[39;49;00m[33mP99 latency [39;49;00m[33m{[39;49;00mp99_ms[33m:[39;49;00m[33m.0f[39;49;00m[33m}[39;49;00m[33mms exceeds 500ms Quality Bar target[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: P99 latency 845ms exceeds 500ms Quality Bar target[0m
+[1m[31mE   assert 844.635009765625 < 500[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T12:56:28.050139+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://localhost:6333/collections/nrg_research/points/count \"HTTP/1.1 404 Not Found\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 6246690816, "extra": {}}
+{"timestamp": "2026-05-05T12:55:34.033374+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:34.447563+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:34.730860+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:34.919528+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:35.465127+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:35.734019+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:35.954300+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:36.314865+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:36.424345+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:36.497993+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:36.880541+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.037484+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.182303+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.419572+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.555966+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.667735+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.763570+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.806740+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:37.894243+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:38.042896+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T12:55:38.838315+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m_________________ TestQdrantIndexSLO.test_qdrant_fully_indexed _________________[0m
+[1m[31mtests/performance/test_slo_compliance.py[0m:426: in test_qdrant_fully_indexed
+    [0m[94massert[39;49;00m data.get([33m"[39;49;00m[33mcollection_exists[39;49;00m[33m"[39;49;00m), [33m"[39;49;00m[33mQdrant collection does not exist[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Qdrant collection does not exist[0m
+[1m[31mE   assert False[0m
+[1m[31mE    +  where False = <built-in method get of dict object at 0x10f818e00>('collection_exists')[0m
+[1m[31mE    +    where <built-in method get of dict object at 0x10f818e00> = {'collection': 'nrg_research', 'collection_exists': False, 'collections': [], 'healthy': True, ...}.get[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T12:56:03.963985+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:56:04.283717+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 404 Not Found\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:56:04.309460+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 69, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:56:04.346661+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/health/qdrant \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://localhost:6333/collections "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 404 Not Found"
+[32mINFO    [0m src.api.main:logging_config.py:69 request completed
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/health/qdrant "HTTP/1.1 200 OK"
+[31m[1m_______________ TestHealthCheckSLO.test_health_check_responsive ________________[0m
+[1m[31mtests/performance/test_slo_compliance.py[0m:451: in test_health_check_responsive
+    [0m[94massert[39;49;00m elapsed < [94m10.0[39;49;00m, [33mf[39;49;00m[33m"[39;49;00m[33mHealth check took [39;49;00m[33m{[39;49;00melapsed[33m:[39;49;00m[33m.2f[39;49;00m[33m}[39;49;00m[33ms (target: < 10s)[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Health check took 20.91s (target: < 10s)[0m
+[1m[31mE   assert 20.906430959701538 < 10.0[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T12:56:25.268224+00:00", "level": "INFO", "logger": "src.api.main", "message": "request completed", "module": "logging_config", "function": "_log", "line": 69, "process_id": 56365, "thread_id": 6162558976, "extra": {}}
+{"timestamp": "2026-05-05T12:56:25.368473+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://testserver/health \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m src.api.main:logging_config.py:69 request completed
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://testserver/health "HTTP/1.1 200 OK"
+--------------------------- Captured stdout teardown ---------------------------
+{"timestamp": "2026-05-05T12:56:26.839370+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: GET http://localhost:6333/collections/nrg_research \"HTTP/1.1 404 Not Found\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 56365, "thread_id": 6246690816, "extra": {}}
+---------------------------- Captured log teardown -----------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: GET http://localhost:6333/collections/nrg_research "HTTP/1.1 404 Not Found"
+[33m=============================== warnings summary ===============================[0m
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p50_latency_under_100ms
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p95_latency_under_300ms
+tests/performance/test_slo_compliance.py::TestQueryLatencySLO::test_p99_latency_under_500ms
+tests/performance/test_slo_compliance.py::TestConcurrencySLO::test_all_tiers_concurrent
+tests/performance/test_slo_compliance.py::TestCitationRateSLO::test_citation_rate_above_80_percent
+tests/performance/test_slo_compliance.py::TestSynthesisCascadeSLO::test_cloud_llm_primary_path
+tests/performance/test_slo_compliance.py::TestQdrantIndexSLO::test_qdrant_fully_indexed
+tests/performance/test_slo_compliance.py::TestHealthCheckSLO::test_health_check_responsive
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/performance/test_slo_compliance.py::[1mTestQueryLatencySLO::test_p50_latency_under_100ms[0m - AssertionError: P50 latency 105ms exceeds 100ms Quality Bar target
+[31mFAILED[0m tests/performance/test_slo_compliance.py::[1mTestQueryLatencySLO::test_p95_latency_under_300ms[0m - AssertionError: P95 latency 2054ms exceeds 300ms Quality Bar target
+[31mFAILED[0m tests/performance/test_slo_compliance.py::[1mTestQueryLatencySLO::test_p99_latency_under_500ms[0m - AssertionError: P99 latency 845ms exceeds 500ms Quality Bar target
+[31mFAILED[0m tests/performance/test_slo_compliance.py::[1mTestQdrantIndexSLO::test_qdrant_fully_indexed[0m - AssertionError: Qdrant collection does not exist
+[31mFAILED[0m tests/performance/test_slo_compliance.py::[1mTestHealthCheckSLO::test_health_check_responsive[0m - AssertionError: Health check took 20.91s (target: < 10s)
+[31m======== [31m[1m5 failed[0m, [32m5 passed[0m, [33m7 skipped[0m, [33m8 warnings[0m[31m in 155.97s (0:02:35)[0m[31m ========[0m

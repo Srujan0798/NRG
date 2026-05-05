@@ -1,0 +1,14 @@
+============================================================
+NRG Workflow Validator
+============================================================
+OK:   All entry points present
+OK:   .claude/skills: 86, .agents/skills: 50, total: 136
+OK:   No duplicate skill names across .claude and .agents
+OK:   MANIFEST.md appears current
+OK:   Forbidden vocabulary guard passed
+OK:   Evidence folder size: 178.5 MB
+OK:   Stale evidence files: 0
+OK:   No hardcoded /Users/srujansai/Desktop/NRG paths in scripts
+OK:   Assignment files follow .agents/AGENTS.md §Task Format
+============================================================
+ALL CHECKS PASSED - workflow is clean

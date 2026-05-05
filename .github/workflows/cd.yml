@@ -121,7 +121,7 @@ jobs:
 
       - name: Run API smoke tests
         run: |
-          docker run -d --name api-test -e APP_ENV=test ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          docker run -d --name api-test -p 8000:8000 -e APP_ENV=test ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
           sleep 10
           curl -sf http://localhost:8000/health && echo "API healthy"
           docker rm -f api-test

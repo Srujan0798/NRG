@@ -1487,6 +1487,7 @@ FOLLOW-UP QUERIES:
     def _fallback_trl(self, query: str, query_lower: str) -> str:
         """Generate SQL for trl_stages queries."""
         conditions = []
+        trl_table = "innovations_at_various_stages_of_technology_readiness_level"
 
         if "iit" in query_lower:
             institute_match = re.search(r"IIT\s+\w+", query, re.IGNORECASE)
@@ -1507,7 +1508,7 @@ FOLLOW-UP QUERIES:
             return (
                 "WITH stage_counts AS ("
                 "SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count "
-                "FROM trl_stages "
+                f"FROM {trl_table} "
                 f"WHERE {inst_filter} AND stage_of_technology IN ('Level 4', 'Level 9') "
                 "GROUP BY financial_year, stage_of_technology"
                 "), yearly_totals AS ("
@@ -1535,16 +1536,16 @@ FOLLOW-UP QUERIES:
                 where_clause = " AND ".join(conditions)
                 return (
                     f"WITH StageCount AS (SELECT stage_of_technology, COUNT(*) as cnt "
-                    f"FROM trl_stages "
+                    f"FROM {trl_table} "
                     f"WHERE {where_clause} GROUP BY stage_of_technology), "
-                    f"TotalCount AS (SELECT COUNT(*) as total FROM trl_stages WHERE {where_clause}) "
+                    f"TotalCount AS (SELECT COUNT(*) as total FROM {trl_table} WHERE {where_clause}) "
                     f"SELECT s.stage_of_technology, s.cnt, ROUND(s.cnt * 100.0 / NULLIF(t.total, 0), 2) as percentage "
                     f"FROM StageCount s, TotalCount t ORDER BY s.cnt DESC;"
                 )
             return (
                 "SELECT stage_of_technology, COUNT(*) as cnt, "
-                "ROUND(COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM trl_stages), 0), 2) as percentage "
-                "FROM trl_stages "
+                f"ROUND(COUNT(*) * 100.0 / NULLIF((SELECT COUNT(*) FROM {trl_table}), 0), 2) as percentage "
+                f"FROM {trl_table} "
                 "GROUP BY stage_of_technology ORDER BY cnt DESC;"
             )
 
@@ -1555,14 +1556,14 @@ FOLLOW-UP QUERIES:
         ):
             return (
                 "SELECT financial_year, stage_of_technology, COUNT(*) as count "
-                "FROM trl_stages "
+                f"FROM {trl_table} "
                 "GROUP BY financial_year, stage_of_technology ORDER BY financial_year DESC, stage_of_technology;"
             )
 
         if conditions:
             where_clause = " AND ".join(conditions)
-            return f"SELECT * FROM trl_stages WHERE {where_clause} LIMIT 100;"
-        return "SELECT * FROM trl_stages LIMIT 100;"
+            return f"SELECT * FROM {trl_table} WHERE {where_clause} LIMIT 100;"
+        return f"SELECT * FROM {trl_table} LIMIT 100;"
 
     def _fallback_patents(self, query: str, query_lower: str) -> str:
         """Generate SQL for combined_ipo_patent_data queries."""

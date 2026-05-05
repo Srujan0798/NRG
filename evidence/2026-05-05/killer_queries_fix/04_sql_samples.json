@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-05-05",
+  "samples": [
+    {
+      "elapsed_ms": 2012.93,
+      "must_contain": [
+        "innovations_at_various_stages_of_technology_readiness_level",
+        "GROUP BY",
+        "financial_year"
+      ],
+      "query_id": "KILLER-02",
+      "role": "researcher",
+      "route": "text_to_sql",
+      "row_count": 4,
+      "shape_pass": true,
+      "sql": "WITH stage_counts AS ( SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') AND financial_year IN ( SELECT financial_year FROM ( SELECT DISTINCT financial_year FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' ORDER BY financial_year DESC LIMIT 3 ) AS recent_years ) GROUP BY financial_year, stage_of_technology ), yearly_totals AS ( SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year ) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+      "status": "success",
+      "verification_status": true
+    },
+    {
+      "elapsed_ms": 42.26,
+      "must_contain": [
+        "innovations_at_various_stages_of_technology_readiness_level",
+        "GROUP BY",
+        "financial_year"
+      ],
+      "query_id": "KILLER-02",
+      "role": "government",
+      "route": "text_to_sql",
+      "row_count": 4,
+      "shape_pass": true,
+      "sql": "WITH stage_counts AS ( SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' AND stage_of_technology IN ('Level 4', 'Level 9') AND financial_year IN ( SELECT financial_year FROM ( SELECT DISTINCT financial_year FROM innovations_at_various_stages_of_technology_readiness_level WHERE institute LIKE '%IIT Madras%' ORDER BY financial_year DESC LIMIT 3 ) AS recent_years ) GROUP BY financial_year, stage_of_technology ), yearly_totals AS ( SELECT financial_year, SUM(stage_count) AS total_count FROM stage_counts GROUP BY financial_year ) SELECT s.financial_year, s.stage_of_technology, s.stage_count, ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct FROM stage_counts AS s JOIN yearly_totals AS y ON y.financial_year = s.financial_year ORDER BY s.financial_year DESC, s.stage_count DESC LIMIT 20",
+      "status": "success",
+      "verification_status": true
+    },
+    {
+      "elapsed_ms": 2350.25,
+      "must_contain": [
+        "WITH",
+        "innovation_grant_from_govt",
+        "combined_ipo_patent_data",
+        "HAVING"
+      ],
+      "query_id": "KILLER-03",
+      "role": "researcher",
+      "route": "text_to_sql",
+      "row_count": 3,
+      "shape_pass": true,
+      "sql": "WITH grants AS ( SELECT institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt WHERE year_of_receiving IS NOT NULL GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) ), grant_yoy AS ( SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct FROM grants AS curr JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1 ), patents AS ( SELECT applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num, COUNT(*) AS granted_patents FROM combined_ipo_patent_data WHERE status = 'Granted' AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) ), patent_yoy AS ( SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct FROM patents AS curr JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1 ) SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents FROM grant_yoy AS g JOIN patent_yoy AS p ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%' AND p.year_num = g.year_num GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0 ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC LIMIT 3",
+      "status": "success",
+      "verification_status": true
+    },
+    {
+      "elapsed_ms": 4861.79,
+      "must_contain": [
+        "WITH",
+        "innovation_grant_from_govt",
+        "combined_ipo_patent_data",
+        "HAVING"
+      ],
+      "query_id": "KILLER-03",
+      "role": "government",
+      "route": "text_to_sql",
+      "row_count": 3,
+      "shape_pass": true,
+      "sql": "WITH grants AS ( SELECT institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num, SUM(grant_received) AS total_grant FROM innovation_grant_from_govt WHERE year_of_receiving IS NOT NULL GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) ), grant_yoy AS ( SELECT curr.institute, curr.year_num, curr.total_grant, prev.total_grant AS prev_grant, ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct FROM grants AS curr JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1 ), patents AS ( SELECT applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num, COUNT(*) AS granted_patents FROM combined_ipo_patent_data WHERE status = 'Granted' AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) ), patent_yoy AS ( SELECT curr.applicants, curr.year_num, curr.granted_patents, prev.granted_patents AS prev_patents, ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct FROM patents AS curr JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1 ) SELECT g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents FROM grant_yoy AS g JOIN patent_yoy AS p ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%' AND p.year_num = g.year_num GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0 ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC LIMIT 3",
+      "status": "success",
+      "verification_status": true
+    }
+  ]
+}

@@ -1,13 +1,42 @@
 # ==============================================================================
 # Runtime Dockerfile for NRG Frontend
 #
-# Build the frontend first with:
-#   npm --prefix frontend run build
-#
-# The Docker image packages the verified Vite output and serves it with nginx.
-# Keeping dependency installation outside this image makes `docker compose up --build`
-# predictable for local acceptance and handoff runs.
+# The image builds the verified Vite output, then serves it with nginx. This
+# keeps Docker Compose and CI smoke builds independent of a pre-existing local
+# dist/frontend directory.
 # ==============================================================================
+
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app/frontend
+ENV NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_PROGRESS=false
+
+COPY frontend/package*.json ./
+RUN sh -eu -c '\
+    npm ci --prefer-offline --no-audit --no-fund --progress=false & \
+    pid="$!"; \
+    while kill -0 "$pid" 2>/dev/null; do \
+      echo "npm ci still running"; \
+      sleep 30; \
+    done; \
+    wait "$pid" \
+  '
+
+COPY frontend/index.html frontend/tsconfig.json frontend/vite.config.ts ./
+COPY frontend/postcss.config.js frontend/tailwind.config.js ./
+COPY frontend/src/ ./src/
+COPY frontend/public/ ./public/
+RUN sh -eu -c '\
+    npm run build & \
+    pid="$!"; \
+    while kill -0 "$pid" 2>/dev/null; do \
+      echo "frontend build still running"; \
+      sleep 30; \
+    done; \
+    wait "$pid" \
+  '
 
 FROM nginx:1.29-alpine
 
@@ -20,7 +49,7 @@ RUN apk upgrade --no-cache && \
     touch /var/run/nginx.pid && \
     chown -R nginx:nginx /var/run/nginx.pid
 
-COPY --chown=nginx:nginx dist/frontend /usr/share/nginx/html
+COPY --from=frontend-builder --chown=nginx:nginx /app/dist/frontend /usr/share/nginx/html
 COPY infrastructure/nginx/frontend.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80

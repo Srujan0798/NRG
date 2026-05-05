@@ -1,0 +1,287 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 2241 items / 2180 deselected / 61 selected
+
+tests/api/test_minimax_mvp_fusion_queries.py::test_minimax_trl_distribution_routes_to_normalized_dhairya_safe_fast_path [32mPASSED[0m[32m [  1%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_report_patterns_are_mirrored_in_hall_of_shame [32mPASSED[0m[32m [  3%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_hall_of_shame_documents_required_fields_for_each_pattern [32mPASSED[0m[32m [  4%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_exports_rule_for_each_dhairya_pattern [32mPASSED[0m[32m [  6%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P1] [32mPASSED[0m[32m [  8%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P2] [32mPASSED[0m[32m [  9%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P3] [32mPASSED[0m[32m [ 11%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P4] [32mPASSED[0m[32m [ 13%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P5] [32mPASSED[0m[32m [ 14%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P6] [32mPASSED[0m[32m [ 16%][0m
+tests/benchmarks/test_dhairya_adversarial.py::TestDhairyaFailurePatternContracts::test_validator_rejects_each_documented_wrong_sql[P7] [32mPASSED[0m[32m [ 18%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q01_credits_intensive_curriculum [32mPASSED[0m[32m [ 19%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q02_phd_ug_ratio_iit_bombay [32mPASSED[0m[32m [ 21%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q03_grant_drop_yoy [32mPASSED[0m[32m [ 22%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q03_grant_drop_yoy_coincidence_case [32mPASSED[0m[32m [ 24%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q04_top_5_funding_agencies [32mPASSED[0m[32m [ 26%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q05_lab_validation_bottleneck [32mPASSED[0m[32m [ 27%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q06_trl9_market_ready [32mPASSED[0m[32m [ 29%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q07_cost_per_patent [32mPASSED[0m[32m [ 31%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q08_pg_courses_iit_madras [32mPASSED[0m[32m [ 32%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q09_most_phd_courses [32mPASSED[0m[32m [ 34%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q10_phd_vs_ug_followup [32mPASSED[0m[32m [ 36%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q11_yoy_pg_growth [32mPASSED[0m[32m [ 37%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q12_strategy_shift [32mPASSED[0m[32m [ 39%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q13_courses_vs_startups [32mPASSED[0m[32m [ 40%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q14_gap_analysis [32mPASSED[0m[32m [ 42%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q15_rising_stars [32mPASSED[0m[32m [ 44%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q16_utilization_audit [32mPASSED[0m[32m [ 45%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaQueries::test_q17_pipeline_progression [32mPASSED[0m[32m [ 47%][0m
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_incomplete_having_without_group [32mPASSED[0m[32m [ 49%][0m
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_trailing_incomplete_marker [32mPASSED[0m[32m [ 50%][0m
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_unbalanced_parens [32mPASSED[0m[32m [ 52%][0m
+tests/benchmarks/test_dhairya_regression.py::TestCompletenessValidator::test_valid_query_passes [32mPASSED[0m[32m [ 54%][0m
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_trl9_maps_to_level9 [32mPASSED[0m[32m [ 55%][0m
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_credit_parsing_in_prompt [32mPASSED[0m[32m [ 57%][0m
+tests/benchmarks/test_dhairya_regression.py::TestSynonymMapping::test_no_distinct_for_ranked_results [32mPASSED[0m[32m [ 59%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[1-Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not just course count?-expected_patterns0] [32mPASSED[0m[32m [ 60%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[2-Show me the ratio of PhD level innovation courses to Undergraduate ones for IIT Bombay.-expected_patterns1] [32mPASSED[0m[32m [ 62%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[3-Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-21 to 2021-22.-expected_patterns2] [32mPASSED[0m[32m [ 63%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[4-Who are the top 5 unique funding agencies providing grants to us?-expected_patterns3] [32mPASSED[0m[32m [ 65%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[5-Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?-expected_patterns4] [32mPASSED[0m[32m [ 67%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[6-List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.-expected_patterns5] [32mPASSED[0m[32m [ 68%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[7-Calculate the 'Cost of Innovation': How much government grant money do we spend for every 1 Patent granted?-expected_patterns6] [32mPASSED[0m[32m [ 70%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[8-Show me all PG innovation courses at IIT Madras for the last 3 years starting from FY 2021-22.-expected_patterns7] [32mPASSED[0m[32m [ 72%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[9-Which institute has the most PhD courses?-expected_patterns8] [32mPASSED[0m[32m [ 73%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[10-How does that compare to their UG numbers?-expected_patterns9] [32mPASSED[0m[32m [ 75%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[11-Identify growth trends: Calculate Year-Over-Year growth for PG courses in IIT Madras.-expected_patterns10] [32mPASSED[0m[32m [ 77%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[12-Detect Strategy Shift: Institute stops UG but spikes in PhD in IIT Madras.-expected_patterns11] [32mPASSED[0m[32m [ 78%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[13-Correlation: Innovation Courses vs. Startups Incubated (Cross-Module).-expected_patterns12] [32mPASSED[0m[32m [ 80%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[14-Gap Analysis: High Capital Expenses but Low Innovation Courses in FY 2023-24.-expected_patterns13] [32mPASSED[0m[32m [ 81%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[15-Rising Stars: Institutes growing funding while the average declines.-expected_patterns14] [32mPASSED[0m[32m [ 83%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[16-Utilization Audit: High Grants vs Low Expenditure.-expected_patterns15] [32mPASSED[0m[32m [ 85%][0m
+tests/benchmarks/test_dhairya_regression.py::TestDhairyaBenchmarks::test_all_17_queries_generate_sql[17-Pipeline Progression: Are we moving from Low TRL to High TRL?-expected_patterns16] [31mERROR[0m[31m [ 86%][0m
+tests/benchmarks/test_dhairya_regression.py::test_dhairya_accuracy_target [32mPASSED[0m[31m [ 88%][0m
+tests/data/test_failed_queries_hall_of_shame.py::test_failed_queries_hall_documents_all_dhairya_patterns [32mPASSED[0m[31m [ 90%][0m
+tests/data/test_schema_parity.py::TestSchemaParity::test_dhairya_tables_present [32mPASSED[0m[31m [ 91%][0m
+tests/data/test_schema_parity.py::TestSchemaParity::test_all_unprofiled_dhairya_tables_have_minimum_rows [32mPASSED[0m[31m [ 93%][0m
+tests/evals/test_sql_accuracy.py::test_sql_accuracy_on_dhairya_eval_set [31mFAILED[0m[31m [ 95%][0m
+tests/integration/test_schema_completeness.py::TestRelationshipMappings::test_dhairya_critical_tables_have_app_joins [32mPASSED[0m[31m [ 96%][0m
+tests/integration/test_schema_completeness.py::TestSchemaSyncCheck::test_get_dhairya_required_tables [32mPASSED[0m[31m [ 98%][0m
+tests/integration/test_schema_completeness.py::TestSQLitePostgreSQLTableSplit::test_dhairya_tables_all_postgresql [32mPASSED[0m[31m [100%][0m
+
+==================================== ERRORS ====================================
+[31m[1m_ ERROR at setup of TestDhairyaBenchmarks.test_all_17_queries_generate_sql[17-Pipeline Progression: Are we moving from Low TRL to High TRL?-expected_patterns16] _[0m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:145: in __init__
+    [0m[96mself[39;49;00m._dbapi_connection = engine.raw_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3293: in raw_connection
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.pool.connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:452: in connect
+    [0m[94mreturn[39;49;00m _ConnectionFairy._checkout([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:1269: in _checkout
+    [0mfairy = _ConnectionRecord.checkout(pool)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:716: in checkout
+    [0mrec = pool._do_get()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:169: in _do_get
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:167: in _do_get
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._create_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:393: in _create_connection
+    [0m[94mreturn[39;49;00m _ConnectionRecord([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:678: in __init__
+    [0m[96mself[39;49;00m.__connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:902: in __connect
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:898: in __connect
+    [0m[96mself[39;49;00m.dbapi_connection = connection = pool._invoke_creator([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/create.py[0m:645: in connect
+    [0m[94mreturn[39;49;00m dialect.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py[0m:616: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.loaded_dbapi.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/psycopg2/__init__.py[0m:122: in connect
+    [0mconn = _connect(dsn, connection_factory=connection_factory, **kwasync)[90m[39;49;00m
+[1m[31mE   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+[1m[31mE   connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  the database system is shutting down[0m
+
+[33mThe above exception was the direct cause of the following exception:[0m
+[1m[31mtests/benchmarks/test_dhairya_regression.py[0m:464: in skill
+    [0ms = TextToSQLSkill()[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/skill.py[0m:605: in __init__
+    [0m[96mself[39;49;00m.extractor, [96mself[39;49;00m.sandbox = [96mself[39;49;00m._initialize_backend()[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/skill.py[0m:642: in _initialize_backend
+    [0mextractor = SchemaExtractor(connection_string=[96mself[39;49;00m._db_url)[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/schema_extractor.py[0m:111: in __init__
+    [0m[96mself[39;49;00m.inspector = inspect([96mself[39;49;00m.engine)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/inspection.py[0m:145: in inspect
+    [0mret = reg(subject)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:303: in _engine_insp
+    [0m[94mreturn[39;49;00m Inspector._construct(Inspector._init_engine, bind)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:236: in _construct
+    [0minit([96mself[39;49;00m, bind)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:247: in _init_engine
+    [0mengine.connect().close()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3269: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._connection_cls([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:147: in __init__
+    [0mConnection._handle_dbapi_exception_noconnection([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:2431: in _handle_dbapi_exception_noconnection
+    [0m[94mraise[39;49;00m sqlalchemy_exception.with_traceback(exc_info[[94m2[39;49;00m]) [94mfrom[39;49;00m[90m [39;49;00m[04m[96me[39;49;00m[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:145: in __init__
+    [0m[96mself[39;49;00m._dbapi_connection = engine.raw_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3293: in raw_connection
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.pool.connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:452: in connect
+    [0m[94mreturn[39;49;00m _ConnectionFairy._checkout([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:1269: in _checkout
+    [0mfairy = _ConnectionRecord.checkout(pool)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:716: in checkout
+    [0mrec = pool._do_get()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:169: in _do_get
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:167: in _do_get
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._create_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:393: in _create_connection
+    [0m[94mreturn[39;49;00m _ConnectionRecord([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:678: in __init__
+    [0m[96mself[39;49;00m.__connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:902: in __connect
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:898: in __connect
+    [0m[96mself[39;49;00m.dbapi_connection = connection = pool._invoke_creator([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/create.py[0m:645: in connect
+    [0m[94mreturn[39;49;00m dialect.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py[0m:616: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.loaded_dbapi.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/psycopg2/__init__.py[0m:122: in connect
+    [0mconn = _connect(dsn, connection_factory=connection_factory, **kwasync)[90m[39;49;00m
+[1m[31mE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+[1m[31mE   connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  the database system is shutting down[0m
+[1m[31mE   [0m
+[1m[31mE   (Background on this error at: https://sqlalche.me/e/20/e3q8)[0m
+=================================== FAILURES ===================================
+[31m[1m____________________ test_sql_accuracy_on_dhairya_eval_set _____________________[0m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:145: in __init__
+    [0m[96mself[39;49;00m._dbapi_connection = engine.raw_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3293: in raw_connection
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.pool.connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:452: in connect
+    [0m[94mreturn[39;49;00m _ConnectionFairy._checkout([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:1269: in _checkout
+    [0mfairy = _ConnectionRecord.checkout(pool)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:716: in checkout
+    [0mrec = pool._do_get()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:169: in _do_get
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:167: in _do_get
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._create_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:393: in _create_connection
+    [0m[94mreturn[39;49;00m _ConnectionRecord([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:678: in __init__
+    [0m[96mself[39;49;00m.__connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:902: in __connect
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:898: in __connect
+    [0m[96mself[39;49;00m.dbapi_connection = connection = pool._invoke_creator([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/create.py[0m:645: in connect
+    [0m[94mreturn[39;49;00m dialect.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py[0m:616: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.loaded_dbapi.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/psycopg2/__init__.py[0m:122: in connect
+    [0mconn = _connect(dsn, connection_factory=connection_factory, **kwasync)[90m[39;49;00m
+[1m[31mE   psycopg2.OperationalError: connection to server at "localhost" (::1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+[1m[31mE   connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+
+[33mThe above exception was the direct cause of the following exception:[0m
+[1m[31mtests/evals/test_sql_accuracy.py[0m:128: in test_sql_accuracy_on_dhairya_eval_set
+    [0mskill = TextToSQLSkill()[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/skill.py[0m:605: in __init__
+    [0m[96mself[39;49;00m.extractor, [96mself[39;49;00m.sandbox = [96mself[39;49;00m._initialize_backend()[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/skill.py[0m:642: in _initialize_backend
+    [0mextractor = SchemaExtractor(connection_string=[96mself[39;49;00m._db_url)[90m[39;49;00m
+[1m[31msrc/skills/text_to_sql/schema_extractor.py[0m:111: in __init__
+    [0m[96mself[39;49;00m.inspector = inspect([96mself[39;49;00m.engine)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/inspection.py[0m:145: in inspect
+    [0mret = reg(subject)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:303: in _engine_insp
+    [0m[94mreturn[39;49;00m Inspector._construct(Inspector._init_engine, bind)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:236: in _construct
+    [0minit([96mself[39;49;00m, bind)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/reflection.py[0m:247: in _init_engine
+    [0mengine.connect().close()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3269: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._connection_cls([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:147: in __init__
+    [0mConnection._handle_dbapi_exception_noconnection([90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:2431: in _handle_dbapi_exception_noconnection
+    [0m[94mraise[39;49;00m sqlalchemy_exception.with_traceback(exc_info[[94m2[39;49;00m]) [94mfrom[39;49;00m[90m [39;49;00m[04m[96me[39;49;00m[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:145: in __init__
+    [0m[96mself[39;49;00m._dbapi_connection = engine.raw_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/base.py[0m:3293: in raw_connection
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.pool.connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:452: in connect
+    [0m[94mreturn[39;49;00m _ConnectionFairy._checkout([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:1269: in _checkout
+    [0mfairy = _ConnectionRecord.checkout(pool)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:716: in checkout
+    [0mrec = pool._do_get()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:169: in _do_get
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/impl.py[0m:167: in _do_get
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m._create_connection()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:393: in _create_connection
+    [0m[94mreturn[39;49;00m _ConnectionRecord([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:678: in __init__
+    [0m[96mself[39;49;00m.__connect()[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:902: in __connect
+    [0m[94mwith[39;49;00m util.safe_reraise():[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/util/langhelpers.py[0m:146: in __exit__
+    [0m[94mraise[39;49;00m exc_value.with_traceback(exc_tb)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/pool/base.py[0m:898: in __connect
+    [0m[96mself[39;49;00m.dbapi_connection = connection = pool._invoke_creator([96mself[39;49;00m)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/create.py[0m:645: in connect
+    [0m[94mreturn[39;49;00m dialect.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/sqlalchemy/engine/default.py[0m:616: in connect
+    [0m[94mreturn[39;49;00m [96mself[39;49;00m.loaded_dbapi.connect(*cargs, **cparams)[90m[39;49;00m
+[1m[31m.venv/lib/python3.11/site-packages/psycopg2/__init__.py[0m:122: in connect
+    [0mconn = _connect(dsn, connection_factory=connection_factory, **kwasync)[90m[39;49;00m
+[1m[31mE   sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+[1m[31mE   connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused[0m
+[1m[31mE   	Is the server running on that host and accepting TCP/IP connections?[0m
+[1m[31mE   [0m
+[1m[31mE   (Background on this error at: https://sqlalche.me/e/20/e3q8)[0m
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/evals/test_sql_accuracy.py::[1mtest_sql_accuracy_on_dhairya_eval_set[0m - sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+[31mERROR[0m tests/benchmarks/test_dhairya_regression.py::[1mTestDhairyaBenchmarks::test_all_17_queries_generate_sql[17-Pipeline Progression: Are we moving from Low TRL to High TRL?-expected_patterns16][0m - sqlalchemy.exc.OperationalError: (psycopg2.OperationalError) connection to server at "localhost" (::1), port 5432 failed: Connection refused
+	Is the server running on that host and accepting TCP/IP connections?
+connection to server at "localhost" (127.0.0.1), port 5432 failed: FATAL:  the database system is shutting down
+
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+[31m====== [31m[1m1 failed[0m, [32m59 passed[0m, [33m2180 deselected[0m, [31m[1m1 error[0m[31m in 960.34s (0:16:00)[0m[31m ======[0m

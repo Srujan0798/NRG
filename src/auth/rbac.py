@@ -232,7 +232,8 @@ class RBACPolicyEngine:
 
         try:
             with open(self._policy_path, "r") as f:
-                raw = yaml.safe_load(f)
+                loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+                raw = yaml.load(f, Loader=loader)
         except yaml.YAMLError as e:
             raise ValueError(f"Invalid YAML in {self._policy_path}: {e}") from e
 

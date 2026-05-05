@@ -85,12 +85,39 @@ def mock_llm(monkeypatch):
     monkeypatch.setattr(synth_module, "get_llm_mesh", lambda: fake_mesh)
     monkeypatch.setattr(synth_module, "get_local_llm_client", mock_get_local_llm_client)
     monkeypatch.setattr(synth_module, "log_llm_call", lambda *args, **kwargs: None)
+    monkeypatch.setenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "0.2")
+    monkeypatch.setenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "0.2")
+    monkeypatch.setenv("NRG_SKIP_C4_READ_MODEL_PREWARM", "1")
     monkeypatch.setattr(api_main, "_fast_query_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_academic_follow_up_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_killer_query_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_advanced_adversarial_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_should_use_c4_read_model", lambda *args, **kwargs: False)
     monkeypatch.setattr(api_main, "_c4_read_model_response", lambda *args, **kwargs: None)
+
+    async def mock_audit_log_query_async(*args, **kwargs):
+        return "audit-test-event"
+
+    async def mock_audit_log_anomaly_async(*args, **kwargs):
+        return "audit-test-event"
+
+    monkeypatch.setattr(api_main, "_audit_log_query_async", mock_audit_log_query_async)
+    monkeypatch.setattr(api_main, "_audit_log_anomaly_async", mock_audit_log_anomaly_async)
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda **_: {
+            "status": "healthy",
+            "chain_valid": True,
+            "chain_length": 1,
+            "valid_events": 1,
+            "error_count": 0,
+        },
+    )
+    monkeypatch.setattr(
+        api_main,
+        "_get_qdrant_vector_count_health",
+        lambda: {"status": "healthy", "collection": "nrg_research", "vectors": 1},
+    )
 
     class StubWorkflow:
         call_count = 0
@@ -118,9 +145,10 @@ def mock_llm(monkeypatch):
 
 
 @pytest.fixture
-def client():
+def client(mock_llm):
     api_main._api_cache.invalidate()
-    return TestClient(api_main.app)
+    with TestClient(api_main.app) as test_client:
+        yield test_client
 
 
 def _login(client: TestClient, username: str = "researcher_user", password: str = "researcher-pass") -> str:

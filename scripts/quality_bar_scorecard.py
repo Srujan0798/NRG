@@ -29,7 +29,10 @@ from urllib import request as urllib_request
 
 SCORECARD_JSON = Path(__file__).parent / "quality_bar_scorecard.json"
 ROOT = Path(__file__).parent.parent
-VENV_PYTEST = ROOT / ".venv" / "bin" / "python"
+DEFAULT_VENV_PYTHON = ROOT / ".venv" / "bin" / "python"
+PYTHON_BIN = Path(os.getenv("NRG_PYTHON_BIN", "")) if os.getenv("NRG_PYTHON_BIN") else (
+    DEFAULT_VENV_PYTHON if DEFAULT_VENV_PYTHON.exists() else Path(sys.executable)
+)
 
 TESTS_C1 = "tests/security/test_pii_compliance.py"
 TESTS_C2 = "tests/security/test_per_user_audit_binding.py"
@@ -164,7 +167,7 @@ def _run_pytest(test_path: str, verbose: bool = False) -> dict:
     """Run a pytest test file and return parsed results."""
     abs_path = ROOT / test_path
     cmd = [
-        str(VENV_PYTEST),
+        str(PYTHON_BIN),
         "-m",
         "pytest",
         str(abs_path),
@@ -197,7 +200,7 @@ def _run_pytest(test_path: str, verbose: bool = False) -> dict:
 def _run_drift_check(verbose: bool = False) -> dict:
     """Run vector drift check script."""
     abs_path = ROOT / TESTS_C5
-    cmd = [str(VENV_PYTEST), str(abs_path)]
+    cmd = [str(PYTHON_BIN), str(abs_path)]
     if verbose:
         cmd.append("--verbose")
 
@@ -265,7 +268,7 @@ def _run_drift_check(verbose: bool = False) -> dict:
 def _run_drift_scheduler_dry_run() -> dict:
     """Verify the local 60-second drift scheduler contract when Qdrant is absent."""
     abs_path = ROOT / TESTS_C5_SCHEDULER
-    cmd = [str(VENV_PYTEST), str(abs_path), "--dry-run"]
+    cmd = [str(PYTHON_BIN), str(abs_path), "--dry-run"]
     try:
         result = subprocess.run(
             cmd,
@@ -525,7 +528,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
     )
 
     cmd = [
-        str(VENV_PYTEST), "-m", "locust",
+        str(PYTHON_BIN), "-m", "locust",
         "-f", str(ROOT / LOCUST_FILE),
         "--headless",
         "-u", str(LOCUST_USERS),

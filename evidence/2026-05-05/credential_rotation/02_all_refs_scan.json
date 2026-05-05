@@ -1,0 +1,5 @@
+usage: scan_env_history_secrets.py [-h] [--repo REPO] [--env-file ENV_FILES]
+                                   [--json-output JSON_OUTPUT]
+                                   [--max-findings MAX_FINDINGS]
+                                   [--allow-findings]
+scan_env_history_secrets.py: error: argument --json-output: expected one argument

@@ -1,0 +1,438 @@
+
+[19:41:58] 0/4 final preflight
+OK: MiniMax env and verified runner are present
+
+[19:41:58] 1/4 strict critical-path boot and walk
+
+[19:41:59] Preflight
+JWT private key already exists: infrastructure/kong/ssl/jwt_rsa.key
+JWT public key already exists: infrastructure/kong/ssl/jwt_rsa.pub
+JWT keypair ready.
+OK: environment and acceptance personas verified locally
+
+[19:42:10] Boot compose stack
+ Container nrg-qdrant Running
+ Container nrg-redis Running
+ Container nrg-postgres Recreate
+ Container nrg-postgres Recreated
+ Container nrg-pgbouncer Running
+ Container nrg-postgres Starting
+ Container nrg-postgres Started
+ Container nrg-postgres Waiting
+ Container nrg-postgres Healthy
+OK: Postgres reachable on localhost:5432
+OK: Qdrant reachable on localhost:6333
+OK: Redis reachable on localhost:6379
+ Image nrg-api Building
+ Image nrg-frontend Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 1.04kB done
+#1 DONE 0.0s
+
+#2 [frontend internal] load build definition from Dockerfile.frontend
+#2 transferring dockerfile: 39B 0.0s
+#2 transferring dockerfile: 1.99kB 0.6s done
+#2 DONE 0.6s
+
+#3 [api internal] load build definition from Dockerfile.api
+#3 transferring dockerfile: 3.29kB 0.6s done
+#3 DONE 0.6s
+
+#4 [api internal] load metadata for docker.io/library/python:3.11-slim
+#4 ...
+
+#5 [frontend internal] load metadata for docker.io/library/node:20-alpine
+#5 DONE 0.4s
+
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.29-alpine
+#6 ...
+
+#7 [auth] library/python:pull token for registry-1.docker.io
+#7 DONE 0.0s
+
+#8 [auth] library/nginx:pull token for registry-1.docker.io
+#8 DONE 0.0s
+
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.29-alpine
+#6 ...
+
+#4 [api internal] load metadata for docker.io/library/python:3.11-slim
+#4 DONE 5.6s
+
+#6 [frontend internal] load metadata for docker.io/library/nginx:1.29-alpine
+#6 DONE 5.6s
+
+#9 [frontend internal] load .dockerignore
+#9 transferring context: 33B 0.0s
+#9 transferring context: 735B 0.1s done
+#9 DONE 0.3s
+
+#10 [api internal] load build context
+#10 DONE 0.0s
+
+#11 [frontend internal] load build context
+#11 ...
+
+#12 [api builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#12 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2 0.9s done
+#12 DONE 1.0s
+
+#13 [frontend frontend-builder 1/9] FROM docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293
+#13 resolve docker.io/library/node:20-alpine@sha256:fb4cd12c85ee03686f6af5362a0b0d56d50c58a04632e6c0fb8363f609372293 0.9s done
+#13 DONE 1.0s
+
+#14 [frontend stage-1 1/4] FROM docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+#14 resolve docker.io/library/nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de 0.9s done
+#14 DONE 1.0s
+
+#15 [frontend stage-1 2/4] RUN apk upgrade --no-cache &&     adduser -D -u 82 -g 82 -s /bin/sh nginx 2>/dev/null || true &&     chown -R nginx:nginx /usr/share/nginx/html &&     chown -R nginx:nginx /var/cache/nginx &&     chown -R nginx:nginx /var/log/nginx &&     chown -R nginx:nginx /etc/nginx/conf.d &&     touch /var/run/nginx.pid &&     chown -R nginx:nginx /var/run/nginx.pid
+#15 CACHED
+
+#16 [api builder  2/12] WORKDIR /app
+#16 CACHED
+
+#17 [api runner 3/8] RUN python -m pip install --no-cache-dir --upgrade     "pip>=26.0"     "wheel>=0.46.2"     "setuptools>=81.0.0"     "jaraco.context>=6.1.0" &&     groupadd -r app && useradd -r -g app app &&     mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+#17 CACHED
+
+#10 [api internal] load build context
+#10 ...
+
+#11 [frontend internal] load build context
+#11 transferring context: 10.57kB 2.1s done
+#11 DONE 2.3s
+
+#10 [api internal] load build context
+#10 ...
+
+#18 [frontend frontend-builder 4/9] RUN sh -eu -c '    npm ci --prefer-offline --no-audit --no-fund --progress=false &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "npm ci still running";       sleep 30;     done;     wait "$pid"   '
+#18 CACHED
+
+#19 [frontend frontend-builder 6/9] COPY frontend/postcss.config.js frontend/tailwind.config.js ./
+#19 CACHED
+
+#20 [frontend frontend-builder 7/9] COPY frontend/src/ ./src/
+#20 CACHED
+
+#21 [frontend frontend-builder 2/9] WORKDIR /app/frontend
+#21 CACHED
+
+#22 [frontend frontend-builder 3/9] COPY frontend/package*.json ./
+#22 CACHED
+
+#23 [frontend frontend-builder 5/9] COPY frontend/index.html frontend/tsconfig.json frontend/vite.config.ts ./
+#23 CACHED
+
+#24 [frontend frontend-builder 8/9] COPY frontend/public/ ./public/
+#24 CACHED
+
+#10 [api internal] load build context
+#10 transferring context: 2.21MB 6.3s
+#10 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 ...
+
+#10 [api internal] load build context
+#10 transferring context: 4.84MB 11.4s
+#10 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 ...
+
+#10 [api internal] load build context
+#10 transferring context: 10.76MB 15.2s done
+#10 DONE 15.3s
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 12.00 frontend build still running
+#26 16.42
+#26 16.42 > nrg-frontend@1.0.0 build
+#26 16.42 > tsc && vite build --emptyOutDir
+#26 16.42
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 15.81 Hit:1 http://deb.debian.org/debian trixie InRelease
+#25 15.96 Get:2 http://deb.debian.org/debian trixie-updates InRelease [47.3 kB]
+#25 16.18 Get:3 http://deb.debian.org/debian-security trixie-security InRelease [43.4 kB]
+#25 16.66 Get:4 http://deb.debian.org/debian trixie/main arm64 Packages [9607 kB]
+#25 18.25 Get:5 http://deb.debian.org/debian trixie-updates/main arm64 Packages [5404 B]
+#25 18.43 Get:6 http://deb.debian.org/debian-security trixie-security/main arm64 Packages [130 kB]
+#25 25.78 Fetched 9833 kB in 10s (960 kB/s)
+#25 25.78 Reading package lists...
+#25 42.92 Reading package lists...
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 42.11 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 42.92 Reading package lists...
+#25 56.45 Building dependency tree...
+#25 59.43 Reading state information...
+#25 66.62 The following additional packages will be installed:
+#25 66.62   binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-14
+#25 66.62   cpp-14-aarch64-linux-gnu cpp-aarch64-linux-gnu g++-14
+#25 66.62   g++-14-aarch64-linux-gnu g++-aarch64-linux-gnu gcc-14
+#25 66.62   gcc-14-aarch64-linux-gnu gcc-aarch64-linux-gnu libasan8 libatomic1
+#25 66.62   libbinutils libbrotli1 libc-dev-bin libc6-dev libcc1-0 libcom-err2
+#25 66.62   libcrypt-dev libctf-nobfd0 libctf0 libcurl4t64 libgcc-14-dev libgnutls30t64
+#25 66.62   libgomp1 libgprofng0 libgssapi-krb5-2 libhwasan0 libidn2-0 libisl23 libitm1
+#25 66.62   libjansson4 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+#25 66.62   liblsan0 libmpc3 libmpfr6 libnghttp2-14 libnghttp3-9 libp11-kit0 libpq5
+#25 66.62   libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db libsframe1 libssh2-1t64
+#25 66.62   libssl-dev libstdc++-14-dev libtasn1-6 libtsan2 libubsan1 libunistring5
+#25 66.64   linux-libc-dev rpcsvc-proto
+#25 66.64 Suggested packages:
+#25 66.64   binutils-doc gprofng-gui binutils-gold cpp-doc gcc-14-locales cpp-14-doc
+#25 66.64   gcc-14-doc gcc-multilib make manpages-dev autoconf automake libtool flex
+#25 66.64   bison gdb gcc-doc gdb-aarch64-linux-gnu libc-devtools glibc-doc gnutls-bin
+#25 66.64   krb5-doc krb5-user postgresql-doc-17 libssl-doc libstdc++-14-doc
+#25 66.64 Recommended packages:
+#25 66.64   bash-completion manpages manpages-dev krb5-locales libldap-common
+#25 66.64   publicsuffix libsasl2-modules
+#25 72.69 The following NEW packages will be installed:
+#25 72.69   binutils binutils-aarch64-linux-gnu binutils-common cpp cpp-14
+#25 72.69   cpp-14-aarch64-linux-gnu cpp-aarch64-linux-gnu curl g++ g++-14
+#25 72.69   g++-14-aarch64-linux-gnu g++-aarch64-linux-gnu gcc gcc-14
+#25 72.69   gcc-14-aarch64-linux-gnu gcc-aarch64-linux-gnu libasan8 libatomic1
+#25 72.69   libbinutils libbrotli1 libc-dev-bin libc6-dev libcc1-0 libcom-err2
+#25 72.69   libcrypt-dev libctf-nobfd0 libctf0 libcurl4t64 libgcc-14-dev libgnutls30t64
+#25 72.69   libgomp1 libgprofng0 libgssapi-krb5-2 libhwasan0 libidn2-0 libisl23 libitm1
+#25 72.69   libjansson4 libk5crypto3 libkeyutils1 libkrb5-3 libkrb5support0 libldap2
+#25 72.69   liblsan0 libmpc3 libmpfr6 libnghttp2-14 libnghttp3-9 libp11-kit0 libpq-dev
+#25 72.69   libpq5 libpsl5t64 librtmp1 libsasl2-2 libsasl2-modules-db libsframe1
+#25 72.69   libssh2-1t64 libssl-dev libstdc++-14-dev libtasn1-6 libtsan2 libubsan1
+#25 72.69   libunistring5 linux-libc-dev rpcsvc-proto
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 72.39 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 76.26 0 upgraded, 65 newly installed, 0 to remove and 0 not upgraded.
+#25 76.26 Need to get 70.6 MB of archives.
+#25 76.26 After this operation, 296 MB of additional disk space will be used.
+#25 76.26 Get:1 http://deb.debian.org/debian trixie/main arm64 libsframe1 arm64 2.44-3 [77.8 kB]
+#25 76.76 Get:2 http://deb.debian.org/debian trixie/main arm64 binutils-common arm64 2.44-3 [2509 kB]
+#25 77.32 Get:3 http://deb.debian.org/debian trixie/main arm64 libbinutils arm64 2.44-3 [660 kB]
+#25 77.58 Get:4 http://deb.debian.org/debian trixie/main arm64 libgprofng0 arm64 2.44-3 [668 kB]
+#25 77.81 Get:5 http://deb.debian.org/debian trixie/main arm64 libctf-nobfd0 arm64 2.44-3 [152 kB]
+#25 77.91 Get:6 http://deb.debian.org/debian trixie/main arm64 libctf0 arm64 2.44-3 [84.2 kB]
+#25 77.91 Get:7 http://deb.debian.org/debian trixie/main arm64 libjansson4 arm64 2.14-2+b3 [39.2 kB]
+#25 77.91 Get:8 http://deb.debian.org/debian trixie/main arm64 binutils-aarch64-linux-gnu arm64 2.44-3 [820 kB]
+#25 78.13 Get:9 http://deb.debian.org/debian trixie/main arm64 binutils arm64 2.44-3 [262 kB]
+#25 78.63 Get:10 http://deb.debian.org/debian trixie/main arm64 libisl23 arm64 0.27-1 [601 kB]
+#25 78.84 Get:11 http://deb.debian.org/debian trixie/main arm64 libmpfr6 arm64 4.2.2-1 [685 kB]
+#25 79.04 Get:12 http://deb.debian.org/debian trixie/main arm64 libmpc3 arm64 1.3.1-1+b3 [50.5 kB]
+#25 79.04 Get:13 http://deb.debian.org/debian trixie/main arm64 cpp-14-aarch64-linux-gnu arm64 14.2.0-19 [9169 kB]
+#25 82.07 Get:14 http://deb.debian.org/debian trixie/main arm64 cpp-14 arm64 14.2.0-19 [1276 B]
+#25 82.07 Get:15 http://deb.debian.org/debian trixie/main arm64 cpp-aarch64-linux-gnu arm64 4:14.2.0-1 [4832 B]
+#25 82.09 Get:16 http://deb.debian.org/debian trixie/main arm64 cpp arm64 4:14.2.0-1 [1568 B]
+#25 82.09 Get:17 http://deb.debian.org/debian trixie/main arm64 libbrotli1 arm64 1.1.0-2+b7 [308 kB]
+#25 82.21 Get:18 http://deb.debian.org/debian trixie/main arm64 libkrb5support0 arm64 1.21.3-5 [32.4 kB]
+#25 82.27 Get:19 http://deb.debian.org/debian trixie/main arm64 libcom-err2 arm64 1.47.2-3+b10 [24.9 kB]
+#25 82.30 Get:20 http://deb.debian.org/debian trixie/main arm64 libk5crypto3 arm64 1.21.3-5 [81.2 kB]
+#25 82.34 Get:21 http://deb.debian.org/debian trixie/main arm64 libkeyutils1 arm64 1.6.3-6 [9716 B]
+#25 82.35 Get:22 http://deb.debian.org/debian trixie/main arm64 libkrb5-3 arm64 1.21.3-5 [308 kB]
+#25 82.48 Get:23 http://deb.debian.org/debian trixie/main arm64 libgssapi-krb5-2 arm64 1.21.3-5 [127 kB]
+#25 82.49 Get:24 http://deb.debian.org/debian trixie/main arm64 libunistring5 arm64 1.3-2 [453 kB]
+#25 82.90 Get:25 http://deb.debian.org/debian trixie/main arm64 libidn2-0 arm64 2.3.8-2 [107 kB]
+#25 82.93 Get:26 http://deb.debian.org/debian trixie/main arm64 libsasl2-modules-db arm64 2.1.28+dfsg1-9 [20.1 kB]
+#25 82.97 Get:27 http://deb.debian.org/debian trixie/main arm64 libsasl2-2 arm64 2.1.28+dfsg1-9 [55.6 kB]
+#25 83.06 Get:28 http://deb.debian.org/debian trixie/main arm64 libldap2 arm64 2.6.10+dfsg-1 [179 kB]
+#25 83.08 Get:29 http://deb.debian.org/debian trixie/main arm64 libnghttp2-14 arm64 1.64.0-1.1 [71.4 kB]
+#25 83.11 Get:30 http://deb.debian.org/debian trixie/main arm64 libnghttp3-9 arm64 1.8.0-1 [63.2 kB]
+#25 83.31 Get:31 http://deb.debian.org/debian trixie/main arm64 libpsl5t64 arm64 0.21.2-1.1+b1 [57.1 kB]
+#25 83.33 Get:32 http://deb.debian.org/debian trixie/main arm64 libp11-kit0 arm64 0.25.5-3 [409 kB]
+#25 83.38 Get:33 http://deb.debian.org/debian trixie/main arm64 libtasn1-6 arm64 4.20.0-2 [47.3 kB]
+#25 83.39 Get:34 http://deb.debian.org/debian trixie/main arm64 libgnutls30t64 arm64 3.8.9-3+deb13u2 [1378 kB]
+#25 83.52 Get:35 http://deb.debian.org/debian trixie/main arm64 librtmp1 arm64 2.4+20151223.gitfa8646d.1-2+b5 [56.8 kB]
+#25 83.52 Get:36 http://deb.debian.org/debian trixie/main arm64 libssh2-1t64 arm64 1.11.1-1 [235 kB]
+#25 83.62 Get:37 http://deb.debian.org/debian trixie/main arm64 libcurl4t64 arm64 8.14.1-2+deb13u2 [359 kB]
+#25 84.26 Get:38 http://deb.debian.org/debian trixie/main arm64 curl arm64 8.14.1-2+deb13u2 [262 kB]
+#25 84.89 Get:39 http://deb.debian.org/debian trixie/main arm64 libcc1-0 arm64 14.2.0-19 [42.2 kB]
+#25 85.01 Get:40 http://deb.debian.org/debian trixie/main arm64 libgomp1 arm64 14.2.0-19 [124 kB]
+#25 85.08 Get:41 http://deb.debian.org/debian trixie/main arm64 libitm1 arm64 14.2.0-19 [24.2 kB]
+#25 85.18 Get:42 http://deb.debian.org/debian trixie/main arm64 libatomic1 arm64 14.2.0-19 [10.1 kB]
+#25 85.28 Get:43 http://deb.debian.org/debian trixie/main arm64 libasan8 arm64 14.2.0-19 [2578 kB]
+#25 85.48 Get:44 http://deb.debian.org/debian trixie/main arm64 liblsan0 arm64 14.2.0-19 [1161 kB]
+#25 85.66 Get:45 http://deb.debian.org/debian trixie/main arm64 libtsan2 arm64 14.2.0-19 [2383 kB]
+#25 86.01 Get:46 http://deb.debian.org/debian trixie/main arm64 libubsan1 arm64 14.2.0-19 [1039 kB]
+#25 86.28 Get:47 http://deb.debian.org/debian trixie/main arm64 libhwasan0 arm64 14.2.0-19 [1442 kB]
+#25 86.74 Get:48 http://deb.debian.org/debian trixie/main arm64 libgcc-14-dev arm64 14.2.0-19 [2359 kB]
+#25 87.14 Get:49 http://deb.debian.org/debian trixie/main arm64 gcc-14-aarch64-linux-gnu arm64 14.2.0-19 [17.7 MB]
+#25 93.15 Get:50 http://deb.debian.org/debian trixie/main arm64 gcc-14 arm64 14.2.0-19 [529 kB]
+#25 93.22 Get:51 http://deb.debian.org/debian trixie/main arm64 gcc-aarch64-linux-gnu arm64 4:14.2.0-1 [1440 B]
+#25 93.23 Get:52 http://deb.debian.org/debian trixie/main arm64 gcc arm64 4:14.2.0-1 [5136 B]
+#25 93.23 Get:53 http://deb.debian.org/debian trixie/main arm64 libc-dev-bin arm64 2.41-12+deb13u2 [58.6 kB]
+#25 93.36 Get:54 http://deb.debian.org/debian-security trixie-security/main arm64 linux-libc-dev all 6.12.85-1 [2802 kB]
+#25 94.09 Get:55 http://deb.debian.org/debian trixie/main arm64 libcrypt-dev arm64 1:4.4.38-1 [123 kB]
+#25 94.17 Get:56 http://deb.debian.org/debian trixie/main arm64 rpcsvc-proto arm64 1.4.3-1+b1 [60.5 kB]
+#25 94.30 Get:57 http://deb.debian.org/debian trixie/main arm64 libc6-dev arm64 2.41-12+deb13u2 [1624 kB]
+#25 94.71 Get:58 http://deb.debian.org/debian trixie/main arm64 libstdc++-14-dev arm64 14.2.0-19 [2295 kB]
+#25 97.26 Get:59 http://deb.debian.org/debian trixie/main arm64 g++-14-aarch64-linux-gnu arm64 14.2.0-19 [10.1 MB]
+#25 101.1 Get:60 http://deb.debian.org/debian trixie/main arm64 g++-14 arm64 14.2.0-19 [22.5 kB]
+#25 101.1 Get:61 http://deb.debian.org/debian trixie/main arm64 g++-aarch64-linux-gnu arm64 4:14.2.0-1 [1200 B]
+#25 101.1 Get:62 http://deb.debian.org/debian trixie/main arm64 g++ arm64 4:14.2.0-1 [1332 B]
+#25 101.1 Get:63 http://deb.debian.org/debian trixie/main arm64 libpq5 arm64 17.9-0+deb13u1 [222 kB]
+#25 101.1 Get:64 http://deb.debian.org/debian-security trixie-security/main arm64 libssl-dev arm64 3.5.5-1~deb13u2 [3388 kB]
+#25 101.9 Get:65 http://deb.debian.org/debian trixie/main arm64 libpq-dev arm64 17.9-0+deb13u1 [149 kB]
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 102.9 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 113.7 debconf: unable to initialize frontend: Dialog
+#25 113.7 debconf: (TERM is not set, so the dialog frontend is not usable.)
+#25 113.7 debconf: falling back to frontend: Readline
+#25 113.7 debconf: unable to initialize frontend: Readline
+#25 113.7 debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/aarch64-linux-gnu/perl/5.40.1 /usr/local/share/perl/5.40.1 /usr/lib/aarch64-linux-gnu/perl5/5.40 /usr/share/perl5 /usr/lib/aarch64-linux-gnu/perl-base /usr/lib/aarch64-linux-gnu/perl/5.40 /usr/share/perl/5.40 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 65.)
+#25 113.7 debconf: falling back to frontend: Teletype
+#25 113.9 debconf: unable to initialize frontend: Teletype
+#25 113.9 debconf: (This frontend requires a controlling tty.)
+#25 113.9 debconf: falling back to frontend: Noninteractive
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 132.9 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 153.1 Fetched 70.6 MB in 28s (2498 kB/s)
+#25 153.9 Selecting previously unselected package libsframe1:arm64.
+#25 153.9 (Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5643 files and directories currently installed.)
+#25 154.3 Preparing to unpack .../00-libsframe1_2.44-3_arm64.deb ...
+#25 154.6 Unpacking libsframe1:arm64 (2.44-3) ...
+#25 155.3 Selecting previously unselected package binutils-common:arm64.
+#25 155.3 Preparing to unpack .../01-binutils-common_2.44-3_arm64.deb ...
+#25 155.3 Unpacking binutils-common:arm64 (2.44-3) ...
+#25 158.6 Selecting previously unselected package libbinutils:arm64.
+#25 158.6 Preparing to unpack .../02-libbinutils_2.44-3_arm64.deb ...
+#25 158.6 Unpacking libbinutils:arm64 (2.44-3) ...
+#25 160.9 Selecting previously unselected package libgprofng0:arm64.
+#25 160.9 Preparing to unpack .../03-libgprofng0_2.44-3_arm64.deb ...
+#25 161.1 Unpacking libgprofng0:arm64 (2.44-3) ...
+#25 162.0 Selecting previously unselected package libctf-nobfd0:arm64.
+#25 162.0 Preparing to unpack .../04-libctf-nobfd0_2.44-3_arm64.deb ...
+#25 162.1 Unpacking libctf-nobfd0:arm64 (2.44-3) ...
+#25 162.9 Selecting previously unselected package libctf0:arm64.
+#25 163.0 Preparing to unpack .../05-libctf0_2.44-3_arm64.deb ...
+#25 163.1 Unpacking libctf0:arm64 (2.44-3) ...
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 163.0 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 165.2 Selecting previously unselected package libjansson4:arm64.
+#25 165.2 Preparing to unpack .../06-libjansson4_2.14-2+b3_arm64.deb ...
+#25 165.2 Unpacking libjansson4:arm64 (2.14-2+b3) ...
+#25 165.8 Selecting previously unselected package binutils-aarch64-linux-gnu.
+#25 165.9 Preparing to unpack .../07-binutils-aarch64-linux-gnu_2.44-3_arm64.deb ...
+#25 166.1 Unpacking binutils-aarch64-linux-gnu (2.44-3) ...
+#25 171.3 Selecting previously unselected package binutils.
+#25 171.3 Preparing to unpack .../08-binutils_2.44-3_arm64.deb ...
+#25 171.5 Unpacking binutils (2.44-3) ...
+#25 174.8 Selecting previously unselected package libisl23:arm64.
+#25 174.8 Preparing to unpack .../09-libisl23_0.27-1_arm64.deb ...
+#25 175.2 Unpacking libisl23:arm64 (0.27-1) ...
+#25 178.9 Selecting previously unselected package libmpfr6:arm64.
+#25 178.9 Preparing to unpack .../10-libmpfr6_4.2.2-1_arm64.deb ...
+#25 179.0 Unpacking libmpfr6:arm64 (4.2.2-1) ...
+#25 179.4 Selecting previously unselected package libmpc3:arm64.
+#25 179.4 Preparing to unpack .../11-libmpc3_1.3.1-1+b3_arm64.deb ...
+#25 179.5 Unpacking libmpc3:arm64 (1.3.1-1+b3) ...
+#25 179.6 Selecting previously unselected package cpp-14-aarch64-linux-gnu.
+#25 179.6 Preparing to unpack .../12-cpp-14-aarch64-linux-gnu_14.2.0-19_arm64.deb ...
+#25 179.6 Unpacking cpp-14-aarch64-linux-gnu (14.2.0-19) ...
+#25 187.7 Selecting previously unselected package cpp-14.
+#25 187.8 Preparing to unpack .../13-cpp-14_14.2.0-19_arm64.deb ...
+#25 188.1 Unpacking cpp-14 (14.2.0-19) ...
+#25 189.0 Selecting previously unselected package cpp-aarch64-linux-gnu.
+#25 189.0 Preparing to unpack .../14-cpp-aarch64-linux-gnu_4%3a14.2.0-1_arm64.deb ...
+#25 189.0 Unpacking cpp-aarch64-linux-gnu (4:14.2.0-1) ...
+#25 190.7 Selecting previously unselected package cpp.
+#25 190.8 Preparing to unpack .../15-cpp_4%3a14.2.0-1_arm64.deb ...
+#25 191.2 Unpacking cpp (4:14.2.0-1) ...
+#25 191.7 Selecting previously unselected package libbrotli1:arm64.
+#25 191.7 Preparing to unpack .../16-libbrotli1_1.1.0-2+b7_arm64.deb ...
+#25 191.7 Unpacking libbrotli1:arm64 (1.1.0-2+b7) ...
+#25 192.1 Selecting previously unselected package libkrb5support0:arm64.
+#25 192.1 Preparing to unpack .../17-libkrb5support0_1.21.3-5_arm64.deb ...
+#25 192.2 Unpacking libkrb5support0:arm64 (1.21.3-5) ...
+#25 192.9 Selecting previously unselected package libcom-err2:arm64.
+#25 192.9 Preparing to unpack .../18-libcom-err2_1.47.2-3+b10_arm64.deb ...
+#25 193.0 Unpacking libcom-err2:arm64 (1.47.2-3+b10) ...
+#25 193.6 Selecting previously unselected package libk5crypto3:arm64.
+#25 193.6 Preparing to unpack .../19-libk5crypto3_1.21.3-5_arm64.deb ...
+#25 193.7 Unpacking libk5crypto3:arm64 (1.21.3-5) ...
+#25 194.1 Selecting previously unselected package libkeyutils1:arm64.
+#25 194.1 Preparing to unpack .../20-libkeyutils1_1.6.3-6_arm64.deb ...
+#25 194.2 Unpacking libkeyutils1:arm64 (1.6.3-6) ...
+#25 194.5 Selecting previously unselected package libkrb5-3:arm64.
+#25 194.5 Preparing to unpack .../21-libkrb5-3_1.21.3-5_arm64.deb ...
+#25 194.6 Unpacking libkrb5-3:arm64 (1.21.3-5) ...
+#25 ...
+
+#26 [frontend frontend-builder 9/9] RUN sh -eu -c '    npm run build &     pid="$!";     while kill -0 "$pid" 2>/dev/null; do       echo "frontend build still running";       sleep 30;     done;     wait "$pid"   '
+#26 193.0 frontend build still running
+#26 ...
+
+#25 [api builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#25 195.7 Selecting previously unselected package libgssapi-krb5-2:arm64.
+#25 195.8 Preparing to unpack .../22-libgssapi-krb5-2_1.21.3-5_arm64.deb ...
+#25 195.9 Unpacking libgssapi-krb5-2:arm64 (1.21.3-5) ...
+#25 196.5 Selecting previously unselected package libunistring5:arm64.
+#25 196.5 Preparing to unpack .../23-libunistring5_1.3-2_arm64.deb ...
+#25 196.6 Unpacking libunistring5:arm64 (1.3-2) ...
+#25 197.2 Selecting previously unselected package libidn2-0:arm64.
+#25 197.2 Preparing to unpack .../24-libidn2-0_2.3.8-2_arm64.deb ...
+#25 197.2 Unpacking libidn2-0:arm64 (2.3.8-2) ...
+#25 197.5 Selecting previously unselected package libsasl2-modules-db:arm64.
+#25 197.5 Preparing to unpack .../25-libsasl2-modules-db_2.1.28+dfsg1-9_arm64.deb ...
+#25 197.5 Unpacking libsasl2-modules-db:arm64 (2.1.28+dfsg1-9) ...
+#25 198.1 Selecting previously unselected package libsasl2-2:arm64.
+#25 198.1 Preparing to unpack .../26-libsasl2-2_2.1.28+dfsg1-9_arm64.deb ...
+#25 198.3 Unpacking libsasl2-2:arm64 (2.1.28+dfsg1-9) ...
+#25 198.7 Selecting previously unselected package libldap2:arm64.
+#25 198.8 Preparing to unpack .../27-libldap2_2.6.10+dfsg-1_arm64.deb ...
+#25 198.8 Unpacking libldap2:arm64 (2.6.10+dfsg-1) ...
+#25 199.2 Selecting previously unselected package libnghttp2-14:arm64.
+#25 199.2 Preparing to unpack .../28-libnghttp2-14_1.64.0-1.1_arm64.deb ...
+#25 199.3 Unpacking libnghttp2-14:arm64 (1.64.0-1.1) ...
+#25 199.8 Selecting previously unselected package libnghttp3-9:arm64.
+#25 199.8 Preparing to unpack .../29-libnghttp3-9_1.8.0-1_arm64.deb ...
+#25 199.9 Unpacking libnghttp3-9:arm64 (1.8.0-1) ...
+#25 200.8 Selecting previously unselected package libpsl5t64:arm64.
+#25 200.8 Preparing to unpack .../30-libpsl5t64_0.21.2-1.1+b1_arm64.deb ...
+#25 201.0 Unpacking libpsl5t64:arm64 (0.21.2-1.1+b1) ...
+#25 203.0 Selecting previously unselected package libp11-kit0:arm64.
+#25 203.0 Preparing to unpack .../31-libp11-kit0_0.25.5-3_arm64.deb ...
+#25 203.2 Unpacking libp11-kit0:arm64 (0.25.5-3) ...
+#25 205.5 Selecting previously unselected package libtasn1-6:arm64.
+#25 205.5 Preparing to unpack .../32-libtasn1-6_4.20.0-2_arm64.deb ...
+#25 205.7 Unpacking libtasn1-6:arm64 (4.20.0-2) ...
+#25 206.2 Selecting previously unselected package libgnutls30t64:arm64.
+#25 206.2 Preparing to unpack .../33-libgnutls30t64_3.8.9-3+deb13u2_arm64.deb ...
+#25 206.3 Unpacking libgnutls30t64:arm64 (3.8.9-3+deb13u2) ...
+#25 208.1 Selecting previously unselected package librtmp1:arm64.
+#25 208.1 Preparing to unpack .../34-librtmp1_2.4+20151223.gitfa8646d.1-2+b5_arm64.deb ...
+#25 208.2 Unpacking librtmp1:arm64 (2.4+20151223.gitfa8646d.1-2+b5) ...
+#25 208.6 Selecting previously unselected package libssh2-1t64:arm64.
+#25 208.6 Preparing to unpack .../35-libssh2-1t64_1.11.1-1_arm64.deb ...
+#25 208.6 Unpacking libssh2-1t64:arm64 (1.11.1-1) ...
+#25 209.0 Selecting previously unselected package libcurl4t64:arm64.
+#25 209.0 Preparing to unpack .../36-libcurl4t64_8.14.1-2+deb13u2_arm64.deb ...
+#25 209.1 Unpacking libcurl4t64:arm64 (8.14.1-2+deb13u2) ...
+#25 210.2 Selecting previously unselected package curl.
+#25 210.3 Preparing to unpack .../37-curl_8.14.1-2+deb13u2_arm64.deb ...
+#25 210.3 Unpacking curl (8.14.1-2+deb13u2) ...
+#25 211.0 Selecting previously unselected package libcc1-0:arm64.
+#25 211.0 Preparing to unpack .../38-libcc1-0_14.2.0-19_arm64.deb ...
+#25 211.3 Unpacking libcc1-0:arm64 (14.2.0-19) ...

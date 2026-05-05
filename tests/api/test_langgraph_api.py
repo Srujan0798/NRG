@@ -932,6 +932,96 @@ def test_structured_benchmark_query_bypasses_c4_read_model_preemption():
     assert api_main._should_use_c4_read_model(query) is False
 
 
+def test_lb3_killer_queries_defer_fast_paths_to_killer_sql():
+    queries = [
+        "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        "Identify 3 institutes that cut grants >40% YoY yet increased granted patents — who is doing more with less?",
+    ]
+
+    for query in queries:
+        assert api_main._should_use_c4_read_model(query) is False
+        assert (
+            api_main._fast_query_response(
+                query,
+                user_tier=1,
+                user_id="researcher-user",
+                session_id="lb3-killer",
+            )
+            is None
+        )
+
+
+def test_killer_query_executes_trl_progression_sql(monkeypatch):
+    captured_sql: dict[str, str] = {}
+
+    def fake_execute_sql(sql: str, user_tier: int = 1):
+        captured_sql["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {
+                    "financial_year": "2023-24",
+                    "stage_of_technology": "Level 9",
+                    "stage_count": 8,
+                    "stage_pct": 42.1,
+                }
+            ],
+            "warnings": [],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+
+    payload = api_main._killer_query_response(
+        "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+        user_tier=1,
+        session_id="killer-trl-progression",
+    )
+
+    assert payload is not None
+    sql = captured_sql["sql"]
+    assert "innovations_at_various_stages_of_technology_readiness_level" in sql
+    assert "financial_year" in sql
+    assert "stage_of_technology" in sql
+    assert "GROUP BY financial_year, stage_of_technology" in " ".join(sql.split())
+    assert payload["verification_status"] is True
+
+
+def test_killer_query_executes_grant_drop_patent_growth_sql(monkeypatch):
+    captured_sql: dict[str, str] = {}
+
+    def fake_execute_sql(sql: str, user_tier: int = 1):
+        captured_sql["sql"] = sql
+        return {
+            "query": sql,
+            "results": [
+                {
+                    "institute": "IIT Madras",
+                    "year_num": 2023,
+                    "grant_drop_pct": -45.0,
+                    "patent_growth_pct": 20.0,
+                    "granted_patents": 12,
+                }
+            ],
+            "warnings": [],
+        }
+
+    monkeypatch.setattr("src.skills.text_to_sql.sandbox.execute_sql", fake_execute_sql)
+
+    payload = api_main._killer_query_response(
+        "Identify 3 institutes that cut grants >40% YoY yet increased granted patents — who is doing more with less?",
+        user_tier=1,
+        session_id="killer-grant-patent-growth",
+    )
+
+    assert payload is not None
+    sql = captured_sql["sql"]
+    assert "WITH grants AS" in sql
+    assert "innovation_grant_from_govt" in sql
+    assert "combined_ipo_patent_data" in sql
+    assert "HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0" in sql
+    assert payload["verification_status"] is True
+
+
 def test_killer_query_executes_sanctioned_actual_student_strength_sql(monkeypatch):
     captured = {}
 

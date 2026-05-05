@@ -182,11 +182,7 @@ async def health_check():
 
     audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
     try:
-        audit_health = await asyncio.to_thread(
-            _call_with_thread_timeout,
-            _resolve_audit_health,
-            audit_timeout_seconds,
-        )
+        audit_health = _call_with_thread_timeout(_resolve_audit_health, audit_timeout_seconds)
     except TimeoutError:
         audit_health = {
             "status": "timeout",
@@ -250,11 +246,7 @@ async def health_check():
             retriever_health = {"status": "error", "message": str(exc)}
 
         try:
-            audit_health = await asyncio.to_thread(
-                _call_with_thread_timeout,
-                _resolve_audit_health,
-                audit_timeout_seconds,
-            )
+            audit_health = _call_with_thread_timeout(_resolve_audit_health, audit_timeout_seconds)
         except TimeoutError:
             audit_health = {
                 "status": "timeout",
@@ -306,11 +298,8 @@ async def health_check():
 
     qdrant_timeout_seconds = float(os.getenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "0.75"))
     try:
-        qdrant_health = await asyncio.wait_for(
-            asyncio.to_thread(_qdrant_count_health),
-            timeout=qdrant_timeout_seconds,
-        )
-    except asyncio.TimeoutError:
+        qdrant_health = _call_with_thread_timeout(_qdrant_count_health, qdrant_timeout_seconds)
+    except TimeoutError:
         qdrant_health = {
             "status": "unavailable",
             "collection": os.getenv("QDRANT_COLLECTION", "nrg_research"),
@@ -484,13 +473,13 @@ async def health_qdrant():
             except Exception:
                 collection_exists = False
         return _with_health_contract({
-            "ready": True,
+            "ready": collection_exists,
             "host": host,
             "port": port,
             "collection": collection,
             "collection_exists": collection_exists,
             "collections": names,
-        })
+        }, healthy=collection_exists)
     except Exception as exc:
         return _with_health_contract({
             "ready": False,

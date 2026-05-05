@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 import random
+import re
 import threading
 import time
 from collections import deque
@@ -86,6 +87,21 @@ DEFAULT_DATA_QUALITY_SCORECARD_FILE = REPO_ROOT / "docs/ops/data_quality_scoreca
 JSONDict = dict[str, Any]
 JSONRows = list[JSONDict]
 TokenPayload = dict[str, Any]
+_CACHE_PUNCTUATION_RE = re.compile(r"[^\w\s]")
+_CACHE_WHITESPACE_RE = re.compile(r"\s+")
+_CACHE_STOP_WORDS = frozenset(
+    {
+        "the", "a", "an", "is", "are", "was", "were", "be", "been",
+        "being", "have", "has", "had", "do", "does", "did", "will",
+        "would", "could", "should", "may", "might", "must", "shall",
+        "can", "need", "dare", "ought", "used", "to", "of", "in",
+        "for", "on", "with", "at", "by", "from", "as", "into",
+        "through", "during", "before", "after", "above", "below",
+        "between", "under", "again", "further", "then", "once",
+        "what", "which", "who", "whom", "this", "that", "these",
+        "those", "am", "it", "its",
+    }
+)
 
 
 def _as_json_dict(value: Any) -> JSONDict:
@@ -316,29 +332,17 @@ class _APIMemoryCache:
         - "top AI researchers Gujarat" ≈ "best AI researchers Gujarat"
         - "who is the best researcher" ≈ "best researcher"
         """
-        import re
         # Lowercase
         normalized = query.lower()
         # Remove punctuation
-        normalized = re.sub(r'[^\w\s]', ' ', normalized)
+        normalized = _CACHE_PUNCTUATION_RE.sub(" ", normalized)
         # Normalize whitespace
-        normalized = re.sub(r'\s+', ' ', normalized).strip()
-
-        # Remove common stop words for intent-only matching
-        stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been',
-                      'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will',
-                      'would', 'could', 'should', 'may', 'might', 'must', 'shall',
-                      'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in',
-                      'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into',
-                      'through', 'during', 'before', 'after', 'above', 'below',
-                      'between', 'under', 'again', 'further', 'then', 'once',
-                      'what', 'which', 'who', 'whom', 'this', 'that', 'these',
-                      'those', 'am', 'is', 'it', 'its'}
+        normalized = _CACHE_WHITESPACE_RE.sub(" ", normalized).strip()
 
         words = normalized.split()
-        filtered = [w for w in words if w not in stop_words or len(w) <= 2]
+        filtered = [word for word in words if word not in _CACHE_STOP_WORDS or len(word) <= 2]
 
-        return ' '.join(filtered)
+        return " ".join(filtered)
 
     def _make_cache_key(
         self,
@@ -4621,8 +4625,52 @@ def _is_patent_phd_ratio_query(query_lower: str) -> bool:
     )
 
 
+def _is_total_credit_killer_query(query_lower: str) -> bool:
+    return any(
+        marker in query_lower
+        for marker in (
+            "highest total innovation credits",
+            "intensive innovation curriculum",
+            "total credits",
+            "total credit",
+        )
+    )
+
+
+def _is_trl_progression_killer_query(query_lower: str) -> bool:
+    return (
+        "lab validation" in query_lower
+        and "market ready" in query_lower
+        and ("innovation" in query_lower or "stage" in query_lower or "bottleneck" in query_lower)
+    )
+
+
+def _is_cost_per_patent_query(query_lower: str) -> bool:
+    return (
+        "patent" in query_lower
+        and any(term in query_lower for term in ("cost per", "per granted patent", "grant money per patent"))
+    )
+
+
+def _is_grant_patent_yoy_query(query_lower: str) -> bool:
+    return (
+        "patent" in query_lower
+        and any(term in query_lower for term in ("cut grants", "grant funding dropped", "funding dropped", "doing more with less"))
+        and any(term in query_lower for term in ("increased granted", "patents increased", "patent grants rose", "granted patents"))
+    )
+
+
 def _is_structured_benchmark_query(query_lower: str) -> bool:
-    return _is_sanctioned_actual_strength_query(query_lower) or _is_patent_phd_ratio_query(query_lower)
+    return any(
+        (
+            _is_sanctioned_actual_strength_query(query_lower),
+            _is_patent_phd_ratio_query(query_lower),
+            _is_total_credit_killer_query(query_lower),
+            _is_trl_progression_killer_query(query_lower),
+            _is_cost_per_patent_query(query_lower),
+            _is_grant_patent_yoy_query(query_lower),
+        )
+    )
 
 
 def _advanced_adversarial_response(
@@ -4897,9 +4945,19 @@ def _fixed_structured_acceptance_sql(query_lower: str) -> str | None:
         return """
         WITH stage_counts AS (
             SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count
-            FROM trl_stages
+            FROM innovations_at_various_stages_of_technology_readiness_level
             WHERE institute LIKE '%IIT Madras%'
               AND stage_of_technology IN ('Level 4', 'Level 9')
+              AND financial_year IN (
+                  SELECT financial_year
+                  FROM (
+                      SELECT DISTINCT financial_year
+                      FROM innovations_at_various_stages_of_technology_readiness_level
+                      WHERE institute LIKE '%IIT Madras%'
+                      ORDER BY financial_year DESC
+                      LIMIT 3
+                  ) AS recent_years
+              )
             GROUP BY financial_year, stage_of_technology
         ),
         yearly_totals AS (

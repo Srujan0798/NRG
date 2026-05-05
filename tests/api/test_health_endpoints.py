@@ -491,6 +491,33 @@ def test_qdrant_health_endpoint_reports_readiness(monkeypatch):
     assert payload["collection"] == "nrg_research"
 
 
+def test_qdrant_health_endpoint_reports_not_ready_when_collection_missing(monkeypatch):
+    class OtherCollection:
+        name = "other_collection"
+
+    class OtherCollections:
+        collections = [OtherCollection()]
+
+    class MissingCollectionQdrantClient(FakeQdrantClient):
+        def get_collections(self):
+            return OtherCollections()
+
+        def get_collection(self, collection_name: str):
+            raise RuntimeError(f"Collection {collection_name} not found")
+
+    monkeypatch.setenv("QDRANT_COLLECTION", "nrg_research")
+    monkeypatch.setattr(api_main, "QdrantClient", MissingCollectionQdrantClient)
+    client = TestClient(api_main.app)
+
+    response = client.get("/health/qdrant")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ready"] is False
+    assert payload["healthy"] is False
+    assert payload["collection_exists"] is False
+
+
 def test_qdrant_health_endpoint_accepts_alias_collection(monkeypatch):
     class AliasOnlyQdrantClient(FakeQdrantClient):
         def get_collections(self):

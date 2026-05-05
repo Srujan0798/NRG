@@ -13,7 +13,25 @@ __pycache__
 coverage.xml
 htmlcov
 
+# Local/generated runtime state. Images rebuild these or mount external services.
+.audit
+.cache
+.hypothesis
+.npm-cache
+**/.npm-cache
+.protocol
+data
+dist
+qdrant_storage
+*.db
+*.sqlite
+*.sqlite3
+
 frontend/node_modules
+frontend/.npm-cache
+frontend/.github
+frontend/.storybook
+frontend/e2e
 frontend/dist
 frontend/build
 frontend/coverage
@@ -22,6 +40,7 @@ frontend/.cache
 frontend/test-results
 frontend/playwright-report
 frontend/evidence
+frontend/tests
 
 node_modules
 build

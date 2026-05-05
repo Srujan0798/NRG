@@ -31,6 +31,12 @@ class TierResponseFilterReport:
     shape_columns: list[str] = field(default_factory=_empty_str_list)
 
 
+@dataclass(frozen=True)
+class _PolicyFieldIndex:
+    graph_person_node_types: frozenset[str]
+    field_entries: tuple[tuple[str, str, tuple[str, ...]], ...]
+
+
 _DROP = object()
 K_ANONYMITY_THRESHOLD = 5
 INDIVIDUAL_IDENTIFIER_KEYS = frozenset(
@@ -45,6 +51,8 @@ INDIVIDUAL_IDENTIFIER_KEYS = frozenset(
         "investigator_id",
     }
 )
+_policy_field_index_cache: dict[int, tuple[JSONDict, _PolicyFieldIndex]] = {}
+_policy_value_pattern_cache: dict[int, tuple[JSONDict, dict[str, re.Pattern[str]]]] = {}
 
 
 def filter_query_response_for_tier(
@@ -118,6 +126,9 @@ def filter_response_payload_for_tier(
 ) -> tuple[Any, TierResponseFilterReport]:
     """Return a response payload that satisfies the configured tier policy."""
     policy = _load_response_policy()
+    if _tier_allows_all_fields(int(tier), policy):
+        return payload, TierResponseFilterReport(shape_columns=collect_shape_columns(payload))
+
     context = _FilterContext(policy=policy, tier=int(tier))
     context.name_replacements = _collect_name_replacements(payload, context)
     filtered = _filter_value(payload, context, path="$", parent=None, key=None)
@@ -145,6 +156,13 @@ def required_tier_response_fields() -> set[str]:
     """Return configured response-boundary field classes."""
     policy = _load_response_policy()
     return set(policy.get("field_classes", {}).keys())
+
+
+def warm_response_policy_cache() -> None:
+    """Load and index response filtering policy before latency-sensitive paths."""
+    policy = _load_response_policy()
+    _policy_field_index(policy)
+    _compiled_value_patterns(policy)
 
 
 def collect_shape_columns(payload: Any) -> list[str]:
@@ -293,19 +311,19 @@ def _field_class_for_key(
         return None
 
     normalized = _normalize_key(key)
-    graph_types = {_normalize_key(str(item)) for item in cast(list[Any], policy.get("graph_person_node_types", []))}
-    if normalized == "label" and parent and _normalize_key(str(parent.get("type", ""))) in graph_types:
+    policy_index = _policy_field_index(policy)
+    if (
+        normalized == "label"
+        and parent
+        and _normalize_key(str(parent.get("type", ""))) in policy_index.graph_person_node_types
+    ):
         return "personal_name"
     if normalized == "name" and parent and any(
         marker in parent for marker in ("researcher_id", "author_id", "person_id")
     ):
         return "personal_name"
 
-    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
-    for field_name, spec in field_classes.items():
-        aliases = [_normalize_key(field_name)]
-        aliases.extend(_normalize_key(alias) for alias in spec.get("aliases", []))
-        match_mode = spec.get("match", "exact")
+    for field_name, match_mode, aliases in policy_index.field_entries:
         if match_mode == "contains":
             if any(alias and alias in normalized for alias in aliases):
                 return field_name
@@ -314,11 +332,43 @@ def _field_class_for_key(
     return None
 
 
+def _policy_field_index(policy: JSONDict) -> _PolicyFieldIndex:
+    cache_key = id(policy)
+    cached = _policy_field_index_cache.get(cache_key)
+    if cached is not None and cached[0] is policy:
+        return cached[1]
+
+    graph_types = frozenset(
+        _normalize_key(str(item)) for item in cast(list[Any], policy.get("graph_person_node_types", []))
+    )
+    field_entries: list[tuple[str, str, tuple[str, ...]]] = []
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    for field_name, spec in field_classes.items():
+        aliases = [_normalize_key(field_name)]
+        aliases.extend(_normalize_key(alias) for alias in spec.get("aliases", []))
+        field_entries.append((field_name, str(spec.get("match", "exact")), tuple(aliases)))
+
+    index = _PolicyFieldIndex(
+        graph_person_node_types=graph_types,
+        field_entries=tuple(field_entries),
+    )
+    _policy_field_index_cache[cache_key] = (policy, index)
+    return index
+
+
 def _field_allowed(field_name: str, tier: int, policy: JSONDict) -> bool:
     field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
     spec = field_classes.get(field_name, {})
     allowed_tiers = {int(item) for item in cast(list[Any], spec.get("allowed_tiers", [1, 2, 3]))}
     return int(tier) in allowed_tiers
+
+
+def _tier_allows_all_fields(tier: int, policy: JSONDict) -> bool:
+    field_classes = cast(dict[str, JSONDict], policy.get("field_classes", {}))
+    return all(
+        int(tier) in {int(item) for item in cast(list[Any], spec.get("allowed_tiers", [1, 2, 3]))}
+        for spec in field_classes.values()
+    )
 
 
 def _should_transform_name(field_name: str, tier: int, policy: JSONDict) -> bool:
@@ -419,10 +469,16 @@ def _redact_disallowed_values(
 
 
 def _compiled_value_patterns(policy: JSONDict) -> dict[str, re.Pattern[str]]:
+    cache_key = id(policy)
+    cached = _policy_value_pattern_cache.get(cache_key)
+    if cached is not None and cached[0] is policy:
+        return cached[1]
+
     compiled: dict[str, re.Pattern[str]] = {}
     value_patterns = cast(dict[str, str], policy.get("value_patterns", {}))
     for field_name, pattern in value_patterns.items():
         compiled[field_name] = re.compile(pattern)
+    _policy_value_pattern_cache[cache_key] = (policy, compiled)
     return compiled
 
 

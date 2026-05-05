@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import asyncio
 import atexit
 import json
 import re
 import threading
 import uuid
-from concurrent.futures import ThreadPoolExecutor
+from queue import Full, Queue
 from typing import Any, cast
 
 from src.api.answer_contract import normalize_workflow_result
@@ -17,28 +16,66 @@ from src.services.answer_records import get_answer_record_store
 
 logger = get_logger(__name__)
 JSONDict = dict[str, Any]
-_answer_record_executor: ThreadPoolExecutor | None = None
+_AnswerRecordJob = tuple[str, str | None, dict[str, Any]]
+_answer_record_queue: Queue[_AnswerRecordJob | None] | None = None
+_answer_record_worker: threading.Thread | None = None
+_answer_record_stop: threading.Event | None = None
 _answer_record_executor_lock = threading.Lock()
+_ANSWER_RECORD_QUEUE_SIZE = 1024
 
 
-def _get_answer_record_executor() -> ThreadPoolExecutor:
-    global _answer_record_executor
+def _start_answer_record_worker_locked() -> Queue[_AnswerRecordJob | None]:
+    global _answer_record_queue, _answer_record_worker, _answer_record_stop
+    _answer_record_queue = Queue(maxsize=_ANSWER_RECORD_QUEUE_SIZE)
+    _answer_record_stop = threading.Event()
+    _answer_record_worker = threading.Thread(
+        target=_answer_record_worker_main,
+        args=(_answer_record_queue, _answer_record_stop),
+        name="answer_record",
+        daemon=True,
+    )
+    _answer_record_worker.start()
+    return _answer_record_queue
+
+
+def _answer_record_worker_main(
+    queue: Queue[_AnswerRecordJob | None],
+    stop_event: threading.Event,
+) -> None:
+    while not stop_event.is_set():
+        job = queue.get()
+        try:
+            if job is None:
+                return
+            user_id, session_id, payload = job
+            persist_answer_record(user_id, session_id, payload)
+        finally:
+            queue.task_done()
+
+
+def _ensure_answer_record_queue() -> Queue[_AnswerRecordJob | None]:
+    global _answer_record_queue, _answer_record_worker, _answer_record_stop
     with _answer_record_executor_lock:
-        if _answer_record_executor is None:
-            _answer_record_executor = ThreadPoolExecutor(
-                max_workers=1,
-                thread_name_prefix="answer_record",
-            )
-        return _answer_record_executor
+        if _answer_record_queue is None or _answer_record_worker is None or not _answer_record_worker.is_alive():
+            return _start_answer_record_worker_locked()
+        return _answer_record_queue
 
 
 def shutdown_answer_record_executor() -> None:
-    global _answer_record_executor
+    global _answer_record_queue, _answer_record_worker, _answer_record_stop
     with _answer_record_executor_lock:
-        executor = _answer_record_executor
-        _answer_record_executor = None
-    if executor is not None:
-        executor.shutdown(wait=False, cancel_futures=True)
+        queue = _answer_record_queue
+        stop_event = _answer_record_stop
+        _answer_record_queue = None
+        _answer_record_worker = None
+        _answer_record_stop = None
+    if stop_event is not None:
+        stop_event.set()
+    if queue is not None:
+        try:
+            queue.put_nowait(None)
+        except Full:
+            pass
 
 
 atexit.register(shutdown_answer_record_executor)
@@ -178,13 +215,11 @@ def persist_answer_record(user_id: str, session_id: str | None, payload: dict[st
 
 
 def schedule_answer_record_persist(user_id: str, session_id: str | None, payload: dict[str, Any]) -> None:
-    executor = _get_answer_record_executor()
+    queue = _ensure_answer_record_queue()
     try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        executor.submit(persist_answer_record, user_id, session_id, payload)
-        return
-    loop.run_in_executor(executor, persist_answer_record, user_id, session_id, payload)
+        queue.put_nowait((user_id, session_id, payload))
+    except Full:
+        logger.warning("Answer record persistence queue full; dropping record")
 
 
 def extract_citations_from_text(text: str) -> list[JSONDict]:

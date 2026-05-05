@@ -93,6 +93,7 @@ claude_docs_backup/
 .ruff_cache/
 .protocol/
 .claude/settings.local.json
+.claude/*.lock
 .env.local
 .codex/
 
