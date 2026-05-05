@@ -143,9 +143,13 @@ def test_cd_quality_bar_starts_seeded_api_before_c4_scorecard():
     start_script = start_step["run"]
     assert workflow["env"]["NRG_LOCAL_RESEARCH_DB"] == "data/nrg_research.db"
     assert "python scripts/seed_production_subset.py --profile ci --no-audit" in start_script
-    assert "python -m src.api.main" in start_script
+    assert "python -m uvicorn src.api.main:app" in start_script
+    assert "--workers 4" in start_script
     assert "NRG_QUOTA_DISABLED=1" in start_script
     assert "curl -sf http://localhost:8000/health" in start_script
+
+    scorecard_step = next(step for step in quality_bar_steps if step.get("name") == "Run Quality Bar Scorecard")
+    assert "NRG_C4_REQUIRE_LIVE=1 python scripts/quality_bar_scorecard.py --json-only" in scorecard_step["run"]
 
 
 def test_deploy_workflow_uses_ci_safe_test_env_and_skips_browser_collection():

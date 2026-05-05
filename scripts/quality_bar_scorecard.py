@@ -21,7 +21,6 @@ import os
 import re
 import subprocess
 import sys
-import time
 from datetime import datetime, UTC
 from pathlib import Path
 from urllib import error as urllib_error
@@ -38,6 +37,7 @@ TESTS_C1 = "tests/security/test_pii_compliance.py"
 TESTS_C2 = "tests/security/test_per_user_audit_binding.py"
 TESTS_C3 = "tests/orchestration/test_multi_hop_planner.py"
 TESTS_C4A = "tests/performance/test_slo_compliance.py"
+TESTS_C4B = "tests/load/test_slo_under_load.py"
 TESTS_C5 = "scripts/vector_drift_check.py"
 TESTS_C5_SCHEDULER = "scripts/vector_drift_scheduler.py"
 TESTS_C6 = "tests/security/test_egress_allowlist.py"
@@ -48,6 +48,7 @@ LOCUST_RUN_TIME = os.getenv("NRG_C4_LOCUST_RUN_TIME", "5m")
 LOCUST_PROCESSES = int(os.getenv("NRG_C4_LOCUST_PROCESSES", "0"))
 C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
 C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
+C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
 
 CONSTRAINTS = {
     "C1": {
@@ -163,6 +164,18 @@ def _parse_pytest_output(output: str) -> dict:
     }
 
 
+def _error_result(message: str, *, status: str = "error") -> dict:
+    return {
+        "status": status,
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "total": 1,
+        "passed_rate": 0.0,
+        "error": message,
+    }
+
+
 def _run_pytest(test_path: str, verbose: bool = False) -> dict:
     """Run a pytest test file and return parsed results."""
     abs_path = ROOT / test_path
@@ -193,6 +206,52 @@ def _run_pytest(test_path: str, verbose: bool = False) -> dict:
 
     parsed = _parse_pytest_output(output)
     parsed["exit_code"] = result.returncode
+    parsed["raw_output"] = output[-3000:] if len(output) > 3000 else output
+    return parsed
+
+
+def _run_c4_local_regression(verbose: bool = False) -> dict:
+    """Run the strict local C4 regression suite when no live API is available."""
+    cmd = [
+        str(PYTHON_BIN),
+        "-m",
+        "pytest",
+        str(ROOT / TESTS_C4A),
+        str(ROOT / TESTS_C4B),
+        "-m",
+        "slow or not slow",
+        "-q",
+        "--tb=short",
+        "--no-cov",
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=360,
+            cwd=ROOT,
+        )
+        output = result.stdout + result.stderr
+    except subprocess.TimeoutExpired:
+        return {
+            "status": "local_regression_timeout",
+            "passed": 0,
+            "failed": 1,
+            "skipped": 0,
+            "total": 1,
+            "exit_code": 1,
+            "passed_rate": 0.0,
+            "error": "Local C4 regression timed out after 360s",
+        }
+
+    parsed = _parse_pytest_output(output)
+    parsed["exit_code"] = result.returncode
+    parsed["status"] = "local_regression"
+    parsed["mode"] = "local_regression"
+    parsed["live_api_required"] = C4_REQUIRE_LIVE
+    parsed["live_load_executed"] = False
     parsed["raw_output"] = output[-3000:] if len(output) > 3000 else output
     return parsed
 
@@ -441,6 +500,15 @@ def _extract_c4_metrics(output: str, report_path: Path | None = None) -> dict:
     }
 
 
+def _fetch_json(url: str, timeout: float = 2.0) -> dict | None:
+    req = urllib_request.Request(url, method="GET")
+    try:
+        with urllib_request.urlopen(req, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except (urllib_error.URLError, urllib_error.HTTPError, TimeoutError, json.JSONDecodeError):
+        return None
+
+
 def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
     data = json.dumps(payload).encode("utf-8")
     req = urllib_request.Request(
@@ -488,23 +556,33 @@ def _preissue_load_tokens(api_host: str) -> dict[str, str]:
 
 def _run_c4_load_test(verbose: bool = False) -> dict:
     """Run C4 1000-concurrent-user load test via locust."""
-    import socket
     api_host = None
     for candidate in ("127.0.0.1", "localhost"):
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(2)
-        try:
-            sock.connect((candidate, 8000))
-            api_host = candidate
-            break
-        except Exception:
-            pass
-        finally:
-            sock.close()
+        health = _fetch_json(f"http://{candidate}:8000/health", timeout=2.0)
+        if isinstance(health, dict):
+            status = str(health.get("status", "")).lower()
+            service = str(health.get("service", "")).lower()
+            if status in {"healthy", "degraded"} or "nrg" in service:
+                api_host = candidate
+                break
 
     api_up = api_host is not None
 
     if not api_up:
+        if not C4_REQUIRE_LIVE:
+            result = _run_c4_local_regression(verbose)
+            result.update(
+                {
+                    "live_api_status": "not_running",
+                    "live_c4_skipped": True,
+                    "note": (
+                        "No NRG API health response on port 8000; used strict local "
+                        "C4 SLO regression. Set NRG_C4_REQUIRE_LIVE=1 for deployment "
+                        "or cluster C4 evidence."
+                    ),
+                }
+            )
+            return result
         return {
             "passed": 0,
             "failed": 0,
@@ -513,7 +591,9 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             "exit_code": 0,
             "passed_rate": 0.0,
             "status": "api_not_running",
-            "note": "Skipped: API not running on port 8000. Run `python -m uvicorn src.api.main:app` first.",
+            "mode": "live_required",
+            "live_api_required": C4_REQUIRE_LIVE,
+            "note": "Skipped: no NRG API health response on port 8000. Run `python -m uvicorn src.api.main:app` first.",
         }
 
     locust_report = ROOT / ".cache" / "locust_report.html"
@@ -703,7 +783,7 @@ def _emit_markdown(scorecard: dict) -> str:
         "---",
         "",
         "> **Rule**: A release CANNOT ship unless the scorecard reports **6/6**. Any score drop flags a P0 incident.",
-        f"> Scorecard JSON: `scripts/quality_bar_scorecard.json`",
+        "> Scorecard JSON: `scripts/quality_bar_scorecard.json`",
     ]
 
     return "\n".join(lines)

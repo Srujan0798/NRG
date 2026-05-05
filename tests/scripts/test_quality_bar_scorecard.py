@@ -1,4 +1,3 @@
-import socket
 from types import SimpleNamespace
 
 import scripts.quality_bar_scorecard as scorecard
@@ -42,16 +41,6 @@ def test_c5_uses_scheduler_dry_run_when_live_qdrant_is_unavailable(monkeypatch):
 
 
 def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
-    class FakeSocket:
-        def settimeout(self, _timeout):
-            return None
-
-        def connect(self, _address):
-            return None
-
-        def close(self):
-            return None
-
     def fake_run(cmd, **kwargs):
         assert (tmp_path / ".cache").is_dir()
         assert str(tmp_path / ".cache" / "locust_report.html") in [str(part) for part in cmd]
@@ -69,7 +58,7 @@ def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
         )
 
     monkeypatch.setattr(scorecard, "ROOT", tmp_path)
-    monkeypatch.setattr(socket, "socket", lambda *_args, **_kwargs: FakeSocket())
+    monkeypatch.setattr(scorecard, "_fetch_json", lambda *_args, **_kwargs: {"status": "healthy", "service": "nrg-api"})
     monkeypatch.setattr(
         scorecard,
         "_preissue_load_tokens",
@@ -89,16 +78,6 @@ def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
 
 
 def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_path):
-    class FakeSocket:
-        def settimeout(self, _timeout):
-            return None
-
-        def connect(self, _address):
-            return None
-
-        def close(self):
-            return None
-
     def fake_run(cmd, **kwargs):
         assert "--processes" in cmd
         assert cmd[cmd.index("--processes") + 1] == "4"
@@ -116,7 +95,7 @@ def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_pa
 
     monkeypatch.setattr(scorecard, "ROOT", tmp_path)
     monkeypatch.setattr(scorecard, "LOCUST_PROCESSES", 4, raising=False)
-    monkeypatch.setattr(socket, "socket", lambda *_args, **_kwargs: FakeSocket())
+    monkeypatch.setattr(scorecard, "_fetch_json", lambda *_args, **_kwargs: {"status": "healthy", "service": "nrg-api"})
     monkeypatch.setattr(
         scorecard,
         "_preissue_load_tokens",
@@ -128,6 +107,51 @@ def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_pa
 
     assert result["passed"] == 1
     assert result["locust_processes"] == 4
+
+
+def test_c4_scorecard_skips_tcp_listener_without_nrg_health(monkeypatch):
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("Locust must not run without an NRG /health response")
+
+    monkeypatch.setattr(scorecard, "C4_REQUIRE_LIVE", True, raising=False)
+    monkeypatch.setattr(scorecard, "_fetch_json", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(scorecard.subprocess, "run", fail_if_called)
+
+    result = scorecard._run_c4_load_test()
+
+    assert result["skipped"] == 1
+    assert result["status"] == "api_not_running"
+    assert "health response" in result["note"]
+
+
+def test_c4_scorecard_uses_local_regression_without_live_api(monkeypatch):
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("Locust must not run without an NRG /health response")
+
+    monkeypatch.setattr(scorecard, "C4_REQUIRE_LIVE", False, raising=False)
+    monkeypatch.setattr(scorecard, "_fetch_json", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(scorecard.subprocess, "run", fail_if_called)
+    monkeypatch.setattr(
+        scorecard,
+        "_run_c4_local_regression",
+        lambda _verbose=False: {
+            "status": "local_regression",
+            "mode": "local_regression",
+            "passed": 9,
+            "failed": 0,
+            "skipped": 3,
+            "total": 9,
+            "exit_code": 0,
+            "passed_rate": 1.0,
+        },
+    )
+
+    result = scorecard._run_c4_load_test()
+
+    assert result["passed"] == 9
+    assert result["passed_rate"] == 1.0
+    assert result["mode"] == "local_regression"
+    assert result["live_c4_skipped"] is True
 
 
 def test_c4_scorecard_rejects_target_text_without_numeric_p99():
