@@ -64,7 +64,6 @@ const manualChunks = (id: string) => {
   if (normalized.includes('/node_modules/framer-motion/')) return 'vendor-motion'
   if (normalized.includes('/node_modules/victory-vendor/')) return 'vendor-victory'
   if (normalized.includes('/node_modules/d3-')) return 'vendor-d3'
-  if (normalized.includes('/node_modules/recharts/')) return 'vendor-recharts'
   if (normalized.includes('/node_modules/clsx/')) return 'vendor-clsx'
   if (normalized.includes('/node_modules/lucide-react/')) return 'vendor-lucide'
   if (normalized.includes('/node_modules/@tanstack/')) return 'vendor-tanstack'

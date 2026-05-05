@@ -1,0 +1,39 @@
+# Configuration Changes Applied
+
+## File: `.env`
+
+```diff
+--- a/.env
++++ b/.env
+@@ -30,8 +30,16 @@ AUDIT_CHAIN_KEY=nrg-audit-chain-dev-key
+
+ CORS_ORIGINS=http://localhost:3000,http://localhost:4173,http://127.0.0.1:3000,http://127.0.0.1:4173
+
++# Database pool sizing for 1000 concurrent users
++DATABASE_POOL_MIN=30
++DATABASE_POOL_MAX=80
++
+ # LLM timeout (seconds) — increase for slow sovereign mesh providers
+-LLM_REQUEST_TIMEOUT_SECONDS=60
+-LLM_TIMEOUT_BUDGET=45
++# LLM timeout (seconds) — aggressive for P99 <500ms at 1000 concurrent
++LLM_REQUEST_TIMEOUT_SECONDS=10
++LLM_TIMEOUT_BUDGET=10
++
++# More workers for 1000 concurrent users
++NRG_API_BLOCKING_WORKERS=128
+ CLOUD_SYNTHESIS_ALLOWED=true
+```
+
+## Summary of Changes
+
+1. **DATABASE_POOL_MIN/MAX**: Increased from default (20/40) to (30/80) to handle 1000 concurrent users
+2. **LLM_REQUEST_TIMEOUT_SECONDS**: Reduced from 60s to 10s to fail fast on slow LLM calls
+3. **LLM_TIMEOUT_BUDGET**: Reduced from 45s to 10s to limit total LLM time budget
+4. **NRG_API_BLOCKING_WORKERS**: Increased from default (64) to 128 for more parallel handling
+
+## Result
+
+These config changes did NOT achieve the P99 < 500ms target. The P99 actually worsened from 7900ms to 9800ms after increasing blocking workers, suggesting memory pressure or GIL contention became worse.
+
+**Architectural changes are required** - see 00_summary.md for details.
