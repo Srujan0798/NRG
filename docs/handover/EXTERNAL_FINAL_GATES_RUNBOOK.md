@@ -37,6 +37,40 @@ export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
   --run-cluster-load
 ```
 
+## Sovereign 1000-User C4 Load Gate
+
+The C4 gate is intentionally blocked unless the caller provides both a
+reachable Kubernetes context and the explicit `--run-cluster-load` flag. The
+runner verifies `kubectl cluster-info` before invoking
+`tests/load/run-locust-k8s.sh production`.
+
+Preflight without load:
+
+```bash
+.venv/bin/python scripts/run_final_external_gates.py \
+  --evidence-dir evidence/$(date +%F)/final_external_gates
+```
+
+Expected preflight behavior on a laptop: `sovereign_cluster_1000_user_load`
+returns `BLOCKED` with missing input `explicit --run-cluster-load flag`.
+
+Cluster execution:
+
+```bash
+export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
+
+.venv/bin/python scripts/run_final_external_gates.py \
+  --evidence-dir evidence/$(date +%F)/final_external_gates \
+  --run-cluster-load
+```
+
+Expected C4 artifacts:
+
+- `evidence/YYYY-MM-DD/final_external_gates/kubectl_cluster_info.log`
+- `evidence/YYYY-MM-DD/final_external_gates/c4_1000_user_locust.log`
+- `evidence/YYYY-MM-DD/final_external_gates/external_gate_status.json`
+- `evidence/YYYY-MM-DD/final_external_gates/EXTERNAL_GATE_SUMMARY.md`
+
 ## Deployed Browser Replay Only
 
 ```bash
