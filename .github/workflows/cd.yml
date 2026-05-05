@@ -97,6 +97,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
+      image_repository: ${{ steps.image.outputs.repository }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,11 +108,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Normalize image repository
+        id: image
+        run: echo "repository=$(echo '${{ github.repository_owner }}/nrg' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}
           tags: |
             type=sha,prefix=
             type=ref,event=branch
@@ -123,7 +128,7 @@ jobs:
           context: .
           file: Dockerfile.api
           push: false
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}/api:${{ github.sha }}
           target: runner
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -134,13 +139,13 @@ jobs:
           context: .
           file: Dockerfile.frontend
           push: false
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}/frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Run API smoke tests
         run: |
-          docker run -d --name api-test -p 8000:8000 -e APP_ENV=test ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          docker run -d --name api-test -p 8000:8000 -e APP_ENV=test ${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}/api:${{ github.sha }}
           sleep 10
           curl -sf http://localhost:8000/health && echo "API healthy"
           docker rm -f api-test
@@ -167,8 +172,8 @@ jobs:
 
       - name: Push images to ECR
         run: |
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
+          docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
+          docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
           docker push ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
           docker push ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
 
@@ -208,8 +213,8 @@ jobs:
 
       - name: Push images to ECR (production tags)
         run: |
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:latest
-          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:latest
+          docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:latest
+          docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:latest
           docker push ${{ secrets.ECR_REGISTRY }}/nrg-api:latest
           docker push ${{ secrets.ECR_REGISTRY }}/nrg-frontend:latest
 

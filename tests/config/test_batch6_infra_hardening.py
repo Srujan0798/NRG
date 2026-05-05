@@ -172,3 +172,18 @@ def test_deploy_workflow_uses_ci_safe_test_env_and_skips_browser_collection():
     assert "--dist=loadgroup" in test_script
     assert "-n 2" in test_script
     assert "--no-cov-on-fail" in test_script
+
+
+def test_deploy_workflows_normalize_ghcr_image_repository_names():
+    deploy_source = _read(".github/workflows/deploy.yml")
+    cd_source = _read(".github/workflows/cd.yml")
+
+    for source in [deploy_source, cd_source]:
+        assert "Normalize image repository" in source
+        assert "tr '[:upper:]' '[:lower:]'" in source
+        assert "${{ steps.image.outputs.repository }}" in source
+
+    assert "${{ github.repository }}/nrg-api" not in deploy_source
+    assert "${{ github.repository }}/nrg-frontend" not in deploy_source
+    assert "${{ env.IMAGE_NAME }}/api" not in cd_source
+    assert "${{ env.IMAGE_NAME }}/frontend" not in cd_source
