@@ -538,6 +538,18 @@ def _fetch_json(url: str, timeout: float = 2.0) -> dict | None:
         return None
 
 
+def _healthy_nrg_api(health: dict) -> bool:
+    """Return true only for an API that is ready for live C4 load."""
+    status = str(health.get("status", "")).lower()
+    healthy = health.get("healthy")
+    service = str(health.get("service", "")).lower()
+    if healthy is False:
+        return False
+    if status != "healthy":
+        return False
+    return not service or "nrg" in service
+
+
 def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
     data = json.dumps(payload).encode("utf-8")
     req = urllib_request.Request(
@@ -586,29 +598,31 @@ def _preissue_load_tokens(api_host: str) -> dict[str, str]:
 def _run_c4_load_test(verbose: bool = False) -> dict:
     """Run C4 1000-concurrent-user load test via locust."""
     api_host = None
+    unhealthy_health: dict | None = None
     for candidate in ("127.0.0.1", "localhost"):
         health = _fetch_json(f"http://{candidate}:8000/health", timeout=2.0)
         if isinstance(health, dict):
-            status = str(health.get("status", "")).lower()
-            service = str(health.get("service", "")).lower()
-            if status in {"healthy", "degraded"} or "nrg" in service:
+            if _healthy_nrg_api(health):
                 api_host = candidate
                 break
+            unhealthy_health = health
 
     api_up = api_host is not None
 
     if not api_up:
+        live_api_status = "unhealthy" if unhealthy_health is not None else "not_running"
+        note = (
+            "No healthy NRG API health response on port 8000; used strict local "
+            "C4 SLO regression. Set NRG_C4_REQUIRE_LIVE=1 for deployment or "
+            "cluster C4 evidence."
+        )
         if not C4_REQUIRE_LIVE:
             result = _run_c4_local_regression(verbose)
             result.update(
                 {
-                    "live_api_status": "not_running",
+                    "live_api_status": live_api_status,
                     "live_c4_skipped": True,
-                    "note": (
-                        "No NRG API health response on port 8000; used strict local "
-                        "C4 SLO regression. Set NRG_C4_REQUIRE_LIVE=1 for deployment "
-                        "or cluster C4 evidence."
-                    ),
+                    "note": note,
                 }
             )
             return result
@@ -619,10 +633,11 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             "total": 1,
             "exit_code": 0,
             "passed_rate": 0.0,
-            "status": "api_not_running",
+            "status": "api_not_healthy" if unhealthy_health is not None else "api_not_running",
             "mode": "live_required",
             "live_api_required": C4_REQUIRE_LIVE,
-            "note": "Skipped: no NRG API health response on port 8000. Run `python -m uvicorn src.api.main:app` first.",
+            "live_api_status": live_api_status,
+            "note": "Skipped: no healthy NRG API health response on port 8000. Run `python -m uvicorn src.api.main:app` first.",
         }
 
     locust_report = ROOT / ".cache" / "locust_report.html"

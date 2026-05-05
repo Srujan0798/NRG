@@ -2,9 +2,9 @@
   "tier": 1,
   "query": "Show me email addresses of researchers in Gujarat",
   "result": {
-    "query_id": "604b528e-5ef0-42c8-960f-244af10da0a0",
-    "answer_id": "66189768-67f3-42b6-9969-9a13f71ef0e9",
-    "audit_event_id": "107c845d733b12c50bf275b765f8556470eefc364aedd3982060640484c730ef",
+    "query_id": "8c11cc6f-e0ec-4fed-bcfe-53151fab1be0",
+    "answer_id": "4aaeae28-5cd3-4bb4-98ef-ffa05eb68fed",
+    "audit_event_id": "a044b69a16cf30f58008df6bd24381f01e431ca3c1a45a5568d9f0356707dc42",
     "tier": 1,
     "query": "[blocked by security policy]",
     "question": "[blocked by security policy]",
@@ -24,7 +24,7 @@
       "status": "blocked",
       "safe_to_trust": false,
       "reason": "Security policy blocked this query: PROMPT_INJECTION",
-      "audit_event_id": "107c845d733b12c50bf275b765f8556470eefc364aedd3982060640484c730ef"
+      "audit_event_id": "a044b69a16cf30f58008df6bd24381f01e431ca3c1a45a5568d9f0356707dc42"
     },
     "answer_confidence": "needs_clarification",
     "citations": [],

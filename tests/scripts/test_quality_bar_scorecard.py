@@ -3,6 +3,25 @@ from types import SimpleNamespace
 import scripts.quality_bar_scorecard as scorecard
 
 
+def test_scorecard_disables_rerunfailures_plugin_in_network_sandbox(monkeypatch):
+    def fake_run(cmd, **kwargs):
+        assert "-p" in cmd
+        assert cmd[cmd.index("-p") + 1] == "no:rerunfailures"
+        return SimpleNamespace(
+            returncode=0,
+            stdout="============================== 1 passed in 0.01s ==============================\n",
+            stderr="",
+        )
+
+    monkeypatch.setenv("CODEX_SANDBOX_NETWORK_DISABLED", "1")
+    monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
+
+    result = scorecard._run_pytest("tests/security/test_pii_compliance.py")
+
+    assert result["passed"] == 1
+    assert result["exit_code"] == 0
+
+
 def test_c5_uses_scheduler_dry_run_when_live_qdrant_is_unavailable(monkeypatch):
     calls: list[list[str]] = []
 
@@ -122,6 +141,26 @@ def test_c4_scorecard_skips_tcp_listener_without_nrg_health(monkeypatch):
     assert result["skipped"] == 1
     assert result["status"] == "api_not_running"
     assert "health response" in result["note"]
+
+
+def test_c4_scorecard_skips_unhealthy_forwarded_nrg_health(monkeypatch):
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("Locust must not run against an unhealthy NRG /health response")
+
+    monkeypatch.setattr(scorecard, "C4_REQUIRE_LIVE", True, raising=False)
+    monkeypatch.setattr(
+        scorecard,
+        "_fetch_json",
+        lambda *_args, **_kwargs: {"status": "unhealthy", "healthy": False, "service": "nrg-api"},
+    )
+    monkeypatch.setattr(scorecard.subprocess, "run", fail_if_called)
+
+    result = scorecard._run_c4_load_test()
+
+    assert result["skipped"] == 1
+    assert result["status"] == "api_not_healthy"
+    assert result["live_api_status"] == "unhealthy"
+    assert "healthy NRG API" in result["note"]
 
 
 def test_c4_scorecard_uses_local_regression_without_live_api(monkeypatch):

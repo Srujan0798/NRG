@@ -1,6 +1,6 @@
 # NRG Current Sprint State
 > **Update this file at the end of every session.** Agents read this instead of BACKLOG.md for current priorities.
-> Last updated: 2026-05-05
+> Last updated: 2026-05-06
 
 ---
 
@@ -21,8 +21,9 @@
 |------|--------|----------|
 | K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
 | Quality Bar scorecard | PARTIAL local / external pending | `scripts/quality_bar_scorecard.json` is `5/6`; C1, C2, C3, C5, and C6 pass. C4 ran strict local SLO regression 9/9 but is marked PARTIAL because no live 1000-user load ran. Deployment CI sets `NRG_C4_REQUIRE_LIVE=1` so live C4 cannot fall back silently. |
-| Local Docker/API runtime | BLOCKED | Colima reports the VM running, but Docker commands timed out after Buildx hangs and `localhost:8000` is currently unreachable |
-| Frontend bundle size | PASS prior / BLOCKED current rerun | `evidence/2026-05-05/remaining_closure/frontend_build_current.log` records a prior Vite build with largest JS chunk 318.71 KB raw. A fresh `npm run build` rerun in this session hung in `tsc` for more than 6 minutes and was killed; current build proof remains blocked. |
+| Local Docker/API runtime | BLOCKED | Docker data services are up, but no healthy local API target is available for live C4. Direct Uvicorn startup on port 8001 reached application startup, then failed to bind with `operation not permitted`; this session also observed an unhealthy SSH-forwarded NRG `/health` on port 8000. |
+| FastAPI TestClient runtime | PASS current | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` records 7 passing focused API contract checks; `evidence/2026-05-06/runtime_recovery/killer_queries_testclient.log` records 3 passing killer-query checks. |
+| Frontend bundle size | PASS current | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` records `npm run build` exit 0, 2,581 modules transformed, largest JS chunk 318.71 KB raw, built in 3m 57s. |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
 | Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; local/remote sync must be checked before handoff |
 
@@ -39,6 +40,10 @@
 | Deployment gate stone | May 5 | `prompts_hybrid/09_deployment_gate_stone.md` |
 | Remote workflow | May 5 | `.claude/REMOTE_WORKFLOW.md` |
 | Focused Dhairya regression | May 5 | `evidence/2026-05-05/dhairya_regression_full/01_full_run.log` — 43 passed |
+| Broad non-script pytest | May 5 | `evidence/2026-05-05/final_verification/full_non_script_pytest_after_compose_fix_summary.md` — 1846 passed, 57 skipped, 261 deselected |
+| API focused pytest | May 5 | `evidence/2026-05-05/final_verification/api_pytest_final.log` — 155 passed, 1 deselected |
+| Frontend production build | May 6 | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` — `npm run build` exit 0 |
+| FastAPI TestClient runtime | May 6 | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` — 7 passed; `evidence/2026-05-06/runtime_recovery/killer_queries_testclient.log` — 3 passed |
 
 ---
 

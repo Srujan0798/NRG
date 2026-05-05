@@ -2,9 +2,9 @@
   "tier": 1,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "d8dc8da7-7b11-4d4c-9794-800a26d67c75",
-    "answer_id": "976209a0-5088-400d-b1e8-56a0e521bd9d",
-    "audit_event_id": "3ecd229d0ec1adb517069f159f3fb9175646668d1b5e1c2a4bd4b74743d90a26",
+    "query_id": "24b2b9f4-5da1-4209-9df9-7d88b2c7faed",
+    "answer_id": "a790e774-0530-4a2a-8b4a-d25a8399e4ef",
+    "audit_event_id": "878049e409b36d45388904d99612ff8664f029bf68f227e44b77a027e09b59b5",
     "tier": 1,
     "question": "top AI funding institutions",
     "interpreted_question": "top AI funding institutions",
@@ -102,7 +102,7 @@
         "reason": "Evidence and citations passed verification."
       },
       "citation_validity": 1.0,
-      "audit_event_id": "3ecd229d0ec1adb517069f159f3fb9175646668d1b5e1c2a4bd4b74743d90a26"
+      "audit_event_id": "878049e409b36d45388904d99612ff8664f029bf68f227e44b77a027e09b59b5"
     },
     "citation_validity": 1.0,
     "plan": null,
@@ -160,6 +160,7 @@
         "message": "C4 bounded read model used; no executor/RAG call required."
       }
     ],
-    "tier1_access_scope": "full_detail"
+    "tier1_access_scope": "full_detail",
+    "cached": true
   }
 }

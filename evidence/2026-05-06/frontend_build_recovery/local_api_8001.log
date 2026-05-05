@@ -1,0 +1,13 @@
+INFO:     Started server process [84083]
+INFO:     Waiting for application startup.
+{"timestamp": "2026-05-05T19:20:53.595880+00:00", "level": "INFO", "logger": "src.api.main", "message": "Starting NRG API server...", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T19:20:53.596234+00:00", "level": "INFO", "logger": "src.api.main", "message": "OpenAPI metrics schema exposure", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T19:20:53.597626+00:00", "level": "INFO", "logger": "src.api.main", "message": "Embedder warm-up skipped by NRG_SKIP_EMBEDDER_WARMUP", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T19:20:53.597776+00:00", "level": "INFO", "logger": "src.api.main", "message": "Publication count cache prewarm skipped by NRG_SKIP_PUBLICATION_CACHE_PREWARM", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T19:20:56.808681+00:00", "level": "INFO", "logger": "src.api.main", "message": "C4 read-model snapshot prewarmed", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+INFO:     Application startup complete.
+ERROR:    [Errno 1] error while attempting to bind on address ('127.0.0.1', 8001): operation not permitted
+INFO:     Waiting for application shutdown.
+{"timestamp": "2026-05-05T19:20:56.815283+00:00", "level": "INFO", "logger": "src.api.main", "message": "Received shutdown signal, draining connections...", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T19:20:57.387445+00:00", "level": "INFO", "logger": "src.api.main", "message": "Shutdown complete, exiting.", "module": "logging_config", "function": "_log", "line": 69, "process_id": 84083, "thread_id": 8578674944, "extra": {}}
+INFO:     Application shutdown complete.

@@ -1,7 +1,7 @@
 # Local Verification Summary
 
-Generated: 2026-05-05T18:48:59Z
-Status: PARTIAL local / EXTERNAL BLOCKED
+Generated: 2026-05-05T19:20:00Z
+Status: LOCAL TESTS PASS / QUALITY BAR PARTIAL / EXTERNAL BLOCKED
 
 ## PASS
 
@@ -37,11 +37,28 @@ Status: PARTIAL local / EXTERNAL BLOCKED
   (`evidence/2026-05-05/dhairya_regression_full/01_full_run.log`).
 - Credential history scan evidence reports PASS with zero findings:
   `evidence/2026-05-05/credential_rotation/02_all_refs_scan.json`.
+- Exact API gate passed after final changes:
+  `.venv/bin/python -m pytest tests/api/ -q --tb=short --no-cov -x`
+  recorded 155 passed, 1 deselected in
+  `evidence/2026-05-05/final_verification/api_pytest_final.log`.
+- Exact broad non-script gate passed after final changes:
+  `.venv/bin/python -m pytest tests/ -q --ignore=tests/scripts --tb=short --no-cov -x`
+  recorded 1846 passed, 57 skipped, 261 deselected. Summary:
+  `evidence/2026-05-05/final_verification/full_non_script_pytest_after_compose_fix_summary.md`.
+- PgBouncer compose contract passed after correction:
+  `tests/config/test_docker_compose_pgbouncer.py` plus the compose hardening
+  test recorded 3 passed.
+- Scorecard health-gate regression passed:
+  `evidence/2026-05-05/final_verification/scorecard_health_gate_regression.log`
+  records 15 passed with `-p no:rerunfailures`. The scorecard now refuses
+  unhealthy `/health` responses before live Locust.
 - Local Quality Bar evidence collected:
-  `python3 scripts/quality_bar_scorecard.py --json-only` exited 1 because
-  the scorecard is 5/6. C1, C2, C3, C5, and C6 pass; C4 local regression is
-  9/9 but is marked PARTIAL because no live 1000-user load ran. Current JSON:
-  `scripts/quality_bar_scorecard.json`.
+  `.venv/bin/python scripts/quality_bar_scorecard.py --json-only` exited 1
+  because the scorecard is 5/6. C1, C2, C3, C5, and C6 pass; C4 local
+  regression is 9/9 but is marked PARTIAL because no healthy live API executed
+  1000-user C4. Current evidence:
+  `evidence/2026-05-05/remaining_gates_final_attempt/quality_bar_scorecard_after_unhealthy_health_fix.log`
+  and `evidence/2026-05-05/remaining_gates_final_attempt/quality_bar_scorecard_current_5_6_partial.json`.
 - Fresh scorecard/compose contract suite passed:
   `scorecard_compose_contracts_fresh.log` records 25 passed.
 - Fresh killer-query rerun passed:
@@ -50,26 +67,29 @@ Status: PARTIAL local / EXTERNAL BLOCKED
   `py_compile_scorecard_api_main.log`, `docker_compose_config_fresh.log`,
   `corpus_sync_fresh.log`, `forbidden_vocab_fresh.log`, and
   `git_diff_check_fresh.log`.
-- Frontend production build has prior pass evidence:
-  `evidence/2026-05-05/remaining_closure/frontend_build_current.log` records
-  a completed Vite build with largest JS chunk 318.71 KB raw.
+- Frontend production build has fresh pass evidence:
+  `evidence/2026-05-06/frontend_build_recovery/npm_build.log` records
+  `npm run build` exit 0, 2,581 modules transformed, largest JS chunk
+  318.71 KB raw, and `dist/frontend` present at 6004 KB.
 
-## FAIL
+## FAIL / PARTIAL
 
+- C4 live load is not complete. During verification, a forwarded port-8000
+  service returned an unhealthy NRG `/health`; the old scorecard incorrectly
+  treated that as a live target and Locust failed with P99 10000 ms and 24.8%
+  failures. The fixed scorecard now refuses non-healthy targets and marks C4
+  PARTIAL unless a healthy live API or cluster target is supplied.
 - Earlier strict SLO reruns failed P50/P95/P99 and one full-order `/health`
   response before fixture isolation. Historical failure evidence:
   `evidence/2026-05-05/c4_ci_closure/33_slo_full_after_health_dependency_mocks.log`.
 
 ## BLOCKED
 
-- Docker/Colima runtime is unstable. `docker ps` timed out even after Colima
-  reported the VM running.
-- `/health/db` briefly responded healthy with zero row counts, then
-  `localhost:8000` became unreachable again; `/health/all` timed out.
+- No healthy local API is available for live C4. Docker data services are up;
+  this session also observed an unhealthy SSH-forwarded NRG `/health` on port
+  8000.
 - Frontend Docker image verification was canceled after Buildx reached
   `npm ci` and stalled.
-- Fresh `npm run build` rerun in this session hung in `tsc` for more than 6
-  minutes and was killed; current build proof remains blocked.
 - External gates remain blocked on deployed URLs, production API/Qdrant target,
   usable `KUBECONFIG`, founder GPG signatures, and credential rotation.
 - An unbounded broad `pytest tests/ -q --ignore=tests/scripts --tb=short

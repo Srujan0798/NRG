@@ -134,11 +134,11 @@ services:
       - .env.${APP_ENV:-dev}
     environment:
       - APP_ENV=${APP_ENV:-dev}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-}@pgbouncer:6432/${POSTGRES_DB:-nrg}
       - NRG_AUTH_DB_PATH=sqlite:////var/lib/nrg/nrg_auth.db
       - NRG_AUDIT_DIR=/var/lib/nrg/audit
       - NRG_PROTOCOL_DIR=/var/lib/nrg/protocol
       - NRG_LOCAL_RESEARCH_DB=/app/data/nrg_research.db
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-nrg}:${POSTGRES_PASSWORD:-}@pgbouncer:6432/${POSTGRES_DB:-nrg}
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - QDRANT_COLLECTION=${QDRANT_COLLECTION:-nrg_research}
