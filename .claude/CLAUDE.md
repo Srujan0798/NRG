@@ -101,7 +101,7 @@ docker compose up
 - **Default Guru stance:** produce task protocols. If the active coding agent is
   explicitly assigned implementation work by the founder or root `AGENTS.md`,
   make focused production code changes and verify them.
-- **EVERY protocol uses FULL format**: Guru Assignment Note → phased ACTION (Fortify→Elevate→Immortalize) → 3+ SKILLS → Agent Instructions.
+- **Before creating ANY assignment:** read `.agents/AGENTS.md` §Task Format (lines 111-120). The canonical format is `FILES / PROBLEM / STEPS / SKILLS / EVIDENCE / DONE WHEN`. See `.claude/rules/guru_assignments.md` for the binding rule.
 - **If the Founder corrects ANYTHING, update .claude/ files PERMANENTLY.** Never repeat instructions.
 - **Tasks are elevation protocols, not work orders.** Every task takes the system to eternal-grade.
 

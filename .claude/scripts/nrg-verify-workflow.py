@@ -131,6 +131,25 @@ def check_hardcoded_paths() -> int:
     return errors
 
 
+def check_assignment_format() -> int:
+    errors = 0
+    assignments_dir = REPO_ROOT / ".claude" / "assignments"
+    if not assignments_dir.exists():
+        ok("No .claude/assignments/ directory")
+        return 0
+
+    required_sections = ["FILES", "PROBLEM", "STEPS", "SKILLS", "EVIDENCE", "DONE WHEN"]
+    for fpath in assignments_dir.glob("*.md"):
+        text = fpath.read_text(encoding="utf-8", errors="ignore")
+        missing = [s for s in required_sections if s not in text]
+        if missing:
+            fail(f"Assignment {fpath.name} missing sections: {', '.join(missing)}")
+            errors += 1
+    if errors == 0:
+        ok("Assignment files follow .agents/AGENTS.md §Task Format")
+    return errors
+
+
 def check_entry_points() -> int:
     errors = 0
     required = [
@@ -160,6 +179,7 @@ def main() -> int:
     total_errors += check_forbidden_vocabulary()
     total_errors += check_stale_evidence()
     total_errors += check_hardcoded_paths()
+    total_errors += check_assignment_format()
 
     print("=" * 60)
     if total_errors == 0:

@@ -89,6 +89,8 @@ def mock_llm(monkeypatch):
     monkeypatch.setattr(api_main, "_academic_follow_up_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_killer_query_response", lambda *args, **kwargs: None)
     monkeypatch.setattr(api_main, "_advanced_adversarial_response", lambda *args, **kwargs: None)
+    monkeypatch.setattr(api_main, "_should_use_c4_read_model", lambda *args, **kwargs: False)
+    monkeypatch.setattr(api_main, "_c4_read_model_response", lambda *args, **kwargs: None)
 
     class StubWorkflow:
         call_count = 0

@@ -5,6 +5,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import queue
+import threading
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -27,6 +29,32 @@ _data_quality_health: Callable[[], dict[str, Any]] | None = None
 _qdrant_vector_count_health: Callable[[], dict[str, Any]] | None = None
 _qdrant_client_factory: Callable[..., Any] | None = None
 _killer_query_health_file: Path | None = None
+
+
+def _call_with_thread_timeout(func: Callable[[], dict[str, Any]], timeout: float) -> dict[str, Any]:
+    """Run a blocking health probe without binding its full runtime to the request.
+
+    `asyncio.wait_for(asyncio.to_thread(...))` times out the awaiter, but the
+    worker thread continues and can still delay TestClient/request teardown.
+    This helper contains the long probe in a daemon thread and returns control
+    at the configured timeout.
+    """
+    result_queue: queue.Queue[tuple[str, Any]] = queue.Queue(maxsize=1)
+
+    def _runner() -> None:
+        try:
+            result_queue.put(("ok", func()), block=False)
+        except Exception as exc:  # pragma: no cover - returned to caller
+            result_queue.put(("error", exc), block=False)
+
+    threading.Thread(target=_runner, name="nrg-health-probe", daemon=True).start()
+    try:
+        status, value = result_queue.get(timeout=timeout)
+    except queue.Empty as exc:
+        raise TimeoutError from exc
+    if status == "error":
+        raise value
+    return cast(dict[str, Any], value)
 
 
 def configure_health_router(
@@ -154,11 +182,12 @@ async def health_check():
 
     audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
     try:
-        audit_health = await asyncio.wait_for(
-            asyncio.to_thread(_resolve_audit_health),
-            timeout=audit_timeout_seconds,
+        audit_health = await asyncio.to_thread(
+            _call_with_thread_timeout,
+            _resolve_audit_health,
+            audit_timeout_seconds,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         audit_health = {
             "status": "timeout",
             "chain_valid": None,
@@ -221,11 +250,12 @@ async def health_check():
             retriever_health = {"status": "error", "message": str(exc)}
 
         try:
-            audit_health = await asyncio.wait_for(
-                asyncio.to_thread(_resolve_audit_health),
-                timeout=audit_timeout_seconds,
+            audit_health = await asyncio.to_thread(
+                _call_with_thread_timeout,
+                _resolve_audit_health,
+                audit_timeout_seconds,
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             audit_health = {
                 "status": "timeout",
                 "chain_valid": None,
