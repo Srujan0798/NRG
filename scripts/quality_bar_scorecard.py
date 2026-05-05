@@ -51,6 +51,8 @@ C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
 C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
 C4_LOCAL_RETRIES = int(os.getenv("NRG_C4_LOCAL_RETRIES", "1"))
+C4_HEALTH_RETRIES = int(os.getenv("NRG_C4_HEALTH_RETRIES", "3"))
+C4_HEALTH_TIMEOUT = float(os.getenv("NRG_C4_HEALTH_TIMEOUT", "5"))
 
 CONSTRAINTS = {
     "C1": {
@@ -80,7 +82,7 @@ CONSTRAINTS = {
         "min_pass_rate": 0.83,
         "description": "P99<500ms, ≥1000 concurrent, citation rate >80%, SLO breach detection",
         "test_count_attr": "total",
-        "note": "Unit tests pass. Load test (locust, 1000 users) requires API running on port 8000.",
+        "note": "Unit tests pass. Load test requires a healthy API target. Set NRG_C4_API_BASE_URL when port 8000 is unavailable.",
     },
     "C5": {
         "name": "Vector Drift Monitoring + Auto-Retrain Trigger",
@@ -550,6 +552,25 @@ def _healthy_nrg_api(health: dict) -> bool:
     return not service or "nrg" in service
 
 
+def _c4_api_base_url_candidates() -> list[str]:
+    """Return live API candidates for C4, preferring explicit operator input."""
+    configured = (
+        os.getenv("NRG_C4_API_BASE_URL")
+        or os.getenv("NRG_API_URL")
+        or os.getenv("API_URL")
+    )
+    if configured:
+        if not re.match(r"^https?://", configured):
+            configured = f"http://{configured}"
+        return [configured.rstrip("/")]
+
+    return ["http://127.0.0.1:8000", "http://localhost:8000"]
+
+
+def _c4_api_status_label(health: dict | None) -> str:
+    return "unhealthy" if isinstance(health, dict) else "not_running"
+
+
 def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
     data = json.dumps(payload).encode("utf-8")
     req = urllib_request.Request(
@@ -565,7 +586,7 @@ def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
         return None
 
 
-def _preissue_load_tokens(api_host: str) -> dict[str, str]:
+def _preissue_load_tokens(api_base_url: str) -> dict[str, str]:
     """Issue one token per persona before Locust starts so C4 measures query load."""
     credentials = {
         "LOAD_TEST_RESEARCHER_TOKEN": (
@@ -586,7 +607,7 @@ def _preissue_load_tokens(api_host: str) -> dict[str, str]:
         if os.getenv(env_name):
             continue
         payload = _post_json(
-            f"http://{api_host}:8000/auth/login",
+            f"{api_base_url.rstrip('/')}/auth/login",
             {"username": username, "password": password},
         )
         token = (payload or {}).get("access_token")
@@ -597,24 +618,29 @@ def _preissue_load_tokens(api_host: str) -> dict[str, str]:
 
 def _run_c4_load_test(verbose: bool = False) -> dict:
     """Run C4 1000-concurrent-user load test via locust."""
-    api_host = None
+    api_base_url = None
     unhealthy_health: dict | None = None
-    for candidate in ("127.0.0.1", "localhost"):
-        health = _fetch_json(f"http://{candidate}:8000/health", timeout=2.0)
-        if isinstance(health, dict):
-            if _healthy_nrg_api(health):
-                api_host = candidate
-                break
-            unhealthy_health = health
+    for _attempt in range(max(1, C4_HEALTH_RETRIES)):
+        for candidate in _c4_api_base_url_candidates():
+            health = _fetch_json(f"{candidate}/health", timeout=C4_HEALTH_TIMEOUT)
+            if isinstance(health, dict):
+                if _healthy_nrg_api(health):
+                    api_base_url = candidate
+                    break
+                unhealthy_health = health
+        if api_base_url is not None:
+            break
 
-    api_up = api_host is not None
+    api_up = api_base_url is not None
 
     if not api_up:
-        live_api_status = "unhealthy" if unhealthy_health is not None else "not_running"
+        live_api_status = _c4_api_status_label(unhealthy_health)
+        candidates = ", ".join(_c4_api_base_url_candidates())
         note = (
-            "No healthy NRG API health response on port 8000; used strict local "
-            "C4 SLO regression. Set NRG_C4_REQUIRE_LIVE=1 for deployment or "
-            "cluster C4 evidence."
+            "No healthy NRG API health response from C4 target candidates "
+            f"({candidates}); used strict local C4 SLO regression. Set "
+            "NRG_C4_API_BASE_URL to a healthy deployed or local API and "
+            "NRG_C4_REQUIRE_LIVE=1 for live C4 evidence."
         )
         if not C4_REQUIRE_LIVE:
             result = _run_c4_local_regression(verbose)
@@ -637,12 +663,16 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
             "mode": "live_required",
             "live_api_required": C4_REQUIRE_LIVE,
             "live_api_status": live_api_status,
-            "note": "Skipped: no healthy NRG API health response on port 8000. Run `python -m uvicorn src.api.main:app` first.",
+            "api_candidates": _c4_api_base_url_candidates(),
+            "note": (
+                "Skipped: no healthy NRG API health response from configured "
+                "C4 target candidates. Set NRG_C4_API_BASE_URL to a healthy API."
+            ),
         }
 
     locust_report = ROOT / ".cache" / "locust_report.html"
     locust_report.parent.mkdir(parents=True, exist_ok=True)
-    issued_tokens = _preissue_load_tokens(api_host)
+    issued_tokens = _preissue_load_tokens(api_base_url)
     env = os.environ.copy()
     env.update(issued_tokens)
     available_token_envs = sorted(
@@ -658,7 +688,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "-u", str(LOCUST_USERS),
         "-r", str(LOCUST_SPAWN_RATE),
         "--run-time", LOCUST_RUN_TIME,
-        "--host", f"http://{api_host}:8000",
+        "--host", api_base_url,
         "--html", str(locust_report),
         "--json",
     ]
@@ -699,6 +729,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "passed_rate": 1.0 if passed else 0.0,
         "locust_exit_code": result.returncode,
         "requested_users": LOCUST_USERS,
+        "api_base_url": api_base_url,
         "spawn_rate": LOCUST_SPAWN_RATE,
         "run_time": LOCUST_RUN_TIME,
         "locust_processes": LOCUST_PROCESSES,

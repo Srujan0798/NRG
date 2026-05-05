@@ -96,6 +96,71 @@ def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
     assert result["preissued_tokens"] == ["LOAD_TEST_GOV_TOKEN", "LOAD_TEST_RESEARCHER_TOKEN"]
 
 
+def test_c4_scorecard_uses_configured_api_base_url(monkeypatch, tmp_path):
+    calls: list[str] = []
+
+    def fake_fetch(url, **kwargs):
+        calls.append(url)
+        assert url == "http://127.0.0.1:8001/health"
+        return {"status": "healthy", "service": "nrg-api"}
+
+    def fake_run(cmd, **kwargs):
+        assert cmd[cmd.index("--host") + 1] == "http://127.0.0.1:8001"
+        return SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "Total samples : 1,250\n"
+                "P99           :      320.0 ms  <- C4 SLO target < 500 ms\n"
+                "Aggregated 1250 0(0.00%) | 150 5 400 120 | 100.00 0.00\n"
+                "C4 PASS - P99 320.0ms < 500ms SLO\n"
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setenv("NRG_C4_API_BASE_URL", "http://127.0.0.1:8001")
+    monkeypatch.setattr(scorecard, "ROOT", tmp_path)
+    monkeypatch.setattr(scorecard, "_fetch_json", fake_fetch)
+    monkeypatch.setattr(scorecard, "_preissue_load_tokens", lambda _base_url: {})
+    monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
+
+    result = scorecard._run_c4_load_test()
+
+    assert calls == ["http://127.0.0.1:8001/health"]
+    assert result["passed"] == 1
+    assert result["api_base_url"] == "http://127.0.0.1:8001"
+
+
+def test_c4_scorecard_retries_health_before_local_fallback(monkeypatch, tmp_path):
+    responses = [None, {"status": "healthy", "healthy": True, "service": "nrg-api"}]
+
+    def fake_fetch(_url, **_kwargs):
+        return responses.pop(0)
+
+    def fake_run(cmd, **_kwargs):
+        assert cmd[cmd.index("--host") + 1] in {"http://127.0.0.1:8000", "http://localhost:8000"}
+        return SimpleNamespace(
+            returncode=0,
+            stdout=(
+                "Total samples : 1,250\n"
+                "P99           :      320.0 ms  <- C4 SLO target < 500 ms\n"
+                "Aggregated 1250 0(0.00%) | 150 5 400 120 | 100.00 0.00\n"
+                "C4 PASS - P99 320.0ms < 500ms SLO\n"
+            ),
+            stderr="",
+        )
+
+    monkeypatch.setattr(scorecard, "ROOT", tmp_path)
+    monkeypatch.setattr(scorecard, "C4_HEALTH_RETRIES", 2, raising=False)
+    monkeypatch.setattr(scorecard, "_fetch_json", fake_fetch)
+    monkeypatch.setattr(scorecard, "_preissue_load_tokens", lambda _base_url: {})
+    monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
+
+    result = scorecard._run_c4_load_test()
+
+    assert result["passed"] == 1
+    assert responses == []
+
+
 def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_path):
     def fake_run(cmd, **kwargs):
         assert "--processes" in cmd

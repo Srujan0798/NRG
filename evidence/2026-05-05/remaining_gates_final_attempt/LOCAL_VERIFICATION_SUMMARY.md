@@ -59,6 +59,10 @@ Status: LOCAL TESTS PASS / QUALITY BAR PARTIAL / EXTERNAL BLOCKED
   1000-user C4. Current evidence:
   `evidence/2026-05-05/remaining_gates_final_attempt/quality_bar_scorecard_after_unhealthy_health_fix.log`
   and `evidence/2026-05-05/remaining_gates_final_attempt/quality_bar_scorecard_current_5_6_partial.json`.
+- Live C4 attempt evidence collected:
+  `evidence/2026-05-06/runtime_recovery/live_c4_locust_failure_summary.md`
+  records 150226 requests, 258 failures, P95 2900 ms, P99 4900 ms, and
+  0.1717% failure rate against `http://127.0.0.1:8000`.
 - Fresh scorecard/compose contract suite passed:
   `scorecard_compose_contracts_fresh.log` records 25 passed.
 - Fresh killer-query rerun passed:
@@ -79,6 +83,8 @@ Status: LOCAL TESTS PASS / QUALITY BAR PARTIAL / EXTERNAL BLOCKED
   treated that as a live target and Locust failed with P99 10000 ms and 24.8%
   failures. The fixed scorecard now refuses non-healthy targets and marks C4
   PARTIAL unless a healthy live API or cluster target is supplied.
+- The latest preserved live Locust report still fails C4 on the available
+  target: P99 4900 ms and 0.1717% failures.
 - Earlier strict SLO reruns failed P50/P95/P99 and one full-order `/health`
   response before fixture isolation. Historical failure evidence:
   `evidence/2026-05-05/c4_ci_closure/33_slo_full_after_health_dependency_mocks.log`.
