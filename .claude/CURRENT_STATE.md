@@ -26,6 +26,7 @@
 | Frontend bundle size | ASSIGNED local | 318.71 KB raw (>250KB target). Assignment: `.claude/assignments/shishya_frontend_bundle_diet_v2.md` — reduce to <250KB |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
 | Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; local/remote sync must be checked before handoff |
+| CI/CD pipeline validation | ASSIGNED local | Assignment: `.claude/assignments/shishya_cicd_pipeline_validation.md` — validate workflows, secrets, rollback |
 
 ---
 
