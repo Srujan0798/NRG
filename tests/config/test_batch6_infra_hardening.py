@@ -132,6 +132,36 @@ def test_ci_docker_build_steps_use_buildx_cache():
     assert "file: Dockerfile.api" in _read(".github/workflows/cd.yml")
 
 
+def test_cd_build_pushes_authenticated_ghcr_images_before_smoke():
+    workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
+    assert workflow["permissions"]["contents"] == "read"
+    assert workflow["permissions"]["packages"] == "write"
+
+    build_steps = workflow["jobs"]["build"]["steps"]
+    step_names = [step.get("name") for step in build_steps]
+    assert step_names.index("Login to Container Registry") < step_names.index("Build API image")
+    assert step_names.index("Build API image") < step_names.index("Run API smoke tests")
+
+    login_step = next(step for step in build_steps if step.get("name") == "Login to Container Registry")
+    assert login_step["uses"] == "docker/login-action@v3"
+    assert login_step["with"]["registry"] == "${{ env.REGISTRY }}"
+    assert login_step["with"]["username"] == "${{ github.actor }}"
+    assert login_step["with"]["password"] == "${{ secrets.GITHUB_TOKEN }}"
+
+    api_step = next(step for step in build_steps if step.get("name") == "Build API image")
+    frontend_step = next(step for step in build_steps if step.get("name") == "Build frontend image")
+    assert api_step["with"]["push"] is True
+    assert frontend_step["with"]["push"] is True
+
+    api_tag = "${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}/api:${{ github.sha }}"
+    frontend_tag = "${{ env.REGISTRY }}/${{ steps.image.outputs.repository }}/frontend:${{ github.sha }}"
+    assert api_step["with"]["tags"] == api_tag
+    assert frontend_step["with"]["tags"] == frontend_tag
+
+    smoke_step = next(step for step in build_steps if step.get("name") == "Run API smoke tests")
+    assert api_tag in smoke_step["run"]
+
+
 def test_cd_quality_bar_starts_seeded_api_before_c4_scorecard():
     workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
     quality_bar_steps = workflow["jobs"]["quality-bar"]["steps"]
