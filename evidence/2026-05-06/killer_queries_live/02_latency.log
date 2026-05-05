@@ -1,0 +1,15 @@
+Latency benchmark not run.
+
+Reason: assignment stop rule triggered after KILLER-03 generated SQL with the required shape but returned 0 rows.
+
+Blocking data finding:
+- `combined_ipo_patent_data`: 0 rows in live PostgreSQL.
+- `combined_ipo_patent_data WHERE status = 'Granted'`: 0 rows.
+
+Because KILLER-03 cannot satisfy the >=1 row acceptance condition, the 20-run latency benchmark would fail the same row-count assertion and cannot establish a valid P95/P99 gate.
+
+Live run evidence:
+- `01_live_run.log`: 2 passed, 1 failed.
+- KILLER-01: live API passed and returned 8 rows.
+- KILLER-02: live API passed and returned 6 rows.
+- KILLER-03: live API failed and returned 0 rows.

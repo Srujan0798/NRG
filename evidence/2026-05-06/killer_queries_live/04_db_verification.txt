@@ -1,0 +1,46 @@
+KILLER QUERY SQL + SEED VERIFICATION
+============================================================
+Source rules: tests/benchmarks/killer_queries.yaml; CORPUS/killer_queries.yaml contains matching KILLER-01..03 rules.
+Schema checked: db_struct.sql table definitions for academic_courses_details, innovations_at_various_stages_of_technology_readiness_level, innovation_grant_from_govt, combined_ipo_patent_data.
+
+KILLER-01
+  rows_returned_researcher: 8
+  must_contain:
+    SPLIT_PART: YES
+    total_credit_score: YES
+    AVG: YES
+    GROUP BY institute: YES
+  must_not_contain:
+    CAST(total_credit_score: NO (absent)
+    ::int: NO (absent)
+    ::integer: NO (absent)
+
+KILLER-02
+  rows_returned_researcher: 6
+  must_contain:
+    innovations_at_various_stages_of_technology_readiness_level: YES
+    GROUP BY: YES
+    financial_year: YES
+
+KILLER-03
+  rows_returned_researcher: 0
+  must_contain:
+    WITH: YES
+    innovation_grant_from_govt: YES
+    combined_ipo_patent_data: YES
+    HAVING: YES
+
+Live PostgreSQL seed checks:
+  academic_courses_details rows: 3840
+  academic_courses_details FY 2022-23 rows: 960
+  innovations_at_various_stages_of_technology_readiness_level rows: 1440
+  IIT Madras Level 4/Level 9 rows: 40
+  innovation_grant_from_govt rows: 280
+  grant YoY pairs: 32
+  combined_ipo_patent_data rows: 0
+  combined_ipo_patent_data status=Granted rows: 0
+
+Conclusion:
+  KILLER-01 SQL shape and seed data: PASS.
+  KILLER-02 SQL shape and seed data: PASS.
+  KILLER-03 SQL shape: PASS, but seed data: FAIL/BLOCKED because combined_ipo_patent_data is empty, so patent_yoy cannot produce rows.

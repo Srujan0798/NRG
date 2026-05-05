@@ -1,0 +1,171 @@
+{
+  "KILLER-01": {
+    "government": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "51205569059ff7a6a64394859a5b6d3393c7a36fa3d4b8078c8ebe862f5a5bc6",
+      "citations_count": 1,
+      "elapsed_ms": 50.862,
+      "first_row": {
+        "above_national_average": 0.0,
+        "avg_credits": 473.99999999999994,
+        "financial_year": "2022-23",
+        "institute": "IIT Delhi",
+        "total_credits": 473.99999999999994
+      },
+      "response_preview": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | financial_year | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- | --- |\n| IIT Delhi | 2022-23 | 473.[REDACTED] | 473.[REDACTED] | 0.0 |\n| IIT Kharagpur | 2022-23 | 473.[REDACTED] | 473.[REDACTED] | 0.0 |\n| IIT Kanpur | 2022-23 | 473.[REDACTED] | 473.[REDACTED] | 0.0 |\n| IIT Hyderabad | 2022-23 | 473.[REDACTED] | 473.[REDACTED] | 0.0 |\n| IIT Bombay | 2022-23 | 473.[REDACTED] | 473.[REDACT",
+      "row_count": 8,
+      "sql_query": "\n        WITH selected_year AS (\n            SELECT COALESCE(\n                (SELECT financial_year FROM academic_courses_details WHERE financial_year = '2022-23' LIMIT 1),\n                (SELECT MAX(financial_year) FROM academic_courses_details)\n            ) AS financial_year\n        ),\n        parsed AS (\n            SELECT\n                a.institute,\n                y.financial_year,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details AS a\n            CROSS JOIN selected_year AS y\n            WHERE a.financial_year = y.financial_year\n            GROUP BY institute, y.financial_year\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.financial_year,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
+      "status_code": 200,
+      "warnings": [
+        "Response policy applied: pii_strip:tier2:bank_account"
+      ]
+    },
+    "industry": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "2c69c57f0ec1de27f916c825af74dc51a8c60c5454ed8f7be0fd2c50e2f87047",
+      "citations_count": 1,
+      "elapsed_ms": 32.0,
+      "first_row": {
+        "access_scope": "institution_aggregate",
+        "institution": "IIT Delhi",
+        "metric_band": "medium",
+        "rank": 1,
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      "response_preview": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | IIT Delhi | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 2 | IIT Kharagpur | institution_aggregate | medium | Exact analytical columns are hidden for Tier 3. |\n| 3 | IIT Kanpur | i",
+      "row_count": 8,
+      "sql_query": "",
+      "status_code": 200,
+      "warnings": [
+        "Access restricted: Tier 3 receives aggregate bands, not exact internal metrics.",
+        "Response policy applied: pii_strip:tier3:debug_trace"
+      ]
+    },
+    "researcher": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "2cf69390a58ee914c86c68a6bd68d87721c80382885c9e8fcadec166c4d53b3b",
+      "citations_count": 1,
+      "elapsed_ms": 13.618,
+      "first_row": {
+        "above_national_average": 0.0,
+        "avg_credits": 473.99999999999994,
+        "financial_year": "2022-23",
+        "institute": "IIT Delhi",
+        "total_credits": 473.99999999999994
+      },
+      "response_preview": "Structured evidence query returned 8 rows. [cite:killer-sql:0]\n\n| institute | financial_year | total_credits | avg_credits | above_national_average |\n| --- | --- | --- | --- | --- |\n| IIT Delhi | 2022-23 | 473.99999999999994 | 473.99999999999994 | 0.0 |\n| IIT Kharagpur | 2022-23 | 473.99999999999994 | 473.99999999999994 | 0.0 |\n| IIT Kanpur | 2022-23 | 473.99999999999994 | 473.99999999999994 | 0.0 |\n| IIT Hyderabad | 2022-23 | 473.99999999999994 | 473.99999999999994 | 0.0 |\n| IIT Bombay | 2022-2",
+      "row_count": 8,
+      "sql_query": "\n        WITH selected_year AS (\n            SELECT COALESCE(\n                (SELECT financial_year FROM academic_courses_details WHERE financial_year = '2022-23' LIMIT 1),\n                (SELECT MAX(financial_year) FROM academic_courses_details)\n            ) AS financial_year\n        ),\n        parsed AS (\n            SELECT\n                a.institute,\n                y.financial_year,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details AS a\n            CROSS JOIN selected_year AS y\n            WHERE a.financial_year = y.financial_year\n            GROUP BY institute, y.financial_year\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.financial_year,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        ",
+      "status_code": 200,
+      "warnings": []
+    }
+  },
+  "KILLER-02": {
+    "government": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "0c0231c4ab7bb145e4b10a6fc58506e16fc43bcbd6d90335ec7ab39114ee252d",
+      "citations_count": 1,
+      "elapsed_ms": 15.635,
+      "first_row": {
+        "financial_year": "2023-24",
+        "stage_count": 5,
+        "stage_of_technology": "Level 9",
+        "stage_pct": "50.00"
+      },
+      "response_preview": "Structured evidence query returned 6 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2023-24 | Level 9 | 5 | 50.00 |\n| 2023-24 | Level 4 | 5 | 50.00 |\n| 2022-23 | Level 4 | 5 | 50.00 |\n| 2022-23 | Level 9 | 5 | 50.00 |\n| 2021-22 | Level 4 | 5 | 50.00 |",
+      "row_count": 6,
+      "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n              AND financial_year IN (\n                  SELECT financial_year\n                  FROM (\n                      SELECT DISTINCT financial_year\n                      FROM innovations_at_various_stages_of_technology_readiness_level\n                      WHERE institute LIKE '%IIT Madras%'\n                      ORDER BY financial_year DESC\n                      LIMIT 3\n                  ) AS recent_years\n              )\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
+      "status_code": 200,
+      "warnings": []
+    },
+    "industry": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "2207aa3d0fbb6b988db5c6ea5371eaed11ff0997862491e9525568ff3fb82427",
+      "citations_count": 1,
+      "elapsed_ms": 61.348,
+      "first_row": {
+        "access_scope": "institution_aggregate",
+        "institution": "Institution aggregate",
+        "metric_band": "low",
+        "rank": 1,
+        "restricted_reason": "Exact analytical columns are hidden for Tier 3.",
+        "source_rows": "cited_structured_result"
+      },
+      "response_preview": "Structured evidence query returned 6 rows. [cite:killer-sql:0]\n\nAccess restricted: Tier 3 receives institution-level aggregate bands; exact internal metrics are hidden.\n\n| rank | institution | access_scope | metric_band | restricted_reason |\n| --- | --- | --- | --- | --- |\n| 1 | Institution aggregate | institution_aggregate | low | Exact analytical columns are hidden for Tier 3. |\n| 2 | Institution aggregate | institution_aggregate | low | Exact analytical columns are hidden for Tier 3. |\n| 3 | ",
+      "row_count": 6,
+      "sql_query": "",
+      "status_code": 200,
+      "warnings": [
+        "Access restricted: Tier 3 receives aggregate bands, not exact internal metrics.",
+        "Response policy applied: pii_strip:tier3:debug_trace"
+      ]
+    },
+    "researcher": {
+      "answer_confidence": "high",
+      "answer_confidence_score": 0.95,
+      "audit_event_id": "c175d1643462065e5f0f77c813183a6b0a37ba6678844e898e177226d6f9e1ab",
+      "citations_count": 1,
+      "elapsed_ms": 7.889,
+      "first_row": {
+        "financial_year": "2023-24",
+        "stage_count": 5,
+        "stage_of_technology": "Level 9",
+        "stage_pct": "50.00"
+      },
+      "response_preview": "Structured evidence query returned 6 rows. [cite:killer-sql:0]\n\n| financial_year | stage_of_technology | stage_count | stage_pct |\n| --- | --- | --- | --- |\n| 2023-24 | Level 9 | 5 | 50.00 |\n| 2023-24 | Level 4 | 5 | 50.00 |\n| 2022-23 | Level 4 | 5 | 50.00 |\n| 2022-23 | Level 9 | 5 | 50.00 |\n| 2021-22 | Level 4 | 5 | 50.00 |",
+      "row_count": 6,
+      "sql_query": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n              AND financial_year IN (\n                  SELECT financial_year\n                  FROM (\n                      SELECT DISTINCT financial_year\n                      FROM innovations_at_various_stages_of_technology_readiness_level\n                      WHERE institute LIKE '%IIT Madras%'\n                      ORDER BY financial_year DESC\n                      LIMIT 3\n                  ) AS recent_years\n              )\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        ",
+      "status_code": 200,
+      "warnings": []
+    }
+  },
+  "KILLER-03": {
+    "government": {
+      "answer_confidence": "needs_clarification",
+      "answer_confidence_score": 0.05,
+      "audit_event_id": "2a9b2f9028420a1e7046b1e11ee756d40789ed63818078a6672c974ff18098cf",
+      "citations_count": 1,
+      "elapsed_ms": 21.187,
+      "first_row": null,
+      "response_preview": "Structured evidence query returned 0 rows. [cite:killer-sql:0]\n\nNo rows matched the structured query.",
+      "row_count": 0,
+      "sql_query": "\n        WITH grants AS (\n            SELECT\n                institute,\n                CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num,\n                SUM(grant_received) AS total_grant\n            FROM innovation_grant_from_govt\n            WHERE year_of_receiving IS NOT NULL\n            GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT)\n        ),\n        grant_yoy AS (\n            SELECT\n                curr.institute,\n                curr.year_num,\n                curr.total_grant,\n                prev.total_grant AS prev_grant,\n                ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct\n            FROM grants AS curr\n            JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1\n        ),\n        patents AS (\n            SELECT\n                applicants,\n                CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num,\n                COUNT(*) AS granted_patents\n            FROM combined_ipo_patent_data\n            WHERE status = 'Granted'\n              AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL\n            GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT)\n        ),\n        patent_yoy AS (\n            SELECT\n                curr.applicants,\n                curr.year_num,\n                curr.granted_patents,\n                prev.granted_patents AS prev_patents,\n                ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct\n            FROM patents AS curr\n            JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1\n            \n        )\n        \n        SELECT\n            g.institute,\n            g.year_num,\n            g.grant_drop_pct,\n            p.patent_growth_pct,\n            p.granted_patents\n        FROM grant_yoy AS g\n        JOIN patent_yoy AS p\n          ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%'\n         AND p.year_num = g.year_num\n        GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents\n        HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0\n        ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC\n        LIMIT 3\n        ",
+      "status_code": 200,
+      "warnings": []
+    },
+    "industry": {
+      "answer_confidence": "needs_clarification",
+      "answer_confidence_score": 0.05,
+      "audit_event_id": "784c591ed6f6ad688a7087f09fafea55b798ea7a2f02d6ad55d8c30affda22c9",
+      "citations_count": 1,
+      "elapsed_ms": 21.349,
+      "first_row": null,
+      "response_preview": "Structured evidence query returned 0 rows. [cite:killer-sql:0]\n\nNo rows matched the structured query.",
+      "row_count": 0,
+      "sql_query": "",
+      "status_code": 200,
+      "warnings": [
+        "Response policy applied: pii_strip:tier3:debug_trace"
+      ]
+    },
+    "researcher": {
+      "answer_confidence": "needs_clarification",
+      "answer_confidence_score": 0.05,
+      "audit_event_id": "a8ca7e79d2a38f7919e5232b7a179456d094ca603d6f5b40f2e82efa601e7703",
+      "citations_count": 1,
+      "elapsed_ms": 13.038,
+      "first_row": null,
+      "response_preview": "Structured evidence query returned 0 rows. [cite:killer-sql:0]\n\nNo rows matched the structured query.",
+      "row_count": 0,
+      "sql_query": "\n        WITH grants AS (\n            SELECT\n                institute,\n                CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num,\n                SUM(grant_received) AS total_grant\n            FROM innovation_grant_from_govt\n            WHERE year_of_receiving IS NOT NULL\n            GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT)\n        ),\n        grant_yoy AS (\n            SELECT\n                curr.institute,\n                curr.year_num,\n                curr.total_grant,\n                prev.total_grant AS prev_grant,\n                ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct\n            FROM grants AS curr\n            JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1\n        ),\n        patents AS (\n            SELECT\n                applicants,\n                CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num,\n                COUNT(*) AS granted_patents\n            FROM combined_ipo_patent_data\n            WHERE status = 'Granted'\n              AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL\n            GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT)\n        ),\n        patent_yoy AS (\n            SELECT\n                curr.applicants,\n                curr.year_num,\n                curr.granted_patents,\n                prev.granted_patents AS prev_patents,\n                ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct\n            FROM patents AS curr\n            JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1\n            \n        )\n        \n        SELECT\n            g.institute,\n            g.year_num,\n            g.grant_drop_pct,\n            p.patent_growth_pct,\n            p.granted_patents\n        FROM grant_yoy AS g\n        JOIN patent_yoy AS p\n          ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%'\n         AND p.year_num = g.year_num\n        GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents\n        HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0\n        ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC\n        LIMIT 3\n        ",
+      "status_code": 200,
+      "warnings": []
+    }
+  }
+}

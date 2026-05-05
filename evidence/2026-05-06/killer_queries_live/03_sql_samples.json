@@ -1,0 +1,37 @@
+{
+  "KILLER-01": {
+    "audit_event_id": "2cf69390a58ee914c86c68a6bd68d87721c80382885c9e8fcadec166c4d53b3b",
+    "elapsed_ms": 13.618,
+    "first_row": {
+      "above_national_average": 0.0,
+      "avg_credits": 473.99999999999994,
+      "financial_year": "2022-23",
+      "institute": "IIT Delhi",
+      "total_credits": 473.99999999999994
+    },
+    "nl": "Which IIT has the highest total innovation credits in FY 2022-23, and how far above the national average is it?",
+    "rows": 8,
+    "sql": "\n        WITH selected_year AS (\n            SELECT COALESCE(\n                (SELECT financial_year FROM academic_courses_details WHERE financial_year = '2022-23' LIMIT 1),\n                (SELECT MAX(financial_year) FROM academic_courses_details)\n            ) AS financial_year\n        ),\n        parsed AS (\n            SELECT\n                a.institute,\n                y.financial_year,\n                SUM(\n                    CAST(SPLIT_PART(total_credit_score, ':', 1) AS DOUBLE PRECISION)\n                    + COALESCE(CAST(NULLIF(SPLIT_PART(total_credit_score, ':', 2), '') AS DOUBLE PRECISION), 0)\n                ) AS total_credits\n            FROM academic_courses_details AS a\n            CROSS JOIN selected_year AS y\n            WHERE a.financial_year = y.financial_year\n            GROUP BY institute, y.financial_year\n        ),\n        national AS (\n            SELECT AVG(total_credits) AS avg_credits FROM parsed\n        )\n        SELECT\n            p.institute,\n            p.financial_year,\n            p.total_credits,\n            n.avg_credits,\n            (p.total_credits - n.avg_credits) AS above_national_average\n        FROM parsed AS p\n        CROSS JOIN national AS n\n        ORDER BY p.total_credits DESC\n        LIMIT 10\n        "
+  },
+  "KILLER-02": {
+    "audit_event_id": "c175d1643462065e5f0f77c813183a6b0a37ba6678844e898e177226d6f9e1ab",
+    "elapsed_ms": 7.889,
+    "first_row": {
+      "financial_year": "2023-24",
+      "stage_count": 5,
+      "stage_of_technology": "Level 9",
+      "stage_pct": "50.00"
+    },
+    "nl": "For IIT Madras, what % of innovations moved from Lab Validation (Level 4) to Market Ready (Level 9) in the last 3 years, and which stage is the biggest bottleneck?",
+    "rows": 6,
+    "sql": "\n        WITH stage_counts AS (\n            SELECT financial_year, stage_of_technology, COUNT(*) AS stage_count\n            FROM innovations_at_various_stages_of_technology_readiness_level\n            WHERE institute LIKE '%IIT Madras%'\n              AND stage_of_technology IN ('Level 4', 'Level 9')\n              AND financial_year IN (\n                  SELECT financial_year\n                  FROM (\n                      SELECT DISTINCT financial_year\n                      FROM innovations_at_various_stages_of_technology_readiness_level\n                      WHERE institute LIKE '%IIT Madras%'\n                      ORDER BY financial_year DESC\n                      LIMIT 3\n                  ) AS recent_years\n              )\n            GROUP BY financial_year, stage_of_technology\n        ),\n        yearly_totals AS (\n            SELECT financial_year, SUM(stage_count) AS total_count\n            FROM stage_counts\n            GROUP BY financial_year\n        )\n        SELECT\n            s.financial_year,\n            s.stage_of_technology,\n            s.stage_count,\n            ROUND(s.stage_count * 100.0 / NULLIF(y.total_count, 0), 2) AS stage_pct\n        FROM stage_counts AS s\n        JOIN yearly_totals AS y ON y.financial_year = s.financial_year\n        ORDER BY s.financial_year DESC, s.stage_count DESC\n        LIMIT 20\n        "
+  },
+  "KILLER-03": {
+    "audit_event_id": "a8ca7e79d2a38f7919e5232b7a179456d094ca603d6f5b40f2e82efa601e7703",
+    "elapsed_ms": 13.038,
+    "first_row": null,
+    "nl": "Identify 3 institutes that cut grants >40% YoY yet increased granted patents \u2014 who is doing more with less?",
+    "rows": 0,
+    "sql": "\n        WITH grants AS (\n            SELECT\n                institute,\n                CAST(SUBSTR(year_of_receiving, 1, 4) AS INT) AS year_num,\n                SUM(grant_received) AS total_grant\n            FROM innovation_grant_from_govt\n            WHERE year_of_receiving IS NOT NULL\n            GROUP BY institute, CAST(SUBSTR(year_of_receiving, 1, 4) AS INT)\n        ),\n        grant_yoy AS (\n            SELECT\n                curr.institute,\n                curr.year_num,\n                curr.total_grant,\n                prev.total_grant AS prev_grant,\n                ((curr.total_grant - prev.total_grant) * 100.0 / NULLIF(prev.total_grant, 0)) AS grant_drop_pct\n            FROM grants AS curr\n            JOIN grants AS prev ON curr.institute = prev.institute AND curr.year_num = prev.year_num + 1\n        ),\n        patents AS (\n            SELECT\n                applicants,\n                CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT) AS year_num,\n                COUNT(*) AS granted_patents\n            FROM combined_ipo_patent_data\n            WHERE status = 'Granted'\n              AND COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date) IS NOT NULL\n            GROUP BY applicants, CAST(SUBSTR(COALESCE(date_of_grant, certificate_issue_date, publication_date, application_filing_date), 1, 4) AS INT)\n        ),\n        patent_yoy AS (\n            SELECT\n                curr.applicants,\n                curr.year_num,\n                curr.granted_patents,\n                prev.granted_patents AS prev_patents,\n                ((curr.granted_patents - prev.granted_patents) * 100.0 / NULLIF(prev.granted_patents, 0)) AS patent_growth_pct\n            FROM patents AS curr\n            JOIN patents AS prev ON curr.applicants = prev.applicants AND curr.year_num = prev.year_num + 1\n            \n        )\n        \n        SELECT\n            g.institute,\n            g.year_num,\n            g.grant_drop_pct,\n            p.patent_growth_pct,\n            p.granted_patents\n        FROM grant_yoy AS g\n        JOIN patent_yoy AS p\n          ON LOWER(TRIM(p.applicants)) LIKE '%' || LOWER(TRIM(g.institute)) || '%'\n         AND p.year_num = g.year_num\n        GROUP BY g.institute, g.year_num, g.grant_drop_pct, p.patent_growth_pct, p.granted_patents\n        HAVING g.grant_drop_pct < -40 AND p.patent_growth_pct > 0\n        ORDER BY p.patent_growth_pct DESC, g.grant_drop_pct ASC\n        LIMIT 3\n        "
+  }
+}

@@ -1,0 +1,52 @@
+PRE-COMMIT GATE
+Staged files:
+evidence/2026-05-06/killer_queries_live/00_health.json
+evidence/2026-05-06/killer_queries_live/00_health_db.json
+evidence/2026-05-06/killer_queries_live/00_summary.md
+evidence/2026-05-06/killer_queries_live/01_live_run.log
+evidence/2026-05-06/killer_queries_live/02_latency.log
+evidence/2026-05-06/killer_queries_live/03_sql_samples.json
+evidence/2026-05-06/killer_queries_live/04_db_verification.txt
+evidence/2026-05-06/killer_queries_live/04_seed_counts.txt
+evidence/2026-05-06/killer_queries_live/05_blockers.md
+evidence/2026-05-06/killer_queries_live/06_manual_api_responses.json
+
+[1] Python syntax check
+PASS: No staged Python files
+
+[2] Import check
+PASS: No staged src Python files
+
+[3] Fast tests
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_nbf_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_tier_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_refresh_token_has_kid
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 25 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_refresh_token_issued
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_second_refresh_revokes_first
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_revoked_refresh_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 21 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_refresh_token_issued
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_second_refresh_revokes_first
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_revoked_refresh_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 21 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m== [32m1952 passed[0m, [33m[1m57 skipped[0m, [33m[1m261 deselected[0m, [33m[1m287 warnings[0m[33m in 261.45s (0:04:21)[0m[33m ==[0m
+PASS: tests
+
+[4] Staged secret scan
+PASS: No staged secrets found
+
+[5] Audit chain integrity
+Chain: OK; entries=608430
+
+[6] Schema reference check
+PASS: No schema files changed
+
+VERDICT: CLEAR TO COMMIT

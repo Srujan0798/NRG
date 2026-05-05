@@ -1,0 +1,4 @@
+academic_2022_23|960
+trl_iit_madras_l4_l9|40
+grant_yoy_pairs|32
+granted_patents|0
