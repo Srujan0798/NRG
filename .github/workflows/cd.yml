@@ -172,16 +172,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Check AWS staging configuration
+        id: aws_config
+        env:
+          AWS_ROLE_ARN_STAGING: ${{ secrets.AWS_ROLE_ARN_STAGING }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
+        run: |
+          if [ -z "$AWS_ROLE_ARN_STAGING" ] || [ -z "$AWS_REGION" ] || [ -z "$ECR_REGISTRY" ]; then
+            echo "::warning::AWS staging secrets are not configured; skipping ECR/ECS deploy"
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "configured=true" >> "$GITHUB_OUTPUT"
+
       - name: Configure AWS credentials
+        if: steps.aws_config.outputs.configured == 'true'
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_STAGING }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to ECR
+        if: steps.aws_config.outputs.configured == 'true'
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Push images to ECR
+        if: steps.aws_config.outputs.configured == 'true'
         run: |
           docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/api:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-api:${{ github.sha }}
           docker tag ${{ env.REGISTRY }}/${{ needs.build.outputs.image_repository }}/frontend:${{ github.sha }} ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
@@ -189,17 +206,23 @@ jobs:
           docker push ${{ secrets.ECR_REGISTRY }}/nrg-frontend:${{ github.sha }}
 
       - name: Deploy to ECS staging
+        if: steps.aws_config.outputs.configured == 'true'
         run: |
           aws ecs update-service --cluster nrg-staging --service nrg-api --force-new-deployment
           aws ecs update-service --cluster nrg-staging --service nrg-frontend --force-new-deployment
           aws ecs wait services-stable --cluster nrg-staging --services nrg-api,nrg-frontend
 
       - name: Run smoke tests
+        if: steps.aws_config.outputs.configured == 'true'
         run: |
           for i in {1..10}; do
             curl -sf https://staging.nrg.gov.in/health && echo "Staging healthy" && break
             sleep 10
           done
+
+      - name: Skip staging deploy when AWS secrets are absent
+        if: steps.aws_config.outputs.configured != 'true'
+        run: echo "::warning::AWS staging secrets are not configured; staging deploy skipped after build and API smoke checks"
 
   # ===========================================================================
   # Deploy to Production (manual approval required)
@@ -208,7 +231,7 @@ jobs:
     needs: [deploy-staging]
     runs-on: ubuntu-latest
     environment: production
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     steps:
       - name: Checkout
         uses: actions/checkout@v4

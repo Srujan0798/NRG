@@ -162,6 +162,43 @@ def test_cd_build_pushes_authenticated_ghcr_images_before_smoke():
     assert api_tag in smoke_step["run"]
 
 
+def test_cd_staging_deploy_skips_when_aws_secrets_are_unconfigured():
+    workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
+    steps = workflow["jobs"]["deploy-staging"]["steps"]
+    step_names = [step.get("name") for step in steps]
+
+    assert step_names.index("Check AWS staging configuration") < step_names.index("Configure AWS credentials")
+
+    check_step = next(step for step in steps if step.get("name") == "Check AWS staging configuration")
+    assert check_step["id"] == "aws_config"
+    assert "AWS_ROLE_ARN_STAGING" in check_step["env"]
+    assert "AWS_REGION" in check_step["env"]
+    assert "ECR_REGISTRY" in check_step["env"]
+    assert "configured=false" in check_step["run"]
+
+    guarded_steps = [
+        "Configure AWS credentials",
+        "Login to ECR",
+        "Push images to ECR",
+        "Deploy to ECS staging",
+        "Run smoke tests",
+    ]
+    for name in guarded_steps:
+        step = next(step for step in steps if step.get("name") == name)
+        assert step["if"] == "steps.aws_config.outputs.configured == 'true'"
+
+    skipped_step = next(step for step in steps if step.get("name") == "Skip staging deploy when AWS secrets are absent")
+    assert skipped_step["if"] == "steps.aws_config.outputs.configured != 'true'"
+    assert "AWS staging secrets are not configured" in skipped_step["run"]
+
+
+def test_cd_production_deploy_requires_manual_dispatch():
+    workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
+    production_job = workflow["jobs"]["deploy-production"]
+
+    assert production_job["if"] == "github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'"
+
+
 def test_cd_quality_bar_starts_seeded_api_before_c4_scorecard():
     workflow = yaml.safe_load(_read(".github/workflows/cd.yml"))
     quality_bar_steps = workflow["jobs"]["quality-bar"]["steps"]
