@@ -1,0 +1,69 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, timeout-2.4.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 40 items
+
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_kill_mid_query_returns_graceful_error [32mPASSED[0m[32m [  2%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_timeout_returns_valid_error [32mPASSED[0m[33m [  5%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_connection_refused [32mPASSED[0m[33m [  7%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_failure_does_not_crash_api [32mPASSED[0m[33m [ 10%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_health_endpoint_on_failure [32mPASSED[0m[33m [ 12%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_nvidia_kill_mid_request_cascades_to_local [32mPASSED[0m[33m [ 15%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_nvidia_failure_returns_graceful_error [32mPASSED[0m[33m [ 17%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_local_fallback_schema_valid [32mPASSED[0m[33m [ 20%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_cascade_retries_and_succeeds [32mPASSED[0m[33m [ 22%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_fallback_indicates_degraded_mode [32mPASSED[0m[33m [ 25%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_nvidia_failure_returns_502 [33mSKIPPED[0m[33m [ 27%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_nvidia_timeout_returns_valid_error [32mPASSED[0m[33m [ 30%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_rate_limit_failure_triggers_retry [32mPASSED[0m[33m [ 32%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_llm_returns_valid_response_structure_on_fallback [32mPASSED[0m[33m [ 35%][0m
+tests/chaos/test_llm_failover.py::TestCascadeToLocal::test_local_fallback_still_valid_schema [32mPASSED[0m[33m [ 37%][0m
+tests/chaos/test_llm_failover.py::TestCascadeToLocal::test_concurrent_queries_graceful_degradation [32mPASSED[0m[33m [ 40%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_database_failure_returns_503 [32mPASSED[0m[33m [ 42%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_vector_db_failure_still_returns_results [32mPASSED[0m[33m [ 45%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_api_graceful_shutdown_during_request [32mPASSED[0m[33m [ 47%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_primary_failure_fails_over_in_under_2s [33mSKIPPED[0m[33m [ 50%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_all_cloud_providers_down_falls_to_rule_based [32mPASSED[0m[33m [ 52%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_parallel_race_faster_provider_wins [33mSKIPPED[0m[33m [ 55%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_health_weighted_skips_recent_failures [32mPASSED[0m[33m [ 57%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_circuit_breaker_trips_after_3_failures [32mPASSED[0m[33m [ 60%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generates_returns_after_budget_exhaustion [33mSKIPPED[0m local LLM)[33m [ 62%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_mesh_tracks_provider_metrics_correctly [32mPASSED[0m[33m [ 65%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_parallel_race_with_two_fast_providers [33mSKIPPED[0m[33m [ 67%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generate_streaming_yields_tokens_from_fast_provider [32mPASSED[0m[33m [ 70%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generate_streaming_falls_back_on_provider_failure [32mPASSED[0m[33m [ 72%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_down_returns_sql_only_response [32mPASSED[0m[33m [ 75%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_failure_indicated_in_response [32mPASSED[0m[33m [ 77%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_unavailable_schema_still_valid [32mPASSED[0m[33m [ 80%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_rag_failover_to_sql [32mPASSED[0m[33m [ 82%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_health_check_on_failure [32mPASSED[0m[33m [ 85%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_unavailable_concurrent_queries [32mPASSED[0m[33m [ 87%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_down_still_returns_valid_response [32mPASSED[0m[33m [ 90%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_cache_miss_on_redis_failure_still_returns_data [32mPASSED[0m[33m [ 92%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_failure_does_not_affect_query_response [32mPASSED[0m[33m [ 95%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_cache_invalidation_on_redis_failure [32mPASSED[0m[33m [ 97%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_down_health_check_reports_degraded [32mPASSED[0m[33m [100%][0m
+
+[33m=============================== warnings summary ===============================[0m
+tests/chaos/test_database_connection_failure.py: 5 warnings
+tests/chaos/test_llm_cascade_fallback.py: 5 warnings
+tests/chaos/test_llm_failover.py: 8 warnings
+tests/chaos/test_qdrant_unavailable.py: 6 warnings
+tests/chaos/test_redis_cache_failure.py: 4 warnings
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m================== [32m35 passed[0m, [33m[1m5 skipped[0m, [33m[1m28 warnings[0m[33m in 3.23s[0m[33m ==================[0m

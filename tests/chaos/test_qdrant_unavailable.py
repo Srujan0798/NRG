@@ -67,6 +67,7 @@ class RAGFailoverWorkflow:
 @pytest.fixture(autouse=True)
 def setup(monkeypatch):
     original_workflow = api_main.workflow
+    monkeypatch.setattr(api_main, "_fast_query_response", lambda *args, **kwargs: None)
     api_main._api_cache.invalidate()
     yield
     api_main.workflow = original_workflow

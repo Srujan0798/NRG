@@ -31,6 +31,10 @@ This evidence package covers the CI failures left after `f890dc2c`:
 - `15_docker_compose_config.log`: compose dev profile config check passed.
 - `16_local_read_model_path_check.log`: local read-model path resolves to the seeded mirror path.
 - `17_jwt_compose_key_permissions.log`: CI compose key permissions verified as readable.
+- `18_chaos_full_local_after_push.log`: RED chaos rerun reproduced the remaining chaos fast-path interception issue.
+- `19_chaos_full_green.log`: full chaos suite passed locally, 35 passed and 5 skipped.
+- `20_chaos_fixture_ruff.log`: chaos fixture lint passed.
+- `21_chaos_fixture_diff_check.log`: chaos fixture whitespace diff check passed.
 
 ## Remaining Known Gaps
 

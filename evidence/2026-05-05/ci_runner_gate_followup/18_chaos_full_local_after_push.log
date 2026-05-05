@@ -1,0 +1,163 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, timeout-2.4.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 40 items
+
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_kill_mid_query_returns_graceful_error [32mPASSED[0m[32m [  2%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_timeout_returns_valid_error [32mPASSED[0m[33m [  5%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_connection_refused [32mPASSED[0m[33m [  7%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_failure_does_not_crash_api [32mPASSED[0m[33m [ 10%][0m
+tests/chaos/test_database_connection_failure.py::TestDatabaseConnectionFailure::test_database_health_endpoint_on_failure [32mPASSED[0m[33m [ 12%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_nvidia_kill_mid_request_cascades_to_local [31mFAILED[0m[31m [ 15%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_nvidia_failure_returns_graceful_error [32mPASSED[0m[31m [ 17%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_local_fallback_schema_valid [32mPASSED[0m[31m [ 20%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_cascade_retries_and_succeeds [31mFAILED[0m[31m [ 22%][0m
+tests/chaos/test_llm_cascade_fallback.py::TestLLMCascadeFallback::test_fallback_indicates_degraded_mode [32mPASSED[0m[31m [ 25%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_nvidia_failure_returns_502 [33mSKIPPED[0m[31m [ 27%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_nvidia_timeout_returns_valid_error [32mPASSED[0m[31m [ 30%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_rate_limit_failure_triggers_retry [31mFAILED[0m[31m [ 32%][0m
+tests/chaos/test_llm_failover.py::TestLLMFailover::test_llm_returns_valid_response_structure_on_fallback [32mPASSED[0m[31m [ 35%][0m
+tests/chaos/test_llm_failover.py::TestCascadeToLocal::test_local_fallback_still_valid_schema [32mPASSED[0m[31m [ 37%][0m
+tests/chaos/test_llm_failover.py::TestCascadeToLocal::test_concurrent_queries_graceful_degradation [32mPASSED[0m[31m [ 40%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_database_failure_returns_503 [32mPASSED[0m[31m [ 42%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_vector_db_failure_still_returns_results [32mPASSED[0m[31m [ 45%][0m
+tests/chaos/test_llm_failover.py::TestChaosScenarios::test_api_graceful_shutdown_during_request [32mPASSED[0m[31m [ 47%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_primary_failure_fails_over_in_under_2s [33mSKIPPED[0m[31m [ 50%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_all_cloud_providers_down_falls_to_rule_based [32mPASSED[0m[31m [ 52%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_parallel_race_faster_provider_wins [33mSKIPPED[0m[31m [ 55%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_health_weighted_skips_recent_failures [32mPASSED[0m[31m [ 57%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_circuit_breaker_trips_after_3_failures [32mPASSED[0m[31m [ 60%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generates_returns_after_budget_exhaustion [33mSKIPPED[0m local LLM)[31m [ 62%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_mesh_tracks_provider_metrics_correctly [32mPASSED[0m[31m [ 65%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_parallel_race_with_two_fast_providers [33mSKIPPED[0m[31m [ 67%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generate_streaming_yields_tokens_from_fast_provider [32mPASSED[0m[31m [ 70%][0m
+tests/chaos/test_mesh_resilience.py::TestMeshResilience::test_generate_streaming_falls_back_on_provider_failure [32mPASSED[0m[31m [ 72%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_down_returns_sql_only_response [31mFAILED[0m[31m [ 75%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_failure_indicated_in_response [31mFAILED[0m[31m [ 77%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_unavailable_schema_still_valid [32mPASSED[0m[31m [ 80%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_rag_failover_to_sql [31mFAILED[0m[31m [ 82%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_health_check_on_failure [32mPASSED[0m[31m [ 85%][0m
+tests/chaos/test_qdrant_unavailable.py::TestQdrantUnavailable::test_qdrant_unavailable_concurrent_queries [32mPASSED[0m[31m [ 87%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_down_still_returns_valid_response [32mPASSED[0m[31m [ 90%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_cache_miss_on_redis_failure_still_returns_data [32mPASSED[0m[31m [ 92%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_failure_does_not_affect_query_response [32mPASSED[0m[31m [ 95%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_cache_invalidation_on_redis_failure [32mPASSED[0m[31m [ 97%][0m
+tests/chaos/test_redis_cache_failure.py::TestRedisCacheFailure::test_redis_down_health_check_reports_degraded [32mPASSED[0m[31m [100%][0m
+
+=================================== FAILURES ===================================
+[31m[1m____ TestLLMCascadeFallback.test_nvidia_kill_mid_request_cascades_to_local _____[0m
+[1m[31mtests/chaos/test_llm_cascade_fallback.py[0m:116: in test_nvidia_kill_mid_request_cascades_to_local
+    [0m[94massert[39;49;00m data.get([33m"[39;49;00m[33mverification_status[39;49;00m[33m"[39;49;00m) [95mis[39;49;00m [94mTrue[39;49;00m, [33m"[39;49;00m[33mResponse should be marked verified[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Response should be marked verified[0m
+[1m[31mE   assert False is True[0m
+[1m[31mE    +  where False = <built-in method get of dict object at 0x12428df40>('verification_status')[0m
+[1m[31mE    +    where <built-in method get of dict object at 0x12428df40> = {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.2, 'answer_id': '5cf89856-cd51-46ef-9b5b-243df6308e49', 'assumptions': [], ...}.get[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:19.607324+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:19.609657+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m___________ TestLLMCascadeFallback.test_cascade_retries_and_succeeds ___________[0m
+[1m[31mtests/chaos/test_llm_cascade_fallback.py[0m:170: in test_cascade_retries_and_succeeds
+    [0m[94massert[39;49;00m CascadingWorkflow.call_count >= [94m1[39;49;00m, [33m"[39;49;00m[33mWorkflow should be called[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Workflow should be called[0m
+[1m[31mE   assert 0 >= 1[0m
+[1m[31mE    +  where 0 = CascadingWorkflow.call_count[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:19.680603+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:19.682710+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m____________ TestLLMFailover.test_rate_limit_failure_triggers_retry ____________[0m
+[1m[31mtests/chaos/test_llm_failover.py[0m:128: in test_rate_limit_failure_triggers_retry
+    [0m[94massert[39;49;00m StubFailingWorkflow.call_count >= [94m1[39;49;00m, [33m"[39;49;00m[33mWorkflow should be called[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Workflow should be called[0m
+[1m[31mE   assert 0 >= 1[0m
+[1m[31mE    +  where 0 = StubFailingWorkflow.call_count[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:19.701747+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:19.704072+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m_______ TestQdrantUnavailable.test_qdrant_down_returns_sql_only_response _______[0m
+[1m[31mtests/chaos/test_qdrant_unavailable.py[0m:103: in test_qdrant_down_returns_sql_only_response
+    [0m[94massert[39;49;00m [33m"[39;49;00m[33msql[39;49;00m[33m"[39;49;00m [95min[39;49;00m data.get([33m"[39;49;00m[33mretrieval_sources[39;49;00m[33m"[39;49;00m, []), [33m"[39;49;00m[33mShould use SQL retrieval[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Should use SQL retrieval[0m
+[1m[31mE   assert 'sql' in ['researchers', 'institutions'][0m
+[1m[31mE    +  where ['researchers', 'institutions'] = <built-in method get of dict object at 0x122e88b00>('retrieval_sources', [])[0m
+[1m[31mE    +    where <built-in method get of dict object at 0x122e88b00> = {'answer_confidence': 'high', 'answer_confidence_score': 0.95, 'answer_id': '4dfb0296-f5fa-49b0-a380-ab01c779a668', 'assumptions': [], ...}.get[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:20.349528+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:21.311865+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m_______ TestQdrantUnavailable.test_qdrant_failure_indicated_in_response ________[0m
+[1m[31mtests/chaos/test_qdrant_unavailable.py[0m:123: in test_qdrant_failure_indicated_in_response
+    [0m[94massert[39;49;00m indicates_degradation, [33m"[39;49;00m[33mShould indicate Qdrant unavailability[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Should indicate Qdrant unavailability[0m
+[1m[31mE   assert False[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:21.317949+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:21.320128+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[31m[1m________________ TestQdrantUnavailable.test_rag_failover_to_sql ________________[0m
+[1m[31mtests/chaos/test_qdrant_unavailable.py[0m:154: in test_rag_failover_to_sql
+    [0m[94massert[39;49;00m RAGFailoverWorkflow.call_count >= [94m1[39;49;00m, [33m"[39;49;00m[33mWorkflow should be called[39;49;00m[33m"[39;49;00m[90m[39;49;00m
+[1m[31mE   AssertionError: Workflow should be called[0m
+[1m[31mE   assert 0 >= 1[0m
+[1m[31mE    +  where 0 = RAGFailoverWorkflow.call_count[0m
+----------------------------- Captured stdout call -----------------------------
+{"timestamp": "2026-05-05T17:01:21.330813+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/login \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+{"timestamp": "2026-05-05T17:01:21.332811+00:00", "level": "INFO", "logger": "httpx", "message": "HTTP Request: POST http://testserver/query \"HTTP/1.1 200 OK\"", "module": "_client", "function": "_send_single_request", "line": 1025, "process_id": 41389, "thread_id": 8578674944, "extra": {}}
+------------------------------ Captured log call -------------------------------
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/login "HTTP/1.1 200 OK"
+[32mINFO    [0m httpx:_client.py:1025 HTTP Request: POST http://testserver/query "HTTP/1.1 200 OK"
+[33m=============================== warnings summary ===============================[0m
+tests/chaos/test_database_connection_failure.py: 5 warnings
+tests/chaos/test_llm_cascade_fallback.py: 5 warnings
+tests/chaos/test_llm_failover.py: 8 warnings
+tests/chaos/test_qdrant_unavailable.py: 6 warnings
+tests/chaos/test_redis_cache_failure.py: 4 warnings
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[36m[1m=========================== short test summary info ============================[0m
+[31mFAILED[0m tests/chaos/test_llm_cascade_fallback.py::[1mTestLLMCascadeFallback::test_nvidia_kill_mid_request_cascades_to_local[0m - AssertionError: Response should be marked verified
+assert False is True
+ +  where False = <built-in method get of dict object at 0x12428df40>('verification_status')
+ +    where <built-in method get of dict object at 0x12428df40> = {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.2, 'answer_id': '5cf89856-cd51-46ef-9b5b-243df6308e49', 'assumptions': [], ...}.get
+[31mFAILED[0m tests/chaos/test_llm_cascade_fallback.py::[1mTestLLMCascadeFallback::test_cascade_retries_and_succeeds[0m - AssertionError: Workflow should be called
+assert 0 >= 1
+ +  where 0 = CascadingWorkflow.call_count
+[31mFAILED[0m tests/chaos/test_llm_failover.py::[1mTestLLMFailover::test_rate_limit_failure_triggers_retry[0m - AssertionError: Workflow should be called
+assert 0 >= 1
+ +  where 0 = StubFailingWorkflow.call_count
+[31mFAILED[0m tests/chaos/test_qdrant_unavailable.py::[1mTestQdrantUnavailable::test_qdrant_down_returns_sql_only_response[0m - AssertionError: Should use SQL retrieval
+assert 'sql' in ['researchers', 'institutions']
+ +  where ['researchers', 'institutions'] = <built-in method get of dict object at 0x122e88b00>('retrieval_sources', [])
+ +    where <built-in method get of dict object at 0x122e88b00> = {'answer_confidence': 'high', 'answer_confidence_score': 0.95, 'answer_id': '4dfb0296-f5fa-49b0-a380-ab01c779a668', 'assumptions': [], ...}.get
+[31mFAILED[0m tests/chaos/test_qdrant_unavailable.py::[1mTestQdrantUnavailable::test_qdrant_failure_indicated_in_response[0m - AssertionError: Should indicate Qdrant unavailability
+assert False
+[31mFAILED[0m tests/chaos/test_qdrant_unavailable.py::[1mTestQdrantUnavailable::test_rag_failover_to_sql[0m - AssertionError: Workflow should be called
+assert 0 >= 1
+ +  where 0 = RAGFailoverWorkflow.call_count
+[31m============= [31m[1m6 failed[0m, [32m29 passed[0m, [33m5 skipped[0m, [33m28 warnings[0m[31m in 3.32s[0m[31m =============[0m
