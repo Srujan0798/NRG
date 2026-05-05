@@ -186,6 +186,7 @@ Latest C4 profiling shows the remaining boundary more clearly. Combined query-st
 | `evidence/2026-05-05/leftover_local_closure/README.md` | May 5 local closure summary for the previously dirty Batch 2, Batch 4, Batch 5, schema-parity, primary-key migration, and 500-audit-event evidence. External gates remain blocked separately. |
 | `evidence/2026-05-05/final_external_gates_after_b2351bc2/README.md` | May 5 external final-gate preflight remains BLOCKED by missing deployed frontend/API URLs, missing production API/Qdrant target, missing explicit cluster-load flag, and missing founder GPG signatures. |
 | `evidence/2026-05-05/final_remote_blockers_after_b2351bc2/README.md` | May 5 remote blocker recheck confirms `nrg/main` remains divergent, normal push dry-run is rejected non-fast-forward, and the S3 remote history scan still reports 286 secret-like assignments. |
+| `evidence/2026-05-05/maximum_enforcement_local_browser/README.md` | May 5 local-browser quantum proof captured login, dashboard, streaming answer, citation/source/audit drawers, mobile rendering, and Tier 3 blocked PII JSON; console log still contains two 400 entries and one 502 entry, so it is not a zero-console-error browser gate. |
 | Current uncommitted work | None expected after the final continuation evidence sync. Desktop handoff artifacts live outside the repo under `/Users/srujansai/Desktop/NRG_AI_HANDOFF_2026-04-30`. |
 | `d207b54` | Prior backend messy-query fix |
 | `516991a` | Verified dead artifact prune |

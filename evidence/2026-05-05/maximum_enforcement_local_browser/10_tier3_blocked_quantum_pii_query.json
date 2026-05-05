@@ -1,0 +1,58 @@
+{
+  "query_id": "aee9584d-a7af-4d25-86c0-23552bab19d7",
+  "answer_id": "4c97ef51-b1fe-43c4-b935-ecf29c0a812d",
+  "audit_event_id": "586b3590f009011f0fd5bb463db43fc4e1ae869e355d4eeb46acf1e33682372e",
+  "tier": 3,
+  "query": "[blocked by security policy]",
+  "question": "[blocked by security policy]",
+  "interpreted_question": "[blocked by security policy]",
+  "assumptions": [],
+  "route": "blocked",
+  "blocked": true,
+  "final_answer": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "response": "I cannot process this request because it asks for sensitive or restricted information. Try an aggregate question about institutions, labs, capability areas, or public contact routes instead.",
+  "status": "blocked",
+  "verification_status": false,
+  "confidence": {
+    "level": "needs_clarification",
+    "reason": "Security policy blocked this query: PROMPT_INJECTION"
+  },
+  "verification": {
+    "status": "blocked",
+    "safe_to_trust": false,
+    "reason": "Security policy blocked this query: PROMPT_INJECTION",
+    "audit_event_id": "586b3590f009011f0fd5bb463db43fc4e1ae869e355d4eeb46acf1e33682372e"
+  },
+  "answer_confidence": "needs_clarification",
+  "citations": [],
+  "source_data": {
+    "sql_query": null,
+    "rows": [],
+    "documents": []
+  },
+  "freshness": {
+    "database_snapshot": null,
+    "document_indexed_at": null,
+    "warning": null
+  },
+  "caveats": [
+    "Security policy blocked this query: PROMPT_INJECTION"
+  ],
+  "follow_up_suggestions": [
+    "Show aggregate counts by institution",
+    "Show labs working in this area",
+    "Show public partnership routes"
+  ],
+  "query_time_ms": 0,
+  "sql_query": null,
+  "sql_results": [],
+  "retrieval_sources": [],
+  "warnings": [
+    {
+      "message": "Security policy blocked this query: PROMPT_INJECTION"
+    },
+    "Response policy applied: pii_strip:tier3:debug_trace"
+  ],
+  "conversation_history": [],
+  "tier3_access_scope": "industry_anonymized"
+}

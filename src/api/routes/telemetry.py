@@ -20,12 +20,17 @@ TELEMETRY_EVENT_NAMES = {
     "query.phase_observed",
     "query.completed",
     "query.aborted",
+    "query.stream_reconnecting",
     "citation.opened",
     "audit.verified",
     "proof.verify_clicked",
     "proof.verified",
     "persona.switched",
     "error.shown",
+    "ui.error_boundary",
+    "dpdp.sync_failed",
+    "dpdp.export_failed",
+    "dpdp.erasure_failed",
     "empty.shown",
 }
 

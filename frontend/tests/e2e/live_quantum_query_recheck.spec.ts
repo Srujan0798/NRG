@@ -17,6 +17,18 @@ function writeJson(name: string, payload: unknown) {
   fs.writeFileSync(path.join(evidenceDir, name), `${JSON.stringify(payload, null, 2)}\n`)
 }
 
+function redactEmailFields(payload: unknown): unknown {
+  if (Array.isArray(payload)) return payload.map(redactEmailFields)
+  if (!payload || typeof payload !== 'object') return payload
+
+  return Object.fromEntries(
+    Object.entries(payload as Record<string, unknown>).map(([key, value]) => [
+      key,
+      key.toLowerCase() === 'email' ? '[EMAIL_REDACTED]' : redactEmailFields(value),
+    ]),
+  )
+}
+
 async function login(
   request: APIRequestContext,
   username: string,
@@ -49,8 +61,20 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
   test.setTimeout(120000)
 
   const consoleErrors: string[] = []
+  const browserNetworkErrors: Array<{ url: string; status?: number; failure?: string }> = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
+  })
+  page.on('response', (response) => {
+    if (response.status() >= 400) {
+      browserNetworkErrors.push({ url: response.url(), status: response.status() })
+    }
+  })
+  page.on('requestfailed', (request) => {
+    browserNetworkErrors.push({
+      url: request.url(),
+      failure: request.failure()?.errorText || 'request failed',
+    })
   })
 
   fs.mkdirSync(evidenceDir, { recursive: true })
@@ -64,6 +88,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
       '- Backend: `/query` through the E2E proxy.',
       '- Frontend: login -> dashboard -> query -> streaming answer -> citation drawer -> source drawer -> audit drawer -> mobile screenshot.',
       '- Security: Tier 3 direct PII request stays blocked and includes an audit event ID.',
+      '- Evidence hygiene: Tier 1 API source-row email fields are redacted in the saved JSON capture.',
       '',
     ].join('\n')
   )
@@ -81,7 +106,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
   })
   expect(researcherResponse.ok()).toBeTruthy()
   const researcherPayload = await researcherResponse.json()
-  writeJson('01_researcher_quantum_query_api.json', researcherPayload)
+  writeJson('01_researcher_quantum_query_api.json', redactEmailFields(researcherPayload))
 
   const apiAnswer = `${researcherPayload.response || ''}\n${researcherPayload.final_answer || ''}`
   const apiRows = researcherPayload.sql_results || researcherPayload.source_data?.rows || []
@@ -166,5 +191,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
   expect(blockedPayload.audit_event_id).toBeTruthy()
 
   writeJson('console_errors.json', consoleErrors)
-  expect(consoleErrors.filter((message) => /traceback|uncaught|cannot read/i.test(message))).toEqual([])
+  writeJson('browser_network_errors.json', browserNetworkErrors)
+  expect(browserNetworkErrors).toEqual([])
+  expect(consoleErrors).toEqual([])
 })
