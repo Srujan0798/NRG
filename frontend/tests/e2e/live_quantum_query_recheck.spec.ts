@@ -62,6 +62,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
 
   const consoleErrors: string[] = []
   const browserNetworkErrors: Array<{ url: string; status?: number; failure?: string }> = []
+  const ignoredBrowserNetworkErrors: Array<{ url: string; failure: string; reason: string }> = []
   page.on('console', (message) => {
     if (message.type() === 'error') consoleErrors.push(message.text())
   })
@@ -71,9 +72,19 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
     }
   })
   page.on('requestfailed', (request) => {
+    const failure = request.failure()?.errorText || 'request failed'
+    const url = request.url()
+    if (url.includes('/api/query/stream') && failure.includes('ERR_ABORTED')) {
+      ignoredBrowserNetworkErrors.push({
+        url,
+        failure,
+        reason: 'Chromium reports expected SSE stream closure as net::ERR_ABORTED',
+      })
+      return
+    }
     browserNetworkErrors.push({
-      url: request.url(),
-      failure: request.failure()?.errorText || 'request failed',
+      url,
+      failure,
     })
   })
 
@@ -89,6 +100,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
       '- Frontend: login -> dashboard -> query -> streaming answer -> citation drawer -> source drawer -> audit drawer -> mobile screenshot.',
       '- Security: Tier 3 direct PII request stays blocked and includes an audit event ID.',
       '- Evidence hygiene: Tier 1 API source-row email fields are redacted in the saved JSON capture.',
+      '- Network hygiene: expected Chromium `net::ERR_ABORTED` SSE stream closures are logged separately in `browser_network_ignored.json`.',
       '',
     ].join('\n')
   )
@@ -192,6 +204,7 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
 
   writeJson('console_errors.json', consoleErrors)
   writeJson('browser_network_errors.json', browserNetworkErrors)
+  writeJson('browser_network_ignored.json', ignoredBrowserNetworkErrors)
   expect(browserNetworkErrors).toEqual([])
   expect(consoleErrors).toEqual([])
 })
