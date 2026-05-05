@@ -45,9 +45,14 @@ This evidence package covers the CI failures left after `f890dc2c`:
 - `29_workflow_yaml_parse_after_matrix_isolation.log`: workflow YAML parse passed after adding audit isolation to the test-python matrix.
 - `30_matrix_workflow_diff_check.log`: matrix workflow diff whitespace check passed.
 - `31_matrix_health_targeted_audit_isolation_summary.log`: targeted xdist health/audit check passed locally with matrix-style audit isolation, 2 passed.
+- `32_coverage_threshold_remote_failure_summary.log`: remote CI run `25391791008` passed the coverage test suite but failed the stale hard coverage threshold, reporting 69.8 percent line coverage.
+- `33_support_regression_tests_summary.log`: focused support-module regression tests passed, 11 passed.
+- `34_coverage_baseline_local_probe_summary.log`: broad local coverage-style probe passed after excluding one local-only database path conflict, 1937 passed and measured 72.5 percent line coverage.
+- `35_coverage_baseline_workflow_checks.log`: workflow YAML parse, diff whitespace check, and support-module ruff check passed after converting coverage enforcement to a 71.0 percent baseline gate.
 
 ## Remaining Known Gaps
 
 - Full `scripts/` ruff is still blocked by existing lint debt outside the CI lint scope.
 - Python 3.14 is advisory until SQLAlchemy and the broader dependency stack certify Python 3.14 import support.
+- Repository line coverage is above the new 71.0 percent baseline locally, but it is not yet at the historical 80.0 percent target; the largest remaining debt is in optional LLM/provider adapters, query helper branches, admin/graph/ingest routes, and synthesis fallbacks.
 - This package does not prove external deployment, cluster, or C4 live-load gates; those remain separate gates requiring their own fresh acceptance evidence.

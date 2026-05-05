@@ -1,0 +1,18 @@
+Command:
+env NRG_TEST_ISOLATE_AUDIT=1 NRG_TEST_AUDIT_BASE=/tmp/nrg_support_regression_audit DATABASE_URL=sqlite:////tmp/nrg_support_regression.db NRG_TEST_DATABASE_URL=sqlite:////tmp/nrg_support_regression.db JWT_ALGORITHM=HS256 JWT_SECRET=ci-jwt-secret-for-support-regression-32-bytes .venv/bin/python -m pytest tests/misc/test_support_module_regressions.py -q --tb=short --no-cov
+
+Result:
+PASS
+
+Output summary:
+11 passed in 0.53s
+
+Coverage added:
+- SSO configuration, domain filtering, state handling, and callback token issuance.
+- Security header helper behavior.
+- Local LLM client prompt construction, llama.cpp success/error paths, health cache, and rule-based fallback.
+- Langfuse disabled and traced paths with a local fake tracing client.
+- Training data formatter route formats and JSONL round trip.
+
+Production bug fixed:
+- `src/training/data_formatter.py` now escapes route metadata braces in the ShareGPT formatter instead of raising a ValueError.

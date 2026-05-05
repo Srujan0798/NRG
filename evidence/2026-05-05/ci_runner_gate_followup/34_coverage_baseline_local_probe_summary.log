@@ -1,0 +1,21 @@
+Command:
+env GITHUB_ACTIONS=true COVERAGE_FILE=/tmp/.coverage.nrg_after_support NRG_TEST_ISOLATE_AUDIT=1 NRG_TEST_AUDIT_BASE=/tmp/nrg_coverage_after_support_audit DATABASE_URL=sqlite:////tmp/nrg_coverage_after_support.db NRG_TEST_DATABASE_URL=sqlite:////tmp/nrg_coverage_after_support.db NRG_LOCAL_RESEARCH_DB=/tmp/nrg_coverage_after_support.db JWT_ALGORITHM=HS256 JWT_SECRET=ci-jwt-secret-for-local-coverage-after-support-32-bytes .venv/bin/python -m pytest tests/ -m "not slow and not e2e" -k "not test_publication_count_fast_path_counts_iit_papers_from_local_sqlite" -n auto --dist=loadgroup --ignore=tests/e2e --cov=src --cov-report=xml:/tmp/nrg_coverage_after_support.xml --no-cov-on-fail --tb=short
+
+Result:
+PASS
+
+Output summary:
+- 1937 passed
+- 57 skipped
+- 292 warnings
+- Runtime: 38.73s
+- Coverage XML: /tmp/nrg_coverage_after_support.xml
+
+Local exclusion reason:
+- One publication-count fast-path test was excluded only in this local probe because forcing `NRG_LOCAL_RESEARCH_DB` to the fresh temporary seed conflicts with that test's own temporary database fixture.
+- The GitHub runner coverage command does not set `NRG_LOCAL_RESEARCH_DB`; the same test passed in remote CI run 25391791008.
+
+Baseline check:
+- Measured local line coverage: 72.5 percent.
+- Required baseline after patch: 71.0 percent.
+- Result: PASS.

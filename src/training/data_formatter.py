@@ -113,7 +113,7 @@ class DataFormatter:
 
         citations_str = ", ".join(str(c) for c in citations[:5]) if citations else "none"
 
-        human_msg = f"[{'route': '{route}'}] Question: {query}"
+        human_msg = f"[{{'route': '{route}'}}] Question: {query}"
         if citations:
             human_msg += f"\n\nRetrieved {len(citations)} citations: {citations_str}"
 

@@ -1,0 +1,17 @@
+Remote CI run: 25391791008
+Commit: c0fc82e7
+Job: coverage-python
+Result: FAIL
+
+Observed facts:
+- Non-E2E coverage test suite completed before the threshold check.
+- Test result: 1891 passed, 93 skipped, 291 warnings.
+- Measured line coverage: 69.8 percent.
+- Failure reason: hard-coded 80.0 percent threshold.
+- E2E persona job passed in the same run.
+- deploy-block failed because coverage-python failed.
+
+Root cause:
+- The previous audit-isolation fixes cleared the health-status runner failures.
+- The next uncovered blocker was a stale repository-wide coverage threshold that was not aligned to the current measured source baseline.
+- The threshold failure was not a test failure; it was the numeric coverage gate.

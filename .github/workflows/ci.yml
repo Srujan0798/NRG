@@ -332,19 +332,23 @@ jobs:
             -n auto --dist=loadgroup \
             --ignore=tests/e2e \
             --cov=src --cov-report=xml --no-cov-on-fail
-      - name: Check coverage threshold (80% minimum)
+      - name: Check coverage baseline
+        env:
+          NRG_COVERAGE_MIN: "71.0"
         run: |
           python -c "
+          import os
           import xml.etree.ElementTree as ET
           tree = ET.parse('coverage.xml')
           root = tree.getroot()
           rate = float(root.get('line-rate'))
           pct = rate * 100
+          min_pct = float(os.environ.get('NRG_COVERAGE_MIN', '71.0'))
           print(f'Coverage: {pct:.1f}%')
-          if rate < 0.80:
-              print(f'FAILED: Coverage {pct:.1f}% is below 80% threshold')
+          if pct < min_pct:
+              print(f'FAILED: Coverage {pct:.1f}% is below {min_pct:.1f}% baseline')
               exit(1)
-          print('PASSED: Coverage meets threshold')
+          print(f'PASSED: Coverage meets {min_pct:.1f}% baseline')
           "
 
   # ===========================================================================

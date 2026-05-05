@@ -1,0 +1,15 @@
+Workflow YAML parse:
+ruby -e "require 'yaml'; YAML.load_file('.github/workflows/ci.yml'); puts 'yaml-ok'"
+yaml-ok
+
+Coverage baseline parser:
+NRG_COVERAGE_MIN=71.0 .venv/bin/python -c "...parse /tmp/nrg_coverage_after_support.xml..."
+Coverage: 72.5 percent
+
+Diff whitespace check:
+git diff --check -- .github/workflows/ci.yml src/training/data_formatter.py tests/misc/test_support_module_regressions.py
+PASS
+
+Ruff check:
+.venv/bin/python -m ruff check src/training/data_formatter.py tests/misc/test_support_module_regressions.py
+All checks passed.
