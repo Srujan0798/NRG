@@ -1,3 +1,8 @@
+---
+name: nrg-kong-gateway
+description: Use when configuring or reviewing NRG Kong routes, gateway plugins, DLP behavior, tier-based rate limits, or upstream connectivity.
+---
+
 # NRG Kong Gateway Skill
 
 API gateway configuration, DLP rules, rate limiting, and sovereign routing for the National Research Graph (NRG).

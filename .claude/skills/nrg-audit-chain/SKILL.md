@@ -1,3 +1,8 @@
+---
+name: nrg-audit-chain
+description: Use when implementing, verifying, repairing, or reviewing NRG audit-chain integrity, HMAC events, co-signatures, tamper detection, and evidence binding.
+---
+
 # NRG Audit Chain Skill
 
 Immutable audit chain with HMAC verification, Postgres co-signature, tamper detection, and evidence binding for the National Research Graph (NRG).

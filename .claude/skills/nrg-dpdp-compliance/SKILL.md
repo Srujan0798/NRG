@@ -1,3 +1,8 @@
+---
+name: nrg-dpdp-compliance
+description: Use when designing or auditing NRG consent, data-subject rights, localization, privacy notices, DPIA work, or DPDP Act 2023 compliance.
+---
+
 # NRG DPDP Compliance Skill
 
 India's Digital Personal Data Protection (DPDP) Act 2023 compliance for the National Research Graph (NRG).

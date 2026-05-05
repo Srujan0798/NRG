@@ -1,3 +1,8 @@
+---
+name: nrg-embedding-models
+description: Use when choosing, validating, tuning, or debugging NRG embedding models, vector drift checks, Qdrant collections, or Indic-language retrieval quality.
+---
+
 # NRG Embedding Models Skill
 
 Embedding model selection, vector quality assurance, and language bias detection for the National Research Graph (NRG).

@@ -1,3 +1,8 @@
+---
+name: nrg-grafana-monitoring
+description: Use when building or reviewing NRG Grafana dashboards, Prometheus alerts, SLO panels, drift monitoring, or operational metric runbooks.
+---
+
 # NRG Grafana Monitoring Skill
 
 Monitoring, alerting, and dashboard design for the National Research Graph (NRG) sovereign AI platform.

@@ -1,3 +1,8 @@
+---
+name: nrg-redis-caching
+description: Use when implementing or reviewing NRG Redis caching, rate-limit stores, session metadata, query-cache invalidation, or Redis performance issues.
+---
+
 # NRG Redis Caching Skill
 
 Redis caching patterns, rate limiting, session management, and query result caching for the National Research Graph (NRG).

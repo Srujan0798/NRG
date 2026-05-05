@@ -1,3 +1,8 @@
+---
+name: release-readiness
+description: Use when checking NRG UI, frontend release, launch, or production-readiness surfaces before handoff or deployment.
+---
+
 # Production Readiness — The Professor Test
 
 > **Trigger:** Before any launch, UI sprint completion, or frontend release.  

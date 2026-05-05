@@ -1,3 +1,8 @@
+---
+name: external-audit
+description: Use when requesting independent AI review before major NRG reviews, milestone acceptance, quarterly checks, or critical component audits.
+---
+
 # External AI Audit
 
 > **Trigger:** Before major reviews, quarterly, or when internal audits feel "too easy."  

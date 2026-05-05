@@ -19,6 +19,9 @@ production-Qdrant, cluster-load, or founder-signing proof.
 | Changed Python lint | PASS | Ruff reported `All checks passed!` | command output |
 | Changed Python compile | PASS | `compileall` exited 0 | command output |
 | Alembic migration head | PASS | `d4_primary_key_alignment_005 (head)` | command output |
+| Local PostgreSQL migration | PASS | `alembic upgrade head` exited 0; current revision is `d4_primary_key_alignment_005 (head)` | `local_postgres_alembic_upgrade_head.log`, `local_postgres_alembic_current.log` |
+| PostgreSQL schema parity | PASS | `16 passed in 95.84s` | `schema_parity_postgres_pytest.log` |
+| Batch 4 audit rerun | PASS | D4 summary regenerated at `2026-05-05T11:00:32.388409+00:00`; schema drift false; Dhairya replay `17/17`; single migration head true | `batch4_audit_rerun_after_pk_alignment.log`, `../batch4_data_sql_schema/batch4_summary.md` |
 
 ## Commands
 
@@ -34,6 +37,10 @@ DATABASE_URL=postgresql://... .venv/bin/python -m pytest tests/data/test_schema_
 .venv/bin/ruff check src/migrations/versions/d4_primary_key_alignment_005.py src/migrations/versions/add_production_tables_001.py alembic/versions/add_production_tables_001.py tests/data/test_schema_parity.py
 .venv/bin/python -m compileall -q src/migrations/versions/d4_primary_key_alignment_005.py src/migrations/versions/add_production_tables_001.py alembic/versions/add_production_tables_001.py tests/data/test_schema_parity.py
 .venv/bin/alembic heads
+DATABASE_URL=postgresql://nrg:nrg_default_password@localhost:5432/nrg .venv/bin/alembic upgrade head
+DATABASE_URL=postgresql://nrg:nrg_default_password@localhost:5432/nrg .venv/bin/alembic current
+DATABASE_URL=postgresql://nrg:nrg_default_password@localhost:5432/nrg .venv/bin/python -m pytest tests/data/test_schema_parity.py -q --tb=short --no-cov
+.venv/bin/python scripts/batch4_data_sql_schema_audit.py --database-url postgresql://nrg:nrg_default_password@localhost:5432/nrg
 ```
 
 ## Execution Note

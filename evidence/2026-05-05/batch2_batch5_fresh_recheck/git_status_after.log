@@ -1,0 +1,18 @@
+ M .claude/CURRENT_STATE.md
+ M .claude/skills/external-audit/SKILL.md
+ M .claude/skills/nrg-audit-chain/SKILL.md
+ M .claude/skills/nrg-dpdp-compliance/SKILL.md
+ M .claude/skills/nrg-embedding-models/SKILL.md
+ M .claude/skills/nrg-grafana-monitoring/SKILL.md
+ M .claude/skills/nrg-kong-gateway/SKILL.md
+ M .claude/skills/nrg-nginx-sovereign/SKILL.md
+ M .claude/skills/nrg-redis-caching/SKILL.md
+ M .claude/skills/release-readiness/SKILL.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-03_dhairya_replay.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-03_dhairya_replay.md
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.json
+ M evidence/2026-05-02/batch4_data_sql_schema/D4-06_D4-08_partition_indexes.md
+ M evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.json
+ M evidence/2026-05-02/batch4_data_sql_schema/batch4_summary.md
+ M evidence/2026-05-05/batch2_batch5_fresh_recheck/README.md
+?? .agents/skills/authoring-dags/reference/

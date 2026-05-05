@@ -1,3 +1,8 @@
+---
+name: nrg-nginx-sovereign
+description: Use when configuring or reviewing NRG Nginx reverse proxy, TLS termination, security hardening, Indian-soil hosting, or edge access controls.
+---
+
 # NRG Nginx Sovereign Skill
 
 Nginx reverse proxy, SSL termination, security hardening, and Indian-soil hosting configuration for the National Research Graph (NRG).

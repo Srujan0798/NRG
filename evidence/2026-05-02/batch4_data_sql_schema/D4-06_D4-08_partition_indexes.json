@@ -1,22 +1,22 @@
 {
   "hot_path_query_timings": {
     "audit_events_recent": {
-      "elapsed_ms": 6.021,
+      "elapsed_ms": 9.503,
       "result": 807,
       "status": "PASS"
     },
     "publications_year": {
-      "elapsed_ms": 4.687,
+      "elapsed_ms": 10.424,
       "result": 10000,
       "status": "PASS"
     },
     "researchers_area": {
-      "elapsed_ms": 56.092,
+      "elapsed_ms": 160.67,
       "result": 0,
       "status": "PASS"
     },
     "researchers_state": {
-      "elapsed_ms": 2.317,
+      "elapsed_ms": 3.645,
       "result": 0,
       "status": "PASS"
     }
@@ -248,12 +248,12 @@
   "partition_pruning_explain": {
     "plan": [
       {
-        "Execution Time": 0.839,
+        "Execution Time": 0.768,
         "Plan": {
           "Actual Loops": 1,
           "Actual Rows": 1,
-          "Actual Startup Time": 0.757,
-          "Actual Total Time": 0.758,
+          "Actual Startup Time": 0.65,
+          "Actual Total Time": 0.652,
           "Async Capable": false,
           "Node Type": "Aggregate",
           "Output": [
@@ -267,8 +267,8 @@
             {
               "Actual Loops": 1,
               "Actual Rows": 807,
-              "Actual Startup Time": 0.018,
-              "Actual Total Time": 0.556,
+              "Actual Startup Time": 0.016,
+              "Actual Total Time": 0.593,
               "Async Capable": false,
               "Node Type": "Append",
               "Parallel Aware": false,
@@ -279,8 +279,8 @@
                 {
                   "Actual Loops": 1,
                   "Actual Rows": 807,
-                  "Actual Startup Time": 0.017,
-                  "Actual Total Time": 0.395,
+                  "Actual Startup Time": 0.015,
+                  "Actual Total Time": 0.521,
                   "Alias": "audit_events_1",
                   "Async Capable": false,
                   "Filter": "((audit_events_1.created_at >= '2026-01-01 00:00:00'::timestamp without time zone) AND (audit_events_1.created_at < '2027-01-01 00:00:00'::timestamp without time zone))",
@@ -305,7 +305,7 @@
           "Strategy": "Plain",
           "Total Cost": 59.39
         },
-        "Planning Time": 0.676,
+        "Planning Time": 0.808,
         "Triggers": []
       }
     ],
@@ -317,7 +317,7 @@
   },
   "summary": {
     "audit_events_partitioned": true,
-    "hot_path_timing_max_ms": 56.092,
+    "hot_path_timing_max_ms": 160.67,
     "hot_path_timing_under_200ms": true,
     "partition_pruning_relations": [
       "audit_events_2026"
