@@ -9,8 +9,18 @@ locations. Before giving `CORPUS/` to any AI agent, verify that the mirrors are
 in sync:
 
 ```bash
-python3 scripts/verify_corpus_sync.py
+.venv/bin/python scripts/verify_corpus_sync.py
 ```
+
+Expected successful run:
+
+```text
+CORPUS sync: PASS
+```
+
+If the virtualenv is not available yet, `python3 scripts/verify_corpus_sync.py`
+is acceptable only after dependency setup is complete and the command resolves
+to the project Python version.
 
 Latest Batch 4 verification: `PASS` on 2026-05-02. Evidence:
 `evidence/2026-05-02/batch4_data_sql_schema/D4-10_corpus_sync.json`.

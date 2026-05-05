@@ -54,16 +54,19 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 
 Run these commands from the repo root when independently checking the six
 constraints. Use `.venv/bin/python` in this repository; this shell may not have
-a bare `python` executable.
+a bare `python` executable. Local commands prove regression coverage only; C4
+cluster load, production Qdrant, and founder-signing claims still require the
+external gates runbook.
 
 | Constraint | Local verification command | Evidence boundary |
 | --- | --- | --- |
-| C1 DPDP PII detection | `.venv/bin/python -m pytest tests/security/test_pii_indian.py -q --tb=short --no-cov` | Local security regression proof. |
-| C2 Per-user audit binding | `.venv/bin/python -m pytest tests/security/test_per_user_audit_binding.py -q --tb=short --no-cov` and `.venv/bin/python -c 'from src.audit import verify_chain; print(verify_chain())'` | Test plus current audit-chain proof. |
-| C3 Multi-hop decomposition | `.venv/bin/python -m pytest tests/orchestration/test_multi_hop_planner.py -q --tb=short --no-cov` | Local planner regression proof. |
-| C4 Production SLO | `NRG_QUOTA_DISABLED=1 .venv/bin/python scripts/quality_bar_scorecard.py --json-only` | Local quota-neutral capacity proof only unless run against the deployed/cluster target with the same strict scorecard. |
-| C5 Vector drift | `.venv/bin/python scripts/vector_drift_check.py --check-only --json` and `.venv/bin/python scripts/vector_drift_scheduler.py --dry-run` | Local Qdrant/baseline proof; production vectors require production target context. |
-| C6 Schema egress allowlist | `.venv/bin/python -m pytest tests/security/test_egress_allowlist.py -q --tb=short --no-cov` | Local egress regression proof. |
+| C1 DPDP PII detection | `.venv/bin/python -m pytest tests/security/test_pii_indian.py tests/security/test_pii_compliance.py tests/security/test_pii_scan.py -q --tb=short --no-cov` | Local security regression proof; re-run with current PII corpus before evidence expiry. |
+| C2 Per-user audit binding | `.venv/bin/python -m pytest tests/security/test_per_user_audit_binding.py tests/security/test_audit_chain.py tests/audit/test_chain_integrity.py tests/audit/test_async_append.py -q --tb=short --no-cov` | Local audit regression proof; target chain seal/co-sign evidence is a separate running-stack gate. |
+| C3 Multi-hop decomposition | `.venv/bin/python -m pytest tests/orchestration/test_multi_hop_planner.py tests/orchestration/test_planner.py tests/orchestration/test_planner_node.py -q --tb=short --no-cov` | Local planner regression proof; Dhairya/killer-query replay is still needed for query-quality claims. |
+| C4 Production SLO | `.venv/bin/python -m pytest tests/performance/test_slo_compliance.py tests/load/test_slo_under_load.py -q --tb=short --no-cov` | Local SLO regression proof only. Cluster proof command: `KUBECONFIG=/path/to/cluster .venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/$(date +%F)/final_external_gates --run-cluster-load`. |
+| C5 Vector drift | `.venv/bin/python -m pytest tests/observability/test_vector_drift.py tests/observability/test_vector_drift_scheduler.py tests/scripts/test_vector_drift_scheduler.py -q --tb=short --no-cov` | Local drift regression proof; run `scripts/vector_drift_check.py --check-only --json-output` against populated Qdrant before freshness expires. |
+| C6 Schema egress allowlist | `.venv/bin/python -m pytest tests/security/test_egress_allowlist.py tests/security/test_egress_guard.py tests/config/test_llm_egress_guard.py -q --tb=short --no-cov` | Local egress regression proof; re-run after schema, prompt, egress, or LLM-provider changes. |
+| All six local scorecard | `.venv/bin/python scripts/quality_bar_scorecard.py` | Scorecard PASS is local unless backed by live stack evidence. |
 
 ---
 
