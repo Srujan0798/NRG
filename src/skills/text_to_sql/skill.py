@@ -1368,9 +1368,9 @@ FOLLOW-UP QUERIES:
                 f"SELECT financial_year, level_of_course, COUNT(*) as cnt "
                 f"FROM academic_courses_details WHERE {inst_cond} AND level_of_course IN ('UG', 'PhD') "
                 f"GROUP BY financial_year, level_of_course) "
-                f"SELECT financial_year, level_of_course, cnt, "
-                f"SUM(CASE WHEN level_of_course = 'UG' THEN cnt END) as ug_courses, "
-                f"SUM(CASE WHEN level_of_course = 'PhD' THEN cnt END) as phd_courses "
+                f"SELECT financial_year, "
+                f"SUM(CASE WHEN level_of_course = 'UG' THEN cnt ELSE 0 END) as ug_courses, "
+                f"SUM(CASE WHEN level_of_course = 'PhD' THEN cnt ELSE 0 END) as phd_courses "
                 f"FROM YearlyLevels GROUP BY financial_year ORDER BY financial_year DESC;"
             )
 

@@ -269,6 +269,7 @@ class TestDhairyaQueries:
 
         sql = result.get("query", "")
         assert sql, "SQL should be generated"
+        assert not result.get("error"), f"Generated SQL should execute without error: {result.get('error')}"
         assert "ACADEMIC_COURSES_DETAILS" in sql.upper(), \
             "Must use academic_courses_details for course-based strategy"
         assert "PHD_STUDENTS" not in sql.upper(), \
