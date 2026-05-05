@@ -1,0 +1,9 @@
+command=pytest tests/ -m "not slow and not e2e" -n auto --dist=loadgroup --ignore=tests/e2e --cov=src --cov-report=xml:/tmp/nrg_coverage.xml --no-cov-on-fail -q --tb=short
+database_url=sqlite:////tmp/nrg_cov.db
+audit_base=/tmp/nrg_cov_audit
+audit_isolation=enabled
+exit_code=1
+health_503_reproduced=false
+pytest_summary=1 failed, 1890 passed, 93 skipped, 291 warnings
+local_failure=TRL distribution fast-path test saw 7 result rows where the test expects at least 9.
+local_failure_note=The local probe did not set NRG_LOCAL_RESEARCH_DB, so the fast path used the existing repo data mirror instead of the fresh temporary CI seed. The remote coverage failure being fixed here was limited to /health HTTP 503.

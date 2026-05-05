@@ -1,0 +1,10 @@
+run_id=25390550168
+job_id=74464031807
+job=coverage-python
+status=failure
+failing_tests=2
+failure_1=tests/contract/test_api_schema.py::TestHealthContract::test_health_response_has_status_field returned HTTP 503, expected HTTP 200.
+failure_2=tests/regression/test_bug_fixes.py::TestRegressionAPI::test_health_endpoint_works_when_db_down returned HTTP 503, expected HTTP 200.
+observed_cause=The job log shows audit-chain critical tamper lines immediately before the health responses.
+workflow_gap=coverage-python did not set NRG_TEST_ISOLATE_AUDIT or NRG_TEST_AUDIT_BASE.
+fix=Add coverage-lane audit isolation matching the local release gate pattern.

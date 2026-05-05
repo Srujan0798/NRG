@@ -1,0 +1,5 @@
+command=pytest single TRL distribution fast-path check
+database_override=NRG_LOCAL_RESEARCH_DB=/tmp/nrg_cov.db
+exit_code=0
+pytest_summary=1 passed in 4.44s
+note=This confirms the separate local broad-run failure was caused by selecting the existing repo data mirror instead of the fresh temporary CI seed.

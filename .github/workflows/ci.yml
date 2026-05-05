@@ -318,8 +318,11 @@ jobs:
       - name: Run coverage with xdist-safe reporting
         env:
           COVERAGE_FILE: .coverage.ci
+          NRG_TEST_ISOLATE_AUDIT: "1"
+          NRG_TEST_AUDIT_BASE: ".pytest_audit_coverage"
         run: |
           uv pip install --system pytest pytest-cov pytest-xdist pytest-timeout pytest-asyncio
+          mkdir -p "$NRG_TEST_AUDIT_BASE"
           pytest tests/ \
             -m "not slow and not e2e" \
             -n auto --dist=loadgroup \

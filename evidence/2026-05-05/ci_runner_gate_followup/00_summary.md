@@ -35,6 +35,12 @@ This evidence package covers the CI failures left after `f890dc2c`:
 - `19_chaos_full_green.log`: full chaos suite passed locally, 35 passed and 5 skipped.
 - `20_chaos_fixture_ruff.log`: chaos fixture lint passed.
 - `21_chaos_fixture_diff_check.log`: chaos fixture whitespace diff check passed.
+- `22_coverage_workflow_yaml_parse.log`: workflow YAML parse passed after adding audit isolation to the coverage lane.
+- `23_coverage_workflow_diff_check.log`: coverage workflow diff whitespace check passed.
+- `24_targeted_health_with_audit_isolation.log`: targeted `/health` checks passed with an isolated audit base, 2 passed.
+- `25_coverage_remote_failure_summary.log`: remote coverage failure reduced to 2 `/health` status-code failures caused by audit-chain critical state.
+- `26_coverage_local_probe_summary.log`: local coverage-style probe did not reproduce `/health` 503 under audit isolation; it exposed a separate local stale-data issue outside the remote failure.
+- `27_trl_distribution_local_db_override_summary.log`: the separate local TRL distribution probe passed when the fresh temporary seed was selected explicitly.
 
 ## Remaining Known Gaps
 
