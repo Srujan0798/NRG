@@ -6,6 +6,9 @@ This registry records which scripts are active, which are compatibility
 wrappers, which were retired, and which still need deeper review before any
 move or deletion.
 
+The full per-script inventory is `scripts/SCRIPT_REGISTRY.tsv` with columns:
+`script`, `owner`, `category`, `callers`, and `status`.
+
 ## Rules
 
 - Do not delete a script until reference search proves no active caller and no

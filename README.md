@@ -192,11 +192,14 @@ curl -X POST http://localhost:8000/query \
 | POST | `/auth/login` | Authenticate and get JWT |
 | POST | `/query` | Natural language query |
 | GET | `/researchers` | List researchers (tier-filtered) |
-| GET | `/researchers/{id}` | Researcher details |
 | GET | `/publications` | List publications |
 | GET | `/stats` | Aggregated statistics |
 | GET | `/health` | System health check |
 | GET | `/health/all` | Full health with audit chain |
+
+The complete route inventory is maintained in
+`docs/specs/API_ENDPOINT_MATRIX.md` and guarded by
+`tests/api/test_api_endpoint_matrix.py`.
 
 ---
 

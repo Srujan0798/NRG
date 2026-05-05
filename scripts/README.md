@@ -6,7 +6,8 @@ not a dumping ground for one-off experiments.
 ## Current Script Categories
 
 For per-script status, ownership, and cleanup decisions, see
-[`REGISTRY.md`](REGISTRY.md).
+[`REGISTRY.md`](REGISTRY.md). The full generated inventory with owner,
+category, caller references, and status is [`SCRIPT_REGISTRY.tsv`](SCRIPT_REGISTRY.tsv).
 
 | Category | Purpose | Examples |
 | --- | --- | --- |
