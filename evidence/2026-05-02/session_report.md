@@ -49,3 +49,22 @@ Batch 1/2/3/5 evidence line and the early May 3 follow-up commits.
 4. The earlier H7-07 API endpoint matrix gap is now locally closed by
    `docs/specs/API_ENDPOINT_MATRIX.md` and
    `tests/api/test_api_endpoint_matrix.py`.
+
+## Batch 7 Addendum - 2026-05-05
+
+| Task | Status | Evidence |
+|---|---:|---|
+| H7-01 binary evidence cleanup | PASS locally | `evidence/BINARY_EVIDENCE_INDEX.md` |
+| H7-02 script registry | PASS locally | `scripts/REGISTRY.md`, `scripts/SCRIPT_REGISTRY.tsv` |
+| H7-03 docs link check | PASS locally | `.venv/bin/python scripts/check_docs_links.py` |
+| H7-04 changelog sync | PASS locally | `CHANGELOG.md` |
+| H7-05 C4 runbook | PASS preflight / BLOCKED external load | `evidence/2026-05-02/runbook_c4.md`, `evidence/2026-05-05/batch7_documentation_cleanup_handover/external_gates_preflight/` |
+| H7-06 README stale references | PASS locally | `README.md`, docs link checker |
+| H7-07 API endpoint matrix | PASS locally | `docs/specs/API_ENDPOINT_MATRIX.md`, `tests/api/test_api_endpoint_matrix.py` |
+| H7-08 quality bar commands | PASS locally | `.claude/quality-bar.md` |
+| H7-09 CORPUS sync docs | PASS locally | `CORPUS/README.md` |
+| H7-10 ADRs | PASS locally | `docs/specs/adr/` |
+| H7-11 skill health | PASS locally | 137 repo skills, 0 validation problems |
+| H7-12 memory update | PASS locally | `.claude/memory/INDEX.md`, `.claude/memory/patterns/batch-gate-evidence-boundary.md` |
+| H7-13 backlog accuracy | PASS with external blockers retained | `BACKLOG.md` |
+| H7-14 session report | PASS locally | this addendum plus `evidence/2026-05-05/batch7_documentation_cleanup_handover/README.md` |

@@ -1,3 +1,33 @@
+## Unreleased - May 5 Local Verification And Cleanup
+
+This entry covers the local evidence, docs, security, and handover commits after
+the Wave 5 / 5.5 patch line. External deployment, sovereign-cluster load,
+production-data, UAT, and founder-signature gates remain separate.
+
+### Fixes
+
+- Treated optional live API transport failures in the red-team V41 suite as
+  skips unless `NRG_REQUIRE_LIVE_API=1`.
+- Closed schema-sync false positives for app-owned tables and excluded audit
+  history from data-freshness scoring.
+- Updated frontend dependency evidence after the axios security refresh.
+
+### Operations
+
+- Added fresh Batch 2, Batch 4, and Batch 5 recheck evidence for the current
+  tree.
+- Recorded final external-gate and remote-blocker evidence for the remaining
+  deployment/founder-controlled gates.
+- Refreshed local browser proof and telemetry contract evidence.
+
+### Documentation
+
+- Added and rechecked API endpoint matrix, script registry handover, quality-bar
+  command documentation, CORPUS sync guidance, memory updates, and H7 handover
+  evidence.
+- Clarified the current-state boundary between local PASS evidence and external
+  blockers.
+
 ## v1.0.1 - Wave 5 / 5.5 Patch (2026-05-03)
 
 This changelog entry covers the recent local verification line from

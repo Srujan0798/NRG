@@ -97,7 +97,7 @@ Additional 2026-04-28 / 2026-04-29 evidence:
 | `evidence/2026-04-28/K1_health_qdrant_critical.log` | Qdrant zero-vector health behavior returns CRITICAL. |
 | `evidence/2026-04-28/K3_trl_view_test.log` | TRL view and 63-byte identifier guard tests pass. |
 | `evidence/2026-04-28/K5A_vocab_check_pass.log` | Full-repo production vocabulary gate exits cleanly. |
-| `evidence/2026-04-28/locust_100u_v2.json` | K-2 100-user load evidence; C4 remains failed by latency. |
+| `evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json` | Current local quota-neutral C4 evidence: 1000 users, 82,365 samples, 0 failures, aggregate P99 79 ms; deployed/cluster replay remains required before a deployed load claim. |
 | `evidence/2026-04-28/docs_sync_report.txt` | Docs-sync findings and open documentation drift. |
 | `evidence/2026-04-28/handover_packet_complete.log` | Handover packet structural completeness check. |
 | `evidence/2026-04-28/sprint_review.md` | Sprint review, quality-bar status, and next-sprint questions. |
@@ -134,12 +134,12 @@ For detailed setup, seed, test, and troubleshooting instructions, start with [..
 | Audit chain verification | Complete | No |
 | Live red-team replay | Complete | No |
 | Frontend build | Complete | No |
-| 1000-user C4 SLO | Pending cluster run | Yes |
-| Qdrant C5 drift baseline | Pending corpus baseline | Yes |
+| 1000-user C4 SLO | Complete locally in quota-neutral mode; pending deployed/cluster replay | Yes |
+| Qdrant C5 drift baseline | Complete locally; pending production corpus baseline | Yes |
 | Official 600GB ingest | Pending data access | Yes |
 
 ## Ownership Notes
 
-NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, vector baseline, and official dataset ingestion have all been run and attached as evidence.
+NRG can be handed to the professor's assistant for local technical evaluation now. The production operator should not remove the external-gate language until cluster load testing, production vector baseline, official dataset ingestion, remote-history remediation, and founder signing have all been run and attached as evidence.
 
 *Last updated: 2026-04-30*

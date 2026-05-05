@@ -1,12 +1,13 @@
 # NRG Handover Final Checklist
 
-**Date:** 2026-04-28
-**Status:** Local handover packet prepared; live cluster, user sessions, and founder signing remain gated.
+**Date:** 2026-05-05
+**Status:** Local handover packet prepared and locally reverified; deployed cluster, user sessions, remote-history remediation, and founder signing remain gated.
 
 ## Required Release Gates
 
-- [ ] Quality Bar 6/6 verified (C4 remains blocked by K-2 latency evidence)
-- [ ] All K items closed (K-2 remains open for backend profiling and target-stack validation)
+- [x] Quality Bar 6/6 verified locally in quota-neutral mode
+- [ ] Deployed/cluster Quality Bar replay verified with target-stack evidence
+- [x] Local K-2/K-4 performance remediation verified by current local quota-neutral C4 evidence
 - [x] Forbidden vocab 0 hits
 - [x] Chain seal valid
 - [ ] 3 UAT sessions passed
@@ -50,7 +51,8 @@
 | Docs/code sync | `evidence/2026-04-28/docs_sync_report.txt` |
 | Handover completeness review | `evidence/2026-04-28/handover_packet_complete.log` |
 | External final gates runner | `scripts/run_final_external_gates.py` |
-| Latest external gate status | `evidence/2026-05-01/final_external_gates/EXTERNAL_GATE_SUMMARY.md` |
+| Latest external gate status | `evidence/2026-05-05/final_leftovers_state_sync/external_gates_current_head/EXTERNAL_GATE_SUMMARY.md` |
+| Latest local leftovers closure | `evidence/2026-05-05/final_leftovers_state_sync/README.md` |
 | External final gates runbook | `docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md` |
 
 ## Open Blockers
@@ -60,4 +62,5 @@
 | Sovereign cluster unavailable locally | Execute P7-A through P7-G on the target infrastructure |
 | Real UAT users not present locally | Schedule and run Tier 1, Tier 2, and Tier 3 sessions |
 | Founder GPG private key unavailable to automation | Founder signs handover documents and final tag |
-| C4 remains pending | Complete K-4 optimization and K-2 load validation against the target stack |
+| Deployed/cluster C4 replay pending | Replay the strict C4 scorecard on the target stack with cluster evidence |
+| Remote history/security closure pending | Coordinate approved remote-history remediation and rotate affected credential classes |

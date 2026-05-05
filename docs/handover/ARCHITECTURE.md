@@ -300,11 +300,11 @@ Request + JWT ─► Verify RS256 signature ─► Extract tier ─► RBAC chec
 | C1 | **DPDP-Compliant Indian PII Detection** | Custom regex for Aadhaar, PAN, phone, email + Presidio | 8/8 (100%) ✅ |
 | C2 | **Per-User Audit Binding (Non-Repudiation)** | HMAC-SHA256 chained log, every event tagged to user_id | 26/26 (100%) ✅ |
 | C3 | **Multi-Hop Intent Decomposition (DAG Planner)** | LangGraph planner node decomposes complex queries | 24/24 (100%) ✅ |
-| C4 | **Production SLOs (P99 <500ms, ≥1000 concurrent)** | Locust load test required | SKIP (needs live API) |
-| C5 | **Vector Drift Monitoring + Auto-Retrain Trigger** | Qdrant cosine similarity monitoring | SKIP (needs Qdrant) |
+| C4 | **Production SLOs (P99 <500ms, ≥1000 concurrent)** | Strict C4 scorecard / Locust load test | PASS local quota-neutral; deployed replay pending |
+| C5 | **Vector Drift Monitoring + Auto-Retrain Trigger** | Qdrant cosine similarity monitoring | PASS local; production corpus baseline pending |
 | C6 | **Schema Allowlist Before Cloud LLM** | sqlglot schema validation, sandboxed execution | 35/35 (100%) ✅ |
 
-**Overall: 4/6 passing, 2/6 require live infrastructure (C4, C5)**
+**Overall: 6/6 passing locally; deployed/cluster replay remains required for production sign-off.**
 
 Run the scorecard:
 ```bash

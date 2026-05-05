@@ -3,7 +3,7 @@
 ## Quality Bar Scorecard 6/6 Evidence + DPDP Clause-by-Clause Mapping
 
 **Version:** 1.0  
-**Date:** 2026-04-24  
+**Date:** 2026-05-05
 **Classification:** Internal — Security  
 **Auditor:** Guardian Agent  
 **Cross-reference:** `docs/ops/QUALITY_BAR_SCORECARD_2026-Q2.md`  
@@ -19,8 +19,8 @@
 | C1 | DPDP-Compliant Indian PII Detection | 8/8 (100%) | ✅ PASS |
 | C2 | Per-User Audit Binding (Non-Repudiation) | 26/26 (100%) | ✅ PASS |
 | C3 | Multi-Hop Intent Decomposition (DAG Planner) | 24/24 (100%) | ✅ PASS |
-| C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | SKIP | ⏭️ Unit tests pass; load test requires live API |
-| C5 | Vector Drift Monitoring + Auto-Retrain Trigger | SKIP | ⏭️ Script runs; Qdrant required for full validation |
+| C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | PASS local quota-neutral | Deployed/cluster replay pending |
+| C5 | Vector Drift Monitoring + Auto-Retrain Trigger | PASS local | Production Qdrant/corpus baseline pending |
 | C6 | Schema Allowlist Before Cloud LLM | 35/35 (100%) | ✅ PASS |
 
 **Run the scorecard:**
@@ -207,7 +207,7 @@ For the "Compare Gujarat and Karnataka" query:
 
 ---
 
-## 5. C4 Evidence: Production SLOs (Pending Live Infrastructure)
+## 5. C4 Evidence: Production SLOs (Local Quota-Neutral Passed / Deployed Replay Pending)
 
 ### 5.1 SLO Targets
 
@@ -229,33 +229,36 @@ def test_p95_latency():
     assert p95 < 0.2  # 200ms
 ```
 
-### 5.3 Load Test Requirements
+### 5.3 Current Local Evidence
+
+The latest local quota-neutral C4 scorecard reports 1000 users, 82,365 samples,
+0 failures, and aggregate P99 79 ms:
+
+```text
+evidence/2026-05-02/guru_shishya_validation/c4_rerun/165_quality_bar_scorecard_60s_4workers_bounded_audit_executor.json
+```
+
+This proves the local capacity claim only. Deployed/cluster and quota-policy
+claims require a separate target-stack replay.
+
+### 5.4 Deployed Replay Requirements
 
 To achieve full C4 validation:
 
 ```bash
-# Start API
-python -m uvicorn src.api.main:app
-
-# Run Locust load test
-locust -f tests/load/locustfile.py \
-  --headless \
-  -u 1000 \
-  -r 100 \
-  --run-time 5m \
-  --host http://localhost:8000
+KUBECONFIG=/path/to/sovereign-cluster \
+python scripts/run_final_external_gates.py --run-cluster-load
 ```
 
-### 5.4 Status: ⏭️ SKIPPED (Infrastructure Required)
+### 5.5 Status: PASS Local / BLOCKED Deployed
 
-Unit tests pass. Full load test requires:
-- Running API on target hardware
-- Network conditions matching production
-- Load generation tools
+Local quota-neutral evidence passes. Deployed evidence remains blocked in this
+workspace by missing deployed URLs, production API/Qdrant target, and reachable
+cluster context.
 
 ---
 
-## 6. C5 Evidence: Vector Drift Monitoring (Pending Qdrant)
+## 6. C5 Evidence: Vector Drift Monitoring (Local Passed / Production Baseline Pending)
 
 ### 6.1 Drift Detection Implementation
 
@@ -529,8 +532,8 @@ async def file_grievance(
 | C1: PII Detection | ✅ 8/8 (100%) |
 | C2: Audit Binding | ✅ 26/26 (100%) |
 | C3: Multi-Hop Planner | ✅ 24/24 (100%) |
-| C4: Production SLOs | ⏭️ Pending infrastructure |
-| C5: Vector Drift Monitor | ⏭️ Pending Qdrant |
+| C4: Production SLOs | PASS local quota-neutral / deployed replay pending |
+| C5: Vector Drift Monitor | PASS local / production baseline pending |
 | C6: Schema Allowlist | ✅ 35/35 (100%) |
 
 ### 10.2 DPDP Compliance Status
@@ -576,5 +579,5 @@ async def file_grievance(
 ---
 
 *Document version: 1.0*  
-*Last updated: 2026-04-24*  
+*Last updated: 2026-05-05*
 *For questions: security@nrg.iitgn.ac.in*

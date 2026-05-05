@@ -1,6 +1,9 @@
 # v1.0.0 - Sovereign Launch
 
-This changelog summarizes the local handover state through `6085c3b`. Cluster-gated validation, founder signatures, and commercial gates remain outside this local engineering packet.
+This changelog summarizes the original local handover packet and later May 5
+state sync. Current local quota-neutral C4 evidence passes; cluster-gated
+validation, remote-history remediation, founder signatures, and commercial gates
+remain outside this local engineering packet.
 
 ## Features
 
@@ -22,7 +25,7 @@ This changelog summarizes the local handover state through `6085c3b`. Cluster-ga
 ## Performance
 
 - Added K-4 cold-query latency evidence and publication-count cache warm path (`26f4e77`, `c38421a`).
-- Added 100-user K-2 load-test evidence and incident follow-up for the remaining C4 latency blocker (`14d23db`).
+- Added 100-user K-2 load-test evidence and incident follow-up for the historical C4 latency blocker (`14d23db`); May 2 local quota-neutral C4 evidence supersedes this locally.
 - Added vector-drift scheduler evidence and quality-bar scorecard updates (`1f0be5f`).
 - Added query plan cache reuse coverage and LLM timeout fallback coverage for the Text-to-SQL hot path (`bccc061`).
 
@@ -38,4 +41,4 @@ This changelog summarizes the local handover state through `6085c3b`. Cluster-ga
 - Added handover manifest, final checklist, and evidence cross-references for local handover review (`95f4199`, `b0f6dba`).
 - Added local release verification evidence and sprint artifacts for the 2026-04-28 packet (`b0f6dba`, `5fb4ec0`).
 - Added C1-C8 commercial sprint artifacts and K-6 signing status (`5fb4ec0`).
-- Documented remaining blockers: K-2/C4 latency under load, live UAT sessions, founder GPG signatures, sovereign-cluster validation, and commercial sign-off.
+- Documented remaining blockers: deployed/cluster C4 replay, live UAT sessions, founder GPG signatures, remote-history/security closure, sovereign-cluster validation, and commercial sign-off.
