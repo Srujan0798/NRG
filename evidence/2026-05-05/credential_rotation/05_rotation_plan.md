@@ -37,7 +37,7 @@
 2. **All current credentials are development-only:**
    - `DATABASE_URL=postgresql://nrg:nrg_default_password@localhost:5432/nrg` — localhost-only, default password
    - `JWT_SECRET=development-secret-key-2026` — explicit "development" in value
-   - Demo passwords: `researcher-pass`, `government-pass`, `industry-pass` — self-evident test values
+   - Seeded persona passwords: `researcher-pass`, `government-pass`, `industry-pass` — self-evident test values
    - `MINIMAX_API_KEY` — coding plan key, not a production API key
    - `NVIDIA_API_KEY` — fallback key for development
 
@@ -66,7 +66,7 @@ The following best-practice rotation steps are documented for reference:
 | Audit Chain | `AUDIT_CHAIN_KEY` | `openssl rand -hex 32` — WARNING: breaks existing audit chain if events exist | < 1 min | Critical |
 | MiniMax API | `MINIMAX_API_KEY` | Regenerate via MiniMax developer console | < 5 min | Medium |
 | NVIDIA API | `NVIDIA_API_KEY` | Regenerate via NVIDIA AI platform | < 5 min | Medium |
-| Demo Users | `RESEARCHER_PASSWORD`, `GOV_PASSWORD`, `INDUSTRY_PASSWORD` | Set strong unique passwords per user | < 2 min | High |
+| Seeded Users | `RESEARCHER_PASSWORD`, `GOV_PASSWORD`, `INDUSTRY_PASSWORD` | Set strong unique passwords per user | < 2 min | High |
 
 ### Actual Required Actions (Current State)
 
@@ -75,7 +75,7 @@ The following best-practice rotation steps are documented for reference:
 | Rotate production DB credentials | **PENDING IF EXPOSED** | No production DB credential was proven by local evidence |
 | Rotate JWT secrets | **PENDING IF EXPOSED** | Only development JWT keys were found locally |
 | Rotate API keys | **PENDING IF EXPOSED** | Local evidence indicates development-only keys |
-| Rotate demo user passwords | **RECOMMENDED** | Set strong passwords before production deployment |
+| Rotate seeded user passwords | **RECOMMENDED** | Set strong passwords before production deployment |
 | History purge | **COMPLETE** | Local scan shows 0 findings |
 
 ---

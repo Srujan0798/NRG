@@ -20,7 +20,7 @@
    - No production API keys
    - No production infrastructure credentials
    - All `.env.prod` and `.env.staging` contain `CHANGE_ME_*` placeholders
-   - Demo user passwords are clearly test values
+   - Seeded user passwords are clearly test values
 
 ---
 
@@ -43,7 +43,7 @@ required.
 
 Before production deployment, ensure:
 1. All `CHANGE_ME_*` values in `.env.prod` and `.env.staging` are replaced with real credentials
-2. Strong unique passwords are set for demo/user accounts
+2. Strong unique passwords are set for seeded user accounts
 3. API keys are generated from production provider consoles
 
 ---

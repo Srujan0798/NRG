@@ -51,7 +51,7 @@
 - `DATABASE_URL=postgresql://nrg:nrg_default_password@localhost:5432/nrg` — localhost dev
 - `JWT_SECRET=development-secret-key-2026` — clearly development
 - `MINIMAX_API_KEY=sk-cp-...` — this key format appears to be a coding plan key
-- Demo passwords: `researcher-pass`, `government-pass`, `industry-pass` — obvious test values
+- Seeded persona passwords: `researcher-pass`, `government-pass`, `industry-pass` — obvious test values
 - `.env.prod` and `.env.staging` contain only `CHANGE_ME_*` placeholders
 - No production infrastructure credentials detected
 

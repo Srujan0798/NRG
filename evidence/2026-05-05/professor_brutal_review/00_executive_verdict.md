@@ -13,7 +13,7 @@
 **FUNDING RECOMMENDATION: ₹0 immediate. Conditional ₹10–15 lakh milestone only.**
 **STATUS: NOT production-ready. NOT sovereign-deployed. NOT show-ready.**
 
-The student is either self-deceived or being deceived by their AI assistant. The project is a **local prototype with significant gaps**, not a production sovereign research platform.
+The student is either self-deceived or being deceived by their AI assistant. The project is a **local implementation with significant gaps**, not a production sovereign research platform.
 
 ---
 
@@ -146,7 +146,7 @@ Only after:
 
 ## FINAL STATEMENT TO STUDENT
 
-> You have built a **promising prototype**. The code structure is sound. The vision is clear. The schema is well-designed. But you have **not built a product**.
+> You have built a **promising implementation foundation**. The code structure is sound. The vision is clear. The schema is well-designed. But you have **not built a product**.
 >
 > A product is something a professor can open in a browser and use. A product is SQL that returns correct answers 95% of the time, not 41%. A product is deployed on infrastructure that doesn't live on your MacBook.
 >
