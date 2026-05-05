@@ -1,7 +1,1 @@
-[
-  {
-    "url": "http://127.0.0.1:3012/api/query/stream?query=best+quantum+researchers....&session_id=researcher-acceptance-iitgn",
-    "failure": "net::ERR_ABORTED",
-    "reason": "Chromium reports expected SSE stream closure as net::ERR_ABORTED"
-  }
-]
+[]

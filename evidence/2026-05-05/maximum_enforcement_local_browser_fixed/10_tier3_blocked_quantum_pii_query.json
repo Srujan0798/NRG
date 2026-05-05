@@ -1,7 +1,7 @@
 {
-  "query_id": "74f903ba-ee67-46d8-86ce-f03dcd65e073",
-  "answer_id": "c1090049-d0af-4e4f-a9cc-ad6cae0ed8bb",
-  "audit_event_id": "ea5f9b44be38bd22e7022a52724866e9085f50d6ca11f684f39db873cc080989",
+  "query_id": "d730874c-0941-4f25-88df-0ef725155278",
+  "answer_id": "43d6cedf-dca6-4979-bd33-46004e951e91",
+  "audit_event_id": "8b595fe1784ba8102a282cbb331e5b6466d98fd25242b5a8d579f633341131a6",
   "tier": 3,
   "query": "[blocked by security policy]",
   "question": "[blocked by security policy]",
@@ -21,7 +21,7 @@
     "status": "blocked",
     "safe_to_trust": false,
     "reason": "Security policy blocked this query: PROMPT_INJECTION",
-    "audit_event_id": "ea5f9b44be38bd22e7022a52724866e9085f50d6ca11f684f39db873cc080989"
+    "audit_event_id": "8b595fe1784ba8102a282cbb331e5b6466d98fd25242b5a8d579f633341131a6"
   },
   "answer_confidence": "needs_clarification",
   "citations": [],
