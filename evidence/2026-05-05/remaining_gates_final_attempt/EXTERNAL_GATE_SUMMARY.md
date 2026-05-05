@@ -1,11 +1,11 @@
 # NRG External Final Gates
 
-Generated: 2026-05-05T18:28:07Z
-Overall status: **FAIL/BLOCKED**
+Generated: 2026-05-05T18:48:59Z
+Overall status: **LOCAL PARTIAL / EXTERNAL BLOCKED**
 
 | Gate | Status | Missing / Notes |
 |---|---:|---|
-| current_local_c4_scorecard | PARTIAL | `scripts/quality_bar_scorecard.json` is 5/5 with C4 marked SKIP because no API health response is available on port 8000; strict local SLO regression passes, but live 1000-user load still needs a running API |
+| current_local_c4_scorecard | PARTIAL local | `scripts/quality_bar_scorecard.json` is 5/6. C1, C2, C3, C5, and C6 pass. C4 used strict local regression 9/9 because port 8000 did not return an NRG API `/health` response, but no live 1000-user load ran. |
 | strict_local_slo_regression | PASS | Isolated full SLO rerun passed: 9 passed, 3 skipped (`evidence/2026-05-05/c4_ci_closure/36_slo_full_after_slo_fixture_isolation.log`) |
 | local_runtime_recovery | BLOCKED | Colima reported running after restart, but Docker commands timed out and `localhost:8000` was unreachable; recovery log also captured a Colima startup fatal |
 | frontend_docker_build | BLOCKED | Frontend Docker build reached Buildx/context transfer then stalled; stale build processes were terminated, but repeated Buildx jobs restarted and Docker verification could not be completed |
@@ -18,4 +18,7 @@ Overall status: **FAIL/BLOCKED**
 | github_actions | BLOCKED | Latest runs include in-progress CI/Deploy plus a failed Deploy NRG run |
 | secret_history_remote | BLOCKED | Latest `s3_09_scan_all_refs_after_stale_branch_delete.json` reports 0 findings; credential rotation remains required before security closure |
 
-This file is a gate report, not a production readiness certificate.
+This file is a gate report, not a production readiness certificate. Local
+quality-bar evidence is partial because live C4 did not run. Deployed browser,
+production Qdrant, cluster 1000-user C4, founder signing, and
+credential-rotation closure still require external inputs.

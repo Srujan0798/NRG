@@ -23,6 +23,7 @@ import subprocess
 import sys
 from datetime import datetime, UTC
 from pathlib import Path
+from typing import Any
 from urllib import error as urllib_error
 from urllib import request as urllib_request
 
@@ -187,6 +188,8 @@ def _run_pytest(test_path: str, verbose: bool = False) -> dict:
         str(abs_path),
         "-o",
         "addopts=",
+        "-p",
+        "no:rerunfailures",
         "-v",
         "--tb=short",
         "--no-header",
@@ -224,6 +227,8 @@ def _run_c4_local_regression(verbose: bool = False) -> dict:
         "-q",
         "--tb=short",
         "--no-cov",
+        "-p",
+        "no:rerunfailures",
     ]
 
     attempts: list[dict[str, Any]] = []
@@ -721,6 +726,9 @@ def run_scorecard(verbose: bool = False) -> dict:
             if res.get("skipped") == 1:
                 status = "SKIP"
                 scores[cid] = "SKIP"
+            elif res.get("live_c4_skipped"):
+                status = "PARTIAL"
+                scores[cid] = "PARTIAL"
         elif res.get("partial"):
             status = "PARTIAL"
             scores[cid] = "PARTIAL"
@@ -798,6 +806,12 @@ def _emit_markdown(scorecard: dict) -> str:
         if cid == "C4":
             if res.get("skipped") == 1:
                 lines.append(f"- **Note**: {res.get('note', 'API not running')}")
+            elif res.get("mode") == "local_regression":
+                lines.append("- **Mode**: local_regression")
+                lines.append(f"- **Local SLO Regression**: {res.get('passed', 0)} passed / {res.get('total', 0)} total")
+                lines.append(f"- **Live Load Executed**: {res.get('live_load_executed', False)}")
+                lines.append(f"- **Live C4 Skipped**: {res.get('live_c4_skipped', False)}")
+                lines.append(f"- **Note**: {res.get('note', 'Live C4 requires a running API or cluster target.')}")
             else:
                 lines.append(f"- **1000 Concurrent**: {res.get('has_concurrent_1000', False)}")
                 lines.append(f"- **P99 OK**: {res.get('has_p99_ok', False)}")

@@ -1,7 +1,16 @@
 # C4 CI Closure Evidence
 
 Date: 2026-05-05
-Status: FAIL/BLOCKED
+Status: HOSTED QUALITY-BAR PASS; downstream deploy gates still tracked separately
+
+## Hosted Quality-Bar Evidence
+
+- `38_hosted_quality_bar_scorecard_dc3b92e7.json` — GitHub Actions
+  scorecard artifact from commit `dc3b92e75510d4372ec027340629d934ddb7df39`.
+- `39_hosted_quality_bar_summary_dc3b92e7.md` — summary of the hosted
+  `Deploy` run `25395229374`, job `quality-bar` `74480094337`.
+- Hosted C4 metrics: 1000 requested users, P99 410 ms, failure rate 0.0, and
+  292598 total samples.
 
 ## Passing Local Checks Captured Here
 
@@ -17,7 +26,7 @@ Status: FAIL/BLOCKED
   `29_corpus_sync_final.log`, and `30_forbidden_vocab_final.log` — local
   structural checks passed.
 
-## Current Failure Evidence
+## Historical Local Failure Evidence
 
 - `29_slo_full_rerun_after_p99_focus.log` — strict local SLO suite failed:
   P50 114ms exceeded the 100ms target and `/health` timed out once under the
@@ -27,6 +36,7 @@ Status: FAIL/BLOCKED
 
 ## Blocker Boundary
 
-This directory is evidence for the May 5 closure attempt. It does not close C4.
-Current-stack C4 remains FAIL, and cluster proof remains BLOCKED until a usable
-Kubernetes context and deployment targets are available.
+This directory is evidence for the May 5 C4 closure attempt. Hosted GitHub
+Actions quality-bar C4 is now PASS for commit
+`dc3b92e75510d4372ec027340629d934ddb7df39`; cluster proof remains BLOCKED until
+a usable Kubernetes context and deployment targets are available.

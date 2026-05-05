@@ -1,0 +1,3 @@
+testing_sqlite_rows=1
+testing_sqlite_has_sparse_seed=True
+production_sql_has_sparse_seed=False

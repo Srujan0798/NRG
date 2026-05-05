@@ -20,7 +20,7 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
-| Quality Bar scorecard | PARTIAL current | `scripts/quality_bar_scorecard.json` is `5/5` with C4 marked `SKIP` because no API health response is available on port 8000; isolated strict local SLO regression passes |
+| Quality Bar scorecard | PARTIAL local / external pending | `scripts/quality_bar_scorecard.json` is `5/6`; C1, C2, C3, C5, and C6 pass. C4 ran strict local SLO regression 9/9 but is marked PARTIAL because no live 1000-user load ran. Deployment CI sets `NRG_C4_REQUIRE_LIVE=1` so live C4 cannot fall back silently. |
 | Local Docker/API runtime | BLOCKED | Colima reports the VM running, but Docker commands timed out after Buildx hangs and `localhost:8000` is currently unreachable |
 | Frontend bundle size | PASS prior / BLOCKED current rerun | `evidence/2026-05-05/remaining_closure/frontend_build_current.log` records a prior Vite build with largest JS chunk 318.71 KB raw. A fresh `npm run build` rerun in this session hung in `tsc` for more than 6 minutes and was killed; current build proof remains blocked. |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
@@ -32,7 +32,7 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
-| Local C4 pass | May 2 | `evidence/2026-05-02/.../165_quality_bar_scorecard_...json` |
+| Local C4 regression | May 5 | `scripts/quality_bar_scorecard.json` — 5/6, C4 local regression 9/9, live load not executed |
 | Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
 | Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
 | Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
@@ -46,9 +46,9 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| PASS | PASS | PASS | PASS (local test suite) / cluster pending | PASS local / production pending | PASS |
+| PASS | PASS | PASS | PARTIAL (local test suite pass / live load pending) | PASS local / production pending | PASS |
 
-**C4**: SLO test suite now passes: P50 <100ms, P95 <300ms, P99 <500ms — all green (9 passed, 3 skipped for macOS thread limits). Quality bar scorecard C4 shows SKIP (not FAIL) when API not running on port 8000 — that is expected for local runs without live server. Cluster 1000-user test still blocked pending Kubernetes context.
+**C4**: Local Quality Bar scorecard is partial: `scripts/quality_bar_scorecard.json` reports 5/6 and C4 local regression 9/9, but C4 is not counted as a pass because no live 1000-user run executed. The scorecard verifies `/health` before running Locust, so an unrelated TCP listener on port 8000 no longer creates false HTTP 0 C4 failures. Cluster/live 1000-user proof still requires a usable `KUBECONFIG` or a running NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

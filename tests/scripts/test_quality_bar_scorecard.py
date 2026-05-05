@@ -154,6 +154,38 @@ def test_c4_scorecard_uses_local_regression_without_live_api(monkeypatch):
     assert result["live_c4_skipped"] is True
 
 
+def test_scorecard_marks_local_c4_regression_without_live_load_partial(monkeypatch):
+    def passing_result():
+        return {
+            "passed": 1,
+            "failed": 0,
+            "skipped": 0,
+            "total": 1,
+            "passed_rate": 1.0,
+            "errors": [],
+            "exit_code": 0,
+        }
+
+    monkeypatch.setattr(scorecard, "_run_pytest", lambda *_args, **_kwargs: passing_result())
+    monkeypatch.setattr(scorecard, "_run_drift_check", lambda *_args, **_kwargs: passing_result())
+    monkeypatch.setattr(
+        scorecard,
+        "_run_c4_load_test",
+        lambda *_args, **_kwargs: {
+            **passing_result(),
+            "mode": "local_regression",
+            "live_c4_skipped": True,
+            "live_load_executed": False,
+        },
+    )
+
+    result = scorecard.run_scorecard()
+
+    assert result["scores"]["C4"] == "PARTIAL"
+    assert result["overall"] == "5/6"
+    assert result["is_6_6"] is False
+
+
 def test_c4_scorecard_rejects_target_text_without_numeric_p99():
     metrics = scorecard._extract_c4_metrics(
         "1000 users\n"

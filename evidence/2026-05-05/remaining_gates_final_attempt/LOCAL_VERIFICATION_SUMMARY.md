@@ -1,7 +1,7 @@
 # Local Verification Summary
 
-Generated: 2026-05-05T18:28:07Z
-Status: PARTIAL
+Generated: 2026-05-05T18:48:59Z
+Status: PARTIAL local / EXTERNAL BLOCKED
 
 ## PASS
 
@@ -37,6 +37,19 @@ Status: PARTIAL
   (`evidence/2026-05-05/dhairya_regression_full/01_full_run.log`).
 - Credential history scan evidence reports PASS with zero findings:
   `evidence/2026-05-05/credential_rotation/02_all_refs_scan.json`.
+- Local Quality Bar evidence collected:
+  `python3 scripts/quality_bar_scorecard.py --json-only` exited 1 because
+  the scorecard is 5/6. C1, C2, C3, C5, and C6 pass; C4 local regression is
+  9/9 but is marked PARTIAL because no live 1000-user load ran. Current JSON:
+  `scripts/quality_bar_scorecard.json`.
+- Fresh scorecard/compose contract suite passed:
+  `scorecard_compose_contracts_fresh.log` records 25 passed.
+- Fresh killer-query rerun passed:
+  `../killer_queries_fix/08_final_fresh_rerun.log` records 3 passed.
+- Fresh compile and structure checks passed:
+  `py_compile_scorecard_api_main.log`, `docker_compose_config_fresh.log`,
+  `corpus_sync_fresh.log`, `forbidden_vocab_fresh.log`, and
+  `git_diff_check_fresh.log`.
 - Frontend production build has prior pass evidence:
   `evidence/2026-05-05/remaining_closure/frontend_build_current.log` records
   a completed Vite build with largest JS chunk 318.71 KB raw.
@@ -57,10 +70,6 @@ Status: PARTIAL
   `npm ci` and stalled.
 - Fresh `npm run build` rerun in this session hung in `tsc` for more than 6
   minutes and was killed; current build proof remains blocked.
-- `scripts/quality_bar_scorecard.json` is currently `5/5` with C4 marked
-  `SKIP` because no API health response is available on port 8000. The C4
-  unit-level SLO regression passes, but live 1000-user load still requires a
-  running API.
 - External gates remain blocked on deployed URLs, production API/Qdrant target,
   usable `KUBECONFIG`, founder GPG signatures, and credential rotation.
 - An unbounded broad `pytest tests/ -q --ignore=tests/scripts --tb=short
