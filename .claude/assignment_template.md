@@ -8,6 +8,10 @@
 
 ---
 
+> **Before You Start:** Read `.agents/AGENTS.md` → then read every SKILL.md listed below → then begin.
+>
+> **After Completing:** Run `/pre-commit` → then report back per `.agents/AGENTS.md` §Report Back.
+
 # ASSIGNMENT: [Task Name]
 
 ## Role
@@ -76,3 +80,11 @@
 - If [condition Y] → [action]
 - If blocked after [N] attempts → STOP and report to Guru with [specific artifacts]
 - If you would violate any Constraint → STOP and ask Guru before proceeding
+
+---
+
+## After Completing
+
+1. Run `/pre-commit` (see `.claude/skills/pre-commit/SKILL.md`)
+2. Report back per `.agents/AGENTS.md` §Report Back format
+3. Do not claim DONE without evidence files committed

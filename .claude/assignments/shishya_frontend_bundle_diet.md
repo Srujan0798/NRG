@@ -1,3 +1,7 @@
+> **Before You Start:** Read `.agents/AGENTS.md` → then read every SKILL.md listed below → then begin.
+>
+> **After Completing:** Run `/pre-commit` → then report back per `.agents/AGENTS.md` §Report Back.
+
 # ASSIGNMENT: Frontend Bundle Diet (319KB → <250KB)
 
 ## Role
@@ -74,3 +78,11 @@ Largest Vite lazy-loaded chunk is 319KB raw. Spec target is <250KB raw. Current 
 - If bundle size does not drop after 3 attempts → STOP. Escalate to Guru with treemap and chunk analysis.
 - If tests fail after a build change → STOP. Revert the change and report the error.
 - If removing a dependency would require architectural changes → STOP. Document in blockers and ask Guru.
+
+---
+
+## After Completing
+
+1. Run `/pre-commit` (see `.claude/skills/pre-commit/SKILL.md`)
+2. Report back per `.agents/AGENTS.md` §Report Back format
+3. Do not claim DONE without evidence files committed

@@ -1,3 +1,7 @@
+> **Before You Start:** Read `.agents/AGENTS.md` → then read every SKILL.md listed below → then begin.
+>
+> **After Completing:** Run `/pre-commit` → then report back per `.agents/AGENTS.md` §Report Back.
+
 # ASSIGNMENT: Fix K-Q2 + K-Q3 Killer Queries
 
 ## Role
@@ -76,3 +80,11 @@ Dhairya audit showed K-Q2 and K-Q3 fail. Generated SQL does not match `must_cont
 - If fixing K-Q2/K-Q3 breaks K-Q1 → STOP. Report the regression before continuing.
 - If the required table does not exist in `db_struct.sql` → STOP. Ask Guru whether the schema or the test is wrong.
 - If you would modify test assertions → STOP. Ask Guru for approval.
+
+---
+
+## After Completing
+
+1. Run `/pre-commit` (see `.claude/skills/pre-commit/SKILL.md`)
+2. Report back per `.agents/AGENTS.md` §Report Back format
+3. Do not claim DONE without evidence files committed

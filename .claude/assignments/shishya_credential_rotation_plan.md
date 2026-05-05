@@ -1,3 +1,7 @@
+> **Before You Start:** Read `.agents/AGENTS.md` → then read every SKILL.md listed below → then begin.
+>
+> **After Completing:** Run `/pre-commit` → then report back per `.agents/AGENTS.md` §Report Back.
+
 # ASSIGNMENT: Credential Rotation Plan
 
 ## Role
@@ -72,3 +76,11 @@ A documented rotation plan that answers YES or NO to "were any leaked credential
 - If live credentials were leaked → STOP all other work immediately and flag URGENT to founder. Do not proceed with any other assignment until rotation is approved.
 - If scanner finds secrets still in history → STOP and report immediately.
 - If you cannot determine live vs. dummy status → STOP and ask Guru for access to credential manager or service console.
+
+---
+
+## After Completing
+
+1. Run `/pre-commit` (see `.claude/skills/pre-commit/SKILL.md`)
+2. Report back per `.agents/AGENTS.md` §Report Back format
+3. Do not claim DONE without evidence files committed

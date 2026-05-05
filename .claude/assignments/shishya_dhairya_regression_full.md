@@ -1,3 +1,7 @@
+> **Before You Start:** Read `.agents/AGENTS.md` → then read every SKILL.md listed below → then begin.
+>
+> **After Completing:** Run `/pre-commit` → then report back per `.agents/AGENTS.md` §Report Back.
+
 # ASSIGNMENT: Full Dhairya 17-Query Regression Run
 
 ## Role
@@ -84,6 +88,14 @@ Dhairya regression tests have never been run end-to-end in a single session with
 - If tests time out consistently → STOP. Check stack health and report.
 - If fixing one query breaks another → STOP. Report the regression before continuing.
 - If a fix requires changing test assertions → STOP. Ask Guru for approval.
+
+---
+
+## After Completing
+
+1. Run `/pre-commit` (see `.claude/skills/pre-commit/SKILL.md`)
+2. Report back per `.agents/AGENTS.md` §Report Back format
+3. Do not claim DONE without evidence files committed
 
 **TIME EXPECTATION**
 This will take 30-45 minutes due to live LLM API calls. Do not rush. Let it run.

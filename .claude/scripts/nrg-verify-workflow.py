@@ -158,6 +158,16 @@ def check_assignment_format() -> int:
         if missing:
             fail(f"Assignment {fpath.name} missing hybrid sections: {', '.join(missing)}")
             errors += 1
+
+        # Validate referenced skill files exist
+        import re
+        skill_refs = re.findall(r"`?((?:\.agents|\.claude)/skills/[^`/\s]+)/SKILL\.md`?", text)
+        for skill_dir in skill_refs:
+            skill_path = REPO_ROOT / skill_dir / "SKILL.md"
+            if not skill_path.exists():
+                fail(f"Assignment {fpath.name} references missing skill: {skill_dir}/SKILL.md")
+                errors += 1
+
     if errors == 0:
         ok("Assignment files follow hybrid format (Codex 5.5 + NRG)")
     return errors

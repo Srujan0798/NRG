@@ -49,6 +49,12 @@ EVIDENCE line must specify a concrete `evidence/YYYY-MM-DD/` path. No vague "sav
 
 Every assignment must include Stop Rules. Shishya agents must not loop forever or silently violate constraints.
 
+## Rule 7: Update CURRENT_STATE.md After Assignment
+
+After creating an assignment, update `.claude/CURRENT_STATE.md`:
+- Mark the item as **Assigned** with the assignment filename
+- Set **Owner** to the Shishya agent name or "pending"
+
 ## Enforcement
 
-`nrg-verify-workflow.py` checks `.claude/assignments/*.md` for compliance with the hybrid format.
+`nrg-verify-workflow.py` checks `.claude/assignments/*.md` for compliance with the hybrid format and validates that referenced skill files exist.
