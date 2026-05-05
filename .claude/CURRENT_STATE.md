@@ -19,11 +19,11 @@
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
-| Quality Bar scorecard | PARTIAL local / external pending | `scripts/quality_bar_scorecard.json` is `5/6`; C1, C2, C3, C5, and C6 pass. C4 ran strict local SLO regression 9/9 but is marked PARTIAL because no live 1000-user load ran. Deployment CI sets `NRG_C4_REQUIRE_LIVE=1` so live C4 cannot fall back silently. |
-| Local Docker/API runtime | BLOCKED | Docker data services are up, but no healthy local API target is available for live C4. Direct Uvicorn startup on port 8001 reached application startup, then failed to bind with `operation not permitted`; this session also observed an unhealthy SSH-forwarded NRG `/health` on port 8000. |
+| K-Q2/K-Q3 killer query proof | ASSIGNED local | Assignment: `.claude/assignments/shishya_killer_queries_live_local.md` — run on live local API, capture SQL + latency |
+| Quality Bar scorecard | ASSIGNED local | `scripts/quality_bar_scorecard.json` is `5/6`; C4 P99 1200 ms. Assignment: `.claude/assignments/shishya_c4_p99_optimization.md` — profile and optimize |
+| Local Docker/API runtime | PARTIAL | Docker data services are up. Direct Uvicorn can run on port 8001 through the Python startup wrapper used this session, but the local live C4 gate still fails P99 at the maintained workload. Port 8000 remains occupied by an `ssh` listener. |
 | FastAPI TestClient runtime | PASS current | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` records 7 passing focused API contract checks; `evidence/2026-05-06/runtime_recovery/killer_queries_testclient.log` records 3 passing killer-query checks. |
-| Frontend bundle size | PASS current | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` records `npm run build` exit 0, 2,581 modules transformed, largest JS chunk 318.71 KB raw, built in 3m 57s. |
+| Frontend bundle size | ASSIGNED local | 318.71 KB raw (>250KB target). Assignment: `.claude/assignments/shishya_frontend_bundle_diet_v2.md` — reduce to <250KB |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
 | Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; local/remote sync must be checked before handoff |
 
@@ -33,7 +33,7 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
-| Local C4 regression | May 5 | `scripts/quality_bar_scorecard.json` — 5/6, C4 local regression 9/9, live load not executed |
+| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 5/6, latest local live C4 P99 1200 ms with 0 failures; `evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md` |
 | Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
 | Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
 | Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
@@ -51,9 +51,9 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| PASS | PASS | PASS | PARTIAL (local test suite pass / live load pending) | PASS local / production pending | PASS |
+| PASS | PASS | PASS | FAIL live / PASS local regression | PASS local / production pending | PASS |
 
-**C4**: Local Quality Bar scorecard is partial: `scripts/quality_bar_scorecard.json` reports 5/6 and C4 local regression 9/9, but C4 is not counted as a pass because no live 1000-user run executed. The scorecard verifies `/health` before running Locust, so an unrelated TCP listener on port 8000 no longer creates false HTTP 0 C4 failures. Cluster/live 1000-user proof still requires a usable `KUBECONFIG` or a running NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
+**C4**: `scripts/quality_bar_scorecard.json` reports 5/6. Latest local live C4 on `http://127.0.0.1:8001` used `NRG_C4_REQUIRE_LIVE=1` and completed 338548 requests with 0 failures, but failed P99 at 1200 ms (`evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md`). An earlier forwarded-target attempt also failed at P99 4900 ms and 0.1717% failures (`evidence/2026-05-06/runtime_recovery/live_c4_locust_failure_summary.md`). Cluster/live closure still requires a performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 
