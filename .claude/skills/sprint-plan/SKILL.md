@@ -92,11 +92,12 @@ Which of the 6 Hard Constraints (see `.claude/quality-bar.md`) does this sprint 
 ```
 
 ### Step 5: Produce Task Protocols
-For each P1 task, produce a copy-paste-ready task protocol using the FULL ═══ format from `.claude/protocol.md` Section 3. This includes:
-- GURU ASSIGNMENT NOTE (the WHY)
-- Phased ACTION (Fortify → Elevate → Immortalize)
-- 3+ SKILLS with reasons
-- AGENT INSTRUCTIONS block (verbatim from protocol.md Section 3)
-- ACCEPTANCE CRITERIA that verify ELEVATION, not just "it works"
+For each P1 task, produce a copy-paste-ready assignment using the hybrid format from `.claude/assignment_template.md`. This includes:
+- Role, Personality, Goal
+- Context (FILES + PROBLEM)
+- Execution (STEPS + SKILLS)
+- Constraints
+- Output (EVIDENCE + DONE WHEN)
+- Stop Rules
 
-**NEVER produce flat step lists or simple fix-tasks.** Every task is an elevation protocol.
+**NEVER produce flat step lists or simple fix-tasks.** Every task is a complete protocol.

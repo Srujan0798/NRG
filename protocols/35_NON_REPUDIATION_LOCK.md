@@ -1,3 +1,6 @@
+> **DEPRECATED FORMAT:** This protocol uses the old ═══ format.
+> **Current format:** Use `.claude/assignment_template.md` for all new assignments.
+
 ═══════════════════════════════════════════════════════════════
 TASK: #35 — THE NON-REPUDIATION LOCK
 AGENT: backend / security

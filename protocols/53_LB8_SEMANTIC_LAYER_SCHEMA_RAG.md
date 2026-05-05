@@ -1,3 +1,6 @@
+> **DEPRECATED FORMAT:** This protocol uses the old ═══ format.
+> **Current format:** Use `.claude/assignment_template.md` for all new assignments.
+
 ═══════════════════════════════════════════════════════════════
 TASK: LB-8 — SEMANTIC LAYER + SCHEMA-AWARE RAG FOR TEXT-TO-SQL
 AGENT: backend + ml + data-architecture

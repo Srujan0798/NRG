@@ -1,3 +1,6 @@
+> **DEPRECATED FORMAT:** This protocol uses the old ═══ format.
+> **Current format:** Use `.claude/assignment_template.md` for all new assignments.
+
 ═══════════════════════════════════════════════════════════════
 TASK: LB-3 — THREE KILLER QUERIES — END-TO-END LIVE PROOF
 AGENT: testing + data + devops

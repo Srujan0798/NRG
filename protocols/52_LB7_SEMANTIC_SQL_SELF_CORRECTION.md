@@ -1,3 +1,6 @@
+> **DEPRECATED FORMAT:** This protocol uses the old ═══ format.
+> **Current format:** Use `.claude/assignment_template.md` for all new assignments.
+
 ═══════════════════════════════════════════════════════════════
 TASK: LB-7 — SEMANTIC SQL SELF-CORRECTION + ANOMALY DETECTION
 AGENT: backend + ml + testing

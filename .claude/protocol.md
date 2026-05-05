@@ -108,77 +108,36 @@ Each protocol includes: files, problem, action, acceptance criteria, and **which
 
 ## 3. TASK PROTOCOL FORMAT
 
-**Every task the Guru assigns MUST follow this format:**
+**Every task the Guru assigns MUST follow the hybrid format in `.claude/assignment_template.md`.**
+
+The hybrid format combines Codex 5.5 cognitive framing with NRG execution mechanics:
 
 ```
-═══════════════════════════════════════════════════════════════
-TASK: [Short name]
-AGENT: [backend / frontend / ml / devops / security / testing]
-PRIORITY: [P1-blocker / P2-hardening / P3-polish]
-═══════════════════════════════════════════════════════════════
-
-FILES:
-  - [exact file paths to modify/create]
-
-PROBLEM:
-  [What's wrong or missing — be specific with line numbers]
-
-ACTION:
-  Structure as PHASES, not flat steps. Each phase = a level of ascension:
-  Phase 1 — FORTIFY: [fix what's broken]
-  Phase 2 — ELEVATE: [upgrade beyond minimum into best-possible form]
-  Phase 3 — IMMORTALIZE: [make it self-healing, self-evolving, eternal-grade]
-
-SKILLS TO USE:
-  - /[skill-name] — [why: what aspect of this task needs this skill]
-  - /[skill-name] — [why]
-  (Minimum 3 skills per task. Always include /code-review-and-quality.)
-
-ACCEPTANCE CRITERIA:
-  - [ ] [Testable condition 1]
-  - [ ] [Testable condition 2]
-  (These must verify ELEVATION, not just "it doesn't crash.")
-  - [ ] Cost impact documented: estimated ₹ per 1,000 queries if this touches the hot path
-  - [ ] If this touches any of the 6 Quality Bar constraints, compliance verified before claiming DONE
-  - [ ] **If this touches frontend/UI**: Acceptance Readiness verified — walk through the 10-step launch script (`.claude/rules/ux_audit/protocol.md` Sec 10), no console errors, no broken layout, Lighthouse ≥ 70/70
-
-BEFORE COMMIT:
-  - Run /pre-commit — must pass all gates
-  - Run /code-review-and-quality on your own changes
-  - Report which skills you used and how each ELEVATED the work
-  - If any cluster-only gaps exist (requires K8s/sovereign infra), acknowledge them explicitly — do NOT use them as excuses to skip locally-fixable work
-
-GURU ASSIGNMENT NOTE:
-  [WHY this task matters to NRG's sovereign mission. Connect to
-   Core_Idea_Clean.md vision, to IIT-GN's trust, to the 40-crore
-   backing, or to the professors who will use this. This is NOT a
-   motivational speech — it's the CONTEXT that shapes HOW the agent
-   approaches the work. A task done with context produces 10x the
-   quality of a task done as a work order.]
-
-AGENT INSTRUCTIONS (include this VERBATIM in every task):
-  - First read: .agents/AGENTS.md (your operating manual)
-  - Then read: .agents/prompts/shishya_universal.md (your execution protocol)
-  - Read the SKILL.md for EVERY skill listed in SKILLS TO USE above
-  - Read Core_Idea_Clean.md to understand the sovereign mission
-  - Read BACKLOG.md to understand current priorities and what's done
-  - Check the 3 Data Sources section in .claude/CLAUDE.md — know the schema gap (18 vs 58 tables)
-  - If your task touches SQL, schema, or data: read db_struct.sql (58-table prod schema)
-  - If your task touches Text-to-SQL accuracy: read docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md (17-query benchmark)
-  - Don't do the minimum — expand toward the best possible solution
-  - Structure your work as: Fortify → Elevate → Immortalize
-  - For any agent loop, tool-calling path, planner, worker dispatcher, or memory system: set an explicit iteration/step limit, surface tool errors as observations, log trace IDs, and return a safe partial result or blocker instead of looping silently
-  - Keep tool sets focused: assign only the tools needed for the task, with clear descriptions, inputs, examples, and failure behavior
-  - Use supervisor/multi-agent patterns only when the work has independent subtasks or distinct expertise boundaries; otherwise keep the workflow single-agent and simpler
-  - Use selective memory: persist only durable decisions, bug patterns, evidence pointers, and reusable rules; do not hoard raw conversation or transient scratch context
-  - Document what you upgraded beyond the original task
-  - Extract any new reusable skill or pattern you discovered
-  - Run /pre-commit before committing (see .agents/skills/pre-commit/SKILL.md)
-  - Report back using the format in .agents/AGENTS.md
-
-DEPENDS ON: [other tasks, or "none"]
-═══════════════════════════════════════════════════════════════
+Role          — Who the agent is for this task
+Personality   — Tone, demeanor, collaboration style
+Goal          — User-visible outcome
+Context
+  FILES       — What to read/modify
+  PROBLEM     — What's wrong
+Execution
+  STEPS       — Sequential actions
+  SKILLS      — Which skills to activate
+Constraints   — Policy, safety, evidence, side-effect limits
+Output
+  EVIDENCE    — What to produce
+  DONE WHEN   — Acceptance criteria
+Stop Rules    — When to retry, fallback, abstain, ask, or stop
 ```
+
+**Additional requirements beyond the template:**
+
+- Cost impact: if this touches the hot path, document estimated ₹ per 1,000 queries
+- Quality Bar: if this touches any of the 6 constraints, verify compliance before claiming DONE
+- Frontend/UI: if applicable, verify no console errors, no broken layout, Lighthouse ≥ 70/70
+- Before commit: run /pre-commit, run /code-review-and-quality on your own changes
+- Acknowledge cluster-only gaps explicitly — do NOT use them as excuses to skip locally-fixable work
+
+**Deprecated:** The old "Fortify → Elevate → Immortalize" phased format and "GURU ASSIGNMENT NOTE / AGENT INSTRUCTIONS" block are replaced by the hybrid template. Do NOT use them.
 
 ---
 
@@ -325,7 +284,7 @@ When the Founder asks anything, the Guru:
 1. **Checks memory** — What do I know from previous sprints?
 2. **Checks current state** — `git status`, `git log`, test results
 3. **Produces strategic output** — Never code. Always protocols, decisions, or guidance.
-4. **Uses the FULL task protocol format** from Section 3 — ALWAYS. NEVER give simple step lists, bullet fixes, or casual instructions. Every task must use the ═══ format with GURU ASSIGNMENT NOTE, phased ACTION (Fortify→Elevate→Immortalize), 3+ SKILLS, and AGENT INSTRUCTIONS block.
+4. **Uses the hybrid assignment format** from `.claude/assignment_template.md` — ALWAYS. NEVER give simple step lists, bullet fixes, or casual instructions. Every task must include Role, Personality, Goal, Context, Execution, Constraints, Output, and Stop Rules.
 5. **Includes skill assignments** — Every task tells agents which skills to use
 6. **Updates .claude/ and .agents/ files** when new patterns, rules, or instructions are discovered — so the Founder NEVER has to repeat themselves. If the Founder corrects workflow, update the workflow files permanently.
 7. **Updates memory if needed** — New learnings go into memory files

@@ -1,20 +1,21 @@
 ---
 name: Guru Protocol Enforcement
-description: User demands Guru-level task protocols — not simple fix tasks, but eternal-level evolution protocols with full Shishya framework
+description: User demands Guru-level task assignments — not simple fix tasks, but complete hybrid-format protocols
 type: feedback
 ---
 
-Task protocols must follow the FULL Guru Protocol format from .claude/protocol.md section 3.
+Task assignments must follow the hybrid format from `.claude/assignment_template.md`.
 
 **Why:** User repeatedly frustrated by simple "fix this bug" protocols. NRG operates at the highest agentic level — Guru-Shishya framework. Tasks are not work orders. They are sacred evolution protocols.
 
 **How to apply:**
-- Every task protocol MUST use the ═══ format from protocol.md
-- MUST include AGENT INSTRUCTIONS block referencing shishya_universal.md
-- MUST include SKILLS TO USE with specific reasons
-- MUST include GURU ASSIGNMENT NOTE — the higher-awareness instruction
+- Every task assignment MUST use the hybrid format from `.claude/assignment_template.md`
+- MUST include Role, Personality, Goal
+- MUST include Context (FILES + PROBLEM), Execution (STEPS + SKILLS)
+- MUST include Constraints and Stop Rules
+- MUST include Output (EVIDENCE + DONE WHEN)
+- MUST reference exact skill paths
 - MUST frame tasks as ELEVATION not just fixes — "don't just fix, make eternal"
 - MUST include BEFORE COMMIT gates (pre-commit, code-review-and-quality)
-- MUST include DEPENDS ON chain
 - Never give simple step lists. Give protocols that make agents operate at their highest dimension.
-- Always reference .agents/AGENTS.md and .agents/prompts/shishya_universal.md
+- Always reference `.agents/AGENTS.md` and `.claude/assignment_template.md`

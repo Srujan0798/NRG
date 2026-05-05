@@ -161,7 +161,7 @@ Every NRG work session should follow this order.
 
 4. **Plan As Guru**
    - Use the full Guru protocol when assigning agent work.
-   - Every protocol includes Fortify, Elevate, Immortalize phases.
+   - Every protocol uses the hybrid format from `.claude/assignment_template.md`.
    - Every protocol names at least three skills and the exact acceptance gates.
 
 5. **Execute As Shishya**

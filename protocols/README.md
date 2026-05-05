@@ -1,6 +1,10 @@
 # NRG Protocol Universe — Full Specs
 
-All ═══ task protocols live here as individual files. BACKLOG.md has the summary, this folder has the full executable spec.
+> **DEPRECATED FORMAT:** These protocols use the old ═══ format (Fortify→Elevate→Immortalize, GURU ASSIGNMENT NOTE, AGENT INSTRUCTIONS).  
+> **Current format:** All new assignments use the hybrid format from `.claude/assignment_template.md` (Role / Personality / Goal / Context / Execution / Constraints / Output / Stop Rules).  
+> These files are preserved for historical reference. New work must use the hybrid template.
+
+All task protocols live here as individual files. BACKLOG.md has the summary, this folder has the full executable spec.
 
 ## Naming Convention
 `NN_SHORTNAME.md` — e.g. `27_FINAL_GREEN.md`, `35_NON_REPUDIATION_LOCK.md`

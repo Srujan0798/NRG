@@ -61,7 +61,7 @@ For each classified chunk, write the file. Conventions that are non-negotiable:
 - Memory files: include `name`, `description`, `type` (user / feedback / project / reference) frontmatter. Body has the rule, then `**Why:**`, then `**How to apply:**`. End with `**Source:** <reviewer name> <date>`.
 - New runbooks: lead with a one-line scope, then a "How to use" section, then the table/list, then "Bound to Quality Bar" cross-reference at the bottom.
 - New test corpora: machine-readable YAML so future protocols can iterate on it.
-- Protocol files: full ═══ format from `.claude/protocol.md` §3. Include verbatim AGENT INSTRUCTIONS block.
+- Protocol files: hybrid format from `.claude/assignment_template.md`. Include Role, Personality, Goal, Context, Execution, Constraints, Output, Stop Rules.
 - BACKLOG additions: dated section header (`## YYYY-MM-DD <SUBJECT>`), table not free-form prose, every row bound to a Quality Bar constraint.
 
 **Always sync memory files to BOTH locations**: `.claude/memory/` (repo, source of truth) AND `~/.claude/projects/-Users-srujansai-Desktop-NRG/memory/` (auto-memory, recalled on session start). Update **both** MEMORY.md indexes.
