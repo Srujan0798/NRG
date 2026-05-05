@@ -236,6 +236,5 @@
     },
     "PII redaction applied to response: EMAIL"
   ],
-  "tier1_access_scope": "full_detail",
-  "cached": true
+  "tier1_access_scope": "full_detail"
 }

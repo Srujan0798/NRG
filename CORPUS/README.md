@@ -15,6 +15,9 @@ python3 scripts/verify_corpus_sync.py
 Latest Batch 4 verification: `PASS` on 2026-05-02. Evidence:
 `evidence/2026-05-02/batch4_data_sql_schema/D4-10_corpus_sync.json`.
 
+Latest current-tree recheck: `PASS` on 2026-05-05 with `ok: true`. Evidence:
+`evidence/2026-05-05/80_task_dispatch_recheck/README.md`.
+
 ## Canonical Files And Mirrors
 
 | Canonical source | Corpus mirror | Purpose |

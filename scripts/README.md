@@ -11,7 +11,7 @@ For per-script status, ownership, and cleanup decisions, see
 | Category | Purpose | Examples |
 | --- | --- | --- |
 | Bootstrap and setup | Bring up local development or model dependencies | `bootstrap.sh`, `setup_llm.sh` |
-| Health and verification | Validate API, schema, contracts, corpus, claims, and evidence | `health_check.py`, `deployment_gate.py`, `verify_corpus_sync.py`, `validate_contracts.py` |
+| Health and verification | Validate API, schema, contracts, corpus, claims, documentation links, and evidence | `health_check.py`, `deployment_gate.py`, `verify_corpus_sync.py`, `check_docs_links.py`, `validate_contracts.py` |
 | Seeding and data fixtures | Seed local, acceptance, release, and production-like datasets | `seed_release_data.py`, `seed_local_quality_fixtures.py`, `seed_production_tables.py` |
 | Ingestion and vector index | Load documents, DB rows, embeddings, and Qdrant payloads | `ingest_qdrant.py`, `ingest_documents.py`, `build_qdrant_index.py` |
 | Audit and security | Investigate, rebuild, seal, replay, or check audit/security paths | `audit_investigate.py`, `audit_rebuild.py`, `red_team_live_replay.py` |

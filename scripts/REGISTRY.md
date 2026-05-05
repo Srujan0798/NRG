@@ -23,7 +23,7 @@ move or deletion.
 | --- | --- | --- |
 | Bootstrap and local services | `bootstrap.sh`, `setup_llm.sh`, `start_local_llm.py` | Local setup and model runtime helpers |
 | Health and gates | `health_check.py`, `deployment_gate.py`, `run_final_external_gates.py`, `run_test_suite.sh`, `run_ui_ux_check.sh` | Current gate and validation runners |
-| Source-truth checks | `verify_corpus_sync.py`, `forbidden_vocab_check.sh`, `check_workflow_links.sh`, `validate_contracts.py` | Required before external handoff claims |
+| Source-truth checks | `verify_corpus_sync.py`, `forbidden_vocab_check.sh`, `check_workflow_links.sh`, `check_docs_links.py`, `validate_contracts.py` | Required before external handoff claims |
 | Schema and database | `schema_sync.py`, `check_schema_sync.py`, `init_db.py`, `data_integrity_check.sql` | Keep both schema CLIs until `check_schema_sync.py` is folded into `schema_sync.py` |
 | Audit and security | `audit_chain_health_check.py`, `audit_investigate.py`, `audit_rebuild.py`, `red_team_live_replay.py`, `red_team_replay.sh`, `scan_env_history_secrets.py` | Audit repair, proof, red-team replay, and redacted Git-history env scanning |
 | Sealing and compliance | `chain_seal_attestation.py`, `eternal_seal_execute.py`, `phase7_preflight.py`, `pre_tag_checklist.py` | Cluster and release-gated workflows |

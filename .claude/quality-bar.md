@@ -50,6 +50,21 @@ Source: Encoded into the workflow on 2026-04-24 from an external validator promp
 - **Quarterly**: `/self-evolve` runs scorecard; result committed to `docs/ops/QUALITY_BAR_SCORECARD_<YYYY-QN>.md`.
 - **Guru-level**: Before marking any protocol COMPLETE in BACKLOG.md, the Guru verifies the 6 constraints are not violated by the change.
 
+## Executable Verification Commands
+
+Run these commands from the repo root when independently checking the six
+constraints. Use `.venv/bin/python` in this repository; this shell may not have
+a bare `python` executable.
+
+| Constraint | Local verification command | Evidence boundary |
+| --- | --- | --- |
+| C1 DPDP PII detection | `.venv/bin/python -m pytest tests/security/test_pii_indian.py -q --tb=short --no-cov` | Local security regression proof. |
+| C2 Per-user audit binding | `.venv/bin/python -m pytest tests/security/test_per_user_audit_binding.py -q --tb=short --no-cov` and `.venv/bin/python -c 'from src.audit import verify_chain; print(verify_chain())'` | Test plus current audit-chain proof. |
+| C3 Multi-hop decomposition | `.venv/bin/python -m pytest tests/orchestration/test_multi_hop_planner.py -q --tb=short --no-cov` | Local planner regression proof. |
+| C4 Production SLO | `NRG_QUOTA_DISABLED=1 .venv/bin/python scripts/quality_bar_scorecard.py --json-only` | Local quota-neutral capacity proof only unless run against the deployed/cluster target with the same strict scorecard. |
+| C5 Vector drift | `.venv/bin/python scripts/vector_drift_check.py --check-only --json` and `.venv/bin/python scripts/vector_drift_scheduler.py --dry-run` | Local Qdrant/baseline proof; production vectors require production target context. |
+| C6 Schema egress allowlist | `.venv/bin/python -m pytest tests/security/test_egress_allowlist.py -q --tb=short --no-cov` | Local egress regression proof. |
+
 ---
 
 ## Evidence Expiration (Added 2026-04-28)

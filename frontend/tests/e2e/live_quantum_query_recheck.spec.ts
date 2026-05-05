@@ -53,8 +53,14 @@ test.afterEach(async ({ page }, testInfo) => {
   fs.mkdirSync(evidenceDir, { recursive: true })
   if (!page.isClosed()) await page.close()
   const target = path.join(evidenceDir, `${testInfo.title.replace(/[^a-z0-9]+/gi, '_').toLowerCase()}.webm`)
-  await video.saveAs(target)
-  await testInfo.attach('live_quantum_recheck_video', { path: target, contentType: 'video/webm' })
+  try {
+    await video.saveAs(target)
+    await testInfo.attach('live_quantum_recheck_video', { path: target, contentType: 'video/webm' })
+  } catch (error) {
+    writeJson('video_save_error.json', {
+      message: error instanceof Error ? error.message : String(error),
+    })
+  }
 })
 
 test('live quantum recheck: messy query returns specific evidence, citations, source rows, audit proof, and Tier 3 block', async ({ page, request }) => {
@@ -116,6 +122,13 @@ test('live quantum recheck: messy query returns specific evidence, citations, so
       session_id: 'live-quantum-api-recheck',
     },
   })
+  if (!researcherResponse.ok()) {
+    writeJson('01_researcher_quantum_query_error.json', {
+      status: researcherResponse.status(),
+      statusText: researcherResponse.statusText(),
+      body: (await researcherResponse.text()).slice(0, 4000),
+    })
+  }
   expect(researcherResponse.ok()).toBeTruthy()
   const researcherPayload = await researcherResponse.json()
   writeJson('01_researcher_quantum_query_api.json', redactEmailFields(researcherPayload))
