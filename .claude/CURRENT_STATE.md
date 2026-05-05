@@ -11,7 +11,7 @@
 | Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md` |
 | Cluster C4 (1000-user) | Srujan | No usable Kubernetes context on this machine | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load` |
 | Founder GPG signing | Srujan | No founder private key or signature ceremony available | Schedule founder signing and record detached signatures |
-| Secret history purge | Srujan | Local HEAD is sanitized, but fetched remote refs still report 286 scanner findings | After credential rotation and explicit founder approval, force-push the sanitized rewritten branch with `--force-with-lease` |
+| Secret history purge | Srujan | Latest refreshed scanner evidence reports 0 findings after stale-branch cleanup, but credential rotation is still required if old commits were exposed | Preserve `evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs_after_stale_branch_delete.json`; rotate credentials before security closure |
 
 ---
 
@@ -20,9 +20,10 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
+| Quality Bar scorecard | FAIL current | `scripts/quality_bar_scorecard.json` is `5/6`; C4 failed in the latest May 5 run with HTTP 0 failures because the running-stack/load gate was not healthy |
 | Frontend bundle size | PASS local | May 5 build entry chunk is 2.23 KB raw; largest lazy chunk is 319.01 KB raw / 87.80 KB gzip |
 | Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
-| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md` |
+| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; current local evidence commits may still need a normal push |
 
 ---
 
@@ -43,9 +44,11 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| PASS | PASS | PASS | PASS local / cluster pending | PASS local / production pending | PASS |
+| PASS | PASS | PASS | FAIL current scorecard / historical local pass preserved / cluster pending | PASS local / production pending | PASS |
 
-**C4**: Local quota-neutral 1000-user pass complete. Cluster/deployed proof pending.
+**C4**: The latest scorecard JSON is `5/6` with C4 `FAIL` on May 5. The May 2
+quota-neutral 1000-user pass remains historical local evidence only. Fresh
+current-stack C4 and deployed/cluster C4 are pending.
 
 ---
 

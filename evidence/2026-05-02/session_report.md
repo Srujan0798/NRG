@@ -64,7 +64,7 @@ Batch 1/2/3/5 evidence line and the early May 3 follow-up commits.
 | H7-08 quality bar commands | PASS locally | `.claude/quality-bar.md` |
 | H7-09 CORPUS sync docs | PASS locally | `CORPUS/README.md` |
 | H7-10 ADRs | PASS locally | `docs/specs/adr/` |
-| H7-11 skill health | PASS locally | 137 repo skills, 0 validation problems |
+| H7-11 skill health | PASS locally | 136 repo skills, 0 validation problems |
 | H7-12 memory update | PASS locally | `.claude/memory/INDEX.md`, `.claude/memory/patterns/batch-gate-evidence-boundary.md` |
 | H7-13 backlog accuracy | PASS with external blockers retained | `BACKLOG.md` |
 | H7-14 session report | PASS locally | this addendum plus `evidence/2026-05-05/batch7_documentation_cleanup_handover/README.md` |

@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-05T12:09:58Z",
+  "generated_at": "2026-05-05T12:16:24Z",
   "git_head": {
     "command": "git log -1 --oneline",
     "exit_code": 0,
-    "duration_ms": 99,
-    "output": "evidence/2026-05-05/remaining_gates_final_attempt/git_head.log"
+    "duration_ms": 237,
+    "output": "evidence/2026-05-05/guru_check_174622/git_head.log"
   },
   "env": {
     "NRG_DEPLOYED_FRONTEND_URL": "missing",
@@ -34,7 +34,6 @@
       "gate": "sovereign_cluster_1000_user_load",
       "status": "BLOCKED",
       "missing": [
-        "KUBECONFIG",
         "explicit --run-cluster-load flag"
       ],
       "run_when_ready": "KUBECONFIG=/path/to/sovereign-cluster python scripts/run_final_external_gates.py --run-cluster-load"
@@ -46,40 +45,16 @@
         "8 verified .asc signatures required, found 0",
         "founder private GPG key on signing machine"
       ],
-      "digest_manifest": "evidence/2026-05-05/remaining_gates_final_attempt/handover_sha256_manifest.txt",
+      "digest_manifest": "evidence/2026-05-05/guru_check_174622/handover_sha256_manifest.txt",
       "secret_key_check": {
         "command": "gpg --list-secret-keys --keyid-format LONG",
         "exit_code": 0,
-        "duration_ms": 58,
-        "output": "evidence/2026-05-05/remaining_gates_final_attempt/gpg_secret_key_check.log"
+        "duration_ms": 197,
+        "output": "evidence/2026-05-05/guru_check_174622/gpg_secret_key_check.log"
       },
       "signatures_found": 0,
       "verification_results": [],
       "run_when_ready": "cd docs/handover/signatures && for doc in ../README.md ../SYSTEM_OVERVIEW.md ../ARCHITECTURE.md ../API_REFERENCE.md ../OPERATIONS_RUNBOOK.md ../SECURITY_COMPLIANCE_ATTESTATION.md ../DATA_INTAKE_PROTOCOL.md ../UAT_RESULTS.md; do gpg --armor --detach-sign --output \"$(basename \"$doc\").asc\" \"$doc\"; done"
-    },
-    {
-      "gate": "github_deployments",
-      "status": "BLOCKED",
-      "missing": [
-        "reachable deployed environment"
-      ],
-      "output": "evidence/2026-05-05/remaining_gates_final_attempt/github_deployments.json"
-    },
-    {
-      "gate": "github_actions",
-      "status": "BLOCKED",
-      "missing": [
-        "completed green CI/Deploy run for current remote head"
-      ],
-      "output": "evidence/2026-05-05/remaining_gates_final_attempt/github_runs_latest.json"
-    },
-    {
-      "gate": "secret_history_remote",
-      "status": "BLOCKED",
-      "missing": [
-        "credential rotation confirmation for previously exposed values"
-      ],
-      "output": "evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs_after_stale_branch_delete.json"
     }
   ]
 }

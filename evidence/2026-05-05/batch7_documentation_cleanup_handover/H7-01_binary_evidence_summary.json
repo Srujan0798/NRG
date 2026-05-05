@@ -1,0 +1,22 @@
+{
+  "non_symlink_binary_files": 150,
+  "symlink_archives": 16,
+  "remaining_duplicate_groups": 2,
+  "remaining_duplicate_files": 10,
+  "remaining_groups": [
+    [
+      "evidence/2026-05-05/maximum_enforcement_local_browser_fixed/02_login_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser/02_login_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_red/02_login_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_final/02_login_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_green/02_login_desktop.png"
+    ],
+    [
+      "evidence/2026-05-05/maximum_enforcement_local_browser_fixed/03_researcher_dashboard_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser/03_researcher_dashboard_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_red/03_researcher_dashboard_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_final/03_researcher_dashboard_desktop.png",
+      "evidence/2026-05-05/maximum_enforcement_local_browser_green/03_researcher_dashboard_desktop.png"
+    ]
+  ]
+}
