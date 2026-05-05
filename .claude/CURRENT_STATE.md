@@ -8,10 +8,10 @@
 
 | Item | Owner | Blocker | Next Action |
 |------|-------|---------|-------------|
-| Deployed staging URL | Srujan | No cloud account | Create AWS/GCP account; deploy via `09_deployment_gate_stone.md` |
-| Cluster C4 (1000-user) | Srujan | No K8s cluster | Request KUBECONFIG from IIT-GN IT |
-| Founder GPG signing | Srujan | No key ceremony | Schedule with professor |
-| Secret history purge | Srujan | 286 remote findings | Run `scripts/scan_env_history_secrets.py` + filter-repo |
+| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md` |
+| Cluster C4 (1000-user) | Srujan | No usable Kubernetes context on this machine | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load` |
+| Founder GPG signing | Srujan | No founder private key or signature ceremony available | Schedule founder signing and record detached signatures |
+| Secret history purge | Srujan | Local HEAD is sanitized, but fetched remote refs still report 286 scanner findings | After credential rotation and explicit founder approval, force-push the sanitized rewritten branch with `--force-with-lease` |
 
 ---
 
@@ -21,7 +21,7 @@
 |------|--------|----------|
 | K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
 | Frontend bundle size | PASS local | May 5 build entry chunk is 2.23 KB raw; largest lazy chunk is 319.01 KB raw / 87.80 KB gzip |
-| Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_fixed/console_errors.json` is empty |
+| Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
 | Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md` |
 
 ---
@@ -58,7 +58,7 @@ python3 .claude/scripts/nrg-verify-workflow.py
 # Count skills + flag duplicates
 python3 .claude/scripts/nrg-skill-count.py
 
-# Prune stale evidence (dry-run)
+# Report stale evidence
 python3 .claude/scripts/nrg-evidence-prune.py --days 14
 
 # Full test suite
@@ -87,8 +87,9 @@ bash scripts/run_critical_path_final.sh
 
 | Task type | Must read |
 |-----------|-----------|
-| Any task | `BACKLOG.md` (last 50 lines), `Core_Idea_Clean.md` sections 1-2 |
+| Any task | `BACKLOG.md` (last 50 lines), `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `docs/specs/NRG_EXECUTION_FLOW_RULE_HIERARCHY_2026-05-02.md`, `db_struct.sql` header, `Core_Idea_Clean.md` sections 1-2 |
 | SQL/schema | `db_struct.sql` (full), `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` |
+| v1.0 build/fusion | `docs/specs/NRG_SOURCE_OF_TRUTH_MAP_2026-04-30.md`, `Core_Idea_Clean.md`, `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md`, `db_struct.sql`, `CORPUS/`, `prompts_hybrid/00_INDEX.md`, task stone |
 | Security/PII | `src/security/`, `.claude/rules/security.md` |
 | API/auth | `src/api/main.py`, `src/auth/` |
 | Frontend | `frontend/src/`, `.claude/rules/frontend.md` |

@@ -74,7 +74,11 @@ fi
 # 7. Verify workflow
 echo ""
 echo "Running workflow verification..."
-python3 .claude/scripts/nrg-verify-workflow.py
+if [ -x ".venv/bin/python" ]; then
+    .venv/bin/python .claude/scripts/nrg-verify-workflow.py
+else
+    "$PYTHON" .claude/scripts/nrg-verify-workflow.py
+fi
 
 echo ""
 echo "============================================"
@@ -86,5 +90,5 @@ echo "  2. Start backend:  .venv/bin/python -m uvicorn src.api.main:app --reload
 echo "  3. Start frontend: cd frontend && npm run dev"
 echo "  4. Run tests:      bash scripts/run_test_suite.sh"
 echo ""
-echo "Remote sync: git fetch nrg && git rev-list --left-right --count main...nrg/main && python3 .claude/scripts/nrg-verify-workflow.py"
+echo "Remote sync: git fetch nrg && git rev-list --left-right --count main...nrg/main && .venv/bin/python .claude/scripts/nrg-verify-workflow.py"
 echo "============================================"

@@ -58,7 +58,7 @@
 └── scripts/                     ← Workflow automation
     ├── nrg-verify-workflow.py   ← Validate workflow integrity
     ├── nrg-skill-count.py       ← Count + flag duplicates
-    └── nrg-evidence-prune.py    ← Prune stale evidence
+    └── nrg-evidence-prune.py    ← Report stale evidence
 ```
 
 ### `.claude/skills/` — 86 Skills
@@ -104,7 +104,7 @@ python3 .claude/scripts/nrg-skill-count.py
 # 2. Full workflow validation
 python3 .claude/scripts/nrg-verify-workflow.py
 
-# 3. Evidence bloat check (dry-run)
+# 3. Evidence age/bloat check
 python3 .claude/scripts/nrg-evidence-prune.py --days 14
 ```
 
