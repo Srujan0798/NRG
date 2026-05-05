@@ -1,34 +1,38 @@
-# Immediate Action List — Post Audit v2
+# Immediate Action List — Professor Audit v2
 
-## Next 24 Hours (Critical)
+## Next 24 Hours
 
-1. **Revert bundle diet changes** — lazy-loading recharts INCREASED bundle from 318KB to 476KB. Revert to last known good.
-2. **Seed PostgreSQL with data** — `innovations_at_various_stages_of_technology_readiness_level`, `innovation_grant_from_govt`, `combined_ipo_patent_data` are EMPTY. Migrate from `data/nrg_research.db` (SQLite).
-3. **Fix killer query pipeline** — `needs_clarification` (0.05 confidence) means the query planner cannot answer complex multi-table questions. Debug why.
+| # | Action | Owner | Evidence Path |
+|---|--------|-------|---------------|
+| 1 | Commit all evidence files to git | Srujan | `git add evidence/2026-05-06/professor_audit_v2/` |
+| 2 | Run `npm run build` in frontend/ | Srujan | Verify `frontend/dist/` created |
+| 3 | Check seed data migration script | Srujan | Look for `scripts/migrate_seed_data.py` or similar |
 
-## Next 48 Hours (Urgent)
+## Next 48 Hours
 
-4. **Create AWS account** — unblocks deployment, the #1 funding gate. Use free tier.
-5. **Generate GPG key** — `gpg --full-generate-key` (RSA 4096). Run signing script prepared by Shishya.
-6. **Run C4 profiling** — find actual bottleneck. Likely suspects: embedder sync call, DB connection pool, missing async cache.
+| # | Action | Owner | Evidence Path |
+|---|--------|-------|---------------|
+| 4 | Fix bundle size — replace recharts or configure Vite manualChunks | Srujan | Rebuild must show < 250KB |
+| 5 | Run live C4 load test — verify P99 < 500ms @ 1000 concurrent | Srujan | `NRG_C4_API_BASE_URL` + `NRG_C4_REQUIRE_LIVE=1` |
+| 6 | Document Qdrant setup or fix C5 vector drift check | Srujan | `scripts/vector_drift_check.py` exit 0 |
 
-## Before Any Funding Discussion (Non-Negotiable)
+## Before Any Funding Discussion
 
-7. **Staging URL live** — must be browser-accessible. `curl` must return 200.
-8. **Killer queries pass live** — all 3 return ≥1 row with correct SQL + citations.
-9. **C4 P99 < 500ms** — must pass on staging with 1000 concurrent users, 0 failures.
+| # | Action | Owner | Blocker |
+|---|--------|-------|---------|
+| 7 | Deploy staging URL (cloud/K8s/Docker) | Srujan | **CRITICAL** |
+| 8 | Migrate seed data to PostgreSQL | Srujan | **CRITICAL** |
+| 9 | Verify killer queries return rows (not 0) on live API | Srujan | **CRITICAL** |
+| 10 | Schedule founder GPG signing ceremony | Srujan | **HIGH** |
 
-## Before Professor Walkthrough (Polish)
+## Before Professor Walkthrough
 
-10. **Bundle < 250KB** — or at minimum back to 318KB.
-11. **Audit chain signed** — 8/8 founder signatures.
-12. **Credential rotation approved** — plan reviewed, live status determined.
-13. **Run Professor Audit v2 again** — must score ≥ 7/10.
+| # | Action | Owner | Verification |
+|---|--------|-------|-------------|
+| 11 | Production build verified (dist/ exists, bundle < 250KB) | Srujan | `ls frontend/dist/` + chunk size check |
+| 12 | End-to-end test: login → query → answer on staging URL | Srujan | Playwright or manual |
+| 13 | Prepare demo script that avoids all blocked features | Srujan | Demo script in evidence/ |
 
-## After 1cr Funding (Scale)
+---
 
-14. Production deployment
-15. Cluster C4 (K8s)
-16. DPDP legal review
-17. Ministry security audit
-18. Continuous monitoring + drift detection
+*Last updated: 2026-05-06*
