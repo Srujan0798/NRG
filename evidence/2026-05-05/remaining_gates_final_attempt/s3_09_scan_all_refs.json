@@ -1,0 +1,568 @@
+{
+  "commits_scanned": 5,
+  "file_versions_scanned": 10,
+  "finding_count": 61,
+  "findings": [
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "POSTGRES_PASSWORD",
+      "line": 13,
+      "path": ".env.dev",
+      "value_length": 34,
+      "value_sha256": "bb408f6b86b1"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DATABASE_URL",
+      "line": 15,
+      "path": ".env.dev",
+      "value_length": 77,
+      "value_sha256": "eabc1955075c"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "REDIS_URL",
+      "line": 26,
+      "path": ".env.dev",
+      "value_length": 20,
+      "value_sha256": "e50f870293dc"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "JWT_SECRET",
+      "line": 31,
+      "path": ".env.dev",
+      "value_length": 27,
+      "value_sha256": "6388c360d48a"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DEMO_RESEARCHER_PASSWORD",
+      "line": 64,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "034e94f7bff7"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DEMO_GOVERNMENT_PASSWORD",
+      "line": 66,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "1bd5daf03508"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DEMO_INDUSTRY_PASSWORD",
+      "line": 68,
+      "path": ".env.dev",
+      "value_length": 13,
+      "value_sha256": "c0af9ca66c6c"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "RESEARCHER_PASSWORD",
+      "line": 71,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "034e94f7bff7"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "GOV_PASSWORD",
+      "line": 72,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "1bd5daf03508"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "INDUSTRY_PASSWORD",
+      "line": 73,
+      "path": ".env.dev",
+      "value_length": 13,
+      "value_sha256": "c0af9ca66c6c"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "POSTGRES_PASSWORD",
+      "line": 15,
+      "path": ".env.prod",
+      "value_length": 29,
+      "value_sha256": "5a321cc22dd9"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "JWT_SECRET_KEY",
+      "line": 16,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "REDIS_PASSWORD",
+      "line": 17,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DATABASE_URL",
+      "line": 22,
+      "path": ".env.prod",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "REDIS_URL",
+      "line": 33,
+      "path": ".env.prod",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "GEMINI_API_KEY",
+      "line": 59,
+      "path": ".env.prod",
+      "value_length": 31,
+      "value_sha256": "301d58c0475d"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "POSTGRES_PASSWORD",
+      "line": 14,
+      "path": ".env.staging",
+      "value_length": 26,
+      "value_sha256": "321387889e3f"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "JWT_SECRET_KEY",
+      "line": 15,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "REDIS_PASSWORD",
+      "line": 16,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "DATABASE_URL",
+      "line": 21,
+      "path": ".env.staging",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "REDIS_URL",
+      "line": 32,
+      "path": ".env.staging",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "8b873a823a7e146230778a1192cdb918f9239847",
+      "key": "GEMINI_API_KEY",
+      "line": 46,
+      "path": ".env.staging",
+      "value_length": 28,
+      "value_sha256": "026e28473bd2"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "POSTGRES_PASSWORD",
+      "line": 13,
+      "path": ".env.dev",
+      "value_length": 34,
+      "value_sha256": "bb408f6b86b1"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DATABASE_URL",
+      "line": 15,
+      "path": ".env.dev",
+      "value_length": 77,
+      "value_sha256": "eabc1955075c"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "REDIS_URL",
+      "line": 26,
+      "path": ".env.dev",
+      "value_length": 20,
+      "value_sha256": "e50f870293dc"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "JWT_SECRET",
+      "line": 31,
+      "path": ".env.dev",
+      "value_length": 27,
+      "value_sha256": "6388c360d48a"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DEMO_RESEARCHER_PASSWORD",
+      "line": 64,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "034e94f7bff7"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DEMO_GOVERNMENT_PASSWORD",
+      "line": 66,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "1bd5daf03508"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DEMO_INDUSTRY_PASSWORD",
+      "line": 68,
+      "path": ".env.dev",
+      "value_length": 13,
+      "value_sha256": "c0af9ca66c6c"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "POSTGRES_PASSWORD",
+      "line": 15,
+      "path": ".env.prod",
+      "value_length": 29,
+      "value_sha256": "5a321cc22dd9"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "JWT_SECRET_KEY",
+      "line": 16,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "REDIS_PASSWORD",
+      "line": 17,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DATABASE_URL",
+      "line": 22,
+      "path": ".env.prod",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "REDIS_URL",
+      "line": 33,
+      "path": ".env.prod",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "GEMINI_API_KEY",
+      "line": 59,
+      "path": ".env.prod",
+      "value_length": 31,
+      "value_sha256": "301d58c0475d"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "POSTGRES_PASSWORD",
+      "line": 14,
+      "path": ".env.staging",
+      "value_length": 26,
+      "value_sha256": "321387889e3f"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "JWT_SECRET_KEY",
+      "line": 15,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "REDIS_PASSWORD",
+      "line": 16,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "DATABASE_URL",
+      "line": 21,
+      "path": ".env.staging",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "REDIS_URL",
+      "line": 32,
+      "path": ".env.staging",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "b7eb4f5a940d0ffa2d9e33cfdb15fc0761d2f600",
+      "key": "GEMINI_API_KEY",
+      "line": 46,
+      "path": ".env.staging",
+      "value_length": 28,
+      "value_sha256": "026e28473bd2"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "POSTGRES_PASSWORD",
+      "line": 13,
+      "path": ".env.dev",
+      "value_length": 34,
+      "value_sha256": "bb408f6b86b1"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DATABASE_URL",
+      "line": 15,
+      "path": ".env.dev",
+      "value_length": 77,
+      "value_sha256": "eabc1955075c"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "REDIS_URL",
+      "line": 26,
+      "path": ".env.dev",
+      "value_length": 20,
+      "value_sha256": "e50f870293dc"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DEMO_RESEARCHER_PASSWORD",
+      "line": 63,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "034e94f7bff7"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DEMO_GOVERNMENT_PASSWORD",
+      "line": 65,
+      "path": ".env.dev",
+      "value_length": 15,
+      "value_sha256": "1bd5daf03508"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DEMO_INDUSTRY_PASSWORD",
+      "line": 67,
+      "path": ".env.dev",
+      "value_length": 13,
+      "value_sha256": "c0af9ca66c6c"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "POSTGRES_PASSWORD",
+      "line": 15,
+      "path": ".env.prod",
+      "value_length": 29,
+      "value_sha256": "5a321cc22dd9"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "JWT_SECRET_KEY",
+      "line": 16,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "REDIS_PASSWORD",
+      "line": 17,
+      "path": ".env.prod",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DATABASE_URL",
+      "line": 22,
+      "path": ".env.prod",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "REDIS_URL",
+      "line": 33,
+      "path": ".env.prod",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "GEMINI_API_KEY",
+      "line": 59,
+      "path": ".env.prod",
+      "value_length": 31,
+      "value_sha256": "301d58c0475d"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "POSTGRES_PASSWORD",
+      "line": 14,
+      "path": ".env.staging",
+      "value_length": 26,
+      "value_sha256": "321387889e3f"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "JWT_SECRET_KEY",
+      "line": 15,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "REDIS_PASSWORD",
+      "line": 16,
+      "path": ".env.staging",
+      "value_length": 43,
+      "value_sha256": "afa12f01f7cb"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "DATABASE_URL",
+      "line": 21,
+      "path": ".env.staging",
+      "value_length": 79,
+      "value_sha256": "6c78e5f040de"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "REDIS_URL",
+      "line": 32,
+      "path": ".env.staging",
+      "value_length": 39,
+      "value_sha256": "0341e941614d"
+    },
+    {
+      "commit": "414d9ecfab0041157b4ea2485019e5c49e34b875",
+      "key": "GEMINI_API_KEY",
+      "line": 46,
+      "path": ".env.staging",
+      "value_length": 28,
+      "value_sha256": "026e28473bd2"
+    },
+    {
+      "commit": "66ceaaef7df2d6e0758d1a8a0582db04f36dedc3",
+      "key": "OPENAI_API_KEY",
+      "line": 6,
+      "path": ".env.production",
+      "value_length": 29,
+      "value_sha256": "a5d9478cc48b"
+    },
+    {
+      "commit": "66ceaaef7df2d6e0758d1a8a0582db04f36dedc3",
+      "key": "ANTHROPIC_API_KEY",
+      "line": 10,
+      "path": ".env.production",
+      "value_length": 33,
+      "value_sha256": "57f59d0782be"
+    }
+  ],
+  "key_counts": {
+    "ANTHROPIC_API_KEY": 1,
+    "DATABASE_URL": 9,
+    "DEMO_GOVERNMENT_PASSWORD": 3,
+    "DEMO_INDUSTRY_PASSWORD": 3,
+    "DEMO_RESEARCHER_PASSWORD": 3,
+    "GEMINI_API_KEY": 6,
+    "GOV_PASSWORD": 1,
+    "INDUSTRY_PASSWORD": 1,
+    "JWT_SECRET": 2,
+    "JWT_SECRET_KEY": 6,
+    "OPENAI_API_KEY": 1,
+    "POSTGRES_PASSWORD": 9,
+    "REDIS_PASSWORD": 6,
+    "REDIS_URL": 9,
+    "RESEARCHER_PASSWORD": 1
+  },
+  "remediation": {
+    "affected_keys": [
+      "ANTHROPIC_API_KEY",
+      "DATABASE_URL",
+      "DEMO_GOVERNMENT_PASSWORD",
+      "DEMO_INDUSTRY_PASSWORD",
+      "DEMO_RESEARCHER_PASSWORD",
+      "GEMINI_API_KEY",
+      "GOV_PASSWORD",
+      "INDUSTRY_PASSWORD",
+      "JWT_SECRET",
+      "JWT_SECRET_KEY",
+      "OPENAI_API_KEY",
+      "POSTGRES_PASSWORD",
+      "REDIS_PASSWORD",
+      "REDIS_URL",
+      "RESEARCHER_PASSWORD"
+    ],
+    "affected_paths": [
+      ".env.dev",
+      ".env.prod",
+      ".env.production",
+      ".env.staging"
+    ],
+    "commits_scanned": 5,
+    "file_versions_scanned": 10,
+    "filter_repo_args": [
+      "--path",
+      ".env.dev",
+      "--path",
+      ".env.prod",
+      "--path",
+      ".env.production",
+      "--path",
+      ".env.staging"
+    ],
+    "finding_count": 61,
+    "required_actions": [
+      "freeze repository writes and branch automation",
+      "rotate all affected credential classes before unfreezing writes",
+      "rewrite runtime environment-file history in an approved mirror clone",
+      "force-push rewritten refs only after repository-owner approval",
+      "require contributors and CI runners to re-clone or drop stale refs",
+      "rerun this scanner on the rewritten history and require zero findings"
+    ],
+    "rotation_classes": [
+      "acceptance_users",
+      "jwt",
+      "model_api",
+      "postgresql",
+      "redis"
+    ],
+    "status": "FAIL",
+    "unique_secret_fingerprint_count": 20
+  },
+  "status": "FAIL"
+}

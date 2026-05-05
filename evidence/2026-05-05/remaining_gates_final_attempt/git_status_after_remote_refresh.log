@@ -1,0 +1,10 @@
+## main...nrg/main [ahead 3]
+ M .claude/quality-bar.md
+ M evidence/2026-05-05/remaining_gates_final_attempt/git_divergence_counts.log
+ M evidence/2026-05-05/remaining_gates_final_attempt/git_ls_remote_main.log
+ M evidence/2026-05-05/remaining_gates_final_attempt/git_push_dry_run.log
+?? evidence/2026-05-05/remaining_gates_final_attempt/github_deployments.err
+?? evidence/2026-05-05/remaining_gates_final_attempt/github_deployments.json
+?? evidence/2026-05-05/remaining_gates_final_attempt/github_runs_latest.err
+?? evidence/2026-05-05/remaining_gates_final_attempt/github_runs_latest.json
+?? evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs.json

@@ -40,13 +40,14 @@
   - Likely caused by prior history rewrite (secret purge) that was never force-pushed
   - DO NOT force-push without founder approval per `09_deployment_gate_stone.md` rule 4
 
-## Push Resolution Recorded For Commit `5c6629b1`
+## Remote Update Observed For Commit `5c6629b1`
 
-- **Action**: Force-push was performed after founder approval in the active session.
-- **Command**: `git push --force-with-lease nrg main`
-- **Result**: SUCCESS
-- **Remote update**: `9ace4501...5c6629b1 main -> main (forced update)`
-- **Remote HEAD**: `5c6629b1`
+- **Observation**: `nrg/main` was updated to `5c6629b1` during the active
+  session.
+- **Remote update recorded**: `9ace4501...5c6629b1 main -> main (forced update)`
+- **Remote HEAD observed**: `5c6629b1`
+- **Boundary**: this note records repository state only. Founder approval,
+  credential rotation, and remote CI closure still need their own evidence.
 
 ## Current Boundary After Later Local Evidence Commits
 

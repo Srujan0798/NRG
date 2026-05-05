@@ -56,6 +56,30 @@
       "signatures_found": 0,
       "verification_results": [],
       "run_when_ready": "cd docs/handover/signatures && for doc in ../README.md ../SYSTEM_OVERVIEW.md ../ARCHITECTURE.md ../API_REFERENCE.md ../OPERATIONS_RUNBOOK.md ../SECURITY_COMPLIANCE_ATTESTATION.md ../DATA_INTAKE_PROTOCOL.md ../UAT_RESULTS.md; do gpg --armor --detach-sign --output \"$(basename \"$doc\").asc\" \"$doc\"; done"
+    },
+    {
+      "gate": "github_deployments",
+      "status": "BLOCKED",
+      "missing": [
+        "reachable deployed environment"
+      ],
+      "output": "evidence/2026-05-05/remaining_gates_final_attempt/github_deployments.json"
+    },
+    {
+      "gate": "github_actions",
+      "status": "BLOCKED",
+      "missing": [
+        "completed green CI/Deploy run for current remote head"
+      ],
+      "output": "evidence/2026-05-05/remaining_gates_final_attempt/github_runs_latest.json"
+    },
+    {
+      "gate": "secret_history_remote",
+      "status": "BLOCKED",
+      "missing": [
+        "remote owner-approved history purge and credential rotation"
+      ],
+      "output": "evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs.json"
     }
   ]
 }
