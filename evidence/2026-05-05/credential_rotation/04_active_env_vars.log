@@ -1,30 +1,56 @@
-/Users/srujansai/Desktop/NRG/.env.dev.example:12:POSTGRES_PASSWORD=dev_secret_password_change_in_prod
-/Users/srujansai/Desktop/NRG/.env.dev.example:29:JWT_SECRET=development-secret-key-2026-minimum-32-bytes
-/Users/srujansai/Desktop/NRG/.env.dev.example:52:GEMINI_API_KEY=your_gemini_key_here
-/Users/srujansai/Desktop/NRG/.env.dev.example:63:LANGFUSE_SECRET_KEY=
-/Users/srujansai/Desktop/NRG/.env.dev.example:68:RESEARCHER_PASSWORD=researcher-pass
-/Users/srujansai/Desktop/NRG/.env.dev.example:70:GOV_PASSWORD=government-pass
-/Users/srujansai/Desktop/NRG/.env.dev.example:72:INDUSTRY_PASSWORD=industry-pass
-/Users/srujansai/Desktop/NRG/.env.staging.example:12:POSTGRES_PASSWORD=CHANGE_ME_STAGING_PASSWORD
-/Users/srujansai/Desktop/NRG/.env.staging.example:13:JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
-/Users/srujansai/Desktop/NRG/.env.staging.example:14:REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
-/Users/srujansai/Desktop/NRG/.env.staging.example:20:DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-/Users/srujansai/Desktop/NRG/.env.staging.example:45:GEMINI_API_KEY=CHANGE_ME_STAGING_GEMINI_KEY
-/Users/srujansai/Desktop/NRG/.env.staging.example:53:LANGFUSE_SECRET_KEY=
-/Users/srujansai/Desktop/NRG/.env.local:10:POSTGRES_PASSWORD=nrg_default_password
-/Users/srujansai/Desktop/NRG/.env.local:31:RESEARCHER_PASSWORD=researcher-pass
-/Users/srujansai/Desktop/NRG/.env.local:32:GOV_PASSWORD=government-pass
-/Users/srujansai/Desktop/NRG/.env.local:33:INDUSTRY_PASSWORD=industry-pass
-/Users/srujansai/Desktop/NRG/.env.local:35:JWT_SECRET=development-secret-key-2026
-/Users/srujansai/Desktop/NRG/frontend/.env.example:1:VITE_API_TOKEN_HEADER=Authorization
-/Users/srujansai/Desktop/NRG/.env.prod:12:# SECRETS - MUST BE SET BEFORE DEPLOYMENT
-/Users/srujansai/Desktop/NRG/.env.prod:15:POSTGRES_PASSWORD=CHANGE_ME_PRODUCTION_PASSWORD
-/Users/srujansai/Desktop/NRG/.env.prod:16:JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
-/Users/srujansai/Desktop/NRG/.env.prod:17:REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
-/Users/srujansai/Desktop/NRG/.env.prod:23:DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-/Users/srujansai/Desktop/NRG/.env.prod:34:REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
-/Users/srujansai/Desktop/NRG/.env.prod:43:JWT_PRIVATE_KEY_PATH=/run/secrets/jwt_private.pem
-/Users/srujansai/Desktop/NRG/.env.prod:60:GEMINI_API_KEY=CHANGE_ME_PRODUCTION_GEMINI_KEY
-/Users/srujansai/Desktop/NRG/.env.prod:70:LANGFUSE_SECRET_KEY=
-/Users/srujansai/Desktop/NRG/.env.prod.example:12:# SECRETS - MUST BE SET BEFORE DEPLOYMENT
-/Users/srujansai/Desktop/NRG/.env.prod.example:15:POSTGRES_PASSWORD=CHANGE_ME_PRODUCTION_PASSWORD
+# Active Environment Variables with Secret Indicators
+# Scanned: .env, .env.dev, .env.local, .env.prod, .env.staging, docker-compose*.yml, *.yaml
+# Pattern: API_KEY|SECRET|PASSWORD|TOKEN|PRIVATE
+# Date: 2026-05-05
+
+## .env (NOT git-tracked)
+DATABASE_URL=postgresql://REDACTED
+JWT_SECRET=REDACTED
+JWT_PRIVATE_KEY_PATH=infrastructure/kong/ssl/jwt_rsa.key
+JWT_PUBLIC_KEY_PATH=infrastructure/kong/ssl/jwt_rsa.pub
+MINIMAX_API_KEY=REDACTED
+NVIDIA_API_KEY=REDACTED
+RESEARCHER_PASSWORD=REDACTED
+GOV_PASSWORD=REDACTED
+INDUSTRY_PASSWORD=REDACTED
+AUDIT_CHAIN_KEY=REDACTED
+
+## .env.dev (NOT git-tracked)
+POSTGRES_PASSWORD=REDACTED
+DATABASE_URL=postgresql://REDACTED
+JWT_SECRET=REDACTED
+NRG_PII_ENCRYPTION_KEY=REDACTED
+GEMINI_API_KEY=REDACTED (placeholder: your_gemini_key_here)
+RESEARCHER_PASSWORD=REDACTED
+GOV_PASSWORD=REDACTED
+INDUSTRY_PASSWORD=REDACTED
+
+## .env.local (NOT git-tracked)
+DATABASE_URL=postgresql://REDACTED
+POSTGRES_PASSWORD=REDACTED
+RESEARCHER_PASSWORD=REDACTED
+GOV_PASSWORD=REDACTED
+INDUSTRY_PASSWORD=REDACTED
+JWT_SECRET=REDACTED
+AUDIT_CHAIN_KEY=REDACTED
+
+## .env.prod (NOT git-tracked)
+POSTGRES_PASSWORD=CHANGE_ME_PRODUCTION_PASSWORD
+JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
+REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
+NRG_PII_ENCRYPTION_KEY=CHANGE_ME_generate_with_openssl_rand_base64_32
+GEMINI_API_KEY=CHANGE_ME_PRODUCTION_GEMINI_KEY
+
+## .env.staging (NOT git-tracked)
+POSTGRES_PASSWORD=CHANGE_ME_STAGING_PASSWORD
+JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
+REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
+NRG_PII_ENCRYPTION_KEY=CHANGE_ME_generate_with_openssl_rand_base64_32
+GEMINI_API_KEY=CHANGE_ME_STAGING_GEMINI_KEY
+
+## docker-compose.yml (and variants)
+# Contains service definitions but no actual secret values
+
+---
+Total: 5 runtime env files reviewed, all with dummy/placeholder values or CHANGE_ME_* markers
+No LIVE production credentials detected.

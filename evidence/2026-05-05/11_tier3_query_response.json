@@ -2,16 +2,16 @@
   "tier": 3,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "a895b473-c21d-4afd-814c-90b59151d67b",
-    "answer_id": "0bf266e4-bb43-4545-bceb-1ec12e0e619a",
-    "audit_event_id": "12ad4877508567404aff39457715c1fde343a6d05a8b6b84c06acc0161977a9d",
+    "query_id": "bf9771e1-b6de-4e49-af97-f75990fd5c94",
+    "answer_id": "fd855c7f-490f-4150-9445-44176e4c9628",
+    "audit_event_id": "a332e918c20ca743672458d9bb8450590a88a1929c3b5df2f31cdd09ffc5abf5",
     "tier": 3,
     "question": "top AI funding institutions",
     "interpreted_question": "top AI funding institutions",
     "assumptions": [],
     "route": "sql",
     "blocked": false,
-    "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
+    "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
     "confidence": {
       "level": "high",
       "reason": "Evidence and citations passed verification."
@@ -45,28 +45,28 @@
       "rows": [
         {
           "institute": "IIT Madras",
-          "grant_count": 3755,
-          "funding_cr": 3907.71
+          "grant_count": 8,
+          "funding_cr": 15.0
         },
         {
           "institute": "IIT Bombay",
-          "grant_count": 3754,
-          "funding_cr": 3903.59
+          "grant_count": 7,
+          "funding_cr": 11.0
         },
         {
           "institute": "IIT Delhi",
-          "grant_count": 3751,
-          "funding_cr": 3898.35
+          "grant_count": 4,
+          "funding_cr": 4.5
+        },
+        {
+          "institute": "NIT Karnataka",
+          "grant_count": 4,
+          "funding_cr": 1.95
         },
         {
           "institute": "IIT Hyderabad",
-          "grant_count": 3748,
-          "funding_cr": 3148.22
-        },
-        {
-          "institute": "IIT Roorkee",
-          "grant_count": 3747,
-          "funding_cr": 3147.82
+          "grant_count": 1,
+          "funding_cr": 0.7
         }
       ],
       "documents": []
@@ -88,7 +88,7 @@
     "follow_up_suggestions": [],
     "query_time_ms": 0,
     "query": "top AI funding institutions",
-    "response": "Institution-level grant evidence is led by IIT Madras with \u20b93,907.71 Cr across 3,755 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
+    "response": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
     "status": "success",
     "session_id": null,
     "intent": "funding_aggregate",
@@ -102,7 +102,7 @@
         "reason": "Evidence and citations passed verification."
       },
       "citation_validity": 1.0,
-      "audit_event_id": "12ad4877508567404aff39457715c1fde343a6d05a8b6b84c06acc0161977a9d"
+      "audit_event_id": "a332e918c20ca743672458d9bb8450590a88a1929c3b5df2f31cdd09ffc5abf5"
     },
     "citation_validity": 1.0,
     "plan": null,
@@ -115,28 +115,28 @@
     "sql_results": [
       {
         "institute": "IIT Madras",
-        "grant_count": 3755,
-        "funding_cr": 3907.71
+        "grant_count": 8,
+        "funding_cr": 15.0
       },
       {
         "institute": "IIT Bombay",
-        "grant_count": 3754,
-        "funding_cr": 3903.59
+        "grant_count": 7,
+        "funding_cr": 11.0
       },
       {
         "institute": "IIT Delhi",
-        "grant_count": 3751,
-        "funding_cr": 3898.35
+        "grant_count": 4,
+        "funding_cr": 4.5
+      },
+      {
+        "institute": "NIT Karnataka",
+        "grant_count": 4,
+        "funding_cr": 1.95
       },
       {
         "institute": "IIT Hyderabad",
-        "grant_count": 3748,
-        "funding_cr": 3148.22
-      },
-      {
-        "institute": "IIT Roorkee",
-        "grant_count": 3747,
-        "funding_cr": 3147.82
+        "grant_count": 1,
+        "funding_cr": 0.7
       }
     ],
     "retrieval_sources": [],
@@ -156,6 +156,7 @@
       },
       "Response policy applied: pii_strip:tier3:debug_trace"
     ],
-    "tier3_access_scope": "industry_anonymized"
+    "tier3_access_scope": "industry_anonymized",
+    "cached": true
   }
 }

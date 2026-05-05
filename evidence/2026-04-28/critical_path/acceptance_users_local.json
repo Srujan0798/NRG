@@ -1,0 +1,29 @@
+{
+  "api": [],
+  "local": [
+    {
+      "email": "researcher@iitgn.ac.in",
+      "password": "Researcher@2026",
+      "role": "researcher",
+      "status": "local-ready",
+      "tier": 1,
+      "user_id": "researcher-acceptance-iitgn"
+    },
+    {
+      "email": "ministry@nrg.gov.in",
+      "password": "Ministry@2026",
+      "role": "government",
+      "status": "local-ready",
+      "tier": 2,
+      "user_id": "government-acceptance-ministry"
+    },
+    {
+      "email": "partner@industry.in",
+      "password": "Industry@2026",
+      "role": "industry",
+      "status": "local-ready",
+      "tier": 3,
+      "user_id": "industry-acceptance-partner"
+    }
+  ]
+}

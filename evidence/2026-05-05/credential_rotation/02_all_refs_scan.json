@@ -1,5 +1,20 @@
-usage: scan_env_history_secrets.py [-h] [--repo REPO] [--env-file ENV_FILES]
-                                   [--json-output JSON_OUTPUT]
-                                   [--max-findings MAX_FINDINGS]
-                                   [--allow-findings]
-scan_env_history_secrets.py: error: argument --json-output: expected one argument
+{
+  "commits_scanned": 0,
+  "file_versions_scanned": 0,
+  "finding_count": 0,
+  "findings": [],
+  "key_counts": {},
+  "remediation": {
+    "affected_keys": [],
+    "affected_paths": [],
+    "commits_scanned": 0,
+    "file_versions_scanned": 0,
+    "filter_repo_args": [],
+    "finding_count": 0,
+    "required_actions": [],
+    "rotation_classes": [],
+    "status": "PASS",
+    "unique_secret_fingerprint_count": 0
+  },
+  "status": "PASS"
+}

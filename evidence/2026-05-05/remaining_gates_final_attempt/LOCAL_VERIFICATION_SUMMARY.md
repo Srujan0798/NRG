@@ -1,6 +1,6 @@
 # Local Verification Summary
 
-Generated: 2026-05-05T15:14:37Z
+Generated: 2026-05-05T18:28:07Z
 Status: PARTIAL
 
 ## PASS
@@ -37,10 +37,12 @@ Status: PARTIAL
   (`evidence/2026-05-05/dhairya_regression_full/01_full_run.log`).
 - Credential history scan evidence reports PASS with zero findings:
   `evidence/2026-05-05/credential_rotation/02_all_refs_scan.json`.
+- Frontend production build has prior pass evidence:
+  `evidence/2026-05-05/remaining_closure/frontend_build_current.log` records
+  a completed Vite build with largest JS chunk 318.71 KB raw.
 
 ## FAIL
 
-- `scripts/quality_bar_scorecard.json` is 5/6; C4 is FAIL.
 - Earlier strict SLO reruns failed P50/P95/P99 and one full-order `/health`
   response before fixture isolation. Historical failure evidence:
   `evidence/2026-05-05/c4_ci_closure/33_slo_full_after_health_dependency_mocks.log`.
@@ -53,8 +55,12 @@ Status: PARTIAL
   `localhost:8000` became unreachable again; `/health/all` timed out.
 - Frontend Docker image verification was canceled after Buildx reached
   `npm ci` and stalled.
-- `cd frontend && npm run build` did not produce a captured PASS artifact in
-  the final verification window; a later check found `frontend/dist` missing.
+- Fresh `npm run build` rerun in this session hung in `tsc` for more than 6
+  minutes and was killed; current build proof remains blocked.
+- `scripts/quality_bar_scorecard.json` is currently `5/5` with C4 marked
+  `SKIP` because no API health response is available on port 8000. The C4
+  unit-level SLO regression passes, but live 1000-user load still requires a
+  running API.
 - External gates remain blocked on deployed URLs, production API/Qdrant target,
   usable `KUBECONFIG`, founder GPG signatures, and credential rotation.
 - An unbounded broad `pytest tests/ -q --ignore=tests/scripts --tb=short

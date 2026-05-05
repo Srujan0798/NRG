@@ -66,6 +66,13 @@ const manualChunks = (id: string) => {
   if (normalized.includes('/node_modules/d3-')) return 'vendor-d3'
   if (normalized.includes('/node_modules/recharts/')) return 'vendor-recharts'
   if (normalized.includes('/node_modules/clsx/')) return 'vendor-clsx'
+  if (normalized.includes('/node_modules/lucide-react/')) return 'vendor-lucide'
+  if (normalized.includes('/node_modules/@tanstack/')) return 'vendor-tanstack'
+  if (normalized.includes('/node_modules/date-fns/')) return 'vendor-datefns'
+  if (normalized.includes('/node_modules/axios/')) return 'vendor-axios'
+  if (normalized.includes('/node_modules/zustand/')) return 'vendor-zustand'
+  if (normalized.includes('/node_modules/react-window/')) return 'vendor-window'
+  if (normalized.includes('/node_modules/tailwind-merge/')) return 'vendor-twmerge'
   return undefined
 }
 
