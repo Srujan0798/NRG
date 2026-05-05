@@ -41,6 +41,10 @@ This evidence package covers the CI failures left after `f890dc2c`:
 - `25_coverage_remote_failure_summary.log`: remote coverage failure reduced to 2 `/health` status-code failures caused by audit-chain critical state.
 - `26_coverage_local_probe_summary.log`: local coverage-style probe did not reproduce `/health` 503 under audit isolation; it exposed a separate local stale-data issue outside the remote failure.
 - `27_trl_distribution_local_db_override_summary.log`: the separate local TRL distribution probe passed when the fresh temporary seed was selected explicitly.
+- `28_macos_integration_remote_failure_summary.log`: remote macOS integration failure was one `/health` status-code failure with audit-chain critical state in shared worker storage.
+- `29_workflow_yaml_parse_after_matrix_isolation.log`: workflow YAML parse passed after adding audit isolation to the test-python matrix.
+- `30_matrix_workflow_diff_check.log`: matrix workflow diff whitespace check passed.
+- `31_matrix_health_targeted_audit_isolation_summary.log`: targeted xdist health/audit check passed locally with matrix-style audit isolation, 2 passed.
 
 ## Remaining Known Gaps
 

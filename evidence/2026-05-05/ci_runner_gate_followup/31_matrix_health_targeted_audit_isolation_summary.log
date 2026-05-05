@@ -1,0 +1,6 @@
+command=pytest forced-error audit event check plus health auth-status check with xdist
+audit_isolation=enabled
+audit_base=/tmp/nrg_matrix_target_audit
+exit_code=0
+pytest_summary=2 passed, 1 warning in 9.17s
+note=This targets the remote macOS integration failure shape: a health check after audit-writing API tests, with per-worker audit storage enabled.

@@ -1,0 +1,10 @@
+run_id=25391406335
+job_id=74466581066
+job=test-python macos-14 python-3.11 integration
+status=failure
+failing_tests=1
+failure_1=tests/api/test_auth_api.py health auth status check returned HTTP 503, expected HTTP 200.
+observed_cause=The job log shows audit-chain critical tamper lines immediately before the health response.
+workflow_gap=test-python matrix did not set NRG_TEST_ISOLATE_AUDIT or NRG_TEST_AUDIT_BASE.
+fix=Add matrix-lane audit isolation and create the per-job audit base before pytest.
+coverage_impact=coverage-python was skipped because it depends on the full test-python matrix.

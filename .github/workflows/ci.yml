@@ -282,8 +282,12 @@ jobs:
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
       - name: Run ${{ matrix.tier }} tests in parallel
+        env:
+          NRG_TEST_ISOLATE_AUDIT: "1"
+          NRG_TEST_AUDIT_BASE: ".pytest_audit_${{ matrix.os }}_${{ matrix.tier }}"
         run: |
           uv pip install --system pytest pytest-cov pytest-xdist pytest-timeout pytest-asyncio
+          mkdir -p "$NRG_TEST_AUDIT_BASE"
           SECONDS=0
           pytest tests/ \
             -m "${{ matrix.tier }} and not slow and not e2e" \

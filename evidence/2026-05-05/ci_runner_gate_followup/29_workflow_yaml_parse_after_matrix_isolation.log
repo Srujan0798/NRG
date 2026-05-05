@@ -1,0 +1,5 @@
+workflow=.github/workflows/ci.yml
+top_level_keys=['True', 'env', 'jobs', 'name']
+test_python_job_present=True
+coverage_job_present=True
+yaml_parse=PASS
