@@ -110,14 +110,28 @@ Commit these with the fix. No evidence = not done.
 
 ## Task Format (what every Guru assignment gives you)
 
+Every assignment follows the hybrid format in `.claude/assignment_template.md`.
+It combines Codex 5.5 cognitive framing with NRG execution mechanics:
+
 ```
-FILES      — What to read/modify
-PROBLEM    — What's wrong
-STEPS      — Sequential actions
-SKILLS     — Which skills to activate
-EVIDENCE   — What to produce
-DONE WHEN  — Acceptance criteria
+Role          — Who the agent is for this task
+Personality   — Tone, demeanor, collaboration style
+Goal          — User-visible outcome
+Context
+  FILES       — What to read/modify
+  PROBLEM     — What's wrong
+Execution
+  STEPS       — Sequential actions
+  SKILLS      — Which skills to activate
+Constraints   — Policy, safety, evidence, side-effect limits
+Output
+  EVIDENCE    — What to produce
+  DONE WHEN   — Acceptance criteria
+Stop Rules    — When to retry, fallback, abstain, ask, or stop
 ```
+
+If you receive an assignment missing any of these sections, ask the Guru to
+provide the missing parts before starting work.
 
 ---
 

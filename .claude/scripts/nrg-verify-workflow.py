@@ -138,15 +138,28 @@ def check_assignment_format() -> int:
         ok("No .claude/assignments/ directory")
         return 0
 
-    required_sections = ["FILES", "PROBLEM", "STEPS", "SKILLS", "EVIDENCE", "DONE WHEN"]
+    # Hybrid format: Codex 5.5 framing + NRG execution mechanics
+    required_sections = [
+        "Role",
+        "Personality",
+        "Goal",
+        "FILES",
+        "PROBLEM",
+        "STEPS",
+        "SKILLS",
+        "Constraints",
+        "EVIDENCE",
+        "DONE WHEN",
+        "Stop Rules",
+    ]
     for fpath in assignments_dir.glob("*.md"):
         text = fpath.read_text(encoding="utf-8", errors="ignore")
         missing = [s for s in required_sections if s not in text]
         if missing:
-            fail(f"Assignment {fpath.name} missing sections: {', '.join(missing)}")
+            fail(f"Assignment {fpath.name} missing hybrid sections: {', '.join(missing)}")
             errors += 1
     if errors == 0:
-        ok("Assignment files follow .agents/AGENTS.md §Task Format")
+        ok("Assignment files follow hybrid format (Codex 5.5 + NRG)")
     return errors
 
 

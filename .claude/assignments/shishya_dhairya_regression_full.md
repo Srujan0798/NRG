@@ -1,6 +1,22 @@
-# SHISHYA ASSIGNMENT: Full Dhairya 17-Query Regression Run
+# ASSIGNMENT: Full Dhairya 17-Query Regression Run
 
-**FILES**
+## Role
+
+You are a QA engineer running the Dhairya SQL benchmark regression suite. Your job is to execute all 43 tests covering 17 benchmark queries against the live text-to-SQL pipeline, record pass/fail, capture generated SQL, and fix any text-to-SQL prompt/schema issues within scope.
+
+## Personality
+
+- Treat uncertainty by reading the audit report and schema, not guessing expected results.
+- Treat failures as data: capture exact SQL, error, and context before attempting fixes.
+- Treat the pipeline as the target of fixes, not the tests — tests are ground truth.
+
+## Goal
+
+A complete PASS/FAIL record for all 17 Dhairya benchmark queries with generated SQL captured and any fixable text-to-SQL issues resolved.
+
+## Context
+
+**FILES** — What to read/modify:
 - `tests/benchmarks/test_dhairya_regression.py` — 43 regression tests for 17 Dhairya benchmark queries
 - `docs/reports/SQL_AUDIT_REPORT_DHAIRYA.md` — expected results and failure patterns for all 17 queries
 - `db_struct.sql` — canonical schema the queries must target
@@ -9,7 +25,9 @@
 **PROBLEM**
 Dhairya regression tests have never been run end-to-end in a single session with live LLM inference. Each test calls the text-to-SQL pipeline which makes API calls to the LLM. They time out in normal runs. We need a complete PASS/FAIL record for all 17 queries against the live PostgreSQL database.
 
-**STEPS**
+## Execution
+
+**STEPS** — Sequential actions:
 1. Ensure stack is running: `bash scripts/run_critical_path_final.sh` (or confirm `curl http://localhost:8000/health` returns healthy)
 2. Set database URL: `export DATABASE_URL="postgresql://nrg:nrg_default_password@localhost:5432/nrg"`
 3. Run the full regression with extended timeout:
@@ -29,13 +47,22 @@ Dhairya regression tests have never been run end-to-end in a single session with
    .venv/bin/python -m pytest tests/benchmarks/test_dhairya_regression.py -v --tb=short --timeout=600 -k "q03 or q05 or q16" 2>&1 | tee evidence/2026-05-05/dhairya_regression_full/02_retry_failed.log
    ```
 
-**SKILLS**
-- `.agents/skills/test-driven-development/SKILL.md`
-- `.agents/skills/sql-queries/SKILL.md`
-- `.agents/skills/debug/SKILL.md`
-- `.claude/skills/nrg-data-analyst/SKILL.md`
+**SKILLS** — Which skills to activate:
+- `.agents/skills/test-driven-development/SKILL.md` — run regression tests systematically
+- `.agents/skills/sql-queries/SKILL.md` — write and validate correct PostgreSQL
+- `.agents/skills/debug/SKILL.md` — isolate text-to-SQL pipeline failures
+- `.claude/skills/nrg-data-analyst/SKILL.md` — understand NRG schema and query patterns
 
-**EVIDENCE**
+## Constraints
+
+- Do not modify test assertions — fix the pipeline, not the tests.
+- Must run the full suite before claiming done, even if individual queries are fixed early.
+- Never skip capturing generated SQL for failed queries.
+- If a failure requires architectural changes (new node, new model, new API) → STOP and report.
+
+## Output
+
+**EVIDENCE** — What to produce:
 `evidence/2026-05-05/dhairya_regression_full/`
 - `00_summary.md` — what you did, how many passed/failed, commit SHA
 - `01_full_run.log` — complete pytest output for all 43 tests
@@ -44,15 +71,19 @@ Dhairya regression tests have never been run end-to-end in a single session with
 - `04_sql_samples.json` — actual generated SQL for all 17 queries (pass or fail)
 - `05_blockers.md` — what remains blocked
 
-**DONE WHEN**
+**DONE WHEN** — Acceptance criteria:
 - [ ] All 43 tests in `test_dhairya_regression.py` have been executed
 - [ ] Pass/fail count is recorded for each of the 17 Dhairya queries
 - [ ] Any failed query has generated SQL + error captured in `03_failed_queries.json`
 - [ ] `00_summary.md` contains the final score (e.g., "14/17 queries pass, Q03 Q05 Q16 fail")
 - [ ] Evidence files committed
 
-**HALT RULE**
-If more than 5 queries fail, STOP. Do not attempt to fix more than 5 in one session. Report the full failure set to Guru and wait for prioritization.
+## Stop Rules
+
+- If more than 5 queries fail → STOP. Do not attempt to fix more than 5 in one session. Report the full failure set to Guru and wait for prioritization.
+- If tests time out consistently → STOP. Check stack health and report.
+- If fixing one query breaks another → STOP. Report the regression before continuing.
+- If a fix requires changing test assertions → STOP. Ask Guru for approval.
 
 **TIME EXPECTATION**
 This will take 30-45 minutes due to live LLM API calls. Do not rush. Let it run.

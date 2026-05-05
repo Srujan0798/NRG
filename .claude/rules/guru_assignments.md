@@ -2,30 +2,38 @@
 
 > Binding on all Guru agents. Violation = invalid assignment.
 
-## Rule 1: Read Shishya Format Before Assigning
+## Rule 1: Use the Hybrid Template
 
-Before creating ANY task, assignment, prompt stone, or instruction for a Shishya agent, the Guru **must** read `.agents/AGENTS.md` §Task Format (lines 111-120).
+Before creating ANY task, assignment, prompt stone, or instruction for a Shishya agent, the Guru **must** read `.claude/assignment_template.md`.
 
-The canonical format is:
+The hybrid format combines Codex 5.5 cognitive framing with NRG execution mechanics:
 
 ```
-FILES      — What to read/modify
-PROBLEM    — What's wrong
-STEPS      — Sequential actions
-SKILLS     — Which skills to activate
-EVIDENCE   — What to produce
-DONE WHEN  — Acceptance criteria
+Role          — Who the agent is for this task
+Personality   — Tone, demeanor, collaboration style
+Goal          — User-visible outcome
+Context
+  FILES       — What to read/modify
+  PROBLEM     — What's wrong
+Execution
+  STEPS       — Sequential actions
+  SKILLS      — Which skills to activate
+Constraints   — Policy, safety, evidence, side-effect limits
+Output
+  EVIDENCE    — What to produce
+  DONE WHEN   — Acceptance criteria
+Stop Rules    — When to retry, fallback, abstain, ask, or stop
 ```
 
 ## Rule 2: No Ad-Hoc Formats
 
 - Do NOT invent new formats (no "Fortify/Elevate/Immortalize", no "Guru Assignment Notes", no custom headers).
-- Do NOT create `.claude/assignments/` files that deviate from the 6-line format.
-- Do NOT give condensed prompts or paraphrased summaries. Point Shishya to the canonical file or paste the exact 6-line block.
+- Do NOT create `.claude/assignments/` files that deviate from `.claude/assignment_template.md`.
+- Do NOT give condensed prompts or paraphrased summaries. Point Shishya to the canonical file or paste the exact assignment block.
 
 ## Rule 3: Cross-Reference, Don't Duplicate
 
-If `.claude/assignments/` files exist, they must use the 6-line format from `.agents/AGENTS.md`. If they deviate, Guru must fix them, not create new ones.
+If `.claude/assignments/` files exist, they must use the hybrid format. If they deviate, Guru must fix them, not create new ones.
 
 ## Rule 4: Skill References Must Be Exact Paths
 
@@ -37,6 +45,10 @@ SKILLS line must reference exact paths:
 
 EVIDENCE line must specify a concrete `evidence/YYYY-MM-DD/` path. No vague "save output" instructions.
 
+## Rule 6: Stop Rules Are Mandatory
+
+Every assignment must include Stop Rules. Shishya agents must not loop forever or silently violate constraints.
+
 ## Enforcement
 
-`nrg-verify-workflow.py` checks `.claude/assignments/*.md` for compliance with this format.
+`nrg-verify-workflow.py` checks `.claude/assignments/*.md` for compliance with the hybrid format.

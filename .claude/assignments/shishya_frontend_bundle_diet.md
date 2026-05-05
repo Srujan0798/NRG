@@ -1,6 +1,22 @@
-# SHISHYA ASSIGNMENT: Frontend Bundle Diet (319KB → <250KB)
+# ASSIGNMENT: Frontend Bundle Diet (319KB → <250KB)
 
-**FILES**
+## Role
+
+You are a frontend performance engineer optimizing the NRG React + Vite build. Your job is to reduce the largest lazy-loaded chunk from 319KB raw to under 250KB raw without breaking tests or runtime.
+
+## Personality
+
+- Treat uncertainty by measuring before and after, never guessing.
+- Treat the build as fragile: one change at a time, verify tests pass after each.
+- Treat bundle size as a user-experience metric, not an abstract goal.
+
+## Goal
+
+Largest Vite lazy-loaded chunk raw size is under 250KB; tests and lint pass; no runtime regressions.
+
+## Context
+
+**FILES** — What to read/modify:
 - `frontend/vite.config.ts` — `splitChunks` / `manualChunks` strategy
 - `frontend/package.json` — dependency list to identify heavy packages
 - `frontend/dist/assets/` — built chunks to measure
@@ -9,7 +25,9 @@
 **PROBLEM**
 Largest Vite lazy-loaded chunk is 319KB raw. Spec target is <250KB raw. Current gzip is 87.80KB (acceptable).
 
-**STEPS**
+## Execution
+
+**STEPS** — Sequential actions:
 1. `cd frontend && npm run build | tee ../evidence/2026-05-05/bundle_diet/01_before_build.log`
 2. `ls -la dist/assets/ | grep -E "\.js$" | sort -k5 -rn | tee ../evidence/2026-05-05/bundle_diet/03_chunk_sizes.log`
 3. `npx vite-bundle-visualizer --template treemap -o ../evidence/2026-05-05/bundle_diet/02_bundle_treemap.html` (if available)
@@ -20,12 +38,21 @@ Largest Vite lazy-loaded chunk is 319KB raw. Spec target is <250KB raw. Current 
 8. `npm run test -- --watchAll=false | tee ../evidence/2026-05-05/bundle_diet/06_jest.log`
 9. `npm run lint | tee ../evidence/2026-05-05/bundle_diet/07_lint.log`
 
-**SKILLS**
-- `.claude/skills/frontend-react-best-practices/SKILL.md`
-- `.agents/skills/react-composition-patterns/SKILL.md`
-- `.claude/skills/performance/SKILL.md`
+**SKILLS** — Which skills to activate:
+- `.claude/skills/frontend-react-best-practices/SKILL.md` — apply lazy loading and code splitting
+- `.agents/skills/react-composition-patterns/SKILL.md` — use React.lazy + Suspense correctly
+- `.claude/skills/performance/SKILL.md` — measure and optimize bundle size
 
-**EVIDENCE**
+## Constraints
+
+- Do not remove any feature — only change how it is loaded or split.
+- Must keep entry chunk under 5KB raw.
+- Never skip tests or lint after a build change.
+- If a dependency is the sole cause of bloat and cannot be split, document it in blockers.
+
+## Output
+
+**EVIDENCE** — What to produce:
 `evidence/2026-05-05/bundle_diet/`
 - `00_summary.md` — what changed, before/after sizes, commit SHA
 - `03_chunk_sizes.log` — before chunk sizes
@@ -34,7 +61,7 @@ Largest Vite lazy-loaded chunk is 319KB raw. Spec target is <250KB raw. Current 
 - `07_lint.log` — lint output
 - `08_blockers.md` — what remains blocked
 
-**DONE WHEN**
+**DONE WHEN** — Acceptance criteria:
 - [ ] Largest lazy-loaded chunk raw size < 250KB
 - [ ] Entry chunk stays < 5KB raw
 - [ ] `npm run test -- --watchAll=false` passes (or same count as before)
@@ -42,5 +69,8 @@ Largest Vite lazy-loaded chunk is 319KB raw. Spec target is <250KB raw. Current 
 - [ ] No runtime console errors on `npm run dev` home page
 - [ ] Evidence files committed
 
-**HALT RULE**
-If bundle size does not drop after 3 attempts, STOP. Escalate to Guru with treemap and chunk analysis.
+## Stop Rules
+
+- If bundle size does not drop after 3 attempts → STOP. Escalate to Guru with treemap and chunk analysis.
+- If tests fail after a build change → STOP. Revert the change and report the error.
+- If removing a dependency would require architectural changes → STOP. Document in blockers and ask Guru.
