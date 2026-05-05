@@ -518,6 +518,7 @@ def seed_fdp_details(conn, rows: int = 10):
     data = []
     for i in range(rows):
         data.append({
+            "id": i + 1,
             "financial_year": random.choice(FINANCIAL_YEARS),
             "title_of_course": f"FDP Course {i+1}",
             "fdp_sponsered": random.choice(GOV_ORGS),
@@ -531,9 +532,9 @@ def seed_fdp_details(conn, rows: int = 10):
     for d in data:
         conn.execute(text("""
             INSERT INTO fdp_details
-            (financial_year, title_of_course, fdp_sponsered, certificate_offering_department,
+            (id, financial_year, title_of_course, fdp_sponsered, certificate_offering_department,
              from_date, to_date, duration_days, resource_person_name, no_of_participants)
-            VALUES (:financial_year, :title_of_course, :fdp_sponsered, :certificate_offering_department,
+            VALUES (:id, :financial_year, :title_of_course, :fdp_sponsered, :certificate_offering_department,
                     :from_date, :to_date, :duration_days, :resource_person_name, :no_of_participants)
         """), d)
 
@@ -709,6 +710,7 @@ def seed_startup_recognition(conn, rows: int = 10):
     data = []
     for i in range(rows):
         data.append({
+            "id": i + 1,
             "startup_name": f"Recognized Startup {i+1}",
             "year_of_recognition": random.choice(FINANCIAL_YEARS),
             "registration_no": f"REG{1000+i}",
@@ -719,8 +721,8 @@ def seed_startup_recognition(conn, rows: int = 10):
     for d in data:
         conn.execute(text("""
             INSERT INTO startup_recognition
-            (startup_name, year_of_recognition, registration_no, institute, dpiit_no, as_on_year)
-            VALUES (:startup_name, :year_of_recognition, :registration_no, :institute, :dpiit_no, :as_on_year)
+            (id, startup_name, year_of_recognition, registration_no, institute, dpiit_no, as_on_year)
+            VALUES (:id, :startup_name, :year_of_recognition, :registration_no, :institute, :dpiit_no, :as_on_year)
         """), d)
 
 
@@ -749,6 +751,7 @@ def seed_fdi_investment(conn, rows: int = 10):
     data = []
     for i in range(rows):
         data.append({
+            "id": i + 1,
             "startup_name": f"FDI Startup {i+1}",
             "investment_received": random_bigint(1000000, 20000000),
             "year_of_receiving": random.choice(FINANCIAL_YEARS),
@@ -759,8 +762,8 @@ def seed_fdi_investment(conn, rows: int = 10):
     for d in data:
         conn.execute(text("""
             INSERT INTO fdi_investment
-            (startup_name, investment_received, year_of_receiving, institute, organisation_name, city)
-            VALUES (:startup_name, :investment_received, :year_of_receiving, :institute, :organisation_name, :city)
+            (id, startup_name, investment_received, year_of_receiving, institute, organisation_name, city)
+            VALUES (:id, :startup_name, :investment_received, :year_of_receiving, :institute, :organisation_name, :city)
         """), d)
 
 
@@ -769,6 +772,7 @@ def seed_founders_of_fortune_500_companies(conn, rows: int = 10):
     data = []
     for i in range(rows):
         data.append({
+            "id": i + 1,
             "name_of_alumni": f"Alumni Founder {i+1}",
             "program_passed_from": random.choice(PROGRAM_TYPES),
             "year_of_passing": f"20{random.randint(10, 24)}",
@@ -781,9 +785,9 @@ def seed_founders_of_fortune_500_companies(conn, rows: int = 10):
     for d in data:
         conn.execute(text("""
             INSERT INTO founders_of_fortune_500_companies
-            (name_of_alumni, program_passed_from, year_of_passing, comapny_name,
+            (id, name_of_alumni, program_passed_from, year_of_passing, comapny_name,
              designation, linkedin_url, passout_year, company_url)
-            VALUES (:name_of_alumni, :program_passed_from, :year_of_passing, :comapny_name,
+            VALUES (:id, :name_of_alumni, :program_passed_from, :year_of_passing, :comapny_name,
                     :designation, :linkedin_url, :passout_year, :company_url)
         """), d)
 

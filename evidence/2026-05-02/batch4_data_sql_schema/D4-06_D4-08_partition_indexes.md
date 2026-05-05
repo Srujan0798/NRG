@@ -11,10 +11,10 @@
 
 | Query | Status | Elapsed ms | Result |
 |---|---|---:|---:|
-| `researchers_state` | PASS | 0.51 | 0 |
-| `researchers_area` | PASS | 12.923 | 0 |
-| `publications_year` | PASS | 1.44 | 10000 |
-| `audit_events_recent` | PASS | 0.878 | 807 |
+| `researchers_state` | PASS | 2.317 | 0 |
+| `researchers_area` | PASS | 56.092 | 0 |
+| `publications_year` | PASS | 4.687 | 10000 |
+| `audit_events_recent` | PASS | 6.021 | 807 |
 
 ## Index Counts
 

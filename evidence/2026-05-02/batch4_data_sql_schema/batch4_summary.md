@@ -1,6 +1,6 @@
 # Batch 4 Data / SQL / Schema Summary
 
-- Generated at: 2026-05-04T06:15:59.385119+00:00
+- Generated at: 2026-05-05T10:45:45.558875+00:00
 - Database: `postgresql://nrg:***@localhost:5432/nrg`
 - D4-01 live tables: 80
 - D4-02 schema drift: False

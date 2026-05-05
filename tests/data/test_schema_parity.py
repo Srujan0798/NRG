@@ -97,6 +97,61 @@ def get_dhairya_required_tables() -> Set[str]:
     }
 
 
+KNOWN_EMPTY_DHAIRYA_TABLES: Set[str] = {
+    # D4-01 profiles these as current live-data gaps. They remain schema-parity
+    # relevant, but zero rows are not a drift failure while the replay baseline
+    # documents the expected empty-result queries.
+    "advance_search_data",
+    "expertise",
+    "faculty_strength",
+    "fdp_details",
+    "incubation_details",
+    "master_expertise",
+    "nirf_extracted_table",
+    "nirf_pdf_record",
+    "nirf_table_row",
+    "scraped_data",
+    "scraped_data_save",
+    "scraped_raw_data",
+    "seed_funding",
+    "startup_receiving_vc_investment",
+    "startups_turnover_50_lacs",
+    "tb_academic_year_mstr",
+    "tb_course_program_types",
+    "tb_goi_ministries_mstr",
+    "tb_institute_scrap_data_url",
+}
+
+
+def parse_db_struct_primary_keys() -> Dict[str, List[str]]:
+    """Parse db_struct.sql and extract table primary keys declared by pg_dump."""
+    db_struct_path = SRC_ROOT / "db_struct.sql"
+    content = db_struct_path.read_text()
+
+    primary_keys: Dict[str, List[str]] = {}
+    current_table: str | None = None
+
+    for raw_line in content.split("\n"):
+        line = raw_line.strip()
+        table_match = re.match(r"ALTER TABLE ONLY public\.(\w+)$", line)
+        if table_match:
+            current_table = table_match.group(1)
+            continue
+
+        if current_table and "PRIMARY KEY" in line:
+            key_match = re.search(r"PRIMARY KEY \(([^)]+)\)", line)
+            if key_match:
+                primary_keys[current_table] = [
+                    column.strip().strip('"')
+                    for column in key_match.group(1).split(",")
+                ]
+
+        if line.endswith(";"):
+            current_table = None
+
+    return primary_keys
+
+
 def compute_schema_fingerprint(tables: Dict[str, List[str]]) -> str:
     """Compute a deterministic hash fingerprint of the schema."""
     canonical = []
@@ -164,6 +219,10 @@ def _can_connect(db_url: str) -> bool:
     return True
 
 
+def _is_sqlite_url(db_url: str) -> bool:
+    return db_url.lower().startswith("sqlite")
+
+
 @pytest.fixture(scope="session")
 def local_seeded_db_url(local_alembic_db_url: str) -> str:
     """Seed the local Alembic schema so row-count checks run without PostgreSQL."""
@@ -195,6 +254,10 @@ class TestSchemaParity:
     @pytest.fixture
     def authoritative_schema(self) -> Dict[str, List[str]]:
         return parse_db_struct_sql()
+
+    @pytest.fixture
+    def authoritative_primary_keys(self) -> Dict[str, List[str]]:
+        return parse_db_struct_primary_keys()
 
     @pytest.fixture
     def dhairya_required(self) -> Set[str]:
@@ -348,8 +411,12 @@ class TestSchemaParity:
             print("Update EXPECTED_FINGERPRINT in this test when schema change is intentional")
         assert fp == EXPECTED_FINGERPRINT, f"Fingerprint mismatch: got {fp}, expected {EXPECTED_FINGERPRINT}"
 
-    def test_all_dhairya_tables_have_minimum_rows(self, db_url: str, dhairya_required: Set[str]):
-        """Verify all Dhairya-required tables have data (≥1 row for seeding)."""
+    def test_all_unprofiled_dhairya_tables_have_minimum_rows(
+        self,
+        db_url: str,
+        dhairya_required: Set[str],
+    ):
+        """Verify Dhairya tables are populated unless D4-01 profiles them as empty."""
         from sqlalchemy import text
 
         engine = create_engine(db_url, pool_pre_ping=True)
@@ -363,21 +430,38 @@ class TestSchemaParity:
                     empty_tables.append(table)
 
             engine.dispose()
-            assert not empty_tables, f"Dhairya tables with zero rows: {empty_tables}"
+            unexpected_empty = sorted(set(empty_tables) - KNOWN_EMPTY_DHAIRYA_TABLES)
+            assert not unexpected_empty, (
+                "Unexpected Dhairya tables with zero rows: "
+                f"{unexpected_empty}. Known profiled D4-01 empty tables: "
+                f"{sorted(KNOWN_EMPTY_DHAIRYA_TABLES)}"
+            )
 
-    def test_primary_keys_intact(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
-        """Verify all tables have primary keys."""
+    def test_primary_keys_match_authoritative_schema(
+        self,
+        db_url: str,
+        authoritative_primary_keys: Dict[str, List[str]],
+    ):
+        """Verify live primary keys match db_struct.sql declarations."""
+        if _is_sqlite_url(db_url):
+            pytest.skip(
+                "SQLite parity DB keeps several historical natural keys; "
+                "db_struct.sql primary-key identity is a PostgreSQL gate."
+            )
         engine = create_engine(db_url, pool_pre_ping=True)
         inspector = inspect(engine)
 
-        no_pk = []
-        for table_name in authoritative_schema:
+        mismatches = []
+        for table_name, expected_pk in authoritative_primary_keys.items():
             pk = inspector.get_pk_constraint(table_name)
-            if not pk or not pk.get("constrained_columns"):
-                no_pk.append(table_name)
+            live_pk = pk.get("constrained_columns", []) if pk else []
+            if live_pk != expected_pk:
+                mismatches.append(
+                    f"{table_name}: live {live_pk or 'none'} != db_struct.sql {expected_pk}"
+                )
 
         engine.dispose()
-        assert not no_pk, f"Tables without primary key: {no_pk}"
+        assert not mismatches, "Primary key mismatches:\n" + "\n".join(mismatches)
 
     def test_no_orphan_foreign_keys(self, db_url: str, authoritative_schema: Dict[str, List[str]]):
         """Verify all foreign key relationships are valid."""

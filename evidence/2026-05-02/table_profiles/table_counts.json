@@ -96,14 +96,14 @@
     {
       "in_db_struct": true,
       "reference_frequency": 89,
-      "rows": 1000,
-      "table": "sanctioned_intake"
+      "rows": 0,
+      "table": "advance_search_data"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 88,
-      "rows": 0,
-      "table": "advance_search_data"
+      "reference_frequency": 89,
+      "rows": 1000,
+      "table": "sanctioned_intake"
     },
     {
       "in_db_struct": true,
@@ -143,13 +143,13 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 68,
+      "reference_frequency": 69,
       "rows": 0,
       "table": "incubation_details"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 67,
+      "reference_frequency": 68,
       "rows": 0,
       "table": "expertise"
     },
@@ -161,21 +161,21 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 57,
+      "reference_frequency": 58,
       "rows": 0,
       "table": "seed_funding"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 50,
+      "rows": 0,
+      "table": "scraped_data"
     },
     {
       "in_db_struct": false,
       "reference_frequency": 49,
       "rows": 807,
       "table": "audit_events"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 49,
-      "rows": 0,
-      "table": "scraped_data"
     },
     {
       "in_db_struct": false,
@@ -185,15 +185,21 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_data_save"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_raw_data"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 43,
+      "rows": 0,
+      "table": "fdi_investment"
     },
     {
       "in_db_struct": true,
@@ -217,12 +223,6 @@
       "in_db_struct": true,
       "reference_frequency": 42,
       "rows": 0,
-      "table": "fdi_investment"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 41,
-      "rows": 0,
       "table": "faculty_strength"
     },
     {
@@ -233,7 +233,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 36,
+      "reference_frequency": 37,
       "rows": 0,
       "table": "nirf_extracted_table"
     },
@@ -251,7 +251,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 35,
+      "reference_frequency": 36,
       "rows": 0,
       "table": "startups_turnover_50_lacs"
     },
@@ -269,15 +269,21 @@
     },
     {
       "in_db_struct": true,
+      "reference_frequency": 32,
+      "rows": 1000,
+      "table": "startup_recognition"
+    },
+    {
+      "in_db_struct": true,
       "reference_frequency": 31,
       "rows": 1000,
       "table": "research_consultancy_details_sponsered"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 31,
-      "rows": 1000,
-      "table": "startup_recognition"
+      "reference_frequency": 29,
+      "rows": 0,
+      "table": "nirf_pdf_record"
     },
     {
       "in_db_struct": true,
@@ -287,33 +293,33 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 28,
-      "rows": 0,
-      "table": "nirf_pdf_record"
-    },
-    {
-      "in_db_struct": true,
       "reference_frequency": 26,
       "rows": 1000,
       "table": "faculty_details"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 25,
-      "rows": 0,
-      "table": "tb_institute_scrap_data_url"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 26,
       "rows": 0,
       "table": "fdp_details"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 26,
+      "rows": 0,
+      "table": "tb_institute_scrap_data_url"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 25,
       "rows": 0,
       "table": "nirf_table_row"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 25,
+      "rows": 0,
+      "table": "tb_goi_ministries_mstr"
     },
     {
       "in_db_struct": true,
@@ -325,13 +331,19 @@
       "in_db_struct": true,
       "reference_frequency": 24,
       "rows": 0,
-      "table": "tb_goi_ministries_mstr"
+      "table": "tb_academic_year_mstr"
     },
     {
       "in_db_struct": true,
       "reference_frequency": 23,
       "rows": 0,
-      "table": "tb_academic_year_mstr"
+      "table": "startup_receiving_vc_investment"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 23,
+      "rows": 0,
+      "table": "tb_course_program_types"
     },
     {
       "in_db_struct": true,
@@ -343,25 +355,13 @@
       "in_db_struct": true,
       "reference_frequency": 22,
       "rows": 0,
-      "table": "tb_course_program_types"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 21,
-      "rows": 0,
       "table": "founders_of_fortune_500_companies"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "master_expertise"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 21,
-      "rows": 0,
-      "table": "startup_receiving_vc_investment"
     },
     {
       "in_db_struct": true,
@@ -421,6 +421,12 @@
       "in_db_struct": true,
       "reference_frequency": 14,
       "rows": 0,
+      "table": "startup_recognition_old"
+    },
+    {
+      "in_db_struct": true,
+      "reference_frequency": 14,
+      "rows": 0,
       "table": "user_registration_old"
     },
     {
@@ -434,12 +440,6 @@
       "reference_frequency": 13,
       "rows": 0,
       "table": "django_admin_log"
-    },
-    {
-      "in_db_struct": true,
-      "reference_frequency": 13,
-      "rows": 0,
-      "table": "startup_recognition_old"
     },
     {
       "in_db_struct": true,
@@ -505,7 +505,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 88,
+      "reference_frequency": 89,
       "rows": 0,
       "table": "advance_search_data"
     },
@@ -643,7 +643,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 67,
+      "reference_frequency": 68,
       "rows": 0,
       "table": "expertise"
     },
@@ -655,19 +655,19 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 41,
+      "reference_frequency": 42,
       "rows": 0,
       "table": "faculty_strength"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 42,
+      "reference_frequency": 43,
       "rows": 0,
       "table": "fdi_investment"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 26,
       "rows": 0,
       "table": "fdp_details"
     },
@@ -685,7 +685,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "founders_of_fortune_500_companies"
     },
@@ -703,7 +703,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 68,
+      "reference_frequency": 69,
       "rows": 0,
       "table": "incubation_details"
     },
@@ -757,25 +757,25 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "master_expertise"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 36,
+      "reference_frequency": 37,
       "rows": 0,
       "table": "nirf_extracted_table"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 28,
+      "reference_frequency": 29,
       "rows": 0,
       "table": "nirf_pdf_record"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 25,
       "rows": 0,
       "table": "nirf_table_row"
     },
@@ -877,67 +877,67 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 49,
+      "reference_frequency": 50,
       "rows": 0,
       "table": "scraped_data"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_data_save"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_raw_data"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 57,
+      "reference_frequency": 58,
       "rows": 0,
       "table": "seed_funding"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 23,
       "rows": 0,
       "table": "startup_receiving_vc_investment"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 31,
+      "reference_frequency": 32,
       "rows": 1000,
       "table": "startup_recognition"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 13,
+      "reference_frequency": 14,
       "rows": 0,
       "table": "startup_recognition_old"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 35,
+      "reference_frequency": 36,
       "rows": 0,
       "table": "startups_turnover_50_lacs"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 23,
+      "reference_frequency": 24,
       "rows": 0,
       "table": "tb_academic_year_mstr"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 22,
+      "reference_frequency": 23,
       "rows": 0,
       "table": "tb_course_program_types"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 25,
       "rows": 0,
       "table": "tb_goi_ministries_mstr"
     },
@@ -949,7 +949,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 25,
+      "reference_frequency": 26,
       "rows": 0,
       "table": "tb_institute_scrap_data_url"
     },
@@ -976,7 +976,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 88,
+      "reference_frequency": 89,
       "rows": 0,
       "table": "advance_search_data"
     },
@@ -1078,31 +1078,31 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 67,
+      "reference_frequency": 68,
       "rows": 0,
       "table": "expertise"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 41,
+      "reference_frequency": 42,
       "rows": 0,
       "table": "faculty_strength"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 42,
+      "reference_frequency": 43,
       "rows": 0,
       "table": "fdi_investment"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 26,
       "rows": 0,
       "table": "fdp_details"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "founders_of_fortune_500_companies"
     },
@@ -1120,7 +1120,7 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 68,
+      "reference_frequency": 69,
       "rows": 0,
       "table": "incubation_details"
     },
@@ -1156,25 +1156,25 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 22,
       "rows": 0,
       "table": "master_expertise"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 36,
+      "reference_frequency": 37,
       "rows": 0,
       "table": "nirf_extracted_table"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 28,
+      "reference_frequency": 29,
       "rows": 0,
       "table": "nirf_pdf_record"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 25,
       "rows": 0,
       "table": "nirf_table_row"
     },
@@ -1228,67 +1228,67 @@
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 49,
+      "reference_frequency": 50,
       "rows": 0,
       "table": "scraped_data"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_data_save"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 46,
+      "reference_frequency": 47,
       "rows": 0,
       "table": "scraped_raw_data"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 57,
+      "reference_frequency": 58,
       "rows": 0,
       "table": "seed_funding"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 21,
+      "reference_frequency": 23,
       "rows": 0,
       "table": "startup_receiving_vc_investment"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 13,
+      "reference_frequency": 14,
       "rows": 0,
       "table": "startup_recognition_old"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 35,
+      "reference_frequency": 36,
       "rows": 0,
       "table": "startups_turnover_50_lacs"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 23,
+      "reference_frequency": 24,
       "rows": 0,
       "table": "tb_academic_year_mstr"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 22,
+      "reference_frequency": 23,
       "rows": 0,
       "table": "tb_course_program_types"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 24,
+      "reference_frequency": 25,
       "rows": 0,
       "table": "tb_goi_ministries_mstr"
     },
     {
       "in_db_struct": true,
-      "reference_frequency": 25,
+      "reference_frequency": 26,
       "rows": 0,
       "table": "tb_institute_scrap_data_url"
     },

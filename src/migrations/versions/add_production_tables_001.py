@@ -478,17 +478,19 @@ def upgrade() -> None:
 
     op.create_table(
         'fdi_investment',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('startup_name', sa.Text(), nullable=True),
         sa.Column('investment_received', sa.BigInteger(), nullable=True),
         sa.Column('year_of_receiving', sa.Text(), nullable=True),
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('organisation_name', sa.Text(), nullable=True),
         sa.Column('city', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('startup_name')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(
         'fdp_details',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('financial_year', sa.Text(), nullable=True),
         sa.Column('title_of_course', sa.Text(), nullable=True),
         sa.Column('fdp_sponsered', sa.Text(), nullable=True),
@@ -498,7 +500,7 @@ def upgrade() -> None:
         sa.Column('duration_days', sa.Integer(), nullable=True),
         sa.Column('resource_person_name', sa.Text(), nullable=True),
         sa.Column('no_of_participants', sa.Integer(), nullable=True),
-        sa.PrimaryKeyConstraint('financial_year')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(
@@ -529,6 +531,7 @@ def upgrade() -> None:
 
     op.create_table(
         'founders_of_fortune_500_companies',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('name_of_alumni', sa.Text(), nullable=True),
         sa.Column('program_passed_from', sa.Text(), nullable=True),
         sa.Column('year_of_passing', sa.Text(), nullable=True),
@@ -537,7 +540,7 @@ def upgrade() -> None:
         sa.Column('linkedin_url', sa.Text(), nullable=True),
         sa.Column('passout_year', sa.Text(), nullable=True),
         sa.Column('company_url', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('name_of_alumni')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(
@@ -923,6 +926,7 @@ def upgrade() -> None:
 
     op.create_table(
         'startup_receiving_vc_investment',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('startup_name', sa.Text(), nullable=True),
         sa.Column('amount_received', sa.BigInteger(), nullable=True),
         sa.Column('organisation_name', sa.Text(), nullable=True),
@@ -930,29 +934,31 @@ def upgrade() -> None:
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('city', sa.Text(), nullable=True),
         sa.Column('as_on_year', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('startup_name')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(
         'startup_recognition',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('startup_name', sa.Text(), nullable=True),
         sa.Column('year_of_recognition', sa.Text(), nullable=True),
         sa.Column('registration_no', sa.Text(), nullable=True),
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('dpiit_no', sa.Text(), nullable=True),
         sa.Column('as_on_year', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('startup_name')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(
         'startup_recognition_old',
+        sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('startup_name', sa.Text(), nullable=True),
         sa.Column('year_of_recognition', sa.Text(), nullable=True),
         sa.Column('registration_no', sa.Text(), nullable=True),
         sa.Column('institute', sa.Text(), nullable=True),
         sa.Column('dpiit_no', sa.Text(), nullable=True),
         sa.Column('as_on_year', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('startup_name')
+        sa.PrimaryKeyConstraint('id')
     )
 
     op.create_table(

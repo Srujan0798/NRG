@@ -1,0 +1,10 @@
+
+> nrg-frontend@1.0.0 test
+> jest --runInBand
+
+
+Test Suites: 32 passed, 32 total
+Tests:       107 passed, 107 total
+Snapshots:   0 total
+Time:        28.952 s
+Ran all test suites.

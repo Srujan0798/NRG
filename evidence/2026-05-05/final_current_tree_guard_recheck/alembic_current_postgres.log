@@ -1,0 +1,3 @@
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+d4_primary_key_alignment_005 (head)

@@ -3,7 +3,7 @@
   "passed": 17,
   "results": [
     {
-      "elapsed_ms": 16.439,
+      "elapsed_ms": 41.852,
       "id": "1",
       "query_timeout_ms": 5000,
       "question": "Which institute offers the most intensive innovation curriculum in FY 2022-23 based on total credits, not just course count?",
@@ -65,7 +65,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 3.62,
+      "elapsed_ms": 10.412,
       "id": "2",
       "query_timeout_ms": 5000,
       "question": "Show me the ratio of PhD level innovation courses to Undergraduate ones for IIT Bombay.",
@@ -85,7 +85,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 29.422,
+      "elapsed_ms": 62.971,
       "id": "3",
       "query_timeout_ms": 5000,
       "question": "Flag any institute where grant funding has dropped by more than 50% year-over-year between 2020-2021 to 2021-22.",
@@ -96,7 +96,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 9.909,
+      "elapsed_ms": 37.207,
       "id": "4",
       "query_timeout_ms": 5000,
       "question": "Who are the top 5 unique funding agencies providing grants to us?",
@@ -133,7 +133,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 3.661,
+      "elapsed_ms": 19.09,
       "id": "5",
       "query_timeout_ms": 5000,
       "question": "Identify bottlenecks: What percentage of IIT Madras innovations are stuck at 'Lab Validation' (Level 4)?",
@@ -190,7 +190,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 3.33,
+      "elapsed_ms": 21.386,
       "id": "6",
       "query_timeout_ms": 5000,
       "question": "List all technologies that are 'Market Ready' (TRL 9) for commercialization in IIT Madras.",
@@ -282,7 +282,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 71.51,
+      "elapsed_ms": 246.459,
       "id": "7",
       "query_timeout_ms": 5000,
       "question": "Calculate the 'Cost of Innovation': How much government grant money do we spend for every 1 Patent granted?",
@@ -354,7 +354,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 5.677,
+      "elapsed_ms": 27.304,
       "id": "8",
       "query_timeout_ms": 5000,
       "question": "Show me all PG innovation courses at IIT Madras for the last 3 years starting from FY 2021-22.",
@@ -466,7 +466,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 3.612,
+      "elapsed_ms": 18.087,
       "id": "9",
       "query_timeout_ms": 5000,
       "question": "Which institute has the most PhD courses?",
@@ -482,7 +482,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 2.213,
+      "elapsed_ms": 12.702,
       "id": "10",
       "query_timeout_ms": 5000,
       "question": "How does that compare to their UG numbers? *(Contextual Follow-up)*",
@@ -506,7 +506,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 2.129,
+      "elapsed_ms": 10.26,
       "id": "11",
       "query_timeout_ms": 5000,
       "question": "Identify growth trends: Calculate Year-Over-Year growth for PG courses in IIT Madras.",
@@ -578,7 +578,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 2.586,
+      "elapsed_ms": 9.517,
       "id": "12",
       "query_timeout_ms": 5000,
       "question": "Detect Strategy Shift: Institute stops UG but spikes in PhD in IIT Madras.",
@@ -615,7 +615,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 2.756,
+      "elapsed_ms": 9.061,
       "id": "13",
       "query_timeout_ms": 5000,
       "question": "Correlation: Innovation Courses vs. Startups Incubated (Cross-Module).",
@@ -626,7 +626,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 24.161,
+      "elapsed_ms": 88.79,
       "id": "14",
       "query_timeout_ms": 5000,
       "question": "Gap Analysis: High Capital Expenses but Low Innovation Courses in FY 2023-24.",
@@ -648,7 +648,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 5.451,
+      "elapsed_ms": 18.09,
       "id": "15",
       "query_timeout_ms": 5000,
       "question": "Rising Stars: Institutes growing funding while the average declines.",
@@ -659,7 +659,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 1.894,
+      "elapsed_ms": 11.558,
       "id": "16",
       "query_timeout_ms": 5000,
       "question": "Utilization Audit: High Grants vs Low Expenditure.",
@@ -670,7 +670,7 @@
       "status": "PASS"
     },
     {
-      "elapsed_ms": 8.51,
+      "elapsed_ms": 40.065,
       "id": "17",
       "query_timeout_ms": 5000,
       "question": "Pipeline Progression: Are we moving from Low TRL to High TRL?",

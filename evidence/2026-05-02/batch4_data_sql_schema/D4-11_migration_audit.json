@@ -1,8 +1,8 @@
 {
   "heads": [
-    "d4_partition_audit_events_004"
+    "d4_primary_key_alignment_005"
   ],
-  "migration_count": 14,
+  "migration_count": 15,
   "migrations": [
     {
       "down_revision": null,
@@ -71,6 +71,12 @@
       "upgrade_risk_markers": []
     },
     {
+      "down_revision": "d4_partition_audit_events_004",
+      "file": "src/migrations/versions/d4_primary_key_alignment_005.py",
+      "revision": "d4_primary_key_alignment_005",
+      "upgrade_risk_markers": []
+    },
+    {
       "down_revision": "llm_cost_log_001",
       "file": "src/migrations/versions/lb6_indexes_rls_001.py",
       "revision": "lb6_indexes_rls_001",
@@ -92,9 +98,9 @@
   "risky_upgrade_count": 0,
   "summary": {
     "heads": [
-      "d4_partition_audit_events_004"
+      "d4_primary_key_alignment_005"
     ],
-    "migration_count": 14,
+    "migration_count": 15,
     "risky_upgrade_count": 0,
     "single_head": true
   }

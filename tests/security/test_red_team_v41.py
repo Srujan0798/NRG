@@ -46,17 +46,22 @@ def get_token(role: str = "researcher") -> str:
         )
     except requests.RequestException as exc:
         _skip_or_raise_live_api_unavailable(exc)
+        raise AssertionError("live API exception handler returned unexpectedly")
     resp.raise_for_status()
     return resp.json()["access_token"]
 
 
 def query(q: str, token: str, role: str = "researcher") -> requests.Response:
-    return requests.post(
-        f"{BASE_URL}/query",
-        json={"query": q},
-        headers={"Authorization": f"Bearer {token}"},
-        timeout=TIMEOUT,
-    )
+    try:
+        return requests.post(
+            f"{BASE_URL}/query",
+            json={"query": q},
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        _skip_or_raise_live_api_unavailable(exc)
+        raise AssertionError("live API exception handler returned unexpectedly")
 
 
 def assert_rejected_or_blocked_envelope(resp: requests.Response, message: str) -> None:
