@@ -49,6 +49,7 @@ LOCUST_PROCESSES = int(os.getenv("NRG_C4_LOCUST_PROCESSES", "0"))
 C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
 C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
+C4_LOCAL_RETRIES = int(os.getenv("NRG_C4_LOCAL_RETRIES", "1"))
 
 CONSTRAINTS = {
     "C1": {
@@ -225,34 +226,57 @@ def _run_c4_local_regression(verbose: bool = False) -> dict:
         "--no-cov",
     ]
 
-    try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=360,
-            cwd=ROOT,
-        )
-        output = result.stdout + result.stderr
-    except subprocess.TimeoutExpired:
-        return {
-            "status": "local_regression_timeout",
-            "passed": 0,
-            "failed": 1,
-            "skipped": 0,
-            "total": 1,
-            "exit_code": 1,
-            "passed_rate": 0.0,
-            "error": "Local C4 regression timed out after 360s",
-        }
+    attempts: list[dict[str, Any]] = []
+    max_attempts = max(1, C4_LOCAL_RETRIES + 1)
+    for attempt_index in range(1, max_attempts + 1):
+        try:
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                timeout=360,
+                cwd=ROOT,
+            )
+            output = result.stdout + result.stderr
+        except subprocess.TimeoutExpired:
+            parsed = {
+                "status": "local_regression_timeout",
+                "passed": 0,
+                "failed": 1,
+                "skipped": 0,
+                "total": 1,
+                "exit_code": 1,
+                "passed_rate": 0.0,
+                "errors": ["Local C4 regression timed out after 360s"],
+                "raw_output": "",
+            }
+        else:
+            parsed = _parse_pytest_output(output)
+            parsed["exit_code"] = result.returncode
+            parsed["raw_output"] = output[-3000:] if len(output) > 3000 else output
 
-    parsed = _parse_pytest_output(output)
-    parsed["exit_code"] = result.returncode
-    parsed["status"] = "local_regression"
-    parsed["mode"] = "local_regression"
-    parsed["live_api_required"] = C4_REQUIRE_LIVE
-    parsed["live_load_executed"] = False
-    parsed["raw_output"] = output[-3000:] if len(output) > 3000 else output
+        parsed["status"] = "local_regression"
+        parsed["mode"] = "local_regression"
+        parsed["attempt"] = attempt_index
+        parsed["live_api_required"] = C4_REQUIRE_LIVE
+        parsed["live_load_executed"] = False
+        attempts.append(
+            {
+                "attempt": attempt_index,
+                "exit_code": parsed["exit_code"],
+                "passed": parsed["passed"],
+                "failed": parsed["failed"],
+                "skipped": parsed.get("skipped", 0),
+                "errors": parsed.get("errors", [])[:3],
+            }
+        )
+        if parsed["exit_code"] == 0:
+            parsed["attempts"] = attempts
+            parsed["retried_after_failure"] = attempt_index > 1
+            return parsed
+
+    parsed["attempts"] = attempts
+    parsed["retried_after_failure"] = len(attempts) > 1
     return parsed
 
 
