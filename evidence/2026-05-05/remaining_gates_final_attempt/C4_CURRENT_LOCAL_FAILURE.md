@@ -15,11 +15,21 @@ constraint.
 - Failure rate: 100% locust-reported failures, with HTTP 0 errors
 - Total samples: 13888
 
-The strict local SLO regression command also failed:
+The strict local SLO regression command now passes after fixture isolation:
 
-- Command: `.venv/bin/python -m pytest tests/performance/test_slo_compliance.py -m 'slow or not slow' -q --tb=short --no-cov`
-- Result: 7 passed, 2 failed, 3 skipped
-- Failing checks: P95 343ms >300ms, P99 2007ms >500ms
+- Command: `env NRG_SKIP_C4_READ_MODEL_PREWARM=1 .venv/bin/python -m pytest -o addopts='' tests/performance/test_slo_compliance.py -m 'slow or not slow' -q --tb=short --no-cov`
+- Result: 9 passed, 3 skipped
+- Evidence:
+  `evidence/2026-05-05/c4_ci_closure/36_slo_full_after_slo_fixture_isolation.log`
+
+Earlier May 5 strict SLO reruns failed P50/P95/P99 and one full-order
+`/health` response before fixture isolation. Historical failure evidence:
+`evidence/2026-05-05/c4_ci_closure/33_slo_full_after_health_dependency_mocks.log`.
+
+A focused P99 probe passed after the TestClient fixture-order fix:
+`evidence/2026-05-05/c4_ci_closure/28_slo_p99_focus_after_fixture_order.log`.
+The local SLO regression pass does not override the current Quality Bar
+scorecard failure above.
 
 ## Runtime State After Failure
 
