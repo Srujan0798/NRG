@@ -54,6 +54,7 @@ frontend/API URLs and target health evidence.
 git status --short
 git fetch nrg
 git rev-list --left-right --count main...nrg/main
+.venv/bin/python .claude/scripts/nrg-verify-workflow.py
 ```
 
 If `main` and `nrg/main` have diverged, do not run a normal push as a closure
@@ -108,7 +109,7 @@ exports.
 
 | Problem | Fix |
 |---|---|
-| Python import errors after clone | Run `bash scripts/bootstrap.sh` |
+| Python import errors after clone | Run `bash scripts/nrg-remote-setup.sh` |
 | Frontend packages missing | Run `cd frontend && npm ci` |
 | Qdrant not starting | Check Docker Desktop or Colima, then rerun compose |
 | Port 8000 already in use | Stop the existing API process before `scripts/deploy.sh` |
