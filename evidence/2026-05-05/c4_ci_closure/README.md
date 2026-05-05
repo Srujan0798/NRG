@@ -9,8 +9,14 @@ Status: HOSTED QUALITY-BAR PASS; downstream deploy gates still tracked separatel
   scorecard artifact from commit `dc3b92e75510d4372ec027340629d934ddb7df39`.
 - `39_hosted_quality_bar_summary_dc3b92e7.md` — summary of the hosted
   `Deploy` run `25395229374`, job `quality-bar` `74480094337`.
+- `40_hosted_quality_bar_scorecard_e2bc6fb0.json` — latest GitHub Actions
+  scorecard artifact from commit `e2bc6fb01eca138b60a9ec193160d28222a0d0b7`.
+- `41_hosted_quality_bar_summary_e2bc6fb0.md` — latest hosted run summary;
+  `CI`, `Deploy`, and `Deploy NRG` are all PASS for the same commit.
 - Hosted C4 metrics: 1000 requested users, P99 410 ms, failure rate 0.0, and
   292598 total samples.
+- Latest hosted C4 metrics: 1000 requested users, P99 370 ms, failure rate
+  0.0, and 307721 total samples.
 
 ## Passing Local Checks Captured Here
 
