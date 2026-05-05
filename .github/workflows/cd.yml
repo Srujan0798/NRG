@@ -24,6 +24,11 @@ env:
   IMAGE_NAME: ${{ github.repository_owner }}/nrg
   PYTHON_VERSION: '3.11'
   NODE_VERSION: '20'
+  DATABASE_URL: "sqlite:///data/nrg_research.db"
+  NRG_TEST_DATABASE_URL: "sqlite:///data/nrg_research.db"
+  NRG_LOCAL_RESEARCH_DB: "data/nrg_research.db"
+  JWT_ALGORITHM: "HS256"
+  JWT_SECRET: "ci-jwt-secret-for-deploy-workflow-2026-minimum-32-bytes"
 
 jobs:
   # ===========================================================================
@@ -45,11 +50,25 @@ jobs:
           pip install -q --upgrade pip
           pip install -q -r requirements.txt 2>/dev/null || true
           pip install -q pytest locust 2>/dev/null || true
+          pip install -q -e .
+
+      - name: Start seeded API for C4 scorecard
+        run: |
+          python scripts/seed_production_subset.py --profile ci --no-audit
+          nohup python -m src.api.main > /tmp/nrg-c4-api.log 2>&1 &
+          for i in {1..30}; do
+            if curl -sf http://localhost:8000/health; then
+              echo "API ready for C4 scorecard"
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/nrg-c4-api.log
+          exit 1
 
       - name: Run Quality Bar Scorecard
         id: scorecard
         run: |
-          pip install -q -e . 2>/dev/null || true
           python scripts/quality_bar_scorecard.py --json-only
           RESULT=$?
           echo "scorecard_exit=$RESULT" >> $GITHUB_OUTPUT

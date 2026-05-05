@@ -46,6 +46,7 @@ def test_publication_count_fast_path_counts_iit_papers_from_local_sqlite(tmp_pat
         )
 
     monkeypatch.setattr(api_main, "REPO_ROOT", tmp_path)
+    monkeypatch.delenv("NRG_LOCAL_RESEARCH_DB", raising=False)
     api_main._publication_count_cache.clear()
 
     response = api_main._publication_count_fast_response(
