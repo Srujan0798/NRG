@@ -34,6 +34,7 @@
       "gate": "sovereign_cluster_1000_user_load",
       "status": "BLOCKED",
       "missing": [
+        "KUBECONFIG",
         "explicit --run-cluster-load flag"
       ],
       "run_when_ready": "KUBECONFIG=/path/to/sovereign-cluster python scripts/run_final_external_gates.py --run-cluster-load"
