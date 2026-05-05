@@ -50,7 +50,7 @@
         "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
         "h_index": 84,
         "funding_cr": 0.86,
-        "email": "rohit.thakur@iisc.ac.in"
+        "email": "[EMAIL_REDACTED]"
       },
       {
         "researcher_id": "RES-000778",
@@ -62,7 +62,7 @@
         "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
         "h_index": 84,
         "funding_cr": 0.83,
-        "email": "vishal.gupta@iitkgp.ac.in"
+        "email": "[EMAIL_REDACTED]"
       },
       {
         "researcher_id": "RES-001849",
@@ -74,7 +74,7 @@
         "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
         "h_index": 83,
         "funding_cr": 1.95,
-        "email": "mohan.dave@iitb.ac.in"
+        "email": "[EMAIL_REDACTED]"
       },
       {
         "researcher_id": "RES-001230",
@@ -86,7 +86,7 @@
         "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
         "h_index": 81,
         "funding_cr": 0.98,
-        "email": "lakshmi.das@iitgn.ac.in"
+        "email": "[EMAIL_REDACTED]"
       },
       {
         "researcher_id": "RES-001081",
@@ -98,7 +98,7 @@
         "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
         "h_index": 80,
         "funding_cr": 10.95,
-        "email": "sunita.shukla@ac.in"
+        "email": "[EMAIL_REDACTED]"
       }
     ],
     "documents": []
@@ -165,7 +165,7 @@
       "secondary_research_areas": "Quantum Information Science|Drug Discovery|Proteomics",
       "h_index": 84,
       "funding_cr": 0.86,
-      "email": "rohit.thakur@iisc.ac.in"
+      "email": "[EMAIL_REDACTED]"
     },
     {
       "researcher_id": "RES-000778",
@@ -177,7 +177,7 @@
       "secondary_research_areas": "Proteomics|Quantum Information Science|Solar Energy|Artificial Intelligence",
       "h_index": 84,
       "funding_cr": 0.83,
-      "email": "vishal.gupta@iitkgp.ac.in"
+      "email": "[EMAIL_REDACTED]"
     },
     {
       "researcher_id": "RES-001849",
@@ -189,7 +189,7 @@
       "secondary_research_areas": "Machine Learning|Battery Technology|Agriculture Technology",
       "h_index": 83,
       "funding_cr": 1.95,
-      "email": "mohan.dave@iitb.ac.in"
+      "email": "[EMAIL_REDACTED]"
     },
     {
       "researcher_id": "RES-001230",
@@ -201,7 +201,7 @@
       "secondary_research_areas": "Healthcare AI|Quantum Computing|Fuel Cells",
       "h_index": 81,
       "funding_cr": 0.98,
-      "email": "lakshmi.das@iitgn.ac.in"
+      "email": "[EMAIL_REDACTED]"
     },
     {
       "researcher_id": "RES-001081",
@@ -213,7 +213,7 @@
       "secondary_research_areas": "Quantum Information Science|Natural Language Processing",
       "h_index": 80,
       "funding_cr": 10.95,
-      "email": "sunita.shukla@ac.in"
+      "email": "[EMAIL_REDACTED]"
     }
   ],
   "retrieval_sources": [
