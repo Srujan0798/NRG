@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from dataclasses import dataclass
@@ -316,7 +317,13 @@ class QueryAnswerService:
         try:
             validation = self.deps.prompt_sanitiser.validate_query({"query": request.query}, identifier=user_id or client_ip)
             if not validation["valid"]:
-                self.deps.logger.warning(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
+                log_blocked_prompts = os.getenv("NRG_LOG_BLOCKED_PROMPTS", "").lower() in {
+                    "1",
+                    "true",
+                    "yes",
+                }
+                log_method = self.deps.logger.warning if log_blocked_prompts else self.deps.logger.debug
+                log_method(f"Security violation: {validation['reason']} - {validation.get('details', '')}")
                 if validation["reason"] == "RATE_LIMITED":
                     raise HTTPException(
                         status_code=429,

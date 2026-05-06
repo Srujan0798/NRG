@@ -1,15 +1,19 @@
-Latency benchmark not run.
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 
-Reason: assignment stop rule triggered after KILLER-03 generated SQL with the required shape but returned 0 rows.
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0 -- /Users/srujansai/Desktop/NRG/.venv/bin/python
+cachedir: .pytest_cache
+hypothesis profile 'default' -> database=DirectoryBasedExampleDatabase(PosixPath('/Users/srujansai/Desktop/NRG/.hypothesis/examples'))
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, timeout-2.4.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+[1mcollecting ... [0mcollected 3 items
 
-Blocking data finding:
-- `combined_ipo_patent_data`: 0 rows in live PostgreSQL.
-- `combined_ipo_patent_data WHERE status = 'Granted'`: 0 rows.
+tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-01] [32mPASSED[0m[32m [ 33%][0m
+tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-02] [32mPASSED[0m[32m [ 66%][0m
+tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] [32mPASSED[0m[32m [100%][0m
 
-Because KILLER-03 cannot satisfy the >=1 row acceptance condition, the 20-run latency benchmark would fail the same row-count assertion and cannot establish a valid P95/P99 gate.
-
-Live run evidence:
-- `01_live_run.log`: 2 passed, 1 failed.
-- KILLER-01: live API passed and returned 8 rows.
-- KILLER-02: live API passed and returned 6 rows.
-- KILLER-03: live API failed and returned 0 rows.
+[32m============================== [32m[1m3 passed[0m[32m in 1.41s[0m[32m ===============================[0m

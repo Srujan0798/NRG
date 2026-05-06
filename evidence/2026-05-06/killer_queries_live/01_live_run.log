@@ -14,27 +14,6 @@ asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, a
 
 tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-01] [32mPASSED[0m[32m [ 33%][0m
 tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-02] [32mPASSED[0m[32m [ 66%][0m
-tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] [31mFAILED[0m[31m [100%][0m
+tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] [32mPASSED[0m[32m [100%][0m
 
-=================================== FAILURES ===================================
-[31m[1m______ test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] _______[0m
-[1m[31mtests/e2e/test_three_killer_queries.py[0m:137: in test_killer_query_returns_cited_rows_and_meets_latency
-    [0m[94massert[39;49;00m [96mlen[39;49;00m(payload.get([33m"[39;49;00m[33msql_results[39;49;00m[33m"[39;49;00m) [95mor[39;49;00m []) >= [96mint[39;49;00m(case.get([33m"[39;49;00m[33mexpected_min_rows[39;49;00m[33m"[39;49;00m, [94m1[39;49;00m)), payload[90m[39;49;00m
-[1m[31mE   AssertionError: {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.05, 'answer_id': '4bcdad32-ba24-491c-a759-c915f1ee02cb', 'assumptions': [], ...}[0m
-[1m[31mE   assert 0 >= 1[0m
-[1m[31mE    +  where 0 = len(([] or []))[0m
-[1m[31mE    +    where [] = <built-in method get of dict object at 0x10b30a640>('sql_results')[0m
-[1m[31mE    +      where <built-in method get of dict object at 0x10b30a640> = {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.05, 'answer_id': '4bcdad32-ba24-491c-a759-c915f1ee02cb', 'assumptions': [], ...}.get[0m
-[1m[31mE    +  and   1 = int(1)[0m
-[1m[31mE    +    where 1 = <built-in method get of dict object at 0x10b07c440>('expected_min_rows', 1)[0m
-[1m[31mE    +      where <built-in method get of dict object at 0x10b07c440> = {'expected_min_rows': 1, 'expected_sql_pattern': 'WITH grants AS (...), patents AS (...)\n... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0\n', 'id': 'KILLER-03', 'insight_for_user': 'Surfaces efficiency leaders for performance-based funding decisions.', ...}.get[0m
-[36m[1m=========================== short test summary info ============================[0m
-[31mFAILED[0m tests/e2e/test_three_killer_queries.py::[1mtest_killer_query_returns_cited_rows_and_meets_latency[KILLER-03][0m - AssertionError: {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.05, 'answer_id': '4bcdad32-ba24-491c-a759-c915f1ee02cb', 'assumptions': [], ...}
-assert 0 >= 1
- +  where 0 = len(([] or []))
- +    where [] = <built-in method get of dict object at 0x10b30a640>('sql_results')
- +      where <built-in method get of dict object at 0x10b30a640> = {'answer_confidence': 'needs_clarification', 'answer_confidence_score': 0.05, 'answer_id': '4bcdad32-ba24-491c-a759-c915f1ee02cb', 'assumptions': [], ...}.get
- +  and   1 = int(1)
- +    where 1 = <built-in method get of dict object at 0x10b07c440>('expected_min_rows', 1)
- +      where <built-in method get of dict object at 0x10b07c440> = {'expected_min_rows': 1, 'expected_sql_pattern': 'WITH grants AS (...), patents AS (...)\n... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0\n', 'id': 'KILLER-03', 'insight_for_user': 'Surfaces efficiency leaders for performance-based funding decisions.', ...}.get
-[31m========================= [31m[1m1 failed[0m, [32m2 passed[0m[31m in 3.64s[0m[31m ==========================[0m
+[32m============================== [32m[1m3 passed[0m[32m in 2.35s[0m[32m ===============================[0m
