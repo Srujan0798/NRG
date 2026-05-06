@@ -1,17 +1,17 @@
 {
-  "tier": 2,
+  "tier": 3,
   "query": "top AI funding institutions",
   "result": {
-    "query_id": "195d217c-1505-4ac7-b8b4-279dc92a7d2d",
-    "answer_id": "812fde77-f666-403f-8a19-7359cd4db5ca",
-    "audit_event_id": "209e0b9c233a5e18976d12425918eddadc7438f6388321d149e0aee5f5d92625",
-    "tier": 2,
+    "query_id": "dab726a8-30cf-4aa7-a992-dd57a58c4b49",
+    "answer_id": "cb805285-22ce-4aa8-b532-b7ec8e04ded9",
+    "audit_event_id": "1411c39151e8742c6f61c5f6f14e182f1973de485f9e4cf47f5f48e1584234fa",
+    "tier": 3,
     "question": "top AI funding institutions",
     "interpreted_question": "top AI funding institutions",
     "assumptions": [],
     "route": "sql",
     "blocked": false,
-    "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+    "final_answer": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
     "confidence": {
       "level": "high",
       "reason": "Evidence and citations passed verification."
@@ -41,7 +41,7 @@
       }
     ],
     "source_data": {
-      "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
+      "sql_query": null,
       "rows": [
         {
           "institute": "IIT Madras",
@@ -88,7 +88,7 @@
     "follow_up_suggestions": [],
     "query_time_ms": 0,
     "query": "top AI funding institutions",
-    "response": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model]",
+    "response": "Institution-level grant evidence is led by IIT Madras with \u20b915.00 Cr across 8 grant rows in the read model. [cite:innovation_grant_from_govt:c4-read-model] [cite:researchers:c4-read-model] Tier 3 is restricted to anonymized or aggregate evidence; no direct contact data is returned.",
     "status": "success",
     "session_id": null,
     "intent": "funding_aggregate",
@@ -102,7 +102,7 @@
         "reason": "Evidence and citations passed verification."
       },
       "citation_validity": 1.0,
-      "audit_event_id": "209e0b9c233a5e18976d12425918eddadc7438f6388321d149e0aee5f5d92625"
+      "audit_event_id": "1411c39151e8742c6f61c5f6f14e182f1973de485f9e4cf47f5f48e1584234fa"
     },
     "citation_validity": 1.0,
     "plan": null,
@@ -110,10 +110,8 @@
     "answer_confidence": "high",
     "answer_confidence_score": 0.96,
     "sql_anomaly_report": {},
-    "sql_query": "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5",
-    "sql_queries": [
-      "SELECT institute, grant_count, funding_cr FROM c4_funding_institute_read_model ORDER BY funding_cr DESC LIMIT 5"
-    ],
+    "sql_query": null,
+    "sql_queries": [],
     "sql_results": [
       {
         "institute": "IIT Madras",
@@ -141,10 +139,7 @@
         "funding_cr": 0.7
       }
     ],
-    "retrieval_sources": [
-      "innovation_grant_from_govt",
-      "researchers"
-    ],
+    "retrieval_sources": [],
     "synthesis_method": "rule_based_read_model",
     "conversation_history": [],
     "node_timings": {
@@ -158,8 +153,9 @@
     "warnings": [
       {
         "message": "C4 bounded read model used; no executor/RAG call required."
-      }
+      },
+      "Response policy applied: pii_strip:tier3:debug_trace"
     ],
-    "tier2_access_scope": "government_aggregate"
+    "tier3_access_scope": "industry_anonymized"
   }
 }

@@ -1,20 +1,26 @@
 {
+  "status": "PASS",
   "commits_scanned": 0,
   "file_versions_scanned": 0,
   "finding_count": 0,
-  "findings": [],
   "key_counts": {},
   "remediation": {
-    "affected_keys": [],
-    "affected_paths": [],
+    "status": "PASS",
     "commits_scanned": 0,
     "file_versions_scanned": 0,
-    "filter_repo_args": [],
     "finding_count": 0,
-    "required_actions": [],
+    "unique_secret_fingerprint_count": 0,
+    "affected_paths": [],
+    "affected_keys": [],
     "rotation_classes": [],
-    "status": "PASS",
-    "unique_secret_fingerprint_count": 0
+    "filter_repo_args": [],
+    "required_actions": []
   },
-  "status": "PASS"
+  "findings": [],
+  "scan_metadata": {
+    "scanner": "scripts/scan_env_history_secrets.py",
+    "repo": ".",
+    "runtime_env_basenames": [".env", ".env.dev", ".env.local", ".env.prod", ".env.staging", ".env.production"],
+    "note": "0 findings — runtime .env files not present in git history (excluded via gitignore). Working directory contains runtime .env files not tracked by git."
+  }
 }

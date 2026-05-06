@@ -1,56 +1,79 @@
-# Active Environment Variables with Secret Indicators
-# Scanned: .env, .env.dev, .env.local, .env.prod, .env.staging, docker-compose*.yml, *.yaml
-# Pattern: API_KEY|SECRET|PASSWORD|TOKEN|PRIVATE
-# Date: 2026-05-05
+# Active Environment Variables Audit
 
-## .env (NOT git-tracked)
-DATABASE_URL=postgresql://REDACTED
-JWT_SECRET=REDACTED
-JWT_PRIVATE_KEY_PATH=infrastructure/kong/ssl/jwt_rsa.key
-JWT_PUBLIC_KEY_PATH=infrastructure/kong/ssl/jwt_rsa.pub
-MINIMAX_API_KEY=REDACTED
-NVIDIA_API_KEY=REDACTED
-RESEARCHER_PASSWORD=REDACTED
-GOV_PASSWORD=REDACTED
-INDUSTRY_PASSWORD=REDACTED
-AUDIT_CHAIN_KEY=REDACTED
+Date: 2026-05-05
+Scope: .env*, .yml, .yaml files in working directory
 
-## .env.dev (NOT git-tracked)
-POSTGRES_PASSWORD=REDACTED
-DATABASE_URL=postgresql://REDACTED
-JWT_SECRET=REDACTED
-NRG_PII_ENCRYPTION_KEY=REDACTED
-GEMINI_API_KEY=REDACTED (placeholder: your_gemini_key_here)
-RESEARCHER_PASSWORD=REDACTED
-GOV_PASSWORD=REDACTED
-INDUSTRY_PASSWORD=REDACTED
+## Tracked Files (gitignore-compliant example templates)
 
-## .env.local (NOT git-tracked)
-DATABASE_URL=postgresql://REDACTED
-POSTGRES_PASSWORD=REDACTED
-RESEARCHER_PASSWORD=REDACTED
-GOV_PASSWORD=REDACTED
-INDUSTRY_PASSWORD=REDACTED
-JWT_SECRET=REDACTED
-AUDIT_CHAIN_KEY=REDACTED
+### .env.example
+- DATABASE_URL: redacted local dev placeholder
+- JWT_SECRET: placeholder, must be replaced
+- AUDIT_CHAIN_KEY: redacted dev placeholder
 
-## .env.prod (NOT git-tracked)
-POSTGRES_PASSWORD=CHANGE_ME_PRODUCTION_PASSWORD
-JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
-REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
-NRG_PII_ENCRYPTION_KEY=CHANGE_ME_generate_with_openssl_rand_base64_32
-GEMINI_API_KEY=CHANGE_ME_PRODUCTION_GEMINI_KEY
+### .env.dev.example
+- POSTGRES_PASSWORD: redacted dev placeholder
+- JWT_SECRET: redacted dev placeholder
+- GEMINI_API_KEY: placeholder
 
-## .env.staging (NOT git-tracked)
-POSTGRES_PASSWORD=CHANGE_ME_STAGING_PASSWORD
-JWT_SECRET_KEY=CHANGE_ME_generate_with_openssl_rand_hex_32
-REDIS_PASSWORD=CHANGE_ME_generate_with_openssl_rand_hex_32
-NRG_PII_ENCRYPTION_KEY=CHANGE_ME_generate_with_openssl_rand_base64_32
-GEMINI_API_KEY=CHANGE_ME_STAGING_GEMINI_KEY
+### .env.staging.example / .env.prod.example
+- POSTGRES_PASSWORD: CHANGE_ME placeholder, must be set pre-deploy
+- JWT_SECRET_KEY: CHANGE_ME placeholder
+- GEMINI_API_KEY: CHANGE_ME placeholder
 
-## docker-compose.yml (and variants)
-# Contains service definitions but no actual secret values
+## Untracked Runtime Files (on disk, not in git)
 
----
-Total: 5 runtime env files reviewed, all with dummy/placeholder values or CHANGE_ME_* markers
-No LIVE production credentials detected.
+### .env (DEV)
+- JWT_SECRET: redacted dev value
+- MINIMAX_API_KEY: redacted real-looking value
+- NVIDIA_API_KEY: redacted real-looking value
+- RESEARCHER_PASSWORD: redacted dev value
+- GOV_PASSWORD: redacted dev value
+- INDUSTRY_PASSWORD: redacted dev value
+
+### .env.dev
+- POSTGRES_PASSWORD: redacted dev value
+- JWT_SECRET: redacted dev value
+- GEMINI_API_KEY: placeholder
+
+### .env.local
+- POSTGRES_PASSWORD: redacted dev value
+- JWT_SECRET: redacted dev value
+
+### .env.staging
+- POSTGRES_PASSWORD: CHANGE_ME placeholder
+- JWT_SECRET_KEY: CHANGE_ME placeholder
+- REDIS_PASSWORD: CHANGE_ME placeholder
+
+### .env.prod (NOT DEPLOYED — placeholder template)
+- POSTGRES_PASSWORD: CHANGE_ME placeholder
+- GEMINI_API_KEY: CHANGE_ME placeholder
+
+## Docker Compose Config
+
+docker-compose.yml references:
+- `${POSTGRES_PASSWORD}` — pulled from env vars, not hardcoded
+- `${DATABASE_URL}` — pulled from env vars
+
+## Key Findings
+
+1. **LIVE API keys found in `.env`**:
+   - MINIMAX_API_KEY (redacted real-looking value)
+   - NVIDIA_API_KEY (redacted real-looking value)
+
+2. **Acceptance passwords in `.env`**:
+   - RESEARCHER_PASSWORD
+   - GOV_PASSWORD
+   - INDUSTRY_PASSWORD
+
+3. **PostgreSQL passwords**:
+   - `.env.dev`: redacted dev value
+   - `.env.local`: redacted dev value
+
+4. **JWT secrets**:
+   - All redacted; local evidence indicates dev-pattern values
+
+## Conclusion
+
+The `.env` file contains what appear to be real API keys (MINIMAX, NVIDIA) that are NOT placeholders. These are LIVE credentials that would require rotation if they were ever exposed in git history.
+
+**VERDICT**: Cannot confirm from local scan alone whether these specific keys were in the 286 purged secrets. External verification required.
