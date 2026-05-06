@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-05-06T20:20:58Z",
+  "git_head": {
+    "command": "git log -1 --oneline",
+    "exit_code": 0,
+    "duration_ms": 94,
+    "output": "evidence/2026-05-07/final_recheck_after_guard/final_external_gates/git_head.log"
+  },
+  "env": {
+    "NRG_DEPLOYED_FRONTEND_URL": "missing",
+    "NRG_DEPLOYED_API_URL": "missing",
+    "NRG_PRODUCTION_API_URL": "missing",
+    "KUBECONFIG": "missing"
+  },
+  "gates": [
+    {
+      "gate": "deployed_browser_replay",
+      "status": "BLOCKED",
+      "missing": [
+        "NRG_DEPLOYED_FRONTEND_URL",
+        "NRG_DEPLOYED_API_URL or NRG_PRODUCTION_API_URL"
+      ],
+      "run_when_ready": "cd frontend && NRG_DEPLOYED_FRONTEND_URL=https://... NRG_DEPLOYED_API_URL=https://... NRG_EVIDENCE_DIR=../evidence/YYYY-MM-DD/final_external_gates/deployed_browser npx playwright test tests/e2e/deployed_final_gate.spec.ts --reporter=list"
+    },
+    {
+      "gate": "production_qdrant_baseline",
+      "status": "BLOCKED",
+      "missing": [
+        "NRG_PRODUCTION_API_URL or NRG_DEPLOYED_API_URL"
+      ],
+      "run_when_ready": "NRG_PRODUCTION_API_URL=https://api... python scripts/run_final_external_gates.py"
+    },
+    {
+      "gate": "sovereign_cluster_1000_user_load",
+      "status": "BLOCKED",
+      "missing": [
+        "KUBECONFIG",
+        "non-local Kubernetes context required; current context is colima"
+      ],
+      "checks": {
+        "KUBECONFIG": "missing",
+        "current_context": {
+          "command": "kubectl config current-context",
+          "exit_code": 0,
+          "duration_ms": 161,
+          "output": "evidence/2026-05-07/final_recheck_after_guard/final_external_gates/kubectl_current_context.log"
+        },
+        "current_context_name": "colima"
+      },
+      "run_when_ready": "KUBECONFIG=/path/to/sovereign-cluster NRG_ALLOWED_CLUSTER_CONTEXTS=sovereign-staging python scripts/run_final_external_gates.py --run-cluster-load"
+    },
+    {
+      "gate": "founder_gpg_signing",
+      "status": "BLOCKED",
+      "missing": [
+        "8 verified .asc signatures required, found 0",
+        "founder private GPG key on signing machine"
+      ],
+      "digest_manifest": "evidence/2026-05-07/final_recheck_after_guard/final_external_gates/handover_sha256_manifest.txt",
+      "secret_key_check": {
+        "command": "gpg --list-secret-keys --keyid-format LONG",
+        "exit_code": 0,
+        "duration_ms": 55,
+        "output": "evidence/2026-05-07/final_recheck_after_guard/final_external_gates/gpg_secret_key_check.log"
+      },
+      "signatures_found": 0,
+      "verification_results": [],
+      "run_when_ready": "cd docs/handover/signatures && for doc in ../README.md ../SYSTEM_OVERVIEW.md ../ARCHITECTURE.md ../API_REFERENCE.md ../OPERATIONS_RUNBOOK.md ../SECURITY_COMPLIANCE_ATTESTATION.md ../DATA_INTAKE_PROTOCOL.md ../UAT_RESULTS.md; do gpg --armor --detach-sign --output \"$(basename \"$doc\").asc\" \"$doc\"; done"
+    }
+  ]
+}
