@@ -34,6 +34,9 @@ def test_locustfile_posts_real_query_requests_with_bearer_header():
 def test_c4_locustfile_uses_current_credentials_and_response_keys():
     source = C4_LOCUSTFILE.read_text()
 
+    assert "FastHttpUser" in source
+    assert "from locust import HttpUser" not in source
+    assert "(HttpUser)" not in source
     assert "LOAD_TEST_GOV_USER" in source
     assert "LOAD_TEST_GOV_PASS" in source
     assert '"government-pass"' in source
@@ -42,6 +45,7 @@ def test_c4_locustfile_uses_current_credentials_and_response_keys():
     assert "sql_results" in source
     assert "StopUser" in source
     assert "with user.client.post(" in source
+    assert "user.client.headers.update" not in source
     assert 'name="/auth/login"' in source
     assert "_handle_query_response(resp)" in source
 
@@ -56,6 +60,15 @@ def test_c4_locustfile_declares_60_30_10_traffic_mix():
     assert "weight = 30" in source
     assert "weight = 10" in source
     assert "DROP TABLE" in source
+
+
+def test_c4_locustfile_defaults_match_documented_throughput_profile():
+    source = C4_LOCUSTFILE.read_text()
+
+    assert "throughput >= 100 RPS" in source
+    assert '_wait_window("C4_FAST", 4, 10)' in source
+    assert '_wait_window("C4_FULL", 6, 14)' in source
+    assert '_wait_window("C4_ADVERSARIAL", 6, 14)' in source
 
 
 def test_c4_locustfile_treats_429_as_failure():

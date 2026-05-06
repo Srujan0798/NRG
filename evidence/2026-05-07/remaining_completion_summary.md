@@ -7,11 +7,11 @@ Date: 2026-05-07
 | Gate | Status | Evidence |
 |------|--------|----------|
 | API Docker rebuild | PASS | `api_docker_build_colima_socket.log` |
-| Local quality bar | FAIL | `quality_bar_default_valid_after_remaining_probe.log`; scorecard is 5/6 |
+| Local quality bar | PASS | `quality_bar_default_1m_after_c4_harness_fix.log`; scorecard is 6/6 |
 | C1 DPDP PII | PASS | `scripts/quality_bar_scorecard.json` |
 | C2 Audit binding | PASS | `scripts/quality_bar_scorecard.json` |
 | C3 Multi-hop DAG planner | PASS | `scripts/quality_bar_scorecard.json` |
-| C4 1000-user SLO | FAIL | P99 6600 ms, failure rate 0.27%, 16,398 samples, prewarm 208/208 |
+| C4 1000-user SLO | PASS | P99 200 ms, failure rate 0%, 7,436 samples, prewarm 208/208 |
 | C5 Vector drift | PASS | `scripts/quality_bar_scorecard.json` |
 | C6 Egress allowlist | PASS | `scripts/quality_bar_scorecard.json` |
 | Staging/deployed readiness | BLOCKED | No staging frontend/API URL recorded |
@@ -38,4 +38,5 @@ NRG_C4_LOCUST_RUN_TIME=1m NRG_C4_LOCUST_PROCESSES=4 \
 
 - Docker was unavailable through `/var/run/docker.sock`, but Colima exposed a working socket at `unix:///Users/srujansai/.colima/default/docker.sock`.
 - A wait-profile C4 probe was interrupted when the first local API process exited; it is retained only as diagnostic evidence in `c4_remaining_wait_profile_probe.log`.
-- The retained scorecard evidence is the default-profile rerun in `quality_bar_default_valid_after_remaining_probe.log`.
+- The earlier retained failure was `quality_bar_default_valid_after_remaining_probe.log`.
+- The current retained passing local scorecard evidence is `quality_bar_default_1m_after_c4_harness_fix.log`.

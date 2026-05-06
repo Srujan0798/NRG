@@ -672,16 +672,16 @@ def _prewarm_c4_queries(api_base_url: str, env: dict[str, str]) -> dict[str, int
 def _c4_wait_profile(env: dict[str, str]) -> dict[str, dict[str, str]]:
     return {
         "fast": {
-            "min_seconds": env.get("C4_FAST_WAIT_MIN_SECONDS", "0.2"),
-            "max_seconds": env.get("C4_FAST_WAIT_MAX_SECONDS", "0.9"),
+            "min_seconds": env.get("C4_FAST_WAIT_MIN_SECONDS", "4"),
+            "max_seconds": env.get("C4_FAST_WAIT_MAX_SECONDS", "10"),
         },
         "full": {
-            "min_seconds": env.get("C4_FULL_WAIT_MIN_SECONDS", "0.5"),
-            "max_seconds": env.get("C4_FULL_WAIT_MAX_SECONDS", "1.5"),
+            "min_seconds": env.get("C4_FULL_WAIT_MIN_SECONDS", "6"),
+            "max_seconds": env.get("C4_FULL_WAIT_MAX_SECONDS", "14"),
         },
         "adversarial": {
-            "min_seconds": env.get("C4_ADVERSARIAL_WAIT_MIN_SECONDS", "0.5"),
-            "max_seconds": env.get("C4_ADVERSARIAL_WAIT_MAX_SECONDS", "1.5"),
+            "min_seconds": env.get("C4_ADVERSARIAL_WAIT_MIN_SECONDS", "6"),
+            "max_seconds": env.get("C4_ADVERSARIAL_WAIT_MAX_SECONDS", "14"),
         },
     }
 

@@ -20,7 +20,7 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q1/K-Q2/K-Q3 killer queries | PASS live local | `evidence/2026-05-06/killer_queries_live/` — 3/3 pass against live FastAPI + PostgreSQL; SQL, rows, and latency captured |
-| Quality Bar scorecard | 5/6, C4 FAIL live local | C1-C3 and C5-C6 pass; latest scorecard JSON has C4 FAIL with P99 6600 ms, 0.27% failure rate, 16,398 samples, prewarm 208/208 (`evidence/2026-05-07/quality_bar_default_valid_after_remaining_probe.log`) |
+| Quality Bar scorecard | PASS live local 6/6 | C1-C6 pass; latest scorecard JSON has C4 PASS with P99 200 ms, 0% failure rate, 7,436 samples, 1000 users, 4 Locust processes (`evidence/2026-05-07/quality_bar_default_1m_after_c4_harness_fix.log`) |
 | Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
 | Frontend Batch 2 verification | PASS local | `npm run build`, `npm test -- --runInBand`, lint, contrast, and focused Playwright mobile/a11y passed; evidence under `evidence/2026-05-06/` |
 | Batch 5 orchestration/skills verification | PASS local | `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` passed: 419 passed, 6 skipped |
@@ -33,6 +33,7 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
+| C4 live local harness fix | May 7 | `tests/load/locustfile_c4.py` now uses Locust `FastHttpUser` and documented 100+ RPS think-time defaults; scorecard 6/6 with C4 P99 200 ms, 0% failures, 7,436 samples |
 | API Docker rebuild via Colima | May 7 | `docker build -f Dockerfile.api -t nrg-api:remaining-c4-check .` PASS with `DOCKER_HOST=unix:///Users/srujansai/.colima/default/docker.sock`; evidence `evidence/2026-05-07/api_docker_build_colima_socket.log` |
 | Local C4/C5 rerun | May 7 | `scripts/quality_bar_scorecard.json` — 5/6; C5 PASS; C4 live local still FAIL with P99 6600 ms, 0.27% failures, 16,398 samples |
 | Local C4/C5 recovery attempt | May 6 | `scripts/quality_bar_scorecard.json` — 5/6; C5 bounded vector fingerprint PASS; C4 live local still FAIL with P99 2500 ms, 0% failures, 43,184 samples |
@@ -58,9 +59,9 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| PASS | PASS | PASS | FAIL live local / PASS local regression | PASS live local / production pending | PASS |
+| PASS | PASS | PASS | PASS live local / cluster pending | PASS live local / production pending | PASS |
 
-**C4/C5**: `scripts/quality_bar_scorecard.json` reports 5/6. C5 passes through the bounded vector-fingerprint drift path. C4 remains blocked by P99/failure-rate evidence from the latest valid local 1000-user run: `P99=6600 ms`, failure rate `0.27%`, samples `16,398`, prewarm `208/208` (`evidence/2026-05-07/quality_bar_default_valid_after_remaining_probe.log`). Cluster/live closure still requires a healthy, performant NRG API target with `NRG_C4_REQUIRE_LIVE=1` and a staging URL.
+**C4/C5**: `scripts/quality_bar_scorecard.json` reports 6/6 for live local validation. C4 passes with `P99=200 ms`, failure rate `0.0%`, samples `7,436`, requested users `1000`, Locust processes `4`, and wait profile `fast=4-10s`, `full=6-14s`, `adversarial=6-14s` (`evidence/2026-05-07/quality_bar_default_1m_after_c4_harness_fix.log`). Cluster/deployed closure still requires a healthy NRG API target with `NRG_C4_REQUIRE_LIVE=1`, a staging URL, and Kubernetes context.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

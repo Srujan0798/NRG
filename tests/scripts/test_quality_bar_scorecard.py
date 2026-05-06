@@ -197,6 +197,21 @@ def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_pa
     assert result["locust_processes"] == 4
 
 
+def test_c4_scorecard_records_documented_default_wait_profile(monkeypatch):
+    monkeypatch.delenv("C4_FAST_WAIT_MIN_SECONDS", raising=False)
+    monkeypatch.delenv("C4_FAST_WAIT_MAX_SECONDS", raising=False)
+    monkeypatch.delenv("C4_FULL_WAIT_MIN_SECONDS", raising=False)
+    monkeypatch.delenv("C4_FULL_WAIT_MAX_SECONDS", raising=False)
+    monkeypatch.delenv("C4_ADVERSARIAL_WAIT_MIN_SECONDS", raising=False)
+    monkeypatch.delenv("C4_ADVERSARIAL_WAIT_MAX_SECONDS", raising=False)
+
+    assert scorecard._c4_wait_profile({}) == {
+        "fast": {"min_seconds": "4", "max_seconds": "10"},
+        "full": {"min_seconds": "6", "max_seconds": "14"},
+        "adversarial": {"min_seconds": "6", "max_seconds": "14"},
+    }
+
+
 def test_c4_scorecard_skips_tcp_listener_without_nrg_health(monkeypatch):
     def fail_if_called(*_args, **_kwargs):
         raise AssertionError("Locust must not run without an NRG /health response")
