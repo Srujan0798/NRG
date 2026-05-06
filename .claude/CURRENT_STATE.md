@@ -8,9 +8,9 @@
 
 | Item | Owner | Blocker | Next Action |
 |------|-------|---------|-------------|
-| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session; fresh env check has no deployed target variables set | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md`; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/` |
-| Cluster C4 (1000-user) | Srujan | No usable sovereign/staging Kubernetes context on this machine; current `kubectl` context is local `colima` and `KUBECONFIG` is unset. The external-gate runner now refuses local contexts for `--run-cluster-load`. | Provide `KUBECONFIG` or cluster context, optionally set `NRG_ALLOWED_CLUSTER_CONTEXTS`, then run `scripts/run_final_external_gates.py --run-cluster-load`; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/final_external_gates_cluster_guard/external_gate_status.json` |
-| Founder GPG signing | Srujan | No founder private key or signature ceremony available; latest external-gate runner found 0 verified `.asc` signatures | Schedule founder signing and record detached signatures; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/final_external_gates_pipefail/external_gate_status.json` |
+| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session; fresh env check has no deployed target variables set | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md`; latest blocker evidence: `evidence/2026-05-07/final_remaining_external_recheck_cluster/` |
+| Cluster C4 (1000-user) | Srujan | No usable sovereign/staging Kubernetes context on this machine; current `kubectl` context is local `colima` and `KUBECONFIG` is unset. The external-gate runner refuses local contexts for `--run-cluster-load`. | Provide `KUBECONFIG` or cluster context, optionally set `NRG_ALLOWED_CLUSTER_CONTEXTS`, then run `scripts/run_final_external_gates.py --run-cluster-load`; latest blocker evidence: `evidence/2026-05-07/final_remaining_external_recheck_cluster/external_gate_status.json` |
+| Founder GPG signing | Srujan | No founder private key or signature ceremony available; latest external-gate runner found 0 verified `.asc` signatures | Schedule founder signing and record detached signatures; latest blocker evidence: `evidence/2026-05-07/final_remaining_external_recheck_cluster/external_gate_status.json` |
 | Secret history purge | Srujan | Latest refreshed scanner evidence reports 0 findings, but credential rotation is still required if old commits were exposed | Preserve `evidence/2026-05-07/external_gate_recheck/gitleaks_report.json` and `evidence/2026-05-07/external_gate_recheck/env_history_secret_scan.json`; rotate credentials before security closure |
 
 ---
@@ -26,7 +26,7 @@
 | Batch 5 orchestration/skills verification | PASS local | `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` passed: 419 passed, 6 skipped |
 | CI/CD pipeline | PASS remote | GitHub CI run `25459303060` completed successfully for commit `a56f4ab7`; final evidence under `evidence/2026-05-07/final_workflow_activation_check/` |
 | Console errors | PASS local | empty console_errors.json |
-| External final gate recheck | BLOCKED on missing external inputs | `evidence/2026-05-07/external_gate_recheck/BLOCKERS.md` and `final_external_gates_pipefail/external_gate_status.json` |
+| External final gate recheck | BLOCKED on missing external inputs | `evidence/2026-05-07/final_remaining_external_recheck_cluster/EXTERNAL_GATE_SUMMARY.md` and `external_gate_status.json` |
 
 ---
 
