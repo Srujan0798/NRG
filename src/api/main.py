@@ -2149,6 +2149,7 @@ def _publication_count_fast_response(
 
 _C4_READ_MODEL_LOCK = threading.Lock()
 _c4_read_model_snapshot_cache: dict[str, list[dict[str, Any]]] | None = None
+_c4_snapshot_computed_at: float = 0.0
 
 _C4_INDIAN_STATES = (
     "Andhra Pradesh",
