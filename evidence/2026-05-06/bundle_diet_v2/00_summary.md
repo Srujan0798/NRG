@@ -34,7 +34,7 @@ Current largest is **App at 148KB raw**, which is **40% under** the 250KB spec.
 ## Git Commit SHA
 
 ```
-3846a0d6 evidence: C4 P99 optimization attempt — architectural changes required
+5b84bc59 evidence: complete killer queries live, bundle diet v2, C4 p99 optimization
 ```
 
 ## Observation

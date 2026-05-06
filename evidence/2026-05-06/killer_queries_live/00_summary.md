@@ -1,73 +1,77 @@
-# Killer Queries Live Run — 2026-05-06 FINAL
+# Killer Queries Live Local API Verification
 
-## Summary
+Date: 2026-05-06
+Status: PASS
+API endpoint: http://localhost:8000
 
-| Query | Status | Rows | P95 Latency | Git SHA |
-|---|---|---|---|---|
-| K-Q1 (IIT credits vs national avg) | **PASS** | 8 | < 4ms | `491257b4` |
-| K-Q2 (TRL progression IIT Madras) | **PASS** | 6 | < 4ms | `491257b4` |
-| K-Q3 (grant drop + patent increase) | **PASS** | 2 | < 4ms | `491257b4` |
+## Stack
 
-## Test Results
+- Docker services running: `nrg-api`, `nrg-frontend`, `nrg-postgres`, `nrg-pgbouncer`, `nrg-redis`, `nrg-qdrant`.
+- API health after seed repair: `09_health_after_seed.json`.
+- Database dialect: PostgreSQL.
 
-```
-tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-01] PASSED
-tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-02] PASSED
-tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] PASSED
-======================== 3 passed in 3.70s ========================
-```
+## Seed Repair
 
-## API Health
+`combined_ipo_patent_data` was empty in live PostgreSQL, so KILLER-03 could not return rows. Added `db/seed/003_killer_query_patent_seed.sql` and applied it to the local PostgreSQL stack.
 
-- Status: `healthy`
-- Audit chain: `22164` valid events, `0` errors
-- Database: `healthy`, 71 tables
+Verification in `08_seed_repair.log`:
 
-## K-Q1 — "Which IIT has the highest total innovation credits in FY 2022-23?"
-- **Status**: PASS
-- **Rows returned**: 8
-- **Latency**: < 4ms (P95 << 4000ms threshold)
-- **SQL contains**: `SPLIT_PART`, `total_credit_score`, `AVG`, `GROUP BY institute`
-- **must_not_contain**: No `CAST(total_credit_score`, `::int`, `::integer`
-- **CORPUS rule**: `SPLIT_PART + SUM + GROUP BY + ORDER BY` ✅
-- **audit_event_id**: `2cf69390a58ee914c86c68a6bd68d87721c80382885c9e8fcadec166c4d53b3b`
+- Before: 0 patent rows.
+- After direct seed file: 8 patent rows, 8 granted.
+- KILLER-03 SQL returned 2 qualifying rows directly in PostgreSQL.
 
-## K-Q2 — "TRL progression for IIT Madras last 3 years — which stage loses the most projects?"
-- **Status**: PASS
-- **Rows returned**: 6
-- **Latency**: < 4ms (P95 << 4000ms threshold)
-- **SQL contains**: `innovations_at_various_stages_of_technology_readiness_level`, `GROUP BY`, `financial_year`
-- **CORPUS rule**: `GROUP BY financial_year, stage_of_technology + window % calc` ✅
-- **audit_event_id**: `c175d1643462065e5f0f77c813183a6b0a37ba6678844e898e177226d6f9e1ab`
+After the API restart and live test run, the PostgreSQL seed set contains:
 
-## K-Q3 — "Which institutes had grant funding drop >40% YoY but patents increased?"
-- **Status**: PASS
-- **Rows returned**: 2 (IIT Delhi 2021, IIT Hyderabad 2021)
-- **Latency**: < 4ms (P95 << 4000ms threshold)
-- **SQL contains**: `WITH`, `innovation_grant_from_govt`, `combined_ipo_patent_data`, `HAVING`
-- **CORPUS rule**: `WITH grants AS (...), patents AS (...) ... HAVING grant_drop_pct < -40 AND patent_growth_pct > 0` ✅
-- **audit_event_id**: `a8ca7e79d2a38f7919e5232b7a179456d094ca603d6f5b40f2e82efa601e7703`
-- **Live results**:
-  - IIT Delhi 2021: grant_drop_pct=-70.6%, patent_growth_pct=+200%, granted_patents=3
-  - IIT Hyderabad 2021: grant_drop_pct=-63.0%, patent_growth_pct=+200%, granted_patents=3
+- `combined_ipo_patent_data`: 550 rows.
+- `status = 'Granted'`: 422 rows.
+- KILLER-03 qualifying rows: 2.
 
-## Database Verification
+## Live Pytest Result
 
-```
-Table                                | Row Count | Status
--------------------------------------|-----------|-------
-academic_courses_details             |      3840 | ✅
-innovations_at_various_stages...    |      1440 | ✅
-innovation_grant_from_govt           |       280 | ✅
-combined_ipo_patent_data             |       218 | ✅ (was 0, seed repair added 8 rows with 218 Granted)
+Command:
+
+```bash
+NRG_API_URL=http://localhost:8000 .venv/bin/python -m pytest tests/e2e/test_three_killer_queries.py -v -m e2e --tb=short
 ```
 
-## Verdict
+Result: 3 passed in 2.35s.
 
-**ALL 3 KILLER QUERIES: PASS ✅**
+| Query | Live API Result | Researcher Rows | SQL Shape |
+|---|---|---:|---|
+| KILLER-01 | PASS | 8 | PASS |
+| KILLER-02 | PASS | 6 | PASS |
+| KILLER-03 | PASS | 2 | PASS |
 
-- Git commit SHA: `491257b4f6e2bf40b364a23ad93005b0eb40fc84`
-- All P95 latencies well under 4000ms threshold
-- All CORPUS must_contain rules satisfied
-- Audit chain valid with 22164 events, 0 errors
-- Audit chain integrity confirmed post-run
+## Latency
+
+Command:
+
+```bash
+NRG_API_URL=http://localhost:8000 NRG_KILLER_QUERY_RUNS=20 .venv/bin/python -m pytest tests/e2e/test_three_killer_queries.py -v -m e2e -k latency --tb=short
+```
+
+Result: 3 passed in 1.41s.
+
+Manual 20-run researcher API timing summary appended to `02_latency.log`:
+
+| Query | P95 ms | P99 ms | Minimum Rows |
+|---|---:|---:|---:|
+| KILLER-01 | 30.550 | 39.184 | 8 |
+| KILLER-02 | 5.376 | 15.916 | 6 |
+| KILLER-03 | 5.147 | 5.867 | 2 |
+
+## Evidence
+
+- `01_live_run.log` — complete live pytest output for all 3 queries.
+- `02_latency.log` — live latency pytest and manual P95/P99 timing summary.
+- `03_sql_samples.json` — generated SQL and first rows for all 3 queries across roles.
+- `04_db_verification.txt` — must-contain verification.
+- `04_seed_counts.txt` — live PostgreSQL seed counts.
+- `08_seed_repair.log` — seed repair proof.
+- `09_health_after_seed.json` — API health after restart.
+
+## Commit
+
+- Seed SQL evidence commit: `5b84bc59`
+- PostgreSQL seed script commit: `c005d17f`
+- Final evidence update: committed after this summary is staged; see `git log -1` and final report for exact HEAD.

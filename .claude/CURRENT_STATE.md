@@ -19,9 +19,9 @@
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| K-Q1/K-Q2/K-Q3 killer queries | PASS local TestClient / BLOCKED live | PostgreSQL seeded (evidence/2026-05-06/killer_query_pg_seed/); SQL patterns correct; live proof blocked on staging URL |
-| Quality Bar scorecard | 5/6 (C4 SKIP without live API) | C1-C3, C5, C6 pass; C4 local SLO 9/9; set NRG_C4_API_BASE_URL for live C4 |
-| Frontend bundle | PASS current dist | App.js 148KB (was 218KB); recharts lazy chunk 318KB (acceptable, not in critical path); vendor splits committed |
+| K-Q1/K-Q2/K-Q3 killer queries | PASS live local | `evidence/2026-05-06/killer_queries_live/` — 3/3 pass against live FastAPI + PostgreSQL; SQL, rows, and latency captured |
+| Quality Bar scorecard | 5/6, C4 BLOCKED live | C1-C3, C5, C6 pass; C4 optimization hit the 3-attempt stop rule in `evidence/2026-05-06/c4_p99_optimization/` |
+| Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
 | CI/CD pipeline | FIXED | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
 | Console errors | PASS local | empty console_errors.json |
 
@@ -41,6 +41,8 @@
 | Frontend production build | May 6 | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` — exit 0, App.js 148KB (down from 218KB) |
 | FastAPI TestClient runtime | May 6 | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` — 7 passed |
 | PostgreSQL killer query seed | May 6 | `evidence/2026-05-06/killer_query_pg_seed/00_summary.md` — 4 tables: 1440/280/282/3840 rows; K-Q1, K-Q2, K-Q3 all return data |
+| Killer queries live local API | May 6 | `evidence/2026-05-06/killer_queries_live/00_summary.md` — 3/3 PASS against live FastAPI + PostgreSQL |
+| Frontend bundle diet v2 | May 6 | `evidence/2026-05-06/bundle_diet_v2/00_summary.md` — PASS, largest raw chunk 148KB |
 | CI/CD deploy.yml fix | May 6 | commit c0fc82e7 — e2e isolation, prod condition, Semgrep continue-on-error |
 | C4 SLO local pass | May 6 | `tests/performance/test_slo_compliance.py` — 9/9 passed (P50/P95/P99 within targets) |
 | C4 multi-target health retry | May 6 | commit 816321a4 — NRG_C4_API_BASE_URL env, health retries, port-conflict resilience |
@@ -53,7 +55,7 @@
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
 | PASS | PASS | PASS | FAIL live / PASS local regression | PASS local / production pending | PASS |
 
-**C4**: `scripts/quality_bar_scorecard.json` reports 5/6. Latest local live C4 on `http://127.0.0.1:8001` used `NRG_C4_REQUIRE_LIVE=1` and completed 338548 requests with 0 failures, but failed P99 at 1200 ms (`evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md`). An earlier forwarded-target attempt also failed at P99 4900 ms and 0.1717% failures (`evidence/2026-05-06/runtime_recovery/live_c4_locust_failure_summary.md`). Cluster/live closure still requires a performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
+**C4**: `scripts/quality_bar_scorecard.json` reports 5/6. Latest C4 optimization evidence in `evidence/2026-05-06/c4_p99_optimization/` remains BLOCKED: baseline P99 7900 ms / 0.57% failures, best retry P99 6300 ms / 0 failures, final worker-tuning retry P99 9800 ms / 1.55% failures. The assignment stop rule triggered after 3 attempts. Cluster/live closure still requires a performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

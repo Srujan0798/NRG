@@ -1,0 +1,6 @@
+before=0
+after=8
+granted=8
+kq3_rows=2
+{'institute': 'IIT Delhi', 'year_num': 2021, 'grant_drop_pct': Decimal('-70.5903113534661680'), 'patent_growth_pct': Decimal('200.0000000000000000'), 'granted_patents': 3}
+{'institute': 'IIT Hyderabad', 'year_num': 2021, 'grant_drop_pct': Decimal('-63.0397385123972691'), 'patent_growth_pct': Decimal('200.0000000000000000'), 'granted_patents': 3}

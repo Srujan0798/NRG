@@ -17,3 +17,8 @@ tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and
 tests/e2e/test_three_killer_queries.py::test_killer_query_returns_cited_rows_and_meets_latency[KILLER-03] [32mPASSED[0m[32m [100%][0m
 
 [32m============================== [32m[1m3 passed[0m[32m in 1.41s[0m[32m ===============================[0m
+
+LATENCY SUMMARY (manual 20-run researcher API sample)
+KILLER-01: min_rows=8 mean_ms=8.897 p95_ms=30.550 p99_ms=39.184
+KILLER-02: min_rows=6 mean_ms=4.888 p95_ms=5.376 p99_ms=15.916
+KILLER-03: min_rows=2 mean_ms=4.272 p95_ms=5.147 p99_ms=5.867

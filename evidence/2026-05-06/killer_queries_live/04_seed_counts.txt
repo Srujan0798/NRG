@@ -1,4 +1,6 @@
-academic_2022_23|960
-trl_iit_madras_l4_l9|40
+academic_2022_23|1920
+trl_iit_madras_l4_l9|80
 grant_yoy_pairs|32
-granted_patents|0
+combined_ipo_patent_data|550
+granted_patents|422
+kq3_qualifying_rows|2
