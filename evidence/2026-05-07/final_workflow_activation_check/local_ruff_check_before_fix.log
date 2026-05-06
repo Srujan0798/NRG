@@ -1,0 +1,14 @@
+F401 [*] `src.orchestration.graph.NRGWorkflow` imported but unused
+  --> src/api/main.py:78:56
+   |
+76 | if TYPE_CHECKING:
+77 |     from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
+78 |     from src.orchestration.graph import NRGWorkflow as NRGWorkflowType
+   |                                                        ^^^^^^^^^^^^^^^
+79 |
+80 | configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
+   |
+help: Remove unused import: `src.orchestration.graph.NRGWorkflow`
+
+Found 1 error.
+[*] 1 fixable with the `--fix` option.

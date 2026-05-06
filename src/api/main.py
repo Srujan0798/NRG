@@ -75,7 +75,6 @@ from qdrant_client import QdrantClient
 
 if TYPE_CHECKING:
     from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
-    from src.orchestration.graph import NRGWorkflow as NRGWorkflowType
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)

@@ -1,0 +1,346 @@
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main CI · 25459064737
+Triggered via push less than a minute ago
+
+JOBS
+* contract-tests (ID 74696222196)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  * Install dependencies
+  * Validate orchestration pipeline contracts
+  * Run contract tests (API schema validation)
+  * Run integration tests for major contract bumps
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* load-tests (ID 74696222225)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run load tests (50 concurrent, P95<15s, sustained load)
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* security-tests (ID 74696222236)
+* property-tests (ID 74696222242)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  * Install uv
+  * Install dependencies
+  * Run property-based tests (tier filtering, citations, token budget)
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* local-release-gate (ID 74696222252)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  * Install dependencies
+  * Run sub-15-minute local gate
+  * Upload local gate evidence
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+✓ forbidden-vocab in 9s (ID 74696222260)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Run forbidden-vocab check on changed production files
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* e2e-persona-tests (ID 74696222271)
+* regression-tests (ID 74696222276)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run regression tests
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* secrets-scan (ID 74696222305)
+* chaos-tests (ID 74696222311)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run chaos tests (LLM failover, DB failure, Redis down, Qdrant unavailable)
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* docker-smoke (ID 74696222314)
+* lint (ID 74696222331)
+* python-314-compat (ID 74696222372)
+* test-node (ID 74696222417)
+* test-python (macos-14, 3.11, integration) (ID 74696222419)
+* test-python (ubuntu-22.04, 3.11, unit) (ID 74696222450)
+* test-python (macos-14, 3.11, unit) (ID 74696222483)
+* test-python (ubuntu-22.04, 3.11, integration) (ID 74696222544)
+- slow-nightly in 0s (ID 74696222753)
+- red-team-live-replay in 0s (ID 74696222844)
+
+ANNOTATIONS
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+forbidden-vocab: .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+chaos-tests: .github#2
+
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main CI · 25459064737
+Triggered via push about 1 minute ago
+
+JOBS
+* contract-tests (ID 74696222196)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Validate orchestration pipeline contracts
+  * Run contract tests (API schema validation)
+  * Run integration tests for major contract bumps
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* load-tests (ID 74696222225)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run load tests (50 concurrent, P95<15s, sustained load)
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* security-tests (ID 74696222236)
+* property-tests (ID 74696222242)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  * Install dependencies
+  * Run property-based tests (tier filtering, citations, token budget)
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* local-release-gate (ID 74696222252)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run sub-15-minute local gate
+  * Upload local gate evidence
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+✓ forbidden-vocab in 9s (ID 74696222260)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Run forbidden-vocab check on changed production files
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* e2e-persona-tests (ID 74696222271)
+✓ regression-tests in 48s (ID 74696222276)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run regression tests
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* secrets-scan (ID 74696222305)
+  ✓ Set up job
+  * Run actions/checkout@v4
+  * Install gitleaks
+  * Run gitleaks
+  * Post Run actions/checkout@v4
+✓ chaos-tests in 38s (ID 74696222311)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run chaos tests (LLM failover, DB failure, Redis down, Qdrant unavailable)
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* docker-smoke (ID 74696222314)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Prepare compose environment
+  * Build images
+  * Start services
+  * Wait for API health
+  * Smoke test endpoints
+  * Tear down
+  * Post Run actions/checkout@v4
+* lint (ID 74696222331)
+  ✓ Set up job
+  * Run actions/checkout@v4
+  * Set up Python
+  * Install uv
+  * Install linters
+  * Verify Pydantic/Python migration guardrails
+  * Run ruff linter
+  * Run mypy type check (advisory until baseline is burned down)
+  * Post Run actions/checkout@v4
+* python-314-compat (ID 74696222372)
+* test-node (ID 74696222417)
+* test-python (macos-14, 3.11, integration) (ID 74696222419)
+* test-python (ubuntu-22.04, 3.11, unit) (ID 74696222450)
+  * Set up job
+* test-python (macos-14, 3.11, unit) (ID 74696222483)
+* test-python (ubuntu-22.04, 3.11, integration) (ID 74696222544)
+- slow-nightly in 0s (ID 74696222753)
+- red-team-live-replay in 0s (ID 74696222844)
+
+ANNOTATIONS
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+forbidden-vocab: .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+chaos-tests: .github#2
+
+Refreshing run status every 3 seconds. Press Ctrl+C to quit.
+
+* main CI · 25459064737
+Triggered via push about 1 minute ago
+
+JOBS
+* contract-tests (ID 74696222196)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Validate orchestration pipeline contracts
+  * Run contract tests (API schema validation)
+  * Run integration tests for major contract bumps
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+✓ load-tests in 55s (ID 74696222225)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run load tests (50 concurrent, P95<15s, sustained load)
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* security-tests (ID 74696222236)
+* property-tests (ID 74696222242)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run property-based tests (tier filtering, citations, token budget)
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* local-release-gate (ID 74696222252)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  * Run sub-15-minute local gate
+  * Upload local gate evidence
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+✓ forbidden-vocab in 9s (ID 74696222260)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Run forbidden-vocab check on changed production files
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* e2e-persona-tests (ID 74696222271)
+✓ regression-tests in 48s (ID 74696222276)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run regression tests
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+✓ secrets-scan in 9s (ID 74696222305)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Install gitleaks
+  ✓ Run gitleaks
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+✓ chaos-tests in 38s (ID 74696222311)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  ✓ Install dependencies
+  ✓ Run chaos tests (LLM failover, DB failure, Redis down, Qdrant unavailable)
+  ✓ Post Set up Python 3.11
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* docker-smoke (ID 74696222314)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Prepare compose environment
+  * Build images
+  * Start services
+  * Wait for API health
+  * Smoke test endpoints
+  * Tear down
+  * Post Run actions/checkout@v4
+X lint in 10s (ID 74696222331)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python
+  ✓ Install uv
+  ✓ Install linters
+  ✓ Verify Pydantic/Python migration guardrails
+  X Run ruff linter
+  - Run mypy type check (advisory until baseline is burned down)
+  - Post Set up Python
+  ✓ Post Run actions/checkout@v4
+  ✓ Complete job
+* python-314-compat (ID 74696222372)
+* test-node (ID 74696222417)
+  * Set up job
+* test-python (macos-14, 3.11, integration) (ID 74696222419)
+  ✓ Set up job
+  * Run actions/checkout@v4
+  * Set up Python 3.11
+  * Install uv
+  * Install dependencies
+  * Run integration tests in parallel
+  * Upload test timing evidence
+  * Post Run actions/checkout@v4
+* test-python (ubuntu-22.04, 3.11, unit) (ID 74696222450)
+  ✓ Set up job
+  ✓ Run actions/checkout@v4
+  ✓ Set up Python 3.11
+  ✓ Install uv
+  * Install dependencies
+  * Run unit tests in parallel
+  * Upload test timing evidence
+  * Post Set up Python 3.11
+  * Post Run actions/checkout@v4
+* test-python (macos-14, 3.11, unit) (ID 74696222483)
+  * Set up job
+* test-python (ubuntu-22.04, 3.11, integration) (ID 74696222544)
+- slow-nightly in 0s (ID 74696222753)
+- red-team-live-replay in 0s (ID 74696222844)
+
+ANNOTATIONS
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+forbidden-vocab: .github#2
+
+! Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-python@v5. Actions will be forced to run with Node.js 24 by default starting June 2nd, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+chaos-tests: .github#2
+
+failed to get annotations: HTTP 504: 504 Gateway Timeout (https://api.github.com/repos/Srujan0798/NRG/check-runs/74696222196/annotations)

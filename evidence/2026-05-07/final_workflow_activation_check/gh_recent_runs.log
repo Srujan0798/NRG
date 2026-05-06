@@ -1,0 +1,20 @@
+in_progress		record remote ci recheck	Deploy	main	push	25459065076	26s	2026-05-06T20:23:23Z
+queued		record remote ci recheck	Deploy NRG	main	push	25459064744	27s	2026-05-06T20:23:22Z
+queued		record remote ci recheck	CI	main	push	25459064737	27s	2026-05-06T20:23:22Z
+in_progress		record final external gate recheck	Deploy NRG	main	push	25459005830	1m45s	2026-05-06T20:22:04Z
+in_progress		record final external gate recheck	Deploy	main	push	25459005791	1m45s	2026-05-06T20:22:04Z
+queued		record final external gate recheck	CI	main	push	25459005556	1m45s	2026-05-06T20:22:04Z
+in_progress		harden external cluster gate context checks	Deploy	main	push	25458921998	3m33s	2026-05-06T20:20:16Z
+in_progress		harden external cluster gate context checks	Deploy NRG	main	push	25458921978	3m34s	2026-05-06T20:20:15Z
+in_progress		harden external cluster gate context checks	CI	main	push	25458921972	3m34s	2026-05-06T20:20:15Z
+completed	success	record external gate blocker evidence	Deploy NRG	main	push	25458705343	7m50s	2026-05-06T20:15:30Z
+completed	failure	record external gate blocker evidence	CI	main	push	25458705326	4m19s	2026-05-06T20:15:30Z
+in_progress		record external gate blocker evidence	Deploy	main	push	25458705324	8m19s	2026-05-06T20:15:30Z
+completed	success	fix C4 load harness throughput profile	Deploy NRG	main	push	25458399048	8m27s	2026-05-06T20:08:59Z
+completed	success	fix C4 load harness throughput profile	Deploy	main	push	25458399031	10m10s	2026-05-06T20:08:59Z
+completed	failure	fix C4 load harness throughput profile	CI	main	push	25458399026	3m15s	2026-05-06T20:08:59Z
+completed	success	record remaining gate evidence	Deploy	main	push	25457546434	10m19s	2026-05-06T19:51:13Z
+completed	success	record remaining gate evidence	Deploy NRG	main	push	25457546427	9m44s	2026-05-06T19:51:13Z
+completed	failure	record remaining gate evidence	CI	main	push	25457546381	4m56s	2026-05-06T19:51:13Z
+completed	success	harden vector drift and C4 evidence	Deploy NRG	main	push	25457037196	9m29s	2026-05-06T19:40:27Z
+completed	success	harden vector drift and C4 evidence	Deploy	main	push	25457037189	13m19s	2026-05-06T19:40:27Z
