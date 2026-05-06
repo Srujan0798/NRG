@@ -12,7 +12,7 @@ This runbook is for the deployment/cluster/founder-signing machine. It is not a 
 |---|---|---|
 | Deployed browser replay | `NRG_DEPLOYED_FRONTEND_URL`, `NRG_DEPLOYED_API_URL` | Playwright screenshots, video, API JSON, blocked Tier 3 JSON |
 | Production Qdrant baseline | `NRG_PRODUCTION_API_URL` or `NRG_DEPLOYED_API_URL` | `/health`, `/health/qdrant`, `/health/all` JSON |
-| Sovereign 1000-user C4 load | `KUBECONFIG`, cluster access, load-test secrets, explicit `--run-cluster-load` | Locust HTML/CSV/logs |
+| Sovereign 1000-user C4 load | `KUBECONFIG`, non-local cluster context, optional `NRG_ALLOWED_CLUSTER_CONTEXTS`, load-test secrets, explicit `--run-cluster-load` | Locust HTML/CSV/logs |
 | Founder GPG signing | founder private GPG key on founder-controlled machine | 8 `.asc` signatures and verification logs |
 
 ## One Command
@@ -31,6 +31,7 @@ export NRG_DEPLOYED_FRONTEND_URL="https://frontend.example"
 export NRG_DEPLOYED_API_URL="https://api.example"
 export NRG_PRODUCTION_API_URL="https://api.example"
 export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
+export NRG_ALLOWED_CLUSTER_CONTEXTS="sovereign-staging"
 
 .venv/bin/python scripts/run_final_external_gates.py \
   --evidence-dir evidence/$(date +%F)/final_external_gates \
@@ -39,10 +40,13 @@ export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
 
 ## Sovereign 1000-User C4 Load Gate
 
-The C4 gate is intentionally blocked unless the caller provides both a
-reachable Kubernetes context and the explicit `--run-cluster-load` flag. The
-runner verifies `kubectl cluster-info` before invoking
-`tests/load/run-locust-k8s.sh production`.
+The C4 gate is intentionally blocked unless the caller provides `KUBECONFIG`,
+a non-local Kubernetes context, and the explicit `--run-cluster-load` flag.
+Known local contexts such as `colima`, `docker-desktop`, `minikube`, and
+`kind-*` are refused. Set `NRG_ALLOWED_CLUSTER_CONTEXTS` to a comma-separated
+allowlist when the operations team wants the runner to accept only specific
+cluster context names. The runner verifies `kubectl cluster-info` before
+invoking `tests/load/run-locust-k8s.sh production`.
 
 Preflight without load:
 
@@ -52,12 +56,14 @@ Preflight without load:
 ```
 
 Expected preflight behavior on a laptop: `sovereign_cluster_1000_user_load`
-returns `BLOCKED` with missing input `explicit --run-cluster-load flag`.
+returns `BLOCKED`. With `--run-cluster-load`, the runner still blocks if
+`KUBECONFIG` is unset or the current context is local.
 
 Cluster execution:
 
 ```bash
 export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
+export NRG_ALLOWED_CLUSTER_CONTEXTS="sovereign-staging"
 
 .venv/bin/python scripts/run_final_external_gates.py \
   --evidence-dir evidence/$(date +%F)/final_external_gates \
@@ -66,6 +72,7 @@ export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
 
 Expected C4 artifacts:
 
+- `evidence/YYYY-MM-DD/final_external_gates/kubectl_current_context.log`
 - `evidence/YYYY-MM-DD/final_external_gates/kubectl_cluster_info.log`
 - `evidence/YYYY-MM-DD/final_external_gates/c4_1000_user_locust.log`
 - `evidence/YYYY-MM-DD/final_external_gates/external_gate_status.json`

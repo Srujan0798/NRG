@@ -34,6 +34,7 @@ HANDOVER_DOCS = [
     REPO_ROOT / "docs/handover/DATA_INTAKE_PROTOCOL.md",
     REPO_ROOT / "docs/handover/UAT_RESULTS.md",
 ]
+LOCAL_KUBE_CONTEXTS = {"colima", "docker-desktop", "minikube", "rancher-desktop"}
 
 
 def _redacted_env(name: str) -> str:
@@ -89,6 +90,61 @@ def _fetch_json(url: str, output: Path) -> dict:
 
 def _gate(status: str, name: str, **extra) -> dict:
     return {"gate": name, "status": status, **extra}
+
+
+def _is_local_kube_context(context: str) -> bool:
+    normalized = context.strip().lower()
+    return normalized in LOCAL_KUBE_CONTEXTS or normalized.startswith("kind-")
+
+
+def _allowed_kube_contexts() -> set[str]:
+    raw = os.getenv("NRG_ALLOWED_CLUSTER_CONTEXTS", "")
+    return {item.strip() for item in raw.split(",") if item.strip()}
+
+
+def _cluster_context_preflight(evidence_dir: Path) -> dict | None:
+    """Block cluster load proof unless the context is explicit and non-local."""
+    checks: dict[str, dict | str] = {"KUBECONFIG": _redacted_env("KUBECONFIG")}
+    missing = []
+
+    if not os.getenv("KUBECONFIG"):
+        missing.append("KUBECONFIG")
+
+    current = _run(
+        ["kubectl", "config", "current-context"],
+        timeout=30,
+        output=evidence_dir / "kubectl_current_context.log",
+    )
+    checks["current_context"] = current
+    context = ""
+    if current["exit_code"] == 0:
+        context = (evidence_dir / "kubectl_current_context.log").read_text().strip()
+        checks["current_context_name"] = context
+        if _is_local_kube_context(context):
+            missing.append(f"non-local Kubernetes context required; current context is {context}")
+    else:
+        missing.append("current Kubernetes context")
+
+    allowed_contexts = _allowed_kube_contexts()
+    if allowed_contexts and context and context not in allowed_contexts:
+        missing.append(
+            "current Kubernetes context is not in NRG_ALLOWED_CLUSTER_CONTEXTS"
+        )
+        checks["allowed_contexts"] = sorted(allowed_contexts)
+
+    if missing:
+        return _gate(
+            "BLOCKED",
+            "sovereign_cluster_1000_user_load",
+            missing=missing,
+            checks=checks,
+            run_when_ready=(
+                "KUBECONFIG=/path/to/sovereign-cluster "
+                "NRG_ALLOWED_CLUSTER_CONTEXTS=sovereign-staging "
+                "python scripts/run_final_external_gates.py --run-cluster-load"
+            ),
+        )
+    return None
 
 
 def deployed_browser_gate(evidence_dir: Path) -> dict:
@@ -190,6 +246,10 @@ def load_gate(evidence_dir: Path, run_cluster_load: bool) -> dict:
     missing_tools = [tool for tool in ("kubectl", "docker") if shutil.which(tool) is None]
     if missing_tools:
         return _gate("BLOCKED", "sovereign_cluster_1000_user_load", missing=[f"tool:{tool}" for tool in missing_tools])
+
+    context_blocker = _cluster_context_preflight(evidence_dir)
+    if context_blocker is not None:
+        return context_blocker
 
     cluster = _run(["kubectl", "cluster-info"], timeout=30, output=evidence_dir / "kubectl_cluster_info.log")
     if cluster["exit_code"] != 0:
