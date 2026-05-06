@@ -1,0 +1,91 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.api
+#1 transferring dockerfile: 3.31kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.11-slim
+#2 DONE 2.9s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 735B 0.0s done
+#4 DONE 0.1s
+
+#5 [builder  1/12] FROM docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2
+#5 resolve docker.io/library/python:3.11-slim@sha256:6d85378d88a19cd4d76079817532d62232be95757cb45945a99fec8e8084b9c2 0.1s done
+#5 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 1.33MB 0.3s done
+#6 DONE 0.4s
+
+#7 [builder  7/12] RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+#7 CACHED
+
+#8 [builder  9/12] COPY alembic.ini .
+#8 CACHED
+
+#9 [builder  2/12] WORKDIR /app
+#9 CACHED
+
+#10 [builder  4/12] RUN python -m venv /app/venv
+#10 CACHED
+
+#11 [builder  8/12] RUN pip install --no-cache-dir -e .
+#11 CACHED
+
+#12 [builder  3/12] RUN apt-get update && apt-get install -y --no-install-recommends     curl     gcc     g++     libpq-dev     && rm -rf /var/lib/apt/lists/*
+#12 CACHED
+
+#13 [builder  6/12] COPY pyproject.toml .
+#13 CACHED
+
+#14 [builder  5/12] RUN pip install --upgrade "pip>=26.0" wheel setuptools
+#14 CACHED
+
+#15 [builder 10/12] COPY alembic/ ./alembic/
+#15 CACHED
+
+#16 [builder 11/12] COPY src/ ./src/
+#16 DONE 1.7s
+
+#17 [builder 12/12] COPY scripts/ ./scripts/
+#17 DONE 0.5s
+
+#18 [runner 3/8] RUN python -m pip install --no-cache-dir --upgrade     "pip>=26.0"     "wheel>=0.46.2"     "setuptools>=81.0.0"     "jaraco.context>=6.1.0" &&     groupadd -r app && useradd -r -g app app &&     mkdir -p /var/lib/nrg && chown app:app /var/lib/nrg
+#18 CACHED
+
+#19 [runner 4/8] COPY --from=builder --chown=app:app /app/venv /app/venv
+#19 CACHED
+
+#20 [runner 5/8] COPY --from=builder --chown=app:app /app/alembic.ini /app/alembic.ini
+#20 CACHED
+
+#21 [runner 6/8] COPY --from=builder --chown=app:app /app/alembic /app/alembic
+#21 CACHED
+
+#22 [runner 7/8] COPY --from=builder --chown=app:app /app/src /app/src
+#22 DONE 1.3s
+
+#23 [runner 8/8] COPY --from=builder --chown=app:app /app/scripts /app/scripts
+#23 DONE 0.5s
+
+#24 exporting to image
+#24 exporting layers
+#24 exporting layers 1.0s done
+#24 exporting manifest sha256:24d41c447ea77365651790f45dab6a34038b9a508da8914528c19f69b2924a17 0.0s done
+#24 exporting config sha256:6bb766475c00fb4d86e1435cec7977c272d38222cd43dc1d5bb54f1e565023dc 0.0s done
+#24 exporting attestation manifest sha256:a35027ab1bdefa9c69745a8bddd10cf93f49fef651e1b911f24063b9eb5ddfff 0.0s done
+#24 exporting manifest list sha256:fef74d7d65232202c895d807484d378d084ea045c8b5f54d32ccd592240185c2 0.0s done
+#24 naming to docker.io/library/nrg-api:remaining-c4-check done
+#24 unpacking to docker.io/library/nrg-api:remaining-c4-check
+#24 unpacking to docker.io/library/nrg-api:remaining-c4-check 0.7s done
+#24 DONE 2.0s
+
+View build details: docker-desktop://dashboard/build/default/default/mz65uv1zug0xpofphyuki7ayu

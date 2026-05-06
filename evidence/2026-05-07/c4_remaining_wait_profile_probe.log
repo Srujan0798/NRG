@@ -1,0 +1,95 @@
+
+============================================================
+NRG QUALITY BAR SCORECARD
+============================================================
+
+  Running C1 (DPDP-Compliant Indian PII Detection)... PASS (10/10 passed, 100.0%)
+  Running C2 (Per-User Audit Binding (Non-Repudiation))... PASS (30/30 passed, 100.0%)
+  Running C3 (Multi-Hop Intent Decomposition (DAG Planner))... PASS (31/31 passed, 100.0%)
+  Running C4 (Production SLOs (P99 <500ms, ≥1000 concurrent))... FAIL (0/1 passed, 0.0%)
+  Running C5 (Vector Drift Monitoring + Auto-Retrain Trigger)... PASS (1/1 passed, 100.0%)
+  Running C6 (Schema Allowlist Before Cloud LLM)... PASS (35/35 passed, 100.0%)
+
+JSON scorecard written to: /Users/srujansai/Desktop/NRG/scripts/quality_bar_scorecard.json
+
+# NRG Quality Bar Scorecard
+
+**Generated**: 2026-05-06T19:44:30.997066+00:00
+**Overall Score**: 5/6 (5/6 = 5/6)
+**6/6 Compliant**: ❌ NO
+
+---
+
+| # | Constraint | Tests | Passed | Rate | Status |
+|:--|:-----------|:------:|:------:|:----:|:------:|
+| C1 | DPDP-Compliant Indian PII Detection | 10/10 | 100% | ✅ |
+| C2 | Per-User Audit Binding (Non-Repudiation) | 30/30 | 100% | ✅ |
+| C3 | Multi-Hop Intent Decomposition (DAG Planner) | 31/31 | 100% | ✅ |
+| C4 | Production SLOs (P99 <500ms, ≥1000 concurrent) | 0/1 | 0% | ❌ |
+| C5 | Vector Drift Monitoring + Auto-Retrain Trigger | 1/1 | 100% | ✅ |
+| C6 | Schema Allowlist Before Cloud LLM | 35/35 | 100% | ✅ |
+
+---
+
+## Per-Constraint Details
+
+### C1: DPDP-Compliant Indian PII Detection
+
+- **Description**: 8 patterns: PAN, Aadhaar, mobile, email, passport, GSTIN, bank account + adversarial
+- **Tests**: 10 passed / 10 total
+- **Pass Rate**: 100.0%
+- **Min Required**: 100%
+- **Status**: PASS
+
+### C2: Per-User Audit Binding (Non-Repudiation)
+
+- **Description**: 26 tests: key derivation, binding compute/verify, tamper detection, JWT swap, signature removal
+- **Tests**: 30 passed / 30 total
+- **Pass Rate**: 100.0%
+- **Min Required**: 100%
+- **Status**: PASS
+
+### C3: Multi-Hop Intent Decomposition (DAG Planner)
+
+- **Description**: 28 tests: 10 multi-hop fixtures (incl. 4-hop Gujarat+Karnataka), DAG structure, topological sort
+- **Tests**: 31 passed / 31 total
+- **Pass Rate**: 100.0%
+- **Min Required**: 100%
+- **Status**: PASS
+
+### C4: Production SLOs (P99 <500ms, ≥1000 concurrent)
+
+- **Description**: P99<500ms, ≥1000 concurrent, citation rate >80%, SLO breach detection
+- **Tests**: 0 passed / 1 total
+- **Pass Rate**: 0.0%
+- **Min Required**: 83%
+- **Status**: FAIL
+- **1000 Concurrent**: True
+- **P99 OK**: False
+
+### C5: Vector Drift Monitoring + Auto-Retrain Trigger
+
+- **Description**: Drift check script: cosine shift detection, reindex trigger. Requires Qdrant on port 6333.
+- **Tests**: 1 passed / 1 total
+- **Pass Rate**: 100.0%
+- **Min Required**: 100%
+- **Status**: PASS
+- **Reindex Trigger**: False
+- **Cosine Check**: True
+
+### C6: Schema Allowlist Before Cloud LLM
+
+- **Description**: 35 tests: 20+ egress leak attempts blocked, all audit-logged
+- **Tests**: 35 passed / 35 total
+- **Pass Rate**: 100.0%
+- **Min Required**: 100%
+- **Status**: PASS
+
+---
+
+> **Rule**: A release CANNOT ship unless the scorecard reports **6/6**. Any score drop flags a P0 incident.
+> Scorecard JSON: `scripts/quality_bar_scorecard.json`
+
+============================================================
+RESULT: 5/6 — NOT FULLY COMPLIANT ❌
+============================================================
