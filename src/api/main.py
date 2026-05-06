@@ -2150,6 +2150,7 @@ def _publication_count_fast_response(
 _C4_READ_MODEL_LOCK = threading.Lock()
 _c4_read_model_snapshot_cache: dict[str, list[dict[str, Any]]] | None = None
 _c4_snapshot_computed_at: float = 0.0
+_C4_SNAPSHOT_TTL_SECONDS = float(os.getenv("NRG_C4_SNAPSHOT_TTL_SECONDS", "300"))
 
 _C4_INDIAN_STATES = (
     "Andhra Pradesh",
@@ -2711,12 +2712,21 @@ def _c4_load_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
 
 
 def _c4_read_model_snapshot() -> dict[str, list[dict[str, Any]]]:
-    global _c4_read_model_snapshot_cache
-    if _c4_read_model_snapshot_cache is not None:
+    global _c4_read_model_snapshot_cache, _c4_snapshot_computed_at
+    now = time.monotonic()
+    if (
+        _c4_read_model_snapshot_cache is not None
+        and now - _c4_snapshot_computed_at < _C4_SNAPSHOT_TTL_SECONDS
+    ):
         return _c4_read_model_snapshot_cache
     with _C4_READ_MODEL_LOCK:
-        if _c4_read_model_snapshot_cache is None:
+        now = time.monotonic()
+        if (
+            _c4_read_model_snapshot_cache is None
+            or now - _c4_snapshot_computed_at >= _C4_SNAPSHOT_TTL_SECONDS
+        ):
             _c4_read_model_snapshot_cache = _c4_load_read_model_snapshot()
+            _c4_snapshot_computed_at = time.monotonic()
     return _c4_read_model_snapshot_cache
 
 

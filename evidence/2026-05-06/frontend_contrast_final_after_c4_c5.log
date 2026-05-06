@@ -1,0 +1,9 @@
+
+> nrg-frontend@1.0.0 test:contrast
+> jest --runInBand tests/a11y/contrast.test.ts
+
+Test Suites: 1 passed, 1 total
+Tests:       20 passed, 20 total
+Snapshots:   0 total
+Time:        1.504 s
+Ran all test suites matching tests/a11y/contrast.test.ts.

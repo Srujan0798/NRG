@@ -9,8 +9,9 @@ from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
+import orjson
 from fastapi import HTTPException, Request
-from starlette.responses import StreamingResponse
+from starlette.responses import Response, StreamingResponse
 
 from src.api.answer_contract import blocked_answer_payload
 from src.api.middleware.security import IPAllowlist
@@ -62,7 +63,32 @@ class QueryAnswerService:
 
     def __init__(self, deps: QueryServiceDependencies) -> None:
         self.deps = deps
+        self._serialized_cached_responses: dict[str, tuple[int, bytes]] = {}
         warm_response_policy_cache()
+
+    def _serialized_tier_filtered_cache_hit(
+        self,
+        *,
+        cache_key: str,
+        cached: Mapping[str, Any],
+        user_tier: int,
+    ) -> Response | None:
+        if not (
+            cached.get("_tier_filter_applied") is True
+            and cached.get("_tier_filter_tier") == user_tier
+        ):
+            return None
+
+        cached_identity = id(cached)
+        entry = self._serialized_cached_responses.get(cache_key)
+        if entry is None or entry[0] != cached_identity:
+            payload = self.deps.as_json_dict(cached)
+            payload["cached"] = True
+            payload.pop("_tier_filter_applied", None)
+            payload.pop("_tier_filter_tier", None)
+            entry = (cached_identity, orjson.dumps(payload))
+            self._serialized_cached_responses[cache_key] = entry
+        return Response(content=entry[1], media_type="application/json")
 
     def build_stream_answer_payload(
         self,
@@ -440,6 +466,14 @@ class QueryAnswerService:
             if cached is not None:
                 cached_response: Any = cached
                 if isinstance(cached, Mapping):
+                    serialized_cached = self._serialized_tier_filtered_cache_hit(
+                        cache_key=cache_key,
+                        cached=cached,
+                        user_tier=user_tier,
+                    )
+                    if serialized_cached is not None:
+                        profiler.finish(route="cache", outcome="success", cache_hit=True)
+                        return serialized_cached
                     cached_response_dict = self.deps.as_json_dict(cached)
                     cached_response_dict["cached"] = True
                     if (

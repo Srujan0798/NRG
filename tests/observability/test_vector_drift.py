@@ -24,6 +24,7 @@ DRIFT_SCORE_WARNING = _vdc.DRIFT_SCORE_WARNING
 DRIFT_SCORE_CRITICAL = _vdc.DRIFT_SCORE_CRITICAL
 COSINE_SHIFT_THRESHOLD = _vdc.COSINE_SHIFT_THRESHOLD
 run_drift_check = _vdc.run_drift_check
+run_vector_fingerprint_check = _vdc.run_vector_fingerprint_check
 _qdrant_ready_for_benchmark = _vdc._qdrant_ready_for_benchmark
 establish_baseline = _vdc.establish_baseline
 write_status_file = _vdc._write_status_file
@@ -51,6 +52,34 @@ class TestCosineShift:
         vec_b = [0.0] * 64 + [1.0] * 64
         shift = _cosine_shift(vec_a, vec_b)
         assert 0.4 < shift < 0.6
+
+
+class TestVectorFingerprintDrift:
+    """Unit tests for bounded C5 vector fingerprint drift."""
+
+    def test_vector_fingerprint_establishes_and_reuses_baseline(self, monkeypatch, tmp_path):
+        class FakePoint:
+            def __init__(self, vector):
+                self.vector = vector
+
+        class FakeClient:
+            def scroll(self, **_kwargs):
+                return ([FakePoint([1.0, 0.0]), FakePoint([0.9, 0.1])], None)
+
+        class FakeRetriever:
+            collection_name = "nrg_research"
+            client = FakeClient()
+
+        monkeypatch.setattr(_vdc, "VECTOR_FINGERPRINT_FILE", tmp_path / "vector_fingerprint.json")
+
+        baseline = run_vector_fingerprint_check(FakeRetriever(), {"status": "ok"})
+        stable = run_vector_fingerprint_check(FakeRetriever(), {"status": "ok"})
+
+        assert baseline["status"] == "baseline_established"
+        assert baseline["reindex_triggered"] is False
+        assert stable["cosine_status"] == "stable"
+        assert stable["alert_level"] == "GREEN"
+        assert stable["fingerprint"]["sampled_vectors"] == 2
 
 
 class TestTriggerReindex:

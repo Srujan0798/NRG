@@ -40,4 +40,5 @@ exec uvicorn src.api.main:app \
     --loop "${UVICORN_LOOP:-uvloop}" \
     --http "${UVICORN_HTTP:-httptools}" \
     --timeout-keep-alive "${UVICORN_TIMEOUT_KEEP_ALIVE:-5}" \
-    --graceful-timeout "${UVICORN_GRACEFUL_TIMEOUT:-30}"
+    --graceful-timeout "${UVICORN_GRACEFUL_TIMEOUT:-30}" \
+    --no-access-log

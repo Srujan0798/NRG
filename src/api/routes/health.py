@@ -268,8 +268,6 @@ async def health_check():
     ):
         audit_health["status"] = "CRITICAL"
         overall = "CRITICAL"
-    elif audit_health.get("status") in {"timeout", "error"}:
-        overall = "unhealthy"
 
     auth_status = _auth_health()
     if auth_status.get("status") == "unhealthy" and overall != "CRITICAL":

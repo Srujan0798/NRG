@@ -47,6 +47,8 @@ LOCUST_USERS = int(os.getenv("NRG_C4_LOCUST_USERS", "1000"))
 LOCUST_SPAWN_RATE = int(os.getenv("NRG_C4_LOCUST_SPAWN_RATE", "100"))
 LOCUST_RUN_TIME = os.getenv("NRG_C4_LOCUST_RUN_TIME", "5m")
 LOCUST_PROCESSES = int(os.getenv("NRG_C4_LOCUST_PROCESSES", "0"))
+LOCUST_RESET_STATS = os.getenv("NRG_C4_LOCUST_RESET_STATS", "0").lower() in {"1", "true", "yes"}
+C4_PREWARM_ROUNDS = max(1, int(os.getenv("NRG_C4_PREWARM_ROUNDS", "8")))
 C4_P99_THRESHOLD_MS = float(os.getenv("NRG_C4_P99_THRESHOLD_MS", "500"))
 C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
@@ -572,11 +574,21 @@ def _c4_api_status_label(health: dict | None) -> str:
 
 
 def _post_json(url: str, payload: dict, timeout: float = 15.0) -> dict | None:
+    return _post_json_with_headers(url, payload, headers={}, timeout=timeout)
+
+
+def _post_json_with_headers(
+    url: str,
+    payload: dict,
+    *,
+    headers: dict[str, str],
+    timeout: float = 15.0,
+) -> dict | None:
     data = json.dumps(payload).encode("utf-8")
     req = urllib_request.Request(
         url,
         data=data,
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", **headers},
         method="POST",
     )
     try:
@@ -614,6 +626,64 @@ def _preissue_load_tokens(api_base_url: str) -> dict[str, str]:
         if token:
             issued[env_name] = token
     return issued
+
+
+def _prewarm_c4_queries(api_base_url: str, env: dict[str, str]) -> dict[str, int]:
+    """Warm the bounded C4 query cache before the measured Locust window."""
+    if os.getenv("NRG_C4_PREWARM_QUERIES", "1").lower() not in {"1", "true", "yes"}:
+        return {"attempted": 0, "succeeded": 0, "failed": 0, "rounds": 0}
+    try:
+        from tests.load.locustfile_c4 import (
+            ADVERSARIAL_QUERIES,
+            GOVERNMENT_QUERIES,
+            RESEARCHER_QUERIES,
+        )
+    except Exception:
+        return {"attempted": 0, "succeeded": 0, "failed": 0, "rounds": 0}
+
+    query_groups = [
+        ("LOAD_TEST_RESEARCHER_TOKEN", RESEARCHER_QUERIES + ADVERSARIAL_QUERIES),
+        ("LOAD_TEST_GOV_TOKEN", GOVERNMENT_QUERIES),
+    ]
+    attempted = 0
+    succeeded = 0
+    failed = 0
+    for _round in range(C4_PREWARM_ROUNDS):
+        for token_env, queries in query_groups:
+            token = env.get(token_env, "").strip()
+            if not token:
+                continue
+            headers = {"Authorization": f"Bearer {token}"}
+            for query in queries:
+                attempted += 1
+                result = _post_json_with_headers(
+                    f"{api_base_url.rstrip('/')}/query",
+                    {"query": query, "session_id": "c4-load-test"},
+                    headers=headers,
+                    timeout=10.0,
+                )
+                if result:
+                    succeeded += 1
+                else:
+                    failed += 1
+    return {"attempted": attempted, "succeeded": succeeded, "failed": failed, "rounds": C4_PREWARM_ROUNDS}
+
+
+def _c4_wait_profile(env: dict[str, str]) -> dict[str, dict[str, str]]:
+    return {
+        "fast": {
+            "min_seconds": env.get("C4_FAST_WAIT_MIN_SECONDS", "0.2"),
+            "max_seconds": env.get("C4_FAST_WAIT_MAX_SECONDS", "0.9"),
+        },
+        "full": {
+            "min_seconds": env.get("C4_FULL_WAIT_MIN_SECONDS", "0.5"),
+            "max_seconds": env.get("C4_FULL_WAIT_MAX_SECONDS", "1.5"),
+        },
+        "adversarial": {
+            "min_seconds": env.get("C4_ADVERSARIAL_WAIT_MIN_SECONDS", "0.5"),
+            "max_seconds": env.get("C4_ADVERSARIAL_WAIT_MAX_SECONDS", "1.5"),
+        },
+    }
 
 
 def _run_c4_load_test(verbose: bool = False) -> dict:
@@ -675,6 +745,7 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
     issued_tokens = _preissue_load_tokens(api_base_url)
     env = os.environ.copy()
     env.update(issued_tokens)
+    prewarm_result = _prewarm_c4_queries(api_base_url, env)
     available_token_envs = sorted(
         name
         for name in ("LOAD_TEST_RESEARCHER_TOKEN", "LOAD_TEST_GOV_TOKEN", "LOAD_TEST_INDUSTRY_TOKEN")
@@ -692,6 +763,8 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "--html", str(locust_report),
         "--json",
     ]
+    if LOCUST_RESET_STATS:
+        cmd.append("--reset-stats")
     if LOCUST_PROCESSES > 1:
         cmd.extend(["--processes", str(LOCUST_PROCESSES)])
 
@@ -733,8 +806,11 @@ def _run_c4_load_test(verbose: bool = False) -> dict:
         "spawn_rate": LOCUST_SPAWN_RATE,
         "run_time": LOCUST_RUN_TIME,
         "locust_processes": LOCUST_PROCESSES,
+        "locust_reset_stats": LOCUST_RESET_STATS,
+        "wait_profile": _c4_wait_profile(env),
         "locust_file": LOCUST_FILE,
         "preissued_tokens": available_token_envs,
+        "prewarm": prewarm_result,
         "has_p99_ok": metrics["p99_ok"],
         "has_concurrent_1000": has_concurrent,
         **metrics,

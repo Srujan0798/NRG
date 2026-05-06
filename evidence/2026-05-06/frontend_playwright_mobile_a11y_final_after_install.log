@@ -1,0 +1,20 @@
+
+Running 11 tests using 1 worker
+
+(node:58422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:58422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [chromium] › tests/a11y/axe.test.ts:67:7 › login has no axe violations and five or fewer warnings (3.4s)
+  ✓   2 [chromium] › tests/a11y/axe.test.ts:67:7 › hero has no axe violations and five or fewer warnings (3.2s)
+  ✓   3 [chromium] › tests/a11y/axe.test.ts:67:7 › founder has no axe violations and five or fewer warnings (2.7s)
+  ✓   4 [chromium] › tests/a11y/axe.test.ts:67:7 › researcher-dashboard has no axe violations and five or fewer warnings (2.1s)
+  ✓   5 [chromium] › tests/a11y/axe.test.ts:67:7 › government-dashboard has no axe violations and five or fewer warnings (2.1s)
+  ✓   6 [chromium] › tests/a11y/axe.test.ts:67:7 › industry-dashboard has no axe violations and five or fewer warnings (2.5s)
+  ✓   7 [chromium] › tests/a11y/keyboard.test.ts:4:5 › skip link is the first focusable element and moves focus to main content (545ms)
+  ✓   8 [chromium] › tests/a11y/keyboard.test.ts:23:5 › hero query controls are keyboard operable (558ms)
+  ✓   9 [chromium] › tests/a11y/keyboard.test.ts:36:5 › reduced motion preference is reflected in the app shell (596ms)
+  ✓  10 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 375px (1.1s)
+  ✓  11 [chromium] › tests/e2e/mobile_breakpoints.spec.ts:23:7 › query page renders at 768px (1.1s)
+
+  11 passed (25.0s)

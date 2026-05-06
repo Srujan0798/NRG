@@ -12,6 +12,7 @@
 | Cluster C4 (1000-user) | Srujan | No usable Kubernetes context on this machine | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load` |
 | Founder GPG signing | Srujan | No founder private key or signature ceremony available | Schedule founder signing and record detached signatures |
 | Secret history purge | Srujan | Latest refreshed scanner evidence reports 0 findings after stale-branch cleanup, but credential rotation is still required if old commits were exposed | Preserve `evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs_after_stale_branch_delete.json`; rotate credentials before security closure |
+| API Docker rebuild | Srujan | Local Docker daemon is unavailable (`Cannot connect to the Docker daemon at unix:///var/run/docker.sock`) | Restart Docker/Colima, then rerun `docker build -f Dockerfile.api -t nrg-api .` |
 
 ---
 
@@ -20,8 +21,10 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q1/K-Q2/K-Q3 killer queries | PASS live local | `evidence/2026-05-06/killer_queries_live/` — 3/3 pass against live FastAPI + PostgreSQL; SQL, rows, and latency captured |
-| Quality Bar scorecard | 4/6, C4/C5 FAIL live | C1-C3 and C6 pass; latest scorecard JSON has C4 FAIL and C5 timeout, and local API `/health` is unhealthy (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`) |
+| Quality Bar scorecard | 5/6, C4 FAIL live local | C1-C3 and C5-C6 pass; latest scorecard JSON has C4 FAIL with P99 2500 ms, 0% failure rate, 43,184 samples (`evidence/2026-05-06/quality_bar_local_8001_httpuser_valid_final_after_fasthttp_revert.log`) |
 | Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
+| Frontend Batch 2 verification | PASS local | `npm run build`, `npm test -- --runInBand`, lint, contrast, and focused Playwright mobile/a11y passed; evidence under `evidence/2026-05-06/` |
+| Batch 5 orchestration/skills verification | PASS local | `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` passed: 419 passed, 6 skipped |
 | CI/CD pipeline | PATCHED / remote recheck pending | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
 | Console errors | PASS local | empty console_errors.json |
 
@@ -31,7 +34,7 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
-| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 4/6; latest local live C4 P99 21000 ms with 1.51% failures; latest `http://127.0.0.1:8001/health` is unhealthy with audit timeout, Qdrant vector-health timeout, and CRITICAL vector drift |
+| Local C4/C5 recovery attempt | May 6 | `scripts/quality_bar_scorecard.json` — 5/6; C5 bounded vector fingerprint PASS; C4 live local still FAIL with P99 2500 ms, 0% failures, 43,184 samples |
 | Local API health hardening | May 6 | Lazy workflow construction and bounded vector/data health probes; `evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow_summary.md` |
 | Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
 | Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
@@ -54,9 +57,9 @@
 
 | C1 DPDP PII | C2 Audit | C3 Multi-hop | C4 SLO | C5 Drift | C6 Egress |
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
-| PASS | PASS | PASS | FAIL live / PASS local regression | PASS local / production pending | PASS |
+| PASS | PASS | PASS | FAIL live local / PASS local regression | PASS live local / production pending | PASS |
 
-**C4/C5**: `scripts/quality_bar_scorecard.json` reports 4/6. C4 remains blocked by P99/failure-rate evidence in `evidence/2026-05-06/c4_p99_optimization/` (`P99=21000 ms`, failure rate `1.51%`). C5 timed out in the latest scorecard. The latest local API attempt can start on `http://127.0.0.1:8001`, but `/health` is unhealthy: audit-chain timeout after 10s, Qdrant vector-health timeout after 5s, and vector drift CRITICAL (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`). Cluster/live closure still requires a healthy, performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
+**C4/C5**: `scripts/quality_bar_scorecard.json` reports 5/6. C5 now passes through the bounded vector-fingerprint drift path. C4 remains blocked by P99 evidence from the latest valid local 1000-user run: `P99=2500 ms`, failure rate `0.0%`, samples `43,184`, prewarm `208/208` (`evidence/2026-05-06/quality_bar_local_8001_httpuser_valid_final_after_fasthttp_revert.log`). Cluster/live closure still requires a healthy, performant NRG API target with `NRG_C4_REQUIRE_LIVE=1` and a staging URL.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

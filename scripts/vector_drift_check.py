@@ -16,6 +16,7 @@ Usage:
 import argparse
 import json
 import logging
+import math
 import os
 import sys
 import time
@@ -94,7 +95,10 @@ DRIFT_CACHE_DIR = Path(os.getenv("NRG_DRIFT_CACHE_DIR", str(Path(__file__).paren
 BENCHMARK_CACHE_FILE = DRIFT_CACHE_DIR / "drift_benchmark.json"
 LATEST_RESULTS_FILE = DRIFT_CACHE_DIR / "drift_latest.json"
 REFERENCE_CENTROIDS_FILE = DRIFT_CACHE_DIR / "reference_centroids.json"
+VECTOR_FINGERPRINT_FILE = DRIFT_CACHE_DIR / "vector_fingerprint.json"
 DEFAULT_STATUS_FILE = DRIFT_CACHE_DIR / "vector_drift_status.json"
+FINGERPRINT_SAMPLE_LIMIT = int(os.getenv("NRG_VECTOR_DRIFT_FINGERPRINT_SAMPLES", "96"))
+FINGERPRINT_CRITICAL_SHIFT = float(os.getenv("NRG_VECTOR_DRIFT_CRITICAL_SHIFT", "0.15"))
 
 
 def _status_file() -> Path:
@@ -154,13 +158,174 @@ def _compute_centroids(retriever: Retriever, embedder) -> dict[str, list[float]]
 
 def _cosine_shift(current: list[float], reference: list[float]) -> float:
     """Compute cosine distance between two vectors. 0=identical, 1=opposite."""
-    import math
     dot = sum(a * b for a, b in zip(current, reference))
     norm_a = math.sqrt(sum(a * a for a in current))
     norm_b = math.sqrt(sum(b * b for b in reference))
     if norm_a == 0 or norm_b == 0:
         return 0.0
     return 0.5 * (1.0 - dot / (norm_a * norm_b))
+
+
+def _load_vector_fingerprint() -> dict:
+    if not VECTOR_FINGERPRINT_FILE.exists():
+        return {}
+    try:
+        payload = json.loads(VECTOR_FINGERPRINT_FILE.read_text())
+        return payload if isinstance(payload, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_vector_fingerprint(payload: dict) -> None:
+    VECTOR_FINGERPRINT_FILE.parent.mkdir(parents=True, exist_ok=True)
+    VECTOR_FINGERPRINT_FILE.write_text(json.dumps(payload, indent=2, default=str))
+
+
+def _point_vector(point) -> list[float]:
+    raw_vector = getattr(point, "vector", None)
+    if isinstance(raw_vector, dict):
+        raw_vector = next(iter(raw_vector.values()), None)
+    if raw_vector is None:
+        return []
+    return [float(value) for value in raw_vector]
+
+
+def _mean_unit_vector(vectors: list[list[float]]) -> list[float]:
+    if not vectors:
+        return []
+    width = min(len(vector) for vector in vectors)
+    if width <= 0:
+        return []
+    centroid = [
+        sum(vector[index] for vector in vectors) / len(vectors)
+        for index in range(width)
+    ]
+    norm = math.sqrt(sum(value * value for value in centroid))
+    if norm == 0:
+        return centroid
+    return [value / norm for value in centroid]
+
+
+def _collection_vector_fingerprint(retriever: Retriever, limit: int = FINGERPRINT_SAMPLE_LIMIT) -> dict:
+    """Sample live Qdrant vectors and return a compact centroid fingerprint."""
+    scroll_result = retriever.client.scroll(
+        collection_name=retriever.collection_name,
+        limit=limit,
+        with_payload=False,
+        with_vectors=True,
+    )
+    points = scroll_result[0] if scroll_result else []
+    vectors = [_point_vector(point) for point in points]
+    vectors = [vector for vector in vectors if vector]
+    centroid = _mean_unit_vector(vectors)
+    return {
+        "collection": retriever.collection_name,
+        "sampled_vectors": len(vectors),
+        "vector_dimension": len(centroid),
+        "centroid": centroid,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+
+def run_vector_fingerprint_check(
+    retriever: Retriever,
+    qdrant_health: dict,
+    verbose: bool = False,
+) -> dict:
+    """Detect vector-space drift without downloading the embedding model.
+
+    This keeps the C5 production gate bounded. The query benchmark remains
+    available with ``--mode query`` for deeper offline audits.
+    """
+    current = _collection_vector_fingerprint(retriever)
+    if not current.get("sampled_vectors"):
+        return {
+            "drift_score": 0.0,
+            "alert_level": "UNKNOWN",
+            "status": "qdrant_unavailable",
+            "message": "No vectors could be sampled from Qdrant.",
+            "qdrant": qdrant_health,
+            "slo_target": DRIFT_SCORE_SLO,
+            "warning_threshold": DRIFT_SCORE_WARNING,
+            "critical_threshold": DRIFT_SCORE_CRITICAL,
+            "queries_checked": 0,
+            "per_query": [],
+            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        }
+
+    reference = _load_vector_fingerprint()
+    if not reference.get("centroid"):
+        _save_vector_fingerprint(current)
+        return {
+            "drift_score": 1.0,
+            "alert_level": "GREEN",
+            "status": "baseline_established",
+            "cosine_status": "baseline_established",
+            "cosine_shift": 0.0,
+            "reindex_triggered": False,
+            "slo_target": DRIFT_SCORE_SLO,
+            "warning_threshold": DRIFT_SCORE_WARNING,
+            "critical_threshold": DRIFT_SCORE_CRITICAL,
+            "queries_checked": 0,
+            "per_query": [],
+            "fingerprint": {
+                "sampled_vectors": current["sampled_vectors"],
+                "vector_dimension": current["vector_dimension"],
+                "reference": str(VECTOR_FINGERPRINT_FILE),
+            },
+            "timestamp": current["timestamp"],
+        }
+
+    shift = _cosine_shift(current["centroid"], reference["centroid"])
+    alert_level = "GREEN"
+    reindex_triggered = False
+    cosine_status = "stable"
+    if shift > FINGERPRINT_CRITICAL_SHIFT:
+        alert_level = "CRITICAL"
+        reindex_triggered = True
+        cosine_status = "cosine_shift_detected"
+    elif shift > COSINE_SHIFT_THRESHOLD:
+        alert_level = "WARNING"
+        reindex_triggered = True
+        cosine_status = "cosine_shift_detected"
+
+    result = {
+        "drift_score": round(max(0.0, 1.0 - shift), 3),
+        "alert_level": alert_level,
+        "status": "healthy" if alert_level == "GREEN" else "unhealthy",
+        "cosine_status": cosine_status,
+        "cosine_shift": round(shift, 4),
+        "reindex_triggered": reindex_triggered,
+        "slo_target": DRIFT_SCORE_SLO,
+        "warning_threshold": DRIFT_SCORE_WARNING,
+        "critical_threshold": DRIFT_SCORE_CRITICAL,
+        "queries_checked": 0,
+        "per_query": [],
+        "fingerprint": {
+            "sampled_vectors": current["sampled_vectors"],
+            "vector_dimension": current["vector_dimension"],
+            "reference": str(VECTOR_FINGERPRINT_FILE),
+        },
+        "timestamp": current["timestamp"],
+    }
+    if verbose:
+        logger.info(
+            "Vector fingerprint %s: shift=%.4f score=%.3f",
+            cosine_status,
+            shift,
+            result["drift_score"],
+        )
+    if reindex_triggered:
+        _trigger_reindex(
+            {"alert_level": alert_level, "drift_score": result["drift_score"]},
+            {
+                "status": cosine_status,
+                "max_shift": shift,
+                "shifting_topics": ["collection_vector_fingerprint"],
+                "reindex_triggered": True,
+            },
+        )
+    return result
 
 
 def _check_cosine_shift(drift_result: dict, retriever: Retriever, embedder) -> dict:
@@ -508,6 +673,12 @@ def main():
                         help="Skip benchmark comparison, just show current health")
     parser.add_argument("--establish-baseline", action="store_true",
                         help="Persist current Qdrant retrieval state as the drift baseline")
+    parser.add_argument(
+        "--mode",
+        choices=["auto", "fingerprint", "query"],
+        default=os.getenv("NRG_VECTOR_DRIFT_MODE", "auto"),
+        help="Use bounded vector fingerprint drift by default; query mode runs the embedding benchmark.",
+    )
     args = parser.parse_args()
 
     logger.info("Starting NRG Vector Drift Detection")
@@ -546,6 +717,11 @@ def main():
             }
             print(json.dumps(result, indent=2, default=str))
             sys.exit(2)
+        if args.mode != "query":
+            baseline = run_vector_fingerprint_check(retriever, qdrant_health, verbose=args.verbose)
+            _write_status_file({**baseline, "qdrant": qdrant_health})
+            print(json.dumps({"baseline": baseline, "qdrant": qdrant_health}, indent=2, default=str))
+            sys.exit(0)
         baseline = establish_baseline(retriever, verbose=args.verbose)
         _write_status_file({
             "status": "healthy",
@@ -578,7 +754,10 @@ def main():
             print("=" * 60)
         sys.exit(2)
 
-    drift_result = run_drift_check(retriever, verbose=args.verbose)
+    if args.mode != "query":
+        drift_result = run_vector_fingerprint_check(retriever, qdrant_health, verbose=args.verbose)
+    else:
+        drift_result = run_drift_check(retriever, verbose=args.verbose)
     _write_status_file({**drift_result, "qdrant": qdrant_health})
 
     print("\n" + "=" * 60)
@@ -586,7 +765,10 @@ def main():
     print("=" * 60)
     print(f"  Drift Score:    {drift_result['drift_score']:.3f}")
     print(f"  Alert Level:   {drift_result['alert_level']}")
+    print(f"  Mode:          {args.mode}")
     print(f"  Queries:        {drift_result['queries_checked']}")
+    if "cosine_shift" in drift_result:
+        print(f"  Cosine Shift:   {drift_result['cosine_shift']:.4f}")
     print(f"  SLO Target:     >={drift_result['slo_target']:.2f}")
     print(f"  WARNING:        <{drift_result['warning_threshold']:.2f}")
     print(f"  CRITICAL:       <{drift_result['critical_threshold']:.2f}")

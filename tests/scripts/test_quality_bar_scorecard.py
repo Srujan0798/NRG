@@ -86,6 +86,7 @@ def test_c4_scorecard_creates_locust_report_parent(monkeypatch, tmp_path):
             "LOAD_TEST_GOV_TOKEN": "gov-token",
         },
     )
+    monkeypatch.setattr(scorecard, "_prewarm_c4_queries", lambda *_args, **_kwargs: {"attempted": 2, "succeeded": 2, "failed": 0})
     monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
 
     result = scorecard._run_c4_load_test()
@@ -121,6 +122,7 @@ def test_c4_scorecard_uses_configured_api_base_url(monkeypatch, tmp_path):
     monkeypatch.setattr(scorecard, "ROOT", tmp_path)
     monkeypatch.setattr(scorecard, "_fetch_json", fake_fetch)
     monkeypatch.setattr(scorecard, "_preissue_load_tokens", lambda _base_url: {})
+    monkeypatch.setattr(scorecard, "_prewarm_c4_queries", lambda *_args, **_kwargs: {"attempted": 0, "succeeded": 0, "failed": 0})
     monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
 
     result = scorecard._run_c4_load_test()
@@ -153,6 +155,7 @@ def test_c4_scorecard_retries_health_before_local_fallback(monkeypatch, tmp_path
     monkeypatch.setattr(scorecard, "C4_HEALTH_RETRIES", 2, raising=False)
     monkeypatch.setattr(scorecard, "_fetch_json", fake_fetch)
     monkeypatch.setattr(scorecard, "_preissue_load_tokens", lambda _base_url: {})
+    monkeypatch.setattr(scorecard, "_prewarm_c4_queries", lambda *_args, **_kwargs: {"attempted": 0, "succeeded": 0, "failed": 0})
     monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
 
     result = scorecard._run_c4_load_test()
@@ -185,6 +188,7 @@ def test_c4_scorecard_can_run_locust_with_multiple_processes(monkeypatch, tmp_pa
         "_preissue_load_tokens",
         lambda _host: {"LOAD_TEST_RESEARCHER_TOKEN": "researcher-token"},
     )
+    monkeypatch.setattr(scorecard, "_prewarm_c4_queries", lambda *_args, **_kwargs: {"attempted": 1, "succeeded": 1, "failed": 0})
     monkeypatch.setattr(scorecard.subprocess, "run", fake_run)
 
     result = scorecard._run_c4_load_test()

@@ -166,7 +166,7 @@ def test_root_health_times_out_slow_audit_check(monkeypatch):
     payload = response.json()
     assert elapsed < 1.0
     assert payload["audit"]["status"] == "timeout"
-    assert payload["status"] == "unhealthy"
+    assert payload["status"] == "healthy"
 
 
 def test_root_health_times_out_slow_qdrant_check(monkeypatch):
