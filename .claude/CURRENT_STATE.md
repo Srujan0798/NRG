@@ -24,7 +24,7 @@
 | Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
 | Frontend Batch 2 verification | PASS local | `npm run build`, `npm test -- --runInBand`, lint, contrast, and focused Playwright mobile/a11y passed; evidence under `evidence/2026-05-06/` |
 | Batch 5 orchestration/skills verification | PASS local | `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` passed: 419 passed, 6 skipped |
-| CI/CD pipeline | PATCHED / remote recheck pending | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
+| CI/CD pipeline | PASS remote | GitHub CI run `25459303060` completed successfully for commit `a56f4ab7`; final evidence under `evidence/2026-05-07/final_workflow_activation_check/` |
 | Console errors | PASS local | empty console_errors.json |
 | External final gate recheck | BLOCKED on missing external inputs | `evidence/2026-05-07/external_gate_recheck/BLOCKERS.md` and `final_external_gates_pipefail/external_gate_status.json` |
 
@@ -35,6 +35,7 @@
 | Item | Date | Evidence |
 |------|------|----------|
 | C4 live local harness fix | May 7 | `tests/load/locustfile_c4.py` now uses Locust `FastHttpUser` and documented 100+ RPS think-time defaults; scorecard 6/6 with C4 P99 200 ms, 0% failures, 7,436 samples |
+| Remote CI final closure | May 7 | Commit `a56f4ab7` passed GitHub CI run `25459303060`; follow-up evidence commit `93f6d0de` records `a56f4ab7_ci_final.json` and workflow validation logs |
 | API Docker rebuild via Colima | May 7 | `docker build -f Dockerfile.api -t nrg-api:remaining-c4-check .` PASS with `DOCKER_HOST=unix:///Users/srujansai/.colima/default/docker.sock`; evidence `evidence/2026-05-07/api_docker_build_colima_socket.log` |
 | Local C4/C5 rerun | May 7 | `scripts/quality_bar_scorecard.json` — 5/6; C5 PASS; C4 live local still FAIL with P99 6600 ms, 0.27% failures, 16,398 samples |
 | Local C4/C5 recovery attempt | May 6 | `scripts/quality_bar_scorecard.json` — 5/6; C5 bounded vector fingerprint PASS; C4 live local still FAIL with P99 2500 ms, 0% failures, 43,184 samples |
@@ -66,7 +67,9 @@
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 
-**CI/CD (deploy.yml)**: Fixed in session commits (c0fc82e7+) — pytest e2e isolation, deploy-production condition, Semgrep continue-on-error.
+**CI/CD (deploy.yml)**: PASS remote. GitHub CI run `25459303060` completed with
+`conclusion=success` for commit `a56f4ab7`; evidence is recorded in
+`evidence/2026-05-07/final_workflow_activation_check/A56_CI_FINAL_SUMMARY.md`.
 
 ---
 
