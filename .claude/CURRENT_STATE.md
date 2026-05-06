@@ -8,10 +8,10 @@
 
 | Item | Owner | Blocker | Next Action |
 |------|-------|---------|-------------|
-| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md` |
-| Cluster C4 (1000-user) | Srujan | No usable Kubernetes context on this machine | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load` |
-| Founder GPG signing | Srujan | No founder private key or signature ceremony available | Schedule founder signing and record detached signatures |
-| Secret history purge | Srujan | Latest refreshed scanner evidence reports 0 findings after stale-branch cleanup, but credential rotation is still required if old commits were exposed | Preserve `evidence/2026-05-05/remaining_gates_final_attempt/s3_09_scan_all_refs_after_stale_branch_delete.json`; rotate credentials before security closure |
+| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session; fresh env check has no deployed target variables set | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md`; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/` |
+| Cluster C4 (1000-user) | Srujan | No usable sovereign/staging Kubernetes context on this machine; current `kubectl` context is local `colima` and `KUBECONFIG` is unset | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load`; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/kubectl_context.log` |
+| Founder GPG signing | Srujan | No founder private key or signature ceremony available; latest external-gate runner found 0 verified `.asc` signatures | Schedule founder signing and record detached signatures; latest blocker evidence: `evidence/2026-05-07/external_gate_recheck/final_external_gates_pipefail/external_gate_status.json` |
+| Secret history purge | Srujan | Latest refreshed scanner evidence reports 0 findings, but credential rotation is still required if old commits were exposed | Preserve `evidence/2026-05-07/external_gate_recheck/gitleaks_report.json` and `evidence/2026-05-07/external_gate_recheck/env_history_secret_scan.json`; rotate credentials before security closure |
 
 ---
 
@@ -26,6 +26,7 @@
 | Batch 5 orchestration/skills verification | PASS local | `.venv/bin/python -m pytest tests/orchestration/ tests/skills/ -q --tb=short --no-cov -x` passed: 419 passed, 6 skipped |
 | CI/CD pipeline | PATCHED / remote recheck pending | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
 | Console errors | PASS local | empty console_errors.json |
+| External final gate recheck | BLOCKED on missing external inputs | `evidence/2026-05-07/external_gate_recheck/BLOCKERS.md` and `final_external_gates_pipefail/external_gate_status.json` |
 
 ---
 

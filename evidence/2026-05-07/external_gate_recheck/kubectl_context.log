@@ -1,0 +1,4 @@
+/usr/local/bin/kubectl
+colima
+CURRENT   NAME     CLUSTER   AUTHINFO   NAMESPACE
+*         colima   colima    colima

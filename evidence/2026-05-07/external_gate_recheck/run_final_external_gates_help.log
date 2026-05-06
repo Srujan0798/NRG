@@ -1,0 +1,13 @@
+usage: run_final_external_gates.py [-h] [--evidence-dir EVIDENCE_DIR]
+                                   [--run-cluster-load]
+
+Run or stage the remaining external NRG production gates. This runner
+deliberately separates local evidence from external proof. It will execute a
+gate only when the required deployment/cluster/signing inputs are present.
+Otherwise it writes a BLOCKED row with the exact missing inputs and the
+command to run when the environment is available.
+
+options:
+  -h, --help            show this help message and exit
+  --evidence-dir EVIDENCE_DIR
+  --run-cluster-load

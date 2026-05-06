@@ -1,0 +1,24 @@
+
+============================================================
+NRG Deployment Gate
+Environment: staging
+============================================================
+
+  ℹ️ Checking schema synchronization...
+  ℹ️ Validating RBAC policies...
+  ℹ️ Running security scan...
+
+------------------------------------------------------------
+Results:
+------------------------------------------------------------
+
+  ✅ [PASS] Schema Sync: Canonical schema check passed
+      Duration: 1106ms
+  ✅ [PASS] RBAC Policies: RBAC policies are valid
+      Duration: 79ms
+  ✅ [PASS] Security Scan: No obvious security issues detected
+      Duration: 0ms
+
+============================================================
+⚠️ SELECTED CHECKS PASSED — not a full deploy gate; skipped: Test Suite, Docker Build, Health Endpoints
+============================================================

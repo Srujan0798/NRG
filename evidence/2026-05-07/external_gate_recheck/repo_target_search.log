@@ -1,0 +1,192 @@
+prompts_hybrid/07_show_readiness_handover_stone.md:20:**Before any show readiness claim, there must be a deployed staging URL accessible from the public internet.**
+prompts_hybrid/07_show_readiness_handover_stone.md:28:If no staging URL exists, **STOP**. Run `prompts_hybrid/09_deployment_gate_stone.md` until one exists or explicit `BLOCKED` evidence is recorded.
+prompts_hybrid/07_show_readiness_handover_stone.md:34:Practice and verify this exact path on the **deployed staging URL**:
+prompts_hybrid/07_show_readiness_handover_stone.md:116:- exact flow rehearsed on the **staging URL**
+prompts_hybrid/07_show_readiness_handover_stone.md:159:- screenshots from the **staging URL**
+prompts_hybrid/07_show_readiness_handover_stone.md:174:- critical query result screenshots from the **staging URL**
+prompts_hybrid/07_show_readiness_handover_stone.md:175:- mobile screenshot from the **staging URL**
+prompts_hybrid/07_show_readiness_handover_stone.md:185:If login, query, verified result, Tier 3 safety, audit proof, or **staging URL** fails, do not show the system as ready. Fix the failed gate first.
+frontend/e2e/runtime_dashboards.spec.ts:3:const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
+frontend/e2e/runtime_dashboards.spec.ts:6:  await page.goto(`${FRONTEND_URL}/login`, { waitUntil: 'domcontentloaded' });
+.claude/REMOTE_WORKFLOW.md:93:KUBECONFIG=/path/to/sovereign-cluster \
+.claude/REMOTE_WORKFLOW.md:94:  .venv/bin/python scripts/run_final_external_gates.py --run-cluster-load
+.github/workflows/deploy.yml:11:        default: 'staging'
+.github/workflows/deploy.yml:14:          - staging
+.github/workflows/deploy.yml:189:  deploy-staging:
+.github/workflows/deploy.yml:192:    if: github.ref == 'refs/heads/main' || github.event.inputs.environment == 'staging'
+.github/workflows/deploy.yml:194:      name: staging
+.github/workflows/deploy.yml:195:      url: https://staging.nrg.gov.in
+.github/workflows/deploy.yml:201:      - name: Deploy to staging
+.github/workflows/deploy.yml:203:          echo "Deploying to staging..."
+.github/workflows/deploy.yml:208:          # - kubectl rollout restart deployment/nrg-api -n staging
+.github/workflows/deploy.yml:209:          # - kubectl rollout restart deployment/nrg-frontend -n staging
+.github/workflows/deploy.yml:210:          # - kubectl rollout status deployment/nrg-api -n staging
+.github/workflows/deploy.yml:215:          echo "Running staging smoke tests..."
+.github/workflows/deploy.yml:216:          # curl -f https://staging.nrg.gov.in/health
+.github/workflows/deploy.yml:217:          # curl -f https://staging.nrg.gov.in/health/all
+.github/workflows/deploy.yml:227:    needs: [deploy-staging]
+.github/workflows/deploy.yml:267:    needs: [deploy-staging, deploy-production]
+.github/workflows/deploy.yml:274:          elif [[ "${{ needs.deploy-staging.result }}" == "success" ]]; then
+.github/workflows/cd.yml:3:# Deploys to staging on PR merge to main, production with manual approval
+.github/workflows/cd.yml:16:        default: 'staging'
+.github/workflows/cd.yml:19:          - staging
+.github/workflows/cd.yml:168:  deploy-staging:
+.github/workflows/cd.yml:171:    environment: staging
+.github/workflows/cd.yml:176:      - name: Check AWS staging configuration
+.github/workflows/cd.yml:184:            echo "::warning::AWS staging secrets are not configured; skipping ECR/ECS deploy"
+.github/workflows/cd.yml:209:      - name: Deploy to ECS staging
+.github/workflows/cd.yml:212:          aws ecs update-service --cluster nrg-staging --service nrg-api --force-new-deployment
+.github/workflows/cd.yml:213:          aws ecs update-service --cluster nrg-staging --service nrg-frontend --force-new-deployment
+.github/workflows/cd.yml:214:          aws ecs wait services-stable --cluster nrg-staging --services nrg-api,nrg-frontend
+.github/workflows/cd.yml:220:            curl -sf https://staging.nrg.gov.in/health && echo "Staging healthy" && break
+.github/workflows/cd.yml:224:      - name: Skip staging deploy when AWS secrets are absent
+.github/workflows/cd.yml:226:        run: echo "::warning::AWS staging secrets are not configured; staging deploy skipped after build and API smoke checks"
+.github/workflows/cd.yml:232:    needs: [deploy-staging]
+prompts_hybrid/06_evidence_acceptance_stone.md:32:deployment-gate proof in `prompts_hybrid/09_deployment_gate_stone.md`. Localhost
+prompts_hybrid/09_deployment_gate_stone.md:18:- `scripts/deployment_gate.py`
+prompts_hybrid/09_deployment_gate_stone.md:19:- `scripts/run_final_external_gates.py`
+prompts_hybrid/09_deployment_gate_stone.md:50:   .venv/bin/python scripts/deployment_gate.py --help
+prompts_hybrid/09_deployment_gate_stone.md:65:   curl -fsS "$NRG_API_URL/health"
+prompts_hybrid/09_deployment_gate_stone.md:66:   curl -fsS "$NRG_API_URL/health/db"
+prompts_hybrid/09_deployment_gate_stone.md:67:   curl -fsS "$NRG_API_URL/health/qdrant"
+prompts_hybrid/09_deployment_gate_stone.md:74:   KUBECONFIG=/path/to/sovereign-cluster \
+prompts_hybrid/09_deployment_gate_stone.md:75:     .venv/bin/python scripts/run_final_external_gates.py --run-cluster-load
+scripts/REGISTRY.md:28:| Health and gates | `health_check.py`, `deployment_gate.py`, `run_final_external_gates.py`, `run_test_suite.sh`, `run_ui_ux_check.sh` | Current gate and validation runners |
+scripts/REGISTRY.md:37:| Deployment and backup | `deploy.py`, `deploy.sh`, `deployment_gate.py`, `runtime_image_scan_gate.py`, `backup_nrg.sh`, `backup_db.sh` | `runtime_image_scan_gate.py` validates captured runtime-image scan artifacts; `deploy.sh` and `backup_db.sh` are compatibility wrappers |
+scripts/REGISTRY.md:58:| `deploy.sh` | Local Docker Compose helper; cloud release uses `deploy.py` and `deployment_gate.py` | Keeps a simple local stack command without pretending to be the full release path |
+prompts_hybrid/00_INDEX.md:27:- Deployed readiness is still blocked on staging frontend/API URLs,
+prompts_hybrid/00_INDEX.md:58:9. Use `09_deployment_gate_stone.md` when release, handover, performance, or
+prompts_hybrid/00_INDEX.md:98:| `09_deployment_gate_stone.md` | deployed-proof boundary and external-gate status protocol |
+scripts/vector_drift_check.py:362:    reindex_url = os.getenv("NRG_API_URL", "http://localhost:8000") + "/api/reindex"
+prompts_hybrid/03_frontend_zero_flaw_stone.md:229:- start from a running app URL, local preview, staging URL, or production URL;
+scripts/capture_killer_query_evidence.py:96:    base_url = os.getenv("NRG_API_URL")
+scripts/capture_killer_query_evidence.py:297:            if not os.getenv("NRG_API_URL")
+scripts/capture_killer_query_evidence.py:298:            else os.getenv("NRG_API_URL")
+docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md:40:| 9 | 600 GB-scale JOIN times out (missing index on FK) | High on real data | Catastrophic | Run `EXPLAIN ANALYZE` on each killer query against staging PG with ≥50k rows; zero sequential scans on FK joins; missing indexes added in same PR | "Large-scale aggregation — first sample loading; full report being emailed" — switch to materialized-view answer if available |
+docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md:42:| 11 | Dashboard shows 0 publications because seed not loaded | High in dev / Low in staging | Serious | Verify `SELECT COUNT(*) FROM publications` ≥ 50 000 on staging PG; `/stats` returns realistic numbers | "Connecting to the production dataset — staging snapshot loading" — then switch to the production-data tab |
+docs/runbooks/PRODUCTION_LAUNCH_RISK_REGISTER.md:52:| 21 | UAT data shows numbers that contradict public NIRF / ministry figures (e.g., "you say 300 PhDs at IIT Madras, public records show 1200") | Medium | Catastrophic | Cross-validate aggregates against the latest published NIRF report before T-60; if a discrepancy exists, prepare an "official source vs internal cut" callout slide explaining the difference | Acknowledge the gap honestly: "this is a staging cut limited to 50k rows; production load against the 600 GB feed will reconcile to the official figure" |
+scripts/seed-data.sh:3:# seed-data.sh - Seed initial data for development/staging
+scripts/deploy.py:12:    # Deploy to staging
+scripts/deploy.py:13:    python scripts/deploy.py --env staging --version v1.2.3
+scripts/deploy.py:22:    python scripts/deploy.py --env staging --health-check
+scripts/deploy.py:64:    "staging": DeployConfig(
+scripts/deploy.py:65:        env="staging",
+scripts/deploy.py:220:    cluster_map = {"staging": "nrg-staging", "production": "nrg-prod"}
+scripts/deploy.py:273:    parser.add_argument("--env", choices=["staging", "production"], required=True)
+scripts/deploy.py:333:        cluster = args.cluster or {"staging": "nrg-staging", "production": "nrg-prod"}[args.env]
+docs/ARCHITECTURE_REVIEW.md:279:| P2 | Full PostgreSQL migration dry-run in staging | High |
+frontend/tests/e2e/deployed_final_gate.spec.ts:5:const frontendUrl = process.env.NRG_DEPLOYED_FRONTEND_URL
+frontend/tests/e2e/deployed_final_gate.spec.ts:45:  test.skip(!frontendUrl || !apiUrl, 'Set NRG_DEPLOYED_FRONTEND_URL and NRG_DEPLOYED_API_URL before deployed final gate replay.')
+docs/architecture/OPERATIONS_RUNBOOK.md:15:| Staging | Pre-production validation | staging.nrg.gov.in |
+docs/architecture/OPERATIONS_RUNBOOK.md:46:# SSH to staging server
+docs/architecture/OPERATIONS_RUNBOOK.md:47:ssh ops@staging.nrg.gov.in
+docs/architecture/OPERATIONS_RUNBOOK.md:61:curl https://staging.nrg.gov.in/health/all
+docs/architecture/OPERATIONS_RUNBOOK.md:68:# - [ ] All tests passing in staging
+docs/architecture/OPERATIONS_RUNBOOK.md:615:# 2. Tested in staging
+scripts/SCRIPT_REGISTRY.tsv:36:scripts/deployment_gate.py	Ops	ops-deploy	none-found	active
+scripts/SCRIPT_REGISTRY.tsv:89:scripts/run_final_external_gates.py	Ops	ops-deploy	docs/handover/evidence/02_load_report.md,docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md,docs/handover/FINAL_CHECKLIST.md,.claude/CURRENT_STATE.md,.claude/quality-bar.md	active
+docs/architecture/API_SPECIFICATION/openapi.yaml:35:  - url: https://staging.nrg.gov.in/v1
+scripts/deploy.sh:4:# Local compose helper. Cloud/staging release orchestration lives in
+scripts/deploy.sh:5:# scripts/deploy.py and scripts/deployment_gate.py.
+docs/REPOSITORY_STRUCTURE_AND_CLEANUP_PLAN.md:151:  `.env.dev`, `.env.local`, `.env.prod`, and `.env.staging`.
+docs/REPOSITORY_STRUCTURE_AND_CLEANUP_PLAN.md:153:  `.env.staging.example` as the tracked staging template.
+docs/schema/neon_integration.md:12:   - `staging` branch for testing
+docs/schema/neon_integration.md:38:   - Use separate branches for development, staging, and production
+docs/schema/neon_integration.md:62:   - `staging` - Testing branch
+scripts/quality_bar_scorecard.py:561:        or os.getenv("NRG_API_URL")
+scripts/seed_production_tables.py:5:synthetic but realistic data. Used for development/staging to enable
+scripts/seed_production_tables.py:9:    python scripts/seed_production_tables.py [--url DATABASE_URL] [--rows 10]
+scripts/red_team_replay.sh:14:API_BASE="${NRG_API_URL:-http://localhost:8000}"
+scripts/scan_env_history_secrets.py:27:    ".env.staging",
+scripts/deployment_gate.py:14:    python scripts/deployment_gate.py [--skip-tests] [--skip-docker] [--env <staging|production>]
+scripts/deployment_gate.py:249:        os.getenv("NRG_API_URL")
+scripts/deployment_gate.py:330:    env: str = "staging",
+scripts/deployment_gate.py:409:        default=os.getenv("DEPLOY_ENV", "staging"),
+scripts/deployment_gate.py:410:        choices=["staging", "production"],
+scripts/run_final_external_gates.py:95:    frontend_url = os.getenv("NRG_DEPLOYED_FRONTEND_URL")
+scripts/run_final_external_gates.py:104:                    "NRG_DEPLOYED_FRONTEND_URL": frontend_url,
+scripts/run_final_external_gates.py:111:                "NRG_DEPLOYED_FRONTEND_URL=https://... "
+scripts/run_final_external_gates.py:120:    env["NRG_DEPLOYED_FRONTEND_URL"] = frontend_url
+scripts/run_final_external_gates.py:141:            run_when_ready="NRG_PRODUCTION_API_URL=https://api... python scripts/run_final_external_gates.py",
+scripts/run_final_external_gates.py:185:                "KUBECONFIG=/path/to/sovereign-cluster "
+scripts/run_final_external_gates.py:186:                "python scripts/run_final_external_gates.py --run-cluster-load"
+scripts/run_final_external_gates.py:281:            "NRG_DEPLOYED_FRONTEND_URL": _redacted_env("NRG_DEPLOYED_FRONTEND_URL"),
+scripts/run_final_external_gates.py:284:            "KUBECONFIG": _redacted_env("KUBECONFIG"),
+.claude/skills/python-backend/fastapi_patterns.md:310:SHOW_DOCS_ENVIRONMENT = ("local", "staging")
+scripts/run_test_suite.sh:14:LIVE_API_BASE="${API_BASE:-${NRG_BASE_URL:-${NRG_API_URL:-http://localhost:8000}}}"
+scripts/run_test_suite.sh:217:        NRG_API_URL="$LIVE_API_BASE" \
+docs/operations/deployment-runbook.md:87:| `APP_ENV` | `dev` | Environment identifier: `dev`, `staging`, `prod` |
+docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md:249:KUBECONFIG=/path/to/sovereign-cluster \
+docs/handover/SECURITY_COMPLIANCE_ATTESTATION.md:250:python scripts/run_final_external_gates.py --run-cluster-load
+scripts/eternal_seal_execute.py:15:    - kubectl context points to sovereign-staging cluster
+scripts/README.md:15:| Health and verification | Validate API, schema, contracts, corpus, claims, documentation links, and evidence | `health_check.py`, `deployment_gate.py`, `verify_corpus_sync.py`, `check_docs_links.py`, `validate_contracts.py` |
+scripts/README.md:20:| Deployment and operations | Deploy, backup, preflight, image scan gates, and external-gate verification | `deploy.py`, `deployment_gate.py`, `runtime_image_scan_gate.py`, `backup_nrg.sh`, `run_final_external_gates.py` |
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:13:| Deployed browser replay | `NRG_DEPLOYED_FRONTEND_URL`, `NRG_DEPLOYED_API_URL` | Playwright screenshots, video, API JSON, blocked Tier 3 JSON |
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:15:| Sovereign 1000-user C4 load | `KUBECONFIG`, cluster access, load-test secrets, explicit `--run-cluster-load` | Locust HTML/CSV/logs |
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:23:.venv/bin/python scripts/run_final_external_gates.py \
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:30:export NRG_DEPLOYED_FRONTEND_URL="https://frontend.example"
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:33:export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:35:.venv/bin/python scripts/run_final_external_gates.py \
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:50:.venv/bin/python scripts/run_final_external_gates.py \
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:60:export KUBECONFIG="/path/to/sovereign-cluster-kubeconfig"
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:62:.venv/bin/python scripts/run_final_external_gates.py \
+docs/handover/EXTERNAL_FINAL_GATES_RUNBOOK.md:78:NRG_DEPLOYED_FRONTEND_URL="https://frontend.example" \
+docs/audits/NRG_PRODUCTION_AUDIT_2026-04-27.md:77:| GAP-D: Demo video on sovereign staging | ✅ CLOSED | `evidence/2026-04-26/acceptance_run_recording.mp4` (3.8MB) |
+docs/handover/FINAL_CHECKLIST.md:17:- [ ] PostgreSQL staging migration and seed verified
+docs/handover/FINAL_CHECKLIST.md:53:| External final gates runner | `scripts/run_final_external_gates.py` |
+docs/archive/memory-2026-05-05/grok-principal-engineer-2026-04-25.md:127:| Credit-score parsing must be in the production prompt and validator | LB-2; `src/skills/text_to_sql/skill.py`; `src/skills/text_to_sql/schema_aware_prompt.py`; `src/skills/text_to_sql/validator.py` | Closed in code and tests; staging PostgreSQL evidence still required for final seal |
+docs/audits/NRG_FINAL_ETERNAL_AUDIT_2026-04-27.md:454:The codebase has closed several earlier architectural gaps: API-layer filtering, PgBouncer, credit parsing in the production prompt, and k-anonymity now exist in code. The running production system is still unproven because Docker is unavailable here, Qdrant baseline is unresolved, and live red-team/load/curl evidence was not produced.
+docs/audits/ui_ux_2026-04-27/PRODUCTION_UX_ACCEPTANCE_REPORT.md:99:I have merged the real-user UX protocol into the production acceptance workflow without weakening the evidence standard. I have not claimed live browser completion where the stack was not running locally. The next seal is a recorded full-stack walkthrough plus current-head screenshots, curl evidence, Lighthouse output, and mobile captures.
+docs/handover/evidence/02_load_report.md:8:**Cluster**: sovereign-staging
+docs/handover/evidence/02_load_report.md:15:KUBECONFIG=/path/to/sovereign-cluster \
+docs/handover/evidence/02_load_report.md:16:.venv/bin/python scripts/run_final_external_gates.py \
+docs/specs/CLOSURE_PLAN_2026-04-26.md:71:| LB-2 | Text-to-SQL hardening and adversarial suite | C3 | No | Code and local tests committed; needs staging PostgreSQL query evidence | backend + ml |
+docs/specs/CLOSURE_PLAN_2026-04-26.md:80:| GAP-D | Acceptance recording on sovereign staging | Handover | Yes | Capture script and acceptance runbook ready | devops |
+docs/audits/V4_ETERNAL_FINAL_AUDIT.md:355:  Command: locust --users 1000 --spawn-rate 50 --run-time 5m --headless --host https://nrg-staging.in
+docs/audits/V4_ETERNAL_FINAL_AUDIT.md:496:  --headless --host https://nrg-staging.in \
+docs/audits/V4_ETERNAL_FINAL_AUDIT.md:659:| 1 | Demo video filmed (≤3min, sovereign staging) | ⏸️ Pending | `evidence/04_demo.sha256` |
+docs/audits/V4_ETERNAL_FINAL_AUDIT.md:665:| 7 | PostgreSQL staging: alembic upgrade + seed | ⏸️ Pending | `evidence/01_stage_up.json` |
+docs/handover/evidence/05_chain_seal.json:25:    "constraint": "Indian PII regression against staging egress",
+docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md:164:| M7.2 | Staging environment (`staging.nrg.iitgn.ac.in`) auto-deploys from `develop` | DevOps-Bot | Push to develop → staging in < 10 min |
+docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md:166:| M7.4 | One-click rollback to previous version (< 5 min RTO) | DevOps-Bot | Tested in staging |
+docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md:167:| M7.5 | Database migrations run in pipeline with rollback script | Hephaestus-Backend | Forward + rollback both tested in staging |
+docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md:228:  ☐ M7.1–M7.6 complete (PR gates, staging, prod deploy with approval, rollback)
+docs/specs/MASTER_EXECUTION_PLAN_2026-04-25.md:241:  ☐ First 10 real users onboarded in staging without incident for 7 consecutive days
+docs/handover/evidence/04_demo.sha256:8:- [ ] Screencap on sovereign staging
+docs/STAKEHOLDER_UPDATE.md:73:2. **Kubernetes Helm deployment** — Helm charts are ready for staging/production. Recommend: deploy to staging this week. Decision needed: approve infra spend?
+docs/STAKEHOLDER_UPDATE.md:96:| Helm staging deployed | May 9 |
+docs/uat/UAT_SCHEDULING_TEMPLATES.md:21:- **What you need:** Browser access to the NRG staging URL (credentials will be provided)
+docs/uat/UAT_SCHEDULING_TEMPLATES.md:61:- **Access:** Browser-based, no installation required (staging credentials provided)
+docs/uat/UAT_SCHEDULING_TEMPLATES.md:102:- **Access:** Browser, staging environment (credentials provided)
+docs/specs/C4_1000_USER_LOAD_TEST_SPEC.md:5:> **Cluster Dependency**: YES — requires sovereign K8s or staging environment with ≥4 vCPU, 16 GB RAM, PG ≥50k rows, Qdrant populated
+docs/specs/C4_1000_USER_LOAD_TEST_SPEC.md:127:| K8s cluster | 3+ nodes, 4 vCPU / 16 GB per node | Sovereign cluster or staging equivalent |
+.claude/rules/production_only.md:28:| "works on my machine" | Bare-metal / VM / container parity is mandatory. | "verified in staging" |
+docs/specs/SPRINT_PHASE2_2026-04-28.md:103:| WL-4 | PostgreSQL staging | ⏸️ BLOCKED | 1h | Cluster + 600GB data |
+docs/specs/SPRINT_PHASE2_2026-04-28.md:168:| 14 | **WL-4** — PostgreSQL staging apply | Cluster-gated | P2 | ⏸️ BLOCKED | Cluster access + 600GB data bundle | `alembic upgrade head` + `seed_production_initial_dataset.py --rows 50000` ready |
+docs/specs/SPRINT_PHASE2_2026-04-28.md:199:| WL-4 | PostgreSQL staging | `phase7_preflight.py --require P7-B` | ❌ BLOCKED |
+.claude/rules/audit/protocol.md:527:    ☐ Items requiring sovereign staging cluster — acknowledged,
+.claude/CURRENT_STATE.md:11:| Deployed staging URL | Srujan | No deployed frontend/API URL recorded for this repo/session | Provide target URLs or deployment credentials, then run `09_deployment_gate_stone.md` |
+.claude/CURRENT_STATE.md:12:| Cluster C4 (1000-user) | Srujan | No usable Kubernetes context on this machine | Provide `KUBECONFIG` or cluster context, then run `scripts/run_final_external_gates.py --run-cluster-load` |
+.claude/CURRENT_STATE.md:44:| Deployment gate stone | May 5 | `prompts_hybrid/09_deployment_gate_stone.md` |
+.claude/CURRENT_STATE.md:64:**C4/C5**: `scripts/quality_bar_scorecard.json` reports 6/6 for live local validation. C4 passes with `P99=200 ms`, failure rate `0.0%`, samples `7,436`, requested users `1000`, Locust processes `4`, and wait profile `fast=4-10s`, `full=6-14s`, `adversarial=6-14s` (`evidence/2026-05-07/quality_bar_default_1m_after_c4_harness_fix.log`). Cluster/deployed closure still requires a healthy NRG API target with `NRG_C4_REQUIRE_LIVE=1`, a staging URL, and Kubernetes context.
+.claude/CURRENT_STATE.md:102:**No show readiness claims until staging URLs exist.**
+.claude/CURRENT_STATE.md:117:| Deployment | `prompts_hybrid/09_deployment_gate_stone.md`, `.claude/REMOTE_WORKFLOW.md` |
+.claude/PROFESSOR_AUDIT_PROMPT.md:69:| 1 | DEPLOYED INFRASTRUCTURE | `curl` staging URL? `CURRENT_STATE.md` §Deployed URLs |
+.claude/assignments/shishya_deployment_gate_prep.md:9:You are a DevOps engineer preparing NRG for staging deployment. Your job is to validate all deployment artifacts, fix any configuration issues, and write a deployment runbook so that the moment AWS/GCP credentials are available, deployment takes minutes not hours.
+.claude/assignments/shishya_deployment_gate_prep.md:31:- `prompts_hybrid/09_deployment_gate_stone.md` — deployment gate requirements
+.claude/assignments/shishya_deployment_gate_prep.md:35:NRG has no deployed staging or production URL. The CI/CD pipeline (`deploy.yml`) was recently fixed but has never succeeded on a real deployment. Before the founder provisions cloud infrastructure, we need to verify that every config is correct, every secret is parameterized (not hardcoded), every health check endpoint works, and every rollback procedure is documented. Common failures: hardcoded localhost URLs, missing env vars, broken Dockerfile paths, unparameterized DB credentials, missing health check in docker-compose.prod.yml.
+.claude/assignments/shishya_deployment_gate_prep.md:56:   - Step 3: Deploy to staging
+.claude/assignments/shishya_deployment_gate_prep.md:58:   - Step 5: Run C4 load test against staging
+.claude/assignments/shishya_deployment_gate_prep.md:59:   - Step 6: Promote to production (if staging passes)
+docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md:27:- `.gitignore` covers `.env`, `.env.dev`, `.env.local`, `.env.prod`, and `.env.staging`.
+docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md:99:     --path .env.staging \
+docs/security/ENV_HISTORY_SECRET_REMEDIATION_2026-05-02.md:119:   git log --all --full-history --name-status -- .env .env.dev .env.local .env.prod .env.staging .env.production
+.claude/assignments/shishya_cicd_pipeline_validation.md:9:You are a DevOps engineer auditing the NRG continuous integration and deployment pipeline. Your job is to validate every GitHub Actions workflow, fix syntax errors, identify missing secrets, and produce a CI/CD health report so the pipeline is ready to deploy the moment staging infrastructure exists.
+.claude/assignments/shishya_cicd_pipeline_validation.md:31:- `prompts_hybrid/09_deployment_gate_stone.md` — deployment gate requirements
+.claude/quality-bar.md:47:- **CI-level**: `.github/workflows/cd.yml` — `quality-bar` job runs scorecard before build; blocks all deployments (build, staging, production) unless scorecard reports 6/6.
+.claude/quality-bar.md:66:| C4 Production SLO | `.venv/bin/python -m pytest tests/performance/test_slo_compliance.py tests/load/test_slo_under_load.py -m 'slow or not slow' -q --tb=short --no-cov` | Strict local SLO regression proof. Cluster proof command: `KUBECONFIG=/path/to/cluster .venv/bin/python scripts/run_final_external_gates.py --evidence-dir evidence/$(date +%F)/final_external_gates --run-cluster-load`. |
+.claude/quality-bar.md:119:1. A captured response from a **running uvicorn API + populated Qdrant + ≥50k-row staging PostgreSQL**, committed under `evidence/<YYYY-MM-DD>/` as JSON or Markdown.
+.claude/memory/patterns/partitioning-pitr.md:30:- **Quarterly DR drill**: spin up a fresh staging PostgreSQL, restore from the latest base backup, replay WAL to a chosen point-in-time (e.g., "12:00 IST yesterday"), verify the DB is consistent, run the 3 KILLER queries, document the wall-clock RTO. Drill report committed to `evidence/<date>/dr_drill_<quarter>.md`.
+.claude/memory/sprint_retrospective.md:78:1. Execute WL-4 (PostgreSQL staging) to close 40-table schema gap — this is the **critical path blocker**
+.claude/memory/patterns/live-evidence-requirement.md:9:1. A captured response from a **running uvicorn API + populated Qdrant + ≥50,000-row staging PostgreSQL**, committed under `evidence/<YYYY-MM-DD>/` as JSON or Markdown.
+.claude/memory/patterns/async-compute-queue.md:24:- Master plan M1 (Infrastructure) acceptance must include "Celery + Redis broker deployed; SLURM `sbatch` worker tested end-to-end on staging cluster".

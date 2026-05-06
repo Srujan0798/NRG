@@ -1,0 +1,13 @@
+usage: deployment_gate.py [-h] [--skip-tests] [--skip-docker] [--skip-health]
+                          [--env {staging,production}] [-v]
+
+NRG Deployment Gate
+
+options:
+  -h, --help            show this help message and exit
+  --skip-tests          Skip test suite execution
+  --skip-docker         Skip Docker build check
+  --skip-health         Skip health endpoint check
+  --env {staging,production}
+                        Deployment environment
+  -v, --verbose         Show detailed output
