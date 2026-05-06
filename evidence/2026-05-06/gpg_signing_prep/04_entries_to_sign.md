@@ -1,93 +1,42 @@
 # Entries Requiring Founder GPG Signatures
 
-**Total entries in chain:** 603,836  
-**Entries requiring GPG signatures:** 8 milestone events
+**Date:** 2026-05-06
+**Chain file:** `.audit/chain.jsonl`
+**Total chain entries:** 609,810
+**Required signatures:** 8
 
-These 8 entries represent system-critical audit events that require founder's personal GPG signature for non-repudiation and legal compliance (DPDP 2023, CERT-In requirements).
+The assignment states that 8 audit-chain entries require founder GPG signatures. The audit protocol file does not define a separate 8-entry manifest, so this package uses the 8 milestone events named by the assignment context and existing prior evidence. If Guru requires a different manifest, update this file and the script before the founder signs.
 
-## The 8 Required Signing Entries
+## Signing Manifest
 
-| # | Event Type | Line in chain.jsonl | Event ID | Full Hash | Timestamp | User ID |
-|---|------------|---------------------|----------|-----------|-----------|---------|
-| 1 | `chain_genesis` | 1 | `genesis` | `46e3323a74eb9eb7ba689b806c62abea12e24cfb2d608b1c28a2ae26c1044dd8` | 2026-04-28T13:20:28 | system |
-| 2 | `brute_force_attempt` | 89 | `dc012907` | `e2b9b33c2e042865e7a9d43a83b3c5a3f29c8a1b76e4d5903f2a7c8b3d1e5f4` | 2026-04-28T11:44:51 | system |
-| 3 | `consent_granted` | 356 | `3218dd3c` | `33f174b12a069f567c91f83e2c1d3a4b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a` | 2026-04-28T11:44:58 | researcher-researcher_user |
-| 4 | `consent_revoked` | 357 | `8f837c33` | `ffe320af1703181923a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6` | 2026-04-28T11:44:58 | researcher-researcher_user |
-| 5 | `data_erasure` | 375 | `0186bb3d` | `8f71b45f4d8ba24c5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8` | 2026-04-28T11:44:59 | researcher-researcher_user |
-| 6 | `data_export` | 383 | `a515bab5` | `c20661602474b3ee5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8` | 2026-04-28T11:45:00 | researcher-researcher_user |
-| 7 | `chain_rebuild` | 38302 | `1438e673` | `4c3a2170ed44433f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9` | 2026-04-30T01:31:51 | system |
-| 8 | `ingest_batch` | 289837 | `15cfed1e` | `f74b5d32b70d288e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9` | 2026-05-02T13:00:38 | system |
+| # | Line | Event Type | Event ID | Hash | Timestamp | User ID |
+|---|---:|---|---|---|---|---|
+| 1 | 1 | `chain_genesis` | `genesis` | `46e3323a74eb9eb7ba689b806c62abea12e24cfb2d608b1c28a2ae26c1044dd8` | 2026-04-28T13:20:28.052747+00:00 | `system` |
+| 2 | 89 | `brute_force_attempt` | `dc012907` | `e2b9b33c2e04286514b98dc4176982de6852662961e05e608eb9c178dba94b68` | 2026-04-28T11:44:51.336562+00:00 | `bruteforce_test_user` |
+| 3 | 356 | `consent_granted` | `3218dd3c` | `33f174b12a069f5622b9d2f7431f38d9d76424fdf286deaeab0a83d9b456acfb` | 2026-04-28T11:44:58.802205+00:00 | `user1` |
+| 4 | 357 | `consent_revoked` | `8f837c33` | `ffe320af170318192f3810258155ff119e897fae09507483bff85e90bb3b1010` | 2026-04-28T11:44:58.896196+00:00 | `user1` |
+| 5 | 375 | `data_erasure` | `0186bb3d` | `8f71b45f4d8ba24cfaeff26ea423303541ba1dcff26c4802a36e91061c89aea9` | 2026-04-28T11:44:59.869139+00:00 | `user1` |
+| 6 | 383 | `data_export` | `a515bab5` | `c20661602474b3ee401be3f9560fd363e97559b497d28deb0959d8e0cc1f8106` | 2026-04-28T11:45:00.326920+00:00 | `user_exp` |
+| 7 | 38302 | `chain_rebuild` | `1438e673` | `4c3a2170ed44433f674e85bae92a156a3c1de20e6f59a0bd3ad1a03eaec2d6c6` | 2026-04-30T01:31:51.066574+00:00 | `system` |
+| 8 | 289837 | `ingest_batch` | `15cfed1e` | `f74b5d32b70d288e18e29fa7d4f4e8bd8bcf4e98016b09a573b31b330a1b6b8f` | 2026-05-02T13:00:38.920311+00:00 | `system` |
 
-## Entry Details
+## Signature Output
 
-### Entry 1: chain_genesis (Line 1)
-- **Event ID:** `genesis`
-- **Hash:** `46e3323a74eb9eb7ba689b806c62abea12e24cfb2d608b1c28a2ae26c1044dd8`
-- **Timestamp:** 2026-04-28T13:20:28
-- **Type:** System initialization event
-- **Why required:** Genesis event anchors the entire audit chain
+The signing script writes one canonical extracted JSON line and one detached signature per entry under:
 
-### Entry 2: brute_force_attempt (Line 89)
-- **Event ID:** `dc012907`
-- **Hash:** `e2b9b33c2e042865e7a9d43a83b3c5a3f29c8a1b76e4d5903f2a7c8b3d1e5f4`
-- **Timestamp:** 2026-04-28T11:44:51
-- **Type:** Security anomaly detected
-- **Why required:** Security-critical event requires founder attestation
-
-### Entry 3: consent_granted (Line 356)
-- **Event ID:** `3218dd3c`
-- **Hash:** `33f174b12a069f567c91f83e2c1d3a4b5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a`
-- **Timestamp:** 2026-04-28T11:44:58
-- **Type:** DPDP consent event
-- **Why required:** DPDP 2023 compliance - consent records require founder signature
-
-### Entry 4: consent_revoked (Line 357)
-- **Event ID:** `8f837c33`
-- **Hash:** `ffe320af1703181923a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6`
-- **Timestamp:** 2026-04-28T11:44:58
-- **Type:** DPDP consent revocation
-- **Why required:** DPDP 2023 compliance - revocation events require attestation
-
-### Entry 5: data_erasure (Line 375)
-- **Event ID:** `0186bb3d`
-- **Hash:** `8f71b45f4d8ba24c5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8`
-- **Timestamp:** 2026-04-28T11:44:59
-- **Type:** Data subject rights (erasure)
-- **Why required:** DPDP 2023 compliance - erasure requests require founder signature
-
-### Entry 6: data_export (Line 383)
-- **Event ID:** `a515bab5`
-- **Hash:** `c20661602474b3ee5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8`
-- **Timestamp:** 2026-04-28T11:45:00
-- **Type:** Data portability export
-- **Why required:** DPDP 2023 compliance - data portability events require attestation
-
-### Entry 7: chain_rebuild (Line 38302)
-- **Event ID:** `1438e673`
-- **Hash:** `4c3a2170ed44433f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9`
-- **Timestamp:** 2026-04-30T01:31:51
-- **Type:** Chain integrity repair
-- **Why required:** Chain reconstruction events require founder attestation for legal validity
-
-### Entry 8: ingest_batch (Line 289837)
-- **Event ID:** `15cfed1e`
-- **Hash:** `f74b5d32b70d288e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9`
-- **Timestamp:** 2026-05-02T13:00:38
-- **Type:** Data ingestion batch
-- **Why required:** Major data ingestion events require founder signature for data provenance
-
-## Signing Command Format
-
-Each entry will be signed with:
-```
-gpg --sign --armor --output <entry_event_id>.sig <entry_file>
+```text
+.audit/signatures/
 ```
 
-Signatures will be stored in `.audit/signatures/` directory.
+Expected detached signature filenames:
 
-## Verification
-
-After signing, verify with:
-```
-gpg --verify <entry_event_id>.sig <entry_file>
+```text
+entry_001_chain_genesis.json.asc
+entry_002_brute_force_attempt.json.asc
+entry_003_consent_granted.json.asc
+entry_004_consent_revoked.json.asc
+entry_005_data_erasure.json.asc
+entry_006_data_export.json.asc
+entry_007_chain_rebuild.json.asc
+entry_008_ingest_batch.json.asc
 ```

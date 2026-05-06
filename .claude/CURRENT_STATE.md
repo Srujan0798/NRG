@@ -20,9 +20,9 @@
 | Item | Status | Evidence |
 |------|--------|----------|
 | K-Q1/K-Q2/K-Q3 killer queries | PASS live local | `evidence/2026-05-06/killer_queries_live/` — 3/3 pass against live FastAPI + PostgreSQL; SQL, rows, and latency captured |
-| Quality Bar scorecard | 5/6, C4 BLOCKED live | C1-C3, C5, C6 pass; C4 optimization hit the 3-attempt stop rule in `evidence/2026-05-06/c4_p99_optimization/` |
+| Quality Bar scorecard | 4/6, C4/C5 FAIL live | C1-C3 and C6 pass; latest scorecard JSON has C4 FAIL and C5 timeout, and local API `/health` is unhealthy (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`) |
 | Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
-| CI/CD pipeline | FIXED | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
+| CI/CD pipeline | PATCHED / remote recheck pending | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
 | Console errors | PASS local | empty console_errors.json |
 
 ---
@@ -31,7 +31,8 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
-| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 5/6, latest local live C4 P99 1200 ms with 0 failures; `evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md` |
+| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 4/6; latest local live C4 P99 21000 ms with 1.51% failures; latest `http://127.0.0.1:8001/health` is unhealthy with audit timeout, Qdrant vector-health timeout, and CRITICAL vector drift |
+| Local API health hardening | May 6 | Lazy workflow construction and bounded vector/data health probes; `evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow_summary.md` |
 | Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
 | Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
 | Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
@@ -55,7 +56,7 @@
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
 | PASS | PASS | PASS | FAIL live / PASS local regression | PASS local / production pending | PASS |
 
-**C4**: `scripts/quality_bar_scorecard.json` reports 5/6. Latest C4 optimization evidence in `evidence/2026-05-06/c4_p99_optimization/` remains BLOCKED: baseline P99 7900 ms / 0.57% failures, best retry P99 6300 ms / 0 failures, final worker-tuning retry P99 9800 ms / 1.55% failures. The assignment stop rule triggered after 3 attempts. Cluster/live closure still requires a performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
+**C4/C5**: `scripts/quality_bar_scorecard.json` reports 4/6. C4 remains blocked by P99/failure-rate evidence in `evidence/2026-05-06/c4_p99_optimization/` (`P99=21000 ms`, failure rate `1.51%`). C5 timed out in the latest scorecard. The latest local API attempt can start on `http://127.0.0.1:8001`, but `/health` is unhealthy: audit-chain timeout after 10s, Qdrant vector-health timeout after 5s, and vector drift CRITICAL (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`). Cluster/live closure still requires a healthy, performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

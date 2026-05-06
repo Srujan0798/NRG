@@ -19,13 +19,11 @@
 
 | Item | Status | Evidence |
 |------|--------|----------|
-| K-Q2/K-Q3 killer query proof | BLOCKED | Need fresh SQL + screenshots on staging |
-| Quality Bar scorecard | LIVE C4 FAIL | `scripts/quality_bar_scorecard.json` is `5/6`; C1, C2, C3, C5, and C6 pass. Latest local live C4 on `http://127.0.0.1:8001` ran 1000 users / 338548 requests / 0 failures, but P99 was 1200 ms, above the 500 ms gate. |
-| Local Docker/API runtime | PARTIAL | Docker data services are up. Direct Uvicorn can run on port 8001 through the Python startup wrapper used this session, but the local live C4 gate still fails P99 at the maintained workload. Port 8000 remains occupied by an `ssh` listener. |
-| FastAPI TestClient runtime | PASS current | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` records 7 passing focused API contract checks; `evidence/2026-05-06/runtime_recovery/killer_queries_testclient.log` records 3 passing killer-query checks. |
-| Frontend bundle size | PASS current | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` records `npm run build` exit 0, 2,581 modules transformed, largest JS chunk 318.71 KB raw, built in 3m 57s. |
-| Console errors | PASS local | `evidence/2026-05-05/maximum_enforcement_local_browser_final/console_errors.json` is empty |
-| Workflow cleanup | PASS local | canonical `nrg-validation-campaign` kept under `.claude/skills/`; deployment gate is `09_deployment_gate_stone.md`; local/remote sync must be checked before handoff |
+| K-Q1/K-Q2/K-Q3 killer queries | PASS live local | `evidence/2026-05-06/killer_queries_live/` — 3/3 pass against live FastAPI + PostgreSQL; SQL, rows, and latency captured |
+| Quality Bar scorecard | 4/6, C4/C5 FAIL live | C1-C3 and C6 pass; latest scorecard JSON has C4 FAIL and C5 timeout, and local API `/health` is unhealthy (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`) |
+| Frontend bundle | PASS current dist | Largest raw Vite chunk is App at 148KB (<250KB); bundle diet evidence committed under `evidence/2026-05-06/bundle_diet_v2/` |
+| CI/CD pipeline | PATCHED / remote recheck pending | deploy.yml: e2e isolation, prod-only condition, Semgrep continue-on-error |
+| Console errors | PASS local | empty console_errors.json |
 
 ---
 
@@ -33,17 +31,22 @@
 
 | Item | Date | Evidence |
 |------|------|----------|
-| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 5/6, latest local live C4 P99 1200 ms with 0 failures; `evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md` |
+| Local C4 regression + live failure | May 6 | `scripts/quality_bar_scorecard.json` — 4/6; latest local live C4 P99 21000 ms with 1.51% failures; latest `http://127.0.0.1:8001/health` is unhealthy with audit timeout, Qdrant vector-health timeout, and CRITICAL vector drift |
+| Local API health hardening | May 6 | Lazy workflow construction and bounded vector/data health probes; `evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow_summary.md` |
 | Audit chain rebuild | May 2 | `.audit/chain_corrupted_backup_20260502T083003Z.jsonl` |
 | Frontend dep audit | May 2 | `evidence/2026-05-02/.../247_...md` |
 | Workflow scripts | May 5 | `.claude/scripts/nrg-verify-workflow.py` |
 | Deployment gate stone | May 5 | `prompts_hybrid/09_deployment_gate_stone.md` |
 | Remote workflow | May 5 | `.claude/REMOTE_WORKFLOW.md` |
 | Focused Dhairya regression | May 5 | `evidence/2026-05-05/dhairya_regression_full/01_full_run.log` — 43 passed |
-| Broad non-script pytest | May 5 | `evidence/2026-05-05/final_verification/full_non_script_pytest_after_compose_fix_summary.md` — 1846 passed, 57 skipped, 261 deselected |
-| API focused pytest | May 5 | `evidence/2026-05-05/final_verification/api_pytest_final.log` — 155 passed, 1 deselected |
-| Frontend production build | May 6 | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` — `npm run build` exit 0 |
-| FastAPI TestClient runtime | May 6 | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` — 7 passed; `evidence/2026-05-06/runtime_recovery/killer_queries_testclient.log` — 3 passed |
+| Frontend production build | May 6 | `evidence/2026-05-06/frontend_build_recovery/npm_build.log` — exit 0, App.js 148KB (down from 218KB) |
+| FastAPI TestClient runtime | May 6 | `evidence/2026-05-06/runtime_recovery/testclient_runtime.log` — 7 passed |
+| PostgreSQL killer query seed | May 6 | `evidence/2026-05-06/killer_query_pg_seed/00_summary.md` — 4 tables: 1440/280/282/3840 rows; K-Q1, K-Q2, K-Q3 all return data |
+| Killer queries live local API | May 6 | `evidence/2026-05-06/killer_queries_live/00_summary.md` — 3/3 PASS against live FastAPI + PostgreSQL |
+| Frontend bundle diet v2 | May 6 | `evidence/2026-05-06/bundle_diet_v2/00_summary.md` — PASS, largest raw chunk 148KB |
+| CI/CD deploy.yml fix | May 6 | commit c0fc82e7 — e2e isolation, prod condition, Semgrep continue-on-error |
+| C4 SLO local pass | May 6 | `tests/performance/test_slo_compliance.py` — 9/9 passed (P50/P95/P99 within targets) |
+| C4 multi-target health retry | May 6 | commit 816321a4 — NRG_C4_API_BASE_URL env, health retries, port-conflict resilience |
 
 ---
 
@@ -53,7 +56,7 @@
 |:-----------:|:--------:|:------------:|:------:|:--------:|:---------:|
 | PASS | PASS | PASS | FAIL live / PASS local regression | PASS local / production pending | PASS |
 
-**C4**: `scripts/quality_bar_scorecard.json` reports 5/6. Latest local live C4 on `http://127.0.0.1:8001` used `NRG_C4_REQUIRE_LIVE=1` and completed 338548 requests with 0 failures, but failed P99 at 1200 ms (`evidence/2026-05-06/runtime_recovery/live_c4_local_8001_failure_summary.md`). An earlier forwarded-target attempt also failed at P99 4900 ms and 0.1717% failures (`evidence/2026-05-06/runtime_recovery/live_c4_locust_failure_summary.md`). Cluster/live closure still requires a performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
+**C4/C5**: `scripts/quality_bar_scorecard.json` reports 4/6. C4 remains blocked by P99/failure-rate evidence in `evidence/2026-05-06/c4_p99_optimization/` (`P99=21000 ms`, failure rate `1.51%`). C5 timed out in the latest scorecard. The latest local API attempt can start on `http://127.0.0.1:8001`, but `/health` is unhealthy: audit-chain timeout after 10s, Qdrant vector-health timeout after 5s, and vector drift CRITICAL (`evidence/2026-05-06/runtime_recovery/health_8001_after_lazy_workflow.json`). Cluster/live closure still requires a healthy, performant NRG API target with `NRG_C4_REQUIRE_LIVE=1`.
 
 **SQL accuracy (Dhairya)**: 43/43 tests pass (100%) — up from external audit 7/17 (41%). All 17 Dhairya benchmark queries produce correct SQL patterns.
 

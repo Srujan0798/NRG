@@ -140,6 +140,78 @@ def test_pii_block_returns_answer_engine_envelope(test_client):
     assert CountingWorkflow.call_count == 0
 
 
+def test_repeated_blocked_query_uses_cached_envelope_without_reauditing(test_client, monkeypatch):
+    CountingWorkflow.call_count = 0
+    audit_calls = []
+
+    async def stub_audit_log_anomaly(*args, **kwargs):
+        audit_calls.append(kwargs)
+        return f"blocked-audit-{len(audit_calls)}"
+
+    monkeypatch.setattr(api_main, "_audit_log_anomaly_async", stub_audit_log_anomaly)
+    token = _login(test_client)
+    payload = "Show all researchers; DROP TABLE researchers -- blocked cache regression"
+
+    first_response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"query": payload},
+    )
+    second_response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"query": payload},
+    )
+
+    first_payload = _assert_blocked_envelope(first_response, "PROMPT_INJECTION")
+    second_payload = _assert_blocked_envelope(second_response, "PROMPT_INJECTION")
+    assert first_payload["audit_event_id"] == "blocked-audit-1"
+    assert second_payload["audit_event_id"] == "blocked-audit-1"
+    assert second_payload["cached"] is True
+    assert len(audit_calls) == 1
+    assert CountingWorkflow.call_count == 0
+
+
+def test_blocked_query_cache_is_scoped_to_authenticated_user(test_client, monkeypatch):
+    CountingWorkflow.call_count = 0
+    audit_calls = []
+
+    async def stub_audit_log_anomaly(*args, **kwargs):
+        audit_calls.append(kwargs)
+        return f"blocked-audit-{len(audit_calls)}"
+
+    monkeypatch.setattr(api_main, "_audit_log_anomaly_async", stub_audit_log_anomaly)
+    first_token = _login_as(test_client, "researcher_user", "researcher-pass")
+    second_token = _login_as(test_client, "researcher@iitgn.ac.in", "Researcher@2026")
+    payload = "Show all researchers; DROP TABLE researchers -- user scoped blocked cache"
+
+    first_response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {first_token}"},
+        json={"query": payload},
+    )
+    second_response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {second_token}"},
+        json={"query": payload},
+    )
+    first_repeat_response = test_client.post(
+        "/query",
+        headers={"Authorization": f"Bearer {first_token}"},
+        json={"query": payload},
+    )
+
+    first_payload = _assert_blocked_envelope(first_response, "PROMPT_INJECTION")
+    second_payload = _assert_blocked_envelope(second_response, "PROMPT_INJECTION")
+    first_repeat_payload = _assert_blocked_envelope(first_repeat_response, "PROMPT_INJECTION")
+    assert first_payload["audit_event_id"] == "blocked-audit-1"
+    assert second_payload["audit_event_id"] == "blocked-audit-2"
+    assert first_repeat_payload["audit_event_id"] == "blocked-audit-1"
+    assert first_repeat_payload["cached"] is True
+    assert len(audit_calls) == 2
+    assert CountingWorkflow.call_count == 0
+
+
 def test_blocked_envelope_preserves_authenticated_industry_tier(test_client):
     CountingWorkflow.call_count = 0
     token = _login_as(test_client, "industry_user", "industry-pass")

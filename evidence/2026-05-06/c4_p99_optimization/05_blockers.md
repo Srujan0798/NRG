@@ -1,67 +1,34 @@
-# C4 P99 Optimization — Blockers and Gaps
+# C4 P99 Optimization - Blockers
 
-## 🚫 BLOCKED: Architectural Changes Required
+**Date:** 2026-05-06
+**Status:** BLOCKED after 3 optimization attempts
 
-The P99 target of < 500ms at 1000 concurrent users **cannot be achieved with configuration changes alone**. The root causes are architectural:
+## Stop Rule Triggered
 
-### Primary Bottleneck: LLM Mesh Latency
+The assignment says to stop if P99 does not drop below the gate after 3 optimization attempts. That condition is met.
 
-Every query that reaches `run_workflow` must make external LLM API calls through the sovereign mesh:
-1. MiniMax API (primary, ~2-5s latency)
-2. NVIDIA API (fallback, ~3-8s latency)
-3. Local LLM fallback (~1-3s latency)
+Latest measured C4 result:
 
-At 1000 concurrent users, even with 10s timeout, these calls queue and create massive P99 tail latency.
+- P99: `21000ms`
+- P95: `3700ms`
+- Mean: `1481ms`
+- Failure rate: `1.51%`
+- Samples: `118,788`
+- Target: P99 `<500ms`, failure rate `0%`
 
-### Secondary Bottleneck: Python GIL + ThreadPoolExecutor
+## What Remains Blocked
 
-The LLM calls are made via `ThreadPoolExecutor` with limited workers:
-- `_llm_timeout_executor` in `skill.py`: max_workers=4
-- `_LLM_TIMEOUT_EXECUTOR` in `synthesizer.py`: max_workers=4  
-- `blocking_executor` in `main.py`: max_workers=128
+1. C4 requires either a materialized/read-only load-test path that is part of the product contract, or a deeper runtime redesign. The retained prompt-block cache is safe, but not enough.
+2. Local Docker plus Locust plus FastAPI on this laptop is producing HTTP 0 failures and long queue tails at 1000 users. That is not a clean production proof.
+3. C5 timed out in two later scorecard attempts, so the latest scorecard is `4/6`, not `5/6` or `6/6`.
+4. Any further C4 work should start from a dedicated profiling run with API process metrics, Locust worker metrics, Docker memory/CPU, and PostgreSQL/Qdrant metrics captured together.
 
-Even with 128 blocking workers, the Python GIL prevents true parallelism for I/O-bound LLM calls.
+## Recommended Next Step
 
-### Tertiary Bottleneck: In-Memory SQLite Read Model
+Escalate to Guru with the failed evidence and decide whether the C4 target is meant to be:
 
-The `_c4_read_model_snapshot()` loads 5000 rows from SQLite on first call. With 4 uvicorn workers, concurrent requests can cause SQLite contention, especially under memory pressure.
+- a local laptop proof,
+- a cluster proof,
+- or a product SLO backed by a specific read model/cache contract.
 
-## Changes That Would Help (Require Code Changes)
-
-### 1. Async LLM Clients
-Replace `ThreadPoolExecutor` with true `async/await` LLM clients that don't block threads waiting for I/O.
-
-### 2. Aggressive Response Caching  
-Increase `QUERY_RESULT_CACHE_TTL_SECONDS` from 300 to 3600 and add LRU eviction to reduce LLM call volume by 80%+ for repeated queries.
-
-### 3. Pre-Warm C4 Read Model
-Eagerly load `_c4_read_model_snapshot()` at startup rather than on first request, using `_prewarm_c4_read_model()` pattern already in code.
-
-### 4. Request Coalescing
-Deduplicate concurrent identical queries to a single LLM call using singleflight pattern.
-
-### 5. Circuit Breaker Tuning
-Tighten circuit breaker thresholds to fail immediately rather than retry exhausted providers.
-
-## What Was Tried (And Didn't Work)
-
-| Change | Effect on P99 |
-|--------|---------------|
-| LLM timeout 60s → 10s | Slightly improved (7900 → 6300ms) but failure rate increased |
-| DATABASE_POOL 20/40 → 30/80 | No significant impact |
-| NRG_API_BLOCKING_WORKERS 64 → 128 | **WORSENED** (7900 → 9800ms) |
-
-## Known Gaps
-
-1. **No Redis caching for query results**: `_api_cache` is in-memory only, no shared cache across workers
-2. **No query result materialization**: Complex queries recompute every time
-3. **No connection pooling metrics**: PgBouncer stats not exposed for monitoring
-4. **LLM mesh health not real-time**: Circuit breaker state not exposed in health endpoint
-
-## Evidence Files
-
-- `00_summary.md` - Complete analysis and conclusions
-- `01_baseline.log` - Baseline C4 run (P99=7900ms)
-- `03_after_fix.log` - After all config fixes (P99=9800ms)
-- `04_config_changes.diff` - All .env changes made
-- `05_blockers.md` - This file
+Do not claim C4 pass until the full `NRG_C4_REQUIRE_LIVE=1 .venv/bin/python scripts/quality_bar_scorecard.py` run reports C4 PASS with P99 `<500ms` and `0` failures.

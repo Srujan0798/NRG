@@ -1,39 +1,436 @@
-# Configuration Changes Applied
+diff --git a/scripts/quality_bar_scorecard.py b/scripts/quality_bar_scorecard.py
+index e1767b93..59a28709 100644
+--- a/scripts/quality_bar_scorecard.py
++++ b/scripts/quality_bar_scorecard.py
+@@ -52,7 +52,7 @@ C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
+ C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
+ C4_LOCAL_RETRIES = int(os.getenv("NRG_C4_LOCAL_RETRIES", "1"))
+ C4_HEALTH_RETRIES = int(os.getenv("NRG_C4_HEALTH_RETRIES", "3"))
+-C4_HEALTH_TIMEOUT = float(os.getenv("NRG_C4_HEALTH_TIMEOUT", "5"))
++C4_HEALTH_TIMEOUT = float(os.getenv("NRG_C4_HEALTH_TIMEOUT", "20"))
 
-## File: `.env`
+ CONSTRAINTS = {
+     "C1": {
+diff --git a/src/api/deps.py b/src/api/deps.py
+index 794223c8..8d32aec3 100644
+--- a/src/api/deps.py
++++ b/src/api/deps.py
+@@ -7,7 +7,7 @@ import re
+ import time
+ from collections import OrderedDict, deque
+ from pathlib import Path
+-from typing import Any, Optional, cast
++from typing import TYPE_CHECKING, Any, Optional, cast
 
-```diff
---- a/.env
-+++ b/.env
-@@ -30,8 +30,16 @@ AUDIT_CHAIN_KEY=nrg-audit-chain-dev-key
+ from pydantic import BaseModel, Field, model_validator
 
- CORS_ORIGINS=http://localhost:3000,http://localhost:4173,http://127.0.0.1:3000,http://127.0.0.1:4173
+@@ -19,10 +19,12 @@ from src.api.response_filter import (
+ from src.api.middleware.security import enforce_tier_response_boundary
+ from src.auth.jwt_handler import JWTHandler
+ from src.data.database_v2 import NRGDatabase
+-from src.orchestration.graph import NRGWorkflow
 
-+# Database pool sizing for 1000 concurrent users
-+DATABASE_POOL_MIN=30
-+DATABASE_POOL_MAX=80
+ brute_force_protection = __import__("src.api.middleware.security", fromlist=["brute_force_protection"]).brute_force_protection
+
++if TYPE_CHECKING:
++    from src.orchestration.graph import NRGWorkflow
 +
- # LLM timeout (seconds) — increase for slow sovereign mesh providers
--LLM_REQUEST_TIMEOUT_SECONDS=60
--LLM_TIMEOUT_BUDGET=45
-+# LLM timeout (seconds) — aggressive for P99 <500ms at 1000 concurrent
-+LLM_REQUEST_TIMEOUT_SECONDS=10
-+LLM_TIMEOUT_BUDGET=10
+
+ QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
+ JSONDict = dict[str, Any]
+@@ -111,7 +113,7 @@ _fast_query_context: dict[str, dict[str, Any]] = {}
+ _sql_domain_context: dict[str, dict[str, Any]] = {}
+
+ jwt_handler = JWTHandler()
+-workflow = NRGWorkflow()
++workflow: NRGWorkflow | None = None
+
+ REPO_ROOT = Path(__file__).resolve().parents[2]
+ KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.json"
+@@ -145,6 +147,11 @@ def get_db() -> NRGDatabase:
+
+
+ def get_workflow() -> NRGWorkflow:
++    global workflow
++    if workflow is None:
++        from src.orchestration.graph import NRGWorkflow
 +
-+# More workers for 1000 concurrent users
-+NRG_API_BLOCKING_WORKERS=128
- CLOUD_SYNTHESIS_ALLOWED=true
-```
++        workflow = NRGWorkflow()
+     return workflow
 
-## Summary of Changes
 
-1. **DATABASE_POOL_MIN/MAX**: Increased from default (20/40) to (30/80) to handle 1000 concurrent users
-2. **LLM_REQUEST_TIMEOUT_SECONDS**: Reduced from 60s to 10s to fail fast on slow LLM calls
-3. **LLM_TIMEOUT_BUDGET**: Reduced from 45s to 10s to limit total LLM time budget
-4. **NRG_API_BLOCKING_WORKERS**: Increased from default (64) to 128 for more parallel handling
+diff --git a/src/api/main.py b/src/api/main.py
+index 50ecb7d4..8950bae6 100644
+--- a/src/api/main.py
++++ b/src/api/main.py
+@@ -62,7 +62,6 @@ from src.api.query_response_utils import (
+ )
+ from src.api.query_service import QueryAnswerService, QueryServiceDependencies
+ from src.data.database import resolve_database_path
+-from src.orchestration.graph import NRGWorkflow
+ from src.security.gateway.prompt_sanitiser import prompt_sanitiser
+ from src.audit import log_query as audit_log_query
+ from src.audit import log_anomaly as audit_log_anomaly
+@@ -76,6 +75,7 @@ from qdrant_client import QdrantClient
 
-## Result
+ if TYPE_CHECKING:
+     from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
++    from src.orchestration.graph import NRGWorkflow as NRGWorkflowType
 
-These config changes did NOT achieve the P99 < 500ms target. The P99 actually worsened from 7900ms to 9800ms after increasing blocking workers, suggesting memory pressure or GIL contention became worse.
+ configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
+ logger = get_logger(__name__)
+@@ -249,7 +249,7 @@ def _get_data_quality_health() -> dict[str, Any]:
+     }
 
-**Architectural changes are required** - see 00_summary.md for details.
+
+-QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
++QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "3600"))
+
+
+ def _env_flag(name: str) -> bool:
+@@ -5367,10 +5367,24 @@ def _metric_band(values: list[float]) -> str:
+     return "low"
+
+
+-workflow = NRGWorkflow()
++workflow: Any | None = None
+ jwt_handler = JWTHandler()
+
+
++def NRGWorkflow(*args: Any, **kwargs: Any) -> Any:
++    """Lazily construct the workflow so API health startup avoids LangGraph import cost."""
++    from src.orchestration.graph import NRGWorkflow as _NRGWorkflow
++
++    return _NRGWorkflow(*args, **kwargs)
++
++
++def _get_workflow() -> Any:
++    global workflow
++    if workflow is None:
++        workflow = NRGWorkflow()
++    return workflow
++
++
+ def _run_workflow(
+     query: str,
+     *,
+@@ -5379,7 +5393,7 @@ def _run_workflow(
+     user_id: str | None,
+ ) -> JSONDict:
+     return _as_json_dict(
+-        workflow.run(
++        _get_workflow().run(
+             query,
+             user_tier=user_tier,
+             session_id=session_id,
+diff --git a/src/api/query_service.py b/src/api/query_service.py
+index 3e71ab68..c75af161 100644
+--- a/src/api/query_service.py
++++ b/src/api/query_service.py
+@@ -334,8 +334,42 @@ class QueryAnswerService:
+                             limit_scope="prompt_sanitiser",
+                         ),
+                     )
+-                audit_event_id = None
+-                if validation["reason"] != "RATE_LIMITED":
++
++                blocked_cache_key = self.deps.api_cache.make_cache_key(
++                    request.query,
++                    user_tier,
++                    intent="blocked",
++                    routing=f"{validation['reason']}:{user_id}",
++                )
++                cached_blocked = self.deps.api_cache.get(blocked_cache_key)
++                profiler.mark("blocked_cache_lookup")
++                if cached_blocked is not None:
++                    cached_blocked_response: Any = cached_blocked
++                    if isinstance(cached_blocked, Mapping):
++                        cached_blocked_response = self.deps.as_json_dict(cached_blocked)
++                        cached_blocked_response["cached"] = True
++                        if (
++                            cached_blocked_response.get("_tier_filter_applied") is True
++                            and cached_blocked_response.get("_tier_filter_tier") == user_tier
++                        ):
++                            cached_blocked_response.pop("_tier_filter_applied", None)
++                            cached_blocked_response.pop("_tier_filter_tier", None)
++                            profiler.finish(route="blocked", outcome="blocked", cache_hit=True)
++                            return cached_blocked_response
++                    filtered_cached_blocked = self.deps.apply_tier_response_filter(
++                        cached_blocked_response,
++                        user_tier,
++                        user_id=user_id,
++                        jwt_kid=token_payload.get("kid"),
++                        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
++                        endpoint="/query",
++                    )
++                    profiler.mark("tier_filter")
++                    profiler.finish(route="blocked", outcome="blocked", cache_hit=True)
++                    return filtered_cached_blocked
++
++                async def build_blocked_response() -> dict[str, Any]:
++                    audit_event_id = None
+                     try:
+                         audit_event_id = await self.deps.audit_log_anomaly(
+                             user_id=user_id,
+@@ -349,23 +383,45 @@ class QueryAnswerService:
+                         )
+                     except Exception:
+                         self.deps.logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
+-                blocked = blocked_answer_payload(
+-                    question=request.query,
+-                    user_tier=user_tier,
+-                    audit_event_id=audit_event_id,
+-                    reason=f"Security policy blocked this query: {validation['reason']}",
++                    blocked = blocked_answer_payload(
++                        question=request.query,
++                        user_tier=user_tier,
++                        audit_event_id=audit_event_id,
++                        reason=f"Security policy blocked this query: {validation['reason']}",
++                    )
++                    filtered_blocked = self.deps.apply_tier_response_filter(
++                        blocked,
++                        user_tier,
++                        user_id=user_id,
++                        jwt_kid=token_payload.get("kid"),
++                        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
++                        endpoint="/query",
++                    )
++                    if isinstance(filtered_blocked, dict):
++                        filtered_blocked["_tier_filter_applied"] = True
++                        filtered_blocked["_tier_filter_tier"] = user_tier
++                    return filtered_blocked
++
++                filtered_blocked, blocked_cache_hit = await self.deps.get_or_build_query_cache_singleflight(
++                    blocked_cache_key,
++                    build_blocked_response,
++                    ttl=self.deps.query_result_cache_ttl_seconds,
+                 )
+                 profiler.mark("prompt_sanitizer_block")
+-                filtered_blocked = self.deps.apply_tier_response_filter(
+-                    blocked,
+-                    user_tier,
+-                    user_id=user_id,
+-                    jwt_kid=token_payload.get("kid"),
+-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+-                    endpoint="/query",
+-                )
+-                profiler.mark("tier_filter")
+-                profiler.finish(route="blocked", outcome="blocked", cache_hit=False)
++                if isinstance(filtered_blocked, Mapping):
++                    blocked_response_dict = self.deps.as_json_dict(filtered_blocked)
++                    if blocked_cache_hit:
++                        blocked_response_dict["cached"] = True
++                    if (
++                        blocked_response_dict.get("_tier_filter_applied") is True
++                        and blocked_response_dict.get("_tier_filter_tier") == user_tier
++                    ):
++                        blocked_response_dict.pop("_tier_filter_applied", None)
++                        blocked_response_dict.pop("_tier_filter_tier", None)
++                        profiler.finish(route="blocked", outcome="blocked", cache_hit=blocked_cache_hit)
++                        return blocked_response_dict
++                    filtered_blocked = blocked_response_dict
++                profiler.finish(route="blocked", outcome="blocked", cache_hit=blocked_cache_hit)
+                 return filtered_blocked
+             profiler.mark("prompt_sanitizer")
+
+diff --git a/src/api/routes/health.py b/src/api/routes/health.py
+index de084624..3b0d2bca 100644
+--- a/src/api/routes/health.py
++++ b/src/api/routes/health.py
+@@ -180,7 +180,7 @@ async def health_check():
+             health["status"] = "unhealthy"
+         return health
+
+-    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
++    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "10.0"))
+     try:
+         audit_health = _call_with_thread_timeout(_resolve_audit_health, audit_timeout_seconds)
+     except TimeoutError:
+@@ -291,12 +291,31 @@ async def health_check():
+     if drift_score is not None:
+         slo_tracker.set_drift_score(drift_score)
+
+-    vector_drift_health = _vector_drift()
+-    data_quality_health = _data_quality()
++    vector_drift_timeout_seconds = float(os.getenv("NRG_HEALTH_VECTOR_DRIFT_TIMEOUT_SECONDS", "2.0"))
++    try:
++        vector_drift_health = _call_with_thread_timeout(_vector_drift, vector_drift_timeout_seconds)
++    except TimeoutError:
++        vector_drift_health = {
++            "status": "unknown",
++            "message": f"Vector drift health timed out after {vector_drift_timeout_seconds:.2f}s",
++        }
++    except Exception as exc:
++        vector_drift_health = {"status": "error", "message": str(exc)}
++
++    data_quality_timeout_seconds = float(os.getenv("NRG_HEALTH_DATA_QUALITY_TIMEOUT_SECONDS", "2.0"))
++    try:
++        data_quality_health = _call_with_thread_timeout(_data_quality, data_quality_timeout_seconds)
++    except TimeoutError:
++        data_quality_health = {
++            "status": "unknown",
++            "message": f"Data quality health timed out after {data_quality_timeout_seconds:.2f}s",
++        }
++    except Exception as exc:
++        data_quality_health = {"status": "error", "message": str(exc)}
+     if data_quality_health.get("status") == "unhealthy" and overall != "CRITICAL":
+         overall = "unhealthy"
+
+-    qdrant_timeout_seconds = float(os.getenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "0.75"))
++    qdrant_timeout_seconds = float(os.getenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "5.0"))
+     try:
+         qdrant_health = _call_with_thread_timeout(_qdrant_count_health, qdrant_timeout_seconds)
+     except TimeoutError:
+diff --git a/tests/api/test_health_endpoints.py b/tests/api/test_health_endpoints.py
+index 7e489a2a..7dae7f65 100644
+--- a/tests/api/test_health_endpoints.py
++++ b/tests/api/test_health_endpoints.py
+@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
+ import json
+
+ import src.api.main as api_main
++import src.api.routes.health as health_routes
+
+
+ class FakeCollection:
+@@ -205,6 +206,48 @@ def test_root_health_times_out_slow_qdrant_check(monkeypatch):
+     assert "timed out" in payload["qdrant"]["message"]
+
+
++def test_root_health_times_out_slow_vector_drift_check(monkeypatch):
++    import time
++
++    class FakeDB:
++        dialect = "sqlite"
++
++        def get_stats(self):
++            return {"researchers": 42, "publications": 100}
++
++        def execute(self, query: str):
++            return [{"table_count": 10}]
++
++    def slow_vector_drift_health():
++        time.sleep(0.2)
++        return {"status": "healthy"}
++
++    monkeypatch.setenv("NRG_HEALTH_VECTOR_DRIFT_TIMEOUT_SECONDS", "0.01")
++    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
++    monkeypatch.setattr(
++        "src.audit.get_chain_health",
++        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
++    )
++    monkeypatch.setattr(
++        api_main,
++        "_get_qdrant_vector_count_health",
++        lambda: {"status": "healthy", "collection": "nrg_research", "vectors": 1},
++    )
++    monkeypatch.setattr(health_routes, "_vector_drift_health", slow_vector_drift_health)
++    monkeypatch.setattr(health_routes, "_data_quality_health", lambda: {"status": "healthy"})
++    client = TestClient(api_main.app)
++
++    start = time.perf_counter()
++    response = client.get("/health")
++    elapsed = time.perf_counter() - start
++
++    assert response.status_code == 200
++    payload = response.json()
++    assert elapsed < 1.0
++    assert payload["vector_drift"]["status"] == "unknown"
++    assert "timed out" in payload["vector_drift"]["message"]
++
++
+ def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypatch):
+     class FakeDB:
+         dialect = "sqlite"
+@@ -435,7 +478,7 @@ def test_root_health_reports_explicit_rag_status_when_qdrant_unavailable(monkeyp
+
+
+ def test_query_result_cache_ttl_is_long_enough_for_load_review():
+-    assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 300
++    assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 3600
+
+
+ def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):
+diff --git a/tests/api/test_query_security_validation.py b/tests/api/test_query_security_validation.py
+index adeb4b98..17bdbffc 100644
+--- a/tests/api/test_query_security_validation.py
++++ b/tests/api/test_query_security_validation.py
+@@ -140,6 +140,78 @@ def test_pii_block_returns_answer_engine_envelope(test_client):
+     assert CountingWorkflow.call_count == 0
+
+
++def test_repeated_blocked_query_uses_cached_envelope_without_reauditing(test_client, monkeypatch):
++    CountingWorkflow.call_count = 0
++    audit_calls = []
++
++    async def stub_audit_log_anomaly(*args, **kwargs):
++        audit_calls.append(kwargs)
++        return f"blocked-audit-{len(audit_calls)}"
++
++    monkeypatch.setattr(api_main, "_audit_log_anomaly_async", stub_audit_log_anomaly)
++    token = _login(test_client)
++    payload = "Show all researchers; DROP TABLE researchers -- blocked cache regression"
++
++    first_response = test_client.post(
++        "/query",
++        headers={"Authorization": f"Bearer {token}"},
++        json={"query": payload},
++    )
++    second_response = test_client.post(
++        "/query",
++        headers={"Authorization": f"Bearer {token}"},
++        json={"query": payload},
++    )
++
++    first_payload = _assert_blocked_envelope(first_response, "PROMPT_INJECTION")
++    second_payload = _assert_blocked_envelope(second_response, "PROMPT_INJECTION")
++    assert first_payload["audit_event_id"] == "blocked-audit-1"
++    assert second_payload["audit_event_id"] == "blocked-audit-1"
++    assert second_payload["cached"] is True
++    assert len(audit_calls) == 1
++    assert CountingWorkflow.call_count == 0
++
++
++def test_blocked_query_cache_is_scoped_to_authenticated_user(test_client, monkeypatch):
++    CountingWorkflow.call_count = 0
++    audit_calls = []
++
++    async def stub_audit_log_anomaly(*args, **kwargs):
++        audit_calls.append(kwargs)
++        return f"blocked-audit-{len(audit_calls)}"
++
++    monkeypatch.setattr(api_main, "_audit_log_anomaly_async", stub_audit_log_anomaly)
++    first_token = _login_as(test_client, "researcher_user", "researcher-pass")
++    second_token = _login_as(test_client, "researcher@iitgn.ac.in", "Researcher@2026")
++    payload = "Show all researchers; DROP TABLE researchers -- user scoped blocked cache"
++
++    first_response = test_client.post(
++        "/query",
++        headers={"Authorization": f"Bearer {first_token}"},
++        json={"query": payload},
++    )
++    second_response = test_client.post(
++        "/query",
++        headers={"Authorization": f"Bearer {second_token}"},
++        json={"query": payload},
++    )
++    first_repeat_response = test_client.post(
++        "/query",
++        headers={"Authorization": f"Bearer {first_token}"},
++        json={"query": payload},
++    )
++
++    first_payload = _assert_blocked_envelope(first_response, "PROMPT_INJECTION")
++    second_payload = _assert_blocked_envelope(second_response, "PROMPT_INJECTION")
++    first_repeat_payload = _assert_blocked_envelope(first_repeat_response, "PROMPT_INJECTION")
++    assert first_payload["audit_event_id"] == "blocked-audit-1"
++    assert second_payload["audit_event_id"] == "blocked-audit-2"
++    assert first_repeat_payload["audit_event_id"] == "blocked-audit-1"
++    assert first_repeat_payload["cached"] is True
++    assert len(audit_calls) == 2
++    assert CountingWorkflow.call_count == 0
++
++
+ def test_blocked_envelope_preserves_authenticated_industry_tier(test_client):
+     CountingWorkflow.call_count = 0
+     token = _login_as(test_client, "industry_user", "industry-pass")

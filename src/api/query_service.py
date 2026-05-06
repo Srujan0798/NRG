@@ -334,8 +334,42 @@ class QueryAnswerService:
                             limit_scope="prompt_sanitiser",
                         ),
                     )
-                audit_event_id = None
-                if validation["reason"] != "RATE_LIMITED":
+
+                blocked_cache_key = self.deps.api_cache.make_cache_key(
+                    request.query,
+                    user_tier,
+                    intent="blocked",
+                    routing=f"{validation['reason']}:{user_id}",
+                )
+                cached_blocked = self.deps.api_cache.get(blocked_cache_key)
+                profiler.mark("blocked_cache_lookup")
+                if cached_blocked is not None:
+                    cached_blocked_response: Any = cached_blocked
+                    if isinstance(cached_blocked, Mapping):
+                        cached_blocked_response = self.deps.as_json_dict(cached_blocked)
+                        cached_blocked_response["cached"] = True
+                        if (
+                            cached_blocked_response.get("_tier_filter_applied") is True
+                            and cached_blocked_response.get("_tier_filter_tier") == user_tier
+                        ):
+                            cached_blocked_response.pop("_tier_filter_applied", None)
+                            cached_blocked_response.pop("_tier_filter_tier", None)
+                            profiler.finish(route="blocked", outcome="blocked", cache_hit=True)
+                            return cached_blocked_response
+                    filtered_cached_blocked = self.deps.apply_tier_response_filter(
+                        cached_blocked_response,
+                        user_tier,
+                        user_id=user_id,
+                        jwt_kid=token_payload.get("kid"),
+                        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                        endpoint="/query",
+                    )
+                    profiler.mark("tier_filter")
+                    profiler.finish(route="blocked", outcome="blocked", cache_hit=True)
+                    return filtered_cached_blocked
+
+                async def build_blocked_response() -> dict[str, Any]:
+                    audit_event_id = None
                     try:
                         audit_event_id = await self.deps.audit_log_anomaly(
                             user_id=user_id,
@@ -349,23 +383,45 @@ class QueryAnswerService:
                         )
                     except Exception:
                         self.deps.logger.warning("Audit log_anomaly failed at API layer", exc_info=True)
-                blocked = blocked_answer_payload(
-                    question=request.query,
-                    user_tier=user_tier,
-                    audit_event_id=audit_event_id,
-                    reason=f"Security policy blocked this query: {validation['reason']}",
+                    blocked = blocked_answer_payload(
+                        question=request.query,
+                        user_tier=user_tier,
+                        audit_event_id=audit_event_id,
+                        reason=f"Security policy blocked this query: {validation['reason']}",
+                    )
+                    filtered_blocked = self.deps.apply_tier_response_filter(
+                        blocked,
+                        user_tier,
+                        user_id=user_id,
+                        jwt_kid=token_payload.get("kid"),
+                        request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
+                        endpoint="/query",
+                    )
+                    if isinstance(filtered_blocked, dict):
+                        filtered_blocked["_tier_filter_applied"] = True
+                        filtered_blocked["_tier_filter_tier"] = user_tier
+                    return filtered_blocked
+
+                filtered_blocked, blocked_cache_hit = await self.deps.get_or_build_query_cache_singleflight(
+                    blocked_cache_key,
+                    build_blocked_response,
+                    ttl=self.deps.query_result_cache_ttl_seconds,
                 )
                 profiler.mark("prompt_sanitizer_block")
-                filtered_blocked = self.deps.apply_tier_response_filter(
-                    blocked,
-                    user_tier,
-                    user_id=user_id,
-                    jwt_kid=token_payload.get("kid"),
-                    request_fingerprint=getattr(raw_request.state, "request_fingerprint", None) if raw_request else None,
-                    endpoint="/query",
-                )
-                profiler.mark("tier_filter")
-                profiler.finish(route="blocked", outcome="blocked", cache_hit=False)
+                if isinstance(filtered_blocked, Mapping):
+                    blocked_response_dict = self.deps.as_json_dict(filtered_blocked)
+                    if blocked_cache_hit:
+                        blocked_response_dict["cached"] = True
+                    if (
+                        blocked_response_dict.get("_tier_filter_applied") is True
+                        and blocked_response_dict.get("_tier_filter_tier") == user_tier
+                    ):
+                        blocked_response_dict.pop("_tier_filter_applied", None)
+                        blocked_response_dict.pop("_tier_filter_tier", None)
+                        profiler.finish(route="blocked", outcome="blocked", cache_hit=blocked_cache_hit)
+                        return blocked_response_dict
+                    filtered_blocked = blocked_response_dict
+                profiler.finish(route="blocked", outcome="blocked", cache_hit=blocked_cache_hit)
                 return filtered_blocked
             profiler.mark("prompt_sanitizer")
 

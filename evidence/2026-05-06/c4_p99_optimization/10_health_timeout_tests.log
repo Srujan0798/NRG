@@ -1,0 +1,14 @@
+...                                                                      [100%]
+=============================== warnings summary ===============================
+.venv/lib/python3.11/site-packages/_pytest/config/__init__.py:1448
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/_pytest/config/__init__.py:1448: PytestConfigWarning: Unknown config option: asyncio_mode
+
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/api/test_health_endpoints.py::test_root_health_times_out_slow_vector_drift_check
+tests/api/test_health_endpoints.py::test_root_health_times_out_slow_qdrant_check
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+3 passed, 3 warnings in 34.80s

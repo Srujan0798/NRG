@@ -180,7 +180,7 @@ async def health_check():
             health["status"] = "unhealthy"
         return health
 
-    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "3.0"))
+    audit_timeout_seconds = float(os.getenv("NRG_HEALTH_AUDIT_TIMEOUT_SECONDS", "10.0"))
     try:
         audit_health = _call_with_thread_timeout(_resolve_audit_health, audit_timeout_seconds)
     except TimeoutError:
@@ -291,12 +291,31 @@ async def health_check():
     if drift_score is not None:
         slo_tracker.set_drift_score(drift_score)
 
-    vector_drift_health = _vector_drift()
-    data_quality_health = _data_quality()
+    vector_drift_timeout_seconds = float(os.getenv("NRG_HEALTH_VECTOR_DRIFT_TIMEOUT_SECONDS", "2.0"))
+    try:
+        vector_drift_health = _call_with_thread_timeout(_vector_drift, vector_drift_timeout_seconds)
+    except TimeoutError:
+        vector_drift_health = {
+            "status": "unknown",
+            "message": f"Vector drift health timed out after {vector_drift_timeout_seconds:.2f}s",
+        }
+    except Exception as exc:
+        vector_drift_health = {"status": "error", "message": str(exc)}
+
+    data_quality_timeout_seconds = float(os.getenv("NRG_HEALTH_DATA_QUALITY_TIMEOUT_SECONDS", "2.0"))
+    try:
+        data_quality_health = _call_with_thread_timeout(_data_quality, data_quality_timeout_seconds)
+    except TimeoutError:
+        data_quality_health = {
+            "status": "unknown",
+            "message": f"Data quality health timed out after {data_quality_timeout_seconds:.2f}s",
+        }
+    except Exception as exc:
+        data_quality_health = {"status": "error", "message": str(exc)}
     if data_quality_health.get("status") == "unhealthy" and overall != "CRITICAL":
         overall = "unhealthy"
 
-    qdrant_timeout_seconds = float(os.getenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "0.75"))
+    qdrant_timeout_seconds = float(os.getenv("NRG_HEALTH_QDRANT_TIMEOUT_SECONDS", "5.0"))
     try:
         qdrant_health = _call_with_thread_timeout(_qdrant_count_health, qdrant_timeout_seconds)
     except TimeoutError:

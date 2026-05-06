@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 import json
 
 import src.api.main as api_main
+import src.api.routes.health as health_routes
 
 
 class FakeCollection:
@@ -203,6 +204,48 @@ def test_root_health_times_out_slow_qdrant_check(monkeypatch):
     assert payload["qdrant"]["status"] == "unavailable"
     assert payload["rag"]["status"] == "degraded"
     assert "timed out" in payload["qdrant"]["message"]
+
+
+def test_root_health_times_out_slow_vector_drift_check(monkeypatch):
+    import time
+
+    class FakeDB:
+        dialect = "sqlite"
+
+        def get_stats(self):
+            return {"researchers": 42, "publications": 100}
+
+        def execute(self, query: str):
+            return [{"table_count": 10}]
+
+    def slow_vector_drift_health():
+        time.sleep(0.2)
+        return {"status": "healthy"}
+
+    monkeypatch.setenv("NRG_HEALTH_VECTOR_DRIFT_TIMEOUT_SECONDS", "0.01")
+    monkeypatch.setattr(api_main, "_get_db", lambda: FakeDB())
+    monkeypatch.setattr(
+        "src.audit.get_chain_health",
+        lambda **_: {"chain_valid": True, "chain_length": 7, "valid_events": 7, "error_count": 0},
+    )
+    monkeypatch.setattr(
+        api_main,
+        "_get_qdrant_vector_count_health",
+        lambda: {"status": "healthy", "collection": "nrg_research", "vectors": 1},
+    )
+    monkeypatch.setattr(health_routes, "_vector_drift_health", slow_vector_drift_health)
+    monkeypatch.setattr(health_routes, "_data_quality_health", lambda: {"status": "healthy"})
+    client = TestClient(api_main.app)
+
+    start = time.perf_counter()
+    response = client.get("/health")
+    elapsed = time.perf_counter() - start
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert elapsed < 1.0
+    assert payload["vector_drift"]["status"] == "unknown"
+    assert "timed out" in payload["vector_drift"]["message"]
 
 
 def test_root_health_reports_audit_lineage_repair_required_as_unhealthy(monkeypatch):
@@ -435,7 +478,7 @@ def test_root_health_reports_explicit_rag_status_when_qdrant_unavailable(monkeyp
 
 
 def test_query_result_cache_ttl_is_long_enough_for_load_review():
-    assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 300
+    assert api_main.QUERY_RESULT_CACHE_TTL_SECONDS >= 3600
 
 
 def test_root_health_reports_vector_drift_status_file(monkeypatch, tmp_path):

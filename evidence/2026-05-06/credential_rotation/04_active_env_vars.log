@@ -1,0 +1,80 @@
+./.env.dev.example:12:POSTGRES_PASSWORD -> REDACTED
+./.env.dev.example:29:JWT_SECRET -> REDACTED
+./.env.dev.example:52:GEMINI_API_KEY -> REDACTED
+./.env.dev.example:63:LANGFUSE_SECRET_KEY -> REDACTED
+./.env.dev.example:68:RESEARCHER_PASSWORD -> REDACTED
+./.env.dev.example:70:GOV_PASSWORD -> REDACTED
+./.env.dev.example:72:INDUSTRY_PASSWORD -> REDACTED
+./.env.staging.example:12:POSTGRES_PASSWORD -> REDACTED
+./.env.staging.example:13:JWT_SECRET_KEY -> REDACTED
+./.env.staging.example:14:REDIS_PASSWORD -> REDACTED
+./.env.staging.example:20:DATABASE_URL -> REDACTED
+./.env.staging.example:45:GEMINI_API_KEY -> REDACTED
+./.env.staging.example:53:LANGFUSE_SECRET_KEY -> REDACTED
+./.env.local:10:POSTGRES_PASSWORD -> REDACTED
+./.env.local:31:RESEARCHER_PASSWORD -> REDACTED
+./.env.local:32:GOV_PASSWORD -> REDACTED
+./.env.local:33:INDUSTRY_PASSWORD -> REDACTED
+./.env.local:35:JWT_SECRET -> REDACTED
+./frontend/.env.example:1:VITE_API_TOKEN_HEADER -> REDACTED
+./.env.prod:12:# SECRETS - MUST BE SET BEFORE DEPLOYMENT
+./.env.prod:15:POSTGRES_PASSWORD -> REDACTED
+./.env.prod:16:JWT_SECRET_KEY -> REDACTED
+./.env.prod:17:REDIS_PASSWORD -> REDACTED
+./.env.prod:23:DATABASE_URL -> REDACTED
+./.env.prod:34:REDIS_URL -> REDACTED
+./.env.prod:43:JWT_PRIVATE_KEY_PATH -> REDACTED
+./.env.prod:60:GEMINI_API_KEY -> REDACTED
+./.env.prod:70:LANGFUSE_SECRET_KEY -> REDACTED
+./.env.prod.example:12:# SECRETS - MUST BE SET BEFORE DEPLOYMENT
+./.env.prod.example:15:POSTGRES_PASSWORD -> REDACTED
+./.env.prod.example:16:JWT_SECRET_KEY -> REDACTED
+./.env.prod.example:17:REDIS_PASSWORD -> REDACTED
+./.env.prod.example:23:DATABASE_URL -> REDACTED
+./.env.prod.example:41:JWT_PRIVATE_KEY_PATH -> REDACTED
+./.env.prod.example:56:GEMINI_API_KEY -> REDACTED
+./.env.prod.example:66:LANGFUSE_SECRET_KEY -> REDACTED
+./.env:4:JWT_SECRET -> REDACTED
+./.env:6:JWT_PRIVATE_KEY_PATH -> REDACTED
+./.env:17:MINIMAX_API_KEY -> REDACTED
+./.env:21:NVIDIA_API_KEY -> REDACTED
+./.env:26:RESEARCHER_PASSWORD -> REDACTED
+./.env:27:GOV_PASSWORD -> REDACTED
+./.env:28:INDUSTRY_PASSWORD -> REDACTED
+./.env.staging:12:# SECRETS - MUST BE SET BEFORE DEPLOYMENT
+./.env.staging:14:POSTGRES_PASSWORD -> REDACTED
+./.env.staging:15:JWT_SECRET_KEY -> REDACTED
+./.env.staging:16:REDIS_PASSWORD -> REDACTED
+./.env.staging:22:DATABASE_URL -> REDACTED
+./.env.staging:33:REDIS_URL -> REDACTED
+./.env.staging:47:GEMINI_API_KEY -> REDACTED
+./.env.staging:55:LANGFUSE_SECRET_KEY -> REDACTED
+./.env.dev:13:POSTGRES_PASSWORD -> REDACTED
+./.env.dev:31:JWT_SECRET -> REDACTED
+./.env.dev:53:GEMINI_API_KEY -> REDACTED
+./.env.dev:63:LANGFUSE_SECRET_KEY -> REDACTED
+./.env.dev:68:RESEARCHER_PASSWORD -> REDACTED
+./.env.dev:70:GOV_PASSWORD -> REDACTED
+./.env.dev:72:LEGACY_INDUSTRY_PASSWORD_KEY_NAME -> REDACTED
+./.env.dev:75:RESEARCHER_PASSWORD -> REDACTED
+./.env.dev:76:GOV_PASSWORD -> REDACTED
+./.env.dev:77:INDUSTRY_PASSWORD -> REDACTED
+./docker-compose.yml:16: REDACTED
+./docker-compose.yml:44: REDACTED
+./docker-compose.yml:141: REDACTED
+./.env.example:13:JWT_SECRET -> REDACTED
+./.env.example:14:JWT_PRIVATE_KEY_PATH -> REDACTED
+./.env.example:39:NVIDIA_API_KEY -> REDACTED
+./.env.example:41:GEMINI_API_KEY -> REDACTED
+./.env.example:43:ANTHROPIC_API_KEY -> REDACTED
+./.env.example:45:OPENAI_API_KEY -> REDACTED
+./.env.example:47:AZURE_OPENAI_API_KEY -> REDACTED
+./.env.example:51:LOCAL_LLM_CONTEXT_TOKENS -> REDACTED
+./.env.example:52:RESEARCHER_PASSWORD -> REDACTED
+./.env.example:53:GOV_PASSWORD -> REDACTED
+./.env.example:54:INDUSTRY_PASSWORD -> REDACTED
+./.env.example:58:LANGFUSE_SECRET_KEY -> REDACTED
+./infrastructure/kong/plugins/dlp/pii_types.yml:72: REDACTED
+./infrastructure/helm/nrg/templates/monitors/compliance-cronjob.yaml:55: REDACTED
+./infrastructure/helm/nrg/templates/backup/backup-cronjobs.yaml:80: REDACTED
+./infrastructure/helm/nrg/templates/vault/vault-config.yaml:64: REDACTED

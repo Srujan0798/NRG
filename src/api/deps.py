@@ -7,7 +7,7 @@ import re
 import time
 from collections import OrderedDict, deque
 from pathlib import Path
-from typing import Any, Optional, cast
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -19,9 +19,11 @@ from src.api.response_filter import (
 from src.api.middleware.security import enforce_tier_response_boundary
 from src.auth.jwt_handler import JWTHandler
 from src.data.database_v2 import NRGDatabase
-from src.orchestration.graph import NRGWorkflow
 
 brute_force_protection = __import__("src.api.middleware.security", fromlist=["brute_force_protection"]).brute_force_protection
+
+if TYPE_CHECKING:
+    from src.orchestration.graph import NRGWorkflow
 
 
 QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
@@ -111,7 +113,7 @@ _fast_query_context: dict[str, dict[str, Any]] = {}
 _sql_domain_context: dict[str, dict[str, Any]] = {}
 
 jwt_handler = JWTHandler()
-workflow = NRGWorkflow()
+workflow: NRGWorkflow | None = None
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 KILLER_QUERY_HEALTH_FILE = REPO_ROOT / "evidence/2026-04-26/killer_query_health.json"
@@ -145,6 +147,11 @@ def get_db() -> NRGDatabase:
 
 
 def get_workflow() -> NRGWorkflow:
+    global workflow
+    if workflow is None:
+        from src.orchestration.graph import NRGWorkflow
+
+        workflow = NRGWorkflow()
     return workflow
 
 

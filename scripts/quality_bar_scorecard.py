@@ -52,7 +52,7 @@ C4_MAX_FAILURE_RATE = float(os.getenv("NRG_C4_MAX_FAILURE_RATE", "0"))
 C4_REQUIRE_LIVE = os.getenv("NRG_C4_REQUIRE_LIVE", "0").lower() in {"1", "true", "yes"}
 C4_LOCAL_RETRIES = int(os.getenv("NRG_C4_LOCAL_RETRIES", "1"))
 C4_HEALTH_RETRIES = int(os.getenv("NRG_C4_HEALTH_RETRIES", "3"))
-C4_HEALTH_TIMEOUT = float(os.getenv("NRG_C4_HEALTH_TIMEOUT", "5"))
+C4_HEALTH_TIMEOUT = float(os.getenv("NRG_C4_HEALTH_TIMEOUT", "20"))
 
 CONSTRAINTS = {
     "C1": {

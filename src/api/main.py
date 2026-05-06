@@ -62,7 +62,6 @@ from src.api.query_response_utils import (
 )
 from src.api.query_service import QueryAnswerService, QueryServiceDependencies
 from src.data.database import resolve_database_path
-from src.orchestration.graph import NRGWorkflow
 from src.security.gateway.prompt_sanitiser import prompt_sanitiser
 from src.audit import log_query as audit_log_query
 from src.audit import log_anomaly as audit_log_anomaly
@@ -76,6 +75,7 @@ from qdrant_client import QdrantClient
 
 if TYPE_CHECKING:
     from src.data.database_v2 import NRGDatabase as NRGDatabaseV2
+    from src.orchestration.graph import NRGWorkflow as NRGWorkflowType
 
 configure_logging(level=os.getenv("LOG_LEVEL", "INFO"), json_format=True)
 logger = get_logger(__name__)
@@ -249,7 +249,7 @@ def _get_data_quality_health() -> dict[str, Any]:
     }
 
 
-QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "300"))
+QUERY_RESULT_CACHE_TTL_SECONDS = int(os.getenv("QUERY_RESULT_CACHE_TTL_SECONDS", "3600"))
 
 
 def _env_flag(name: str) -> bool:
@@ -5367,8 +5367,22 @@ def _metric_band(values: list[float]) -> str:
     return "low"
 
 
-workflow = NRGWorkflow()
+workflow: Any | None = None
 jwt_handler = JWTHandler()
+
+
+def NRGWorkflow(*args: Any, **kwargs: Any) -> Any:
+    """Lazily construct the workflow so API health startup avoids LangGraph import cost."""
+    from src.orchestration.graph import NRGWorkflow as _NRGWorkflow
+
+    return _NRGWorkflow(*args, **kwargs)
+
+
+def _get_workflow() -> Any:
+    global workflow
+    if workflow is None:
+        workflow = NRGWorkflow()
+    return workflow
 
 
 def _run_workflow(
@@ -5379,7 +5393,7 @@ def _run_workflow(
     user_id: str | None,
 ) -> JSONDict:
     return _as_json_dict(
-        workflow.run(
+        _get_workflow().run(
             query,
             user_tier=user_tier,
             session_id=session_id,

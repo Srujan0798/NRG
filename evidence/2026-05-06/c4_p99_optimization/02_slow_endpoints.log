@@ -1,0 +1,56 @@
+# C4 Profiling Evidence
+
+Date: 2026-05-06
+Profiler used: request-envelope and query-stage timing logs. `py-spy` was not used.
+
+## Direct 8001 Profiled Baseline
+
+Source: `01_baseline_8001_profiled_locust_report.html`
+
+| Metric | Value |
+|---|---:|
+| Requests | 19,565 |
+| Failures | 4,360 |
+| Failure rate | 22.284692% |
+| Mean | 12259.11 ms |
+| Median | 4600 ms |
+| P95 | 49000 ms |
+| P99 | 76000 ms |
+| Max | 85000 ms |
+
+This run had request-envelope profiling enabled, so it is diagnostic rather than a clean performance target. It confirmed extreme tail latency under 1000-user pressure.
+
+## Query Stage Profile
+
+Source: `02_stage_profile.jsonl`
+
+| Stage | Samples | Mean ms | P50 ms | P95 ms | P99 ms | Max ms |
+|---|---:|---:|---:|---:|---:|---:|
+| Handler total | 893 | 7.110 | 0.790 | 37.710 | 133.032 | 966.910 |
+| Rate limit and tier guard | 893 | 0.057 | 0.031 | 0.094 | 0.599 | 5.865 |
+| Prompt sanitizer, normal path | 837 | 0.615 | 0.473 | 1.175 | 2.668 | 14.030 |
+| Prompt sanitizer, blocked path | 56 | 92.493 | 60.832 | 214.949 | 433.396 | 966.732 |
+| Consent check | 837 | 0.458 | 0.174 | 1.091 | 5.555 | 39.261 |
+| Cache lookup | 837 | 0.059 | 0.023 | 0.060 | 0.232 | 16.828 |
+| C4 read model | 1 | 21.284 | 21.284 | 21.284 | 21.284 | 21.284 |
+| Audit append | 1 | 112.318 | 112.318 | 112.318 | 112.318 | 112.318 |
+
+Sampled routes: 836 cache hits, 56 blocked prompt responses, 1 C4 read-model miss.
+
+## Best Post-Fix Endpoint Breakdown
+
+Source: `03_after_fix_locust_report.html`
+
+| Endpoint | Requests | Failures | Failure Rate | Mean ms | P95 ms | P99 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| `/query::researcher` | 90,967 | 481 | 0.5288% | 1156.84 | 2300 | 6800 |
+| `/query::government` | 34,652 | 218 | 0.6291% | 1279.91 | 2600 | 9300 |
+| `/query::adversarial` | 8,653 | 55 | 0.6356% | 1474.24 | 2900 | 9600 |
+| `/stats::adversarial` | 2,223 | 18 | 0.8097% | 1304.45 | 2800 | 9400 |
+| Aggregated | 136,495 | 772 | 0.5656% | 1210.61 | 2400 | 7900 |
+
+## Interpretation
+
+The app-level cached handler p99 in the stage sample is 133.032 ms, while the Locust-observed p99 after the best fix is 7900 ms. That gap points to runtime queueing, process instability, local load-generator pressure, or another layer outside the sampled query handler.
+
+The blocked prompt path is still a measurable hot path, but its sampled P99 is 433.396 ms and cannot explain the full multi-second aggregated C4 tail by itself. Attempts to add workers and tune audit lock retry timing regressed results; the audit lock timing change was reverted.

@@ -1,0 +1,329 @@
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/pytest_asyncio/plugin.py:247: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the fixture caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to function scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+[1m============================= test session starts ==============================[0m
+platform darwin -- Python 3.11.7, pytest-8.2.2, pluggy-1.6.0
+rootdir: /Users/srujansai/Desktop/NRG
+configfile: pytest.ini
+plugins: hypothesis-6.100.1, cov-7.1.0, Faker-22.6.0, xdist-3.8.0, timeout-2.4.0, rerunfailures-14.0, langsmith-0.7.32, asyncio-1.3.0, anyio-4.13.0
+timeout: 60.0s
+timeout method: signal
+timeout func_only: False
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2270 items / 261 deselected / 2009 selected
+
+tests/api/test_500_audit_event.py [32m.[0m[32m                                      [  0%][0m
+tests/api/test_ai_synthesis.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                     [  0%][0m
+tests/api/test_answer_records_api.py [32m.[0m[32m.[0m[33m                                  [  0%][0m
+tests/api/test_api_endpoint_matrix.py [32m.[0m[33m                                  [  0%][0m
+tests/api/test_audit_event_endpoint.py [32m.[0m[32m.[0m[32m.[0m[33m                               [  0%][0m
+tests/api/test_auth_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                      [  0%][0m
+tests/api/test_c4_read_model.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                    [  1%][0m
+tests/api/test_critical_path_stream.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [  1%][0m
+tests/api/test_data_stats_nulls.py [32m.[0m[33m                                     [  1%][0m
+tests/api/test_final_golden_fast_paths.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [  1%][0m
+tests/api/test_glm_fusion_queries.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  2%][0m
+tests/api/test_health_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [  3%][0m
+tests/api/test_k4_publication_count_fast_path.py [32m.[0m[32m.[0m[33m                      [  3%][0m
+tests/api/test_k_anonymity_response_boundary.py [32m.[0m[32m.[0m[32m.[0m[33m                      [  3%][0m
+tests/api/test_langgraph_api.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m        [  5%][0m
+tests/api/test_lifespan_startup.py [32m.[0m[33m                                     [  5%][0m
+tests/api/test_live_hybrid_stream.py [32m.[0m[33m                                   [  5%][0m
+tests/api/test_metrics_fast_path.py [32m.[0m[33m                                    [  5%][0m
+tests/api/test_minimax_mvp_fusion_queries.py [32m.[0m[32m.[0m[32m.[0m[33m                         [  5%][0m
+tests/api/test_new_endpoints.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  5%][0m
+tests/api/test_query_async_boundaries.py [32m.[0m[32m.[0m[33m                              [  6%][0m
+tests/api/test_query_helper_drift.py [32m.[0m[33m                                   [  6%][0m
+tests/api/test_query_security_validation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                   [  6%][0m
+tests/api/test_query_service_extraction.py [32m.[0m[32m.[0m[33m                            [  6%][0m
+tests/api/test_request_logging_middleware.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [  7%][0m
+tests/api/test_researchers_endpoint_limits.py [32m.[0m[33m                          [  7%][0m
+tests/api/test_route_registration.py [32m.[0m[32m.[0m[32m.[0m[33m                                 [  7%][0m
+tests/api/test_telemetry_contract.py [32m.[0m[33m                                   [  7%][0m
+tests/api/test_tier_isolation_live.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [  7%][0m
+tests/api/test_tier_isolation_property.py [32m.[0m[33m                              [  7%][0m
+tests/api/test_tier_response_filtering.py [32m.[0m[32m.[0m[33m                             [  7%][0m
+tests/audit/test_async_append.py [32m.[0m[32m.[0m[33m                                      [  7%][0m
+tests/audit/test_audit_singleton_reset.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [  8%][0m
+tests/audit/test_chain_integrity.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m               [  9%][0m
+tests/audit/test_db_cosign.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 10%][0m
+tests/auth/test_auth_context_cache.py [32m.[0m[32m.[0m[32m.[0m[33m                                [ 10%][0m
+tests/auth/test_jwt_handler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                          [ 11%][0m
+tests/auth/test_jwt_secret_config.py [32m.[0m[33m                                   [ 11%][0m
+tests/benchmarks/test_dhairya_adversarial.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                  [ 11%][0m
+tests/benchmarks/test_dhairya_regression.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 13%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                          [ 13%][0m
+tests/benchmarks/test_text_to_sql_prompt_hardening.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m              [ 14%][0m
+tests/config/test_batch6_infra_hardening.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 14%][0m
+tests/config/test_cost_guard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 16%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 16%][0m
+tests/config/test_docker_compose_pgbouncer.py [32m.[0m[32m.[0m[32m.[0m[33m                        [ 17%][0m
+tests/config/test_helm_vector_drift_cronjobs.py [32m.[0m[32m.[0m[33m                       [ 17%][0m
+tests/config/test_llm_config.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                       [ 18%][0m
+tests/config/test_llm_egress_guard.py [32m.[0m[33m                                  [ 18%][0m
+tests/config/test_locustfile_contract.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 18%][0m
+tests/config/test_trl_safe_views.py [32m.[0m[32m.[0m[32m.[0m[33m                                  [ 18%][0m
+tests/contract/test_answer_engine_v1_contract.py [32m.[0m[32m.[0m[32m.[0m[33m                     [ 18%][0m
+tests/contract/test_api_response_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 19%][0m
+tests/contract/test_api_schema.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 19%][0m
+tests/contract/test_pipeline_contracts.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 20%][0m
+tests/contract/test_query_endpoint.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                       [ 21%][0m
+tests/data/test_data_quality.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                 [ 21%][0m
+tests/data/test_database_v2.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [ 22%][0m
+tests/data/test_database_v2_schema_drift.py [32m.[0m[33m                            [ 22%][0m
+tests/data/test_failed_queries_hall_of_shame.py [32m.[0m[33m                        [ 22%][0m
+tests/data/test_rls_policies.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                   [ 22%][0m
+tests/data/test_schema_indexes.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                   [ 22%][0m
+tests/data/test_schema_parity.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[33m                        [ 23%][0m
+tests/db/test_d4_data_constraints_migration.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                    [ 23%][0m
+tests/db/test_d4_hot_path_indexes_migration.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [ 24%][0m
+tests/db/test_d4_partition_audit_events_migration.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 24%][0m
+tests/db/test_trl_view.py [32m.[0m[32m.[0m[32m.[0m[33m                                            [ 24%][0m
+tests/evals/test_quality_gates.py [33ms[0m[32m.[0m[32m.[0m[33ms[0m[33m                                   [ 24%][0m
+tests/evals/test_sql_accuracy.py [33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[33m                                  [ 25%][0m
+tests/frontend/test_login_presets.py [32m.[0m[33m                                   [ 25%][0m
+tests/ingestion/test_vector_pipeline.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                             [ 25%][0m
+tests/integration/test_api_gateway.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m                           [ 25%][0m
+tests/integration/test_pipeline_e2e.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 25%][0m
+tests/integration/test_postgresql_connection.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m        [ 26%][0m
+tests/integration/test_query_caching.py [32m.[0m[32m.[0m[33m                               [ 26%][0m
+tests/integration/test_real_queries.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 27%][0m
+tests/integration/test_schema_completeness.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 28%]
+[0m[32m.[0m[32m.[0m[33m                                                                       [ 28%][0m
+tests/misc/test_support_module_regressions.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 29%][0m
+tests/misc/test_zero_coverage_modules.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m             [ 29%][0m
+tests/observability/test_metrics.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 31%][0m
+tests/observability/test_prometheus_label_safety.py [32m.[0m[33m                    [ 31%][0m
+tests/observability/test_vector_drift.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m           [ 32%][0m
+tests/observability/test_vector_drift_scheduler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m              [ 32%][0m
+tests/orchestration/test_complex_queries.py [32m.[0m[32m.[0m[32m.[0m[33m                          [ 32%][0m
+tests/orchestration/test_graph_session_memory.py [32m.[0m[33m                       [ 32%][0m
+tests/orchestration/test_join_graph_blindness.py [32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[33ms[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 33%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                             [ 34%][0m
+tests/orchestration/test_nodes.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                  [ 35%][0m
+tests/orchestration/test_planner.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [ 36%][0m
+tests/orchestration/test_planner_node.py [32m.[0m[32m.[0m[32m.[0m[33m                             [ 36%][0m
+tests/orchestration/test_query_catalog.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 36%][0m
+tests/orchestration/test_remaining_nodes.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m           [ 37%][0m
+tests/orchestration/test_retry_handler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 37%][0m
+tests/orchestration/test_router.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 39%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                         [ 40%][0m
+tests/orchestration/test_router_simple_query.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 41%][0m
+tests/orchestration/test_schema_rag_wrapper.py [32m.[0m[32m.[0m[32m.[0m[33m                       [ 41%][0m
+tests/orchestration/test_silent_wrong_answer.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 42%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 42%][0m
+tests/orchestration/test_sql_oracle.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 43%][0m
+tests/orchestration/test_state_transitions.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [ 43%][0m
+tests/orchestration/test_synthesizer_citations.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 44%][0m
+tests/orchestration/test_synthesizer_llm.py [32m.[0m[32m.[0m[32m.[0m[33m                          [ 44%][0m
+tests/orchestration/test_synthesizer_multi_source.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m              [ 44%][0m
+tests/orchestration/test_synthesizer_safety.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                     [ 44%][0m
+tests/orchestration/test_two_brain_conflict_resolution.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m        [ 45%][0m
+tests/orchestration/test_verifier_node.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m               [ 45%][0m
+tests/orchestration/test_verifier_numeric_faithfulness.py [32m.[0m[32m.[0m[32m.[0m[33m            [ 45%][0m
+tests/orchestration/test_workflow_pipeline.py [32m.[0m[32m.[0m[33m                         [ 46%][0m
+tests/property/test_citation_presence.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                          [ 46%][0m
+tests/property/test_tier_filtering_always_returns_subset.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 46%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                               [ 47%][0m
+tests/property/test_token_budget_never_exceeded.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 47%][0m
+tests/regression/test_bug_fixes.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                          [ 48%][0m
+tests/scripts/test_batch4_data_sql_schema_audit.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                  [ 48%][0m
+tests/scripts/test_build_qdrant_index.py [32m.[0m[33m                               [ 48%][0m
+tests/scripts/test_capture_killer_query_evidence.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                 [ 48%][0m
+tests/scripts/test_check_env.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                     [ 49%][0m
+tests/scripts/test_check_slow_test_markers.py [32m.[0m[32m.[0m[32m.[0m[33m                        [ 49%][0m
+tests/scripts/test_ingest_nrg_db.py [32m.[0m[32m.[0m[33m                                   [ 49%][0m
+tests/scripts/test_ingest_qdrant.py [32m.[0m[32m.[0m[32m.[0m[33m                                  [ 49%][0m
+tests/scripts/test_ingest_qdrant_documents.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                    [ 49%][0m
+tests/scripts/test_insert_test_data_qdrant.py [32m.[0m[33m                          [ 49%][0m
+tests/scripts/test_missing_script_modules.py [32m.[0m[32m.[0m[33m                          [ 49%][0m
+tests/scripts/test_phase7_preflight.py [32m.[0m[32m.[0m[32m.[0m[33m                               [ 50%][0m
+tests/scripts/test_prewarm_release_cache.py [32m.[0m[32m.[0m[32m.[0m[33m                          [ 50%][0m
+tests/scripts/test_pydantic_migration_guard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 50%][0m
+tests/scripts/test_quality_bar_scorecard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m            [ 51%][0m
+tests/scripts/test_red_team_live_replay.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 51%][0m
+tests/scripts/test_red_team_replay_script.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 51%][0m
+tests/scripts/test_repair_qdrant_payloads.py [32m.[0m[32m.[0m[32m.[0m[33m                         [ 51%][0m
+tests/scripts/test_run_critical_path_contract.py [32m.[0m[32m.[0m[32m.[0m[33m                     [ 52%][0m
+tests/scripts/test_runtime_image_scan_gate.py [32m.[0m[32m.[0m[32m.[0m[33m                        [ 52%][0m
+tests/scripts/test_scan_env_history_secrets.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                    [ 52%][0m
+tests/scripts/test_seed_local_quality_fixtures.py [32m.[0m[32m.[0m[33m                     [ 52%][0m
+tests/scripts/test_seed_relations.py [32m.[0m[33m                                   [ 52%][0m
+tests/scripts/test_sovereign_deploy_script.py [32m.[0m[32m.[0m[33m                         [ 52%][0m
+tests/scripts/test_vector_drift_scheduler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 53%][0m
+tests/scripts/test_verify_db_merge.py [32m.[0m[32m.[0m[33m                                 [ 53%][0m
+tests/scripts/test_verify_intake_bundle.py [32m.[0m[32m.[0m[32m.[0m[33m                           [ 53%][0m
+tests/security/test_admin_rbac_routes.py [32m.[0m[33m                               [ 53%][0m
+tests/security/test_adversarial_inputs.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 55%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                 [ 55%][0m
+tests/security/test_audit_chain.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 56%][0m
+tests/security/test_data_boundary.py [32m.[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 56%][0m
+tests/security/test_egress_allowlist.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 58%]
+[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                      [ 58%][0m
+tests/security/test_egress_guard.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 59%][0m
+tests/security/test_gateway.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[33ms[0m[33ms[0m[32m.[0m[33m                                 [ 59%][0m
+tests/security/test_hmac_validation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 59%][0m
+tests/security/test_kong_dlp_runtime.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m                            [ 60%][0m
+tests/security/test_p0_security_regressions.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                    [ 60%][0m
+tests/security/test_per_user_audit_binding.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 61%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 61%][0m
+tests/security/test_pii_compliance.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 62%][0m
+tests/security/test_pii_indian.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                          [ 63%][0m
+tests/security/test_pii_scan.py [32m.[0m[32m.[0m[33m                                       [ 63%][0m
+tests/security/test_postgresql_rbac.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 63%][0m
+tests/security/test_prompt_injection.py [32m.[0m[32m.[0m[32m.[0m[33m                              [ 63%][0m
+tests/security/test_prompt_sanitiser_middleware.py [32m.[0m[32m.[0m[33m                    [ 63%][0m
+tests/security/test_qdrant_rbac.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                            [ 64%][0m
+tests/security/test_rate_limit_enforced.py [33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                        [ 64%][0m
+tests/security/test_rbac.py [32m.[0m[33ms[0m[32m.[0m[33ms[0m[33m                                         [ 64%][0m
+tests/security/test_rbac_isolation.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 64%][0m
+tests/security/test_rbac_middleware.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 65%][0m
+tests/security/test_rbac_policies.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m          [ 66%][0m
+tests/security/test_red_team_v41.py [32m.[0m[32m.[0m[32m.[0m[33ms[0m[33ms[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m       [ 68%][0m
+tests/security/test_request_signer_constant_time.py [32m.[0m[33m                    [ 68%][0m
+tests/security/test_sanitiser.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 70%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                 [ 70%][0m
+tests/security/test_sanitiser_extended.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 72%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                                     [ 72%][0m
+tests/security/test_security_hardening.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                [ 73%][0m
+tests/security/test_security_regression.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 74%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m [ 78%]
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                       [ 80%][0m
+tests/security/test_sql_injection.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                      [ 81%][0m
+tests/security/test_sql_injection_blocked.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m           [ 82%][0m
+tests/security/test_temporal_rbac.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 82%][0m
+tests/security/test_tier_filtering_properties.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m          [ 83%][0m
+tests/security/test_tier_generalization.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m       [ 84%][0m
+tests/security/test_xss_sanitiser.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                [ 84%][0m
+tests/security/test_zero_leakage.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33ms[0m[32m.[0m[32m.[0m[33m                             [ 85%][0m
+tests/services/test_consent.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 85%][0m
+tests/services/test_consent_extended.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 85%][0m
+tests/skills/test_qdrant_config.py [32m.[0m[32m.[0m[33m                                    [ 86%][0m
+tests/skills/test_rag.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                        [ 86%][0m
+tests/skills/test_rag_embedder_retriever.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m    [ 87%][0m
+tests/skills/test_rag_failures.py [32m.[0m[32m.[0m[32m.[0m[33m                                    [ 87%][0m
+tests/skills/test_rag_ingest_reranker.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                         [ 88%][0m
+tests/skills/test_rag_missing_modules.py [32m.[0m[33m                               [ 88%][0m
+tests/skills/test_result_anomaly_detector.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m      [ 89%][0m
+tests/skills/test_safe_sql_builder.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                            [ 89%][0m
+tests/skills/test_sandbox.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                  [ 90%][0m
+tests/skills/test_schema_extractor.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 90%][0m
+tests/skills/test_schema_retriever.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m     [ 91%][0m
+tests/skills/test_text_to_sql.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 92%][0m
+tests/skills/test_text_to_sql_rewriter.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 92%][0m
+tests/skills/test_text_to_sql_semantic_anomaly.py [32m.[0m[32m.[0m[32m.[0m[33m                    [ 92%][0m
+tests/skills/test_validator.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 93%][0m
+tests/snapshot/test_component_rendering.py [33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33ms[0m[33m                       [ 93%][0m
+tests/training/test_data_collector.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m           [ 95%][0m
+tests/training/test_quality_filter.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m         [ 96%][0m
+tests/training/test_stratified_sampler.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m              [ 97%][0m
+tests/unit/test_compose_config.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                 [ 97%][0m
+tests/unit/test_database.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                  [ 98%][0m
+tests/unit/test_database_path.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                   [ 98%][0m
+tests/unit/test_local_llm_client.py [32m.[0m[32m.[0m[33m                                   [ 98%][0m
+tests/unit/test_redis_layer.py [32m.[0m[33m                                         [ 98%][0m
+tests/unit/test_synthesis_cascade.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                              [ 98%][0m
+tests/utils/test_helpers.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                           [ 99%][0m
+tests/utils/test_logging_config.py [32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                               [100%][0m
+
+[33m=============================== warnings summary ===============================[0m
+tests/api/test_ai_synthesis.py: 1 warning
+tests/api/test_audit_event_endpoint.py: 3 warnings
+tests/api/test_auth_api.py: 8 warnings
+tests/api/test_critical_path_stream.py: 3 warnings
+tests/api/test_glm_fusion_queries.py: 1 warning
+tests/api/test_health_endpoints.py: 12 warnings
+tests/api/test_langgraph_api.py: 4 warnings
+tests/api/test_live_hybrid_stream.py: 1 warning
+tests/api/test_metrics_fast_path.py: 1 warning
+tests/api/test_minimax_mvp_fusion_queries.py: 1 warning
+tests/api/test_new_endpoints.py: 11 warnings
+tests/api/test_query_security_validation.py: 9 warnings
+tests/api/test_researchers_endpoint_limits.py: 1 warning
+tests/api/test_route_registration.py: 1 warning
+tests/api/test_tier_response_filtering.py: 1 warning
+tests/contract/test_api_response_schema.py: 8 warnings
+tests/contract/test_api_schema.py: 17 warnings
+tests/contract/test_query_endpoint.py: 10 warnings
+tests/integration/test_query_caching.py: 2 warnings
+tests/observability/test_metrics.py: 9 warnings
+tests/property/test_citation_presence.py: 6 warnings
+tests/property/test_tier_filtering_always_returns_subset.py: 22 warnings
+tests/property/test_token_budget_never_exceeded.py: 6 warnings
+tests/regression/test_bug_fixes.py: 8 warnings
+tests/security/test_admin_rbac_routes.py: 1 warning
+tests/security/test_adversarial_inputs.py: 36 warnings
+tests/security/test_hmac_validation.py: 7 warnings
+tests/security/test_rate_limit_enforced.py: 5 warnings
+tests/security/test_security_hardening.py: 13 warnings
+tests/security/test_sql_injection.py: 14 warnings
+tests/security/test_sql_injection_blocked.py: 17 warnings
+tests/security/test_tier_filtering_properties.py: 13 warnings
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+    response = await f(request)
+
+tests/auth/test_jwt_handler.py::test_concurrent_refresh_allows_only_one_rotation
+tests/auth/test_jwt_handler.py::test_access_token_verification_reuses_same_ip_decode_cache
+tests/auth/test_jwt_handler.py::test_cached_access_token_still_detects_replay_from_new_ip
+tests/auth/test_jwt_handler.py::test_refresh_token_survives_handler_restart_with_store
+tests/auth/test_jwt_handler.py::test_logout_revokes_refresh_token_in_store
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 11 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/auth/test_jwt_handler.py::test_concurrent_refresh_allows_only_one_rotation
+tests/auth/test_jwt_handler.py::test_access_token_verification_reuses_same_ip_decode_cache
+tests/auth/test_jwt_handler.py::test_cached_access_token_still_detects_replay_from_new_ip
+tests/auth/test_jwt_handler.py::test_refresh_token_survives_handler_restart_with_store
+tests/auth/test_jwt_handler.py::test_logout_revokes_refresh_token_in_store
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 11 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/security/test_red_team_v41.py::test_rt07_jwt_key_confusion
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 15 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_same_ip_allows_same_token
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_different_ip_triggers_replay_detection
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_revoked_token_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 18 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_same_ip_allows_same_token
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_different_ip_triggers_replay_detection
+tests/security/test_security_regression.py::TestTokenReplayDetection::test_revoked_token_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 18 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_kid_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_aud_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_jti_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_nbf_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_tier_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_refresh_token_has_kid
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 25 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_kid_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_aud_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_jti_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_nbf_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_token_has_tier_claim
+tests/security/test_security_regression.py::TestJWTHardening::test_refresh_token_has_kid
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 25 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_refresh_token_issued
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_second_refresh_revokes_first
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_revoked_refresh_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:147: InsecureKeyLengthWarning: The HMAC key is 21 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    return self._jws.encode(
+
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_refresh_token_issued
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_second_refresh_revokes_first
+tests/security/test_security_regression.py::TestJWTRefreshRotation::test_revoked_refresh_rejected
+  /Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/jwt/api_jwt.py:365: InsecureKeyLengthWarning: The HMAC key is 21 bytes long, which is below the minimum recommended length of 32 bytes for SHA256. See RFC 7518 Section 3.2.
+    decoded = self.decode_complete(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m== [32m1951 passed[0m, [33m[1m58 skipped[0m, [33m[1m261 deselected[0m, [33m[1m287 warnings[0m[33m in 464.05s (0:07:44)[0m[33m ==[0m

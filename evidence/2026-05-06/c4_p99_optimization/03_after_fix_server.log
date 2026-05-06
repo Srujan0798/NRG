@@ -1,0 +1,48 @@
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started parent process [64691]
+INFO:     Started server process [64808]
+INFO:     Waiting for application startup.
+INFO:     Started server process [64824]
+INFO:     Waiting for application startup.
+INFO:     Started server process [64840]
+INFO:     Waiting for application startup.
+INFO:     Started server process [64825]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+INFO:     Received SIGINT, exiting.
+INFO:     Terminated child process [64808]
+INFO:     Terminated child process [64824]
+INFO:     Terminated child process [64825]
+INFO:     Terminated child process [64840]
+INFO:     Waiting for child process [64808]
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [64840]
+INFO:     Finished server process [64808]
+INFO:     Waiting for child process [64824]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [64825]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [64824]
+INFO:     Waiting for child process [64825]
+INFO:     Waiting for child process [64840]
+INFO:     Stopping parent process [64691]

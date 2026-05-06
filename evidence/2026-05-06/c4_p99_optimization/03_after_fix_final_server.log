@@ -1,0 +1,60 @@
+INFO:     Uvicorn running on http://127.0.0.1:8001 (Press CTRL+C to quit)
+INFO:     Started parent process [78992]
+INFO:     Started server process [78998]
+INFO:     Waiting for application startup.
+INFO:     Started server process [78997]
+INFO:     Waiting for application startup.
+INFO:     Started server process [78996]
+INFO:     Waiting for application startup.
+INFO:     Started server process [78995]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+INFO:     Application startup complete.
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+INFO:     Waiting for child process [78995]
+INFO:     Child process [78995] died
+INFO:     Started server process [80404]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+/Users/srujansai/Desktop/NRG/.venv/lib/python3.11/site-packages/fastapi/routing.py:120: FastAPIDeprecationWarning: ORJSONResponse is deprecated, FastAPI now serializes data directly to JSON bytes via Pydantic when a return type or response model is set, which is faster and doesn't need a custom response class. Read more in the FastAPI docs: https://fastapi.tiangolo.com/advanced/custom-response/#orjson-or-response-model and https://fastapi.tiangolo.com/tutorial/response-model/
+  response = await f(request)
+INFO:     Waiting for child process [78998]
+INFO:     Child process [78998] died
+INFO:     Started server process [81576]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Received SIGINT, exiting.
+INFO:     Terminated child process [80404]
+INFO:     Terminated child process [78996]
+INFO:     Terminated child process [78997]
+INFO:     Terminated child process [81576]
+INFO:     Waiting for child process [80404]
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [81576]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [78997]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [80404]
+INFO:     Waiting for child process [78996]
+INFO:     Application shutdown complete.
+INFO:     Finished server process [78996]
+INFO:     Waiting for child process [78997]
+INFO:     Waiting for child process [81576]
+INFO:     Stopping parent process [78992]
