@@ -72,13 +72,19 @@ test-results/
 test_results/
 *.log
 backups/
-demo_sprint/
+[Dd]emo_sprint/
 experiments/
 pitch/
 dist/
 models/
 logs/
 coverage.xml
+
+# Root-level external imports and local history backups
+Glm_[Mm][Vv][Pp]/
+Minimax_[Mm][Vv][Pp]/
+NRG DB/
+NRG_HISTORY_BACKUP_BEFORE_S3_09_PURGE_*.git/
 
 # Runtime / PID / backup files
 *.pid
