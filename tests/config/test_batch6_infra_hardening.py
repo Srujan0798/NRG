@@ -260,3 +260,31 @@ def test_deploy_workflows_normalize_ghcr_image_repository_names():
     assert "${{ github.repository }}/nrg-frontend" not in deploy_source
     assert "${{ env.IMAGE_NAME }}/api" not in cd_source
     assert "${{ env.IMAGE_NAME }}/frontend" not in cd_source
+
+
+def test_ci_scheduled_red_team_replay_runs_with_python():
+    workflow = yaml.safe_load(_read(".github/workflows/ci.yml"))
+    steps = workflow["jobs"]["red-team-live-replay"]["steps"]
+
+    replay_step = next(step for step in steps if step.get("name") == "Run LB-5 live replay")
+    replay_script = replay_step["run"]
+
+    assert "python scripts/red_team_live_replay.py" in replay_script
+    assert "bash scripts/red_team_live_replay.py" not in replay_script
+    assert "--evidence evidence/ci/red-team-live-replay/17_red_team_results.md" in replay_script
+
+
+def test_ci_scheduled_artifact_uploads_match_test_evidence_dirs():
+    workflow = yaml.safe_load(_read(".github/workflows/ci.yml"))
+
+    local_steps = workflow["jobs"]["local-release-gate"]["steps"]
+    local_run = next(step for step in local_steps if step.get("name") == "Run sub-15-minute local gate")["run"]
+    local_upload = next(step for step in local_steps if step.get("name") == "Upload local gate evidence")
+    assert "EVIDENCE_DIR=evidence/ci/local-release-gate" in local_run
+    assert "evidence/ci/local-release-gate/test_suite_full_final.xml" in local_upload["with"]["path"]
+
+    slow_steps = workflow["jobs"]["slow-nightly"]["steps"]
+    slow_run = next(step for step in slow_steps if step.get("name") == "Run slow suite")["run"]
+    slow_upload = next(step for step in slow_steps if step.get("name") == "Upload slow suite evidence")
+    assert "EVIDENCE_DIR=evidence/ci/slow-nightly" in slow_run
+    assert "evidence/ci/slow-nightly/test_suite_full_final.xml" in slow_upload["with"]["path"]

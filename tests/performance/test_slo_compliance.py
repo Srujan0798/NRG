@@ -345,8 +345,14 @@ class TestConcurrencySLO:
         successful_latencies = [lat for status, lat in results if status == 200]
         assert len(successful_latencies) == 1000, f"Only {len(successful_latencies)}/1000 succeeded"
 
-        max_latency = max(successful_latencies)
-        assert max_latency < 0.5, f"Max latency {max_latency:.2f}s exceeds P99 threshold of 500ms"
+        sorted_latencies = sorted(successful_latencies)
+        p99_index = max(0, min(len(sorted_latencies) - 1, int(len(sorted_latencies) * 0.99) - 1))
+        p99_latency = sorted_latencies[p99_index]
+        max_latency = sorted_latencies[-1]
+        assert p99_latency < 0.5, (
+            f"P99 latency {p99_latency:.2f}s exceeds 500ms threshold "
+            f"(max {max_latency:.2f}s)"
+        )
 
     @pytest.mark.timeout(60)
     def test_all_tiers_concurrent(self, client):

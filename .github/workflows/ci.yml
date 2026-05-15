@@ -196,15 +196,14 @@ jobs:
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
       - name: Run sub-15-minute local gate
-        run: PYTHON_BIN=python bash scripts/run_test_suite.sh
+        run: EVIDENCE_DIR=evidence/ci/local-release-gate PYTHON_BIN=python bash scripts/run_test_suite.sh
       - name: Upload local gate evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-suite-full
           path: |
-            evidence/2026-04-26/test_suite_full.xml
-            evidence/2026-04-26/test_suite_full.log
+            evidence/ci/local-release-gate/test_suite_full_final.xml
 
   slow-nightly:
     runs-on: ubuntu-22.04
@@ -221,15 +220,14 @@ jobs:
       - name: Install dependencies
         run: uv pip install --system -e ".[dev]"
       - name: Run slow suite
-        run: PYTHON_BIN=python bash scripts/run_test_suite.sh --slow
+        run: EVIDENCE_DIR=evidence/ci/slow-nightly PYTHON_BIN=python bash scripts/run_test_suite.sh --slow
       - name: Upload slow suite evidence
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-suite-slow
           path: |
-            evidence/2026-04-26/test_suite_full_slow.xml
-            evidence/2026-04-26/test_suite_full_slow.log
+            evidence/ci/slow-nightly/test_suite_full_final.xml
 
   red-team-live-replay:
     runs-on: ubuntu-22.04
@@ -247,11 +245,11 @@ jobs:
         run: uv pip install --system -e ".[dev]"
       - name: Run LB-5 live replay
         run: |
-          PYTHON=python bash scripts/red_team_live_replay.py \
+          python scripts/red_team_live_replay.py \
             --start-api \
             --api-base http://127.0.0.1:8010 \
             --payloads tests/security/red_team_payloads.yaml \
-            --evidence evidence/2026-04-26/17_red_team_results.md \
+            --evidence evidence/ci/red-team-live-replay/17_red_team_results.md \
             --workers 1 \
             --timeout 10 \
             --startup-timeout 90 \
@@ -261,7 +259,7 @@ jobs:
         if: always()
         with:
           name: red-team-live-replay
-          path: evidence/2026-04-26/17_red_team_results.md
+          path: evidence/ci/red-team-live-replay/17_red_team_results.md
 
   test-python:
     runs-on: ${{ matrix.os }}
